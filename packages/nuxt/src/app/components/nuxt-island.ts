@@ -203,7 +203,6 @@ export default defineComponent({
       })
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-        console.log({ pKey, uid: uid.value, res })
 
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
