@@ -1,7 +1,8 @@
 <template>
   <div>
-    <LazyEventDelayedModel
+    <LazyDelayedModel
       v-model="model"
+      hydrate-on-interaction
       @hydrated="log"
     />
   </div>

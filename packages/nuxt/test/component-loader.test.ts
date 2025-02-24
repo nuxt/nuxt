@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { kebabCase, pascalCase } from 'scule'
 import { rollup } from 'rollup'
+import type { Plugin } from 'rollup'
 import vuePlugin from '@vitejs/plugin-vue'
 import vuePluginJsx from '@vitejs/plugin-vue-jsx'
 import type { AddComponentOptions } from '@nuxt/kit'
@@ -34,7 +35,7 @@ describe('components:loader', () => {
         setup(__props) {
 
           const NamedComponent = __nuxt_component_0;
-
+          
       return (_ctx, _cache) => {
         const _component_MyComponent = __nuxt_component_0;
         const _component_LazyMyComponent = __nuxt_component_0_lazy;
@@ -90,19 +91,21 @@ describe('components:loader', () => {
   it('should correctly resolve lazy hydration components', async () => {
     const sfc = `
     <template>
-      <LazyIdleMyComponent :hydrate="3000" />
-      <LazyVisibleMyComponent :hydrate="{threshold: 0.2}" />
-      <LazyEventMyComponent :hydrate="['click','mouseover']" />
-      <LazyMediaMyComponent hydrate="(max-width: 500px)" />
-      <LazyIfMyComponent :hydrate="someCondition" />
-      <LazyTimeMyComponent :hydrate="3000" />
-      <LazyPromiseMyComponent :hydrate="promise" />
+      <LazyMyComponent :hydrate-on-idle="3000" />
+      <LazyMyComponent :hydrate-on-visible="{threshold: 0.2}" />
+      <LazyMyComponent :hydrate-on-interaction="['click','mouseover']" />
+      <LazyMyComponent hydrate-on-media-query="(max-width: 500px)" />
+      <LazyMyComponent :hydrate-after="3000" />
+      <LazyMyComponent :hydrate-on-idle>
+        <LazyMyComponent hydrate-when="true" />
+      </LazyMyComponent>
+      <LazyMyComponent hydrate-on-visible />
     </template>
     `
     const code = await transform(sfc, '/pages/index.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyEventComponent, createLazyMediaComponent, createLazyIfComponent, createLazyTimeComponent, createLazyPromiseComponent } from '../client-runtime.mjs';
-      import { createElementBlock, openBlock, Fragment, createVNode } from 'vue';
+      "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyTimeComponent, createLazyIfComponent } from '../client-runtime.mjs';
+      import { createElementBlock, openBlock, Fragment, createVNode, withCtx } from 'vue';
 
       var _export_sfc = (sfc, props) => {
         const target = sfc.__vccOpts || sfc;
@@ -112,32 +115,35 @@ describe('components:loader', () => {
         return target;
       };
 
-      const __nuxt_component_0_delayedNetwork = createLazyIdleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_delayedIO = createLazyVisibleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_delayedEvent = createLazyEventComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_delayedMedia = createLazyMediaComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_delayedIf = createLazyIfComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_delayedTime = createLazyTimeComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_delayedPromise = createLazyPromiseComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_idle = createLazyIdleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_visible = createLazyVisibleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_event = createLazyInteractionComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_media = createLazyMediaQueryComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_time = createLazyTimeComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_if = createLazyIfComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const _sfc_main = {};
 
       function _sfc_render(_ctx, _cache) {
-        const _component_LazyIdleMyComponent = __nuxt_component_0_delayedNetwork;
-        const _component_LazyVisibleMyComponent = __nuxt_component_0_delayedIO;
-        const _component_LazyEventMyComponent = __nuxt_component_0_delayedEvent;
-        const _component_LazyMediaMyComponent = __nuxt_component_0_delayedMedia;
-        const _component_LazyIfMyComponent = __nuxt_component_0_delayedIf;
-        const _component_LazyTimeMyComponent = __nuxt_component_0_delayedTime;
-        const _component_LazyPromiseMyComponent = __nuxt_component_0_delayedPromise;
+        const _component_LazyIdleMyComponent = __nuxt_component_0_lazy_idle;
+        const _component_LazyVisibleMyComponent = __nuxt_component_0_lazy_visible;
+        const _component_LazyInteractionMyComponent = __nuxt_component_0_lazy_event;
+        const _component_LazyMediaQueryMyComponent = __nuxt_component_0_lazy_media;
+        const _component_LazyTimeMyComponent = __nuxt_component_0_lazy_time;
+        const _component_LazyIfMyComponent = __nuxt_component_0_lazy_if;
 
         return (openBlock(), createElementBlock(Fragment, null, [
-          createVNode(_component_LazyIdleMyComponent, { hydrate: 3000 }),
-          createVNode(_component_LazyVisibleMyComponent, { hydrate: {threshold: 0.2} }),
-          createVNode(_component_LazyEventMyComponent, { hydrate: ['click','mouseover'] }),
-          createVNode(_component_LazyMediaMyComponent, { hydrate: "(max-width: 500px)" }),
-          createVNode(_component_LazyIfMyComponent, { hydrate: _ctx.someCondition }, null, 8 /* PROPS */, ["hydrate"]),
-          createVNode(_component_LazyTimeMyComponent, { hydrate: 3000 }),
-          createVNode(_component_LazyPromiseMyComponent, { hydrate: _ctx.promise }, null, 8 /* PROPS */, ["hydrate"])
+          createVNode(_component_LazyIdleMyComponent, { "hydrate-on-idle": 3000 }),
+          createVNode(_component_LazyVisibleMyComponent, { "hydrate-on-visible": {threshold: 0.2} }),
+          createVNode(_component_LazyInteractionMyComponent, { "hydrate-on-interaction": ['click','mouseover'] }),
+          createVNode(_component_LazyMediaQueryMyComponent, { "hydrate-on-media-query": "(max-width: 500px)" }),
+          createVNode(_component_LazyTimeMyComponent, { "hydrate-after": 3000 }),
+          createVNode(_component_LazyIdleMyComponent, { "hydrate-on-idle": _ctx.hydrateOnIdle }, {
+            default: withCtx(() => [
+              createVNode(_component_LazyIfMyComponent, { "hydrate-when": "true" })
+            ]),
+            _: 1 /* STABLE */
+          }, 8 /* PROPS */, ["hydrate-on-idle"]),
+          createVNode(_component_LazyVisibleMyComponent, { "hydrate-on-visible": "" })
         ], 64 /* STABLE_FRAGMENT */))
       }
       var index = /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]]);
@@ -162,6 +168,12 @@ async function transform (code: string, filename: string) {
     meta: {},
     ...opts,
   }))
+  const [pre, post] = LoaderPlugin({
+    clientDelayedComponentRuntime: '/client-runtime.mjs',
+    serverComponentRuntime: '/server-runtime.mjs',
+    getComponents: () => components,
+    mode: 'server',
+  }).rollup() as Plugin[]
   const bundle = await rollup({
     input: filename,
     plugins: [
@@ -178,14 +190,10 @@ async function transform (code: string, filename: string) {
           }
         },
       },
+      pre,
       vuePlugin(),
       vuePluginJsx(),
-      LoaderPlugin({
-        clientDelayedComponentRuntime: '/client-runtime.mjs',
-        serverComponentRuntime: '/server-runtime.mjs',
-        getComponents: () => components,
-        mode: 'server',
-      }).rollup(),
+      post,
     ],
   })
   const { output: [chunk] } = await bundle.generate({})

@@ -2953,17 +2953,6 @@ describe('lazy import components', () => {
     await page.close()
   })
 
-  it('handles promise-based hydration correctly', async () => {
-    const { page } = await renderPage('/lazy-import-components/promise')
-
-    const initialPromiseText = 'This should be visible at first with promise!'
-
-    await page.locator('[data-testid=delayed-component]', { hasText: initialPromiseText }).first().waitFor({ state: 'visible' })
-    await page.locator('[data-testid=delayed-component]', { hasText: initialPromiseText }).first().waitFor({ state: 'hidden' })
-
-    await page.close()
-  })
-
   it('keeps reactivity with models', async () => {
     const { page } = await renderPage('/lazy-import-components/model-event')
 
