@@ -57,7 +57,6 @@
     "magic-string": "^0.30.17",
     "memfs": "4.14.1",
     "nuxt": "workspace:*",
-    "ohash": "1.1.4",
     "postcss": "8.5.3",
     "rollup": "4.34.8",
     "send": ">=1.1.0",

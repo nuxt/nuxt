@@ -49,7 +49,7 @@ useAsyncData(() => {})
       }),
     }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`
       "import { useAsyncData } from '#app'
-      useAsyncData(() => {}, '$yXewDLZblH')"
+      useAsyncData(() => {}, '$HJiaryoL2y')"
     `)
   })
 
