@@ -43,6 +43,7 @@ export const createLazyIdleComponent = (loader: AsyncComponentLoader) => {
   })
 }
 
+const defaultInteractionEvents = ['pointerenter', 'focus'] satisfies Array<keyof HTMLElementEventMap>
 /* @__NO_SIDE_EFFECTS__ */
 export const createLazyInteractionComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
@@ -51,13 +52,13 @@ export const createLazyInteractionComponent = (loader: AsyncComponentLoader) => 
       hydrateOnInteraction: {
         type: [String, Array] as unknown as () => keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> | true,
         required: false,
-        default: ['pointerenter', 'focus'] satisfies Array<keyof HTMLElementEventMap>,
+        default: defaultInteractionEvents,
       },
     },
     emits: ['hydrated'],
     setup (props, { attrs, emit }) {
       const hydrated = () => { emit('hydrated') }
-      const comp = defineAsyncComponent({ loader, hydrate: hydrateOnInteraction(props.hydrateOnInteraction === true ? ['pointerenter', 'focus'] : props.hydrateOnInteraction) })
+      const comp = defineAsyncComponent({ loader, hydrate: hydrateOnInteraction(props.hydrateOnInteraction === true ? defaultInteractionEvents : props.hydrateOnInteraction || defaultInteractionEvents) })
       return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
     },
   })
