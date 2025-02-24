@@ -120,19 +120,18 @@ export const componentsTypeTemplate = {
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
-type DelayedComponent<T> = DefineComponent<{hydrate?: T},{},{},{},{},{},{},{hydrated: void}>
+type HydrationStrategies = {
+  hydrateOnVisible?: IntersectionObserverInit | true
+  hydrateOnIdle?: number | true
+  hydrateOnInteraction?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> | true
+  hydrateOnMediaQuery?: string
+  hydrateAfter?: number
+  hydrateWhen?: boolean
+}
+type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>)
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
-  // TODO: refactor this to prop or directive format
-  ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type} & DelayedComponent<number>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyTime${pascalName}': ${type} & DelayedComponent<number>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyPromise${pascalName}': ${type} & DelayedComponent<Promise<unknown>>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyVisible${pascalName}': ${type} & DelayedComponent<IntersectionObserverInit>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DelayedComponent<keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyMedia${pascalName}': ${type} & DelayedComponent<string>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyIf${pascalName}': ${type} & DelayedComponent<unknown>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyNever${pascalName}': ${type}`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {
@@ -140,15 +139,7 @@ declare module 'vue' {
 }
 
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type} & DelayedComponent<number>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyTime${pascalName}: ${type} & DelayedComponent<number>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyPromise${pascalName}: ${type} & DelayedComponent<Promise<unknown>>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyVisible${pascalName}: ${type} & DelayedComponent<IntersectionObserverInit>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type} & DelayedComponent<keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyMedia${pascalName}: ${type} & DelayedComponent<string>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyIf${pascalName}: ${type} & DelayedComponent<unknown>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyNever${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
 
 export const componentNames: string[]
 `
