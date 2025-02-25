@@ -74,7 +74,7 @@ However, during Server-Side Rendering, due to security risks such as **Server-Si
 ```vue [pages/index.vue]
 <script setup lang="ts">
 // This will NOT forward headers or cookies during SSR
-const { data } = useAsyncData(() => $fetch('/api/cookies'))
+const { data } = await useAsyncData(() => $fetch('/api/cookies'))
 </script>
 ```
 
@@ -92,7 +92,7 @@ If you need to forward headers and cookies on the server, you must manually pass
 <script setup lang="ts">
 // This will forward the user's headers and cookies to `/api/cookies`
 const requestFetch = useRequestFetch()
-const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'))
+const { data } = await useAsyncData(() => requestFetch('/api/cookies'))
 </script>
 ```
 
