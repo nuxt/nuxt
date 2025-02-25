@@ -487,6 +487,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             isExternal: isExternal.value || hasTarget.value,
             isActive: false,
             isExactActive: false,
+            isInWhitelist: isInWhitelist.value,
           })
         }
 
