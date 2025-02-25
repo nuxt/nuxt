@@ -79,10 +79,6 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
   noPrefetch?: boolean
 }
 
-type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {}
-
 /**
  * Create a NuxtLink component with given options as defaults.
  * @see https://nuxt.com/docs/api/components/nuxt-link
@@ -504,7 +500,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   }) as unknown as new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp>) => InstanceType<DefineSetupFnComponent<
     NuxtLinkProps<CustomProp>,
     [],
-    SlotsType<Prettify<NuxtLinkSlots<CustomProp>>>
+    SlotsType<NuxtLinkSlots<CustomProp>>
   >>
 }
 
