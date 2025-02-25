@@ -5,7 +5,7 @@ import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
-import { hash } from 'ohash'
+import { isEqual } from 'ohash/utils'
 import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
@@ -75,7 +75,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
     }
     const callback = () => {
-      if (opts.readonly || hash(cookie.value) === hash(cookies[name])) { return }
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
 
       cookies[name] = klona(cookie.value)
@@ -136,11 +136,11 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
-      if (opts.readonly || hash(cookie.value) === hash(cookies[name])) { return }
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       nuxtApp._cookies ||= {}
       if (name in nuxtApp._cookies) {
         // do not append a second `set-cookie` header
-        if (hash(cookie.value) === hash(nuxtApp._cookies[name])) { return }
+        if (isEqual(cookie.value, nuxtApp._cookies[name])) { return }
         // warn in dev mode
         if (import.meta.dev) {
           console.warn(`[nuxt] cookie \`${name}\` was previously set to \`${opts.encode(nuxtApp._cookies[name] as any)}\` and is being overridden to \`${opts.encode(cookie.value as any)}\`. This may cause unexpected issues.`)
