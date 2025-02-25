@@ -7,7 +7,6 @@ export async function resolveTypePath (path: string, subpath: string, searchPath
   try {
     const r = resolveModulePath(path, {
       from: searchPaths?.map(d => directoryToURL(d)),
-      suffixes: [''],
       conditions: ['types', 'import', 'require'],
     })
     if (subpath) {
