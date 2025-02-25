@@ -26,7 +26,7 @@ export function tryResolveModule (id: string, url: string | string[]): Promise<s
 export function tryResolveModule (id: string, url: string | string[] | URL | URL[] = import.meta.url) {
   return Promise.resolve(resolveModulePath(id, {
     from: url,
-    suffixes: ['/index'],
+    suffixes: ['', '/index'],
     try: true,
   }))
 }

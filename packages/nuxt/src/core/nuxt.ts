@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, runWithNuxtContext, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -24,6 +24,7 @@ import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
+import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -482,7 +483,13 @@ async function initNuxt (nuxt: Nuxt) {
   for (const _mod of nuxt.options.modules) {
     const mod = Array.isArray(_mod) ? _mod[0] : _mod
     if (typeof mod !== 'string') { continue }
-    const modPath = await resolvePath(resolveAlias(mod), { fallbackToOriginal: true })
+    const modAlias = resolveAlias(mod)
+    const modPath = resolveModulePath(modAlias, {
+      try: true,
+      from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+      suffixes: ['/nuxt', '/nuxt/index', '/module', '/module/index', '', '/index'],
+      extensions: nuxt.options.extensions,
+    }) ?? modAlias
     specifiedModules.add(modPath)
   }
 
@@ -920,9 +927,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 export async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
-  const path = await resolvePath(name, { fallbackToOriginal: true }).catch(() => null)
+  const path = resolveModulePath(name, { try: true })
 
-  if (!path || path === name) { return }
+  if (!path) { return }
   const { version } = await readPackageJSON(path)
 
   if (version && gt(nuxtVersion, version)) {

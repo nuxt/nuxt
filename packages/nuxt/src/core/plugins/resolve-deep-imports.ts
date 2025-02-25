@@ -44,7 +44,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
 
       const path = resolveModulePath(id, {
         from: [dir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)),
-        suffixes: ['/index'],
+        suffixes: ['', '/index'],
         conditions,
         try: true,
       })
