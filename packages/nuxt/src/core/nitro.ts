@@ -409,7 +409,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
-      exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/, ...sharedPatterns],
+      exclude: [/core[\\/]runtime[\\/]nitro[\\/](?:handlers|utils)/, ...sharedPatterns],
     }),
   )
 
