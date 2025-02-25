@@ -3,14 +3,15 @@ import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineCom
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { type ActiveHeadEntry, type Head, injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
 
+import type { ActiveHeadEntry, Head } from '@unhead/vue/types'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
+import { injectHead } from '../composables/head'
 import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
@@ -220,6 +221,7 @@ export default defineComponent({
           if (activeHead) {
             activeHead.patch(res.head)
           } else {
+            // @ts-expect-error type juggling
             activeHead = head.push(res.head)
           }
         }

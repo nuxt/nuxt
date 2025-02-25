@@ -6,8 +6,6 @@ import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
-
-import { resolveUnrefHeadInput } from '@unhead/vue'
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
@@ -1016,7 +1014,9 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta name="description" content="overriding with an inline useHead call">')
     expect(headHtml).toMatch(/<html[^>]*class="html-attrs-test"/)
     expect(headHtml).toMatch(/<body[^>]*class="body-attrs-test"/)
-    expect(headHtml).toContain('<script src="https://a-body-appended-script.com"></script></body>')
+
+    const bodyHtml = headHtml.match(/<body[^>]*>(.*)<\/body>/s)![1]
+    expect(bodyHtml).toContain('<script src="https://a-body-appended-script.com"></script>')
 
     const indexHtml = await $fetch<string>('/')
     // should render charset by default
@@ -1037,7 +1037,7 @@ describe('head tags', () => {
     // useServerHead - shorthands
     expect(headHtml).toContain('>/* Custom styles */</style>')
     // useHeadSafe - removes dangerous content
-    expect(headHtml).toContain('<script id="xss-script"></script>')
+    expect(headHtml).not.toContain('id="xss-script"')
     expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
   })
 
@@ -2408,7 +2408,7 @@ describe('component islands', () => {
       for (const key in result.head) {
         if (key === 'link') {
           result.head[key] = result.head[key]?.map((h) => {
-            h.href &&= resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
+            h.href &&= String(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
             return h
           })
         }
@@ -2428,7 +2428,6 @@ describe('component islands', () => {
         }
       `)
     } else if (isDev() && !isWebpack) {
-      // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
 
@@ -2806,7 +2805,7 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
               .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
               // Vite 6 enables CSS minify by default for SSR
               .replace(/blue/, '#00f')
-        style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
+        style.key &&= String(style.key).replace(/-[a-z0-9]+$/i, '')
       }
     }
   }
