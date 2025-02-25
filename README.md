@@ -32,7 +32,6 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - 🧩 [Modules](#modules)
 - ❤️  [Contribute](#contribute)
 - 🏠 [Local Development](#local-development)
-- ⛰️ [Nuxt 2](#nuxt-2)
 - 🛟 [Professional Support](#professional-support)
 - 🔗 [Follow Us](#follow-us)
 - ⚖️ [License](#license)

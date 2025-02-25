@@ -54,7 +54,7 @@ export const createIslandPage = (name: string) => {
       return () => {
         return h('div', [
           h(NuxtIsland, {
-            name: `page:${name}`,
+            name: `page_${name}`,
             lazy: props.lazy,
             ref: islandRef,
             context: { url: path },

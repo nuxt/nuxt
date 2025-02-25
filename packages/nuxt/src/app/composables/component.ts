@@ -1,6 +1,7 @@
 import { getCurrentInstance, reactive, toRefs } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
 import { useHead } from '@unhead/vue'
+import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { getNuxtAppCtx, useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
@@ -9,13 +10,23 @@ import { createError } from './error'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
+/* @__NO_SIDE_EFFECTS__ */
+function getFetchKey () {
+  const vm = getCurrentInstance()!
+  const route = useRoute()
+  const { _fetchKeyBase } = vm.proxy!.$options
+  return hash([
+    _fetchKeyBase,
+    route.path,
+    route.query,
+    route.matched.findIndex(r => Object.values(r.components || {}).includes(vm.type)),
+  ])
+}
+
 async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<string, any>>, fn: (nuxtApp: NuxtApp) => Promise<Record<string, any>>) {
   const nuxtApp = useNuxtApp()
-  const route = useRoute()
-  const vm = getCurrentInstance()!
-  const { fetchKey, _fetchKeyBase } = vm.proxy!.$options
-  const key = (typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey) ||
-    ([_fetchKeyBase, route.fullPath, route.matched.findIndex(r => Object.values(r.components || {}).includes(vm.type))].join(':'))
+  const { fetchKey } = getCurrentInstance()!.proxy!.$options
+  const key = (typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey) || getFetchKey()
   const { data, error } = await useAsyncData(`options:asyncdata:${key}`, () => import.meta.server ? nuxtApp.runWithContext(() => fn(nuxtApp)) : fn(nuxtApp))
   if (error.value) {
     throw createError(error.value)
