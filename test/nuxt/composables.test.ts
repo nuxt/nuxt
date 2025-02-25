@@ -554,14 +554,15 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "id": "override",
+        "id": "test",
         "matcher": {
           "dynamic": {},
           "static": {
-            "/": null,
-            "/pre": null,
             "/pre/test": {
-              "redirect": true,
+              "redirect": "/",
+            },
+            "/specific-prerendered": {
+              "prerender": true,
             },
           },
           "wildcard": {
@@ -570,9 +571,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
             },
           },
         },
-        "prerendered": [
-          "/specific-prerendered",
-        ],
+        "prerendered": [],
       }
     `)
   })
@@ -583,10 +582,10 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
         "prerender": true,
       }
     `)
-    expect(await getRouteRules('/pre/test')).toMatchInlineSnapshot(`
+    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
-        "redirect": true,
+        "redirect": "/",
       }
     `)
   })

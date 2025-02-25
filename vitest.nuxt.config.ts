@@ -14,10 +14,10 @@ export default defineVitestConfig({
       nuxt: {
         overrides: {
           pages: true,
-          runtimeConfig: {
-            app: {
-              buildId: 'override',
-            },
+          routeRules: {
+            '/specific-prerendered': { prerender: true },
+            '/pre/test': { redirect: '/' },
+            '/pre/**': { prerender: true },
           },
           experimental: {
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
