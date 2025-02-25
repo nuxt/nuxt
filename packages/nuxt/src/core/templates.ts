@@ -475,7 +475,7 @@ export const publicPathTemplate: NuxtTemplate = {
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
 
-      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
+      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts
       'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',
