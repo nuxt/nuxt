@@ -33,7 +33,7 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
             const cleaned = result.slice('forEach'.length).replace(/;\s+$/, '')
             const args = [JSON.stringify(cleaned)]
             if (needsAttr) {
-              args.push(JSON.stringify(hash(result)))
+              args.push(JSON.stringify(hash(result).slice(0, 10)))
             }
             s.overwrite(callback.start, callback.end, args.join(', '))
           }))

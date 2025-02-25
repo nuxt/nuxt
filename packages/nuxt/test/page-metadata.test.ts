@@ -272,13 +272,13 @@ describe('normalizeRoutes', () => {
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
-          "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
+          "import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";",
         },
         "routes": "[
         {
           name: "some-custom-name",
-          path: indexN6pT4Un8hYMeta?.path ?? "/",
-          meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
+          path: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.path ?? "/",
+          meta: { ...(indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta || {}), ...{"layout":"test","foo":"bar"} },
           redirect: "/",
           component: () => import("/app/pages/index.vue")
         }
@@ -301,16 +301,16 @@ describe('normalizeRoutes', () => {
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
-          "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
+          "import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";",
         },
         "routes": "[
         {
-          name: indexN6pT4Un8hYMeta?.name ?? undefined,
-          path: indexN6pT4Un8hYMeta?.path ?? "/",
-          props: indexN6pT4Un8hYMeta?.props ?? false,
-          meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
-          alias: indexN6pT4Un8hYMeta?.alias || [],
-          redirect: indexN6pT4Un8hYMeta?.redirect,
+          name: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.name ?? undefined,
+          path: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.path ?? "/",
+          props: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.props ?? false,
+          meta: { ...(indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta || {}), ...{"layout":"test","foo":"bar"} },
+          alias: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.alias || [],
+          redirect: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.redirect,
           component: () => import("/app/pages/index.vue")
         }
       ]",

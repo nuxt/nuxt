@@ -4,6 +4,7 @@ import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src'
+import type { NuxtConfig } from '../schema'
 
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
@@ -105,5 +106,23 @@ describe('loadNuxt', () => {
     await nuxt.callHook('test')
 
     expect(loggerWarn).not.toHaveBeenCalled()
+  })
+})
+
+const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
+  ['pages dir', {}, { enabled: true }],
+  ['pages dir empty', { dir: { pages: 'empty-dir' } }, { enabled: false }],
+  ['user config', { pages: false }, { enabled: false }],
+  ['user config', { pages: { enabled: false } }, { enabled: false }],
+  ['user config', { pages: { enabled: true, pattern: '**/*{.vue}' } }, { enabled: true, pattern: '**/*{.vue}' }],
+]
+
+const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
+describe('pages detection', () => {
+  it.each(pagesDetectionTests)('%s `%s`', async (_, overrides, result) => {
+    const nuxt = await loadNuxt({ cwd: pagesFixtureDir, overrides, ready: true })
+    // @ts-expect-error should resolve to object?
+    expect(nuxt.options.pages).toMatchObject(result)
+    await nuxt.close()
   })
 })

@@ -203,6 +203,7 @@ export default createConfigForNuxt({
                   'perfect-debounce',
                   'radix3',
                   'ohash',
+                  'ohash/utils',
                   'pathe',
                   'uncrypto',
                   // internal deps
