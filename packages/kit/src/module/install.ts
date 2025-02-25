@@ -4,11 +4,12 @@ import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
-import { parseNodeModulePath, resolve as resolveModule } from 'mlly'
+import { parseNodeModulePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 import { isRelative } from 'ufo'
 import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
-import { resolveAlias, resolvePath } from '../resolve'
+import { resolveAlias } from '../resolve'
 import { logger } from '../logger'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
@@ -102,14 +103,14 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     paths.add(join(nuxtModule, 'module'))
     paths.add(join(nuxtModule, 'nuxt'))
 
+    // TODO: consider refactoring and dropping `suffixes` rather than iterating over paths
     for (const path of paths) {
       try {
-        const src = isAbsolute(path)
-          ? pathToFileURL(await resolvePath(path, { fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
-          : await resolveModule(path, {
-            url: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-            extensions: nuxt.options.extensions,
-          })
+        const src = pathToFileURL(resolveModulePath(path, {
+          from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+          suffixes: ['/index'],
+          extensions: nuxt.options.extensions,
+        })).href
         resolvedModulePath = fileURLToPath(new URL(src))
         if (!existsSync(resolvedModulePath)) {
           continue

@@ -2,7 +2,7 @@ import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { globby } from 'globby'
-import { resolvePath as _resolvePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { directoryToURL } from './internal/esm'
 import { tryUseNuxt } from './context'
@@ -200,7 +200,11 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   }
 
   // Try to resolve as module id
-  const resolvedModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir].map(d => directoryToURL(d)) }).catch(() => null)
+  const resolvedModulePath = resolveModulePath(_path, {
+    try: true,
+    suffixes: ['/index'],
+    from: [cwd, ...modulesDir].map(d => directoryToURL(d)),
+  })
   if (resolvedModulePath) {
     return {
       path: resolvedModulePath,
