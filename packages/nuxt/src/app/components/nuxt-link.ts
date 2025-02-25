@@ -1,23 +1,22 @@
 import type {
   AllowedComponentProps,
   AnchorHTMLAttributes,
-  ComputedOptions,
   ComputedRef,
-  DefineComponent,
-  EmitsOptions,
+  DefineSetupFnComponent,
   InjectionKey,
-  MethodOptions,
   PropType,
   SlotsType,
+  UnwrapRef,
+  VNode,
   VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { type NuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
@@ -33,7 +32,8 @@ const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
-export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
+export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<RouterLinkProps, 'to'> {
+  custom?: CustomProp
   /**
    * Route Location the link should navigate to when clicked on.
    */
@@ -79,6 +79,10 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
   noPrefetch?: boolean
 }
 
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {}
+
 /**
  * Create a NuxtLink component with given options as defaults.
  * @see https://nuxt.com/docs/api/components/nuxt-link
@@ -107,7 +111,23 @@ export interface NuxtLinkOptions extends
   prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
 }
 
-export type NuxtLinkSlots = Pick<InstanceType<typeof RouterLink>['$slots'], 'default'>
+type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
+  ? {
+      href: string
+      navigate: () => Promise<void>
+      prefetch: (nuxtApp?: NuxtApp) => Promise<void>
+      route: (RouteLocation & { href: string }) | undefined
+      rel: string | null
+      target: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
+      isExternal: boolean
+      isActive: false
+      isExactActive: false
+    }
+  : UnwrapRef<UseLinkReturn>
+
+type NuxtLinkSlots<CustomProp extends boolean = false> = {
+  default?: (props: NuxtLinkDefaultSlotProps<CustomProp>) => VNode[]
+}
 
 /* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions) {
@@ -473,14 +493,19 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             isExternal: isExternal.value || hasTarget.value,
             isActive: false,
             isExactActive: false,
-          })
+          } satisfies NuxtLinkDefaultSlotProps<true>)
         }
 
         // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
         return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
       }
     },
-  }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
+    // }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
+  }) as unknown as new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp>) => InstanceType<DefineSetupFnComponent<
+    NuxtLinkProps<CustomProp>,
+    [],
+    SlotsType<Prettify<NuxtLinkSlots<CustomProp>>>
+  >>
 }
 
 export default defineNuxtLink(nuxtLinkDefaults)
