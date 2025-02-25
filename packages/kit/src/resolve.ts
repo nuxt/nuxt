@@ -172,7 +172,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
-  path = resolveAlias(path)
+  path = _resolveAlias(path, opts.alias ?? nuxt?.options.alias ?? {})
 
   // Resolve relative to cwd
   if (!isAbsolute(path)) {
