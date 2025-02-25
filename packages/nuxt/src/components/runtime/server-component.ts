@@ -2,7 +2,7 @@ import { defineComponent, getCurrentInstance, h, ref } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered } from '#app/composables/payload'
-import { showError } from '#app/composables/error'
+import { createError, showError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
 
 /* @__NO_SIDE_EFFECTS__ */
@@ -59,6 +59,16 @@ export const createIslandPage = (name: string) => {
             ref: islandRef,
             context: { url: path },
             onError: (e) => {
+              if (e.cause && e.cause instanceof Response) {
+                throw createError({
+                  statusCode: e.cause.status,
+                  statusText: e.cause.statusText,
+                  status: e.cause.status,
+                })
+              }
+              if (import.meta.server) {
+                throw e
+              }
               nuxtApp.runWithContext(() => showError(e))
             },
           }, slots),
