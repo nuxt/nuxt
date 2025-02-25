@@ -337,10 +337,14 @@ declare module 'nitro/types' {
   interface NitroRouteConfig {
     ssr?: boolean
     noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
+    experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
     noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
+    experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
@@ -358,10 +362,14 @@ declare module 'nitropack/types' {
   interface NitroRouteConfig {
     ssr?: boolean
     noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
+    experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
     noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
+    experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
