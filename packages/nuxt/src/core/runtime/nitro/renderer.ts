@@ -385,10 +385,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
-  // TODO: remove for v4
-  // @ts-expect-error legacy
-  routeOptions.noScripts ??= routeOptions.experimentalNoScripts
-
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
 
   // Setup head
