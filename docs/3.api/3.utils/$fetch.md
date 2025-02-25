@@ -62,7 +62,6 @@ function contactForm() {
 If you use `$fetch` to call an (external) HTTPS URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
 
-
 ### Passing Headers and Cookies
 
 When we call `$fetch` in the browser, user headers like `cookie` will be directly sent to the API.
