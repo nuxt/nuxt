@@ -69,12 +69,12 @@ export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): 
   const nuxtApp = useNuxtApp()
 
   // Initialise global route announcer if it doesn't exist already
-  const announcer = nuxtApp._routeAnnouncer = nuxtApp._routeAnnouncer || createRouteAnnouncer(opts)
+  const announcer = nuxtApp._routeAnnouncer ||= createRouteAnnouncer(opts)
   if (opts.politeness !== announcer.politeness.value) {
     announcer.politeness.value = opts.politeness || 'polite'
   }
   if (import.meta.client && getCurrentScope()) {
-    nuxtApp._routeAnnouncerDeps = nuxtApp._routeAnnouncerDeps || 0
+    nuxtApp._routeAnnouncerDeps ||= 0
     nuxtApp._routeAnnouncerDeps++
     onScopeDispose(() => {
       nuxtApp._routeAnnouncerDeps!--

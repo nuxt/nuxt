@@ -48,6 +48,7 @@ export default createConfigForNuxt({
     rules: {
       'curly': ['error', 'all'], // Including if blocks with a single statement
       'dot-notation': 'error',
+      'logical-assignment-operators': ['error', 'always', { enforceForIfStatements: true }],
       'no-console': ['warn', { allow: ['warn', 'error', 'debug'] }],
       'no-lonely-if': 'error', // No single if in an "else" block
       'no-useless-rename': 'error',
@@ -216,7 +217,7 @@ export default createConfigForNuxt({
       },
     },
     {
-      files: ['**/fixtures/**', '**/fixture/**'],
+      files: ['**/fixtures/**', '**/fixture/**', '**/*-fixture/**'],
       name: 'local/disables/fixtures',
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',

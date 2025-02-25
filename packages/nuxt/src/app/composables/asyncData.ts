@@ -230,14 +230,14 @@ export function useAsyncData<
   const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
 
   // Apply defaults
-  options.server = options.server ?? true
-  options.default = options.default ?? (getDefault as () => DefaultT)
-  options.getCachedData = options.getCachedData ?? getDefaultCachedData
+  options.server ??= true
+  options.default ??= getDefault as () => DefaultT
+  options.getCachedData ??= getDefaultCachedData
 
-  options.lazy = options.lazy ?? false
-  options.immediate = options.immediate ?? true
-  options.deep = options.deep ?? asyncDataDefaults.deep
-  options.dedupe = options.dedupe ?? 'cancel'
+  options.lazy ??= false
+  options.immediate ??= true
+  options.deep ??= asyncDataDefaults.deep
+  options.dedupe ??= 'cancel'
 
   // Create or use a shared asyncData entity
   const initialCachedData = options.getCachedData!(key, nuxtApp)

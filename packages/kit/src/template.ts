@@ -105,9 +105,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   // Resolve dst
-  if (!template.dst) {
-    template.dst = resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
-  }
+  template.dst ||= resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
 
   return template as ResolvedNuxtTemplate<T>
 }
@@ -202,7 +200,6 @@ export async function _generateTypes (nuxt: Nuxt) {
       /* Decorator support */
       ...useDecorators
         ? {
-            useDefineForClassFields: false,
             experimentalDecorators: false,
           }
         : {},

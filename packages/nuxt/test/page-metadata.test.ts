@@ -42,6 +42,19 @@ export default {
     })
   })
 
+  it('should parse lang="jsx" from vue files', async () => {
+    const fileContents = `
+  <script setup lang="jsx">
+  const foo = <></>;
+  definePageMeta({ name: 'bar' })
+  </script>`
+
+    const meta = await getRouteMeta(fileContents, `/app/pages/index.vue`)
+    expect(meta).toStrictEqual({
+      name: 'bar',
+    })
+  })
+
   // TODO: https://github.com/nuxt/nuxt/pull/30066
   it.todo('should handle experimental decorators', async () => {
     const fileContents = `

@@ -198,12 +198,10 @@ export default defineComponent({
     }
 
     async function fetchComponent (force = false) {
-      nuxtApp[pKey] = nuxtApp[pKey] || {}
-      if (!nuxtApp[pKey][uid.value]) {
-        nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
-          delete nuxtApp[pKey]![uid.value]
-        })
-      }
+      nuxtApp[pKey] ||= {}
+      nuxtApp[pKey][uid.value] ||= _fetchComponent(force).finally(() => {
+        delete nuxtApp[pKey]![uid.value]
+      })
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 

@@ -2405,9 +2405,7 @@ describe('component islands', () => {
       for (const key in result.head) {
         if (key === 'link') {
           result.head[key] = result.head[key]?.map((h) => {
-            if (h.href) {
-              h.href = String(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-            }
+            h.href &&= String(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
             return h
           })
         }
@@ -2511,7 +2509,7 @@ describe('component islands', () => {
     const { page } = await renderPage('/')
 
     const islandPageRequest = page.waitForRequest((req) => {
-      return req.url().includes('/__nuxt_island/page:server-page')
+      return req.url().includes('/__nuxt_island/page_server-page')
     })
     await page.getByText('to server page').click()
     await islandPageRequest
@@ -2799,16 +2797,12 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
   if (result.head.style) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
-        if (style.innerHTML) {
-          style.innerHTML =
+        style.innerHTML &&=
             (style.innerHTML as string)
               .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
               // Vite 6 enables CSS minify by default for SSR
               .replace(/blue/, '#00f')
-        }
-        if (style.key) {
-          style.key = String(style.key).replace(/-[a-z0-9]+$/i, '')
-        }
+        style.key &&= String(style.key).replace(/-[a-z0-9]+$/i, '')
       }
     }
   }
@@ -2867,13 +2861,27 @@ describe('lazy import components', () => {
   })
 })
 
-describe('defineNuxtComponent watch duplicate', () => {
-  it('test after navigation duplicate', async () => {
+describe('defineNuxtComponent', () => {
+  it('watches duplicate updates after navigation', async () => {
     const { page } = await renderPage('/define-nuxt-component')
     await page.getByTestId('define-nuxt-component-bar').click()
     await page.getByTestId('define-nuxt-component-state').click()
     await page.getByTestId('define-nuxt-component-foo').click()
     expect(await page.getByTestId('define-nuxt-component-state').first().innerText()).toBe('2')
+  })
+
+  it('get correctly route when navigating between routes', async () => {
+    const { page } = await renderPage('/define-nuxt-component/route-1')
+    await page.getByText('Go to route 2').click()
+    expect(await page.getByTestId('define-nuxt-component-route-2-path').innerText()).include('route-2')
+
+    await page.getByText('Go to route 1').click()
+    expect(await page.getByTestId('define-nuxt-component-route-1-path').innerText()).include('route-1')
+  })
+
+  it ('should get correctly inject value', async () => {
+    const { page } = await renderPage('/define-nuxt-component/inject')
+    expect(await page.getByTestId('define-nuxt-component-inject-value').innerText()).include('bar')
   })
 })
 

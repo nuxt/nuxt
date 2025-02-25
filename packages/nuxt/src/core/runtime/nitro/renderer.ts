@@ -166,7 +166,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig(ssrContext.event)
-    ssrContext.modules = ssrContext.modules || new Set<string>()
+    ssrContext.modules ||= new Set<string>()
     ssrContext.payload.serverRendered = false
     ssrContext.config = {
       public: config.public,
@@ -427,8 +427,51 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
   }
 
-  if (!NO_SCRIPTS && !isRenderingIsland) {
-    // 3. Resource Hints
+  // 3. Response for component islands
+  if (isRenderingIsland && islandContext) {
+    const islandHead: Head = {}
+    for (const entry of head.headEntries()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
+        const currentValue = islandHead[key as keyof Head]
+        if (Array.isArray(currentValue)) {
+          currentValue.push(...value)
+        }
+        islandHead[key as keyof Head] = value
+      }
+    }
+
+    // TODO: remove for v4
+    islandHead.link ||= []
+    islandHead.style ||= []
+
+    const islandResponse: NuxtIslandResponse = {
+      id: islandContext.id,
+      head: islandHead,
+      html: getServerComponentHTML(_rendered.html),
+      components: getClientIslandResponse(ssrContext),
+      slots: getSlotIslandResponse(ssrContext),
+    }
+
+    await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
+
+    const response = {
+      body: JSON.stringify(islandResponse, null, 2),
+      statusCode: getResponseStatus(event),
+      statusMessage: getResponseStatusText(event),
+      headers: {
+        'content-type': 'application/json;charset=utf-8',
+        'x-powered-by': 'Nuxt',
+      },
+    } satisfies RenderResponse
+    if (import.meta.prerender) {
+      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
+      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
+    }
+    return response
+  }
+
+  if (!NO_SCRIPTS) {
+    // 4. Resource Hints
     // TODO: add priorities based on Capo
     head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
@@ -436,7 +479,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head.push({
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
     }, headEntryOptions)
-    // 4. Payloads
+    // 5. Payloads
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
@@ -453,8 +496,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     })
   }
 
-  // 5. Scripts
-  if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
+  // 6. Scripts
+  if (!routeOptions.experimentalNoScripts) {
     head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,

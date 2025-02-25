@@ -24,7 +24,7 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id = appId || 'nuxt-app') {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -49,7 +49,6 @@ export interface RuntimeNuxtHooks {
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
-  'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
   'page:view-transition:start': (transition: ViewTransition) => HookResult
   'page:loading:start': () => HookResult
@@ -377,7 +376,7 @@ export function createNuxtApp (options: CreateOptions) {
         }
       })
     }
-    window.useNuxtApp = window.useNuxtApp || useNuxtApp
+    window.useNuxtApp ||= useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.

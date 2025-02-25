@@ -51,7 +51,7 @@
     "ohash": "^1.1.4",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
-    "postcss": "^8.5.2",
+    "postcss": "^8.5.3",
     "postcss-import": "^16.1.0",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^8.1.1",
@@ -73,11 +73,11 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.2.3",
+    "@rspack/core": "1.2.5",
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "rollup": "4.34.6",
+    "rollup": "4.34.8",
     "unbuild": "3.3.1",
     "vue": "3.5.13"
   },

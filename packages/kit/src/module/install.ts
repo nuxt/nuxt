@@ -79,12 +79,16 @@ export const normalizeModuleTranspilePath = (p: string) => {
   return getDirectory(p).split('node_modules/').pop() as string
 }
 
+const MissingModuleMatcher = /Cannot find module\s+['"]?([^'")\s]+)['"]?/i
+
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   let buildTimeModuleMeta: ModuleMeta = {}
   let resolvedModulePath: string | undefined
 
   const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
 
+  let resolvedNuxtModule: NuxtModule<any> | undefined
+  let hadNonFunctionPath = false
   // Import if input is string
   if (typeof nuxtModule === 'string') {
     const paths = new Set<string>()
@@ -94,9 +98,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       nuxtModule = resolve(nuxt.options.rootDir, nuxtModule)
     }
 
-    paths.add(join(nuxtModule, 'nuxt'))
-    paths.add(join(nuxtModule, 'module'))
     paths.add(nuxtModule)
+    paths.add(join(nuxtModule, 'module'))
+    paths.add(join(nuxtModule, 'nuxt'))
 
     for (const path of paths) {
       try {
@@ -106,9 +110,17 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
             url: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
             extensions: nuxt.options.extensions,
           })
-
-        nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
         resolvedModulePath = fileURLToPath(new URL(src))
+        if (!existsSync(resolvedModulePath)) {
+          continue
+        }
+        const instance = await jiti.import(src, { default: true }) as NuxtModule
+        // ignore possible barrel exports
+        if (typeof instance !== 'function') {
+          hadNonFunctionPath = true
+          continue
+        }
+        resolvedNuxtModule = instance
 
         // nuxt-module-builder generates a module.json with metadata including the version
         const moduleMetadataPath = new URL('module.json', src)
@@ -118,24 +130,35 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         break
       } catch (error: unknown) {
         const code = (error as Error & { code?: string }).code
-        if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
+        if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
           continue
+        }
+        if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
+          const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
+          // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
+          // i.e module is importing a module that is missing
+          if (!module || module.includes(nuxtModule as string)) {
+            continue
+          }
         }
         logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
         throw error
       }
     }
+  } else {
+    resolvedNuxtModule = nuxtModule
   }
 
-  // Throw error if module could not be found
-  if (typeof nuxtModule === 'string') {
-    throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+  if (!resolvedNuxtModule) {
+    // Module was resolvable but returned a non-function
+    if (hadNonFunctionPath) {
+      throw new TypeError(`Nuxt module should be a function: ${nuxtModule}.`)
+    }
+    // Throw error if module could not be found
+    if (typeof nuxtModule === 'string') {
+      throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+    }
   }
 
-  // Throw error if input is not a function
-  if (typeof nuxtModule !== 'function') {
-    throw new TypeError('Nuxt module should be a function: ' + nuxtModule)
-  }
-
-  return { nuxtModule, buildTimeModuleMeta, resolvedModulePath } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }
+  return { nuxtModule: resolvedNuxtModule, buildTimeModuleMeta, resolvedModulePath } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }
 }

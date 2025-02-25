@@ -18,7 +18,6 @@ import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { createImportProtectionPatterns } from './plugins/import-protection'
-import { EXTENSION_RE } from './utils'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -58,8 +57,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         continue
       }
 
-      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'utils'))
-      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'types'))
+      sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
+      sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
     }
   }
 
@@ -416,32 +415,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
-
-  // TODO: extract to shared utility?
-  const excludedAlias = [/^@vue\/.*$/, '#imports', 'vue-demi', /^#app/]
-  const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
-  const aliases = nitroConfig.alias!
-  const tsConfig = nitroConfig.typescript!.tsConfig!
-  tsConfig.compilerOptions ||= {}
-  tsConfig.compilerOptions.paths ||= {}
-  for (const _alias in aliases) {
-    const alias = _alias as keyof typeof aliases
-    if (excludedAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) {
-      continue
-    }
-    if (alias in tsConfig.compilerOptions.paths) {
-      continue
-    }
-
-    const absolutePath = resolve(basePath, aliases[alias]!)
-    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
-    if (stats?.isDirectory()) {
-      tsConfig.compilerOptions.paths[alias] = [absolutePath]
-      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
-    } else {
-      tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(EXTENSION_RE, '')] /* remove extension */
-    }
-  }
 
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
