@@ -23,12 +23,11 @@ overrides:
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
   c12: 2.0.4
-  h3: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+  h3: npm:h3-nightly@1.15.1-20250222-111608-d1c00fc
   jiti: 2.4.2
   magic-string: ^0.30.17
   nitro: npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6
   nuxt: workspace:*
-  ohash: 1.1.4
   postcss: 8.5.3
   rollup: 4.34.8
   send: '>=1.1.0'
@@ -141,8 +140,8 @@ importers:
         specifier: 3.0.3
         version: 3.0.3
       h3:
-        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
-        version: h3-nightly@1.14.0-20250122-114730-3f9e703
+        specifier: npm:h3-nightly@1.15.1-20250222-111608-d1c00fc
+        version: h3-nightly@1.15.1-20250222-111608-d1c00fc
       happy-dom:
         specifier: 17.1.4
         version: 17.1.4
@@ -264,8 +263,8 @@ importers:
         specifier: ^1.7.4
         version: 1.7.4
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: ^2.0.4
+        version: 2.0.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -403,8 +402,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
-        version: h3-nightly@1.14.0-20250122-114730-3f9e703
+        specifier: npm:h3-nightly@1.15.1-20250222-111608-d1c00fc
+        version: h3-nightly@1.15.1-20250222-111608-d1c00fc
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -442,8 +441,8 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: ^2.0.4
+        version: 2.0.4
       on-change:
         specifier: ^5.0.1
         version: 5.0.1
@@ -587,8 +586,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
-        version: h3-nightly@1.14.0-20250122-114730-3f9e703
+        specifier: npm:h3-nightly@1.15.1-20250222-111608-d1c00fc
+        version: h3-nightly@1.15.1-20250222-111608-d1c00fc
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -602,8 +601,8 @@ importers:
         specifier: ^4.17.0
         version: 4.17.0
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: ^2.0.4
+        version: 2.0.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -751,8 +750,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.98.0(esbuild@0.25.0))
       h3:
-        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
-        version: h3-nightly@1.14.0-20250122-114730-3f9e703
+        specifier: npm:h3-nightly@1.15.1-20250222-111608-d1c00fc
+        version: h3-nightly@1.15.1-20250222-111608-d1c00fc
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -898,8 +897,8 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2
       h3:
-        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
-        version: h3-nightly@1.14.0-20250122-114730-3f9e703
+        specifier: npm:h3-nightly@1.15.1-20250222-111608-d1c00fc
+        version: h3-nightly@1.15.1-20250222-111608-d1c00fc
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -1001,8 +1000,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
-        version: h3-nightly@1.14.0-20250122-114730-3f9e703
+        specifier: npm:h3-nightly@1.15.1-20250222-111608-d1c00fc
+        version: h3-nightly@1.15.1-20250222-111608-d1c00fc
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -1019,8 +1018,8 @@ importers:
         specifier: ^2.9.2
         version: 2.9.2(webpack@5.98.0)
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: ^2.0.4
+        version: 2.0.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -3812,6 +3811,9 @@ packages:
   crossws@0.3.2:
     resolution: {integrity: sha512-S2PpQHRcgYABOS2465b34wqTOn5dbLL+iSvyweJYGGFLDsKq88xrjDXUiEhfYkhWZq1HuS6of3okRHILbkrqxw==}
 
+  crossws@0.3.4:
+    resolution: {integrity: sha512-uj0O1ETYX1Bh6uSgktfPvwDiPYGQ3aI4qVsaC/LWpkIzGj1nUYm5FK3K+t11oOlpN01lGbprFCH4wBlKdJjVgw==}
+
   css-declaration-sorter@7.2.0:
     resolution: {integrity: sha512-h70rUM+3PNFuaBDTLe8wF/cdWu+dOZmb7pJt8Z2sedYbAcQVQV/tEchueg3GWxwqS0cxtbxmaHEdkNACqcvsow==}
     engines: {node: ^14 || ^16 || >=18}
@@ -4662,8 +4664,8 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  h3-nightly@1.14.0-20250122-114730-3f9e703:
-    resolution: {integrity: sha512-mAl1YHJq2fwAIVXBaDCQD9uIiAFs+Jl3uNg6vGFfHG8VPHzcEqFbImUE83wCLHYCxC68qSjEnkaDCRzO8SNQAA==}
+  h3-nightly@1.15.1-20250222-111608-d1c00fc:
+    resolution: {integrity: sha512-V2DeFol/CJ4QLimURS59juWk4b+XY2qhSlyhi0U3WnqN3PKLAIpLtRn340MHQf53ldMhP4oQA/SrJG9hPOcnLA==}
 
   happy-dom@17.1.4:
     resolution: {integrity: sha512-cMxE0HP45kLIgWdI0PFfnitNb95Cv8kG8moqI7CK6kcEcfV7xoYVVvSmJ7EuGfDatSKWtjhG/czVooqEV0L4rA==}
@@ -5771,6 +5773,9 @@ packages:
     resolution: {integrity: sha512-IRUxE4BVsHWXkV/SFOut4qTlagw2aM8T5/vnTsmrHJvVoKueJHRc/JaFND7QDDc61kLYUJ6qlZM3sqTSyx2dTw==}
     hasBin: true
 
+  node-mock-http@1.0.0:
+    resolution: {integrity: sha512-0uGYQ1WQL1M5kKvGRXWQ3uZCHtLTO8hln3oBjIusM75WoesZ909uQJs/Hb946i2SS+Gsrhkaa6iAO17jRIv6DQ==}
+
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
 
@@ -5851,6 +5856,9 @@ packages:
 
   ohash@1.1.4:
     resolution: {integrity: sha512-FlDryZAahJmEF3VR3w1KogSEdWX3WhA5GPakFx4J81kEAiHyLMpdLLElS8n8dfNadMgAne/MywcvmogzscVt4g==}
+
+  ohash@2.0.4:
+    resolution: {integrity: sha512-ac+SFwzhdHb0hp48/dbR7Jta39qfbuj7t3hApd9uyHS8bisHTfVzSEvjOVgV0L3zG7VR2/7JjkSGimP75D+hOQ==}
 
   on-change@5.0.1:
     resolution: {integrity: sha512-n7THCP7RkyReRSLkJb8kUWoNsxUIBxTkIp3JKno+sEz6o/9AJ3w3P9fzQkITEkMwyTKJjZciF3v/pVoouxZZMg==}
@@ -8623,13 +8631,13 @@ snapshots:
       defu: 6.1.4
       fuse.js: 7.1.0
       giget: 1.2.4
-      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
+      h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
       httpxy: 0.1.7
       jiti: 2.4.2
       listhen: 1.9.0
       nypm: 0.5.4
       ofetch: 1.4.1
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -8754,7 +8762,7 @@ snapshots:
       '@vueuse/core': 12.7.0(typescript@5.7.3)
       consola: 3.4.0
       defu: 6.1.4
-      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
+      h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
       magic-string: 0.30.17
       ofetch: 1.4.1
       ohash: 1.1.4
@@ -8819,7 +8827,7 @@ snapshots:
       estree-walker: 3.0.3
       fake-indexeddb: 6.0.0
       get-port-please: 3.1.2
-      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
+      h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
       local-pkg: 1.0.0
       magic-string: 0.30.17
       node-fetch-native: 1.6.6
@@ -10499,7 +10507,7 @@ snapshots:
       giget: 1.2.4
       jiti: 2.4.2
       mlly: 1.7.4
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -10788,6 +10796,10 @@ snapshots:
   crossws@0.2.4: {}
 
   crossws@0.3.2:
+    dependencies:
+      uncrypto: 0.1.3
+
+  crossws@0.3.4:
     dependencies:
       uncrypto: 0.1.3
 
@@ -11809,18 +11821,17 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3-nightly@1.14.0-20250122-114730-3f9e703:
+  h3-nightly@1.15.1-20250222-111608-d1c00fc:
     dependencies:
       cookie-es: 1.2.2
-      crossws: 0.3.2
+      crossws: 0.3.4
       defu: 6.1.4
       destr: 2.0.3
       iron-webcrypto: 1.2.1
-      ohash: 1.1.4
+      node-mock-http: 1.0.0
       radix3: 1.1.2
       ufo: 1.5.4
       uncrypto: 0.1.3
-      unenv: 1.10.0
 
   happy-dom@17.1.4:
     dependencies:
@@ -12472,7 +12483,7 @@ snapshots:
       crossws: 0.3.2
       defu: 6.1.4
       get-port-please: 3.1.2
-      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
+      h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
       http-shutdown: 1.2.2
       jiti: 2.4.2
       mlly: 1.7.4
@@ -13126,7 +13137,7 @@ snapshots:
       fs-extra: 11.2.0
       globby: 14.1.0
       gzip-size: 7.0.0
-      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
+      h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
       hookable: 5.5.3
       httpxy: 0.1.7
       ioredis: 5.4.1
@@ -13209,6 +13220,8 @@ snapshots:
   node-forge@1.3.1: {}
 
   node-gyp-build@4.8.2: {}
+
+  node-mock-http@1.0.0: {}
 
   node-releases@2.0.19: {}
 
@@ -13306,6 +13319,8 @@ snapshots:
       ufo: 1.5.4
 
   ohash@1.1.4: {}
+
+  ohash@2.0.4: {}
 
   on-change@5.0.1: {}
 
@@ -14941,7 +14956,7 @@ snapshots:
       anymatch: 3.1.3
       chokidar: 4.0.3
       destr: 2.0.3
-      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
+      h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
       lru-cache: 10.4.3
       node-fetch-native: 1.6.6
       ofetch: 1.4.1
