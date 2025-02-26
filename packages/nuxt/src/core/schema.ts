@@ -10,7 +10,6 @@ import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
-import { resolveModulePath } from 'exsolve'
 import { logger } from '../utils'
 
 export default defineNuxtModule({
@@ -55,9 +54,10 @@ export default defineNuxtModule({
       })
 
       if (nuxt.options.experimental.watcher === 'parcel') {
-        const watcherPath = resolveModulePath('@parcel/watcher', { try: true, from: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)) })
-        if (watcherPath) {
-          const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
+        try {
+          const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', {
+            url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)),
+          })
           for (const layer of nuxt.options._layers) {
             const subscription = await subscribe(layer.config.rootDir, onChange, {
               ignore: ['!nuxt.schema.*'],
@@ -65,8 +65,9 @@ export default defineNuxtModule({
             nuxt.hook('close', () => subscription.unsubscribe())
           }
           return
+        } catch {
+          logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
         }
-        logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
       }
 
       const isIgnored = createIsIgnored(nuxt)

@@ -5,7 +5,6 @@ import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } fro
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
-import { resolveModulePath } from 'exsolve'
 
 import { logger } from '../utils'
 import { generateApp as _generateApp, createApp } from './app'
@@ -194,36 +193,35 @@ async function createParcelWatcher () {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
-  const watcherPath = resolveModulePath('@parcel/watcher', { try: true, from: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) })
-  if (!watcherPath) {
+  try {
+    const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) })
+    for (const layer of nuxt.options._layers) {
+      if (!layer.config.srcDir) { continue }
+      const watcher = subscribe(layer.config.srcDir, (err, events) => {
+        if (err) { return }
+        for (const event of events) {
+          if (isIgnored(event.path)) { continue }
+          nuxt.callHook('builder:watch', watchEvents[event.type], normalize(event.path))
+        }
+      }, {
+        ignore: [
+          ...nuxt.options.ignore,
+          'node_modules',
+        ],
+      })
+      watcher.then((subscription) => {
+        if (nuxt.options.debug && nuxt.options.debug.watchers) {
+        // eslint-disable-next-line no-console
+          console.timeEnd('[nuxt] builder:parcel:watch')
+        }
+        nuxt.hook('close', () => subscription.unsubscribe())
+      })
+    }
+    return true
+  } catch {
     logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
     return false
   }
-
-  const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
-  for (const layer of nuxt.options._layers) {
-    if (!layer.config.srcDir) { continue }
-    const watcher = subscribe(layer.config.srcDir, (err, events) => {
-      if (err) { return }
-      for (const event of events) {
-        if (isIgnored(event.path)) { continue }
-        nuxt.callHook('builder:watch', watchEvents[event.type], normalize(event.path))
-      }
-    }, {
-      ignore: [
-        ...nuxt.options.ignore,
-        'node_modules',
-      ],
-    })
-    watcher.then((subscription) => {
-      if (nuxt.options.debug && nuxt.options.debug.watchers) {
-        // eslint-disable-next-line no-console
-        console.timeEnd('[nuxt] builder:parcel:watch')
-      }
-      nuxt.hook('close', () => subscription.unsubscribe())
-    })
-  }
-  return true
 }
 
 async function bundle (nuxt: Nuxt) {
@@ -244,11 +242,10 @@ async function bundle (nuxt: Nuxt) {
   }
 }
 
-function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
-  const builderPath = resolveModulePath(builder, { try: true, from: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
-
-  if (!builderPath) {
+async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
+  try {
+    return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
+  } catch {
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
   }
-  return importModule(builderPath)
 }
