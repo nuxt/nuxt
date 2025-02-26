@@ -18,7 +18,7 @@ import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
 import { resolveUnrefHeadInput } from '@unhead/vue/utils'
-import type { Head, HeadEntryOptions, Link, ResolvedHead, Script, Style } from '@unhead/vue/types'
+import type { HeadEntryOptions, Link, ResolvedHead, Script, Style } from '@unhead/vue/types'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -495,7 +495,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const islandHead: ResolvedHead = {}
     // TODO migrate to using resolved tags to minify the payload
     for (const entry of head.entries.values()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as ResolvedHead)) {
         const currentValue = islandHead[key as keyof ResolvedHead]
         if (Array.isArray(currentValue)) {
           currentValue.push(...value)
