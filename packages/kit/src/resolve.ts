@@ -207,8 +207,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   })
   if (resolvedModulePath) {
     return {
-      // TODO: https://github.com/unjs/exsolve/pull/8
-      path: normalize(resolvedModulePath).replace(/^[a-z]:/, r => r.toUpperCase()),
+      path: normalize(resolvedModulePath),
       type: 'file',
       virtual: false,
     }

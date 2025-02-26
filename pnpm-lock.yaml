@@ -248,8 +248,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       exsolve:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.2
+        version: 0.4.2
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -402,8 +402,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       exsolve:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.2
+        version: 0.4.2
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -4391,8 +4391,8 @@ packages:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
 
-  exsolve@0.4.0:
-    resolution: {integrity: sha512-z4qgr19noI181wWs/Bd1PM6Gaf3m5Y1RHDUVdbhft28yD2C0a/7HLhLWbphwOHx2RObWG9CkLHFmUbvFdOfj7w==}
+  exsolve@0.4.2:
+    resolution: {integrity: sha512-sLGq+3R6ISovHNxuENnZ69paPIQm8h2bfeSefXIKvBLNCgh4pc+luHtgTLC4ij2zN6KFm1aMG8efQXcjyNy3lw==}
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
@@ -11537,7 +11537,7 @@ snapshots:
 
   expect-type@1.1.0: {}
 
-  exsolve@0.4.0: {}
+  exsolve@0.4.2: {}
 
   extend@3.0.2: {}
 
