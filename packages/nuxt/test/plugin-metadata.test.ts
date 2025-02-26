@@ -11,14 +11,14 @@ describe('plugin-metadata', () => {
     setup: () => { return { provide: { jsx: '[JSX]' } } },
     order: 1,
   })
-  it.each(properties)('should extract metadata from object-syntax plugins', async (k, value) => {
+  it.each(properties)('should extract metadata from object-syntax plugins', (k, value) => {
     const obj = [...properties.filter(([key]) => key !== k), [k, value]]
 
-    const meta = await extractMetadata([
+    const meta = extractMetadata([
       'export default defineNuxtPlugin({',
       ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString().replace('"[JSX]"', '() => <span>JSX</span>') : JSON.stringify(value)},`),
       '})',
-    ].join('\n'), 'file.tsx')
+    ].join('\n'), 'tsx')
 
     expect(meta).toEqual({
       'name': 'test',
