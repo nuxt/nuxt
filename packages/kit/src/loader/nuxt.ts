@@ -21,17 +21,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const rootURL = directoryToURL(opts.cwd!)
-
   const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt']
-    .map(pkg => resolvePackageJSON(pkg, { url: rootURL }).catch(() => null)))
+    .map(pkg => resolvePackageJSON(pkg, { parent: opts.cwd! }).catch(() => null)))
     .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
   if (!nearestNuxtPkg) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
   const pkg = await readPackageJSON(nearestNuxtPkg)
 
-  const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { url: rootURL })
+  const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { url: directoryToURL(opts.cwd!) })
   const nuxt = await loadNuxt(opts)
   return nuxt
 }
