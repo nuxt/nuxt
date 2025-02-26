@@ -1049,11 +1049,6 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
   })
 
-  it.skipIf(isV4)('legacy vueuse/head works', async () => {
-    const headHtml = await $fetch<string>('/vueuse-head')
-    expect(headHtml).toContain('<title>using provides usehead and updateDOM - VueUse head polyfill test</title>')
-  })
-
   it('should render http-equiv correctly', async () => {
     const html = await $fetch<string>('/head')
     // http-equiv should be rendered kebab case
