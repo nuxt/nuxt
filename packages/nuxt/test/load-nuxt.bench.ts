@@ -21,7 +21,7 @@ describe('loadNuxt', () => {
       cwd: emptyDir,
       ready: true,
       overrides: {
-        buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'),
+        buildDir: join(emptyDir, 'node_modules/load-nuxt/.nuxt'),
       },
     })
     await nuxt.close()
