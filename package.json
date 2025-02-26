@@ -54,7 +54,7 @@
     "@vue/compiler-core": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
-    "c12": "2.0.4",
+    "c12": "3.0.1",
     "h3": "npm:h3-nightly@1.15.1-20250222-111608-d1c00fc",
     "jiti": "2.4.2",
     "magic-string": "^0.30.17",
