@@ -1,10 +1,11 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
+import { resolveModulePath } from 'exsolve'
 
 import { logger } from '../utils'
 import { generateApp as _generateApp, createApp } from './app'
@@ -193,7 +194,7 @@ async function createParcelWatcher () {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
-  const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)))
+  const watcherPath = resolveModulePath('@parcel/watcher', { try: true, from: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) })
   if (!watcherPath) {
     logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
     return false
@@ -243,8 +244,8 @@ async function bundle (nuxt: Nuxt) {
   }
 }
 
-async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
-  const builderPath = await tryResolveModule(builder, [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)])
+function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
+  const builderPath = resolveModulePath(builder, { try: true, from: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
 
   if (!builderPath) {
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
