@@ -1,8 +1,9 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, resolvePath } from '@nuxt/kit'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
+import type { Component, ComponentsDir, ComponentsOptions, NuxtPage } from 'nuxt/schema'
 
+import type { NitroRouteConfig } from 'nitro/types'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
@@ -198,7 +199,20 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
-    addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
+    const routeData = {
+      pages: [] as NuxtPage[],
+      routeRules: {} as { [path: string]: NitroRouteConfig },
+    }
+
+    nuxt.hook('pages:resolved', (pages) => {
+      routeData.pages = pages
+    })
+
+    nuxt.hook('nitro:routeRules', (routeRules) => {
+      routeData.routeRules = routeRules
+    })
+
+    addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents, routeData }), { client: false })
 
     const sharedLoaderOptions = {
       getComponents,

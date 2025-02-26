@@ -29,6 +29,17 @@ const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(components
 
 const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
   sourcemap: false,
+  routeData: {
+    pages: [
+      {
+        path: '/spa',
+        file: '/dummy/spa.vue',
+      },
+    ],
+    routeRules: {
+      '/spa/**': { ssr: false },
+    },
+  },
   getComponents () {
     return [{
       pascalName: 'NotDotClientComponent',
@@ -54,7 +65,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
   },
 }).raw({}, { framework: 'rollup' }) as Plugin
 
-const treeshake = async (source: string): Promise<string> => {
+const treeshake = async (source: string, id?: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (treeshakeTemplatePlugin.transform! as Function).call({
     parse: (code: string, opts: any = {}) => Parser.parse(code, {
@@ -63,7 +74,7 @@ const treeshake = async (source: string): Promise<string> => {
       locations: true,
       ...opts,
     }),
-  }, source)
+  }, source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -217,5 +228,19 @@ describe('treeshake client only in ssr', () => {
 
     expect(treeshaken).toContain('resolveComponent("AppIcon")')
     expect(treeshaken).not.toContain('caret-up')
+  })
+
+  it('should treeshake based on route rules', async () => {
+    const filePath = '/dummy/spa.vue'
+    const treeshaken = await treeshake(`const __sfc__ = {};
+import { ssrRenderAttrs as _ssrRenderAttrs } from "vue/server-renderer"
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(\`<div\${_ssrRenderAttrs(_attrs)}> Should Not Contain Anything </div>\`)
+}
+__sfc__.ssrRender = ssrRender
+__sfc__.__file = "src/App.vue"
+export default __sfc__`, filePath)
+
+    expect(treeshaken).toBe('')
   })
 })
