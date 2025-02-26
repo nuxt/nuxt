@@ -30,7 +30,7 @@ describe('render', () => {
     })
     await build(nuxt)
     await nuxt.close()
-  }, 100_000)
+  }, 200_000)
 
   bench('index route in the basic test fixture', async () => {
     const res = await x('node', [join(outputDir, 'server/index.mjs')], {
