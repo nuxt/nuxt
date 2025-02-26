@@ -282,6 +282,18 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       })
     }
 
+    if (nuxt.options.future.compatibilityVersion !== 4) {
+      // TODO: remove in Nuxt v4
+      nuxt.hook('nitro:config', (config) => {
+        for (const value of Object.values(config.routeRules || {})) {
+          if ('experimentalNoScripts' in value) {
+            value.noScripts = value.experimentalNoScripts
+            delete value.experimentalNoScripts
+          }
+        }
+      })
+    }
+
     nuxt.hook('nitro:config', (config) => {
       config.alias ||= {}
       config.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
