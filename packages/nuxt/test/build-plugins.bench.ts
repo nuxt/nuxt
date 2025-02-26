@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
+import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
-import { normalize } from 'pathe'
+import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { build, loadNuxt } from 'nuxt'
 import type { Nuxt } from '@nuxt/schema'
@@ -10,6 +11,7 @@ const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL
 describe('build', () => {
   let nuxt: Nuxt
   beforeAll(async () => {
+    await rm(join(basicTestFixtureDir, '.nuxt'), { recursive: true, force: true })
     nuxt = await loadNuxt({
       cwd: basicTestFixtureDir,
       ready: true,

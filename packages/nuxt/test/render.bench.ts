@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { rm } from 'node:fs/promises'
 import { beforeAll, bench, describe, expect } from 'vitest'
 import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
@@ -10,6 +11,7 @@ const outputDir = fileURLToPath(new URL('../../../node_modules/.test/render-benc
 
 describe('render', () => {
   beforeAll(async () => {
+    await rm(join(basicTestFixtureDir, '.nuxt'), { recursive: true, force: true })
     const nuxt = await loadNuxt({
       cwd: basicTestFixtureDir,
       ready: true,
