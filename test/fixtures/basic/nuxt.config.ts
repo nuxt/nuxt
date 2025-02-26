@@ -35,7 +35,7 @@ export default defineNuxtConfig({
         }
       })
     },
-    '~/modules/subpath',
+    '~/custom-modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {

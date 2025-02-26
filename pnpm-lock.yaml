@@ -241,6 +241,9 @@ importers:
       destr:
         specifier: ^2.0.3
         version: 2.0.3
+      exsolve:
+        specifier: ^1.0.1
+        version: 1.0.1
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -310,7 +313,7 @@ importers:
         version: 2.10.4(typescript@5.7.3)
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -401,6 +404,9 @@ importers:
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
+      exsolve:
+        specifier: ^1.0.1
+        version: 1.0.1
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -539,7 +545,7 @@ importers:
         version: 3.5.13
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -684,7 +690,7 @@ importers:
         version: 4.34.8
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -974,7 +980,7 @@ importers:
         version: 4.34.8
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -1113,7 +1119,7 @@ importers:
         version: 2.25.9
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -2378,8 +2384,8 @@ packages:
   '@redocly/config@0.21.0':
     resolution: {integrity: sha512-JBtrrjBIURTnzb7KUIWOF46vSgpfC3rO6Mm8LjtRjtTNCLTyB+mOuU7HrTkVcvUCEBuSuzkivlTHMWT4JETz9A==}
 
-  '@redocly/openapi-core@1.31.3':
-    resolution: {integrity: sha512-SyE/1TwM33tgldc3k367sg2i1kqnILOJZo6J96Y/Tt1PHhJp+na637CzCuTgdyY86GTPvNw42834Ks0Lkfk3Hg==}
+  '@redocly/openapi-core@1.31.2':
+    resolution: {integrity: sha512-HScpiSuluLic9+QpsI2JWaegeDuRn3hximPBpiUpy4WdXf74Ev094kpUgjhiD3xDuP/KpVdchooAkLnzQ0X+vg==}
     engines: {node: '>=18.17.0', npm: '>=9.5.0'}
 
   '@rollup/plugin-alias@5.1.1':
@@ -2631,8 +2637,8 @@ packages:
   '@shikijs/core@1.23.1':
     resolution: {integrity: sha512-NuOVgwcHgVC6jBVH5V7iblziw6iQbWWHrj5IlZI3Fqu2yx9awH7OIQkXIcsHsUmY19ckwSgUMgrqExEyP5A0TA==}
 
-  '@shikijs/core@3.1.0':
-    resolution: {integrity: sha512-1ppAOyg3F18N8Ge9DmJjGqRVswihN33rOgPovR6gUHW17Hw1L4RlRhnmVQcsacSHh0A8IO1FIgNbtTxUFwodmg==}
+  '@shikijs/core@3.0.0':
+    resolution: {integrity: sha512-gSm3JQf2J2psiUn5bWokmZwnu5N0jfBtRps4CQ1B+qrFvmZCRAkMVoaxgl9qZgAFK5KisLAS3//XaMFVytYHKw==}
 
   '@shikijs/engine-javascript@1.22.2':
     resolution: {integrity: sha512-iOvql09ql6m+3d1vtvP8fLCVCK7BQD1pJFmHIECsujB0V32BJ0Ab6hxk1ewVSMFA58FI0pR2Had9BKZdyQrxTw==}
@@ -2649,10 +2655,8 @@ packages:
   '@shikijs/transformers@1.22.2':
     resolution: {integrity: sha512-8f78OiBa6pZDoZ53lYTmuvpFPlWtevn23bzG+azpPVvZg7ITax57o/K3TC91eYL3OMJOO0onPbgnQyZjRos8XQ==}
 
-  '@shikijs/twoslash@3.1.0':
-    resolution: {integrity: sha512-cEaS6Nw1IhcJRc0RxJWIaZLXq0A5d9aJ9LoRfO4+y1L1wqC/+YCqrMEZqxkdjep3usCbZRae13fcXMd4pz8fHQ==}
-    peerDependencies:
-      typescript: 5.7.3
+  '@shikijs/twoslash@3.0.0':
+    resolution: {integrity: sha512-Il7XsIzbBLGV67i4yCoBDFvlMOuky1DpMyHgBjNjBu7gEw/DcmpoEEs1MwVH6Lk6fX4wXDhMQ+pDL2EwqzWqdQ==}
 
   '@shikijs/types@1.22.2':
     resolution: {integrity: sha512-NCWDa6LGZqTuzjsGfXOBWfjS/fDIbDdmVDug+7ykVe1IKT4c1gakrvlfFYp5NhAXH/lyqLM8wsAPo5wNy73Feg==}
@@ -2660,8 +2664,8 @@ packages:
   '@shikijs/types@1.23.1':
     resolution: {integrity: sha512-98A5hGyEhzzAgQh2dAeHKrWW4HfCMeoFER2z16p5eJ+vmPeF6lZ/elEne6/UCU551F/WqkopqRsr1l2Yu6+A0g==}
 
-  '@shikijs/types@3.1.0':
-    resolution: {integrity: sha512-F8e7Fy4ihtcNpJG572BZZC1ErYrBrzJ5Cbc9Zi3REgWry43gIvjJ9lFAoUnuy7Bvy4IFz7grUSxL5edfrrjFEA==}
+  '@shikijs/types@3.0.0':
+    resolution: {integrity: sha512-kh/xgZHxI6m9trVvPw+C47jyVHx190r0F5gkF+VO5vYB54UtcoPJe66dzZmK7GbJbzmtGEGbOwct/jsoPjjUqg==}
 
   '@shikijs/vitepress-twoslash@1.23.1':
     resolution: {integrity: sha512-L67HkzDkbECjYdWxQA9BuKAIB0c7eaa+7sD6dZUQ6/cdJGiWvaPLYMRwMWZQ4ToRsz1X6MQmOKQp6Xb6FEc3Bg==}
@@ -7180,9 +7184,6 @@ packages:
   twoslash-protocol@0.2.12:
     resolution: {integrity: sha512-5qZLXVYfZ9ABdjqbvPc4RWMr7PrpPaaDSeaYY55vl/w1j6H6kzsWK/urAEIXlzYlyrFmyz1UbwIt+AA0ck+wbg==}
 
-  twoslash-protocol@0.3.1:
-    resolution: {integrity: sha512-BMePTL9OkuNISSyyMclBBhV2s9++DiOCyhhCoV5Kaht6eaWLwVjCCUJHY33eZJPsyKeZYS8Wzz0h+XI01VohVw==}
-
   twoslash-vue@0.2.12:
     resolution: {integrity: sha512-kxH60DLn2QBcN2wjqxgMDkyRgmPXsytv7fJIlsyFMDPSkm1/lMrI/UMrNAshNaRHcI+hv8x3h/WBgcvlb2RNAQ==}
     peerDependencies:
@@ -7190,11 +7191,6 @@ packages:
 
   twoslash@0.2.12:
     resolution: {integrity: sha512-tEHPASMqi7kqwfJbkk7hc/4EhlrKCSLcur+TcvYki3vhIfaRMXnXjaYFgXpoZRbT6GdprD4tGuVBEmTpUgLBsw==}
-    peerDependencies:
-      typescript: 5.7.3
-
-  twoslash@0.3.1:
-    resolution: {integrity: sha512-OGqMTGvqXTcb92YQdwGfEdK0nZJA64Aj/ChLOelbl3TfYch2IoBST0Yx4C0LQ7Lzyqm9RpgcpgDxeXQIz4p2Kg==}
     peerDependencies:
       typescript: 5.7.3
 
@@ -7227,6 +7223,15 @@ packages:
 
   ultrahtml@1.5.3:
     resolution: {integrity: sha512-GykOvZwgDWZlTQMtp5jrD4BVL+gNn2NVlVafjcFUJ7taY20tqYdwdoWBFy6GBJsNTZe1GkGPkSl5knQAjtgceg==}
+
+  unbuild@3.3.1:
+    resolution: {integrity: sha512-/5OeeHmW1JlWEyQw3SPkB9BV16lzr6C5i8D+O17NLx6ETgvCZ3ZlyXfWkVVfG2YCsv8xAVQCqJNJtbEAGwHg7A==}
+    hasBin: true
+    peerDependencies:
+      typescript: 5.7.3
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   unbuild@3.5.0:
     resolution: {integrity: sha512-DPFttsiADnHRb/K+yJ9r9jdn6JyXlsmdT0S12VFC14DFSJD+cxBnHq+v0INmqqPVPxOoUjvJFYUVIb02rWnVeA==}
@@ -9132,7 +9137,7 @@ snapshots:
 
   '@redocly/config@0.21.0': {}
 
-  '@redocly/openapi-core@1.31.3(supports-color@9.4.0)':
+  '@redocly/openapi-core@1.31.2(supports-color@9.4.0)':
     dependencies:
       '@redocly/ajv': 8.11.2
       '@redocly/config': 0.21.0
@@ -9344,9 +9349,9 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
-  '@shikijs/core@3.1.0':
+  '@shikijs/core@3.0.0':
     dependencies:
-      '@shikijs/types': 3.1.0
+      '@shikijs/types': 3.0.0
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
@@ -9377,14 +9382,14 @@ snapshots:
     dependencies:
       shiki: 1.22.2
 
-  '@shikijs/twoslash@3.1.0(typescript@5.7.3)':
+  '@shikijs/twoslash@3.0.0(typescript@5.7.3)':
     dependencies:
-      '@shikijs/core': 3.1.0
-      '@shikijs/types': 3.1.0
-      twoslash: 0.3.1(typescript@5.7.3)
-      typescript: 5.7.3
+      '@shikijs/core': 3.0.0
+      '@shikijs/types': 3.0.0
+      twoslash: 0.2.12(typescript@5.7.3)
     transitivePeerDependencies:
       - supports-color
+      - typescript
 
   '@shikijs/types@1.22.2':
     dependencies:
@@ -9396,14 +9401,14 @@ snapshots:
       '@shikijs/vscode-textmate': 9.3.1
       '@types/hast': 3.0.4
 
-  '@shikijs/types@3.1.0':
+  '@shikijs/types@3.0.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
   '@shikijs/vitepress-twoslash@1.23.1(@nuxt/kit@packages+kit)(typescript@5.7.3)':
     dependencies:
-      '@shikijs/twoslash': 3.1.0(typescript@5.7.3)
+      '@shikijs/twoslash': 3.0.0(typescript@5.7.3)
       floating-vue: 5.2.2(@nuxt/kit@packages+kit)(vue@3.5.13(typescript@5.7.3))
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.0.0
@@ -13497,7 +13502,7 @@ snapshots:
 
   openapi-typescript@7.6.1(typescript@5.7.3):
     dependencies:
-      '@redocly/openapi-core': 1.31.3(supports-color@9.4.0)
+      '@redocly/openapi-core': 1.31.2(supports-color@9.4.0)
       ansi-colors: 4.1.3
       change-case: 5.4.4
       parse-json: 8.1.0
@@ -14883,8 +14888,6 @@ snapshots:
 
   twoslash-protocol@0.2.12: {}
 
-  twoslash-protocol@0.3.1: {}
-
   twoslash-vue@0.2.12(typescript@5.7.3):
     dependencies:
       '@vue/language-core': 2.1.10(typescript@5.7.3)
@@ -14898,14 +14901,6 @@ snapshots:
     dependencies:
       '@typescript/vfs': 1.6.1(typescript@5.7.3)
       twoslash-protocol: 0.2.12
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - supports-color
-
-  twoslash@0.3.1(typescript@5.7.3):
-    dependencies:
-      '@typescript/vfs': 1.6.1(typescript@5.7.3)
-      twoslash-protocol: 0.3.1
       typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
@@ -14927,6 +14922,39 @@ snapshots:
   ufo@1.5.4: {}
 
   ultrahtml@1.5.3: {}
+
+  unbuild@3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
+    dependencies:
+      '@rollup/plugin-alias': 5.1.1(rollup@4.34.8)
+      '@rollup/plugin-commonjs': 28.0.2(rollup@4.34.8)
+      '@rollup/plugin-json': 6.1.0(rollup@4.34.8)
+      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.34.8)
+      '@rollup/plugin-replace': 6.0.2(rollup@4.34.8)
+      '@rollup/pluginutils': 5.1.4(rollup@4.34.8)
+      citty: 0.1.6
+      consola: 3.4.0
+      defu: 6.1.4
+      esbuild: 0.24.2
+      hookable: 5.5.3
+      jiti: 2.4.2
+      magic-string: 0.30.17
+      mkdist: 2.2.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+      mlly: 1.7.4
+      pathe: 2.0.3
+      pkg-types: 1.3.1
+      pretty-bytes: 6.1.1
+      rollup: 4.34.8
+      rollup-plugin-dts: 6.1.1(rollup@4.34.8)(typescript@5.7.3)
+      scule: 1.3.0
+      tinyglobby: 0.2.12
+      untyped: 1.5.2
+    optionalDependencies:
+      typescript: 5.7.3
+    transitivePeerDependencies:
+      - sass
+      - supports-color
+      - vue
+      - vue-tsc
 
   unbuild@3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
     dependencies:
