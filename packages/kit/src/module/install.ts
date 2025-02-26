@@ -107,7 +107,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   try {
     const src = pathToFileURL(resolveModulePath(nuxtModule, {
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-      suffixes: ['/nuxt', '/nuxt/index', '/module', '/module/index', '', '/index'],
+      suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
       extensions: nuxt.options.extensions,
     })).href
     const resolvedModulePath = fileURLToPath(new URL(src))

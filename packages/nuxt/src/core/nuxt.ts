@@ -487,7 +487,7 @@ async function initNuxt (nuxt: Nuxt) {
     const modPath = resolveModulePath(modAlias, {
       try: true,
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-      suffixes: ['/nuxt', '/nuxt/index', '/module', '/module/index', '', '/index'],
+      suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
       extensions: nuxt.options.extensions,
     }) ?? modAlias
     specifiedModules.add(modPath)

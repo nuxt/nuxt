@@ -202,7 +202,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   // Try to resolve as module id
   const resolvedModulePath = resolveModulePath(_path, {
     try: true,
-    suffixes: ['', '/index'],
+    suffixes: ['', 'index'],
     from: [cwd, ...modulesDir].map(d => directoryToURL(d)),
   })
   if (resolvedModulePath) {
