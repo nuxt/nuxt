@@ -235,6 +235,9 @@ jobs:
           name: dist
           path: packages
 
+      - name: Prepare test fixtures
+        run: pnpm test:prepare
+
       - name: Run benchmarks
         uses: CodSpeedHQ/action@63ae6025a0ffee97d7736a37c9192dbd6ed4e75f # v3.4.0
         with:
