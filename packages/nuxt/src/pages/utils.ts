@@ -11,7 +11,7 @@ import type { Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
-import { parseAndWalk, transform, withLocations } from '../core/utils/parse'
+import { parseAndWalk, withLocations } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 
@@ -207,7 +207,7 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export async function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -234,13 +234,11 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
       continue
     }
 
-    const js = await transform(script.code, { loader: script.loader })
-
     const dynamicProperties = new Set<keyof NuxtPage>()
 
     let foundMeta = false
 
-    parseAndWalk(js.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (foundMeta) { return }
 
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
@@ -256,7 +254,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
         const propertyValue = withLocations(property.value)
 
         if (propertyValue.type === 'ObjectExpression') {
-          const valueString = js.code.slice(propertyValue.start, propertyValue.end)
+          const valueString = script.code.slice(propertyValue.start, propertyValue.end)
           try {
             extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
           } catch {
