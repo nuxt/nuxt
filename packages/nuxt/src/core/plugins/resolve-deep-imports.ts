@@ -54,7 +54,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
         return null
       }
 
-      return path
+      return normalize(path)
     },
   }
 }

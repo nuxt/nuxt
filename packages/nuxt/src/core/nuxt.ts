@@ -24,7 +24,7 @@ import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
-import { resolveModulePath } from 'exsolve'
+import { resolveModulePath, resolveModuleURL } from 'exsolve'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -398,7 +398,7 @@ async function initNuxt (nuxt: Nuxt) {
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
-        helperModule: resolveModulePath('unctx', { try: true, from: importPaths }) ?? 'unctx',
+        helperModule: resolveModuleURL('unctx', { try: true, from: importPaths }) ?? 'unctx',
       },
     }))
 
@@ -489,8 +489,8 @@ async function initNuxt (nuxt: Nuxt) {
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
       suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
       extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
-    }) ?? modAlias
-    specifiedModules.add(modPath)
+    })
+    specifiedModules.add(modPath ? normalize(modPath) : modAlias)
   }
 
   // Automatically register user modules
