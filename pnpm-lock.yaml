@@ -293,8 +293,8 @@ importers:
         specifier: 4.1.2
         version: 4.1.2
       untyped:
-        specifier: ^1.5.2
-        version: 1.5.2
+        specifier: ^2.0.0
+        version: 2.0.0
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -510,8 +510,8 @@ importers:
         specifier: ^1.15.0
         version: 1.15.0(db0@0.1.4)(ioredis@5.4.1)
       untyped:
-        specifier: ^1.5.2
-        version: 1.5.2
+        specifier: ^2.0.0
+        version: 2.0.0
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -798,8 +798,8 @@ importers:
         specifier: 4.1.2
         version: 4.1.2
       untyped:
-        specifier: 1.5.2
-        version: 1.5.2
+        specifier: 2.0.0
+        version: 2.0.0
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -7397,6 +7397,10 @@ packages:
 
   untyped@1.5.2:
     resolution: {integrity: sha512-eL/8PlhLcMmlMDtNPKhyyz9kEBDS3Uk4yMu/ewlkT2WFbtzScjHWPJLdQLmaGPUKjXzwe9MumOtOgc4Fro96Kg==}
+    hasBin: true
+
+  untyped@2.0.0:
+    resolution: {integrity: sha512-nwNCjxJTjNuLCgFr42fEak5OcLuB3ecca+9ksPFNvtfYSLpjf+iJqSIaSnIile6ZPbKYxI5k2AfXqeopGudK/g==}
     hasBin: true
 
   unwasm@0.3.9:
@@ -15021,6 +15025,14 @@ snapshots:
       scule: 1.3.0
     transitivePeerDependencies:
       - supports-color
+
+  untyped@2.0.0:
+    dependencies:
+      citty: 0.1.6
+      defu: 6.1.4
+      jiti: 2.4.2
+      knitwork: 1.2.0
+      scule: 1.3.0
 
   unwasm@0.3.9:
     dependencies:
