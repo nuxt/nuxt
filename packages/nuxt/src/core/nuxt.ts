@@ -488,7 +488,7 @@ async function initNuxt (nuxt: Nuxt) {
       try: true,
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
       suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-      extensions: nuxt.options.extensions,
+      extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
     }) ?? modAlias
     specifiedModules.add(modPath)
   }
