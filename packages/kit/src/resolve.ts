@@ -207,7 +207,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   })
   if (resolvedModulePath) {
     return {
-      path: normalize(resolvedModulePath),
+      path: resolvedModulePath,
       type: 'file',
       virtual: false,
     }

@@ -490,7 +490,7 @@ async function initNuxt (nuxt: Nuxt) {
       suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
       extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
     })
-    specifiedModules.add(modPath ? normalize(modPath) : modAlias)
+    specifiedModules.add(modPath || modAlias)
   }
 
   // Automatically register user modules

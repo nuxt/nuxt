@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
+import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
@@ -253,7 +253,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     if (!stats) {
       const resolvedModule = resolveModulePath(aliases[alias]!, { try: true, from: importPaths })
       if (resolvedModule) {
-        absolutePath = normalize(resolvedModule)
+        absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)
       }
     }

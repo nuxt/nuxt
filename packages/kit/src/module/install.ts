@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
-import { dirname, isAbsolute, normalize, resolve } from 'pathe'
+import { dirname, isAbsolute, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import { parseNodeModulePath } from 'mlly'
@@ -110,7 +110,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
       extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
     })
-    const resolvedModulePath = normalize(fileURLToPath(src))
+    const resolvedModulePath = fileURLToPath(src)
     const resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
 
     if (typeof resolvedNuxtModule !== 'function') {
