@@ -11,8 +11,8 @@ const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL
 describe('loadNuxt', () => {
   beforeAll(async () => {
     await Promise.all([
-      rm(join(emptyDir, '.nuxt'), { recursive: true, force: true }),
-      rm(join(basicTestFixtureDir, '.nuxt'), { recursive: true, force: true }),
+      rm(join(emptyDir, 'node_modules/load-nuxt/.nuxt'), { recursive: true, force: true }),
+      rm(join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'), { recursive: true, force: true }),
     ])
   })
 
@@ -20,6 +20,9 @@ describe('loadNuxt', () => {
     const nuxt = await loadNuxt({
       cwd: emptyDir,
       ready: true,
+      overrides: {
+        buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'),
+      },
     })
     await nuxt.close()
   })
@@ -28,6 +31,9 @@ describe('loadNuxt', () => {
     const nuxt = await loadNuxt({
       cwd: basicTestFixtureDir,
       ready: true,
+      overrides: {
+        buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'),
+      },
     })
     await nuxt.close()
   })

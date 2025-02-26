@@ -11,11 +11,12 @@ const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL
 describe('build', () => {
   let nuxt: Nuxt
   beforeAll(async () => {
-    await rm(join(basicTestFixtureDir, '.nuxt'), { recursive: true, force: true })
+    await rm(join(basicTestFixtureDir, 'node_modules/build-plugins/.nuxt'), { recursive: true, force: true })
     nuxt = await loadNuxt({
       cwd: basicTestFixtureDir,
       ready: true,
       overrides: {
+        buildDir: join(basicTestFixtureDir, 'node_modules/build-plugins/.nuxt'),
         ssr: false,
         sourcemap: false,
         hooks: {
