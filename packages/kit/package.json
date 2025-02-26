@@ -46,7 +46,7 @@
     "ufo": "^1.5.4",
     "unctx": "^2.4.1",
     "unimport": "^4.1.2",
-    "untyped": "^1.5.2"
+    "untyped": "^2.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
