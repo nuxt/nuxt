@@ -247,6 +247,9 @@ importers:
       errx:
         specifier: ^0.1.0
         version: 0.1.0
+      exsolve:
+        specifier: ^0.4.4
+        version: 0.4.4
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -395,6 +398,9 @@ importers:
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
+      exsolve:
+        specifier: ^0.4.4
+        version: 0.4.4
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -3851,9 +3857,6 @@ packages:
       uWebSockets.js:
         optional: true
 
-  crossws@0.3.2:
-    resolution: {integrity: sha512-S2PpQHRcgYABOS2465b34wqTOn5dbLL+iSvyweJYGGFLDsKq88xrjDXUiEhfYkhWZq1HuS6of3okRHILbkrqxw==}
-
   crossws@0.3.4:
     resolution: {integrity: sha512-uj0O1ETYX1Bh6uSgktfPvwDiPYGQ3aI4qVsaC/LWpkIzGj1nUYm5FK3K+t11oOlpN01lGbprFCH4wBlKdJjVgw==}
 
@@ -4431,8 +4434,8 @@ packages:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
 
-  exsolve@0.4.2:
-    resolution: {integrity: sha512-sLGq+3R6ISovHNxuENnZ69paPIQm8h2bfeSefXIKvBLNCgh4pc+luHtgTLC4ij2zN6KFm1aMG8efQXcjyNy3lw==}
+  exsolve@0.4.4:
+    resolution: {integrity: sha512-74RiT9i1G0eyFyE9n5f6mdX8+AicZFnhJ0CHB9VrkIl3Sy8vmW49ODbpwevdLswST7fhp3jvfPzD4DArTfjnsA==}
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
@@ -10591,7 +10594,7 @@ snapshots:
       confbox: 0.1.8
       defu: 6.1.4
       dotenv: 16.4.7
-      exsolve: 0.4.2
+      exsolve: 0.4.4
       giget: 2.0.0
       jiti: 2.4.2
       ohash: 2.0.5
@@ -10881,10 +10884,6 @@ snapshots:
       which: 2.0.2
 
   crossws@0.2.4: {}
-
-  crossws@0.3.2:
-    dependencies:
-      uncrypto: 0.1.3
 
   crossws@0.3.4:
     dependencies:
@@ -11622,7 +11621,7 @@ snapshots:
 
   expect-type@1.1.0: {}
 
-  exsolve@0.4.2: {}
+  exsolve@0.4.4: {}
 
   extend@3.0.2: {}
 
@@ -12578,7 +12577,7 @@ snapshots:
       citty: 0.1.6
       clipboardy: 4.0.0
       consola: 3.4.0
-      crossws: 0.3.2
+      crossws: 0.3.4
       defu: 6.1.4
       get-port-please: 3.1.2
       h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
