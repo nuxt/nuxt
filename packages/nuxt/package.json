@@ -89,6 +89,7 @@
     "esbuild": "^0.25.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
+    "exsolve": "^0.4.4",
     "globby": "^14.1.0",
     "h3": "npm:h3-nightly@1.15.1-20250222-111608-d1c00fc",
     "hookable": "^5.5.3",
