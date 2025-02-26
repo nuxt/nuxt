@@ -65,7 +65,7 @@
     "send": ">=1.1.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
-    "unbuild": "3.3.1",
+    "unbuild": "3.4.2",
     "unhead": "1.11.20",
     "unimport": "4.1.2",
     "vite": "6.2.0",
@@ -94,7 +94,7 @@
     "acorn": "8.14.0",
     "autoprefixer": "10.4.20",
     "case-police": "1.0.0",
-    "changelogen": "0.5.7",
+    "changelogen": "0.6.0",
     "consola": "3.4.0",
     "cssnano": "7.0.6",
     "destr": "2.0.3",
@@ -128,13 +128,13 @@
     "ts-blank-space": "0.6.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
-    "unbuild": "3.3.1",
+    "unbuild": "3.4.2",
     "vitest": "3.0.7",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.2.4",
     "webpack": "5.98.0"
   },
-  "packageManager": "pnpm@10.5.0",
+  "packageManager": "pnpm@10.5.1",
   "version": ""
 }
