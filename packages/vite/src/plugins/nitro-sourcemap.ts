@@ -14,7 +14,8 @@ export const createSourcemapPreserver = () => {
       outputDir = config.build.outDir
     },
     async writeBundle (_options, bundle) {
-      for (const chunk of Object.values(bundle)) {
+      for (const chunkId in bundle) {
+        const chunk = bundle[chunkId]!
         if (chunk.type !== 'chunk' || !chunk.map) { continue }
 
         const id = resolve(outputDir, chunk.fileName)

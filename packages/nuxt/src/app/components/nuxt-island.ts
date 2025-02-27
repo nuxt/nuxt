@@ -33,7 +33,8 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
 
   const promises: Array<Promise<void>> = []
 
-  for (const [component, item] of Object.entries(paths)) {
+  for (const component in paths) {
+    const item = paths[component]!
     if (!(components!.has(component))) {
       promises.push((async () => {
         const chunkSource = joinURL(source, item.chunk)
@@ -146,10 +147,10 @@ export default defineComponent({
         html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
       }
 
-      if (import.meta.client && !canLoadClientComponent.value) {
-        for (const [key, value] of Object.entries(payloads.components || {})) {
+      if (import.meta.client && !canLoadClientComponent.value && payloads.components) {
+        for (const key in payloads.components) {
           html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
-            return full + value.html
+            return full + payloads.components![key]!.html
           })
         }
       }
@@ -287,8 +288,8 @@ export default defineComponent({
             if (selectiveClient) {
               if (import.meta.server) {
                 if (payloads.components) {
-                  for (const [id, info] of Object.entries(payloads.components)) {
-                    const { html, slots } = info
+                  for (const id in payloads.components) {
+                    const { html, slots } = payloads.components[id]!
                     let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
                     for (const slot in slots) {
                       replaced = replaced.replaceAll(`data-island-slot="${slot}">`, full => full + slots[slot])
@@ -299,8 +300,8 @@ export default defineComponent({
                   }
                 }
               } else if (canLoadClientComponent.value && payloads.components) {
-                for (const [id, info] of Object.entries(payloads.components)) {
-                  const { props, slots } = info
+                for (const id in payloads.components) {
+                  const { props, slots } = payloads.components[id]!
                   const component = components!.get(id)!
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {

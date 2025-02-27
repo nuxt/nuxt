@@ -460,7 +460,8 @@ export default defineNuxtModule({
       nuxt.hook('pages:extend', (routes) => {
         const nitro = useNitro()
         let resolvedRoutes: string[]
-        for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
+        for (const path in nitro.options.routeRules) {
+          const rule = nitro.options.routeRules[path]!
           if (!rule.redirect) { continue }
           resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
           // skip if there's already a route matching this path
@@ -506,7 +507,8 @@ export default defineNuxtModule({
       if (nuxt.options.dev) { return }
       const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
-      for (const [key, chunk] of Object.entries(manifest)) {
+      for (const key in manifest) {
+        const chunk = manifest[key]!
         if (chunk.src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, chunk.src!)))) {
           delete manifest[key]
           continue

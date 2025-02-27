@@ -412,7 +412,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
   if (!isRenderingIsland || import.meta.dev) {
     const link: Link[] = []
-    for (const resource of Object.values(styles)) {
+    for (const resourceId in styles) {
+      const resource = styles[resourceId]!
       // Do not add links to resources that are inlined (vite v5+)
       if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
         continue
@@ -434,7 +435,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   if (isRenderingIsland && islandContext) {
     const islandHead: Head = {}
     for (const entry of head.headEntries()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
+      const currentEntry = resolveUnrefHeadInput(entry.input)
+      for (const key in currentEntry as Head) {
+        const value = currentEntry[key]
         const currentValue = islandHead[key as keyof Head]
         if (Array.isArray(currentValue)) {
           currentValue.push(...value)
@@ -677,9 +680,9 @@ const SSR_CLIENT_SLOT_MARKER = /^island-slot=([^;]*);(.*)$/
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
   const response: NuxtIslandResponse['slots'] = {}
-  for (const [name, slot] of Object.entries(ssrContext.islandContext.slots)) {
+  for (const name in ssrContext.islandContext.slots) {
     response[name] = {
-      ...slot,
+      ...ssrContext.islandContext.slots[name]!,
       fallback: ssrContext.teleports?.[`island-fallback=${name}`],
     }
   }
@@ -690,11 +693,11 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.components).length) { return undefined }
   const response: NuxtIslandResponse['components'] = {}
 
-  for (const [clientUid, component] of Object.entries(ssrContext.islandContext.components)) {
+  for (const clientUid in ssrContext.islandContext.components) {
     // remove teleport anchor to avoid hydration issues
     const html = ssrContext.teleports?.[clientUid]?.replaceAll('<!--teleport start anchor-->', '') || ''
     response[clientUid] = {
-      ...component,
+      ...ssrContext.islandContext.components[clientUid]!,
       html,
       slots: getComponentSlotTeleport(clientUid, ssrContext.teleports ?? {}),
     }
