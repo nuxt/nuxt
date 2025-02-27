@@ -304,8 +304,8 @@ export function useAsyncData<
           const { captureStackTrace } = await import('errx')
           const { fileURLToPath } = await import('node:url')
           const stack = captureStackTrace()
-          const caller = stack[stack.length - 1]
-          const explanation = caller ? ` (used at ${fileURLToPath(caller.source)}:${caller.line}:${caller.column})` : ''
+          const { source, line, column } = stack[stack.length - 1] ?? {}
+          const explanation = source ? ` (used at ${fileURLToPath(source)}:${line}:${column})` : ''
           // @ts-expect-error private property
           console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
         }
