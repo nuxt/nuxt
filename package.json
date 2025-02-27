@@ -54,7 +54,7 @@
     "@vue/compiler-core": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
-    "c12": "3.0.1",
+    "c12": "3.0.2",
     "h3": "npm:h3-nightly@1.15.1-20250222-111608-d1c00fc",
     "jiti": "2.4.2",
     "magic-string": "^0.30.17",
@@ -65,7 +65,7 @@
     "send": ">=1.1.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
-    "unbuild": "3.4.2",
+    "unbuild": "3.5.0",
     "unhead": "1.11.20",
     "unimport": "4.1.2",
     "vite": "6.2.0",
@@ -128,13 +128,13 @@
     "ts-blank-space": "0.6.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
-    "unbuild": "3.4.2",
+    "unbuild": "3.5.0",
     "vitest": "3.0.7",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.2.4",
     "webpack": "5.98.0"
   },
-  "packageManager": "pnpm@10.5.1",
+  "packageManager": "pnpm@10.5.2",
   "version": ""
 }
