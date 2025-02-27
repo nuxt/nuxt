@@ -8,7 +8,7 @@ export const createServerComponent = (name: string) => {
   return defineComponent({
     name,
     inheritAttrs: false,
-    props: { lazy: Boolean },
+    props: { lazy: Boolean, useCache: { type: Boolean, default: true } },
     emits: ['error'],
     setup (props, { attrs, slots, expose, emit }) {
       const vm = getCurrentInstance()
@@ -22,6 +22,7 @@ export const createServerComponent = (name: string) => {
         return h(NuxtIsland, {
           name,
           lazy: props.lazy,
+          useCache: props.useCache,
           props: attrs,
           scopeId: vm?.vnode.scopeId,
           ref: islandRef,
@@ -40,7 +41,7 @@ export const createIslandPage = (name: string) => {
     name,
     inheritAttrs: false,
     props: { lazy: Boolean },
-    async setup (props, { slots, expose }) {
+    async setup(props, { slots, expose }) {
       const islandRef = ref<null | typeof NuxtIsland>(null)
 
       expose({
