@@ -429,7 +429,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
-    addServerPlugin(resolve(distDir, 'core/runtime/nitro/dev-server-logs'))
+    addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/dev-server-logs'))
     nuxt.options.nitro = defu(nuxt.options.nitro, {
       externals: {
         inline: [/#internal\/dev-server-logs-options/],
