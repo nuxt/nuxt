@@ -267,7 +267,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
-  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
@@ -382,7 +382,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 6. Scripts
-  if (!routeOptions.experimentalNoScripts) {
+  if (!routeOptions.noScripts) {
     head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
