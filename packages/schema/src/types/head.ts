@@ -1,6 +1,6 @@
-import type { MergeHead, ResolvedHead } from '@unhead/vue/types'
+import type { SerializableHead } from '@unhead/vue/types'
 
-export type MetaObjectRaw = ResolvedHead<MergeHead>
+export type MetaObjectRaw = SerializableHead
 export type MetaObject = MetaObjectRaw
 
 export type AppHeadMetaObject = MetaObjectRaw & {

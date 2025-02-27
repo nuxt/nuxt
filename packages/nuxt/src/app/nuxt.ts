@@ -9,7 +9,7 @@ import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 import type { LogObject } from 'consola'
-import type { MergeHead, VueHeadClient } from '@unhead/vue/types'
+import type { VueHeadClient } from '@unhead/vue/types'
 
 import type { NuxtAppLiterals } from 'nuxt/app'
 
@@ -69,7 +69,7 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: Partial<NuxtPayload>
-  head: VueHeadClient<MergeHead>
+  head: VueHeadClient
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>

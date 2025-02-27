@@ -18,7 +18,7 @@ import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
 import { resolveUnrefHeadInput } from '@unhead/vue/utils'
-import type { HeadEntryOptions, Link, ResolvedHead, Script, Style } from '@unhead/vue/types'
+import type { HeadEntryOptions, Link, Script, SerializableHead, Style } from '@unhead/vue/types'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -79,7 +79,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: ResolvedHead
+  head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -492,15 +492,15 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: ResolvedHead = {}
+    const islandHead: SerializableHead = {}
     // TODO migrate to using resolved tags to minify the payload
     for (const entry of head.entries.values()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as ResolvedHead)) {
-        const currentValue = islandHead[key as keyof ResolvedHead]
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+        const currentValue = islandHead[key as keyof SerializableHead]
         if (Array.isArray(currentValue)) {
           currentValue.push(...value)
         }
-        islandHead[key as keyof ResolvedHead] = value
+        islandHead[key as keyof SerializableHead] = value
       }
     }
 

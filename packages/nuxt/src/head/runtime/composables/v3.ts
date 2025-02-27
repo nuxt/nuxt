@@ -1,4 +1,4 @@
-import type { ActiveHeadEntry, MergeHead, UseHeadInput, UseHeadOptions, UseHeadSafeInput, UseSeoMetaInput, VueHeadClient } from '@unhead/vue'
+import type { ActiveHeadEntry, UseHeadInput, UseHeadOptions, UseHeadSafeInput, UseSeoMetaInput, VueHeadClient } from '@unhead/vue'
 import { hasInjectionContext, inject } from 'vue'
 import {
   useHead as headCore,
@@ -15,31 +15,31 @@ import type { NuxtApp } from '#app/nuxt'
  *
  * In Nuxt v3 this function will not throw an error if the context is missing.
  */
-export function injectHead (nuxtApp?: NuxtApp): VueHeadClient<MergeHead> {
+export function injectHead (nuxtApp?: NuxtApp): VueHeadClient {
   // Nuxt 4 will throw an error if the context is missing
   const nuxt = nuxtApp || tryUseNuxtApp()
   return nuxt?.ssrContext?.head || nuxt?.runWithContext(() => {
     if (hasInjectionContext()) {
-      return inject<VueHeadClient<MergeHead>>(headSymbol)!
+      return inject<VueHeadClient>(headSymbol)!
     }
-  }) as VueHeadClient<MergeHead>
+  }) as VueHeadClient
 }
 
 interface NuxtUseHeadOptions extends UseHeadOptions {
   nuxt?: NuxtApp
 }
 
-export function useHead<T extends MergeHead> (input: UseHeadInput<T>, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput<T>> | void {
+export function useHead (input: UseHeadInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput> | void {
   const head = injectHead(options.nuxt)
   if (head) {
-    return headCore(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput<T>>
+    return headCore(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
   }
 }
 
-export function useHeadSafe<T extends MergeHead> (input: UseHeadSafeInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput<T>> | void {
+export function useHeadSafe (input: UseHeadSafeInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadSafeInput> | void {
   const head = injectHead(options.nuxt)
   if (head) {
-    return headSafe(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
+    return headSafe(input, { head, ...options }) as ActiveHeadEntry<UseHeadSafeInput>
   }
 }
 
@@ -50,23 +50,23 @@ export function useSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions 
   }
 }
 
-export function useServerHead<T extends MergeHead> (input: UseHeadInput<T>, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput<T>> | void {
+export function useServerHead (input: UseHeadInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput> | void {
   const head = injectHead(options.nuxt)
   if (head) {
-    return serverHead(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput<T>>
+    return serverHead(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
   }
 }
 
-export function useServerHeadSafe (input: UseHeadSafeInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseSeoMetaInput> | void {
+export function useServerHeadSafe (input: UseHeadSafeInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadSafeInput> | void {
   const head = injectHead(options.nuxt)
   if (head) {
-    return serverHeadSafe(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
+    return serverHeadSafe(input, { head, ...options }) as ActiveHeadEntry<UseHeadSafeInput>
   }
 }
 
-export function useServerSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput> | void {
+export function useServerSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseSeoMetaInput> | void {
   const head = injectHead(options.nuxt)
   if (head) {
-    return serverSeoMeta(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
+    return serverSeoMeta(input, { head, ...options }) as ActiveHeadEntry<UseSeoMetaInput>
   }
 }
