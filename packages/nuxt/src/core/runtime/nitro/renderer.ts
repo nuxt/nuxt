@@ -385,7 +385,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
-  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
@@ -430,51 +430,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
   }
 
-  if (!NO_SCRIPTS && !isRenderingIsland) {
-    // 3. Resource Hints
-    // TODO: add priorities based on Capo
-    head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
-    }, headEntryOptions)
-    head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
-    }, headEntryOptions)
-    // 4. Payloads
-    head.push({
-      script: _PAYLOAD_EXTRACTION
-        ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-        : process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
-          : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
-    }, {
-      ...headEntryOptions,
-      // this should come before another end of body scripts
-      tagPosition: 'bodyClose',
-      tagPriority: 'high',
-    })
-  }
-
-  // 5. Scripts
-  if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
-    head.push({
-      script: Object.values(scripts).map(resource => (<Script> {
-        type: resource.module ? 'module' : null,
-        src: renderer.rendererContext.buildAssetsURL(resource.file),
-        defer: resource.module ? null : true,
-        // if we are rendering script tag payloads that import an async payload
-        // we need to ensure this resolves before executing the Nuxt entry
-        tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
-        crossorigin: '',
-      })),
-    }, headEntryOptions)
-  }
-
-  // remove certain tags for nuxt islands
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
-
-  // Response for component islands
+  // 3. Response for component islands
   if (isRenderingIsland && islandContext) {
     const islandHead: Head = {}
     for (const entry of head.headEntries()) {
@@ -516,6 +472,50 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
     return response
   }
+
+  if (!NO_SCRIPTS) {
+    // 4. Resource Hints
+    // TODO: add priorities based on Capo
+    head.push({
+      link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
+    }, headEntryOptions)
+    head.push({
+      link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
+    }, headEntryOptions)
+    // 5. Payloads
+    head.push({
+      script: _PAYLOAD_EXTRACTION
+        ? process.env.NUXT_JSON_PAYLOADS
+          ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+        : process.env.NUXT_JSON_PAYLOADS
+          ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
+          : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
+    }, {
+      ...headEntryOptions,
+      // this should come before another end of body scripts
+      tagPosition: 'bodyClose',
+      tagPriority: 'high',
+    })
+  }
+
+  // 6. Scripts
+  if (!routeOptions.noScripts) {
+    head.push({
+      script: Object.values(scripts).map(resource => (<Script> {
+        type: resource.module ? 'module' : null,
+        src: renderer.rendererContext.buildAssetsURL(resource.file),
+        defer: resource.module ? null : true,
+        // if we are rendering script tag payloads that import an async payload
+        // we need to ensure this resolves before executing the Nuxt entry
+        tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
+        crossorigin: '',
+      })),
+    }, headEntryOptions)
+  }
+
+  // remove certain tags for nuxt islands
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {

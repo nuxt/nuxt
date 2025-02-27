@@ -1,8 +1,9 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
+import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
@@ -175,7 +176,7 @@ export default defineNuxtModule<ComponentsOptions>({
       for (const component of newComponents) {
         if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
           // attempt to resolve component path
-          component.filePath = await resolvePath(component.filePath, { fallbackToOriginal: true })
+          component.filePath = resolveModulePath(resolveAlias(component.filePath), { try: true, extensions: nuxt.options.extensions }) ?? component.filePath
         }
         if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
           newComponents.push({

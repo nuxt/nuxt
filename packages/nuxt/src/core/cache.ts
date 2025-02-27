@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { createIsIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
-import { hash, murmurHash, objectHash } from 'ohash'
+import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
 import { dirname, join, relative } from 'pathe'
@@ -107,7 +107,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     const layerName = `layer#${layerCtr++}`
     hashSources.push({
       name: `${layerName}:config`,
-      data: objectHash({
+      data: serialize({
         ...layer.config,
         ...options.configOverrides || {},
       }),
@@ -115,8 +115,8 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
 
     const normalizeFiles = (files: Awaited<ReturnType<typeof readFilesRecursive>>) => files.map(f => ({
       name: f.name,
-      size: (f.attrs as any)?.size,
-      data: murmurHash(f.data as any /* ArrayBuffer */),
+      size: f.attrs?.size,
+      data: hash(f.data),
     }))
 
     const isIgnored = createIsIgnored(nuxt)

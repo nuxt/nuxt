@@ -1,7 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
+import { findPath, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import type { PluginMeta } from 'nuxt/app'
@@ -215,8 +215,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  app.middleware = uniqueBy(await resolvePaths(nuxt, [...app.middleware].reverse(), 'path'), 'name').reverse()
+  app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
 
   // Resolve app.config
   app.configs = []
@@ -231,16 +231,21 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   await nuxt.callHook('app:resolve', app)
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
+  app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
 }
 
-function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
+function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
   return Promise.all(items.map(async (item) => {
     if (!item[key]) { return item }
     return {
       ...item,
-      [key]: await resolvePath(resolveAlias(item[key])),
+      [key]: await resolvePath(item[key], {
+        alias: nuxt.options.alias,
+        extensions: nuxt.options.extensions,
+        fallbackToOriginal: true,
+        virtual: true,
+      }),
     }
   }))
 }

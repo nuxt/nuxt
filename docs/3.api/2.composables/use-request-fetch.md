@@ -11,7 +11,7 @@ links:
 You can use `useRequestFetch` to forward the request context and headers when making server-side fetch requests.
 
 When making a client-side fetch request, the browser automatically sends the necessary headers.
-However, when making a request during server-side rendering, because the request is made on the server, we need to forward the headers manually.
+However, when making a request during server-side rendering, due to security considerations, we need to forward the headers manually.
 
 ::note
 Headers that are **not meant to be forwarded** will **not be included** in the request. These headers include, for example:
@@ -26,14 +26,14 @@ The [`useFetch`](/docs/api/composables/use-fetch) composable uses `useRequestFet
 
 ```vue [pages/index.vue]
 <script setup lang="ts">
-  // This will forward the user's headers to the `/api/foo` event handler
-  // Result: { cookies: { foo: 'bar' } }
-  const requestFetch = useRequestFetch()
-  const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'))
-  
-  // This will NOT forward anything
-  // Result: { cookies: {} }
-  const { data: notForwarded } = await useAsyncData(() => $fetch('/api/cookies')) 
+// This will forward the user's headers to the `/api/cookies` event handler
+// Result: { cookies: { foo: 'bar' } }
+const requestFetch = useRequestFetch()
+const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'))
+
+// This will NOT forward anything
+// Result: { cookies: {} }
+const { data: notForwarded } = await useAsyncData(() => $fetch('/api/cookies')) 
 </script>
 ```
 
