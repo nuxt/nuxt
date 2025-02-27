@@ -127,6 +127,7 @@ type HydrationStrategies = {
   hydrateOnMediaQuery?: string
   hydrateAfter?: number
   hydrateWhen?: boolean
+  hydrateNever?: true
 }
 type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>)
 interface _GlobalComponents {
