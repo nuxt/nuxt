@@ -248,8 +248,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       exsolve:
-        specifier: ^0.4.4
-        version: 0.4.4
+        specifier: ^1.0.1
+        version: 1.0.1
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -402,8 +402,8 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
       exsolve:
-        specifier: ^0.4.4
-        version: 0.4.4
+        specifier: ^1.0.1
+        version: 1.0.1
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -4393,6 +4393,9 @@ packages:
 
   exsolve@0.4.4:
     resolution: {integrity: sha512-74RiT9i1G0eyFyE9n5f6mdX8+AicZFnhJ0CHB9VrkIl3Sy8vmW49ODbpwevdLswST7fhp3jvfPzD4DArTfjnsA==}
+
+  exsolve@1.0.1:
+    resolution: {integrity: sha512-Smf0iQtkQVJLaph8r/qS8C8SWfQkaq9Q/dFcD44MLbJj6DNhlWefVuaS21SjfqOsBbjVlKtbCj6L9ekXK6EZUg==}
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
@@ -11553,6 +11556,8 @@ snapshots:
   expect-type@1.1.0: {}
 
   exsolve@0.4.4: {}
+
+  exsolve@1.0.1: {}
 
   extend@3.0.2: {}
 
