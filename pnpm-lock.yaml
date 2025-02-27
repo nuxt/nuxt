@@ -537,6 +537,9 @@ importers:
       '@vitejs/plugin-vue':
         specifier: 5.2.1
         version: 5.2.1(vite@6.2.0(@types/node@22.13.5)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.7.3))
+      '@vitejs/plugin-vue-jsx':
+        specifier: ^4.1.1
+        version: 4.1.1(vite@6.2.0(@types/node@22.13.5)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.7.3))
       '@vue/compiler-sfc':
         specifier: 3.5.13
         version: 3.5.13
@@ -4390,9 +4393,6 @@ packages:
   expect-type@1.1.0:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
-
-  exsolve@0.4.4:
-    resolution: {integrity: sha512-74RiT9i1G0eyFyE9n5f6mdX8+AicZFnhJ0CHB9VrkIl3Sy8vmW49ODbpwevdLswST7fhp3jvfPzD4DArTfjnsA==}
 
   exsolve@1.0.1:
     resolution: {integrity: sha512-Smf0iQtkQVJLaph8r/qS8C8SWfQkaq9Q/dFcD44MLbJj6DNhlWefVuaS21SjfqOsBbjVlKtbCj6L9ekXK6EZUg==}
@@ -11557,8 +11557,6 @@ snapshots:
       yoctocolors: 2.1.1
 
   expect-type@1.1.0: {}
-
-  exsolve@0.4.4: {}
 
   exsolve@1.0.1: {}
 
