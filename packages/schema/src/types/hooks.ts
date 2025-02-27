@@ -258,6 +258,12 @@ export interface NuxtHooks {
 
   // Nitropack
   /**
+   * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
+   * @param options Objects containing `references`, `declarations`
+   * @returns Promise
+   */
+  'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
+  /**
    * Called before initializing Nitro, allowing customization of Nitro's configuration.
    * @param nitroConfig The nitro config to be extended
    * @returns Promise
