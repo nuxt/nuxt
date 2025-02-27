@@ -1,4 +1,4 @@
-import type { UseScriptInput } from '@unhead/vue'
+import type { UseScriptInput } from '@unhead/vue/scripts'
 import { createError } from './error'
 
 function renderStubMessage (name: string) {
