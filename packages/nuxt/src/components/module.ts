@@ -14,6 +14,7 @@ import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands
 import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
+import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -207,13 +208,19 @@ export default defineNuxtModule<ComponentsOptions>({
       getComponents,
       clientDelayedComponentRuntime,
       serverComponentRuntime,
-      lazyHydration: nuxt.options.experimental.lazyHydration,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
+
+    if (nuxt.options.experimental.lazyHydration) {
+      addBuildPlugin(LazyHydrationTransformPlugin({
+        ...sharedLoaderOptions,
+        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+      }), { prepend: true })
+    }
 
     if (nuxt.options.experimental.componentIslands) {
       const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient

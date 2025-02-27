@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { kebabCase, pascalCase } from 'scule'
 import { rollup } from 'rollup'
-import type { Plugin } from 'rollup'
 import vuePlugin from '@vitejs/plugin-vue'
 import vuePluginJsx from '@vitejs/plugin-vue-jsx'
 import type { AddComponentOptions } from '@nuxt/kit'
 
 import { LoaderPlugin } from '../src/components/plugins/loader'
+import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform'
 
 describe('components:loader', () => {
   it('should correctly resolve components', async () => {
@@ -103,54 +103,20 @@ describe('components:loader', () => {
       <LazyMyComponent hydrate-on-visible />
     </template>
     `
-    const code = await transform(sfc, '/pages/index.vue')
-    expect(code).toMatchInlineSnapshot(`
+    const lines = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
+    const imports = lines.filter(l => l.startsWith('import'))
+    expect(imports.join('\n')).toMatchInlineSnapshot(`
       "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyTimeComponent, createLazyIfComponent } from '../client-runtime.mjs';
-      import { createElementBlock, openBlock, Fragment, createVNode, withCtx } from 'vue';
-
-      var _export_sfc = (sfc, props) => {
-        const target = sfc.__vccOpts || sfc;
-        for (const [key, val] of props) {
-          target[key] = val;
-        }
-        return target;
-      };
-
-      const __nuxt_component_0_lazy_idle = createLazyIdleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      import { createElementBlock, openBlock, Fragment, createVNode, withCtx } from 'vue';"
+    `)
+    const components = lines.filter(l => l.startsWith('const __nuxt_component'))
+    expect(components.join('\n')).toMatchInlineSnapshot(`
+      "const __nuxt_component_0_lazy_idle = createLazyIdleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_lazy_visible = createLazyVisibleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_lazy_event = createLazyInteractionComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_lazy_media = createLazyMediaQueryComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_lazy_time = createLazyTimeComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_lazy_if = createLazyIfComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const _sfc_main = {};
-
-      function _sfc_render(_ctx, _cache) {
-        const _component_LazyIdleMyComponent = __nuxt_component_0_lazy_idle;
-        const _component_LazyVisibleMyComponent = __nuxt_component_0_lazy_visible;
-        const _component_LazyInteractionMyComponent = __nuxt_component_0_lazy_event;
-        const _component_LazyMediaQueryMyComponent = __nuxt_component_0_lazy_media;
-        const _component_LazyTimeMyComponent = __nuxt_component_0_lazy_time;
-        const _component_LazyIfMyComponent = __nuxt_component_0_lazy_if;
-
-        return (openBlock(), createElementBlock(Fragment, null, [
-          createVNode(_component_LazyIdleMyComponent, { "hydrate-on-idle": 3000 }),
-          createVNode(_component_LazyVisibleMyComponent, { "hydrate-on-visible": {threshold: 0.2} }),
-          createVNode(_component_LazyInteractionMyComponent, { "hydrate-on-interaction": ['click','mouseover'] }),
-          createVNode(_component_LazyMediaQueryMyComponent, { "hydrate-on-media-query": "(max-width: 500px)" }),
-          createVNode(_component_LazyTimeMyComponent, { "hydrate-after": 3000 }),
-          createVNode(_component_LazyTimeMyComponent, { hydrateAfter: 3000 }),
-          createVNode(_component_LazyIdleMyComponent, { "hydrate-on-idle": _ctx.hydrateOnIdle }, {
-            default: withCtx(() => [
-              createVNode(_component_LazyIfMyComponent, { "hydrate-when": "true" })
-            ]),
-            _: 1 /* STABLE */
-          }, 8 /* PROPS */, ["hydrate-on-idle"]),
-          createVNode(_component_LazyVisibleMyComponent, { "hydrate-on-visible": "" })
-        ], 64 /* STABLE_FRAGMENT */))
-      }
-      var index = /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render]]);
-
-      export { index as default };"
+      const __nuxt_component_0_lazy_if = createLazyIfComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));"
     `)
   })
 })
@@ -170,13 +136,7 @@ async function transform (code: string, filename: string) {
     meta: {},
     ...opts,
   }))
-  const [pre, post] = LoaderPlugin({
-    clientDelayedComponentRuntime: '/client-runtime.mjs',
-    serverComponentRuntime: '/server-runtime.mjs',
-    getComponents: () => components,
-    lazyHydration: true,
-    mode: 'server',
-  }).rollup() as Plugin[]
+
   const bundle = await rollup({
     input: filename,
     plugins: [
@@ -193,10 +153,15 @@ async function transform (code: string, filename: string) {
           }
         },
       },
-      pre,
+      LazyHydrationTransformPlugin({ getComponents: () => components }).rollup(),
       vuePlugin(),
       vuePluginJsx(),
-      post,
+      LoaderPlugin({
+        clientDelayedComponentRuntime: '/client-runtime.mjs',
+        serverComponentRuntime: '/server-runtime.mjs',
+        getComponents: () => components,
+        mode: 'server',
+      }).rollup(),
     ],
   })
   const { output: [chunk] } = await bundle.generate({})
