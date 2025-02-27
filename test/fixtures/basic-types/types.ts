@@ -408,8 +408,8 @@ describe('head', () => {
       base: { href: '/base' },
       link: computed(() => []),
       meta: [
-        { key: 'key', name: 'description', content: 'some description ' },
-        () => ({ key: 'key', name: 'description', content: 'some description ' }),
+        { name: 'description', content: 'some description ' },
+        () => ({ name: 'description', content: 'some description ' }),
       ],
       titleTemplate: (titleChunk) => {
         return titleChunk ? `${titleChunk} - Site Title` : 'Site Title'
