@@ -212,7 +212,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const ast = parseAndWalk(code, id, {
+      const ast = parseAndWalk(code, id + (query.lang ? '.' + query.lang : '.ts'), {
         scopeTracker,
       })
 

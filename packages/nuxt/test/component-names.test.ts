@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Component } from '@nuxt/schema'
 import { compileScript, parse } from '@vue/compiler-sfc'
-import * as Parser from 'acorn'
 
 import { ComponentNamePlugin } from '../src/components/plugins/component-names'
 
@@ -43,14 +42,7 @@ onMounted(() => {
 </script>
     `
     const res = compileScript(parse(sfc).descriptor, { id: 'test.vue' })
-    const { code } = transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, components[0].filePath) ?? {}
+    const { code } = transformPlugin.transform(res.content, components[0].filePath) ?? {}
     expect(code?.trim()).toMatchInlineSnapshot(`
       "export default Object.assign({
         setup(__props, { expose: __expose }) {

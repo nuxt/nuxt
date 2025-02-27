@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import * as Parser from 'acorn'
 
 import { ComposableKeysPlugin, detectImportNames } from '../src/core/plugins/composable-keys'
 
@@ -40,14 +39,7 @@ describe('composable keys plugin', () => {
 import { useAsyncData } from '#app'
 useAsyncData(() => {})
     `
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`
       "import { useAsyncData } from '#app'
       useAsyncData(() => {}, '$HJiaryoL2y')"
     `)
@@ -55,14 +47,7 @@ useAsyncData(() => {})
 
   it('should not add hash when one exists', () => {
     const code = `useAsyncData(() => {}, 'foo')`
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
+    expect(transformPlugin.transform(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should not add hash composables is imported from somewhere else', () => {
@@ -70,13 +55,6 @@ useAsyncData(() => {})
 const useAsyncData = () => {}
 useAsyncData(() => {})
     `
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
+    expect(transformPlugin.transform(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 })
