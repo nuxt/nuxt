@@ -12,10 +12,11 @@ import { env, nodeless } from 'unenv'
 import { defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
-import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
-import { runtimePathsPlugin } from './plugins/paths'
-import { typeCheckPlugin } from './plugins/type-check'
-import { viteNodePlugin } from './vite-node'
+import { DevStyleSSRPlugin } from './plugins/dev-ssr-css'
+import { RuntimePathsPlugin } from './plugins/paths'
+import { TypeCheckPlugin } from './plugins/type-check'
+import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
+import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
@@ -131,14 +132,14 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
     },
     plugins: [
-      devStyleSSRPlugin({
+      DevStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir),
       }),
-      runtimePathsPlugin({
+      RuntimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client,
       }),
-      viteNodePlugin(ctx),
+      ViteNodePlugin(ctx),
     ],
     appType: 'custom',
     server: {
@@ -198,8 +199,13 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Add type checking client panel
   if (!ctx.nuxt.options.test && ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
-    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
+    clientConfig.plugins!.push(TypeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
+
+  clientConfig.plugins!.push(ModulePreloadPolyfillPlugin({
+    sourcemap: !!ctx.nuxt.options.sourcemap.client,
+    entry: ctx.entry,
+  }))
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
