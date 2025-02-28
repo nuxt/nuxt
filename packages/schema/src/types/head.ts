@@ -1,4 +1,4 @@
-import type { SerializableHead } from '@unhead/vue/types'
+import type { AriaAttributes, DataKeys, GlobalAttributes, SerializableHead } from '@unhead/vue/types'
 
 export type MetaObjectRaw = SerializableHead
 export type MetaObject = MetaObjectRaw
@@ -16,3 +16,5 @@ export type AppHeadMetaObject = MetaObjectRaw & {
    */
   viewport?: string
 }
+
+export type SerializableHtmlAttributes = GlobalAttributes & AriaAttributes & DataKeys
