@@ -42,14 +42,14 @@ interface ScannedFile {
   absolutePath: string
 }
 
-export async function resolvePagesRoutes (nuxt = useNuxt()): Promise<NuxtPage[]> {
+export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = nuxt.options._layers.map(
     layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
   )
 
   const scannedFiles: ScannedFile[] = []
   for (const dir of pagesDirs) {
-    const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
+    const files = await resolveFiles(dir, pattern)
     scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
   }
 
@@ -247,7 +247,10 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
 
       foundMeta = true
       const pageMetaArgument = node.expression.arguments[0]
-      if (pageMetaArgument?.type !== 'ObjectExpression') { return }
+      if (pageMetaArgument?.type !== 'ObjectExpression') {
+        logger.warn(`\`definePageMeta\` must be called with an object literal (reading \`${absolutePath}\`).`)
+        return
+      }
 
       for (const key of extractionKeys) {
         const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
@@ -541,7 +544,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const pageImportName = genSafeVariableName(filename(file) + hash(file))
+      const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
       const metaImportName = pageImportName + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 

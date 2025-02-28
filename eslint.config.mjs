@@ -21,7 +21,7 @@ export default createConfigForNuxt({
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
-        'packages/nuxt/src/core/runtime/nitro/error-*',
+        'packages/nuxt/src/core/runtime/nitro/handlers/error-*',
       ],
     },
     {
@@ -203,6 +203,7 @@ export default createConfigForNuxt({
                   'perfect-debounce',
                   'radix3',
                   'ohash',
+                  'ohash/utils',
                   'pathe',
                   'uncrypto',
                   // internal deps

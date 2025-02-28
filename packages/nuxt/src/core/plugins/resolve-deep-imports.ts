@@ -1,4 +1,5 @@
-import { parseNodeModulePath, resolvePath } from 'mlly'
+import { parseNodeModulePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 import { isAbsolute, normalize } from 'pathe'
 import type { Plugin } from 'vite'
 import { directoryToURL, resolveAlias } from '@nuxt/kit'
@@ -36,13 +37,24 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
       const normalisedImporter = importer.replace(/^\0?virtual:(?:nuxt:)?/, '')
       const dir = parseNodeModulePath(normalisedImporter).dir || pkgDir
 
-      return await this.resolve?.(normalisedId, dir, { skipSelf: true }) ?? await resolvePath(id, {
-        url: [dir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)),
+      const res = await this.resolve?.(normalisedId, dir, { skipSelf: true })
+      if (res !== undefined && res !== null) {
+        return res
+      }
+
+      const path = resolveModulePath(id, {
+        from: [dir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)),
+        suffixes: ['', 'index'],
         conditions,
-      }).catch(() => {
+        try: true,
+      })
+
+      if (!path) {
         logger.debug('Could not resolve id', id, importer)
         return null
-      })
+      }
+
+      return normalize(path)
     },
   }
 }

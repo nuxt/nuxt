@@ -7,9 +7,10 @@ import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
+import { resolveModulePath } from 'exsolve'
 
 import { filterInPlace } from './utils'
-import { directoryToURL, tryResolveModule } from './internal/esm'
+import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
@@ -98,7 +99,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
+      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src).replace(/-/g, '_')}${srcPath.ext}`
     }
   }
 
@@ -211,7 +212,6 @@ export async function _generateTypes (nuxt: Nuxt) {
       /* Decorator support */
       ...useDecorators
         ? {
-            useDefineForClassFields: false,
             experimentalDecorators: false,
           }
         : {},
@@ -262,7 +262,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = await tryResolveModule(aliases[alias]!, importPaths)
+      const resolvedModule = resolveModulePath(aliases[alias]!, { try: true, from: importPaths })
       if (resolvedModule) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)

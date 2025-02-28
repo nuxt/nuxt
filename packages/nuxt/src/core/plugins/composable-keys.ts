@@ -108,7 +108,7 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
           s.appendLeft(
             codeIndex + (node as any).end - 1,
-            (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`) + '\'',
+            (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + '\'',
           )
         },
       })
