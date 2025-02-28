@@ -637,5 +637,14 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : Boolean(await get('debug'))
       },
     },
+
+    /**
+     * Enable automatic configuration of hydration strategies for `<Lazy>` components.
+     */
+    lazyHydration: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
+      },
+    },
   },
 })

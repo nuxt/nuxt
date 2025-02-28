@@ -16,7 +16,7 @@ import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from 'nuxt/app
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
+import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -447,6 +447,14 @@ describe('components', () => {
     h(WithTypes, { aProp: '40' })
 
     // TODO: assert typed slots, exposed, generics, etc.
+  })
+  it('includes types for lazy hydration', () => {
+    h(LazyWithTypes)
+    h(LazyWithTypes, { hydrateAfter: 300 })
+    h(LazyWithTypes, { hydrateOnIdle: true })
+
+    // @ts-expect-error wrong prop type for this hydration strategy
+    h(LazyWithTypes, { hydrateAfter: '' })
   })
   it('include fallback slot in server components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
