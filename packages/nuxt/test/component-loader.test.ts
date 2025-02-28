@@ -107,7 +107,7 @@ describe('components:loader', () => {
     const lines = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
     const imports = lines.filter(l => l.startsWith('import'))
     expect(imports.join('\n')).toMatchInlineSnapshot(`
-      "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyTimeComponent, createLazyIfComponent } from '../client-runtime.mjs';
+      "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyTimeComponent, createLazyIfComponent, createLazyNeverComponent } from '../client-runtime.mjs';
       import { createElementBlock, openBlock, Fragment, createVNode, withCtx } from 'vue';"
     `)
     const components = lines.filter(l => l.startsWith('const __nuxt_component'))
