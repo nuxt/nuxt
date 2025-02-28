@@ -49,7 +49,7 @@ props => props.hydrateOnIdle === 0
   : hydrateOnIdle(props.hydrateOnIdle === true ? undefined : props.hydrateOnIdle),
 )
 
-const defaultInteractionEvents = ['pointerenter', 'focus'] satisfies Array<keyof HTMLElementEventMap>
+const defaultInteractionEvents = ['pointerenter', 'click', 'focus'] satisfies Array<keyof HTMLElementEventMap>
 
 /* @__NO_SIDE_EFFECTS__ */
 export const createLazyInteractionComponent = defineLazyComponent({

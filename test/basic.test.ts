@@ -2942,6 +2942,7 @@ describe('lazy import components', () => {
 
     for (let i = 0; i < 10; i++) {
       expect(await countLocator.textContent()).toBe(`${i}`)
+      await incrementButton.hover()
       await incrementButton.click()
     }
 
