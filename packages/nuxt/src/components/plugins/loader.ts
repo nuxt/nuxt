@@ -13,6 +13,7 @@ import { logger } from '../../utils'
 interface LoaderOptions {
   getComponents (): Component[]
   mode: 'server' | 'client'
+  srcDir: string
   serverComponentRuntime: string
   clientDelayedComponentRuntime: string
   sourcemap?: boolean
@@ -84,48 +85,49 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           if (lazy) {
             const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
             if (modifier && normalComponent) {
+              const relativePath = relative(options.srcDir, component.filePath)
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
                   imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
                   identifier += '_lazy_visible'
-                  imports.add(`const ${identifier} = createLazyVisibleComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Interaction':
                 case 'interaction-':
                   imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
                   identifier += '_lazy_event'
-                  imports.add(`const ${identifier} = createLazyInteractionComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Idle':
                 case 'idle-':
                   imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
                   identifier += '_lazy_idle'
-                  imports.add(`const ${identifier} = createLazyIdleComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'MediaQuery':
                 case 'media-query-':
                   imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
                   identifier += '_lazy_media'
-                  imports.add(`const ${identifier} = createLazyMediaQueryComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'If':
                 case 'if-':
                   imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
                   identifier += '_lazy_if'
-                  imports.add(`const ${identifier} = createLazyIfComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Never':
                 case 'never-':
                   imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                   identifier += '_lazy_never'
-                  imports.add(`const ${identifier} = __defineAsyncComponent({loader: ${dynamicImport}, hydrate: () => {}})`)
+                  imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Time':
                 case 'time-':
                   imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
                   identifier += '_lazy_time'
-                  imports.add(`const ${identifier} = createLazyTimeComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
               }
             } else {

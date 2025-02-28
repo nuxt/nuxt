@@ -1,139 +1,112 @@
 import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, watch } from 'vue'
-import type { AsyncComponentLoader, HydrationStrategy } from 'vue'
+import type { AsyncComponentLoader, ComponentObjectPropsOptions, ExtractPropTypes, HydrationStrategy } from 'vue'
+import { useNuxtApp } from '#app/nuxt'
 
-/* @__NO_SIDE_EFFECTS__ */
-export const createLazyVisibleComponent = (loader: AsyncComponentLoader) => {
-  return defineComponent({
+function defineLazyComponent<P extends ComponentObjectPropsOptions> (props: P, defineStrategy: (props: ExtractPropTypes<P>) => HydrationStrategy | undefined) {
+  return (id: string, loader: AsyncComponentLoader) => defineComponent({
     inheritAttrs: false,
-    props: {
-      hydrateOnVisible: {
-        type: [Object, Boolean] as unknown as () => true | IntersectionObserverInit,
-        required: false,
-      },
-    },
+    props,
     emits: ['hydrated'],
-    setup (props, { attrs, emit }) {
-      const hydrated = () => { emit('hydrated') }
-      const comp = defineAsyncComponent({ loader, hydrate: hydrateOnVisible(props.hydrateOnVisible === true ? undefined : props.hydrateOnVisible) })
-      return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
-    },
-  })
-}
-
-/* @__NO_SIDE_EFFECTS__ */
-export const createLazyIdleComponent = (loader: AsyncComponentLoader) => {
-  return defineComponent({
-    inheritAttrs: false,
-    props: {
-      hydrateOnIdle: {
-        type: [Number, Boolean] as unknown as () => true | number,
-        required: true,
-      },
-    },
-    emits: ['hydrated'],
-    setup (props, { attrs, emit }) {
-      const hydrated = () => { emit('hydrated') }
-      if (props.hydrateOnIdle === 0) {
-        const comp = defineAsyncComponent(loader)
-        return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
+    setup (props, ctx) {
+      if (import.meta.server) {
+        const nuxtApp = useNuxtApp()
+        nuxtApp.hook('app:rendered', ({ ssrContext }) => {
+          // strip the lazy hydrated component from the ssrContext so prefetch/preload tags are not rendered for it
+          ssrContext!.modules!.delete(id)
+        })
       }
-      const comp = defineAsyncComponent({ loader, hydrate: hydrateOnIdle(props.hydrateOnIdle === true ? undefined : props.hydrateOnIdle) })
-      return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
+      // wrap the async component in a second component to avoid loading the chunk too soon
+      const comp = defineAsyncComponent({
+        hydrate: defineStrategy(props as ExtractPropTypes<P>),
+        loader: () => Promise.resolve(defineAsyncComponent(loader)),
+      })
+      return () => h(comp, mergeProps(ctx.attrs, { 'onVnodeMounted': () => { ctx.emit('hydrated') } }))
     },
   })
 }
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyVisibleComponent = defineLazyComponent({
+  hydrateOnVisible: {
+    type: [Object, Boolean] as unknown as () => true | IntersectionObserverInit,
+    required: false,
+  },
+},
+props => hydrateOnVisible(props.hydrateOnVisible === true ? undefined : props.hydrateOnVisible),
+)
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyIdleComponent = defineLazyComponent({
+  hydrateOnIdle: {
+    type: [Number, Boolean] as unknown as () => true | number,
+    required: true,
+  },
+},
+props => props.hydrateOnIdle === 0
+  ? undefined /* hydrate immediately */
+  : hydrateOnIdle(props.hydrateOnIdle === true ? undefined : props.hydrateOnIdle),
+)
 
 const defaultInteractionEvents = ['pointerenter', 'focus'] satisfies Array<keyof HTMLElementEventMap>
-/* @__NO_SIDE_EFFECTS__ */
-export const createLazyInteractionComponent = (loader: AsyncComponentLoader) => {
-  return defineComponent({
-    inheritAttrs: false,
-    props: {
-      hydrateOnInteraction: {
-        type: [String, Array] as unknown as () => keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> | true,
-        required: false,
-        default: defaultInteractionEvents,
-      },
-    },
-    emits: ['hydrated'],
-    setup (props, { attrs, emit }) {
-      const hydrated = () => { emit('hydrated') }
-      const comp = defineAsyncComponent({ loader, hydrate: hydrateOnInteraction(props.hydrateOnInteraction === true ? defaultInteractionEvents : props.hydrateOnInteraction || defaultInteractionEvents) })
-      return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
-    },
-  })
-}
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyMediaQueryComponent = (loader: AsyncComponentLoader) => {
-  return defineComponent({
-    inheritAttrs: false,
-    props: {
-      hydrateOnMediaQuery: {
-        type: String as unknown as () => string,
-        required: true,
-      },
-    },
-    emits: ['hydrated'],
-    setup (props, { attrs, emit }) {
-      const hydrated = () => { emit('hydrated') }
-      const comp = defineAsyncComponent({ loader, hydrate: hydrateOnMediaQuery(props.hydrateOnMediaQuery) })
-      return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
-    },
-  })
-}
+export const createLazyInteractionComponent = defineLazyComponent({
+  hydrateOnInteraction: {
+    type: [String, Array] as unknown as () => keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> | true,
+    required: false,
+    default: defaultInteractionEvents,
+  },
+},
+props => hydrateOnInteraction(props.hydrateOnInteraction === true ? defaultInteractionEvents : (props.hydrateOnInteraction || defaultInteractionEvents)),
+)
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyIfComponent = (loader: AsyncComponentLoader) => {
-  return defineComponent({
-    inheritAttrs: false,
-    props: {
-      hydrateWhen: {
-        type: Boolean,
-        required: true,
-        default: true,
-      },
-    },
-    emits: ['hydrated'],
-    setup (props, { attrs, emit }) {
-      const hydrated = () => { emit('hydrated') }
-      if (props.hydrateWhen) {
-        const comp = defineAsyncComponent(loader)
-        return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
-      }
-      const strategy: HydrationStrategy = (hydrate) => {
-        const unwatch = watch(() => props.hydrateWhen, () => hydrate(), { once: true })
-        return () => unwatch()
-      }
-      const comp = defineAsyncComponent({ loader, hydrate: strategy })
-      return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
-    },
-  })
-}
+export const createLazyMediaQueryComponent = defineLazyComponent({
+  hydrateOnMediaQuery: {
+    type: String as unknown as () => string,
+    required: true,
+  },
+},
+props => hydrateOnMediaQuery(props.hydrateOnMediaQuery),
+)
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyTimeComponent = (loader: AsyncComponentLoader) => {
-  return defineComponent({
-    inheritAttrs: false,
-    props: {
-      hydrateAfter: {
-        type: Number,
-        required: true,
-      },
+export const createLazyIfComponent = defineLazyComponent({
+  hydrateWhen: {
+    type: Boolean,
+    default: true,
+  },
+},
+props => props.hydrateWhen
+  ? undefined /* hydrate immediately */
+  : (hydrate) => {
+      const unwatch = watch(() => props.hydrateWhen, () => hydrate(), { once: true })
+      return () => unwatch()
     },
-    emits: ['hydrated'],
-    setup (props, { attrs, emit }) {
-      const hydrated = () => { emit('hydrated') }
-      if (props.hydrateAfter === 0) {
-        const comp = defineAsyncComponent(loader)
-        return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
-      }
-      const strategy: HydrationStrategy = (hydrate) => {
-        const id = setTimeout(hydrate, props.hydrateAfter)
-        return () => clearTimeout(id)
-      }
-      const comp = defineAsyncComponent({ loader, hydrate: strategy })
-      return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
+)
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyTimeComponent = defineLazyComponent({
+  hydrateAfter: {
+    type: Number,
+    required: true,
+  },
+},
+props => props.hydrateAfter === 0
+  ? undefined /* hydrate immediately */
+  : (hydrate) => {
+      const id = setTimeout(hydrate, props.hydrateAfter)
+      return () => clearTimeout(id)
     },
-  })
-}
+)
+
+/* @__NO_SIDE_EFFECTS__ */
+const hydrateNever = () => {}
+export const createLazyNeverComponent = defineLazyComponent({
+  hydrateNever: {
+    type: Boolean as () => true,
+    required: true,
+  },
+},
+() => hydrateNever,
+)

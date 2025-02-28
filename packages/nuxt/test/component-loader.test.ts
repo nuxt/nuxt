@@ -160,6 +160,7 @@ async function transform (code: string, filename: string) {
         clientDelayedComponentRuntime: '/client-runtime.mjs',
         serverComponentRuntime: '/server-runtime.mjs',
         getComponents: () => components,
+        srcDir: '/',
         mode: 'server',
       }).rollup(),
     ],
