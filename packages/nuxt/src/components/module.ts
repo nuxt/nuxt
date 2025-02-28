@@ -1,8 +1,9 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
+import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
@@ -13,6 +14,7 @@ import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands
 import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
+import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -175,7 +177,7 @@ export default defineNuxtModule<ComponentsOptions>({
       for (const component of newComponents) {
         if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
           // attempt to resolve component path
-          component.filePath = await resolvePath(component.filePath, { fallbackToOriginal: true })
+          component.filePath = resolveModulePath(resolveAlias(component.filePath), { try: true, extensions: nuxt.options.extensions }) ?? component.filePath
         }
         if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
           newComponents.push({
@@ -200,15 +202,26 @@ export default defineNuxtModule<ComponentsOptions>({
 
     addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
 
+    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
+
     const sharedLoaderOptions = {
       getComponents,
+      clientDelayedComponentRuntime,
       serverComponentRuntime,
+      srcDir: nuxt.options.srcDir,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
+
+    if (nuxt.options.experimental.lazyHydration) {
+      addBuildPlugin(LazyHydrationTransformPlugin({
+        ...sharedLoaderOptions,
+        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+      }), { prepend: true })
+    }
 
     if (nuxt.options.experimental.componentIslands) {
       const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
