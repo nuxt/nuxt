@@ -10,7 +10,7 @@ export default defineNuxtConfig({
       addTypeTemplate({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
-      }, { nitro: true })
+      }, { nuxt: true, nitro: true })
       function _test () {
         installModule('~/modules/example', {
           typeTest (val) {
