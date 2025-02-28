@@ -4,10 +4,14 @@ import type { Plugin } from 'vite'
 const QUERY_RE = /\?.+$/
 
 export function ModulePreloadPolyfillPlugin (options: { sourcemap: boolean, entry: string }): Plugin {
+  let isDisabled = false
   return {
     name: 'nuxt:module-preload-polyfill',
+    configResolved (config) {
+      isDisabled = config.build.modulePreload === false || config.build.modulePreload.polyfill === false
+    },
     transform (code, id) {
-      if (id.replace(QUERY_RE, '') !== options.entry) { return }
+      if (isDisabled || id.replace(QUERY_RE, '') !== options.entry) { return }
 
       const s = new MagicString(code)
 
