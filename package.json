@@ -127,11 +127,5 @@
     "webpack": "5.96.1"
   },
   "packageManager": "pnpm@10.5.2",
-  "version": "",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "esbuild"
-    ]
-  }
+  "version": ""
 }
