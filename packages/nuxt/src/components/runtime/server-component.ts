@@ -66,9 +66,6 @@ export const createIslandPage = (name: string) => {
                   status: e.cause.status,
                 })
               }
-              if (import.meta.server) {
-                throw e
-              }
               nuxtApp.runWithContext(() => showError(e))
             },
           }, slots),
