@@ -16,11 +16,13 @@ function defineLazyComponent<P extends ComponentObjectPropsOptions> (props: P, d
         })
       }
       // wrap the async component in a second component to avoid loading the chunk too soon
+      const child = defineAsyncComponent({ loader })
       const comp = defineAsyncComponent({
         hydrate: defineStrategy(props as ExtractPropTypes<P>),
-        loader: () => Promise.resolve(defineAsyncComponent(loader)),
+        loader: () => Promise.resolve(child),
       })
-      return () => h(comp, mergeProps(ctx.attrs, { 'onVnodeMounted': () => { ctx.emit('hydrated') } }))
+      const onVnodeMounted = () => { ctx.emit('hydrated') }
+      return () => h(comp, mergeProps(ctx.attrs, { onVnodeMounted }))
     },
   })
 }
