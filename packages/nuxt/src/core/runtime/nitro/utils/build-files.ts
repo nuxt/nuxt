@@ -6,8 +6,8 @@ import type { Manifest } from 'vite'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/ssr'
 
-import { useRuntimeConfig } from 'nitro/runtime'
 import type { NuxtSSRContext } from 'nuxt/app'
+import { useRuntimeConfig } from '#internal/nitro'
 
 // @ts-expect-error virtual file
 import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'

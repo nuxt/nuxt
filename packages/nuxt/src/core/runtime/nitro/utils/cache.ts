@@ -1,4 +1,4 @@
-import { useStorage } from 'nitro/runtime'
+import { useStorage } from '#internal/nitro'
 
 export const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
 export const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
