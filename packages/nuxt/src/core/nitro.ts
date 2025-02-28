@@ -400,7 +400,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.experimental.respectNoSSRHeader) {
     nitroConfig.handlers ||= []
     nitroConfig.handlers.push({
-      handler: resolve(distDir, 'core/runtime/nitro/no-ssr'),
+      handler: resolve(distDir, 'core/runtime/nitro/middleware/no-ssr'),
       middleware: true,
     })
   }
