@@ -119,7 +119,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
                   break
                 case 'Never':
                 case 'never-':
-                  imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
                   identifier += '_lazy_never'
                   imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
