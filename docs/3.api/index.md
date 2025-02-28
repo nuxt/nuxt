@@ -13,7 +13,7 @@ surround: false
   ::card{icon="i-lucide-arrow-left-right" title="Composables" to="/docs/api/composables/use-app-config"}
   Discover Nuxt composable functions for data-fetching, head management and more.
   ::
-  ::card{icon="i-lucid-square-function" title="Utils" to="/docs/api/utils/dollarfetch"}
+  ::card{icon="i-lucide-square-function" title="Utils" to="/docs/api/utils/dollarfetch"}
   Learn about Nuxt utility functions for navigation, error handling and more.
   ::
   ::card{icon="i-lucide-square-terminal" title="Commands" to="/docs/api/commands/add"}
