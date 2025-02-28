@@ -1,5 +1,6 @@
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { interopDefault, resolvePath, resolvePathSync } from 'mlly'
+import { interopDefault } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 import { createJiti } from 'jiti'
 import { captureStackTrace } from 'errx'
 
@@ -21,17 +22,19 @@ export function directoryToURL (dir: string): URL {
  */
 export async function tryResolveModule (id: string, url: URL | URL[]): Promise<string | undefined>
 /** @deprecated pass URLs pointing at files */
-export async function tryResolveModule (id: string, url: string | string[]): Promise<string | undefined>
-export async function tryResolveModule (id: string, url: string | string[] | URL | URL[] = import.meta.url) {
-  try {
-    return await resolvePath(id, { url })
-  } catch {
-    // intentionally empty as this is a `try-` function
-  }
+export function tryResolveModule (id: string, url: string | string[]): Promise<string | undefined>
+export function tryResolveModule (id: string, url: string | string[] | URL | URL[] = import.meta.url) {
+  return Promise.resolve(resolveModulePath(id, {
+    from: url,
+    suffixes: ['', 'index'],
+    try: true,
+  }))
 }
 
 export function resolveModule (id: string, options?: ResolveModuleOptions) {
-  return resolvePathSync(id, { url: options?.url ?? options?.paths ?? [import.meta.url] })
+  return resolveModulePath(id, {
+    from: options?.url ?? options?.paths ?? [import.meta.url],
+  })
 }
 
 export interface ImportModuleOptions extends ResolveModuleOptions {

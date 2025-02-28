@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { $fetch as _$fetch, fetch, setup } from '@nuxt/test-utils/e2e'
@@ -29,7 +29,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
   const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
 
   describe('hmr', () => {
-    it('should load dev server', async () => {
+    beforeAll(async () => {
       await expectWithPolling(() => $fetch<string>('/').then(r => r.includes('Home page')).catch(() => null), true)
     })
 
@@ -150,6 +150,8 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       const { page, pageErrors, consoleLogs } = await renderPage('/routes')
 
       await fsp.writeFile(join(fixturePath, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
+
+      await expectWithPolling(() => consoleLogs.some(log => log.text.includes('hmr')), true)
 
       await page.getByRole('link').click()
       await expectWithPolling(() => page.getByTestId('contents').textContent(), 'A new route!')

@@ -35,7 +35,7 @@ export default defineNuxtConfig({
         }
       })
     },
-    '~/modules/subpath',
+    '~/custom-modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {
@@ -194,7 +194,7 @@ export default defineNuxtConfig({
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
-      '/no-scripts': { experimentalNoScripts: true },
+      '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
     },
     prerender: {
