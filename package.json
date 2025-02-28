@@ -119,14 +119,14 @@
     "ts-blank-space": "0.6.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
-    "unbuild": "3.4.2",
+    "unbuild": "3.5.0",
     "vitest": "3.0.7",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.2.4",
     "webpack": "5.96.1"
   },
-  "packageManager": "pnpm@10.5.1",
+  "packageManager": "pnpm@10.5.2",
   "version": "",
   "pnpm": {
     "onlyBuiltDependencies": [
