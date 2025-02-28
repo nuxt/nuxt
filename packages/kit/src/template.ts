@@ -51,9 +51,9 @@ export function addServerTemplate (template: NuxtServerTemplate) {
  *
  * You can pass a second context object to specify in which context the type should be added.
  *
- * By default `context.nuxt` is `true`, and `context.nitro` is `false`.
+ * If no context object is passed, then it will only be added to the nuxt context.
  */
-export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context: { nitro?: boolean, nuxt?: boolean } = {}) {
+export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean }) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -63,12 +63,12 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context: { n
   }
 
   // Add template to types reference
-  if (context.nuxt !== false) {
+  if (!context || context.nuxt) {
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ path: template.dst })
     })
   }
-  if (context.nitro) {
+  if (context?.nitro) {
     nuxt.hook('nitro:prepare:types', ({ references }) => {
       references.push({ path: template.dst })
     })
