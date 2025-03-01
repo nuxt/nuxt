@@ -230,8 +230,8 @@ importers:
   packages/kit:
     dependencies:
       c12:
-        specifier: ^2.0.4
-        version: 2.0.4(magicast@0.3.5)
+        specifier: ^3.0.2
+        version: 3.0.2(magicast@0.3.5)
       consola:
         specifier: ^3.4.0
         version: 3.4.0
@@ -313,7 +313,7 @@ importers:
         version: 2.10.4(typescript@5.7.3)
       unbuild:
         specifier: latest
-        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -369,8 +369,8 @@ importers:
         specifier: ^8.14.0
         version: 8.14.0
       c12:
-        specifier: ^2.0.4
-        version: 2.0.4(magicast@0.3.5)
+        specifier: ^3.0.2
+        version: 3.0.2(magicast@0.3.5)
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
@@ -545,7 +545,7 @@ importers:
         version: 3.5.13
       unbuild:
         specifier: latest
-        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -690,7 +690,7 @@ importers:
         version: 4.34.8
       unbuild:
         specifier: latest
-        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -738,8 +738,8 @@ importers:
         specifier: 2.2.4
         version: 2.2.4(typescript@5.7.3)
       c12:
-        specifier: 2.0.4
-        version: 2.0.4(magicast@0.3.5)
+        specifier: 3.0.2
+        version: 3.0.2(magicast@0.3.5)
       chokidar:
         specifier: 4.0.3
         version: 4.0.3
@@ -980,7 +980,7 @@ importers:
         version: 4.34.8
       unbuild:
         specifier: latest
-        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -1119,7 +1119,7 @@ importers:
         version: 2.25.9
       unbuild:
         specifier: latest
-        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -3517,6 +3517,14 @@ packages:
 
   c12@3.0.1:
     resolution: {integrity: sha512-xuYi2qvu3ne8+5KchFjNLeK/j7Antw/18JCJyMI7lPoBeZ2aF1wK6rILCBkCoD+H2zG2SfjlanfLUNQ6v1bbNQ==}
+    peerDependencies:
+      magicast: ^0.3.5
+    peerDependenciesMeta:
+      magicast:
+        optional: true
+
+  c12@3.0.2:
+    resolution: {integrity: sha512-6Tzk1/TNeI3WBPpK0j/Ss4+gPj3PUJYbWl/MWDJBThFvwNGNkXtd7Cz8BJtD4aRwoGHtzQD0SnxamgUiBH0/Nw==}
     peerDependencies:
       magicast: ^0.3.5
     peerDependenciesMeta:
@@ -7216,15 +7224,6 @@ packages:
   ultrahtml@1.5.3:
     resolution: {integrity: sha512-GykOvZwgDWZlTQMtp5jrD4BVL+gNn2NVlVafjcFUJ7taY20tqYdwdoWBFy6GBJsNTZe1GkGPkSl5knQAjtgceg==}
 
-  unbuild@3.3.1:
-    resolution: {integrity: sha512-/5OeeHmW1JlWEyQw3SPkB9BV16lzr6C5i8D+O17NLx6ETgvCZ3ZlyXfWkVVfG2YCsv8xAVQCqJNJtbEAGwHg7A==}
-    hasBin: true
-    peerDependencies:
-      typescript: 5.7.3
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   unbuild@3.5.0:
     resolution: {integrity: sha512-DPFttsiADnHRb/K+yJ9r9jdn6JyXlsmdT0S12VFC14DFSJD+cxBnHq+v0INmqqPVPxOoUjvJFYUVIb02rWnVeA==}
     hasBin: true
@@ -10564,6 +10563,23 @@ snapshots:
       defu: 6.1.4
       dotenv: 16.4.7
       exsolve: 0.4.4
+      giget: 2.0.0
+      jiti: 2.4.2
+      ohash: 2.0.6
+      pathe: 2.0.3
+      perfect-debounce: 1.0.0
+      pkg-types: 2.0.0
+      rc9: 2.1.2
+    optionalDependencies:
+      magicast: 0.3.5
+
+  c12@3.0.2(magicast@0.3.5):
+    dependencies:
+      chokidar: 4.0.3
+      confbox: 0.1.8
+      defu: 6.1.4
+      dotenv: 16.4.7
+      exsolve: 1.0.1
       giget: 2.0.0
       jiti: 2.4.2
       ohash: 2.0.6
@@ -14897,39 +14913,6 @@ snapshots:
   ufo@1.5.4: {}
 
   ultrahtml@1.5.3: {}
-
-  unbuild@3.3.1(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
-    dependencies:
-      '@rollup/plugin-alias': 5.1.1(rollup@4.34.8)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.34.8)
-      '@rollup/plugin-json': 6.1.0(rollup@4.34.8)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.34.8)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.34.8)
-      '@rollup/pluginutils': 5.1.4(rollup@4.34.8)
-      citty: 0.1.6
-      consola: 3.4.0
-      defu: 6.1.4
-      esbuild: 0.24.2
-      hookable: 5.5.3
-      jiti: 2.4.2
-      magic-string: 0.30.17
-      mkdist: 2.2.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
-      mlly: 1.7.4
-      pathe: 2.0.3
-      pkg-types: 1.3.1
-      pretty-bytes: 6.1.1
-      rollup: 4.34.8
-      rollup-plugin-dts: 6.1.1(rollup@4.34.8)(typescript@5.7.3)
-      scule: 1.3.0
-      tinyglobby: 0.2.12
-      untyped: 1.5.2
-    optionalDependencies:
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - sass
-      - supports-color
-      - vue
-      - vue-tsc
 
   unbuild@3.5.0(typescript@5.7.3)(vue-tsc@2.2.4(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
     dependencies:
