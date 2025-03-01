@@ -41,6 +41,9 @@
       ],
       "#internal/nitro/utils": [
         "./node_modules/nitropack/dist/runtime/utils"
+      ],
+      "#unhead/composables": [
+        "./packages/nuxt/src/head/runtime/composables/v4"
       ]
     }
   },

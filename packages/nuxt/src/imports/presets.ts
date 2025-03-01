@@ -105,6 +105,10 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['useRuntimeHook'],
     from: '#app/composables/runtime-hook',
   },
+  {
+    imports: ['useHead', 'useHeadSafe', 'useServerHeadSafe', 'useServerHead', 'useSeoMeta', 'useServerSeoMeta', 'injectHead'],
+    from: '#app/composables/head',
+  },
 ]
 
 export const scriptsStubsPreset = {

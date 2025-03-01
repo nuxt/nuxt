@@ -1,27 +1,6 @@
-import type { Head, MergeHead } from '@unhead/schema'
+import type { AriaAttributes, DataKeys, GlobalAttributes, SerializableHead } from '@unhead/vue/types'
 
-/** @deprecated Extend types from `@unhead/schema` directly. This may be removed in a future minor version. */
-export interface HeadAugmentations extends MergeHead {
-  // runtime type modifications
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  base?: {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  link?: {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  meta?: {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  style?: {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  script?: {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  noscript?: {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  htmlAttrs?: {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  bodyAttrs?: {}
-}
-
-export type MetaObjectRaw = Head<HeadAugmentations>
+export type MetaObjectRaw = SerializableHead
 export type MetaObject = MetaObjectRaw
 
 export type AppHeadMetaObject = MetaObjectRaw & {
@@ -37,3 +16,5 @@ export type AppHeadMetaObject = MetaObjectRaw & {
    */
   viewport?: string
 }
+
+export type SerializableHtmlAttributes = GlobalAttributes & AriaAttributes & DataKeys
