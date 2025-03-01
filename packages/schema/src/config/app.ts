@@ -475,8 +475,6 @@ export default defineResolvers({
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
      *
-     * @see [`unhead` options documentation](https://unhead.unjs.io/setup/ssr/installation#options)
-     *
      * @example
      * ```ts
      * export default defineNuxtConfig({
