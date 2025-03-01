@@ -121,7 +121,7 @@
     "playwright-core": "1.50.1",
     "rollup": "4.34.9",
     "semver": "7.7.1",
-    "sherif": "1.3.0",
+    "sherif": "1.4.0",
     "std-env": "3.8.0",
     "tinyexec": "0.3.2",
     "tinyglobby": "0.2.12",
@@ -132,7 +132,7 @@
     "vitest": "3.0.7",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
-    "vue-tsc": "2.2.4",
+    "vue-tsc": "2.2.6",
     "webpack": "5.98.0"
   },
   "packageManager": "pnpm@10.5.2",
