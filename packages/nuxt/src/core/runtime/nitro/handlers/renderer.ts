@@ -10,10 +10,9 @@ import type { H3Event } from 'h3'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
-import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { Head, HeadEntryOptions } from '@unhead/schema'
-import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
+import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
+import { resolveUnrefHeadInput } from '@unhead/vue/utils'
+import type { HeadEntryOptions, Link, Script, SerializableHead, Style } from '@unhead/vue/types'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -23,7 +22,7 @@ import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, sp
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig } from '#internal/nitro'
 // @ts-expect-error virtual file
-import unheadPlugins from '#internal/unhead-plugins.mjs'
+import unheadOptions from '#internal/unhead-options.mjs'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
@@ -76,7 +75,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: Head
+  head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -171,9 +170,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  const head = createServerHead({
-    plugins: unheadPlugins,
-  })
+  const head = createHead(unheadOptions)
 
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
