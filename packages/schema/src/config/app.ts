@@ -260,7 +260,7 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt root element id.
-     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
      */
     rootAttrs: {
       $resolve: async (val, get) => {
@@ -290,7 +290,7 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt Teleport element attributes.
-     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
      */
     teleportAttrs: {
       $resolve: async (val, get) => {
@@ -311,7 +311,7 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt Nuxt SpaLoader element attributes.
-     * @type {Partial<typeof import('@unhead/schema').HtmlAttributes>}
+     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
      */
     spaLoaderAttrs: {
       id: '__nuxt-loader',
@@ -454,6 +454,24 @@ export default defineResolvers({
    * An object that allows us to configure the `unhead` nuxt module.
    */
   unhead: {
+    /***
+     * Enable the legacy compatibility mode for `unhead` module. This applies the following changes:
+     * - Disables Capo.js sorting
+     * - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body`
+     * - Adds the `PromisesPlugin`: supports promises as input
+     *
+     * @see [`unhead` migration documentation](https://unhead-unjs-io.nuxt.dev/docs/migration)
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   legacy: true
+     * })
+     * ```
+     * @type {boolean}
+     */
+    legacy: false,
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
      *
@@ -468,7 +486,7 @@ export default defineResolvers({
      *   }
      * })
      * ```
-     * @type {typeof import('@unhead/schema').RenderSSRHeadOptions}
+     * @type {typeof import('@unhead/vue/types').RenderSSRHeadOptions}
      */
     renderSSRHeadOptions: {
       $resolve: async (val, get) => {

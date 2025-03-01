@@ -1,6 +1,5 @@
 import { defineComponent } from 'vue'
 import type { PropType, SetupContext } from 'vue'
-import { useHead } from '@unhead/vue'
 import type {
   CrossOrigin,
   FetchPriority,
@@ -10,6 +9,7 @@ import type {
   ReferrerPolicy,
   Target,
 } from './types'
+import { useHead } from '#app/composables/head'
 
 const removeUndefinedProps = (props: Props) => {
   const filteredProps = Object.create(null)
