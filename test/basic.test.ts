@@ -2426,7 +2426,7 @@ describe('component islands', () => {
       `)
     } else if (isDev() && !isWebpack) {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
-      // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
+      // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
 
       expect(result.head).toMatchInlineSnapshot(`
@@ -2859,6 +2859,112 @@ describe('lazy import components', () => {
 
   it('lazy load named component with mode server', () => {
     expect(html).toContain('lazy-named-comp-server')
+  })
+
+  it('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
+    const { page } = await renderPage('/lazy-import-components')
+
+    const hydratedText = 'This is mounted.'
+    const unhydratedText = 'This is not mounted.'
+
+    expect.soft(html).toContain(unhydratedText)
+    expect.soft(html).not.toContain(hydratedText)
+
+    await page.locator('data-testid=hydrate-on-visible', { hasText: hydratedText }).waitFor()
+    expect.soft(await page.locator('data-testid=hydrate-on-visible-bottom').textContent().then(r => r?.trim())).toBe(unhydratedText)
+
+    await page.locator('data-testid=hydrate-on-interaction-default', { hasText: unhydratedText }).waitFor()
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor()
+
+    await page.locator('data-testid=hydrate-when-always', { hasText: hydratedText }).waitFor()
+    await page.locator('data-testid=hydrate-when-state', { hasText: unhydratedText }).waitFor()
+
+    const component = page.getByTestId('hydrate-on-interaction-default')
+    await component.hover()
+    await page.locator('data-testid=hydrate-on-interaction-default', { hasText: hydratedText }).waitFor()
+
+    await page.getByTestId('button-increase-state').click()
+    await page.locator('data-testid=hydrate-when-state', { hasText: hydratedText }).waitFor()
+
+    await page.getByTestId('hydrate-on-visible-bottom').scrollIntoViewIfNeeded()
+    await page.locator('data-testid=hydrate-on-visible-bottom', { hasText: hydratedText }).waitFor()
+
+    await page.locator('data-testid=hydrate-never', { hasText: unhydratedText }).waitFor()
+
+    await page.close()
+  })
+  it('respects custom delayed hydration triggers and overrides defaults', async () => {
+    const { page } = await renderPage('/lazy-import-components')
+
+    const unhydratedText = 'This is not mounted.'
+    const hydratedText = 'This is mounted.'
+
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
+
+    await page.getByTestId('hydrate-on-interaction-click').hover()
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
+
+    await page.getByTestId('hydrate-on-interaction-click').click()
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: hydratedText }).waitFor({ state: 'visible' })
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'hidden' })
+
+    await page.close()
+  })
+
+  it('does not delay hydration of components named after modifiers', async () => {
+    const { page } = await renderPage('/lazy-import-components')
+
+    await page.locator('data-testid=event-view-normal-component', { hasText: 'This is mounted.' }).waitFor()
+    await page.locator('data-testid=event-view-normal-component', { hasText: 'This is not mounted.' }).waitFor({ state: 'hidden' })
+
+    await page.close()
+  })
+
+  it('handles time-based hydration correctly', async () => {
+    const { page } = await renderPage('/lazy-import-components/time')
+
+    const unhydratedText = 'This is not mounted.'
+    const hydratedText = 'This is mounted.'
+
+    await page.locator('[data-testid=hydrate-after]', { hasText: unhydratedText }).waitFor({ state: 'visible' })
+    await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
+
+    await page.close()
+  })
+
+  it('keeps reactivity with models', async () => {
+    const { page } = await renderPage('/lazy-import-components/model-event')
+
+    const countLocator = page.getByTestId('count')
+    const incrementButton = page.getByTestId('increment')
+
+    await countLocator.waitFor()
+
+    for (let i = 0; i < 10; i++) {
+      expect(await countLocator.textContent()).toBe(`${i}`)
+      await incrementButton.hover()
+      await incrementButton.click()
+    }
+
+    expect(await countLocator.textContent()).toBe('10')
+
+    await page.close()
+  })
+
+  it('emits hydration events', async () => {
+    const { page, consoleLogs } = await renderPage('/lazy-import-components/model-event')
+
+    const initialLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
+    expect(initialLogs.length).toBe(0)
+
+    await page.getByTestId('count').click()
+
+    // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    const hydrationLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
+    expect(hydrationLogs.length).toBeGreaterThan(0)
+
+    await page.close()
   })
 })
 

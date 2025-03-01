@@ -245,7 +245,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
       foundMeta = true
       const pageMetaArgument = node.expression.arguments[0]
-      if (pageMetaArgument?.type !== 'ObjectExpression') { return }
+      if (pageMetaArgument?.type !== 'ObjectExpression') {
+        logger.warn(`\`definePageMeta\` must be called with an object literal (reading \`${absolutePath}\`).`)
+        return
+      }
 
       for (const key of extractionKeys) {
         const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)

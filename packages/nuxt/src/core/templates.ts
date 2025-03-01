@@ -1,13 +1,13 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
+import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
@@ -317,10 +317,38 @@ export const middlewareTemplate: NuxtTemplate = {
   },
 }
 
+function renderAttr (key: string, value?: string) {
+  return value ? `${key}="${value}"` : ''
+}
+
+function renderAttrs (obj: Record<string, string>) {
+  const attrs: string[] = []
+  for (const key in obj) {
+    attrs.push(renderAttr(key, obj[key]))
+  }
+  return attrs.join(' ')
+}
+
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
-  getContents () {
+  async getContents ({ nuxt }) {
+    const references = [] as TSReference[]
+    const declarations = [] as string[]
+    await nuxt.callHook('nitro:prepare:types', { references, declarations })
+
+    const sourceDir = join(nuxt.options.buildDir, 'types')
+    const lines = [
+      ...references.map((ref) => {
+        if ('path' in ref && isAbsolute(ref.path)) {
+          ref.path = relative(sourceDir, ref.path)
+        }
+        return `/// <reference ${renderAttrs(ref)} />`
+      }),
+      ...declarations,
+    ]
+
     return /* typescript */`
+${lines.join('\n')}
 /// <reference path="./schema.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
@@ -483,7 +511,7 @@ export const publicPathTemplate: NuxtTemplate = {
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
 
-      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
+      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts
       'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',

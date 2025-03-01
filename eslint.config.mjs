@@ -21,7 +21,7 @@ export default createConfigForNuxt({
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
-        'packages/nuxt/src/core/runtime/nitro/error-*',
+        'packages/nuxt/src/core/runtime/nitro/handlers/error-*',
       ],
     },
     {
@@ -206,6 +206,7 @@ export default createConfigForNuxt({
                   'ohash/utils',
                   'pathe',
                   'uncrypto',
+                  'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
                 ].map(r => `!${r}`),

@@ -1,5 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
@@ -8,8 +9,9 @@ import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
+import { captureStackTrace } from 'errx'
 
-import { filterInPlace } from './utils'
+import { distDirURL, filterInPlace } from './utils'
 import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
@@ -26,6 +28,19 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
 
   // Remove any existing template with the same destination path
   filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
+
+  try {
+    const distDir = distDirURL.toString()
+    const { source } = captureStackTrace().find(e => e.source && !e.source.startsWith(distDir)) ?? {}
+    if (source) {
+      const path = normalize(fileURLToPath(source))
+      if (existsSync(path)) {
+        template._path = path
+      }
+    }
+  } catch {
+    // ignore errors as this is an additive feature
+  }
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -48,8 +63,12 @@ export function addServerTemplate (template: NuxtServerTemplate) {
 /**
  * Renders given types during build to disk in the project `buildDir`
  * and register them as types.
+ *
+ * You can pass a second context object to specify in which context the type should be added.
+ *
+ * If no context object is passed, then it will only be added to the nuxt context.
  */
-export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
+export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean }) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -59,9 +78,16 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
   }
 
   // Add template to types reference
-  nuxt.hook('prepare:types', ({ references }) => {
-    references.push({ path: template.dst })
-  })
+  if (!context || context.nuxt) {
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: template.dst })
+    })
+  }
+  if (context?.nitro) {
+    nuxt.hook('nitro:prepare:types', ({ references }) => {
+      references.push({ path: template.dst })
+    })
+  }
 
   return template
 }
