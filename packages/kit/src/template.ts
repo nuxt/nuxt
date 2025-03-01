@@ -201,9 +201,21 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const isV4 = nuxt.options.future?.compatibilityVersion === 4
-  const hasTypescriptVersionWithModulePreserve = await readPackageJSON('typescript', { url: nuxt.options.modulesDir })
-    .then(r => r?.version && gte(r.version, '5.4.0'))
-    .catch(() => isV4)
+  const nestedModulesDirs: string[] = []
+  for (const dir of [...nuxt.options.modulesDir].sort()) {
+    const withSlash = withTrailingSlash(dir)
+    if (nestedModulesDirs.every(d => !d.startsWith(withSlash))) {
+      nestedModulesDirs.push(withSlash)
+    }
+  }
+
+  let hasTypescriptVersionWithModulePreserve
+  for (const parent of nestedModulesDirs) {
+    hasTypescriptVersionWithModulePreserve ??= await readPackageJSON('typescript', { parent })
+      .then(r => r?.version && gte(r.version, '5.4.0'))
+      .catch(() => undefined)
+  }
+  hasTypescriptVersionWithModulePreserve ??= isV4
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
@@ -311,8 +323,15 @@ export async function _generateTypes (nuxt: Nuxt) {
   await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
     if (typeof id !== 'string') { return }
 
-    const pkg = await readPackageJSON(id, { url: nuxt.options.modulesDir }).catch(() => null)
-    references.push(({ types: pkg?.name || id }))
+    for (const parent of nestedModulesDirs) {
+      const pkg = await readPackageJSON(id, { parent }).catch(() => null)
+      if (pkg) {
+        references.push(({ types: pkg.name ?? id }))
+        return
+      }
+    }
+
+    references.push(({ types: id }))
   }))
 
   const declarations: string[] = []
