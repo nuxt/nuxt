@@ -104,7 +104,7 @@
     "nitro": "npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6",
     "nypm": "^0.6.0",
     "ofetch": "^1.4.1",
-    "ohash": "^2.0.7",
+    "ohash": "^2.0.8",
     "on-change": "^5.0.1",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
