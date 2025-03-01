@@ -230,8 +230,8 @@ importers:
   packages/kit:
     dependencies:
       c12:
-        specifier: ^3.0.2
-        version: 3.0.2(magicast@0.3.5)
+        specifier: ^2.0.4
+        version: 2.0.4(magicast@0.3.5)
       consola:
         specifier: ^3.4.0
         version: 3.4.0
@@ -366,11 +366,11 @@ importers:
         specifier: 3.5.13
         version: 3.5.13
       acorn:
-        specifier: 8.14.0
+        specifier: ^8.14.0
         version: 8.14.0
       c12:
-        specifier: ^3.0.2
-        version: 3.0.2(magicast@0.3.5)
+        specifier: ^2.0.4
+        version: 2.0.4(magicast@0.3.5)
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
@@ -738,8 +738,8 @@ importers:
         specifier: 2.2.4
         version: 2.2.4(typescript@5.7.3)
       c12:
-        specifier: 3.0.2
-        version: 3.0.2(magicast@0.3.5)
+        specifier: 2.0.4
+        version: 2.0.4(magicast@0.3.5)
       chokidar:
         specifier: 4.0.3
         version: 4.0.3
@@ -3517,14 +3517,6 @@ packages:
 
   c12@3.0.1:
     resolution: {integrity: sha512-xuYi2qvu3ne8+5KchFjNLeK/j7Antw/18JCJyMI7lPoBeZ2aF1wK6rILCBkCoD+H2zG2SfjlanfLUNQ6v1bbNQ==}
-    peerDependencies:
-      magicast: ^0.3.5
-    peerDependenciesMeta:
-      magicast:
-        optional: true
-
-  c12@3.0.2:
-    resolution: {integrity: sha512-6Tzk1/TNeI3WBPpK0j/Ss4+gPj3PUJYbWl/MWDJBThFvwNGNkXtd7Cz8BJtD4aRwoGHtzQD0SnxamgUiBH0/Nw==}
     peerDependencies:
       magicast: ^0.3.5
     peerDependenciesMeta:
@@ -10572,23 +10564,6 @@ snapshots:
       defu: 6.1.4
       dotenv: 16.4.7
       exsolve: 0.4.4
-      giget: 2.0.0
-      jiti: 2.4.2
-      ohash: 2.0.6
-      pathe: 2.0.3
-      perfect-debounce: 1.0.0
-      pkg-types: 2.0.0
-      rc9: 2.1.2
-    optionalDependencies:
-      magicast: 0.3.5
-
-  c12@3.0.2(magicast@0.3.5):
-    dependencies:
-      chokidar: 4.0.3
-      confbox: 0.1.8
-      defu: 6.1.4
-      dotenv: 16.4.7
-      exsolve: 1.0.1
       giget: 2.0.0
       jiti: 2.4.2
       ohash: 2.0.6
