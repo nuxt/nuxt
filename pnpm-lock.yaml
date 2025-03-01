@@ -191,8 +191,8 @@ importers:
         specifier: 7.7.1
         version: 7.7.1
       sherif:
-        specifier: 1.3.0
-        version: 1.3.0
+        specifier: 1.4.0
+        version: 1.4.0
       std-env:
         specifier: 3.8.0
         version: 3.8.0
@@ -213,7 +213,7 @@ importers:
         version: 1.5.4
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vitest:
         specifier: 3.0.7
         version: 3.0.7(@types/debug@4.1.12)(@types/node@22.13.8)(happy-dom@17.1.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -224,8 +224,8 @@ importers:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
       vue-tsc:
-        specifier: 2.2.4
-        version: 2.2.4(typescript@5.8.2)
+        specifier: 2.2.6
+        version: 2.2.6(typescript@5.8.2)
       webpack:
         specifier: 5.98.0
         version: 5.98.0
@@ -310,7 +310,7 @@ importers:
         version: nitro-nightly@3.0.0-beta-28969273.f7aa9de6(typescript@5.8.2)
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -545,7 +545,7 @@ importers:
         version: 3.5.13
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -690,7 +690,7 @@ importers:
         version: 4.34.9
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
@@ -735,8 +735,8 @@ importers:
         specifier: 3.5.13
         version: 3.5.13
       '@vue/language-core':
-        specifier: 2.2.4
-        version: 2.2.4(typescript@5.8.2)
+        specifier: 2.2.6
+        version: 2.2.6(typescript@5.8.2)
       c12:
         specifier: 3.0.2
         version: 3.0.2(magicast@0.3.5)
@@ -793,7 +793,7 @@ importers:
         version: 1.3.0
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       unctx:
         specifier: 2.4.1
         version: 2.4.1
@@ -952,7 +952,7 @@ importers:
         version: 3.0.7(@types/node@22.13.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-plugin-checker:
         specifier: ^0.9.0
-        version: 0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.4(typescript@5.8.2))
+        version: 0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.6(typescript@5.8.2))
       vue-bundle-renderer:
         specifier: ^2.1.1
         version: 2.1.1
@@ -965,7 +965,7 @@ importers:
         version: 4.34.9
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
@@ -1113,7 +1113,7 @@ importers:
         version: 4.34.9
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
@@ -3152,8 +3152,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@2.2.4':
-    resolution: {integrity: sha512-eGGdw7eWUwdIn9Fy/irJ7uavCGfgemuHQABgJ/hU1UgZFnbTg9VWeXvHQdhY+2SPQZWJqWXvRWIg67t4iWEa+Q==}
+  '@vue/language-core@2.2.6':
+    resolution: {integrity: sha512-7IQTvwVOvhYSzcizZ2hAdqJjI+SaJS2GO7EnDlSlQ77drwl5UzNa2IZm9pO9MdMxrlw24CGI/Lo3xpCjM26veg==}
     peerDependencies:
       typescript: 5.8.2
     peerDependenciesMeta:
@@ -6793,38 +6793,38 @@ packages:
   shell-quote@1.8.1:
     resolution: {integrity: sha512-6j1W9l1iAs/4xYBI1SYOVZyFcCis9b4KCLQ8fgAGG07QvzaRLVVRQvAy85yNmmZSjYjg4MWh4gNvlPujU/5LpA==}
 
-  sherif-darwin-arm64@1.3.0:
-    resolution: {integrity: sha512-vwt1txYQYxETI8390pHptuS2+TckM3rZRdSvuDlI+1bA9Pbqc1Ad9bXq7iNGZcb+0eFbimoIqJWqi0d5ailDew==}
+  sherif-darwin-arm64@1.4.0:
+    resolution: {integrity: sha512-7PTK+BMC7zHxie3dDi/TPJXrHvCVs+Kf80NO6G9dm/DHFwLi/EJpw/i49H9W3NgN2ND9+MlR0/q0g2rSiaCmkg==}
     cpu: [arm64]
     os: [darwin]
 
-  sherif-darwin-x64@1.3.0:
-    resolution: {integrity: sha512-POrNEfVQ+HJYWiiDwC9fVAumc/MIRqYrnmW+zvY2khusWr1sQitNcc4qAtz/iDJktqQqFIQ4J0h+pSWa84sxDg==}
+  sherif-darwin-x64@1.4.0:
+    resolution: {integrity: sha512-r4pwDHjPgeothxvl+d58BvJ1WhSiWfiukivltJJXgQDg4p64K4nv9dsQw1+zO4I2gYSlsUOXA9LDYlka79JyTA==}
     cpu: [x64]
     os: [darwin]
 
-  sherif-linux-arm64@1.3.0:
-    resolution: {integrity: sha512-kftGHdZRat1p2PntW6vXC+TqPQI6Sm55Zxi3gfXZiz1knFY53dJHr+MaP1W6DlzJ+DhOuZzJ4HkfT/K3/5BPUA==}
+  sherif-linux-arm64@1.4.0:
+    resolution: {integrity: sha512-cABgykKbFYruIZkU07ubiKgJS6qooIbMpwBTpivCb7/5Xwgw2Jm1oryhKFFv4i8I3R1TPdNxHpz2yyGuaW+7Uw==}
     cpu: [arm64]
     os: [linux]
 
-  sherif-linux-x64@1.3.0:
-    resolution: {integrity: sha512-9nbK5wqazisbhHGJ+t/DQM8Cr1QEgOSJ4J071wrLrYNEcvr/9PMkKXmX2YJdY9VWKz+AIohXJ2ZkXtB/oEyPDQ==}
+  sherif-linux-x64@1.4.0:
+    resolution: {integrity: sha512-igofjXjgov2QTyivMCkPuXklqBHfVDikicyilQlPTEMO3ZIsz1uE6D6IC1iq7iDV/cbx0IYJo6v0cSSpiYTrSA==}
     cpu: [x64]
     os: [linux]
 
-  sherif-windows-arm64@1.3.0:
-    resolution: {integrity: sha512-q+tkYx0kSAm8bUpt8jAv1JQMZolG4sTXwVH/CAU47ukPO8t4ghzEEhPZDdJYcDf6co7D2V1JbXdfaG9u1+3d+w==}
+  sherif-windows-arm64@1.4.0:
+    resolution: {integrity: sha512-1oQ178TfmRYrhMOyRrQ3AOKwt7hmGXZJJwyJE4LV3c7PgKvOiWz3USBI1FapLbNBmslgsTnzJJVD7CFZNOqDZA==}
     cpu: [arm64]
     os: [win32]
 
-  sherif-windows-x64@1.3.0:
-    resolution: {integrity: sha512-bd0mS6GIs0Mwdx9nP7deFATzGM5AVw3wUv/fRoum3bRkJNKJrm5HTh9cKuXiz6gc3pHjUUZOnKL0i7fZGfu+ew==}
+  sherif-windows-x64@1.4.0:
+    resolution: {integrity: sha512-hTY6gYKRlOA0SqpK4yklAPzFZhn6NJGeM50ida67b2k7B6ApsStru9U3yt//b6cqy+6z3HxgxH9IpVVBiWJnVQ==}
     cpu: [x64]
     os: [win32]
 
-  sherif@1.3.0:
-    resolution: {integrity: sha512-UeCSc/Jx33ykalVx07Z/aHu0XKwg/UL5qprU+fYll97atJXLPZhy+FefPrDDEohzkQZ2jZbb6q4TX/crKuoJEA==}
+  sherif@1.4.0:
+    resolution: {integrity: sha512-mo7zKtRsDrRadbXa8tuoK5mtov5kV4qw2iuzD/ZyEVSeZfY0BpR1+KUhvJHCUJDHBv2nh0dJMwKkmlbbq/QKOg==}
     hasBin: true
 
   shiki@1.22.2:
@@ -7678,8 +7678,8 @@ packages:
     peerDependencies:
       vue: 3.5.13
 
-  vue-tsc@2.2.4:
-    resolution: {integrity: sha512-3EVHlxtpMXcb5bCaK7QDFTbEkMusDfVk0HVRrkv5hEb+Clpu9a96lKUXJAeD/akRlkoA4H8MCHgBDN19S6FnzA==}
+  vue-tsc@2.2.6:
+    resolution: {integrity: sha512-TI6eAnWPatONEpVAZt1etbSrh8tDpHOLSlRqKGudOK5WKVnBGzHXUi0KR4UCsf2o5P+5285w4HF+5avhfH7IMA==}
     hasBin: true
     peerDependencies:
       typescript: 5.8.2
@@ -10143,7 +10143,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.2
 
-  '@vue/language-core@2.2.4(typescript@5.8.2)':
+  '@vue/language-core@2.2.6(typescript@5.8.2)':
     dependencies:
       '@volar/language-core': 2.4.11
       '@vue/compiler-dom': 3.5.13
@@ -13123,7 +13123,7 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
-  mkdist@2.2.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
+  mkdist@2.2.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
     dependencies:
       autoprefixer: 10.4.20(postcss@8.5.3)
       citty: 0.1.6
@@ -13141,7 +13141,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.2
       vue: 3.5.13(typescript@5.8.2)
-      vue-tsc: 2.2.4(typescript@5.8.2)
+      vue-tsc: 2.2.6(typescript@5.8.2)
 
   mlly@1.7.4:
     dependencies:
@@ -14413,32 +14413,32 @@ snapshots:
 
   shell-quote@1.8.1: {}
 
-  sherif-darwin-arm64@1.3.0:
+  sherif-darwin-arm64@1.4.0:
     optional: true
 
-  sherif-darwin-x64@1.3.0:
+  sherif-darwin-x64@1.4.0:
     optional: true
 
-  sherif-linux-arm64@1.3.0:
+  sherif-linux-arm64@1.4.0:
     optional: true
 
-  sherif-linux-x64@1.3.0:
+  sherif-linux-x64@1.4.0:
     optional: true
 
-  sherif-windows-arm64@1.3.0:
+  sherif-windows-arm64@1.4.0:
     optional: true
 
-  sherif-windows-x64@1.3.0:
+  sherif-windows-x64@1.4.0:
     optional: true
 
-  sherif@1.3.0:
+  sherif@1.4.0:
     optionalDependencies:
-      sherif-darwin-arm64: 1.3.0
-      sherif-darwin-x64: 1.3.0
-      sherif-linux-arm64: 1.3.0
-      sherif-linux-x64: 1.3.0
-      sherif-windows-arm64: 1.3.0
-      sherif-windows-x64: 1.3.0
+      sherif-darwin-arm64: 1.4.0
+      sherif-darwin-x64: 1.4.0
+      sherif-linux-arm64: 1.4.0
+      sherif-linux-x64: 1.4.0
+      sherif-windows-arm64: 1.4.0
+      sherif-windows-x64: 1.4.0
 
   shiki@1.22.2:
     dependencies:
@@ -14840,7 +14840,7 @@ snapshots:
 
   ultrahtml@1.5.3: {}
 
-  unbuild@3.5.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
+  unbuild@3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.34.9)
       '@rollup/plugin-commonjs': 28.0.2(rollup@4.34.9)
@@ -14856,7 +14856,7 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mkdist: 2.2.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+      mkdist: 2.2.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       mlly: 1.7.4
       pathe: 2.0.3
       pkg-types: 2.0.0
@@ -15182,7 +15182,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-checker@0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.4(typescript@5.8.2)):
+  vite-plugin-checker@0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.6(typescript@5.8.2)):
     dependencies:
       '@babel/code-frame': 7.26.2
       chokidar: 4.0.3
@@ -15198,7 +15198,7 @@ snapshots:
       eslint: 9.21.0(jiti@2.4.2)
       optionator: 0.9.4
       typescript: 5.8.2
-      vue-tsc: 2.2.4(typescript@5.8.2)
+      vue-tsc: 2.2.6(typescript@5.8.2)
 
   vite-plugin-inspect@11.0.0(@nuxt/kit@packages+kit)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)):
     dependencies:
@@ -15372,10 +15372,10 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.13(typescript@5.8.2)
 
-  vue-tsc@2.2.4(typescript@5.8.2):
+  vue-tsc@2.2.6(typescript@5.8.2):
     dependencies:
       '@volar/typescript': 2.4.11
-      '@vue/language-core': 2.2.4(typescript@5.8.2)
+      '@vue/language-core': 2.2.6(typescript@5.8.2)
       typescript: 5.8.2
 
   vue@3.5.13(typescript@5.8.2):
