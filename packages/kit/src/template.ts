@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
+import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
@@ -11,7 +11,7 @@ import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
-import { distDir, filterInPlace } from './utils'
+import { distDirURL, filterInPlace } from './utils'
 import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
@@ -30,9 +30,10 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
 
   try {
-    const { source } = captureStackTrace().find(e => e.source && !e.source.startsWith('file://' + distDir)) ?? {}
+    const distDir = distDirURL.toString()
+    const { source } = captureStackTrace().find(e => e.source && !e.source.startsWith(distDir)) ?? {}
     if (source) {
-      const path = fileURLToPath(source)
+      const path = normalize(fileURLToPath(source))
       if (existsSync(path)) {
         template._path = path
       }
