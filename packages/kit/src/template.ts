@@ -48,8 +48,12 @@ export function addServerTemplate (template: NuxtServerTemplate) {
 /**
  * Renders given types during build to disk in the project `buildDir`
  * and register them as types.
+ *
+ * You can pass a second context object to specify in which context the type should be added.
+ *
+ * If no context object is passed, then it will only be added to the nuxt context.
  */
-export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
+export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean }) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -59,9 +63,16 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
   }
 
   // Add template to types reference
-  nuxt.hook('prepare:types', ({ references }) => {
-    references.push({ path: template.dst })
-  })
+  if (!context || context.nuxt) {
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: template.dst })
+    })
+  }
+  if (context?.nitro) {
+    nuxt.hook('nitro:prepare:types', ({ references }) => {
+      references.push({ path: template.dst })
+    })
+  }
 
   return template
 }
