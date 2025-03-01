@@ -206,6 +206,7 @@ export default createConfigForNuxt({
                   'ohash/utils',
                   'pathe',
                   'uncrypto',
+                  'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
                 ].map(r => `!${r}`),
