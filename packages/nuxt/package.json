@@ -76,7 +76,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.5",
     "@nuxt/vite-builder": "workspace:*",
-    "@unhead/vue": "2.0.0-beta.1",
+    "@unhead/vue": "2.0.0-beta.2",
     "@vue/shared": "^3.5.13",
     "acorn": "^8.14.0",
     "c12": "^2.0.4",
