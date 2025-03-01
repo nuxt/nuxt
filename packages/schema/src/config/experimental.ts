@@ -487,5 +487,10 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+
+    /**
+     * Disable resolving imports into Nuxt templates from the path of the module that added the template.
+     */
+    templateImportResolution: true,
   },
 })
