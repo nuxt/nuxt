@@ -2445,6 +2445,7 @@ describe('component islands', () => {
             },
           ],
           "style": [],
+          "titleTemplate": "%s - Fixture",
         }
       `)
     }
