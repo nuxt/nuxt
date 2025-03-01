@@ -2927,7 +2927,7 @@ describe('lazy import components', () => {
     const hydratedText = 'This is mounted.'
 
     await page.locator('[data-testid=hydrate-after]', { hasText: unhydratedText }).waitFor({ state: 'visible' })
-    await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'hidden' })
+    await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
 
     await page.close()
   })
