@@ -372,14 +372,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: Head = {}
+    const islandHead: SerializableHead = {}
     for (const entry of head.headEntries()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
-        const currentValue = islandHead[key as keyof Head]
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+        const currentValue = islandHead[key as keyof SerializableHead]
         if (Array.isArray(currentValue)) {
           currentValue.push(...value)
         }
-        islandHead[key as keyof Head] = value
+        islandHead[key as keyof SerializableHead] = value
       }
     }
 

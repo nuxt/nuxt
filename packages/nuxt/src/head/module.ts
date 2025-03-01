@@ -51,7 +51,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
     if (nuxt.options.experimental.polyfillVueUseHead) {
       // backwards compatibility
-      nuxt.options.alias['@vueuse/head'] = unheadVue
+      nuxt.options.alias['@vueuse/head'] = resolveModulePath('@unhead/vue', { try: true, from: importPaths }) || '@unhead/vue'
       addPlugin({ src: resolve(runtimeDir, 'plugins/vueuse-head-polyfill') })
     }
 
