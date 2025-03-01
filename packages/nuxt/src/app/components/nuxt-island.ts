@@ -185,16 +185,23 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
-      const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
-      // TODO: support passing on more headers
-      if (import.meta.server && import.meta.prerender) {
-        const hints = r.headers.get('x-nitro-prerender')
-        if (hints) {
-          appendResponseHeader(event!, 'x-nitro-prerender', hints)
+      try {
+        const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+        // TODO: support passing on more headers
+        if (import.meta.server && import.meta.prerender) {
+          const hints = r.headers.get('x-nitro-prerender')
+          if (hints) {
+            appendResponseHeader(event!, 'x-nitro-prerender', hints)
+          }
         }
+        setPayload(key, result)
+        return result
+      } catch (e: any) {
+        if (r.status !== 200) {
+          throw new Error(e.toString(), { cause: r })
+        }
+        throw e
       }
-      setPayload(key, result)
-      return result
     }
 
     async function fetchComponent (force = false) {
