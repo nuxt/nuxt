@@ -52,7 +52,7 @@ There are over 100 parameters. See the [full list of parameters in the source co
 
 ## Performance
 
-In most instances, SEO meta tags don't need to be reactive as search engine robots primarily scan the initial page load. 
+In most instances, SEO meta tags don't need to be reactive as search engine robots primarily scan the initial page load.
 
 For better performance, you can wrap your `useSeoMeta` calls in a server-only condition when the meta tags don't need to be reactive:
 
