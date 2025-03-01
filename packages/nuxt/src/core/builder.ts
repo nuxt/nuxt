@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
@@ -196,37 +196,36 @@ async function createParcelWatcher () {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
-  const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)))
-  if (!watcherPath) {
+  try {
+    const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) })
+    for (const layer of nuxt.options._layers) {
+      if (!layer.config.srcDir) { continue }
+      const watcher = subscribe(layer.config.srcDir, (err, events) => {
+        if (err) { return }
+        for (const event of events) {
+          if (isIgnored(event.path)) { continue }
+          // TODO: consider moving to emit absolute path in 3.8 or 4.0
+          nuxt.callHook('builder:watch', watchEvents[event.type], nuxt.options.experimental.relativeWatchPaths ? normalize(relative(nuxt.options.srcDir, event.path)) : normalize(event.path))
+        }
+      }, {
+        ignore: [
+          ...nuxt.options.ignore,
+          'node_modules',
+        ],
+      })
+      watcher.then((subscription) => {
+        if (nuxt.options.debug && nuxt.options.debug.watchers) {
+          // eslint-disable-next-line no-console
+          console.timeEnd('[nuxt] builder:parcel:watch')
+        }
+        nuxt.hook('close', () => subscription.unsubscribe())
+      })
+    }
+    return true
+  } catch {
     logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
     return false
   }
-
-  const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
-  for (const layer of nuxt.options._layers) {
-    if (!layer.config.srcDir) { continue }
-    const watcher = subscribe(layer.config.srcDir, (err, events) => {
-      if (err) { return }
-      for (const event of events) {
-        if (isIgnored(event.path)) { continue }
-        // TODO: consider moving to emit absolute path in 3.8 or 4.0
-        nuxt.callHook('builder:watch', watchEvents[event.type], nuxt.options.experimental.relativeWatchPaths ? normalize(relative(nuxt.options.srcDir, event.path)) : normalize(event.path))
-      }
-    }, {
-      ignore: [
-        ...nuxt.options.ignore,
-        'node_modules',
-      ],
-    })
-    watcher.then((subscription) => {
-      if (nuxt.options.debug && nuxt.options.debug.watchers) {
-        // eslint-disable-next-line no-console
-        console.timeEnd('[nuxt] builder:parcel:watch')
-      }
-      nuxt.hook('close', () => subscription.unsubscribe())
-    })
-  }
-  return true
 }
 
 async function bundle (nuxt: Nuxt) {
@@ -248,10 +247,9 @@ async function bundle (nuxt: Nuxt) {
 }
 
 async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
-  const builderPath = await tryResolveModule(builder, [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)])
-
-  if (!builderPath) {
+  try {
+    return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
+  } catch {
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
   }
-  return importModule(builderPath)
 }

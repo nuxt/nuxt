@@ -27,10 +27,11 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^3.0.2",
+    "c12": "^2.0.4",
     "consola": "^3.4.0",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
+    "exsolve": "^1.0.1",
     "globby": "^14.1.0",
     "ignore": "^7.0.3",
     "jiti": "^2.4.2",
