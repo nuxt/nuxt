@@ -14,7 +14,7 @@ import { isCSS } from './utils'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 allows adding middleware after setup
-export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
+export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
 

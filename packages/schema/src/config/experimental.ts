@@ -478,5 +478,19 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : Boolean(await get('debug'))
       },
     },
+
+    /**
+     * Enable automatic configuration of hydration strategies for `<Lazy>` components.
+     */
+    lazyHydration: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
+      },
+    },
+
+    /**
+     * Disable resolving imports into Nuxt templates from the path of the module that added the template.
+     */
+    templateImportResolution: true,
   },
 })
