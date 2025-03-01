@@ -1,18 +1,4 @@
 <script setup lang="ts">
-const loading = useState(() => true)
-
-useHead({
-  bodyAttrs: {
-    class: () => (loading.value ? 'yellow' : ''),
-  },
-})
-
-const head = injectHead()
-const _ = head.hooks.hookOnce('dom:rendered', () => {
-  loading.value = false
-})
-
-onUnmounted(_)
 </script>
 
 <template>
@@ -22,8 +8,6 @@ onUnmounted(_)
   </div>
 </template>
 
-<style>
-.yellow {
-  background: yellow;
-}
+<style scoped>
+
 </style>
