@@ -28,8 +28,8 @@ useHeadSafe({
 // <meta content="0;javascript:alert(1)">
 ```
 
-::read-more{to="https://unhead.unjs.io/usage/composables/use-head-safe" target="_blank"}
-Read more on `unhead` documentation.
+::read-more{to="https://unhead.unjs.io/docs/api/use-head-safe" target="_blank"}
+Read more on the `Unhead` documentation.
 ::
 
 ## Type
