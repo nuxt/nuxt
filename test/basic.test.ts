@@ -2933,7 +2933,7 @@ describe('lazy import components', () => {
     const hydratedText = 'This is mounted.'
     await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
 
-    const hydrationLogs = consoleLogs.filter(log => log.type !== 'warn')
+    const hydrationLogs = consoleLogs.filter(log => !log.text.includes('[vite]') && !log.text.includes('<Suspense>'))
     expect(hydrationLogs.map(log => log.text)).toEqual([])
 
     await page.close()
