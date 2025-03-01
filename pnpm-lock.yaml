@@ -241,6 +241,9 @@ importers:
       destr:
         specifier: ^2.0.3
         version: 2.0.3
+      errx:
+        specifier: ^0.1.0
+        version: 0.1.0
       exsolve:
         specifier: ^1.0.1
         version: 1.0.1
