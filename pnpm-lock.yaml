@@ -272,8 +272,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       pkg-types:
-        specifier: ^1.3.1
-        version: 1.3.1
+        specifier: ^2.0.1
+        version: 2.0.1
       scule:
         specifier: ^1.3.0
         version: 1.3.0
@@ -465,8 +465,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       pkg-types:
-        specifier: ^1.3.1
-        version: 1.3.1
+        specifier: ^2.0.1
+        version: 2.0.1
       radix3:
         specifier: ^1.1.2
         version: 1.1.2
@@ -783,8 +783,8 @@ importers:
         specifier: 1.4.1
         version: 1.4.1
       pkg-types:
-        specifier: 1.3.1
-        version: 1.3.1
+        specifier: 2.0.1
+        version: 2.0.1
       postcss:
         specifier: 8.5.3
         version: 8.5.3
@@ -945,8 +945,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       pkg-types:
-        specifier: ^1.3.1
-        version: 1.3.1
+        specifier: ^2.0.1
+        version: 2.0.1
       postcss:
         specifier: 8.5.3
         version: 8.5.3
@@ -6084,8 +6084,8 @@ packages:
   pkg-types@1.3.1:
     resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
 
-  pkg-types@2.0.0:
-    resolution: {integrity: sha512-W+831FxieJW1CIAh3JMmHaMhK/SiSeyCqbSWqLjjvbjaPDDY0cRkspIfOx4vLkFNgfxnzSxxGFUiMHMm6QpvYA==}
+  pkg-types@2.0.1:
+    resolution: {integrity: sha512-LdDk/hlFeVBoEZqlkJ2bsxwq5fjKQg7i422zu78IC16CSR2XBe7kYxxBx0mkU8kLX6nh50Zp80lZHveKnsHTpQ==}
 
   playwright-core@1.50.1:
     resolution: {integrity: sha512-ra9fsNWayuYumt+NiM069M6OkcRb1FZSK8bgi66AtpFoWkg2+y0bJSNmkFrWhMbEBbVKC/EruAHH3g0zmtwGmQ==}
@@ -8719,7 +8719,7 @@ snapshots:
       execa: 9.5.2
       magicast: 0.3.5
       pathe: 2.0.3
-      pkg-types: 2.0.0
+      pkg-types: 2.0.1
       prompts: 2.4.2
       semver: 7.7.1
 
@@ -8747,7 +8747,7 @@ snapshots:
       ohash: 2.0.7
       pathe: 2.0.3
       perfect-debounce: 1.0.0
-      pkg-types: 2.0.0
+      pkg-types: 2.0.1
       semver: 7.7.1
       simple-git: 3.27.0
       sirv: 3.0.1
@@ -10574,7 +10574,7 @@ snapshots:
       ohash: 2.0.7
       pathe: 2.0.3
       perfect-debounce: 1.0.0
-      pkg-types: 2.0.0
+      pkg-types: 2.0.1
       rc9: 2.1.2
     optionalDependencies:
       magicast: 0.3.5
@@ -10591,7 +10591,7 @@ snapshots:
       ohash: 2.0.7
       pathe: 2.0.3
       perfect-debounce: 1.0.0
-      pkg-types: 2.0.0
+      pkg-types: 2.0.1
       rc9: 2.1.2
     optionalDependencies:
       magicast: 0.3.5
@@ -10657,7 +10657,7 @@ snapshots:
       ofetch: 1.4.1
       open: 10.1.0
       pathe: 2.0.3
-      pkg-types: 2.0.0
+      pkg-types: 2.0.1
       scule: 1.3.0
       semver: 7.7.1
       std-env: 3.8.0
@@ -13429,7 +13429,7 @@ snapshots:
       citty: 0.1.6
       consola: 3.4.0
       pathe: 2.0.3
-      pkg-types: 2.0.0
+      pkg-types: 2.0.1
       tinyexec: 0.3.2
 
   object-assign@4.1.1: {}
@@ -13664,9 +13664,10 @@ snapshots:
       mlly: 1.7.4
       pathe: 2.0.3
 
-  pkg-types@2.0.0:
+  pkg-types@2.0.1:
     dependencies:
       confbox: 0.1.8
+      exsolve: 1.0.1
       pathe: 2.0.3
 
   playwright-core@1.50.1: {}
@@ -14939,7 +14940,7 @@ snapshots:
       mkdist: 2.2.0(typescript@5.8.2)(vue-tsc@2.2.4(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       mlly: 1.7.4
       pathe: 2.0.3
-      pkg-types: 2.0.0
+      pkg-types: 2.0.1
       pretty-bytes: 6.1.1
       rollup: 4.34.9
       rollup-plugin-dts: 6.1.1(rollup@4.34.9)(typescript@5.8.2)
