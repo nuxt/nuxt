@@ -1,5 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
@@ -8,8 +9,9 @@ import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
+import { captureStackTrace } from 'errx'
 
-import { filterInPlace } from './utils'
+import { distDirURL, filterInPlace } from './utils'
 import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
@@ -26,6 +28,19 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
 
   // Remove any existing template with the same destination path
   filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
+
+  try {
+    const distDir = distDirURL.toString()
+    const { source } = captureStackTrace().find(e => e.source && !e.source.startsWith(distDir)) ?? {}
+    if (source) {
+      const path = normalize(fileURLToPath(source))
+      if (existsSync(path)) {
+        template._path = path
+      }
+    }
+  } catch {
+    // ignore errors as this is an additive feature
+  }
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
