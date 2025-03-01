@@ -6,7 +6,7 @@ import { withoutTrailingSlash } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 import { build, loadNuxt } from 'nuxt'
 
-const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url))))
+const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/minimal', import.meta.url))))
 
 describe('build', () => {
   let nuxt: Nuxt
@@ -30,7 +30,7 @@ describe('build', () => {
 
   afterAll(() => nuxt?.close())
 
-  bench('initial production build in the basic test fixture', async () => {
+  bench('initial production build in the minimal test fixture', async () => {
     await build(nuxt).catch((e) => {
       if (!e?.toString().includes('bypass nitro build')) {
         throw e
