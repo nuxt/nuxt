@@ -97,6 +97,12 @@ export default defineNuxtModule({
     }
     options.enabled = await isPagesEnabled()
     nuxt.options.pages = options
+    // For backwards compatibility with `@nuxtjs/i18n` and other modules that serialize `nuxt.options.pages` directly
+    // TODO: remove in a future major
+    Object.defineProperty(nuxt.options.pages, 'toString', {
+      enumerable: false,
+      get: () => () => options.enabled,
+    })
 
     if (nuxt.options.dev && options.enabled) {
       // Add plugin to check if pages are enabled without NuxtPage being instantiated
