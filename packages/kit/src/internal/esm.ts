@@ -33,6 +33,7 @@ export function tryResolveModule (id: string, url: string | string[] | URL | URL
 export function resolveModule (id: string, options?: ResolveModuleOptions) {
   return resolveModulePath(id, {
     from: options?.url ?? options?.paths ?? [import.meta.url],
+    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
   })
 }
 
