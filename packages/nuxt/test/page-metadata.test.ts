@@ -79,7 +79,10 @@ definePageMeta({ name: 'bar' })
     `
     const meta = getRouteMeta(fileContents, `/app/pages/index.vue`)
     expect(meta).toStrictEqual({
-      name: 'bar',
+      'meta': {
+        '__nuxt_dynamic_meta_key': new Set(['meta']),
+      },
+      'name': 'bar',
     })
   })
 
