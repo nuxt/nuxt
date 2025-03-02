@@ -1,0 +1,3 @@
+title: 'Utils'
+titleTemplate: '%s · Nuxt Utils'
+navigation.icon: i-lucide-square-function
