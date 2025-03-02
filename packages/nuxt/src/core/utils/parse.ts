@@ -1,8 +1,7 @@
 import { walk as _walk } from 'estree-walker'
 import type { Node, SyncHandler } from 'estree-walker'
-import type { ArrowFunctionExpression, CatchClause, Program as ESTreeProgram, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, VariableDeclaration } from 'estree'
-import { parse } from 'acorn'
-import type { Program } from 'acorn'
+import type { ArrowFunctionExpression, CatchClause, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program, VariableDeclaration } from 'estree'
+import { parseSync } from 'oxc-parser'
 import { type SameShape, type TransformOptions, type TransformResult, transform as esbuildTransform } from 'esbuild'
 import { tryUseNuxt } from '@nuxt/kit'
 
@@ -22,7 +21,7 @@ interface WalkOptions {
 }
 
 export function walk (ast: Program | Node, callback: Partial<WalkOptions>) {
-  return _walk(ast as unknown as ESTreeProgram | Node, {
+  return _walk(ast, {
     enter (node, parent, key, index) {
       // @ts-expect-error - accessing a protected property
       callback.scopeTracker?.processNodeEnter(node as WithLocations<Node>)
@@ -33,15 +32,16 @@ export function walk (ast: Program | Node, callback: Partial<WalkOptions>) {
       callback.scopeTracker?.processNodeLeave(node as WithLocations<Node>)
       callback.leave?.call(this, node as WithLocations<Node>, parent as WithLocations<Node> | null, { key, index, ast })
     },
-  }) as Program | Node | null
+  })
 }
 
 export function parseAndWalk (code: string, sourceFilename: string, callback: WalkerCallback): Program
 export function parseAndWalk (code: string, sourceFilename: string, object: Partial<WalkOptions>): Program
 export function parseAndWalk (code: string, sourceFilename: string, callback: Partial<WalkOptions> | WalkerCallback) {
-  const ast = parse (code, { sourceType: 'module', ecmaVersion: 'latest', locations: true, sourceFile: sourceFilename })
-  walk(ast, typeof callback === 'function' ? { enter: callback } : callback)
-  return ast
+  const lang = sourceFilename.match(/\.[cm]?([jt]sx?)$/)?.[1] as 'js' | 'ts' | 'jsx' | 'tsx' | undefined
+  const ast = parseSync(sourceFilename, code, { sourceType: 'module', lang })
+  walk(ast.program as unknown as Program, typeof callback === 'function' ? { enter: callback } : callback)
+  return ast.program as unknown as Program
 }
 
 export function withLocations<T> (node: T): WithLocations<T> {
