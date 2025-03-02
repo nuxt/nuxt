@@ -213,7 +213,7 @@ importers:
         version: 1.5.4
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vitest:
         specifier: 3.0.7
         version: 3.0.7(@types/debug@4.1.12)(@types/node@22.13.8)(happy-dom@17.1.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -224,8 +224,8 @@ importers:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
       vue-tsc:
-        specifier: 2.2.6
-        version: 2.2.6(typescript@5.8.2)
+        specifier: 2.2.8
+        version: 2.2.8(typescript@5.8.2)
       webpack:
         specifier: 5.98.0
         version: 5.98.0
@@ -266,8 +266,8 @@ importers:
         specifier: ^1.7.4
         version: 1.7.4
       ohash:
-        specifier: ^2.0.8
-        version: 2.0.8
+        specifier: ^2.0.9
+        version: 2.0.9
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -310,7 +310,7 @@ importers:
         version: nitro-nightly@3.0.0-beta-28969273.f7aa9de6(typescript@5.8.2)
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -444,8 +444,8 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
       ohash:
-        specifier: ^2.0.8
-        version: 2.0.8
+        specifier: ^2.0.9
+        version: 2.0.9
       on-change:
         specifier: ^5.0.1
         version: 5.0.1
@@ -545,7 +545,7 @@ importers:
         version: 3.5.13
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vite:
         specifier: 6.2.0
         version: 6.2.0(@types/node@22.13.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -610,8 +610,8 @@ importers:
         specifier: ^4.17.0
         version: 4.17.0
       ohash:
-        specifier: ^2.0.8
-        version: 2.0.8
+        specifier: ^2.0.9
+        version: 2.0.9
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -690,7 +690,7 @@ importers:
         version: 4.34.9
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
@@ -735,8 +735,8 @@ importers:
         specifier: 3.5.13
         version: 3.5.13
       '@vue/language-core':
-        specifier: 2.2.6
-        version: 2.2.6(typescript@5.8.2)
+        specifier: 2.2.8
+        version: 2.2.8(typescript@5.8.2)
       c12:
         specifier: 3.0.2
         version: 3.0.2(magicast@0.3.5)
@@ -793,7 +793,7 @@ importers:
         version: 1.3.0
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       unctx:
         specifier: 2.4.1
         version: 2.4.1
@@ -952,7 +952,7 @@ importers:
         version: 3.0.7(@types/node@22.13.8)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-plugin-checker:
         specifier: ^0.9.0
-        version: 0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.6(typescript@5.8.2))
+        version: 0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.8(typescript@5.8.2))
       vue-bundle-renderer:
         specifier: ^2.1.1
         version: 2.1.1
@@ -965,7 +965,7 @@ importers:
         version: 4.34.9
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
@@ -1027,8 +1027,8 @@ importers:
         specifier: ^2.9.2
         version: 2.9.2(webpack@5.98.0)
       ohash:
-        specifier: ^2.0.8
-        version: 2.0.8
+        specifier: ^2.0.9
+        version: 2.0.9
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -1113,7 +1113,7 @@ importers:
         version: 4.34.9
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+        version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
@@ -3195,8 +3195,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@2.2.6':
-    resolution: {integrity: sha512-7IQTvwVOvhYSzcizZ2hAdqJjI+SaJS2GO7EnDlSlQ77drwl5UzNa2IZm9pO9MdMxrlw24CGI/Lo3xpCjM26veg==}
+  '@vue/language-core@2.2.8':
+    resolution: {integrity: sha512-rrzB0wPGBvcwaSNRriVWdNAbHQWSf0NlGqgKHK5mEkXpefjUlVRP62u03KvwZpvKVjRnBIQ/Lwre+Mx9N6juUQ==}
     peerDependencies:
       typescript: 5.8.2
     peerDependenciesMeta:
@@ -5924,8 +5924,8 @@ packages:
   ohash@1.1.4:
     resolution: {integrity: sha512-FlDryZAahJmEF3VR3w1KogSEdWX3WhA5GPakFx4J81kEAiHyLMpdLLElS8n8dfNadMgAne/MywcvmogzscVt4g==}
 
-  ohash@2.0.8:
-    resolution: {integrity: sha512-it414TxihR6VuYAEhyPYagaETGVKMRGWgRdA6qgIARsrBIpDGjLCktIG9g9zN55n+aDTiBFIj55MxWOacbKV8w==}
+  ohash@2.0.9:
+    resolution: {integrity: sha512-ljz2sybhXrRpBW9LleuJPP9uxbMKW8qxFz9lLOHW2QEel78rJ1sUgaX2cBNDt49w+JleNSkhYkVOCx6RgkKn0Q==}
 
   on-change@5.0.1:
     resolution: {integrity: sha512-n7THCP7RkyReRSLkJb8kUWoNsxUIBxTkIp3JKno+sEz6o/9AJ3w3P9fzQkITEkMwyTKJjZciF3v/pVoouxZZMg==}
@@ -7716,8 +7716,8 @@ packages:
     peerDependencies:
       vue: 3.5.13
 
-  vue-tsc@2.2.6:
-    resolution: {integrity: sha512-TI6eAnWPatONEpVAZt1etbSrh8tDpHOLSlRqKGudOK5WKVnBGzHXUi0KR4UCsf2o5P+5285w4HF+5avhfH7IMA==}
+  vue-tsc@2.2.8:
+    resolution: {integrity: sha512-jBYKBNFADTN+L+MdesNX/TB3XuDSyaWynKMDgR+yCSln0GQ9Tfb7JS2lr46s2LiFUT1WsmfWsSvIElyxzOPqcQ==}
     hasBin: true
     peerDependencies:
       typescript: 5.8.2
@@ -8727,7 +8727,7 @@ snapshots:
       listhen: 1.9.0
       nypm: 0.5.4
       ofetch: 1.4.1
-      ohash: 2.0.8
+      ohash: 2.0.9
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -8780,7 +8780,7 @@ snapshots:
       local-pkg: 1.1.0
       magicast: 0.3.5
       nypm: 0.6.0
-      ohash: 2.0.8
+      ohash: 2.0.9
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 2.0.1
@@ -10207,7 +10207,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.2
 
-  '@vue/language-core@2.2.6(typescript@5.8.2)':
+  '@vue/language-core@2.2.8(typescript@5.8.2)':
     dependencies:
       '@volar/language-core': 2.4.11
       '@vue/compiler-dom': 3.5.13
@@ -10623,7 +10623,7 @@ snapshots:
       exsolve: 1.0.1
       giget: 2.0.0
       jiti: 2.4.2
-      ohash: 2.0.8
+      ohash: 2.0.9
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 2.0.1
@@ -13180,7 +13180,7 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
-  mkdist@2.2.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
+  mkdist@2.2.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
     dependencies:
       autoprefixer: 10.4.20(postcss@8.5.3)
       citty: 0.1.6
@@ -13198,7 +13198,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.2
       vue: 3.5.13(typescript@5.8.2)
-      vue-tsc: 2.2.6(typescript@5.8.2)
+      vue-tsc: 2.2.8(typescript@5.8.2)
 
   mlly@1.7.4:
     dependencies:
@@ -13459,7 +13459,7 @@ snapshots:
 
   ohash@1.1.4: {}
 
-  ohash@2.0.8: {}
+  ohash@2.0.9: {}
 
   on-change@5.0.1: {}
 
@@ -14911,7 +14911,7 @@ snapshots:
 
   ultrahtml@1.5.3: {}
 
-  unbuild@3.5.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
+  unbuild@3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.34.9)
       '@rollup/plugin-commonjs': 28.0.2(rollup@4.34.9)
@@ -14927,7 +14927,7 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mkdist: 2.2.0(typescript@5.8.2)(vue-tsc@2.2.6(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
+      mkdist: 2.2.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
       mlly: 1.7.4
       pathe: 2.0.3
       pkg-types: 2.0.1
@@ -15253,7 +15253,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-checker@0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.6(typescript@5.8.2)):
+  vite-plugin-checker@0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.8.2)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.8(typescript@5.8.2)):
     dependencies:
       '@babel/code-frame': 7.26.2
       chokidar: 4.0.3
@@ -15269,14 +15269,14 @@ snapshots:
       eslint: 9.21.0(jiti@2.4.2)
       optionator: 0.9.4
       typescript: 5.8.2
-      vue-tsc: 2.2.6(typescript@5.8.2)
+      vue-tsc: 2.2.8(typescript@5.8.2)
 
   vite-plugin-inspect@11.0.0(@nuxt/kit@packages+kit)(vite@6.2.0(@types/node@22.13.8)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)):
     dependencies:
       ansis: 3.16.0
       debug: 4.4.0(supports-color@9.4.0)
       error-stack-parser-es: 1.0.5
-      ohash: 2.0.8
+      ohash: 2.0.9
       open: 10.1.0
       perfect-debounce: 1.0.0
       sirv: 3.0.1
@@ -15443,10 +15443,10 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.13(typescript@5.8.2)
 
-  vue-tsc@2.2.6(typescript@5.8.2):
+  vue-tsc@2.2.8(typescript@5.8.2):
     dependencies:
       '@volar/typescript': 2.4.11
-      '@vue/language-core': 2.2.6(typescript@5.8.2)
+      '@vue/language-core': 2.2.8(typescript@5.8.2)
       typescript: 5.8.2
 
   vue@3.5.13(typescript@5.8.2):
