@@ -254,6 +254,9 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     h(NuxtLink, { to: { name: 'param-id', params: { bob: 23 } } })
     h(NuxtLink, { to: { name: 'param-id', params: { id: 4 } } })
+
+    // doesn't throw an error when accessing properties of component
+    const _props = NuxtLink.props
   })
 })
 
