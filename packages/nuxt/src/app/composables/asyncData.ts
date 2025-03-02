@@ -107,10 +107,6 @@ export interface AsyncDataExecuteOptions {
 
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
-  /**
-   * @deprecated Use `status` instead. This may be removed in a future major version.
-   */
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
@@ -250,7 +246,6 @@ export function useAsyncData<
     const _ref = options.deep ? ref : shallowRef
     nuxtApp._asyncData[key] = {
       data: _ref(hasCachedData ? initialCachedData : options.default!()),
-      pending: ref(!hasCachedData),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle'),
       _default: options.default!,
@@ -278,7 +273,6 @@ export function useAsyncData<
         return Promise.resolve(cachedData)
       }
     }
-    asyncData.pending.value = true
     asyncData.status.value = 'pending'
     // TODO: Cancel previous promise
     const promise = new Promise<ResT>(
@@ -325,8 +319,6 @@ export function useAsyncData<
       })
       .finally(() => {
         if ((promise as any).cancelled) { return }
-
-        asyncData.pending.value = false
 
         delete nuxtApp._asyncDataPromises[key]
       })
@@ -376,7 +368,6 @@ export function useAsyncData<
 
     if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || typeof initialCachedData !== 'undefined')) {
       // 1. Hydration (server: true): no fetch
-      asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
     } else if (instance && ((nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || options.lazy) && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
@@ -537,7 +528,6 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   if (nuxtApp._asyncData[key]) {
     nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
     nuxtApp._asyncData[key]!.error.value = undefined
-    nuxtApp._asyncData[key]!.pending.value = false
     nuxtApp._asyncData[key]!.status.value = 'idle'
   }
 
