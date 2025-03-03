@@ -15,7 +15,7 @@ import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
-import { LazyHydrationMicroTransformPlugin, lazyHydrationMicroTypeTemplate } from './plugins/lazy-hydration-micro-transform'
+import { LazyHydrationMacroTransformPlugin, lazyHydrationMacroTypeTemplate } from './plugins/lazy-hydration-macro-transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -223,12 +223,12 @@ export default defineNuxtModule<ComponentsOptions>({
         sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
       }), { prepend: true })
 
-      addBuildPlugin(LazyHydrationMicroTransformPlugin({
+      addBuildPlugin(LazyHydrationMacroTransformPlugin({
         ...sharedLoaderOptions,
         sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
       }))
 
-      addTypeTemplate(lazyHydrationMicroTypeTemplate)
+      addTypeTemplate(lazyHydrationMacroTypeTemplate)
     }
 
     if (nuxt.options.experimental.componentIslands) {

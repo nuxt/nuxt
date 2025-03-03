@@ -15,15 +15,15 @@ interface LoaderOptions {
   clientDelayedComponentRuntime: string
 }
 
-const LAZY_HYDRATION_MICRO_RE = /(?:const\s+(\w+)\s*=\s*)?defineLazy(Idle|Visible|Interaction|MediaQuery|Time|If|Never)Component\(\(\)\s*=>\s*import\(['"](.+?)['"]\)\)/g
+const LAZY_HYDRATION_MACRO_RE = /(?:const\s+(\w+)\s*=\s*)?defineLazy(Idle|Visible|Interaction|MediaQuery|Time|If|Never)Component\(\(\)\s*=>\s*import\(['"](.+?)['"]\)\)/g
 const COMPONENT_NAME = /import\(["'].*\/([^\\/]+?)\.\w+["']\)/
 
-export const LazyHydrationMicroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
+export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
 
   return {
-    name: 'nuxt:lazy-hydration-micro',
+    name: 'nuxt:lazy-hydration-macro',
     enforce: 'post',
     transformInclude (id) {
       if (exclude.some(pattern => pattern.test(id))) {
@@ -36,7 +36,7 @@ export const LazyHydrationMicroTransformPlugin = (options: LoaderOptions) => cre
     },
 
     transform (code) {
-      const matches = Array.from(code.matchAll(LAZY_HYDRATION_MICRO_RE))
+      const matches = Array.from(code.matchAll(LAZY_HYDRATION_MACRO_RE))
       if (!matches.length) { return }
 
       const s = new MagicString(code)
@@ -93,8 +93,8 @@ export const LazyHydrationMicroTransformPlugin = (options: LoaderOptions) => cre
   }
 })
 
-export const lazyHydrationMicroTypeTemplate: NuxtTypeTemplate = {
-  filename: 'lazy-hydration-micro.d.ts',
+export const lazyHydrationMacroTypeTemplate: NuxtTypeTemplate = {
+  filename: 'lazy-hydration-macro.d.ts',
   getContents () {
     return `
 import { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent } from 'vue'
