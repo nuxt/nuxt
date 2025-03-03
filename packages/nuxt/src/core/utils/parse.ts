@@ -1,9 +1,9 @@
 import { walk as _walk } from 'estree-walker'
 import type { Node, SyncHandler } from 'estree-walker'
 import type { ArrowFunctionExpression, CatchClause, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program, VariableDeclaration } from 'estree'
-import { parseSync } from 'oxc-parser'
 import { type SameShape, type TransformOptions, type TransformResult, transform as esbuildTransform } from 'esbuild'
 import { tryUseNuxt } from '@nuxt/kit'
+import { provider } from 'std-env'
 
 export type { Node }
 
@@ -33,6 +33,13 @@ export function walk (ast: Program | Node, callback: Partial<WalkOptions>) {
       callback.leave?.call(this, node as WithLocations<Node>, parent as WithLocations<Node> | null, { key, index, ast })
     },
   })
+}
+
+let parseSync: typeof import('oxc-parser').parseSync
+
+export async function initParser () {
+  parseSync = await (provider === 'stackblitz' ? import('@oxc-parser/wasm') as unknown as Promise<typeof import('oxc-parser')> : import('oxc-parser'))
+    .then(r => r.parseSync)
 }
 
 export function parseAndWalk (code: string, sourceFilename: string, callback: WalkerCallback): Program

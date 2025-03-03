@@ -50,6 +50,7 @@ import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
+import { initParser } from './utils/parse'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -334,6 +335,8 @@ async function initNuxt (nuxt: Nuxt) {
       await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
     }
   }
+
+  await initParser()
 
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
