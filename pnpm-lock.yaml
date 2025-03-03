@@ -350,6 +350,9 @@ importers:
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
+      '@oxc-parser/wasm':
+        specifier: ^0.53.0
+        version: 0.53.0
       '@types/node':
         specifier: 22.13.8
         version: 22.13.8
@@ -2312,6 +2315,9 @@ packages:
     resolution: {integrity: sha512-7EhG3JJRttLxfyPriaO7J+2mNQ3tKG25/VkkPW30aH5YL6TKQFUijM/Lh7UW7nRXdvr5Oqn4yVjnDTi8PapFmw==}
     cpu: [x64]
     os: [win32]
+
+  '@oxc-parser/wasm@0.53.0':
+    resolution: {integrity: sha512-RqWt/Z8SH9RkE5PBTCre/GczXpM/D8pajshzMiHqTVKyrBtUd7ulL2idYBrceBsK+FQT2XdRTx4cUs7TCRfEGw==}
 
   '@oxc-project/types@0.53.0':
     resolution: {integrity: sha512-8JXXVoHnRLcl6kDBboSfAmAkKeb6PSvSc5qSJxiOFzFx0ZCLAbUDmuwR2hkBnY7kQS3LmNXaONq1BFAmwTyeZw==}
@@ -9110,6 +9116,10 @@ snapshots:
 
   '@oxc-parser/binding-win32-x64-msvc@0.53.0':
     optional: true
+
+  '@oxc-parser/wasm@0.53.0':
+    dependencies:
+      '@oxc-project/types': 0.53.0
 
   '@oxc-project/types@0.53.0': {}
 
