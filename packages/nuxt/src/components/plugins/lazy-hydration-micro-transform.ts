@@ -5,7 +5,7 @@ import { relative } from 'pathe'
 import MagicString from 'magic-string'
 import { genDynamicImport, genImport } from 'knitwork'
 import { pascalCase } from 'scule'
-import { SX_RE, isVue } from '../../core/utils'
+import { isJS, isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -32,7 +32,7 @@ export const LazyHydrationMicroTransformPlugin = (options: LoaderOptions) => cre
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
+      return isVue(id, { type: ['template', 'script'] }) || isJS(id)
     },
 
     transform (code) {
