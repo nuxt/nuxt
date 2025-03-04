@@ -2931,13 +2931,17 @@ describe('lazy import components', () => {
   })
 
   it('handles time-based hydration correctly', async () => {
-    const { page } = await renderPage('/lazy-import-components/time')
-
     const unhydratedText = 'This is not mounted.'
-    const hydratedText = 'This is mounted.'
+    const html = await $fetch<string>('/lazy-import-components/time')
+    expect(html).toContain(unhydratedText)
 
-    await page.locator('[data-testid=hydrate-after]', { hasText: unhydratedText }).waitFor({ state: 'visible' })
-    await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'hidden' })
+    const { page, consoleLogs } = await renderPage('/lazy-import-components/time')
+
+    const hydratedText = 'This is mounted.'
+    await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
+
+    const hydrationLogs = consoleLogs.filter(log => !log.text.includes('[vite]') && !log.text.includes('<Suspense>'))
+    expect(hydrationLogs.map(log => log.text)).toEqual([])
 
     await page.close()
   })

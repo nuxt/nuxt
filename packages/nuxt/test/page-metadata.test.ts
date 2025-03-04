@@ -1,8 +1,7 @@
 import { type MockedFunction, describe, expect, it, vi } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
-import * as Parser from 'acorn'
 import { klona } from 'klona'
-import { transform as esbuildTransform } from 'esbuild'
+
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta'
 import { getRouteMeta, normalizeRoutes } from '../src/pages/utils'
 import type { NuxtPage } from '../schema'
@@ -12,15 +11,15 @@ const filePath = '/app/pages/index.vue'
 vi.mock('klona', { spy: true })
 
 describe('page metadata', () => {
-  it('should not extract metadata from empty files', async () => {
-    expect(await getRouteMeta('', filePath)).toEqual({})
-    expect(await getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})
+  it('should not extract metadata from empty files', () => {
+    expect(getRouteMeta('', filePath)).toEqual({})
+    expect(getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})
   })
 
-  it('should extract metadata from JS/JSX files', async () => {
+  it('should extract metadata from JS/JSX files', () => {
     const fileContents = `definePageMeta({ name: 'bar' })`
     for (const ext of ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']) {
-      const meta = await getRouteMeta(fileContents, `/app/pages/index.${ext}`)
+      const meta = getRouteMeta(fileContents, `/app/pages/index.${ext}`)
       expect(meta).toStrictEqual({
         'name': 'bar',
         'meta': {
@@ -30,7 +29,7 @@ describe('page metadata', () => {
     }
   })
 
-  it('should parse JSX files', async () => {
+  it('should parse JSX files', () => {
     const fileContents = `
 export default {
   setup () {
@@ -39,7 +38,7 @@ export default {
   }
 }
     `
-    const meta = await getRouteMeta(fileContents, `/app/pages/index.jsx`)
+    const meta = getRouteMeta(fileContents, `/app/pages/index.jsx`)
     // TODO: remove in v4
     delete meta.meta
     expect(meta).toStrictEqual({
@@ -47,14 +46,14 @@ export default {
     })
   })
 
-  it('should parse lang="jsx" from vue files', async () => {
+  it('should parse lang="jsx" from vue files', () => {
     const fileContents = `
   <script setup lang="jsx">
   const foo = <></>;
   definePageMeta({ name: 'bar' })
   </script>`
 
-    const meta = await getRouteMeta(fileContents, `/app/pages/index.vue`)
+    const meta = getRouteMeta(fileContents, `/app/pages/index.vue`)
     expect(meta).toStrictEqual({
       'meta': {
         '__nuxt_dynamic_meta_key': new Set(['meta']),
@@ -63,8 +62,7 @@ export default {
     })
   })
 
-  // TODO: https://github.com/nuxt/nuxt/pull/30066
-  it.todo('should handle experimental decorators', async () => {
+  it('should handle experimental decorators', () => {
     const fileContents = `
 <script setup lang="ts">
 function something (_method: () => unknown) {
@@ -79,31 +77,34 @@ class SomeClass {
 definePageMeta({ name: 'bar' })
 </script>
     `
-    const meta = await getRouteMeta(fileContents, `/app/pages/index.vue`)
+    const meta = getRouteMeta(fileContents, `/app/pages/index.vue`)
     expect(meta).toStrictEqual({
-      name: 'bar',
+      'meta': {
+        '__nuxt_dynamic_meta_key': new Set(['meta']),
+      },
+      'name': 'bar',
     })
   })
 
-  it('should use and invalidate cache', async () => {
+  it('should use and invalidate cache', () => {
     const _klona = klona as unknown as MockedFunction<typeof klona>
     _klona.mockImplementation(obj => obj)
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
-    const meta = await getRouteMeta(fileContents, filePath)
-    expect(meta === await getRouteMeta(fileContents, filePath)).toBeTruthy()
-    expect(meta === await getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
-    expect(meta === await getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
+    const meta = getRouteMeta(fileContents, filePath)
+    expect(meta === getRouteMeta(fileContents, filePath)).toBeTruthy()
+    expect(meta === getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
+    expect(meta === getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
     _klona.mockReset()
   })
 
-  it('should not share state between page metadata', async () => {
+  it('should not share state between page metadata', () => {
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
-    const meta = await getRouteMeta(fileContents, filePath)
-    expect(meta === await getRouteMeta(fileContents, filePath)).toBeFalsy()
+    const meta = getRouteMeta(fileContents, filePath)
+    expect(meta === getRouteMeta(fileContents, filePath)).toBeFalsy()
   })
 
-  it('should extract serialisable metadata', async () => {
-    const meta = await getRouteMeta(`
+  it('should extract serialisable metadata', () => {
+    const meta = getRouteMeta(`
     <script setup>
     definePageMeta({
       path: '/some-custom-path',
@@ -144,8 +145,8 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
-  it('should extract serialisable metadata from files with multiple blocks', async () => {
-    const meta = await getRouteMeta(`
+  it('should extract serialisable metadata from files with multiple blocks', () => {
+    const meta = getRouteMeta(`
     <script lang="ts">
     export default {
       name: 'thing'
@@ -179,8 +180,8 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
-  it('should extract serialisable metadata in options api', async () => {
-    const meta = await getRouteMeta(`
+  it('should extract serialisable metadata in options api', () => {
+    const meta = getRouteMeta(`
     <script>
     export default {
       setup() {
@@ -207,8 +208,8 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
-  it('should extract serialisable metadata all quoted', async () => {
-    const meta = await getRouteMeta(`
+  it('should extract serialisable metadata all quoted', () => {
+    const meta = getRouteMeta(`
     <script setup>
     definePageMeta({
       "otherValue": {
@@ -229,8 +230,8 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
-  it('should extract configured extra meta', async () => {
-    const meta = await getRouteMeta(`
+  it('should extract configured extra meta', () => {
+    const meta = getRouteMeta(`
     <script setup>
     definePageMeta({
       foo: 'bar',
@@ -249,9 +250,9 @@ definePageMeta({ name: 'bar' })
 })
 
 describe('normalizeRoutes', () => {
-  it('should produce valid route objects when used with extracted meta', async () => {
+  it('should produce valid route objects when used with extracted meta', () => {
     const page: NuxtPage = { path: '/', file: filePath }
-    Object.assign(page, await getRouteMeta(`
+    Object.assign(page, getRouteMeta(`
       <script setup>
       definePageMeta({
         name: 'some-custom-name',
@@ -340,14 +341,7 @@ definePageMeta({
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "const __nuxt_page_meta = {
         name: 'hi',
         other: 'value'
@@ -374,14 +368,7 @@ definePageMeta({
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "function isNumber(value) {
         return value && !isNaN(Number(value))
       }
@@ -408,14 +395,7 @@ definePageMeta({
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "import { validateIdParam } from './utils'
 
       const __nuxt_page_meta = {
@@ -443,14 +423,7 @@ definePageMeta({
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "const __nuxt_page_meta = {
         middleware: () => {
           const useState = (key) => ({ value: { isLoggedIn: false } })
@@ -485,14 +458,7 @@ definePageMeta({
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "const __nuxt_page_meta = {
         middleware: () => {
           function isLoggedIn() {
@@ -535,14 +501,7 @@ definePageMeta({
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "import { useState } from '#app/composables/state'
 
       const __nuxt_page_meta = {
@@ -584,14 +543,7 @@ definePageMeta({
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "import { useState } from '#app/composables/state'
 
       const __nuxt_page_meta = {
@@ -608,7 +560,7 @@ definePageMeta({
     `)
   })
 
-  it('should work with esbuild.keepNames = true', async () => {
+  it('should work when keeping names = true', () => {
     const sfc = `
 <script setup lang="ts">
 import { foo } from './utils'
@@ -629,37 +581,24 @@ definePageMeta({
 </script>
       `
     const compiled = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    const res = await esbuildTransform(compiled.content, {
-      loader: 'ts',
-      keepNames: true,
-    })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.code, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
-      "import { foo } from "./utils";
-      var __defProp = Object.defineProperty;
-      var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-      const checkNum = /* @__PURE__ */ __name((value) => {
-            return !isNaN(Number(foo(value)));
-          }, "checkNum");
-      function isNumber(value) {
-            return value && checkNum(value);
-          }
+    expect(transformPlugin.transform(compiled.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "import { foo } from './utils'
+      const checkNum = (value) => {
+        return !isNaN(Number(foo(value)))
+      }
+      function isNumber (value) {
+        return value && checkNum(value)
+      }
       const __nuxt_page_meta = {
-            validate: /* @__PURE__ */ __name(({ params }) => {
-              return isNumber(params.id);
-            }, "validate")
-          }
+        validate: ({ params }) => {
+          return isNumber(params.id)
+        },
+      }
       export default __nuxt_page_meta"
     `)
   })
 
-  it('should throw for await expressions', async () => {
+  it('should throw for await expressions', () => {
     const sfc = `
 <script setup lang="ts">
 const asyncValue = await Promise.resolve('test')
@@ -670,21 +609,11 @@ definePageMeta({
 </script>
       `
     const compiled = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    const res = await esbuildTransform(compiled.content, {
-      loader: 'ts',
-    })
 
     let wasErrorThrown = false
 
     try {
-      transformPlugin.transform.call({
-        parse: (code: string, opts: any = {}) => Parser.parse(code, {
-          sourceType: 'module',
-          ecmaVersion: 'latest',
-          locations: true,
-          ...opts,
-        }),
-      }, res.code, 'component.vue?macro=true')
+      transformPlugin.transform(compiled.content, 'component.vue?macro=true')
     } catch (e) {
       if (e instanceof Error) {
         expect(e.message).toMatch(/await in definePageMeta/)
@@ -751,14 +680,7 @@ const hoisted = ref('hoisted')
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "const foo = 'foo'
       const num = 1
       const bar = { bar: 'bar' }.bar, baz = { baz: 'baz' }.baz, x = { foo }

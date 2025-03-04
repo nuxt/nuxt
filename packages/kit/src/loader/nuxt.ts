@@ -1,5 +1,8 @@
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { pathToFileURL } from 'node:url'
 import type { Nuxt } from '@nuxt/schema'
+import { resolveModulePath } from 'exsolve'
+import { interopDefault } from 'mlly'
+import { readPackageJSON } from 'pkg-types'
 import { directoryToURL, importModule, tryImportModule } from '../internal/esm'
 import { runWithNuxtContext } from '../context'
 import type { LoadNuxtConfigOptions } from './config'
@@ -26,25 +29,26 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const rootURL = directoryToURL(opts.cwd!)
+  const resolvedPath = ['nuxt-nightly', 'nuxt3', 'nuxt', 'nuxt-edge']
+    .map(pkg => resolveModulePath(pkg, { try: true, from: [directoryToURL(opts.cwd!)] }))
+    .filter((p): p is NonNullable<typeof p> => !!p)
+    .sort((a, b) => b.length - a.length)[0]
 
-  const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt3', 'nuxt', 'nuxt-edge']
-    .map(pkg => resolvePackageJSON(pkg, { url: rootURL }).catch(() => null)))
-    .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
-  if (!nearestNuxtPkg) {
+  if (!resolvedPath) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
-  const pkg = await readPackageJSON(nearestNuxtPkg)
+  const pkg = await readPackageJSON(resolvedPath)
   const majorVersion = pkg.version ? Number.parseInt(pkg.version.split('.')[0]!) : ''
 
   // Nuxt 3
   if (majorVersion && majorVersion >= 3) {
-    const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { url: rootURL })
+    const { loadNuxt } = await import(pathToFileURL(resolvedPath).href).then(r => interopDefault(r)) as typeof import('nuxt')
     const nuxt = await loadNuxt(opts)
     return nuxt
   }
 
   // Nuxt 2
+  const rootURL = directoryToURL(opts.cwd!)
   const { loadNuxt } = await tryImportModule<{ loadNuxt: any }>('nuxt-edge', { url: rootURL }) || await importModule<{ loadNuxt: any }>('nuxt', { url: rootURL })
   const nuxt = await loadNuxt({
     rootDir: opts.cwd,
