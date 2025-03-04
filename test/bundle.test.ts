@@ -64,7 +64,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "entities",
         "estree-walker",
         "hookable",
-        "node-mock-http",
         "packrup",
         "source-map-js",
         "ufo",
@@ -95,7 +94,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@unhead/ssr",
         "devalue",
         "hookable",
-        "node-mock-http",
         "packrup",
         "unhead",
       ]
