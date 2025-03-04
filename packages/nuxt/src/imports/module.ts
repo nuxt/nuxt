@@ -79,8 +79,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
 
         if (isNuxtV4) {
-          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'utils'))
-          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'types'))
+          composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
+          composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
         }
 
         for (const dir of (layer.config.imports?.dirs ?? [])) {
@@ -135,7 +135,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             fileFilter: file => !isIgnored(file),
           })
           for (const i of scannedImports) {
-            i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+            i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
           }
           imports.push(...scannedImports)
         }

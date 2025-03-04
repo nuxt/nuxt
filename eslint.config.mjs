@@ -21,7 +21,7 @@ export default createConfigForNuxt({
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
-        'packages/nuxt/src/core/runtime/nitro/error-*',
+        'packages/nuxt/src/core/runtime/nitro/handlers/error-*',
       ],
     },
     {
@@ -48,6 +48,7 @@ export default createConfigForNuxt({
     rules: {
       'curly': ['error', 'all'], // Including if blocks with a single statement
       'dot-notation': 'error',
+      'logical-assignment-operators': ['error', 'always', { enforceForIfStatements: true }],
       'no-console': ['warn', { allow: ['warn', 'error', 'debug'] }],
       'no-lonely-if': 'error', // No single if in an "else" block
       'no-useless-rename': 'error',
@@ -204,6 +205,7 @@ export default createConfigForNuxt({
                   'ohash',
                   'pathe',
                   'uncrypto',
+                  'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
                 ].map(r => `!${r}`),
@@ -216,7 +218,7 @@ export default createConfigForNuxt({
       },
     },
     {
-      files: ['**/fixtures/**', '**/fixture/**'],
+      files: ['**/fixtures/**', '**/fixture/**', '**/*-fixture/**'],
       name: 'local/disables/fixtures',
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',

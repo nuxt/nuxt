@@ -69,7 +69,12 @@ export default defineResolvers({
   workspaceDir: {
     $resolve: async (val, get) => {
       const rootDir = await get('rootDir')
-      return val && typeof val === 'string' ? resolve(rootDir, val) : await findWorkspaceDir(rootDir).catch(() => rootDir)
+      return val && typeof val === 'string'
+        ? resolve(rootDir, val)
+        : await findWorkspaceDir(rootDir, {
+          gitConfig: 'closest',
+          try: true,
+        }).catch(() => rootDir)
     },
   },
 
@@ -405,7 +410,11 @@ export default defineResolvers({
     /**
      * The shared directory. This directory is shared between the app and the server.
      */
-    shared: 'shared',
+    shared: {
+      $resolve: (val) => {
+        return val && typeof val === 'string' ? val : 'shared'
+      },
+    },
 
     /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server

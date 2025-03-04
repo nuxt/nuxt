@@ -13,8 +13,10 @@ interface EnsurePackageInstalledOptions {
 }
 
 async function promptToInstall (name: string, installCommand: () => Promise<void>, options: EnsurePackageInstalledOptions) {
-  if (await resolvePackageJSON(name, { url: options.searchPaths }).catch(() => null)) {
-    return true
+  for (const parent of options.searchPaths || []) {
+    if (await resolvePackageJSON(name, { parent }).catch(() => null)) {
+      return true
+    }
   }
 
   logger.info(`Package ${name} is missing`)

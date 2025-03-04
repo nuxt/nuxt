@@ -1,12 +1,12 @@
 import type { H3Event } from 'h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import { useServerHead } from '@unhead/vue'
 import type { H3Event$Fetch } from 'nitro/types'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
+import { useServerHead } from './head'
 
 /** @since 3.0.0 */
 export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()) {
@@ -132,7 +132,7 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
 
   useServerHead({
     script: [{
-      key: vm && key ? key : code,
+      key: vm && key ? key : undefined,
       tagPosition: 'bodyClose',
       tagPriority: 'critical',
       innerHTML: code,

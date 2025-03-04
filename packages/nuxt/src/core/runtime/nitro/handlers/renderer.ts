@@ -1,36 +1,33 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import {
-  createRenderer,
   getPrefetchLinks,
   getPreloadLinks,
   getRequestDependencies,
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
-import type { Manifest as ClientManifest } from 'vue-bundle-renderer'
 import type { RenderResponse } from 'nitro/types'
-import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
-import devalue from '@nuxt/devalue'
-import { stringify, uneval } from 'devalue'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
-import { renderToString as _renderToString } from 'vue/server-renderer'
-import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { Head, HeadEntryOptions } from '@unhead/schema'
-import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
+import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
+import { resolveUnrefHeadInput } from '@unhead/vue/utils'
+import type { HeadEntryOptions, Link, Script, SerializableHead, Style } from '@unhead/vue/types'
 
-import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
+import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
+import { getEntryIds, getSPARenderer, getSSRRenderer, getSSRStyles } from '../utils/build-files'
+import { islandCache, islandPropCache, payloadCache, sharedPrerenderCache } from '../utils/cache'
+
+import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/payload'
 // @ts-expect-error virtual file
-import unheadPlugins from '#internal/unhead-plugins.mjs'
+import unheadOptions from '#internal/unhead-options.mjs'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
 // @ts-expect-error virtual file
-import { appHead, appId, appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled, multiApp, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
+import { appHead, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -78,7 +75,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: Head
+  head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -90,119 +87,6 @@ export interface NuxtRenderResponse {
   statusMessage?: string
   headers: Record<string, string>
 }
-
-// @ts-expect-error file will be produced after app build
-const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
-  .then(r => r.default || r)
-  .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
-
-const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
-  // @ts-expect-error internal key set by CSS inlining configuration
-  r._globalCSS,
-).map(r => r.src!))
-
-// @ts-expect-error file will be produced after app build
-const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
-
-// @ts-expect-error file will be produced after app build
-const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
-
-// -- SSR Renderer --
-const getSSRRenderer = lazyCachedFunction(async () => {
-  // Load client manifest
-  const manifest = await getClientManifest()
-  if (!manifest) { throw new Error('client.manifest is not available') }
-
-  // Load server bundle
-  const createSSRApp = await getServerEntry()
-  if (!createSSRApp) { throw new Error('Server bundle is not available') }
-
-  const options = {
-    manifest,
-    renderToString,
-    buildAssetsURL,
-  }
-  // Create renderer
-  const renderer = createRenderer(createSSRApp, options)
-
-  type RenderToStringParams = Parameters<typeof _renderToString>
-  async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1]) {
-    const html = await _renderToString(input, context)
-    // In development with vite-node, the manifest is on-demand and will be available after rendering
-    if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
-      renderer.rendererContext.updateManifest(await getClientManifest())
-    }
-    return APP_ROOT_OPEN_TAG + html + APP_ROOT_CLOSE_TAG
-  }
-
-  return renderer
-})
-
-// -- SPA Renderer --
-const getSPARenderer = lazyCachedFunction(async () => {
-  const manifest = await getClientManifest()
-
-  // @ts-expect-error virtual file
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
-    .then((r) => {
-      if (spaLoadingTemplateOutside) {
-        const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`
-        const APP_SPA_LOADER_CLOSE_TAG = `</${appSpaLoaderTag}>`
-        const appTemplate = APP_ROOT_OPEN_TAG + APP_ROOT_CLOSE_TAG
-        const loaderTemplate = r ? APP_SPA_LOADER_OPEN_TAG + r + APP_SPA_LOADER_CLOSE_TAG : ''
-        return appTemplate + loaderTemplate
-      } else {
-        return APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG
-      }
-    })
-
-  const options = {
-    manifest,
-    renderToString: () => spaTemplate,
-    buildAssetsURL,
-  }
-  // Create SPA renderer and cache the result for all requests
-  const renderer = createRenderer(() => () => {}, options)
-  const result = await renderer.renderToString({})
-
-  const renderToString = (ssrContext: NuxtSSRContext) => {
-    const config = useRuntimeConfig(ssrContext.event)
-    ssrContext.modules = ssrContext.modules || new Set<string>()
-    ssrContext.payload.serverRendered = false
-    ssrContext.config = {
-      public: config.public,
-      app: config.app,
-    }
-    return Promise.resolve(result)
-  }
-
-  return {
-    rendererContext: renderer.rendererContext,
-    renderToString,
-  }
-})
-
-const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
-const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
-const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
-const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
-const sharedPrerenderKeys = new Set<string>()
-const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
-  ? {
-      get<T = unknown> (key: string): Promise<T> | undefined {
-        if (sharedPrerenderKeys.has(key)) {
-          return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
-        }
-      },
-      async set<T> (key: string, value: Promise<T>): Promise<void> {
-        sharedPrerenderKeys.add(key)
-        sharedPrerenderPromises!.set(key, value)
-        useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
-        // free up memory after the promise is resolved
-          .finally(() => sharedPrerenderPromises!.delete(key))
-      },
-    }
-  : null
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
@@ -236,10 +120,8 @@ const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
-const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
-const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
-
-const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
+const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
+const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
@@ -275,7 +157,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   let url = ssrError?.url as string || islandContext?.url || event.path
 
   // Whether we are rendering payload route
-  const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !isRenderingIsland
+  const isRenderingPayload = process.env.NUXT_PAYLOAD_EXTRACTION && !isRenderingIsland && PAYLOAD_URL_RE.test(url)
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
 
@@ -289,9 +171,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  const head = createServerHead({
-    plugins: unheadPlugins,
-  })
+  const head = createHead(unheadOptions)
 
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
@@ -324,7 +204,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url.replace(/\?.*/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -375,7 +255,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
@@ -385,7 +265,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
-  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
@@ -430,60 +310,16 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
   }
 
-  if (!NO_SCRIPTS && !isRenderingIsland) {
-    // 3. Resource Hints
-    // TODO: add priorities based on Capo
-    head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
-    }, headEntryOptions)
-    head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
-    }, headEntryOptions)
-    // 4. Payloads
-    head.push({
-      script: _PAYLOAD_EXTRACTION
-        ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-        : process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
-          : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
-    }, {
-      ...headEntryOptions,
-      // this should come before another end of body scripts
-      tagPosition: 'bodyClose',
-      tagPriority: 'high',
-    })
-  }
-
-  // 5. Scripts
-  if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
-    head.push({
-      script: Object.values(scripts).map(resource => (<Script> {
-        type: resource.module ? 'module' : null,
-        src: renderer.rendererContext.buildAssetsURL(resource.file),
-        defer: resource.module ? null : true,
-        // if we are rendering script tag payloads that import an async payload
-        // we need to ensure this resolves before executing the Nuxt entry
-        tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
-        crossorigin: '',
-      })),
-    }, headEntryOptions)
-  }
-
-  // remove certain tags for nuxt islands
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
-
-  // Response for component islands
+  // 3. Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: Head = {}
-    for (const entry of head.headEntries()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
-        const currentValue = islandHead[key as keyof Head]
+    const islandHead: SerializableHead = {}
+    for (const entry of head.entries.values()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+        const currentValue = islandHead[key as keyof SerializableHead]
         if (Array.isArray(currentValue)) {
           currentValue.push(...value)
         }
-        islandHead[key as keyof Head] = value
+        islandHead[key as keyof SerializableHead] = value
       }
     }
 
@@ -517,6 +353,50 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     return response
   }
 
+  if (!NO_SCRIPTS) {
+    // 4. Resource Hints
+    // TODO: add priorities based on Capo
+    head.push({
+      link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
+    }, headEntryOptions)
+    head.push({
+      link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
+    }, headEntryOptions)
+    // 5. Payloads
+    head.push({
+      script: _PAYLOAD_EXTRACTION
+        ? process.env.NUXT_JSON_PAYLOADS
+          ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+        : process.env.NUXT_JSON_PAYLOADS
+          ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
+          : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
+    }, {
+      ...headEntryOptions,
+      // this should come before another end of body scripts
+      tagPosition: 'bodyClose',
+      tagPriority: 'high',
+    })
+  }
+
+  // 6. Scripts
+  if (!routeOptions.noScripts) {
+    head.push({
+      script: Object.values(scripts).map(resource => (<Script> {
+        type: resource.module ? 'module' : null,
+        src: renderer.rendererContext.buildAssetsURL(resource.file),
+        defer: resource.module ? null : true,
+        // if we are rendering script tag payloads that import an async payload
+        // we need to ensure this resolves before executing the Nuxt entry
+        tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
+        crossorigin: '',
+      })),
+    }, headEntryOptions)
+  }
+
+  // remove certain tags for nuxt islands
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
+
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
     island: isRenderingIsland,
@@ -547,16 +427,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   return response
 })
-
-function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
-  let res: Promise<T> | null = null
-  return () => {
-    if (res === null) {
-      res = fn().catch((err) => { res = null; throw err })
-    }
-    return res
-  }
-}
 
 function normalizeChunks (chunks: (string | undefined)[]) {
   return chunks.filter(Boolean).map(i => i!.trim())
@@ -590,76 +460,6 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
     }
   }
   return Array.from(inlinedStyles).map(style => ({ innerHTML: style }))
-}
-
-function renderPayloadResponse (ssrContext: NuxtSSRContext) {
-  return {
-    body: process.env.NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
-      : `export default ${devalue(splitPayload(ssrContext).payload)}`,
-    statusCode: getResponseStatus(ssrContext.event),
-    statusMessage: getResponseStatusText(ssrContext.event),
-    headers: {
-      'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
-      'x-powered-by': 'Nuxt',
-    },
-  } satisfies RenderResponse
-}
-
-function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
-  const payload: Script = {
-    'type': 'application/json',
-    'innerHTML': contents,
-    'data-nuxt-data': appId,
-    'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR),
-  }
-  if (!multiApp) {
-    payload.id = '__NUXT_DATA__'
-  }
-  if (opts.src) {
-    payload['data-src'] = opts.src
-  }
-  const config = uneval(opts.ssrContext.config)
-  return [
-    payload,
-    {
-      innerHTML: multiApp
-        ? `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={config:${config}}`
-        : `window.__NUXT__={};window.__NUXT__.config=${config}`,
-    },
-  ]
-}
-
-function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  opts.data.config = opts.ssrContext.config
-  const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
-  const nuxtData = devalue(opts.data)
-  if (_PAYLOAD_EXTRACTION) {
-    const singleAppPayload = `import p from "${opts.src}";window.__NUXT__={...p,...(${nuxtData})}`
-    const multiAppPayload = `import p from "${opts.src}";window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={...p,...(${nuxtData})}`
-    return [
-      {
-        type: 'module',
-        innerHTML: multiApp ? multiAppPayload : singleAppPayload,
-      },
-    ]
-  }
-  const singleAppPayload = `window.__NUXT__=${nuxtData}`
-  const multiAppPayload = `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]=${nuxtData}`
-  return [
-    {
-      innerHTML: multiApp ? multiAppPayload : singleAppPayload,
-    },
-  ]
-}
-
-function splitPayload (ssrContext: NuxtSSRContext) {
-  const { data, prerenderedAt, ...initial } = ssrContext.payload
-  return {
-    initial: { ...initial, prerenderedAt },
-    payload: { data, prerenderedAt },
-  }
 }
 
 /**

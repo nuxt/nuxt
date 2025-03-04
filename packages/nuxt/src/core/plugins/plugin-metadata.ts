@@ -7,7 +7,7 @@ import MagicString from 'magic-string'
 import { normalize } from 'pathe'
 import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
 
-import { parseAndWalk, transform, withLocations } from '../../core/utils/parse'
+import { parseAndWalk, withLocations } from '../../core/utils/parse'
 import { logger } from '../../utils'
 
 const internalOrderMap = {
@@ -38,7 +38,7 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
 }
 
 const metaCache: Record<string, Omit<PluginMeta, 'enforce'>> = {}
-export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
+export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   let meta: PluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
@@ -46,8 +46,7 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
   if (code.match(/defineNuxtPlugin\s*\([\w(]/)) {
     return {}
   }
-  const js = await transform(code, { loader })
-  parseAndWalk(js.code, `file.${loader}`, (node) => {
+  parseAndWalk(code, `file.${loader}`, (node) => {
     if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
 
     const name = 'name' in node.callee && node.callee.name
@@ -70,7 +69,7 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
       meta = defu(extractMetaFromObject(plugin.properties), meta)
     }
 
-    meta.order = meta.order || orderMap[meta.enforce || 'default'] || orderMap.default
+    meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
   })
   metaCache[code] = meta

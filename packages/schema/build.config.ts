@@ -28,7 +28,7 @@ export default defineBuildConfig({
   },
   externals: [
     // Type imports
-    '@unhead/schema',
+    '@unhead/vue',
     '@vitejs/plugin-vue',
     'chokidar',
     '@vitejs/plugin-vue-jsx',

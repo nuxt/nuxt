@@ -1,9 +1,9 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
-import { useHead } from '@unhead/vue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
+import { useHead } from './head'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
@@ -21,7 +21,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   if (import.meta.server || !payloadExtraction) { return null }
   const payloadURL = await _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
-  const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
+  const cache = nuxtApp._payloadCache ||= {}
   if (payloadURL in cache) {
     return cache[payloadURL] || null
   }

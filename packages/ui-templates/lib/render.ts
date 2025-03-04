@@ -160,8 +160,8 @@ export const RenderPlugin = () => {
           `const props = defineProps(${props})`,
           title && 'useHead(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
-            ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))],
-            ['style', [{ children: `\`${globalStyles}\`` }]],
+            ['script', inlineScripts.map(s => ({ children: `\`${s.replace(/[`$]/g, '\\$&')}\`` }))],
+            ['style', [{ children: `\`${globalStyles.replace(/[`$]/g, '\\$&')}\`` }]],
           ]) + ')',
           '</script>',
           '<template>',
@@ -201,7 +201,7 @@ export const RenderPlugin = () => {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
       for (const file of ['error-500.ts', 'error-dev.ts']) {
-        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro', file))
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro/handlers', file))
       }
     },
   }

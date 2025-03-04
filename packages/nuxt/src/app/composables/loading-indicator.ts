@@ -1,6 +1,6 @@
 import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
@@ -170,9 +170,9 @@ export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}): 
   const nuxtApp = useNuxtApp()
 
   // Initialise global loading indicator if it doesn't exist already
-  const indicator = nuxtApp._loadingIndicator = nuxtApp._loadingIndicator || createLoadingIndicator(opts)
+  const indicator = nuxtApp._loadingIndicator ||= createLoadingIndicator(opts)
   if (import.meta.client && getCurrentScope()) {
-    nuxtApp._loadingIndicatorDeps = nuxtApp._loadingIndicatorDeps || 0
+    nuxtApp._loadingIndicatorDeps ||= 0
     nuxtApp._loadingIndicatorDeps++
     onScopeDispose(() => {
       nuxtApp._loadingIndicatorDeps!--

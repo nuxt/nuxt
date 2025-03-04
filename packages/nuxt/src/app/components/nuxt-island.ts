@@ -3,7 +3,7 @@ import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineCom
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { type ActiveHeadEntry, type Head, injectHead } from '@unhead/vue'
+import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
@@ -11,6 +11,7 @@ import type { FetchResponse } from 'ofetch'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
+import { injectHead } from '../composables/head'
 import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
@@ -86,11 +87,11 @@ export default defineComponent({
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
-    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
+    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
-    let activeHead: ActiveHeadEntry<Head>
+    let activeHead: ActiveHeadEntry<SerializableHead>
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
@@ -184,25 +185,30 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
-      const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
-      // TODO: support passing on more headers
-      if (import.meta.server && import.meta.prerender) {
-        const hints = r.headers.get('x-nitro-prerender')
-        if (hints) {
-          appendResponseHeader(event!, 'x-nitro-prerender', hints)
+      try {
+        const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+        // TODO: support passing on more headers
+        if (import.meta.server && import.meta.prerender) {
+          const hints = r.headers.get('x-nitro-prerender')
+          if (hints) {
+            appendResponseHeader(event!, 'x-nitro-prerender', hints)
+          }
         }
+        setPayload(key, result)
+        return result
+      } catch (e: any) {
+        if (r.status !== 200) {
+          throw new Error(e.toString(), { cause: r })
+        }
+        throw e
       }
-      setPayload(key, result)
-      return result
     }
 
     async function fetchComponent (force = false) {
-      nuxtApp[pKey] = nuxtApp[pKey] || {}
-      if (!nuxtApp[pKey][uid.value]) {
-        nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
-          delete nuxtApp[pKey]![uid.value]
-        })
-      }
+      nuxtApp[pKey] ||= {}
+      nuxtApp[pKey][uid.value] ||= _fetchComponent(force).finally(() => {
+        delete nuxtApp[pKey]![uid.value]
+      })
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 

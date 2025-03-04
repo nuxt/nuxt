@@ -9,7 +9,7 @@ import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
-import type { MergeHead, VueHeadClient } from '@unhead/vue'
+import type { VueHeadClient } from '@unhead/vue/types'
 
 import type { NuxtAppLiterals } from 'nuxt/app'
 
@@ -24,7 +24,7 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id = appId || 'nuxt-app') {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -49,7 +49,6 @@ export interface RuntimeNuxtHooks {
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
-  'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
   'page:view-transition:start': (transition: ViewTransition) => HookResult
   'page:loading:start': () => HookResult
@@ -67,7 +66,7 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: Partial<NuxtPayload>
-  head: VueHeadClient<MergeHead>
+  head: VueHeadClient
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
@@ -377,7 +376,7 @@ export function createNuxtApp (options: CreateOptions) {
         }
       })
     }
-    window.useNuxtApp = window.useNuxtApp || useNuxtApp
+    window.useNuxtApp ||= useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.

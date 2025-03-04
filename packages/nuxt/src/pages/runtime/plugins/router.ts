@@ -130,7 +130,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp._route = shallowReactive(route)
 
-    nuxtApp._middleware = nuxtApp._middleware || {
+    nuxtApp._middleware ||= {
       global: [],
       named: {},
     }

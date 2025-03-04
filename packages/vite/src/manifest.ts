@@ -39,13 +39,9 @@ export async function writeManifest (ctx: ViteBuildContext) {
   const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
 
   for (const entry of manifestEntries) {
-    if (entry.file) {
-      entry.file = entry.file.replace(BASE_RE, '')
-    }
+    entry.file &&= entry.file.replace(BASE_RE, '')
     for (const item of ['css', 'assets'] as const) {
-      if (entry[item]) {
-        entry[item] = entry[item].map((i: string) => i.replace(BASE_RE, ''))
-      }
+      entry[item] &&= entry[item].map((i: string) => i.replace(BASE_RE, ''))
     }
   }
 
