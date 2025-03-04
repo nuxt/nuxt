@@ -10,10 +10,9 @@ import type { H3Event } from 'h3'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
-import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { Head, HeadEntryOptions } from '@unhead/schema'
-import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
+import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
+import { resolveUnrefHeadInput } from '@unhead/vue/utils'
+import type { HeadEntryOptions, Link, Script, SerializableHead, Style } from '@unhead/vue/types'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -23,7 +22,7 @@ import { islandCache, islandPropCache, payloadCache, sharedPrerenderCache } from
 
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/payload'
 // @ts-expect-error virtual file
-import unheadPlugins from '#internal/unhead-plugins.mjs'
+import unheadOptions from '#internal/unhead-options.mjs'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
@@ -76,7 +75,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: Head
+  head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -172,9 +171,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  const head = createServerHead({
-    plugins: unheadPlugins,
-  })
+  const head = createHead(unheadOptions)
 
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
@@ -315,14 +312,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 3. Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: Head = {}
-    for (const entry of head.headEntries()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
-        const currentValue = islandHead[key as keyof Head]
+    const islandHead: SerializableHead = {}
+    for (const entry of head.entries.values()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+        const currentValue = islandHead[key as keyof SerializableHead]
         if (Array.isArray(currentValue)) {
           currentValue.push(...value)
         }
-        islandHead[key as keyof Head] = value
+        islandHead[key as keyof SerializableHead] = value
       }
     }
 
