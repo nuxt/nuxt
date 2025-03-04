@@ -1,12 +1,12 @@
-import type { FetchError, FetchOptions } from 'ofetch'
 import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { FetchError, FetchOptions } from 'ofetch'
+import { hash } from 'ohash'
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, toValue } from 'vue'
-import { hash } from 'ohash'
 
-import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
+import { useRequestFetch } from './ssr'
 
 // @ts-expect-error virtual file
 import { fetchDefaults } from '#build/nuxt.config.mjs'
@@ -171,7 +171,7 @@ export function useFetch<
     let _$fetch = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
-    if (import.meta.server && !opts.$fetch) {
+    if (import.meta.server) {
       const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
       if (isLocalFetch) {
         _$fetch = useRequestFetch()
