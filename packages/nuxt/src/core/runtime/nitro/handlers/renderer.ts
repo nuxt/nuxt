@@ -120,7 +120,8 @@ const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
-const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
+const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
+const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
@@ -156,7 +157,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   let url = ssrError?.url as string || islandContext?.url || event.path
 
   // Whether we are rendering payload route
-  const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !isRenderingIsland
+  const isRenderingPayload = process.env.NUXT_PAYLOAD_EXTRACTION && !isRenderingIsland && PAYLOAD_URL_RE.test(url)
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
 
@@ -203,7 +204,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url, PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -254,7 +255,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }

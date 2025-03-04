@@ -8,6 +8,7 @@ export async function resolveTypePath (path: string, subpath: string, searchPath
     const r = resolveModulePath(path, {
       from: searchPaths?.map(d => directoryToURL(d)),
       conditions: ['types', 'import', 'require'],
+      extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
     })
     if (subpath) {
       return r.replace(/(?:\.d)?\.[mc]?[jt]s$/, '')

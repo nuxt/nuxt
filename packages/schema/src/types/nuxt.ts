@@ -43,6 +43,11 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   getContents?: (data: { nuxt: Nuxt, app: NuxtApp, options: Options }) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
+  /**
+   * The source path of the template (to try resolving dependencies from).
+   * @internal
+   */
+  _path?: string
 }
 
 export interface NuxtServerTemplate {
