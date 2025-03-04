@@ -1,15 +1,9 @@
 <template>
   <div>
     hydrate-on-visible:
-    <LazyVisibleDelayedComponentMacro
-      data-testid="hydrate-on-visible"
-      hydrate-on-visible
-    />
+    <LazyVisibleDelayedComponentMacro data-testid="hydrate-on-visible" />
     hydrate-on-idle:
-    <LazyIdleDelayedComponentMacro
-      data-testid="hydrate-on-idle"
-      hydrate-on-idle
-    />
+    <LazyIdleDelayedComponentMacro data-testid="hydrate-on-idle" />
     hydrate-on-interaction-default:
     <LazyInteractionDelayedComponentMacro data-testid="hydrate-on-interaction-default" />
     hydrate-on-interaction-click:
@@ -38,24 +32,13 @@
       data-testid="hydrate-when-state"
       :hydrate-when="state > 0"
     />
-    <!-- hydrate-after:
-    <LazyTimeDelayedComponentMacro
-      data-testid="hydrate-after"
-      :hydrate-after="2000"
-    /> -->
     hydrate-never:
-    <LazyNeverDelayedComponentMacro
-      data-testid="hydrate-never"
-      hydrate-never
-    />
+    <LazyNeverDelayedComponentMacro data-testid="hydrate-never" />
     <div style="height:3000px">
       This is a very tall div
     </div>
     hydrate-on-visible-bottom:
-    <LazyVisibleDelayedComponentMacro
-      data-testid="hydrate-on-visible-bottom"
-      hydrate-on-visible
-    />
+    <LazyVisibleDelayedComponentMacro data-testid="hydrate-on-visible-bottom" />
   </div>
 </template>
 
@@ -65,7 +48,6 @@ const LazyIdleDelayedComponentMacro = defineLazyIdleComponent(() => import('~/co
 const LazyInteractionDelayedComponentMacro = defineLazyInteractionComponent(() => import('~/components/DelayedComponent.vue'))
 const LazyMediaQueryDelayedComponentMacro = defineLazyMediaQueryComponent(() => import('~/components/DelayedComponent.vue'))
 const LazyIfDelayedComponentMacro = defineLazyIfComponent(() => import('~/components/DelayedComponent.vue'))
-// const LazyTimeDelayedComponentMacro = defineLazyTimeComponent(() => import('~/components/DelayedComponent.vue'))
 const LazyNeverDelayedComponentMacro = defineLazyNeverComponent(() => import('~/components/DelayedComponent.vue'))
 
 const state = ref(0)

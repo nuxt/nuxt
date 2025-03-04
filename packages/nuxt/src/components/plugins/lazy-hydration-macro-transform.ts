@@ -94,19 +94,18 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
 })
 
 export const lazyHydrationMacroTypeTemplate: NuxtTypeTemplate = {
-  filename: 'lazy-hydration-macro.d.ts',
+  filename: 'types/lazy-hydration-macro.d.ts',
   getContents () {
-    return `
-import { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent } from 'vue'
+    return `import { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent } from 'vue'
 type LazyHydrationComponent<Props> = DefineComponent<Props, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>
 
 declare global {
   function defineLazyVisibleComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateOnVisible?: IntersectionObserverInit | true }>;
   function defineLazyIdleComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateOnIdle?: number | true }>;
   function defineLazyInteractionComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateOnInteraction?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> | true }>;
-  function defineLazyMediaQueryComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateOnMediaQuery?: string }>;
+  function defineLazyMediaQueryComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateOnMediaQuery: string }>;
   function defineLazyIfComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateWhen?: boolean }>;
-  function defineLazyTimeComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateAfter?: number | true }>;
+  function defineLazyTimeComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateAfter: number | true }>;
   function defineLazyNeverComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): T & LazyHydrationComponent<{ hydrateNever?: true }>;
 }
 `

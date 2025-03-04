@@ -32,6 +32,7 @@ export const createLazyVisibleComponent = defineLazyComponent({
   hydrateOnVisible: {
     type: [Object, Boolean] as unknown as () => true | IntersectionObserverInit,
     required: false,
+    default: true,
   },
 },
 props => hydrateOnVisible(props.hydrateOnVisible === true ? undefined : props.hydrateOnVisible),
@@ -41,7 +42,8 @@ props => hydrateOnVisible(props.hydrateOnVisible === true ? undefined : props.hy
 export const createLazyIdleComponent = defineLazyComponent({
   hydrateOnIdle: {
     type: [Number, Boolean] as unknown as () => true | number,
-    required: true,
+    required: false,
+    default: true,
   },
 },
 props => props.hydrateOnIdle === 0
@@ -107,7 +109,8 @@ const hydrateNever = () => {}
 export const createLazyNeverComponent = defineLazyComponent({
   hydrateNever: {
     type: Boolean as () => true,
-    required: true,
+    required: false,
+    default: true,
   },
 },
 () => hydrateNever,
