@@ -120,8 +120,8 @@ export default defineComponent({
 
           const isFinalRender = !nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
           const isSamePageButDifferentQueryOrFragment = key === previousPageKey && previousRouteFullPath !== routeProps.route.fullPath
-          
-          // When navigating within the same page and only changing the query or fragment, 
+
+          // When navigating within the same page and only changing the query or fragment,
           // Suspense doesn't resolve, so we need to manually call `page:loading:end`
           if (isFinalRender && isSamePageButDifferentQueryOrFragment) {
             nuxtApp.callHook('page:loading:end')
