@@ -310,8 +310,51 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
   }
 
-  if (!NO_SCRIPTS && !isRenderingIsland) {
-    // 3. Resource Hints
+  // 3. Response for component islands
+  if (isRenderingIsland && islandContext) {
+    const islandHead: SerializableHead = {}
+    for (const entry of head.entries.values()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+        const currentValue = islandHead[key as keyof SerializableHead]
+        if (Array.isArray(currentValue)) {
+          currentValue.push(...value)
+        }
+        islandHead[key as keyof SerializableHead] = value
+      }
+    }
+
+    // TODO: remove for v4
+    islandHead.link ||= []
+    islandHead.style ||= []
+
+    const islandResponse: NuxtIslandResponse = {
+      id: islandContext.id,
+      head: islandHead,
+      html: getServerComponentHTML(_rendered.html),
+      components: getClientIslandResponse(ssrContext),
+      slots: getSlotIslandResponse(ssrContext),
+    }
+
+    await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
+
+    const response = {
+      body: JSON.stringify(islandResponse, null, 2),
+      statusCode: getResponseStatus(event),
+      statusMessage: getResponseStatusText(event),
+      headers: {
+        'content-type': 'application/json;charset=utf-8',
+        'x-powered-by': 'Nuxt',
+      },
+    } satisfies RenderResponse
+    if (import.meta.prerender) {
+      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
+      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
+    }
+    return response
+  }
+
+  if (!NO_SCRIPTS) {
+    // 4. Resource Hints
     // TODO: add priorities based on Capo
     head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
@@ -319,7 +362,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head.push({
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
     }, headEntryOptions)
-    // 4. Payloads
+    // 5. Payloads
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
@@ -337,7 +380,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 6. Scripts
-  if (!routeOptions.noScripts && !isRenderingIsland) {
+  if (!routeOptions.noScripts) {
     head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
@@ -370,49 +413,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Allow hooking into the rendered result
   await nitroApp.hooks.callHook('render:html', htmlContext, { event })
-
-  // Response for component islands
-  if (isRenderingIsland && islandContext) {
-    const islandHead: SerializableHead = {}
-    for (const entry of head.headEntries()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
-        const currentValue = islandHead[key as keyof SerializableHead]
-        if (Array.isArray(currentValue)) {
-          currentValue.push(...value)
-        }
-        islandHead[key as keyof SerializableHead] = value
-      }
-    }
-
-    // TODO: remove for v4
-    islandHead.link ||= []
-    islandHead.style ||= []
-
-    const islandResponse: NuxtIslandResponse = {
-      id: islandContext.id,
-      head: islandHead,
-      html: getServerComponentHTML(htmlContext.body as [string, ...string[]]),
-      components: getClientIslandResponse(ssrContext),
-      slots: getSlotIslandResponse(ssrContext),
-    }
-
-    await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
-
-    const response = {
-      body: JSON.stringify(islandResponse, null, 2),
-      statusCode: getResponseStatus(event),
-      statusMessage: getResponseStatusText(event),
-      headers: {
-        'content-type': 'application/json;charset=utf-8',
-        'x-powered-by': 'Nuxt',
-      },
-    } satisfies RenderResponse
-    if (import.meta.prerender) {
-      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
-      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
-    }
-    return response
-  }
 
   // Construct HTML response
   const response = {
@@ -465,9 +465,9 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
 /**
  * remove the root node from the html body
  */
-function getServerComponentHTML (body: [string, ...string[]]): string {
-  const match = body[0].match(ROOT_NODE_REGEX)
-  return match?.[1] || body[0]
+function getServerComponentHTML (body: string): string {
+  const match = body.match(ROOT_NODE_REGEX)
+  return match?.[1] || body
 }
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/

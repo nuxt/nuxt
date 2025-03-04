@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue'
-import { useLoadingIndicator } from '#app/composables/loading-indicator'
+import { useLoadingIndicator } from '../composables/loading-indicator'
 
 export default defineComponent({
   name: 'NuxtLoadingIndicator',
