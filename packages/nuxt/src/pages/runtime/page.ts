@@ -59,6 +59,7 @@ export default defineComponent({
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
     let previousPageKey: string | undefined | false
+    let previousRouteFullPath: string | undefined
 
     expose({ pageRef })
 
@@ -82,7 +83,6 @@ export default defineComponent({
     if (import.meta.dev) {
       nuxtApp._isNuxtPageUsed = true
     }
-    let pageLoadingEndHookAlreadyCalled = false
 
     const routerProviderLookup = new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
 
@@ -117,11 +117,17 @@ export default defineComponent({
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
-          if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
+
+          const isFinalRender = !nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
+          const isSamePageButDifferentQueryOrFragment = key === previousPageKey && previousRouteFullPath !== routeProps.route.fullPath
+          
+          // When navigating within the same page and only changing the query or fragment, 
+          // Suspense doesn't resolve, so we need to manually call `page:loading:end`
+          if (isFinalRender && isSamePageButDifferentQueryOrFragment) {
             nuxtApp.callHook('page:loading:end')
-            pageLoadingEndHookAlreadyCalled = true
           }
 
+          previousRouteFullPath = routeProps.route.fullPath
           previousPageKey = key
 
           if (import.meta.server) {
@@ -159,10 +165,7 @@ export default defineComponent({
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => {
                 nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
-                  if (!pageLoadingEndHookAlreadyCalled) {
-                    return nuxtApp.callHook('page:loading:end')
-                  }
-                  pageLoadingEndHookAlreadyCalled = false
+                  return nuxtApp.callHook('page:loading:end')
                 }).finally(done))
               },
             }, {
