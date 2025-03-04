@@ -35,6 +35,7 @@ function deepDelete (obj: any, newObj: any) {
 
 function deepAssign (obj: any, newObj: any) {
   for (const key in newObj) {
+    if (key === "__proto__" || key === "constructor") continue;
     const val = newObj[key]
     if (isPojoOrArray(val)) {
       const defaultVal = Array.isArray(val) ? [] : {}
