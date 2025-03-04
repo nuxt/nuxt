@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
@@ -55,6 +56,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
   const isIgnored = createIsIgnored(nuxt)
+
+  const mockEmpty = fileURLToPath(import.meta.resolve('unenv/mock/empty'))
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -65,9 +68,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
-            'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
+            'web-streams-polyfill/ponyfill/es2018': mockEmpty,
             // Cannot destructure property 'AbortController' of ..
-            'abort-controller': 'unenv/runtime/mock/empty',
+            'abort-controller': mockEmpty,
           },
         },
         css: await resolveCSSOptions(nuxt),

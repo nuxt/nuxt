@@ -1,4 +1,4 @@
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
@@ -61,6 +61,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
     }
   }
+
+  const mockProxy = fileURLToPath(import.meta.resolve('unenv/mock/proxy'))
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
@@ -202,11 +204,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
         : {
-            'estree-walker': 'unenv/runtime/mock/proxy',
-            '@babel/parser': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-core': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-ssr': 'unenv/runtime/mock/proxy',
+            'estree-walker': mockProxy,
+            '@babel/parser': mockProxy,
+            '@vue/compiler-core': mockProxy,
+            '@vue/compiler-dom': mockProxy,
+            '@vue/compiler-ssr': mockProxy,
           },
       '@vue/devtools-api': 'vue-devtools-stub',
 
@@ -375,7 +377,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // add stub alias to allow vite to resolve import
   if (!nuxt.options.experimental.appManifest) {
-    nuxt.options.alias['#app-manifest'] = 'unenv/runtime/mock/proxy'
+    nuxt.options.alias['#app-manifest'] = mockProxy
   }
 
   // Add fallback server for `ssr: false`
