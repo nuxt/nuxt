@@ -894,6 +894,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.1
+        version: 1.0.1
       externality:
         specifier: ^1.0.2
         version: 1.0.2

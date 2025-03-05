@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
@@ -9,6 +8,7 @@ import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
+import { resolveModulePath } from 'exsolve'
 import { resolveTSConfig } from 'pkg-types'
 
 import { buildClient } from './client'
@@ -57,7 +57,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const isIgnored = createIsIgnored(nuxt)
 
-  const mockEmpty = fileURLToPath(import.meta.resolve('unenv/mock/empty'))
+  const mockEmpty = resolveModulePath('unenv/mock/empty', { from: import.meta.url })
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
