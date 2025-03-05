@@ -199,6 +199,7 @@ export default defineNuxtConfig({
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
     },
+    output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
       routes: [
         '/random/a',

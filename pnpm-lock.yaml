@@ -24,7 +24,7 @@ overrides:
   postcss: 8.5.3
   rollup: 4.34.9
   h3: npm:h3-nightly@latest
-  nitropack: npm:nitropack-nightly@2.11.1-20250304-210714.6a6ed561
+  nitropack: npm:nitropack-nightly@2.11.1-20250305-104627.47febf5c
   send: '>=1.1.0'
   typescript: 5.8.2
   ufo: 1.5.4
@@ -155,8 +155,8 @@ importers:
         specifier: 4.17.0
         version: 4.17.0
       nitropack:
-        specifier: npm:nitropack-nightly@2.11.1-20250304-210714.6a6ed561
-        version: nitropack-nightly@2.11.1-20250304-210714.6a6ed561(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.1-20250305-104627.47febf5c
+        version: nitropack-nightly@2.11.1-20250305-104627.47febf5c(typescript@5.8.2)
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -306,8 +306,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: npm:nitropack-nightly@2.11.1-20250304-210714.6a6ed561
-        version: nitropack-nightly@2.11.1-20250304-210714.6a6ed561(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.1-20250305-104627.47febf5c
+        version: nitropack-nightly@2.11.1-20250305-104627.47febf5c(typescript@5.8.2)
       unbuild:
         specifier: latest
         version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
@@ -426,8 +426,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitropack:
-        specifier: npm:nitropack-nightly@2.11.1-20250304-210714.6a6ed561
-        version: nitropack-nightly@2.11.1-20250304-210714.6a6ed561(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.1-20250305-104627.47febf5c
+        version: nitropack-nightly@2.11.1-20250305-104627.47febf5c(typescript@5.8.2)
       nypm:
         specifier: ^0.6.0
         version: 0.6.0
@@ -759,8 +759,8 @@ importers:
         specifier: 2.9.2
         version: 2.9.2(webpack@5.98.0(esbuild@0.25.0))
       nitropack:
-        specifier: npm:nitropack-nightly@2.11.1-20250304-210714.6a6ed561
-        version: nitropack-nightly@2.11.1-20250304-210714.6a6ed561(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.1-20250305-104627.47febf5c
+        version: nitropack-nightly@2.11.1-20250305-104627.47febf5c(typescript@5.8.2)
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -5720,8 +5720,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitropack-nightly@2.11.1-20250304-210714.6a6ed561:
-    resolution: {integrity: sha512-FoFvxQMGj2KFfCcbstmoLlYhVtNNn9NkzbAF2R9/YKx/PdDEKqsiojV2OaY1Uk6K0wULt8sSCC8vuhuvwvX7ow==}
+  nitropack-nightly@2.11.1-20250305-104627.47febf5c:
+    resolution: {integrity: sha512-z12NotKsefkM6Rks+izx9e1l6oc9PU382dTpv/XiC0M5pgPhBlF4s4T2LdaQxeUEsv6Njrcl/pr5TXHjNPzK7w==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -13040,7 +13040,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitropack-nightly@2.11.1-20250304-210714.6a6ed561(typescript@5.8.2):
+  nitropack-nightly@2.11.1-20250305-104627.47febf5c(typescript@5.8.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@netlify/functions': 3.0.0
