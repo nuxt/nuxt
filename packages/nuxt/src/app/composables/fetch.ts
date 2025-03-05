@@ -144,7 +144,7 @@ export function useFetch<
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
   }
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev) {
     // @ts-expect-error private property
     _asyncDataOptions._functionName = opts._functionName || 'useFetch'
   }
