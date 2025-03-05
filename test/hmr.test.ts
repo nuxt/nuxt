@@ -26,7 +26,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
   const indexVue = await fsp.readFile(join(fixtureDir, 'pages/index.vue'), 'utf8')
 
-  describe('hmr', () => {
+  describe('hmr', { sequential: true }, () => {
     beforeAll(async () => {
       await expectWithPolling(() => $fetch<string>('/').then(r => r.includes('Home page')).catch(() => null), true)
     })
@@ -65,7 +65,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await page.close()
     })
 
-    it('should detect new routes', { timeout: 60000 }, async () => {
+    it.sequential('should detect new routes', { timeout: 60000 }, async () => {
       const res = await fetch('/some-404')
       expect(res.status).toBe(404)
 
@@ -74,7 +74,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await expectWithPolling(() => $fetch<string>('/some-404').then(r => r.includes('Home page')).catch(() => null), true)
     })
 
-    it('should hot reload route rules', { timeout: 60000 }, async () => {
+    it.sequential('should hot reload route rules', { timeout: 60000 }, async () => {
       await expectWithPolling(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null), 'added in routeRules')
 
       // write new page route
