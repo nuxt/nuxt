@@ -55,6 +55,8 @@
     "nuxt": "workspace:*",
     "postcss": "8.5.3",
     "rollup": "4.34.9",
+    "h3": "npm:h3-nightly@latest",
+    "nitropack": "npm:nitropack-nightly@2.11.1-20250304-210714.6a6ed561",
     "send": ">=1.1.0",
     "typescript": "5.8.2",
     "ufo": "1.5.4",

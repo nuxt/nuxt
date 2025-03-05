@@ -22,8 +22,6 @@ env:
   # 7 GiB by default on GitHub, setting to 6 GiB
   # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
   NODE_OPTIONS: --max-old-space-size=6144
-  # TODO: https://github.com/nitrojs/nitro/pull/3152
-  NITRO_NO_UNIX_SOCKET: 1
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
