@@ -105,7 +105,7 @@ function createWatcher () {
   const watcher = chokidarWatch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
-    ignored: [isIgnored, /[\\/]node_modules[\\/]/],
+    ignored: [isIgnored, /[\\/]node_modules[\\/]/, /\.sock$/],
   })
 
   const restartPaths = new Set<string>()
@@ -151,7 +151,7 @@ function createGranularWatcher () {
   }
   for (const dir of pathsToWatch) {
     pending++
-    const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/] })
+    const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/, /\.sock$/] })
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
@@ -168,7 +168,7 @@ function createGranularWatcher () {
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
-        const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
+        const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /\.sock$/] })
         // TODO: consider moving to emit absolute path in 3.8 or 4.0
         pathWatcher.on('all', (event, p) => {
           if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {

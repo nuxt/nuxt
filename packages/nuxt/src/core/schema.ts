@@ -83,6 +83,7 @@ export default defineNuxtModule({
           (path, stats) => (stats && !stats.isFile()) || !SCHEMA_RE.test(path),
           isIgnored,
           /[\\/]node_modules[\\/]/,
+          /\.sock$/,
         ],
         ignoreInitial: true,
       })
