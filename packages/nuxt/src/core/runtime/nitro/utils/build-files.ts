@@ -4,7 +4,7 @@ import {
 import type { Manifest as ClientManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vite'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { propsToString } from '@unhead/ssr'
+import { propsToString } from '@unhead/vue/server'
 
 import type { NuxtSSRContext } from 'nuxt/app'
 import { useRuntimeConfig } from '#internal/nitro'

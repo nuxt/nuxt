@@ -22,6 +22,8 @@ env:
   # 7 GiB by default on GitHub, setting to 6 GiB
   # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
   NODE_OPTIONS: --max-old-space-size=6144
+  # TODO: https://github.com/nitrojs/nitro/pull/3152
+  NITRO_NO_UNIX_SOCKET: 1
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
@@ -234,6 +236,9 @@ jobs:
         with:
           name: dist
           path: packages
+
+      - name: Prepare test fixtures
+        run: pnpm test:prepare
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@63ae6025a0ffee97d7736a37c9192dbd6ed4e75f # v3.4.0
