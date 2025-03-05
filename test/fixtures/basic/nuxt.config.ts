@@ -137,6 +137,7 @@ export default defineNuxtConfig({
       needsFallback: undefined,
     },
   },
+  buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   build: {
     transpile: [
