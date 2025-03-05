@@ -137,7 +137,6 @@ export default defineNuxtConfig({
       needsFallback: undefined,
     },
   },
-  buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   build: {
     transpile: [
@@ -200,7 +199,6 @@ export default defineNuxtConfig({
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
     },
-    output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
       routes: [
         '/random/a',

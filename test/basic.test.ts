@@ -14,14 +14,17 @@ import type { NuxtIslandResponse } from '#app'
 const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 const isV4 = process.env.TEST_V4 === 'true'
+const isDev = process.env.TEST_ENV === 'dev'
+const fixtureDir = fileURLToPath(new URL('./fixtures/basic', import.meta.url))
 
 await setup({
-  rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
-  dev: process.env.TEST_ENV === 'dev',
+  rootDir: fixtureDir,
+  dev: isDev,
   server: true,
   browser: true,
   setupTimeout: 360 * 1000,
   nuxtConfig: {
+    buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
     hooks: {
       'modules:done' () {
         // TODO: investigate whether to upstream a fix to vite-plugin-vue or nuxt/test-utils
