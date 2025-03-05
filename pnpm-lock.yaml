@@ -439,8 +439,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
       oxc-parser:
-        specifier: ^0.55.0
-        version: 0.55.0
+        specifier: ^0.54.0
+        version: 0.54.0
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -2249,48 +2249,48 @@ packages:
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
-  '@oxc-parser/binding-darwin-arm64@0.55.0':
-    resolution: {integrity: sha512-HBwYqLgR2bXeILKZYKJDDpPbd42AKzNJZVHlBbU3wF0Klk3OxQfOpwn7N5g8R8lddGa9vTrZEiepahbf42YQnQ==}
+  '@oxc-parser/binding-darwin-arm64@0.54.0':
+    resolution: {integrity: sha512-LiNsE4YZ7UUCvkRvqKSr0ubWvOAyqeCKbqzhBQ4Dvj3EpkORX+MLj8c6/LcFWHtulNS066DvvB9nmd4FkMGeDQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxc-parser/binding-darwin-x64@0.55.0':
-    resolution: {integrity: sha512-It19BlMQls87eLOPvWh1NyKCR/lPHVAqwUdtqhs/fFwTGAg/JReJgiApmDJ2TK9dzsN3j6NJz2/Toze2y7w6VA==}
+  '@oxc-parser/binding-darwin-x64@0.54.0':
+    resolution: {integrity: sha512-sMoLDWK636eNkhxxu8Zfpgh1m64B68hU+D3qPOopzO9sMri2Xd+/Qy4AIe2CiQMTLf6Sb4+jTeqYqRrR8cgsPg==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.55.0':
-    resolution: {integrity: sha512-XUOR8Zm4jPS+vFTOpXlB2miQbkpsIL/VH+69OJh7kTjkKDDwWYplvcaXrTEiiB6LS3oa7JywZqfuDo69rLXOXQ==}
+  '@oxc-parser/binding-linux-arm64-gnu@0.54.0':
+    resolution: {integrity: sha512-TgnttTu46sdbMTDiObIX21okp58qiGaLk/qAPj8NorQHfBKnK9BWaCb0PBfDxeYozRDW4vppPPq4GXQlzhyQ9w==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-arm64-musl@0.55.0':
-    resolution: {integrity: sha512-pXbyHmc3yCxymM3SLkz78UMLv6RwTVdlfd9XWlwm8CGDeDSpbW74DobI7aeABe+1EC+ZloBBR0gAZhyh35yUxA==}
+  '@oxc-parser/binding-linux-arm64-musl@0.54.0':
+    resolution: {integrity: sha512-4J1Uc6vCbWp62fU7XbwPM93QwM/5ZTldbY/iXzyn/qX3+I6QYA2YaFgssO+zelYM0Bdaqpgeq8jeTAyN3HsLpw==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-gnu@0.55.0':
-    resolution: {integrity: sha512-4hrliQtd2zBA+oM1agd0iQyuwHFdeGiDynGPgejiwD3t782fiD6/MhWAWrTG+F/SvHyTmE5hYSAV0kv/416iIQ==}
+  '@oxc-parser/binding-linux-x64-gnu@0.54.0':
+    resolution: {integrity: sha512-qG5fxcIVIpQefZ71fTPetlr5FQ+MVKsDvC1Ozgy66apNKeWdjV8Aqx1k1yaZiTsENThhxP6zAOTOek398vsBSw==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-linux-x64-musl@0.55.0':
-    resolution: {integrity: sha512-E2UtqI04jxZ0MhUK7wOLqVvQiNhehXbWoAR6rvVzpCioefjUJssMSLgqHmERo9TLb6hkUjf3AbSDXIPjSq5rmw==}
+  '@oxc-parser/binding-linux-x64-musl@0.54.0':
+    resolution: {integrity: sha512-dcS2iP7hyF2AO6h3UAcC1OemKpElbiZdNW+88dP8fw5KArMWGH/GRNk2r/kBGq2YCETdP8ROlnUXMqGMaY3NEA==}
     cpu: [x64]
     os: [linux]
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.55.0':
-    resolution: {integrity: sha512-ChcwRJgVYK1jApp/UqpHoI6WC5NR3/76v+1HmtYpg0lwmPdwgqDpZg8ZjCasNwAcaYIxpSFylozCjPNekWIc9Q==}
+  '@oxc-parser/binding-win32-arm64-msvc@0.54.0':
+    resolution: {integrity: sha512-YiSM4tZYDGVgT3VXFlzZ86NCgp46BdLjCe85Pq/jfPXGFFSA0EU0Xg94jY8F+6w0BO/NjWJ1mEJwjhUzlWRq3Q==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxc-parser/binding-win32-x64-msvc@0.55.0':
-    resolution: {integrity: sha512-uSLYEWpdrUcpO45sJT/a411CjbmM0O8/udMeDmRe8B4kNW3io1L70yhm2BdlH9tNKrAP/xRS46DFGpsyJ+nHdA==}
+  '@oxc-parser/binding-win32-x64-msvc@0.54.0':
+    resolution: {integrity: sha512-NqsfN0pCJcB94bHzZtPzyKkeeGKo6U6Qj//lAE88XaZxVMlw58sz77wHIhIo0p9/KuKiMcD5VO2AIGG56AsJfg==}
     cpu: [x64]
     os: [win32]
 
-  '@oxc-project/types@0.55.0':
-    resolution: {integrity: sha512-gexu41j3k6ALmXtX5XHkWMXBy88PWavGRzFi1u+WacoZ/FJ5ukfz2SxEdILACAir+/xCAe2FbZcyT/xZ8qtFLQ==}
+  '@oxc-project/types@0.54.0':
+    resolution: {integrity: sha512-Tf0TGE96lQglNMyGKpIxSz7RmPtf410FY93QAD03XN40Rutpq4UsVePYQ9Nia8xb/YYLX9IskhJ7DK8rkcAabQ==}
 
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
@@ -3284,6 +3284,11 @@ packages:
 
   acorn@7.4.1:
     resolution: {integrity: sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
+  acorn@8.14.0:
+    resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -5884,8 +5889,8 @@ packages:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
 
-  oxc-parser@0.55.0:
-    resolution: {integrity: sha512-AUGkBaPcuj1AHvFu26HRJYFT+UZYglENdUeRAfY4hG9jg3g/jYWX+yXKZWmgsn1b14tfbXYSJaP5bNo26pWyIA==}
+  oxc-parser@0.54.0:
+    resolution: {integrity: sha512-nYqnBdqWL/yOJayDoSe8a/twaaersgXKOwypR9XuSf6gbzsI+aGDm8gg9vn1p+GcRN8P+Z3erTHjUdAvuUhfHQ==}
 
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
@@ -8978,31 +8983,31 @@ snapshots:
 
   '@one-ini/wasm@0.1.1': {}
 
-  '@oxc-parser/binding-darwin-arm64@0.55.0':
+  '@oxc-parser/binding-darwin-arm64@0.54.0':
     optional: true
 
-  '@oxc-parser/binding-darwin-x64@0.55.0':
+  '@oxc-parser/binding-darwin-x64@0.54.0':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-gnu@0.55.0':
+  '@oxc-parser/binding-linux-arm64-gnu@0.54.0':
     optional: true
 
-  '@oxc-parser/binding-linux-arm64-musl@0.55.0':
+  '@oxc-parser/binding-linux-arm64-musl@0.54.0':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-gnu@0.55.0':
+  '@oxc-parser/binding-linux-x64-gnu@0.54.0':
     optional: true
 
-  '@oxc-parser/binding-linux-x64-musl@0.55.0':
+  '@oxc-parser/binding-linux-x64-musl@0.54.0':
     optional: true
 
-  '@oxc-parser/binding-win32-arm64-msvc@0.55.0':
+  '@oxc-parser/binding-win32-arm64-msvc@0.54.0':
     optional: true
 
-  '@oxc-parser/binding-win32-x64-msvc@0.55.0':
+  '@oxc-parser/binding-win32-x64-msvc@0.54.0':
     optional: true
 
-  '@oxc-project/types@0.55.0': {}
+  '@oxc-project/types@0.54.0': {}
 
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
@@ -10241,6 +10246,8 @@ snapshots:
       acorn: 8.14.1
 
   acorn@7.4.1: {}
+
+  acorn@8.14.0: {}
 
   acorn@8.14.1: {}
 
@@ -13007,7 +13014,7 @@ snapshots:
 
   mlly@1.7.4:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.5.4
@@ -13314,18 +13321,18 @@ snapshots:
       type-check: 0.4.0
       word-wrap: 1.2.5
 
-  oxc-parser@0.55.0:
+  oxc-parser@0.54.0:
     dependencies:
-      '@oxc-project/types': 0.55.0
+      '@oxc-project/types': 0.54.0
     optionalDependencies:
-      '@oxc-parser/binding-darwin-arm64': 0.55.0
-      '@oxc-parser/binding-darwin-x64': 0.55.0
-      '@oxc-parser/binding-linux-arm64-gnu': 0.55.0
-      '@oxc-parser/binding-linux-arm64-musl': 0.55.0
-      '@oxc-parser/binding-linux-x64-gnu': 0.55.0
-      '@oxc-parser/binding-linux-x64-musl': 0.55.0
-      '@oxc-parser/binding-win32-arm64-msvc': 0.55.0
-      '@oxc-parser/binding-win32-x64-msvc': 0.55.0
+      '@oxc-parser/binding-darwin-arm64': 0.54.0
+      '@oxc-parser/binding-darwin-x64': 0.54.0
+      '@oxc-parser/binding-linux-arm64-gnu': 0.54.0
+      '@oxc-parser/binding-linux-arm64-musl': 0.54.0
+      '@oxc-parser/binding-linux-x64-gnu': 0.54.0
+      '@oxc-parser/binding-linux-x64-musl': 0.54.0
+      '@oxc-parser/binding-win32-arm64-msvc': 0.54.0
+      '@oxc-parser/binding-win32-x64-msvc': 0.54.0
 
   p-limit@3.1.0:
     dependencies:
@@ -14747,7 +14754,7 @@ snapshots:
 
   unctx@2.4.1:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       estree-walker: 3.0.3
       magic-string: 0.30.17
       unplugin: 2.2.0
@@ -14794,7 +14801,7 @@ snapshots:
 
   unimport@4.1.2:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       local-pkg: 1.1.0
@@ -14901,7 +14908,7 @@ snapshots:
 
   unplugin@2.2.0:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       webpack-virtual-modules: 0.6.2
 
   unstorage@1.15.0(db0@0.3.1)(ioredis@5.5.0):
@@ -15258,7 +15265,7 @@ snapshots:
   webpack-bundle-analyzer@4.10.2:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      acorn: 8.14.1
+      acorn: 8.14.0
       acorn-walk: 8.3.4
       commander: 7.2.0
       debounce: 1.2.1
@@ -15317,7 +15324,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.1
+      acorn: 8.14.0
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
@@ -15347,7 +15354,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.1
+      acorn: 8.14.0
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
