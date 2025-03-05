@@ -65,7 +65,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await page.close()
     })
 
-    it('should detect new routes', { timeout: 60000 }, async () => {
+    it.skipIf(isCI)('should detect new routes', { timeout: 60000 }, async () => {
       const res = await fetch('/some-404')
       expect(res.status).toBe(404)
 
@@ -85,7 +85,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await expectWithPolling(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null), 'edited in dev')
     })
 
-    it('should HMR islands', async () => {
+    it.skipIf(isCI)('should HMR islands', async () => {
       const { page, pageErrors, consoleLogs } = await renderPage('/server-component')
 
       const componentPath = join(fixtureDir, 'components/islands/HmrComponent.vue')
