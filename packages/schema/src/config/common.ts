@@ -69,7 +69,12 @@ export default defineResolvers({
   workspaceDir: {
     $resolve: async (val, get) => {
       const rootDir = await get('rootDir')
-      return val && typeof val === 'string' ? resolve(rootDir, val) : await findWorkspaceDir(rootDir).catch(() => rootDir)
+      return val && typeof val === 'string'
+        ? resolve(rootDir, val)
+        : await findWorkspaceDir(rootDir, {
+          gitConfig: 'closest',
+          try: true,
+        }).catch(() => rootDir)
     },
   },
 
