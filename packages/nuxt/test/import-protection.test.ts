@@ -34,7 +34,7 @@ describe('import protection', () => {
       expect(result).toBeNull()
     } else {
       expect(result).toBeDefined()
-      expect(normalize(result)).contains('unenv/mock/proxy')
+      expect(normalize(result)).contains('unenv/runtime/mock/proxy')
     }
   })
 })
