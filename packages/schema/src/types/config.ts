@@ -4,6 +4,7 @@ import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+import type { NitroRuntimeConfigApp as LegacyNitroRuntimeConfigApp } from 'nitro'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
 import type { ConfigSchema } from '../../schema/config'
@@ -39,7 +40,8 @@ type RuntimeConfigNamespace = Record<string, unknown>
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
-  app: NitroRuntimeConfigApp
+  // TODO: remove in v4
+  app: NitroRuntimeConfigApp | LegacyNitroRuntimeConfigApp
   /** Only available on the server. */
   nitro?: NitroRuntimeConfig['nitro']
   public: PublicRuntimeConfig
