@@ -236,6 +236,7 @@ export const Meta = defineComponent({
     content: String,
     httpEquiv: String as PropType<HTTPEquiv>,
     name: String,
+    property: String,
   },
   setup (props) {
     const meta = { 'http-equiv': props.httpEquiv, ...normalizeProps(props) } as UnheadMeta
