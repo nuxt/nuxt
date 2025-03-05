@@ -61,9 +61,7 @@
     "unimport": "4.1.2",
     "vite": "6.2.0",
     "vue": "3.5.13",
-    "webpack": "5.98.0",
-    "nitropack": "npm:nitropack-nightly@2.11.2-20250305-192721.72225800",
-    "h3": "npm:h3-nightly@1.15.1-20250222-111608-d1c00fc"
+    "webpack": "5.98.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.4",
@@ -105,7 +103,7 @@
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.44.0",
     "memfs": "4.17.0",
-    "nitropack": "npm:nitropack-nightly@2.11.2-20250305-192721.72225800",
+    "nitropack": "2.11.2",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
