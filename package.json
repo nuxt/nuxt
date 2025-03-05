@@ -104,7 +104,7 @@
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.44.0",
     "memfs": "4.17.0",
-    "nitropack": "2.11.1",
+    "nitropack": "npm:nitropack-nightly@2.11.2-20250305-192721.72225800",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
