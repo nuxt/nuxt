@@ -483,8 +483,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-rc.10
+        version: 2.0.0-rc.12
       unimport:
         specifier: 4.1.2
         version: 4.1.2
@@ -634,8 +634,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-rc.10
+        version: 2.0.0-rc.12
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -896,6 +896,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.1
+        version: 1.0.1
       externality:
         specifier: ^1.0.2
         version: 1.0.2
@@ -942,8 +945,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-rc.10
+        version: 2.0.0-rc.12
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -1060,8 +1063,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-rc.10
+        version: 2.0.0-rc.12
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0

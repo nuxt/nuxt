@@ -8,6 +8,7 @@ import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
+import { resolveModulePath } from 'exsolve'
 import { resolveTSConfig } from 'pkg-types'
 
 import { buildClient } from './client'
@@ -55,6 +56,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
   const isIgnored = createIsIgnored(nuxt)
+
+  const mockEmpty = resolveModulePath('unenv/mock/empty', { from: import.meta.url })
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -65,9 +68,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
-            'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
+            'web-streams-polyfill/ponyfill/es2018': mockEmpty,
             // Cannot destructure property 'AbortController' of ..
-            'abort-controller': 'unenv/runtime/mock/empty',
+            'abort-controller': mockEmpty,
           },
         },
         css: await resolveCSSOptions(nuxt),
