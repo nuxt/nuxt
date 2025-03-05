@@ -34,7 +34,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
       conditions = [...resolvedConditions]
 
       const { runtimeDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
-        url: nuxt.options.modulesDir.map(d => directoryToURL(d)),
+        url: new URL(import.meta.url),
       }) || {}
 
       external = new Set([
