@@ -62,7 +62,8 @@
     "vite": "6.2.0",
     "vue": "3.5.13",
     "webpack": "5.98.0",
-    "nitropack": "npm:nitropack-nightly@2.11.2-20250305-192721.72225800"
+    "nitropack": "npm:nitropack-nightly@2.11.2-20250305-192721.72225800",
+    "h3": "npm:h3-nightly@1.15.1-20250222-111608-d1c00fc"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.4",
