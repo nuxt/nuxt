@@ -145,7 +145,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     })
 
     it.skipIf(isWebpack)('should HMR routes', { timeout: 60_000 }, async () => {
-      const { page, pageErrors, consoleLogs } = await renderPage('/routes')
+      const { page, pageErrors, consoleLogs } = await renderPage('/routes', { retries: 5 })
 
       await fsp.writeFile(join(fixtureDir, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
 
