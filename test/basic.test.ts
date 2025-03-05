@@ -1166,11 +1166,14 @@ describe('errors', () => {
     expect(res.statusText).toBe('This is a custom error')
     const error = await res.json()
     delete error.stack
+    const url = new URL(error.url)
+    url.host = 'localhost:3000'
+    error.url = url.toString()
     expect(error).toMatchObject({
-      message: 'This is a custom error',
+      message: 'Server Error',
       statusCode: 422,
       statusMessage: 'This is a custom error',
-      url: '/error',
+      url: 'http://localhost:3000/error',
     })
   })
 
@@ -1189,12 +1192,17 @@ describe('errors', () => {
     expect(res.status).toBe(404)
     const error = await res.json()
     delete error.stack
+    const url = new URL(error.url)
+    url.host = 'localhost:3000'
+    error.url = url.toString()
+
     expect(error).toMatchInlineSnapshot(`
       {
+        "error": true,
         "message": "Page Not Found: /__nuxt_error",
         "statusCode": 404,
         "statusMessage": "Page Not Found: /__nuxt_error",
-        "url": "/__nuxt_error",
+        "url": "http://localhost:3000/__nuxt_error",
       }
     `)
   })

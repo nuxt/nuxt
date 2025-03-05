@@ -1,10 +1,10 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
-import { getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h3'
+import { getRequestHeaders, getRequestURL, getResponseHeader, send, sendRedirect, setResponseHeader, setResponseStatus } from 'h3'
 import type { NuxtPayload } from 'nuxt/app'
 
-import { isJsonRequest, normalizeError } from '../utils/error'
+import { isJsonRequest, setSecurityHeaders } from '../utils/error'
 import { useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
@@ -14,38 +14,52 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     return
   }
 
-  // Parse and normalize error
-  const { stack, statusCode, statusMessage, message } = normalizeError(error)
+  const isSensitive = error.unhandled || error.fatal
+  const statusCode = error.statusCode || 500
+  const statusMessage = error.statusMessage || 'Server Error'
+  const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true })
 
-  // Create an error object
-  const errorObject = {
-    url: event.path,
-    statusCode,
-    statusMessage,
-    message,
-    stack: import.meta.dev && statusCode !== 404
-      ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
-      : '',
-    // TODO: check and validate error.data for serialisation into query
-    data: error.data as any,
-  } satisfies Partial<NuxtPayload['error']> & { url: string }
+  if (statusCode === 404) {
+    const baseURL = import.meta.baseURL || '/'
+    if (/^\/[^/]/.test(baseURL) && !url.pathname.startsWith(baseURL)) {
+      return sendRedirect(event, `${baseURL}${url.pathname.slice(1)}${url.search}`)
+    }
+  }
 
   // Console output
-  if (error.unhandled || error.fatal) {
-    const tags = [
-      '[nuxt]',
-      '[request error]',
-      error.unhandled && '[unhandled]',
-      error.fatal && '[fatal]',
-      Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`,
-    ].filter(Boolean).join(' ')
-    console.error(tags, (error.message || error.toString() || 'internal server error') + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+  if (isSensitive) {
+    if (import.meta.dev) {
+      const { logError } = await import('../utils/error-dev')
+      await logError(event, url, error)
+    } else {
+      const tags = [error.unhandled && '[unhandled]', error.fatal && '[fatal]'].filter(Boolean).join(' ')
+      console.error(`[nuxt] [request error] ${tags} [${event.method}] ${url}\n`, error)
+    }
   }
 
   if (event.handled) { return }
 
-  // Set response code and message
-  setResponseStatus(event, (errorObject.statusCode !== 200 && errorObject.statusCode) as any as number || 500, errorObject.statusMessage)
+  // Parse and normalize error
+  // Create an error object
+  const errorObject: Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any } = {
+    error: true,
+    url: url.toString(),
+    statusCode,
+    statusMessage,
+    message: isSensitive && !import.meta.dev ? 'Server Error' : error.message,
+    data: isSensitive && !import.meta.dev ? undefined : error.data as any,
+  }
+
+  if (import.meta.dev) {
+    errorObject.stack = error.stack?.split('\n').map(line => line.trim()).join('\n')
+  }
+
+  // Send response
+  setSecurityHeaders(event)
+  setResponseStatus(event, statusCode, statusMessage)
+  if (statusCode === 404 || !getResponseHeader(event, 'cache-control')) {
+    setResponseHeader(event, 'cache-control', 'no-cache')
+  }
 
   // Access request headers
   const reqHeaders = getRequestHeaders(event)
