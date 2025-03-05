@@ -24,7 +24,6 @@ await setup({
   browser: true,
   setupTimeout: 360 * 1000,
   nuxtConfig: {
-    buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
     hooks: {
       'modules:done' () {
         // TODO: investigate whether to upstream a fix to vite-plugin-vue or nuxt/test-utils
