@@ -11,7 +11,7 @@ links:
 `defineLazyVisibleComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until it becomes visible in the viewport.
 
 ::note
-Internally, this leverages Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-visible).
+Under the hood, this uses Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-visible).
 ::
 
 ## Usage
@@ -52,7 +52,7 @@ const LazyVisibleMyComponent = defineLazyVisibleComponent(
   ```
 
   ::read-more{to="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/IntersectionObserver" title="IntersectionObserver options"}
-  Read more about `hydrate-on-visible` options.
+  Read more about the options for `hydrate-on-visible`.
   ::
 
 ## Emits
