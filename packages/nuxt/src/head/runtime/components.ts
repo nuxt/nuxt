@@ -54,12 +54,7 @@ const normalizeProps = <T extends Record<string, any>>(_props: T): Partial<T> =>
 }
 
 function useHeadComponentCtx (): HeadComponentCtx {
-  const ctx = inject<HeadComponentCtx | null>(HeadComponentCtxSymbol, null)
-  // fallback to regular useHead
-  if (!ctx) {
-    return createHeadComponentCtx()
-  }
-  return ctx!
+  return inject<HeadComponentCtx>(HeadComponentCtxSymbol, createHeadComponentCtx, true)
 }
 
 function createHeadComponentCtx (): HeadComponentCtx {
