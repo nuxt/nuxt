@@ -1,4 +1,4 @@
-import { defineComponent, inject, onUnmounted, provide, reactive } from 'vue'
+import { defineComponent, inject, onUnmounted, provide, reactive, triggerRef } from 'vue'
 import type { PropType } from 'vue'
 import type {
   BodyAttributes,
@@ -134,19 +134,22 @@ export const NoScript = defineComponent({
     title: String,
   },
   setup (props, { slots }) {
-    const noscript = normalizeProps(props) as Noscript
-    const slotVnodes = slots.default?.()
-    const textContent = slotVnodes
-      ? slotVnodes.filter(({ children }) => children).map(({ children }) => children).join('')
-      : ''
-    if (textContent) {
-      noscript.innerHTML = textContent
-    }
     const { input } = useHeadComponentCtx()
     input.noscript ||= []
-    const idx: keyof typeof input.noscript = input.noscript.push(noscript) - 1
+    const idx: keyof typeof input.noscript = input.noscript.push({}) - 1
     onUnmounted(() => input.noscript![idx] = null)
-    return () => null
+    return () => {
+      const noscript = normalizeProps(props) as Noscript
+      const slotVnodes = slots.default?.()
+      const textContent = slotVnodes
+        ? slotVnodes.filter(({ children }) => children).map(({ children }) => children).join('')
+        : ''
+      if (textContent) {
+        noscript.innerHTML = textContent
+      }
+      input.noscript![idx] = noscript
+      return null
+    }
   },
 })
 
@@ -182,12 +185,14 @@ export const Link = defineComponent({
     target: String as PropType<Target>,
   },
   setup (props) {
-    const link = normalizeProps(props) as UnheadLink
     const { input } = useHeadComponentCtx()
     input.link ||= []
-    const idx: keyof typeof input.link = input.link.push(link) - 1
+    const idx: keyof typeof input.link = input.link.push({}) - 1
     onUnmounted(() => input.link![idx] = null)
-    return () => null
+    return () => {
+      input.link![idx] = normalizeProps(props) as UnheadLink
+      return null
+    }
   },
 })
 
@@ -202,9 +207,11 @@ export const Base = defineComponent({
   },
   setup (props) {
     const { input } = useHeadComponentCtx()
-    input.base = normalizeProps(props) as UnheadBase
     onUnmounted(() => input.base = null)
-    return () => null
+    return () => {
+      input.base = normalizeProps(props) as UnheadBase
+      return null
+    }
   },
 })
 
@@ -213,16 +220,18 @@ export const Title = defineComponent({
   name: 'Title',
   inheritAttrs: false,
   setup (_, { slots }) {
-    const defaultSlot = slots.default?.()
-    if (import.meta.dev) {
-      if (defaultSlot && (defaultSlot.length > 1 || (defaultSlot[0] && typeof defaultSlot[0].children !== 'string'))) {
-        console.error('<Title> can take only one string in its default slot.')
-      }
-    }
     const { input } = useHeadComponentCtx()
-    input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
     onUnmounted(() => input.title = null)
-    return () => null
+    return () => {
+      const defaultSlot = slots.default?.()
+      input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
+      if (import.meta.dev) {
+        if (defaultSlot && (defaultSlot.length > 1 || (defaultSlot[0] && typeof defaultSlot[0].children !== 'string'))) {
+          console.error('<Title> can take only one string in its default slot.')
+        }
+      }
+      return null
+    }
   },
 })
 
@@ -239,16 +248,19 @@ export const Meta = defineComponent({
     property: String,
   },
   setup (props) {
-    const meta = { 'http-equiv': props.httpEquiv, ...normalizeProps(props) } as UnheadMeta
-    // fix casing for http-equiv
-    if ('httpEquiv' in meta) {
-      delete meta.httpEquiv
-    }
     const { input } = useHeadComponentCtx()
     input.meta ||= []
-    const idx: keyof typeof input.meta = input.meta.push(meta) - 1
+    const idx: keyof typeof input.meta = input.meta.push({}) - 1
     onUnmounted(() => input.meta![idx] = null)
-    return () => null
+    return () => {
+      const meta = { 'http-equiv': props.httpEquiv, ...normalizeProps(props) } as UnheadMeta
+      // fix casing for http-equiv
+      if ('httpEquiv' in meta) {
+        delete meta.httpEquiv
+      }
+      input.meta![idx] = meta
+      return null
+    }
   },
 })
 
@@ -270,19 +282,21 @@ export const Style = defineComponent({
     },
   },
   setup (props, { slots }) {
-    const style = normalizeProps(props) as UnheadStyle
-    const textContent = slots.default?.()?.[0]?.children
-    if (textContent) {
-      if (import.meta.dev && typeof textContent !== 'string') {
-        console.error('<Style> can only take a string in its default slot.')
-      }
-      style.textContent = textContent
-    }
     const { input } = useHeadComponentCtx()
     input.style ||= []
-    const idx: keyof typeof input.style = input.style.push(style) - 1
+    const idx: keyof typeof input.style = input.style.push({}) - 1
     onUnmounted(() => input.style![idx] = null)
-    return () => null
+    return () => {
+      const style = normalizeProps(props) as UnheadStyle
+      const textContent = slots.default?.()?.[0]?.children
+      if (textContent) {
+        if (import.meta.dev && typeof textContent !== 'string') {
+          console.error('<Style> can only take a string in its default slot.')
+        }
+        style.textContent = textContent
+      }
+      return null
+    }
   },
 })
 
@@ -308,9 +322,11 @@ export const Html = defineComponent({
   },
   setup (_props, ctx) {
     const { input } = useHeadComponentCtx()
-    input.htmlAttrs = { ..._props } as HtmlAttributes
     onUnmounted(() => input.htmlAttrs = null)
-    return () => ctx.slots.default?.()
+    return () => {
+      input.htmlAttrs = { ..._props } as HtmlAttributes
+      return ctx.slots.default?.()
+    }
   },
 })
 
@@ -321,8 +337,10 @@ export const Body = defineComponent({
   props: globalProps,
   setup (_props, ctx) {
     const { input } = useHeadComponentCtx()
-    input.bodyAttrs = { ..._props } as BodyAttributes
     onUnmounted(() => input.bodyAttrs = null)
-    return () => ctx.slots.default?.()
+    return () => {
+      input.bodyAttrs = { ..._props } as BodyAttributes
+      return ctx.slots.default?.()
+    }
   },
 })
