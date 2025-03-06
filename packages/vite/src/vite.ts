@@ -93,7 +93,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
           },
           watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/, /\.sock$/] },
+            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
             exclude: nuxt.options.ignore,
           },
         },
