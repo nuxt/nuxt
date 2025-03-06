@@ -8,7 +8,13 @@ links:
     size: xs
 ---
 
-`defineLazyIdleComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until the browser is idle. It is useful when you want the component to load as soon as possible without blocking the critical rendering path.
+`defineLazyIdleComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until the browser is idle, ensuring that critical rendering tasks are prioritized first.
+
+When using `v-if="false"` on a lazy component, you might not need delayed hydration. You can just use a normal lazy component.
+
+::tip
+You can use `defineLazyIdleComponent` for non-essential components that do not need immediate hydration. This helps improve performance by deferring hydration until the browser is idle, reducing competition for main thread resources.
+::
 
 ::note
 Under the hood, this uses Vue's built-in [`hydrateOnIdle` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-idle).

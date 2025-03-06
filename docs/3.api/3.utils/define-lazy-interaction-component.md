@@ -10,6 +10,12 @@ links:
 
 `defineLazyInteractionComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until the user interacts with it (e.g., click, mouseover).
 
+When using `v-if="false"` on a lazy component, you might not need delayed hydration. You can just use a normal lazy component.
+
+::tip
+You can use `defineLazyInteractionComponent` for components that require hydration only after user interaction. This helps optimize performance by avoiding unnecessary hydration until the component is actually needed.
+::
+
 ## Usage
 
 ```vue

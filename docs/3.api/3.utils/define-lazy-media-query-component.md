@@ -10,6 +10,12 @@ links:
 
 `defineLazyMediaQueryComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until the specified media query is matched.
 
+When using `v-if="false"` on a lazy component, you might not need delayed hydration. You can just use a normal lazy component.
+
+::tip
+You can use `defineLazyMediaQueryComponent` for components that should only be hydrated under specific screen sizes or device conditions. This helps optimize rendering by ensuring hydration only occurs when necessary.
+::
+
 ## Usage
 
 ```vue

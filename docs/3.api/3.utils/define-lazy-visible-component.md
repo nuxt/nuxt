@@ -10,6 +10,12 @@ links:
 
 `defineLazyVisibleComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until the element(s) become visible in the viewport.
 
+When using `v-if="false"` on a lazy component, you might not need delayed hydration. You can just use a normal lazy component.
+
+::tip
+You can use `defineLazyVisibleComponent` for elements that are not immediately needed. This helps keep the page responsive and interactive while deferring non-essential hydration. However, for critical, above-the-fold content, consider using a different strategy to ensure a better user experience.
+::
+
 ::note
 Under the hood, this uses Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-visible).
 ::
@@ -42,7 +48,7 @@ You can pass an object with options for the `IntersectionObserver` or `true` to 
 ```vue
 <template>
   <div>
-    <!--
+    <!-- 
       Hydration will be triggered when
       the element(s) is 100px away from entering the viewport.
     -->
