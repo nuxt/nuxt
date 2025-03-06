@@ -31,14 +31,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
   errorObject.message ||= 'Server Error'
 
-  setResponseHeaders(event, {
-    'x-content-type-options': defaultRes.headers['x-content-type-options'],
-    // Prevent error page from being embedded in an iframe
-    'x-frame-options': defaultRes.headers['x-frame-options'],
-    // Prevent browsers from sending the Referer header
-    'referrer-policy': defaultRes.headers['referrer-policy'],
-    'Cache-Control': defaultRes.headers['Cache-Control'],
-  })
+  delete defaultRes.headers['content-type'] // this would be set to application/json
+  delete defaultRes.headers['content-security-policy'] // this would disable JS execution in the error page
+
+  setResponseHeaders(event, defaultRes.headers)
 
   // Access request headers
   const reqHeaders = getRequestHeaders(event)
