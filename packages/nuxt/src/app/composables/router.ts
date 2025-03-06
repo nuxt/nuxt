@@ -152,7 +152,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (import.meta.client && !isExternal && inMiddleware) {
     if (options?.replace) {
       if (typeof to === 'string') {
-        const { pathname, search, hash } = parseURL(fullPath)
+        const { pathname, search, hash } = parseURL(to)
         return { path: pathname, query: parseQuery: (search), hash, replace: true }
       }
       return { ...to, replace: true }
