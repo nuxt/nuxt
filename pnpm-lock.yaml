@@ -240,7 +240,7 @@ importers:
         version: 0.1.0
       exsolve:
         specifier: ^1.0.1
-        version: 1.0.2
+        version: 1.0.1
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -391,7 +391,7 @@ importers:
         version: 3.0.3
       exsolve:
         specifier: ^1.0.1
-        version: 1.0.2
+        version: 1.0.1
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -461,9 +461,6 @@ importers:
       semver:
         specifier: ^7.7.1
         version: 7.7.1
-      source-map:
-        specifier: ^0.7.4
-        version: 0.7.4
       std-env:
         specifier: ^3.8.1
         version: 3.8.1
@@ -515,12 +512,6 @@ importers:
       vue-router:
         specifier: ^4.5.0
         version: 4.5.0(vue@3.5.13(typescript@5.8.2))
-      youch:
-        specifier: 4.1.0-beta.5
-        version: 4.1.0-beta.5
-      youch-core:
-        specifier: ^0.3.1
-        version: 0.3.1
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.10.5
@@ -907,7 +898,7 @@ importers:
         version: 5.0.0
       exsolve:
         specifier: ^1.0.1
-        version: 1.0.2
+        version: 1.0.1
       externality:
         specifier: ^1.0.2
         version: 1.0.2
@@ -3301,6 +3292,11 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
+  acorn@8.14.0:
+    resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
   acorn@8.14.1:
     resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
     engines: {node: '>=0.4.0'}
@@ -4416,6 +4412,9 @@ packages:
   expect-type@1.1.0:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
+
+  exsolve@1.0.1:
+    resolution: {integrity: sha512-Smf0iQtkQVJLaph8r/qS8C8SWfQkaq9Q/dFcD44MLbJj6DNhlWefVuaS21SjfqOsBbjVlKtbCj6L9ekXK6EZUg==}
 
   exsolve@1.0.2:
     resolution: {integrity: sha512-ZEcIMbthn2zeX4/wD/DLxDUjuCltHXT8Htvm/JFlTkdYgWh2+HGppgwwNUnIVxzxP7yJOPtuBAec0dLx6lVY8w==}
@@ -10299,6 +10298,8 @@ snapshots:
 
   acorn@7.4.1: {}
 
+  acorn@8.14.0: {}
+
   acorn@8.14.1: {}
 
   agent-base@7.1.1(supports-color@9.4.0):
@@ -10538,7 +10539,7 @@ snapshots:
       confbox: 0.1.8
       defu: 6.1.4
       dotenv: 16.4.7
-      exsolve: 1.0.2
+      exsolve: 1.0.1
       giget: 2.0.0
       jiti: 2.4.2
       ohash: 2.0.11
@@ -11564,6 +11565,8 @@ snapshots:
       yoctocolors: 2.1.1
 
   expect-type@1.1.0: {}
+
+  exsolve@1.0.1: {}
 
   exsolve@1.0.2: {}
 
@@ -13129,7 +13132,7 @@ snapshots:
 
   mlly@1.7.4:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.5.4
@@ -13596,7 +13599,7 @@ snapshots:
   pkg-types@2.1.0:
     dependencies:
       confbox: 0.2.1
-      exsolve: 1.0.2
+      exsolve: 1.0.1
       pathe: 2.0.3
 
   playwright-core@1.50.1: {}
@@ -14894,7 +14897,7 @@ snapshots:
 
   unctx@2.4.1:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       estree-walker: 3.0.3
       magic-string: 0.30.17
       unplugin: 2.2.0
@@ -14914,7 +14917,7 @@ snapshots:
   unenv@2.0.0-rc.12:
     dependencies:
       defu: 6.1.4
-      exsolve: 1.0.2
+      exsolve: 1.0.1
       ohash: 2.0.11
       pathe: 2.0.3
       ufo: 1.5.4
@@ -14941,7 +14944,7 @@ snapshots:
 
   unimport@4.1.2:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       local-pkg: 1.1.0
@@ -15053,7 +15056,7 @@ snapshots:
 
   unplugin@2.2.0:
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.14.0
       webpack-virtual-modules: 0.6.2
 
   unstorage@1.15.0(db0@0.3.1)(ioredis@5.5.0):
@@ -15410,7 +15413,7 @@ snapshots:
   webpack-bundle-analyzer@4.10.2:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      acorn: 8.14.1
+      acorn: 8.14.0
       acorn-walk: 8.3.4
       commander: 7.2.0
       debounce: 1.2.1
@@ -15469,7 +15472,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.1
+      acorn: 8.14.0
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
@@ -15499,7 +15502,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.1
+      acorn: 8.14.0
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
