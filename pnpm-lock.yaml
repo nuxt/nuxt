@@ -14,7 +14,7 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.13.9
-  '@unhead/vue': 2.0.0-rc.2
+  '@unhead/vue': 2.0.0-rc.1
   '@vue/compiler-core': 3.5.13
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
@@ -81,8 +81,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       '@unhead/vue':
-        specifier: 2.0.0-rc.2
-        version: 2.0.0-rc.2(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.0-rc.1
+        version: 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
       '@vitest/coverage-v8':
         specifier: 3.0.7
         version: 3.0.7(vitest@3.0.7(@types/debug@4.1.12)(@types/node@22.13.9)(happy-dom@17.2.2)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
@@ -346,8 +346,8 @@ importers:
         specifier: 22.13.9
         version: 22.13.9
       '@unhead/vue':
-        specifier: 2.0.0-rc.2
-        version: 2.0.0-rc.2(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.0-rc.1
+        version: 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
@@ -513,7 +513,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.10.5
-        version: 0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.2(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.5.0)(typescript@5.8.2)
+        version: 0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.1(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.5.0)(typescript@5.8.2)
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -706,8 +706,8 @@ importers:
         specifier: 2.25.9
         version: 2.25.9(esbuild@0.25.0)
       '@unhead/vue':
-        specifier: 2.0.0-rc.2
-        version: 2.0.0-rc.2(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.0-rc.1
+        version: 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
       '@vitejs/plugin-vue':
         specifier: 5.2.1
         version: 5.2.1(vite@6.2.0(@types/node@22.13.9)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.2))
@@ -2115,7 +2115,7 @@ packages:
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
-      '@unhead/vue': 2.0.0-rc.2
+      '@unhead/vue': 2.0.0-rc.1
     peerDependenciesMeta:
       '@stripe/stripe-js':
         optional: true
@@ -2917,8 +2917,8 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@unhead/vue@2.0.0-rc.2':
-    resolution: {integrity: sha512-AvP5xRIRoXf7IDpc+iXEZwMcmH9fztS9DiPGUhBUKtu8ExJPvcmrPevgrtWBLSCa75ijxuKUWd1gPHne5F4VZg==}
+  '@unhead/vue@2.0.0-rc.1':
+    resolution: {integrity: sha512-Y9DQ8gwAVXSkVJ76sMZsfdfVmXaWCvz3viJMQN3WnZ1DcWknme5HoFgBEDHyYxIZymP8dHsxWAFk1p+yRZE4Bw==}
     peerDependencies:
       vue: 3.5.13
 
@@ -3264,11 +3264,6 @@ packages:
 
   acorn@7.4.1:
     resolution: {integrity: sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
-  acorn@8.14.0:
-    resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -7252,8 +7247,8 @@ packages:
   unenv@2.0.0-rc.12:
     resolution: {integrity: sha512-aygmJLhrEnuLKDCISMoOL7ceRJeksnvXJXvtEvFei4zoOXQfvQkUGhZe8u//iK5C++M4pq3CsMbhVjFmWvOlmA==}
 
-  unhead@2.0.0-rc.2:
-    resolution: {integrity: sha512-8rFnunD1YefSbZys80L61Ixft6yWxgzCb5Z/weNIgNf8iHc6zxEYi7HmgodCg4w8br9pdAXsLYUfUJ0zPePUWw==}
+  unhead@2.0.0-rc.1:
+    resolution: {integrity: sha512-jy/rBmC8Q+9EvSpkMYL4gvozSJGe7XTPPcC6NCzh8dUhNxC5eiwtIYdS/gyxvgOnItb9e+B/fHvrFFgLUkwuzQ==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -8765,10 +8760,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.98.0
 
-  '@nuxt/scripts@0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.2(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.5.0)(typescript@5.8.2)':
+  '@nuxt/scripts@0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.1(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.5.0)(typescript@5.8.2)':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 2.0.0-rc.2(vue@3.5.13(typescript@5.8.2))
+      '@unhead/vue': 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
       '@vueuse/core': 12.7.0(typescript@5.8.2)
       consola: 3.4.0
       defu: 6.1.4
@@ -9707,10 +9702,10 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unhead/vue@2.0.0-rc.2(vue@3.5.13(typescript@5.8.2))':
+  '@unhead/vue@2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))':
     dependencies:
       hookable: 5.5.3
-      unhead: 2.0.0-rc.2
+      unhead: 2.0.0-rc.1
       vue: 3.5.13(typescript@5.8.2)
 
   '@unocss/astro@66.0.0(vite@6.2.0(@types/node@22.13.9)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.2))':
@@ -10253,8 +10248,6 @@ snapshots:
       acorn: 8.14.1
 
   acorn@7.4.1: {}
-
-  acorn@8.14.0: {}
 
   acorn@8.14.1: {}
 
@@ -13092,7 +13085,7 @@ snapshots:
 
   mlly@1.7.4:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.5.4
@@ -14859,7 +14852,7 @@ snapshots:
 
   unctx@2.4.1:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       estree-walker: 3.0.3
       magic-string: 0.30.17
       unplugin: 2.2.0
@@ -14884,7 +14877,7 @@ snapshots:
       pathe: 2.0.3
       ufo: 1.5.4
 
-  unhead@2.0.0-rc.2:
+  unhead@2.0.0-rc.1:
     dependencies:
       hookable: 5.5.3
 
@@ -14906,7 +14899,7 @@ snapshots:
 
   unimport@4.1.2:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       local-pkg: 1.1.0
@@ -15018,7 +15011,7 @@ snapshots:
 
   unplugin@2.2.0:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       webpack-virtual-modules: 0.6.2
 
   unstorage@1.15.0(db0@0.3.1)(ioredis@5.5.0):
@@ -15369,7 +15362,7 @@ snapshots:
   webpack-bundle-analyzer@4.10.2:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      acorn: 8.14.0
+      acorn: 8.14.1
       acorn-walk: 8.3.4
       commander: 7.2.0
       debounce: 1.2.1
@@ -15428,7 +15421,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.0
+      acorn: 8.14.1
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
@@ -15458,7 +15451,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.0
+      acorn: 8.14.1
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
