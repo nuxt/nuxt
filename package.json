@@ -38,8 +38,6 @@
   },
   "resolutions": {
     "@babel/core": "7.26.9",
-    "h3": "1.15.1",
-    "nitropack": "npm:nitropack-nightly@2.11.3-20250306-104907.06147e7a",
     "@babel/helper-plugin-utils": "7.26.5",
     "@nuxt/cli": "3.22.4",
     "@nuxt/kit": "workspace:*",
@@ -105,7 +103,7 @@
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.44.0",
     "memfs": "4.17.0",
-    "nitropack": "2.11.2",
+    "nitropack": "2.11.3",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
