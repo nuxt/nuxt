@@ -1,4 +1,4 @@
-import { defineComponent, inject, onUnmounted, provide, reactive, triggerRef } from 'vue'
+import { defineComponent, inject, onUnmounted, provide, reactive } from 'vue'
 import type { PropType } from 'vue'
 import type {
   BodyAttributes,
