@@ -649,7 +649,9 @@ describe('routing utilities: `navigateTo`', () => {
     expect(navigateTo('/')).toMatchInlineSnapshot(`"/"`)
     expect(navigateTo('/', { replace: true })).toMatchInlineSnapshot(`
       {
+        "hash": "",
         "path": "/",
+        "query": {},
         "replace": true,
       }
     `)
