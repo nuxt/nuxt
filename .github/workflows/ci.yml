@@ -7,6 +7,7 @@ on:
       - "*.md"
     branches:
       - main
+      - test/3.x-playwright
       - 3.x
   pull_request:
     paths-ignore:
