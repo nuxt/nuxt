@@ -13,30 +13,31 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     return
   }
   // invoke default Nitro error handler (which will log appropriately if required)
-  const defaultError = await defaultHandler(error, event, { json: true })
-
-  if (event.handled) { return }
+  const defaultRes = await defaultHandler(error, event, { json: true })
 
   // let Nitro handle redirect if appropriate
   const statusCode = error.statusCode || 500
-  if (statusCode === 404 && defaultError.status === 302) {
-    return defaultError
+  if (statusCode === 404 && defaultRes.status === 302) {
+    setResponseHeaders(event, defaultRes.headers)
+    setResponseStatus(event, defaultRes.status, defaultRes.statusText)
+    return send(event, JSON.stringify(defaultRes.body, null, 2))
   }
 
-  if (import.meta.dev && typeof defaultError.body !== 'string' && Array.isArray(defaultError.body.stack)) {
+  if (import.meta.dev && typeof defaultRes.body !== 'string' && Array.isArray(defaultRes.body.stack)) {
     // normalize to string format expected by nuxt `error.vue`
-    defaultError.body.stack = defaultError.body.stack.join('\n')
+    defaultRes.body.stack = defaultRes.body.stack.join('\n')
   }
 
-  const errorObject = defaultError.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
+  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
   errorObject.message ||= 'Server Error'
 
   setResponseHeaders(event, {
-    'x-content-type-options': defaultError.headers['x-content-type-options'],
+    'x-content-type-options': defaultRes.headers['x-content-type-options'],
     // Prevent error page from being embedded in an iframe
-    'x-frame-options': defaultError.headers['x-frame-options'],
+    'x-frame-options': defaultRes.headers['x-frame-options'],
     // Prevent browsers from sending the Referer header
-    'referrer-policy': defaultError.headers['referrer-policy'],
+    'referrer-policy': defaultRes.headers['referrer-policy'],
+    'Cache-Control': defaultRes.headers['Cache-Control'],
   })
 
   // Access request headers
@@ -56,6 +57,8 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       },
     ).catch(() => null)
 
+  if (event.handled) { return }
+
   // Fallback to static rendered error page
   if (!res) {
     const { template } = import.meta.dev ? await import('../templates/error-dev') : await import('../templates/error-500')
@@ -63,18 +66,15 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
-    if (event.handled) { return }
     setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
     return send(event, template(errorObject))
   }
 
   const html = await res.text()
-  if (event.handled) { return }
-
   for (const [header, value] of res.headers.entries()) {
     setResponseHeader(event, header, value)
   }
-  setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultError.status, res.statusText || defaultError.statusText)
+  setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
 
   return send(event, html)
 }
