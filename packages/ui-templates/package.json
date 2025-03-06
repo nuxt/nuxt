@@ -20,7 +20,7 @@
     "@types/lodash-es": "4.17.12",
     "@unocss/reset": "66.0.0",
     "beasties": "0.2.0",
-    "html-validate": "9.4.1",
+    "html-validate": "9.4.2",
     "htmlnano": "2.1.1",
     "jiti": "2.4.2",
     "knitwork": "1.2.0",
