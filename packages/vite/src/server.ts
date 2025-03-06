@@ -89,6 +89,7 @@ export async function buildServer (ctx: ViteBuildContext) {
           new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
         ],
         output: {
+          preserveModules: true,
           entryFileNames: '[name].mjs',
           format: 'module',
           generatedCode: {
