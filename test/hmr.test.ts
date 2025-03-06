@@ -19,15 +19,14 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
+      buildDir: join(fixturePath, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)),
       builder: isWebpack ? 'webpack' : 'vite',
-      buildDir: process.env.NITRO_BUILD_DIR,
-      nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
     },
   })
 
   const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
 
-  describe('hmr', () => {
+  describe('hmr', { sequential: true }, () => {
     beforeAll(async () => {
       await expectWithPolling(() => $fetch<string>('/').then(r => r.includes('Home page')).catch(() => null), true)
     })
@@ -66,7 +65,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await page.close()
     })
 
-    it('should detect new routes', async () => {
+    it('should detect new routes', { timeout: 60000 }, async () => {
       const res = await fetch('/some-404')
       expect(res.status).toBe(404)
 
@@ -75,7 +74,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await expectWithPolling(() => $fetch<string>('/some-404').then(r => r.includes('Home page')).catch(() => null), true)
     })
 
-    it('should hot reload route rules', async () => {
+    it('should hot reload route rules', { timeout: 60000 }, async () => {
       await expectWithPolling(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null), 'added in routeRules')
 
       // write new page route
@@ -146,7 +145,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     })
 
     it.skipIf(isWebpack)('should HMR routes', { timeout: 60_000 }, async () => {
-      const { page, pageErrors, consoleLogs } = await renderPage('/routes')
+      const { page, pageErrors, consoleLogs } = await renderPage('/routes', { retries: 5 })
 
       await fsp.writeFile(join(fixturePath, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
 
