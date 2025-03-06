@@ -2,7 +2,6 @@
   <div>
     <LazyInteractionDelayedComponentMacro
       v-model="model"
-      hydrate-on-interaction
       @hydrated="log"
     />
   </div>
