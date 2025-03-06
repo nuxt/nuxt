@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { isCI, isWindows } from 'std-env'
+import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
@@ -11,20 +11,20 @@ const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUI
 
 // TODO: fix HMR on Windows
 if (process.env.TEST_ENV !== 'built' && !isWindows) {
-  const fixtureDir = fileURLToPath(new URL('./fixtures-temp/hmr', import.meta.url))
+  const fixturePath = fileURLToPath(new URL('./fixtures-temp/hmr', import.meta.url))
   await setup({
-    rootDir: fixtureDir,
+    rootDir: fixturePath,
     dev: true,
     server: true,
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
-      buildDir: join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)),
+      buildDir: join(fixturePath, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)),
       builder: isWebpack ? 'webpack' : 'vite',
     },
   })
 
-  const indexVue = await fsp.readFile(join(fixtureDir, 'pages/index.vue'), 'utf8')
+  const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
 
   describe('hmr', { sequential: true }, () => {
     beforeAll(async () => {
@@ -46,7 +46,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
         .replace('<Title>HMR fixture</Title>', '<Title>HMR fixture HMR</Title>')
         .replace('<h1>Home page</h1>', '<h1>Home page - but not as you knew it</h1>')
       newContents += '<style scoped>\nh1 { color: red }\n</style>'
-      await fsp.writeFile(join(fixtureDir, 'pages/index.vue'), newContents)
+      await fsp.writeFile(join(fixturePath, 'pages/index.vue'), newContents)
 
       await expectWithPolling(() => page.title(), 'HMR fixture HMR')
 
@@ -65,31 +65,29 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await page.close()
     })
 
-    // TODO: investigate why CI fails
-
-    it.skipIf(isCI)('should detect new routes', { timeout: 60000 }, async () => {
+    it('should detect new routes', { timeout: 60000 }, async () => {
       const res = await fetch('/some-404')
       expect(res.status).toBe(404)
 
       // write new page route
-      await fsp.writeFile(join(fixtureDir, 'pages/some-404.vue'), indexVue)
+      await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
       await expectWithPolling(() => $fetch<string>('/some-404').then(r => r.includes('Home page')).catch(() => null), true)
     })
 
-    it.skipIf(isCI)('should hot reload route rules', { timeout: 60000 }, async () => {
+    it('should hot reload route rules', { timeout: 60000 }, async () => {
       await expectWithPolling(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null), 'added in routeRules')
 
       // write new page route
-      const file = await fsp.readFile(join(fixtureDir, 'pages/route-rules.vue'), 'utf8')
-      await fsp.writeFile(join(fixtureDir, 'pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
+      const file = await fsp.readFile(join(fixturePath, 'pages/route-rules.vue'), 'utf8')
+      await fsp.writeFile(join(fixturePath, 'pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
 
       await expectWithPolling(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null), 'edited in dev')
     })
 
-    it.skipIf(isCI)('should HMR islands', async () => {
+    it('should HMR islands', async () => {
       const { page, pageErrors, consoleLogs } = await renderPage('/server-component')
 
-      const componentPath = join(fixtureDir, 'components/islands/HmrComponent.vue')
+      const componentPath = join(fixturePath, 'components/islands/HmrComponent.vue')
       const componentContents = await fsp.readFile(componentPath, 'utf8')
       const triggerHmr = (number: string) => fsp.writeFile(componentPath, componentContents.replace('ref(0)', `ref(${number})`))
 
@@ -114,7 +112,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     it.skipIf(isWebpack)('should HMR page meta', async () => {
       const { page, pageErrors, consoleLogs } = await renderPage('/page-meta')
 
-      const pagePath = join(fixtureDir, 'pages/page-meta.vue')
+      const pagePath = join(fixturePath, 'pages/page-meta.vue')
       const pageContents = await fsp.readFile(pagePath, 'utf8')
 
       expect(JSON.parse(await page.getByTestId('meta').textContent() || '{}')).toStrictEqual({ some: 'stuff' })
@@ -134,7 +132,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
           'type': 'debug',
         },
         {
-          'text': `[vite] hot updated: /@id/virtual:nuxt:${encodeURIComponent(join(fixtureDir, '.nuxt/routes.mjs'))}`,
+          'text': `[vite] hot updated: /@id/virtual:nuxt:${encodeURIComponent(join(fixturePath, '.nuxt/routes.mjs'))}`,
           'type': 'debug',
         },
       ])
@@ -149,7 +147,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     it.skipIf(isWebpack)('should HMR routes', { timeout: 60_000 }, async () => {
       const { page, pageErrors, consoleLogs } = await renderPage('/routes', { retries: 5 })
 
-      await fsp.writeFile(join(fixtureDir, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
+      await fsp.writeFile(join(fixturePath, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
 
       await expectWithPolling(() => consoleLogs.some(log => log.text.includes('hmr')), true)
 
