@@ -14,7 +14,7 @@ export async function setup () {
   }
   await cp(fixtureDir, tempDir, {
     recursive: true,
-    filter: src => !src.includes('.cache'),
+    filter: src => !src.includes('.cache') && !src.endsWith('.sock'),
   })
 }
 
