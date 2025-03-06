@@ -22,7 +22,7 @@ export default defineConfig({
     },
     testTimeout: isWindows ? 60000 : 10000,
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-    exclude: [...configDefaults.exclude, 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
+    exclude: [...configDefaults.exclude, 'test/e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
     poolOptions: {
       threads: {
         maxThreads: process.env.TEST_ENV === 'dev' ? 1 : undefined,
