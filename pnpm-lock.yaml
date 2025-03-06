@@ -14,7 +14,7 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.13.9
-  '@unhead/vue': 2.0.0-rc.1
+  '@unhead/vue': 2.0.0-rc.3
   '@vue/compiler-core': 3.5.13
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
@@ -84,8 +84,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       '@unhead/vue':
-        specifier: 2.0.0-rc.1
-        version: 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.0-rc.3
+        version: 2.0.0-rc.3(vue@3.5.13(typescript@5.8.2))
       '@vitest/coverage-v8':
         specifier: 3.0.7
         version: 3.0.7(vitest@3.0.7(@types/debug@4.1.12)(@types/node@22.13.9)(happy-dom@17.2.2)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
@@ -340,8 +340,8 @@ importers:
         specifier: 22.13.9
         version: 22.13.9
       '@unhead/vue':
-        specifier: 2.0.0-rc.1
-        version: 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.0-rc.3
+        version: 2.0.0-rc.3(vue@3.5.13(typescript@5.8.2))
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
@@ -507,7 +507,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.10.5
-        version: 0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.1(vue@3.5.13(typescript@5.8.2)))(typescript@5.8.2)
+        version: 0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.3(vue@3.5.13(typescript@5.8.2)))(typescript@5.8.2)
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -551,8 +551,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2(@rspack/core@1.2.7)(webpack@5.98.0)
       css-minimizer-webpack-plugin:
-        specifier: ^7.0.0
-        version: 7.0.0(webpack@5.98.0)
+        specifier: ^7.0.1
+        version: 7.0.1(webpack@5.98.0)
       cssnano:
         specifier: ^7.0.6
         version: 7.0.6(postcss@8.5.3)
@@ -700,8 +700,8 @@ importers:
         specifier: 2.25.9
         version: 2.25.9(esbuild@0.25.0)
       '@unhead/vue':
-        specifier: 2.0.0-rc.1
-        version: 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.0-rc.3
+        version: 2.0.0-rc.3(vue@3.5.13(typescript@5.8.2))
       '@vitejs/plugin-vue':
         specifier: 5.2.1
         version: 5.2.1(vite@6.2.0(@types/node@22.13.9)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.2))
@@ -727,8 +727,8 @@ importers:
         specifier: 0.1.8
         version: 0.1.8
       css-minimizer-webpack-plugin:
-        specifier: 7.0.0
-        version: 7.0.0(esbuild@0.25.0)(webpack@5.98.0(esbuild@0.25.0))
+        specifier: 7.0.1
+        version: 7.0.1(esbuild@0.25.0)(webpack@5.98.0(esbuild@0.25.0))
       esbuild:
         specifier: 0.25.0
         version: 0.25.0
@@ -814,8 +814,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0
       html-validate:
-        specifier: 9.4.1
-        version: 9.4.1(vitest@3.0.7(@types/debug@4.1.12)(@types/node@22.13.9)(happy-dom@17.2.2)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
+        specifier: 9.4.2
+        version: 9.4.2(vitest@3.0.7(@types/debug@4.1.12)(@types/node@22.13.9)(happy-dom@17.2.2)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
       htmlnano:
         specifier: 2.1.1
         version: 2.1.1(cssnano@7.0.6(postcss@8.5.3))(postcss@8.5.3)(relateurl@0.2.7)(svgo@3.3.2)(terser@5.32.0)(typescript@5.8.2)
@@ -965,8 +965,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2(@rspack/core@1.2.7)(webpack@5.98.0)
       css-minimizer-webpack-plugin:
-        specifier: ^7.0.0
-        version: 7.0.0(webpack@5.98.0)
+        specifier: ^7.0.1
+        version: 7.0.1(webpack@5.98.0)
       cssnano:
         specifier: ^7.0.6
         version: 7.0.6(postcss@8.5.3)
@@ -2102,7 +2102,7 @@ packages:
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
-      '@unhead/vue': 2.0.0-rc.1
+      '@unhead/vue': 2.0.0-rc.3
     peerDependenciesMeta:
       '@stripe/stripe-js':
         optional: true
@@ -2911,8 +2911,8 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@unhead/vue@2.0.0-rc.1':
-    resolution: {integrity: sha512-Y9DQ8gwAVXSkVJ76sMZsfdfVmXaWCvz3viJMQN3WnZ1DcWknme5HoFgBEDHyYxIZymP8dHsxWAFk1p+yRZE4Bw==}
+  '@unhead/vue@2.0.0-rc.3':
+    resolution: {integrity: sha512-NREjgMWLi4wzgtd8C84I2utpvN3PSPbYQopNxUuyPEJWuBcHeS4M4YQYpMhlANqgVzEWCsdepWDXR0BdQlA6LQ==}
     peerDependencies:
       vue: 3.5.13
 
@@ -3839,8 +3839,8 @@ packages:
       webpack:
         optional: true
 
-  css-minimizer-webpack-plugin@7.0.0:
-    resolution: {integrity: sha512-niy66jxsQHqO+EYbhPuIhqRQ1mNcNVUHrMnkzzir9kFOERJUaQDDRhh7dKDz33kBpkWMF9M8Vx0QlDbc5AHOsw==}
+  css-minimizer-webpack-plugin@7.0.1:
+    resolution: {integrity: sha512-L0XZFcGEPBZm0lJ8EjqifudRTvNAd7YuU7Ny5KAmeMbVh3ArtaOaiQTr5KhINEVhHpFZiTpUEdtTWE7ICA2hMA==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@parcel/css': '*'
@@ -4798,8 +4798,8 @@ packages:
     resolution: {integrity: sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==}
     engines: {node: '>=8'}
 
-  html-validate@9.4.1:
-    resolution: {integrity: sha512-eyb/0RdmQFFajSvL1Ak+yxtRY6hBJ5fx3yt9XAQFH6S7+7PWsnEeWsDhKaOo5fdTtljgXNiyvcicB7OS599m3g==}
+  html-validate@9.4.2:
+    resolution: {integrity: sha512-lvorU3Q320MMD6ryh0FupMJ5DOKsNKxwdKba+ig4cUYEBQ3SUnANBMCv5OaxwKqd2VCKQPlveXb3K1zqJsfV0Q==}
     engines: {node: ^18.19.0 || >= 20.6.0}
     hasBin: true
     peerDependencies:
@@ -7307,8 +7307,8 @@ packages:
   unenv@1.10.0:
     resolution: {integrity: sha512-wY5bskBQFL9n3Eca5XnhH6KbUo/tfvkwm9OpcdCvLaeA7piBNbavbOKJySEwQ1V0RH6HvNlSAFRTpvTqgKRQXQ==}
 
-  unhead@2.0.0-rc.1:
-    resolution: {integrity: sha512-jy/rBmC8Q+9EvSpkMYL4gvozSJGe7XTPPcC6NCzh8dUhNxC5eiwtIYdS/gyxvgOnItb9e+B/fHvrFFgLUkwuzQ==}
+  unhead@2.0.0-rc.3:
+    resolution: {integrity: sha512-4PMXOvzC8J86XlKZI6QBiWQIsVnfsFyAntw3wjqZyVLxbImdetWvY9jdObpOusLLqrLol3rnBtXbrmnJklg+5A==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -8818,10 +8818,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.98.0
 
-  '@nuxt/scripts@0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.1(vue@3.5.13(typescript@5.8.2)))(typescript@5.8.2)':
+  '@nuxt/scripts@0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.3(vue@3.5.13(typescript@5.8.2)))(typescript@5.8.2)':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))
+      '@unhead/vue': 2.0.0-rc.3(vue@3.5.13(typescript@5.8.2))
       '@vueuse/core': 12.7.0(typescript@5.8.2)
       consola: 3.4.0
       defu: 6.1.4
@@ -9774,10 +9774,10 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unhead/vue@2.0.0-rc.1(vue@3.5.13(typescript@5.8.2))':
+  '@unhead/vue@2.0.0-rc.3(vue@3.5.13(typescript@5.8.2))':
     dependencies:
       hookable: 5.5.3
-      unhead: 2.0.0-rc.1
+      unhead: 2.0.0-rc.3
       vue: 3.5.13(typescript@5.8.2)
 
   '@unocss/astro@66.0.0(vite@6.2.0(@types/node@22.13.9)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.2))':
@@ -10890,7 +10890,7 @@ snapshots:
       '@rspack/core': 1.2.7
       webpack: 5.98.0
 
-  css-minimizer-webpack-plugin@7.0.0(esbuild@0.25.0)(webpack@5.98.0(esbuild@0.25.0)):
+  css-minimizer-webpack-plugin@7.0.1(esbuild@0.25.0)(webpack@5.98.0(esbuild@0.25.0)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       cssnano: 7.0.6(postcss@8.5.3)
@@ -10902,7 +10902,7 @@ snapshots:
     optionalDependencies:
       esbuild: 0.25.0
 
-  css-minimizer-webpack-plugin@7.0.0(webpack@5.98.0):
+  css-minimizer-webpack-plugin@7.0.1(webpack@5.98.0):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
       cssnano: 7.0.6(postcss@8.5.3)
@@ -12097,7 +12097,7 @@ snapshots:
 
   html-tags@3.3.1: {}
 
-  html-validate@9.4.1(vitest@3.0.7(@types/debug@4.1.12)(@types/node@22.13.9)(happy-dom@17.2.2)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)):
+  html-validate@9.4.2(vitest@3.0.7(@types/debug@4.1.12)(@types/node@22.13.9)(happy-dom@17.2.2)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)):
     dependencies:
       '@html-validate/stylish': 4.2.0
       '@sidvind/better-ajv-errors': 3.0.1(ajv@8.17.1)
@@ -15015,7 +15015,7 @@ snapshots:
       node-fetch-native: 1.6.6
       pathe: 1.1.2
 
-  unhead@2.0.0-rc.1:
+  unhead@2.0.0-rc.3:
     dependencies:
       hookable: 5.5.3
 
