@@ -304,7 +304,7 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: ^2.11.2
+        specifier: 2.11.2
         version: 2.11.2(typescript@5.8.2)
       unbuild:
         specifier: latest
@@ -757,7 +757,7 @@ importers:
         specifier: 2.9.2
         version: 2.9.2(webpack@5.98.0(esbuild@0.25.0))
       nitropack:
-        specifier: ^2.11.2
+        specifier: 2.11.2
         version: 2.11.2(typescript@5.8.2)
       ofetch:
         specifier: 1.4.1
