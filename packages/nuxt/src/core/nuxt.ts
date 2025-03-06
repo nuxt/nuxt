@@ -24,7 +24,7 @@ import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
-import { resolveModulePath, resolveModuleURL } from 'exsolve'
+import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -48,7 +48,8 @@ import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { ComposableKeysPlugin } from './plugins/composable-keys'
-import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
+import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
+import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
 
@@ -374,8 +375,10 @@ async function initNuxt (nuxt: Nuxt) {
   addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
 
   // add resolver for modules used in virtual files
-  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { client: false })
-  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { server: false })
+  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { client: false })
+  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { server: false })
+
+  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { client: false, prepend: true })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
@@ -392,13 +395,12 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   nuxt.hook('modules:done', () => {
-    const importPaths = nuxt.options.modulesDir.map(dir => directoryToURL((dir)))
     // Add unctx transform
     addBuildPlugin(UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
-        helperModule: resolveModuleURL('unctx', { try: true, from: importPaths }) ?? 'unctx',
+        helperModule: 'unctx',
       },
     }))
 
