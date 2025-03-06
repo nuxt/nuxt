@@ -6,6 +6,8 @@ settings:
 
 overrides:
   '@babel/core': 7.26.9
+  h3: 1.15.1
+  nitropack: npm:nitropack-nightly@2.11.3-20250306-104907.06147e7a
   '@babel/helper-plugin-utils': 7.26.5
   '@nuxt/cli': 3.22.4
   '@nuxt/kit': workspace:*
@@ -153,8 +155,8 @@ importers:
         specifier: 4.17.0
         version: 4.17.0
       nitropack:
-        specifier: 2.11.2
-        version: 2.11.2(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.3-20250306-104907.06147e7a
+        version: nitropack-nightly@2.11.3-20250306-104907.06147e7a(typescript@5.8.2)
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -238,7 +240,7 @@ importers:
         version: 0.1.0
       exsolve:
         specifier: ^1.0.1
-        version: 1.0.1
+        version: 1.0.2
       globby:
         specifier: ^14.1.0
         version: 14.1.0
@@ -304,8 +306,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: 2.11.2
-        version: 2.11.2(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.3-20250306-104907.06147e7a
+        version: nitropack-nightly@2.11.3-20250306-104907.06147e7a(typescript@5.8.2)
       unbuild:
         specifier: latest
         version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
@@ -389,12 +391,12 @@ importers:
         version: 3.0.3
       exsolve:
         specifier: ^1.0.1
-        version: 1.0.1
+        version: 1.0.2
       globby:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       hookable:
         specifier: ^5.5.3
@@ -424,8 +426,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitropack:
-        specifier: ^2.11.2
-        version: 2.11.2(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.3-20250306-104907.06147e7a
+        version: nitropack-nightly@2.11.3-20250306-104907.06147e7a(typescript@5.8.2)
       nypm:
         specifier: ^0.6.0
         version: 0.6.0
@@ -590,7 +592,7 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       jiti:
         specifier: ^2.4.2
@@ -766,8 +768,8 @@ importers:
         specifier: 2.9.2
         version: 2.9.2(webpack@5.98.0(esbuild@0.25.0))
       nitropack:
-        specifier: 2.11.2
-        version: 2.11.2(typescript@5.8.2)
+        specifier: npm:nitropack-nightly@2.11.3-20250306-104907.06147e7a
+        version: nitropack-nightly@2.11.3-20250306-104907.06147e7a(typescript@5.8.2)
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -905,7 +907,7 @@ importers:
         version: 5.0.0
       exsolve:
         specifier: ^1.0.1
-        version: 1.0.1
+        version: 1.0.2
       externality:
         specifier: ^1.0.2
         version: 1.0.2
@@ -913,7 +915,7 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       jiti:
         specifier: ^2.4.2
@@ -1019,7 +1021,7 @@ importers:
         specifier: ^9.0.2
         version: 9.0.2(typescript@5.8.2)(webpack@5.98.0)
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       jiti:
         specifier: ^2.4.2
@@ -3299,11 +3301,6 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  acorn@8.14.0:
-    resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
   acorn@8.14.1:
     resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
     engines: {node: '>=0.4.0'}
@@ -4419,9 +4416,6 @@ packages:
   expect-type@1.1.0:
     resolution: {integrity: sha512-bFi65yM+xZgk+u/KRIpekdSYkTB5W1pEf0Lt8Q8Msh7b+eQ7LXVtIB1Bkm4fvclDEL1b2CZkMhv2mOeF8tMdkA==}
     engines: {node: '>=12.0.0'}
-
-  exsolve@1.0.1:
-    resolution: {integrity: sha512-Smf0iQtkQVJLaph8r/qS8C8SWfQkaq9Q/dFcD44MLbJj6DNhlWefVuaS21SjfqOsBbjVlKtbCj6L9ekXK6EZUg==}
 
   exsolve@1.0.2:
     resolution: {integrity: sha512-ZEcIMbthn2zeX4/wD/DLxDUjuCltHXT8Htvm/JFlTkdYgWh2+HGppgwwNUnIVxzxP7yJOPtuBAec0dLx6lVY8w==}
@@ -5765,8 +5759,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitropack@2.11.2:
-    resolution: {integrity: sha512-NyXw88hkrigXYo0iDodEbWdLyv8iF69LAj63eS+FDLg8+IDEKv1y58eMKmzk8vW/hwHoi2aimqHTfsZbqFAWrg==}
+  nitropack-nightly@2.11.3-20250306-104907.06147e7a:
+    resolution: {integrity: sha512-byVSC5cn/Q0Q723lBTSItoWp25Hx0T8oA7ON3MbP8gK41ub52l6EnQtK3byQYmjC4Wg0m/bwFM6i/c71YqAb2g==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -10305,8 +10299,6 @@ snapshots:
 
   acorn@7.4.1: {}
 
-  acorn@8.14.0: {}
-
   acorn@8.14.1: {}
 
   agent-base@7.1.1(supports-color@9.4.0):
@@ -10546,7 +10538,7 @@ snapshots:
       confbox: 0.1.8
       defu: 6.1.4
       dotenv: 16.4.7
-      exsolve: 1.0.1
+      exsolve: 1.0.2
       giget: 2.0.0
       jiti: 2.4.2
       ohash: 2.0.11
@@ -11572,8 +11564,6 @@ snapshots:
       yoctocolors: 2.1.1
 
   expect-type@1.1.0: {}
-
-  exsolve@1.0.1: {}
 
   exsolve@1.0.2: {}
 
@@ -13139,7 +13129,7 @@ snapshots:
 
   mlly@1.7.4:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.5.4
@@ -13170,7 +13160,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitropack@2.11.2(typescript@5.8.2):
+  nitropack-nightly@2.11.3-20250306-104907.06147e7a(typescript@5.8.2):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@netlify/functions': 3.0.0
@@ -13606,7 +13596,7 @@ snapshots:
   pkg-types@2.1.0:
     dependencies:
       confbox: 0.2.1
-      exsolve: 1.0.1
+      exsolve: 1.0.2
       pathe: 2.0.3
 
   playwright-core@1.50.1: {}
@@ -14904,7 +14894,7 @@ snapshots:
 
   unctx@2.4.1:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       estree-walker: 3.0.3
       magic-string: 0.30.17
       unplugin: 2.2.0
@@ -14924,7 +14914,7 @@ snapshots:
   unenv@2.0.0-rc.12:
     dependencies:
       defu: 6.1.4
-      exsolve: 1.0.1
+      exsolve: 1.0.2
       ohash: 2.0.11
       pathe: 2.0.3
       ufo: 1.5.4
@@ -14951,7 +14941,7 @@ snapshots:
 
   unimport@4.1.2:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       local-pkg: 1.1.0
@@ -15063,7 +15053,7 @@ snapshots:
 
   unplugin@2.2.0:
     dependencies:
-      acorn: 8.14.0
+      acorn: 8.14.1
       webpack-virtual-modules: 0.6.2
 
   unstorage@1.15.0(db0@0.3.1)(ioredis@5.5.0):
@@ -15420,7 +15410,7 @@ snapshots:
   webpack-bundle-analyzer@4.10.2:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
-      acorn: 8.14.0
+      acorn: 8.14.1
       acorn-walk: 8.3.4
       commander: 7.2.0
       debounce: 1.2.1
@@ -15479,7 +15469,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.0
+      acorn: 8.14.1
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
@@ -15509,7 +15499,7 @@ snapshots:
       '@webassemblyjs/ast': 1.14.1
       '@webassemblyjs/wasm-edit': 1.14.1
       '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.14.0
+      acorn: 8.14.1
       browserslist: 4.24.4
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0

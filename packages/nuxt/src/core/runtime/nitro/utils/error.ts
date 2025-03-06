@@ -1,4 +1,4 @@
-import { type H3Event, getRequestHeader, setResponseHeaders } from 'h3'
+import { type H3Event, getRequestHeader } from 'h3'
 
 /**
  * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/main/src/runtime/internal/utils.ts
@@ -24,15 +24,4 @@ export function hasReqHeader (event: H3Event, name: string, includes: string) {
   return (
     value && typeof value === 'string' && value.toLowerCase().includes(includes)
   )
-}
-
-export function setSecurityHeaders (event: H3Event) {
-  setResponseHeaders(event, {
-    // Prevent browser from guessing the MIME types of resources.
-    'X-Content-Type-Options': 'nosniff',
-    // Prevent error page from being embedded in an iframe
-    'X-Frame-Options': 'DENY',
-    // Prevent browsers from sending the Referer header
-    'Referrer-Policy': 'no-referrer',
-  })
 }

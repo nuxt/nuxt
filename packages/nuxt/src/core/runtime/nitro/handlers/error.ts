@@ -1,65 +1,43 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
-import type { H3Error } from 'h3'
-import { getRequestHeaders, getRequestURL, getResponseHeader, send, sendRedirect, setResponseHeader, setResponseStatus } from 'h3'
-import type { NuxtPayload } from 'nuxt/app'
+import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 
-import { isJsonRequest, setSecurityHeaders } from '../utils/error'
+import { isJsonRequest } from '../utils/error'
 import { useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
+import type { NuxtPayload } from '#app/nuxt'
 
-export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
+export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (isJsonRequest(event)) {
     // let Nitro handle JSON errors
     return
   }
-
-  const isSensitive = error.unhandled || error.fatal
-  const statusCode = error.statusCode || 500
-  const statusMessage = error.statusMessage || 'Server Error'
-  const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true })
-
-  if (statusCode === 404) {
-    const baseURL = import.meta.baseURL || '/'
-    if (/^\/[^/]/.test(baseURL) && !url.pathname.startsWith(baseURL)) {
-      return sendRedirect(event, `${baseURL}${url.pathname.slice(1)}${url.search}`)
-    }
-  }
-
-  // Console output
-  if (isSensitive) {
-    if (import.meta.dev) {
-      const { logError } = await import('../utils/error-dev')
-      await logError(event, url, error)
-    } else {
-      const tags = [error.unhandled && '[unhandled]', error.fatal && '[fatal]'].filter(Boolean).join(' ')
-      console.error(`[nuxt] [request error] ${tags} [${event.method}] ${url}\n`, error)
-    }
-  }
+  // invoke default Nitro error handler (which will log appropriately if required)
+  const defaultError = await defaultHandler(error, event, { json: true })
 
   if (event.handled) { return }
 
-  // Parse and normalize error
-  // Create an error object
-  const errorObject: Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any } = {
-    error: true,
-    url: url.toString(),
-    statusCode,
-    statusMessage,
-    message: isSensitive && !import.meta.dev ? 'Server Error' : error.message,
-    data: isSensitive && !import.meta.dev ? undefined : error.data as any,
+  // let Nitro handle redirect if appropriate
+  const statusCode = error.statusCode || 500
+  if (statusCode === 404 && defaultError.status === 302) {
+    return defaultError
   }
 
-  if (import.meta.dev) {
-    errorObject.stack = error.stack?.split('\n').map(line => line.trim()).join('\n')
+  if (import.meta.dev && typeof defaultError.body !== 'string' && Array.isArray(defaultError.body.stack)) {
+    // normalize to string format expected by nuxt `error.vue`
+    defaultError.body.stack = defaultError.body.stack.join('\n')
   }
 
-  // Send response
-  setSecurityHeaders(event)
-  setResponseStatus(event, statusCode, statusMessage)
-  if (statusCode === 404 || !getResponseHeader(event, 'cache-control')) {
-    setResponseHeader(event, 'cache-control', 'no-cache')
-  }
+  const errorObject = defaultError.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
+  errorObject.message ||= 'Server Error'
+
+  setResponseHeaders(event, {
+    'x-content-type-options': defaultError.headers['x-content-type-options'],
+    // Prevent error page from being embedded in an iframe
+    'x-frame-options': defaultError.headers['x-frame-options'],
+    // Prevent browsers from sending the Referer header
+    'referrer-policy': defaultError.headers['referrer-policy'],
+  })
 
   // Access request headers
   const reqHeaders = getRequestHeaders(event)
@@ -96,7 +74,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   for (const [header, value] of res.headers.entries()) {
     setResponseHeader(event, header, value)
   }
-  setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
+  setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultError.status, res.statusText || defaultError.statusText)
 
   return send(event, html)
 }
