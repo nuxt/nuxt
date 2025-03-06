@@ -1,6 +1,6 @@
 ---
 title: 'defineLazyVisibleComponent'
-description: 'Define a lazy hydration component with a visible strategy.'
+description: 'Define a lazy hydration component with a visibility strategy.'
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-`defineLazyVisibleComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until it becomes visible in the viewport.
+`defineLazyVisibleComponent` is a compiler macro that allows you to define a lazy hydration component. This enables deferring the hydration of a component until the element(s) become visible in the viewport.
 
 ::note
 Under the hood, this uses Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-visible).
@@ -37,23 +37,23 @@ const LazyVisibleMyComponent = defineLazyVisibleComponent(
 - **Type**: `IntersectionObserverInit | true`
 - **Default**: `true`
 
-  You can pass an object with options for the `IntersectionObserver` or `true` to use the default options.
+You can pass an object with options for the `IntersectionObserver` or `true` to use the default options.
 
-  ```vue
-  <template>
-    <div>
-      <!-- 
-        Hydration will be triggered when
-        the element is 100px away from entering the viewport.
-      -->
-      <LazyVisibleMyComponent :hydrate-on-visible="{ rootMargin: '100px' }" />
-    </div>
-  </template>
-  ```
+```vue
+<template>
+  <div>
+    <!--
+      Hydration will be triggered when
+      the element(s) is 100px away from entering the viewport.
+    -->
+    <LazyVisibleMyComponent :hydrate-on-visible="{ rootMargin: '100px' }" />
+  </div>
+</template>
+```
 
-  ::read-more{to="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/IntersectionObserver" title="IntersectionObserver options"}
-  Read more about the options for `hydrate-on-visible`.
-  ::
+::read-more{to="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/IntersectionObserver" title="IntersectionObserver options"}
+Read more about the options for `hydrate-on-visible`.
+::
 
 ## Emits
 
@@ -61,4 +61,4 @@ const LazyVisibleMyComponent = defineLazyVisibleComponent(
 
 - **Type**: `() => void`
 
-  This event is emitted when the component is hydrated.
+This event is emitted when the component is hydrated.
