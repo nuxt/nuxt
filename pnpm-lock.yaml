@@ -513,7 +513,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.10.5
-        version: 0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.3(vue@3.5.13(typescript@5.8.2)))(typescript@5.8.2)
+        version: 0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.3(vue@3.5.13(typescript@5.8.2)))(db0@0.1.4)(ioredis@5.4.1)(typescript@5.8.2)
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -8961,7 +8961,7 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.98.0
 
-  '@nuxt/scripts@0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.3(vue@3.5.13(typescript@5.8.2)))(typescript@5.8.2)':
+  '@nuxt/scripts@0.10.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.3(vue@3.5.13(typescript@5.8.2)))(db0@0.1.4)(ioredis@5.4.1)(typescript@5.8.2)':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@unhead/vue': 2.0.0-rc.3(vue@3.5.13(typescript@5.8.2))

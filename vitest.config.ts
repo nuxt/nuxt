@@ -15,7 +15,6 @@ export default defineConfig({
     },
   },
   test: {
-    globalSetup: './test/setup.ts',
     setupFiles: ['./test/setup-env.ts'],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'packages/nuxt/src/app', 'playground', '**/test/', 'scripts', 'vitest.nuxt.config.ts'],
