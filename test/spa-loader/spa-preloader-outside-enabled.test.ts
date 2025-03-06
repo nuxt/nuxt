@@ -3,17 +3,21 @@ import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { createPage, setup, url } from '@nuxt/test-utils/e2e'
 import type { Page } from 'playwright-core'
+import { join } from 'pathe'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 const isDev = process.env.TEST_ENV === 'dev'
 
+const fixtureDir = fileURLToPath(new URL('../fixtures/spa-loader', import.meta.url))
+
 if (!isDev) {
   await setup({
-    rootDir: fileURLToPath(new URL('../fixtures/spa-loader', import.meta.url)),
+    rootDir: fixtureDir,
     server: true,
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
+      buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
       builder: isWebpack ? 'webpack' : 'vite',
       spaLoadingTemplate: true,
       experimental: {

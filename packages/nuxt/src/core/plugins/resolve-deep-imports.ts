@@ -10,9 +10,10 @@ import { logger } from '../../utils'
 
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
 
-export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
+export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
   const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite', '@vitest/']
   let conditions: string[]
+
   return {
     name: 'nuxt:resolve-bare-imports',
     enforce: 'post',
