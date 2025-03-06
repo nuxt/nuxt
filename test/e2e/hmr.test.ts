@@ -2,7 +2,7 @@ import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, fetch, waitForHydration } from '@nuxt/test-utils/e2e'
+import { $fetch, waitForHydration } from '@nuxt/test-utils/e2e'
 import { expect, test } from '@nuxt/test-utils/playwright'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
@@ -17,6 +17,7 @@ test.use({
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
+      devtools: { enabled: false },
       builder: isWebpack ? 'webpack' : 'vite',
     },
   },
@@ -93,11 +94,11 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
     )
   })
 
-  test('hot reloading route rules', async () => {
+  test('hot reloading route rules', async ({ request }) => {
     // Check the initial header
     await expectWithPolling(() =>
-      fetch('/route-rules')
-        .then(r => r.headers.get('x-extend'))
+      request.get('/route-rules')
+        .then(r => r.headers()['x-extend'])
         .catch(() => null),
     'added in routeRules',
     )
@@ -111,8 +112,8 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
     // Wait for the route rule to be hot reloaded
     await expectWithPolling(() =>
-      fetch('/route-rules')
-        .then(r => r.headers.get('x-extend'))
+      request.get('/route-rules')
+        .then(r => r.headers()['x-extend'])
         .catch(() => null),
     'edited in dev',
     )
