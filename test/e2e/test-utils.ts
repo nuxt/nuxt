@@ -13,7 +13,7 @@ const test = base.extend<{ fetch: (path: string) => Promise<Response> }>({
           headers: { 'accept': 'text/html' },
           signal: AbortSignal.timeout(1000),
         }).catch(() => undefined)
-      } while (!res || res?.status === 503)
+      } while (!res || res?.status === 503 || res?.status === 500)
 
       if (!res) {
         await request.get(path, { headers: { 'accept': 'text/html' } })
