@@ -9,9 +9,9 @@ const test = base.extend<{ fetch: (path: string) => Promise<Response> }>({
     use(async (path) => {
       let res: Response | undefined
       do {
-        console.log(joinURL(_nuxtHooks.ctx.url!, path))
         res = await fetch(joinURL(_nuxtHooks.ctx.url!, path), {
           headers: { 'accept': 'text/html' },
+          signal: AbortSignal.timeout(1000),
         }).catch(() => undefined)
       } while (!res || res?.status === 503)
 
@@ -39,11 +39,8 @@ test.use({
   },
   goto: ({ page }, use) => {
     use(async (path, options) => {
-      console.log('about to fetch', path)
       const result = await page.goto(path, options as any)
-      console.log('waiting for hydration', path)
       await waitForHydration(page, path, 'hydration')
-      console.log('hydrated', path)
       return result
     })
   },
