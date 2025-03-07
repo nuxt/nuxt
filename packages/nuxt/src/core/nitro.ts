@@ -6,7 +6,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
-import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { createIsIgnored, findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
@@ -424,6 +424,28 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|core[\\/]runtime[\\/]nitro[\\/](?:handlers|utils)/, ...sharedPatterns],
     }),
   )
+
+  // Apply Nuxt's ignore configuration to the root and src unstorage mounts
+  // created by Nitro. This ensures that the unstorage watcher will use the
+  // same ignore list as Nuxt's watcher and can reduce unneccesary file handles.
+  const isIgnored = createIsIgnored(nuxt)
+  nitroConfig.devStorage ??= {}
+  nitroConfig.devStorage.root ??= {
+    driver: 'fs',
+    readOnly: true,
+    base: nitroConfig.rootDir,
+    watchOptions: {
+      ignored: [isIgnored],
+    },
+  }
+  nitroConfig.devStorage.src ??= {
+    driver: 'fs',
+    readOnly: true,
+    base: nitroConfig.srcDir,
+    watchOptions: {
+      ignored: [isIgnored],
+    },
+  }
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
