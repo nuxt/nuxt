@@ -302,7 +302,7 @@ jobs:
           path: packages
 
       - name: Test (fixtures)
-        run: pnpm test:fixtures
+        run: pnpm test:fixtures && pnpm test:e2e
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
@@ -310,6 +310,7 @@ jobs:
           TEST_CONTEXT: ${{ matrix.context }}
           TEST_PAYLOAD: ${{ matrix.payload }}
           SKIP_BUNDLE_SIZE: true
+          NITRO_NO_UNIX_SOCKET: ${{ matrix.env == 'dev' && '1' || '' }}
 
       - uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
         if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'

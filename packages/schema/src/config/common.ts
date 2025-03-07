@@ -553,6 +553,7 @@ export default defineResolvers({
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
         '**/*.d.{cts,mts,ts}', // ignore type declarations
         '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        '**/*.sock',
         relative(rootDir, analyzeDir),
         relative(rootDir, buildDir),
       ])

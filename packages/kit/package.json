@@ -32,7 +32,7 @@
     "defu": "^6.1.4",
     "destr": "^2.0.3",
     "errx": "^0.1.0",
-    "exsolve": "^1.0.1",
+    "exsolve": "^1.0.2",
     "globby": "^14.1.0",
     "ignore": "^7.0.3",
     "jiti": "^2.4.2",
@@ -56,7 +56,7 @@
     "nitro": "npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6",
     "unbuild": "3.5.0",
     "vite": "6.2.0",
-    "vitest": "3.0.7",
+    "vitest": "3.0.8",
     "webpack": "5.98.0"
   },
   "engines": {
