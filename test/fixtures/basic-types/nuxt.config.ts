@@ -76,7 +76,6 @@ export default defineNuxtConfig({
       testConfig: 123,
     },
   },
-  buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   routeRules: {
     '/param': {

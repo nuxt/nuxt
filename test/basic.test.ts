@@ -7,7 +7,6 @@ import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
-import { resolveUnrefHeadInput } from '@unhead/vue'
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
@@ -1016,13 +1015,15 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta name="description" content="overriding with an inline useHead call">')
     expect(headHtml).toMatch(/<html[^>]*class="html-attrs-test"/)
     expect(headHtml).toMatch(/<body[^>]*class="body-attrs-test"/)
-    expect(headHtml).toContain('<script src="https://a-body-appended-script.com"></script></body>')
+
+    const bodyHtml = headHtml.match(/<body[^>]*>(.*)<\/body>/s)![1]
+    expect(bodyHtml).toContain('<script src="https://a-body-appended-script.com"></script>')
 
     const indexHtml = await $fetch<string>('/')
     // should render charset by default
     expect(indexHtml).toContain('<meta charset="utf-8">')
     // should render <Head> components
-    expect(indexHtml).toContain('<title>Basic fixture</title>')
+    expect(indexHtml).toContain('<title>Basic fixture - Fixture</title>')
   })
 
   it('SSR script setup should render tags', async () => {
@@ -1037,7 +1038,7 @@ describe('head tags', () => {
     // useServerHead - shorthands
     expect(headHtml).toContain('>/* Custom styles */</style>')
     // useHeadSafe - removes dangerous content
-    expect(headHtml).toContain('<script id="xss-script"></script>')
+    expect(headHtml).not.toContain('<script id="xss-script">')
     expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
   })
 
@@ -1057,7 +1058,7 @@ describe('head tags', () => {
   it('should render http-equiv correctly', async () => {
     const html = await $fetch<string>('/head')
     // http-equiv should be rendered kebab case
-    expect(html).toContain('<meta content="default-src https" http-equiv="content-security-policy">')
+    expect(html).toContain('<meta http-equiv="content-security-policy" content="default-src https">')
   })
 
   // TODO: Doesn't adds header in test environment
@@ -1165,11 +1166,14 @@ describe('errors', () => {
     expect(res.statusText).toBe('This is a custom error')
     const error = await res.json()
     delete error.stack
+    const url = new URL(error.url)
+    url.host = 'localhost:3000'
+    error.url = url.toString()
     expect(error).toMatchObject({
-      message: 'This is a custom error',
+      message: isDev() ? 'This is a custom error' : 'Server Error',
       statusCode: 422,
       statusMessage: 'This is a custom error',
-      url: '/error',
+      url: 'http://localhost:3000/error',
     })
   })
 
@@ -1188,12 +1192,17 @@ describe('errors', () => {
     expect(res.status).toBe(404)
     const error = await res.json()
     delete error.stack
+    const url = new URL(error.url)
+    url.host = 'localhost:3000'
+    error.url = url.toString()
+
     expect(error).toMatchInlineSnapshot(`
       {
+        "error": true,
         "message": "Page Not Found: /__nuxt_error",
         "statusCode": 404,
         "statusMessage": "Page Not Found: /__nuxt_error",
-        "url": "/__nuxt_error",
+        "url": "http://localhost:3000/__nuxt_error",
       }
     `)
   })
@@ -2261,6 +2270,7 @@ describe('component islands', () => {
         "head": {
           "link": [],
           "style": [],
+          "titleTemplate": "%s - Fixture",
         },
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
@@ -2283,6 +2293,7 @@ describe('component islands', () => {
         "head": {
           "link": [],
           "style": [],
+          "titleTemplate": "%s - Fixture",
         },
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
@@ -2346,6 +2357,7 @@ describe('component islands', () => {
         "head": {
           "link": [],
           "style": [],
+          "titleTemplate": "%s - Fixture",
         },
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
@@ -2377,6 +2389,7 @@ describe('component islands', () => {
           "head": {
             "link": [],
             "style": [],
+            "titleTemplate": "%s - Fixture",
           },
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
@@ -2408,7 +2421,7 @@ describe('component islands', () => {
       for (const key in result.head) {
         if (key === 'link') {
           result.head[key] = result.head[key]?.map((h) => {
-            h.href &&= resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
+            h.href &&= (h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
             return h
           })
         }
@@ -2425,6 +2438,7 @@ describe('component islands', () => {
               "innerHTML": "pre[data-v-xxxxx]{color:#00f}",
             },
           ],
+          "titleTemplate": "%s - Fixture",
         }
       `)
     } else if (isDev() && !isWebpack) {
@@ -2442,6 +2456,7 @@ describe('component islands', () => {
             },
           ],
           "style": [],
+          "titleTemplate": "%s - Fixture",
         }
       `)
     }

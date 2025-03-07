@@ -39,7 +39,7 @@
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "@unhead/schema": "1.11.20",
+    "@unhead/vue": "2.0.0-rc.1",
     "@vitejs/plugin-vue": "5.2.1",
     "@vitejs/plugin-vue-jsx": "4.1.1",
     "@vue/compiler-core": "3.5.13",
@@ -56,9 +56,9 @@
     "hookable": "5.5.3",
     "ignore": "7.0.3",
     "mini-css-extract-plugin": "2.9.2",
-    "nitropack": "2.10.4",
+    "nitropack": "2.11.3",
     "ofetch": "1.4.1",
-    "pkg-types": "2.0.1",
+    "pkg-types": "2.1.0",
     "postcss": "8.5.3",
     "rollup-plugin-visualizer": "5.14.0",
     "sass-loader": "16.0.5",
@@ -72,14 +72,14 @@
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
     "vue-router": "4.5.0",
-    "webpack": "5.96.1",
+    "webpack": "5.98.0",
     "webpack-dev-middleware": "7.4.2"
   },
   "dependencies": {
     "consola": "^3.4.0",
     "defu": "^6.1.4",
     "pathe": "^2.0.3",
-    "std-env": "^3.8.0"
+    "std-env": "^3.8.1"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

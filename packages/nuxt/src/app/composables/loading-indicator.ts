@@ -1,6 +1,6 @@
 import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
