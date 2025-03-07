@@ -97,7 +97,7 @@
     "changelogen": "0.6.1",
     "consola": "3.4.0",
     "cssnano": "7.0.6",
-    "defu": "^6.1.4",
+    "defu": "6.1.4",
     "destr": "2.0.3",
     "devalue": "5.1.1",
     "eslint": "9.21.0",

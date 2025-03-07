@@ -114,7 +114,7 @@ importers:
         specifier: 7.0.6
         version: 7.0.6(postcss@8.5.3)
       defu:
-        specifier: ^6.1.4
+        specifier: 6.1.4
         version: 6.1.4
       destr:
         specifier: 2.0.3
