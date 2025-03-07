@@ -15,14 +15,13 @@ export default defineConfig({
     },
   },
   test: {
-    globalSetup: './test/setup.ts',
     setupFiles: ['./test/setup-env.ts'],
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'packages/nuxt/src/app', 'playground', '**/test/', 'scripts', 'vitest.nuxt.config.ts'],
     },
     testTimeout: isWindows ? 60000 : 10000,
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-    exclude: [...configDefaults.exclude, 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
+    exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
     poolOptions: {
       threads: {
         maxThreads: process.env.TEST_ENV === 'dev' ? 1 : undefined,
