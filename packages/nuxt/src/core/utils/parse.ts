@@ -3,7 +3,6 @@ import type { Node, SyncHandler } from 'estree-walker'
 import type { ArrowFunctionExpression, CatchClause, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program, VariableDeclaration } from 'estree'
 import { type SameShape, type TransformOptions, type TransformResult, transform as esbuildTransform } from 'esbuild'
 import { tryUseNuxt } from '@nuxt/kit'
-import { provider } from 'std-env'
 
 export type { Node }
 
@@ -38,14 +37,22 @@ export function walk (ast: Program | Node, callback: Partial<WalkOptions>) {
 let parseSync: typeof import('oxc-parser').parseSync
 
 export async function initParser () {
-  parseSync = await (provider === 'stackblitz' ? import('@oxc-parser/wasm') as unknown as Promise<typeof import('oxc-parser')> : import('oxc-parser'))
-    .then(r => r.parseSync)
+  try {
+    parseSync = await import('oxc-parser').then(r => r.parseSync)
+  } catch {
+    // this can fail on stackblitz so we fall back to wasm build
+    const { parseSync: wasmParse } = await import('@oxc-parser/wasm')
+    parseSync = (sourceFilename, code, options) => wasmParse(code, {
+      sourceFilename: sourceFilename.replace(/\?.*$/, '') + `.${options?.lang || 'ts'}`,
+      sourceType: 'module',
+    }) as any
+  }
 }
 
 export function parseAndWalk (code: string, sourceFilename: string, callback: WalkerCallback): Program
 export function parseAndWalk (code: string, sourceFilename: string, object: Partial<WalkOptions>): Program
 export function parseAndWalk (code: string, sourceFilename: string, callback: Partial<WalkOptions> | WalkerCallback) {
-  const lang = sourceFilename.match(/\.[cm]?([jt]sx?)$/)?.[1] as 'js' | 'ts' | 'jsx' | 'tsx' | undefined
+  const lang = sourceFilename.match(/\.[cm]?([jt]sx?)$/)?.[1] as 'js' | 'ts' | 'jsx' | 'tsx' | undefined || 'ts'
   const ast = parseSync(sourceFilename, code, { sourceType: 'module', lang })
   walk(ast.program as unknown as Program, typeof callback === 'function' ? { enter: callback } : callback)
   return ast.program as unknown as Program
