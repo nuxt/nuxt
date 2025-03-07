@@ -343,8 +343,8 @@ importers:
         specifier: workspace:*
         version: link:../vite
       '@oxc-parser/wasm':
-        specifier: ^0.56.4
-        version: 0.56.4
+        specifier: ^0.56.5
+        version: 0.56.5
       '@types/node':
         specifier: 22.13.9
         version: 22.13.9
@@ -2296,14 +2296,14 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@oxc-parser/wasm@0.56.4':
-    resolution: {integrity: sha512-UFU2VgzJlCx3K+OFvZ7fRjh8hdZdLs3mkL6xQjaRot5Mathwp/jGHy5WPt12osZeKjFDz4AIeJE9XUWPoRclTA==}
+  '@oxc-parser/wasm@0.56.5':
+    resolution: {integrity: sha512-9vtn56ok7PHS0elihFP+Q+alveQuGR0vnF6OeZesxkKWLJr8mCk0kZJx5ZxLjibaPA/sxWTmOyn31UMM9jg9fg==}
 
   '@oxc-project/types@0.56.3':
     resolution: {integrity: sha512-zYw7js4CgLSQZ9bfPJjqc5AMS3mM98ur18OA7smCUZe9gpv6agHBLsC5NsXerZLVS7L5r06i8olPvymiymhWyw==}
 
-  '@oxc-project/types@0.56.4':
-    resolution: {integrity: sha512-6D6CDi0otc2rGuI5vmy6uMvGB1jILy7S7bwy3IuYQ9LXraru1mB9dTdJATyVjdpUC9RgnhMymlD7JncIJkQKpA==}
+  '@oxc-project/types@0.56.5':
+    resolution: {integrity: sha512-skY3kOJwp22W4RkaadH1hZ3hqFHjkRrIIE0uQ4VUg+/Chvbl+2pF+B55IrIk2dgsKXS57YEUsJuN6I6s4rgFjA==}
 
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
@@ -9191,13 +9191,13 @@ snapshots:
   '@oxc-parser/binding-win32-x64-msvc@0.56.3':
     optional: true
 
-  '@oxc-parser/wasm@0.56.4':
+  '@oxc-parser/wasm@0.56.5':
     dependencies:
-      '@oxc-project/types': 0.56.4
+      '@oxc-project/types': 0.56.5
 
   '@oxc-project/types@0.56.3': {}
 
-  '@oxc-project/types@0.56.4': {}
+  '@oxc-project/types@0.56.5': {}
 
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
