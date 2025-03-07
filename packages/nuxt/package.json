@@ -73,7 +73,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "@nuxt/cli": "^3.22.4",
+    "@nuxt/cli": "^3.22.5",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/devtools": "^2.2.1",
     "@nuxt/kit": "workspace:*",
@@ -81,7 +81,7 @@
     "@nuxt/telemetry": "^2.6.5",
     "@nuxt/vite-builder": "workspace:*",
     "@oxc-parser/wasm": "^0.56.3",
-    "@unhead/vue": "^2.0.0-rc.1",
+    "@unhead/vue": "^2.0.0-rc.7",
     "@vue/shared": "^3.5.13",
     "c12": "^3.0.2",
     "chokidar": "^4.0.3",
@@ -107,7 +107,7 @@
     "magic-string": "^0.30.17",
     "mlly": "^1.7.4",
     "nanotar": "^0.2.0",
-    "nitropack": "^2.11.3",
+    "nitropack": "^2.11.4",
     "nypm": "^0.6.0",
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
@@ -145,8 +145,8 @@
     "@vitejs/plugin-vue-jsx": "4.1.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "latest",
-    "vite": "6.2.0",
-    "vitest": "3.0.7"
+    "vite": "6.2.1",
+    "vitest": "3.0.8"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

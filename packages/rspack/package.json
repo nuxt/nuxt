@@ -35,7 +35,7 @@
     "@rspack/core": "^1.2.7",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
-    "css-minimizer-webpack-plugin": "^7.0.0",
+    "css-minimizer-webpack-plugin": "^7.0.2",
     "cssnano": "^7.0.6",
     "defu": "^6.1.4",
     "esbuild-loader": "^4.3.0",
