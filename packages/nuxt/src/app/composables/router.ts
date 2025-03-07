@@ -157,7 +157,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
           path: pathname,
           ...(search && { query: parseQuery(search) }),
           ...(hash && { hash }),
-          replace: true
+          replace: true,
         }
       }
       return { ...to, replace: true }
