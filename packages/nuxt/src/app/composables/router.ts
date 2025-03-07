@@ -153,7 +153,12 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (options?.replace) {
       if (typeof to === 'string') {
         const { pathname, search, hash } = parseURL(to)
-        return { path: pathname, query: parseQuery(search), hash, replace: true }
+        return {
+          path: pathname,
+          ...(search && { query: parseQuery(search) }),
+          ...(hash && { hash }),
+          replace: true
+        }
       }
       return { ...to, replace: true }
     }
