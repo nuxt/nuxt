@@ -11,7 +11,8 @@
   ],
   "ignoreDeps": [
     "node",
-    "npm"
+    "npm",
+    "oxc-parser"
   ],
   "packageRules": [
     {

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
-import { useHead } from '@unhead/vue'
 import { defineNuxtPlugin } from '../nuxt'
+import { useHead } from '../composables/head'
 
 const SUPPORTED_PROTOCOLS = ['http:', 'https:']
 

@@ -97,6 +97,12 @@ export default defineNuxtModule({
     }
     options.enabled = await isPagesEnabled()
     nuxt.options.pages = options
+    // For backwards compatibility with `@nuxtjs/i18n` and other modules that serialize `nuxt.options.pages` directly
+    // TODO: remove in a future major
+    Object.defineProperty(nuxt.options.pages, 'toString', {
+      enumerable: false,
+      get: () => () => options.enabled,
+    })
 
     if (nuxt.options.dev && options.enabled) {
       // Add plugin to check if pages are enabled without NuxtPage being instantiated
@@ -163,7 +169,7 @@ export default defineNuxtModule({
           '}',
           'export {}',
         ].join('\n'),
-      })
+      }, { nuxt: true, nitro: true })
       addComponent({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
@@ -580,6 +586,16 @@ export default defineNuxtModule({
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
           '  }',
           '}',
+        ].join('\n')
+      },
+    })
+
+    addTypeTemplate({
+      filename: 'types/nitro-middleware.d.ts',
+      getContents: ({ app }) => {
+        const namedMiddleware = app.middleware.filter(mw => !mw.global)
+        return [
+          `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
           'declare module \'nitropack/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
@@ -592,7 +608,7 @@ export default defineNuxtModule({
           '}',
         ].join('\n')
       },
-    })
+    }, { nuxt: true, nitro: true })
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',

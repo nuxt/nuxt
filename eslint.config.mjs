@@ -203,9 +203,9 @@ export default createConfigForNuxt({
                   'perfect-debounce',
                   'radix3',
                   'ohash',
-                  'ohash/utils',
                   'pathe',
                   'uncrypto',
+                  'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
                 ].map(r => `!${r}`),

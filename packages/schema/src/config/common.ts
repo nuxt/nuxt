@@ -69,7 +69,12 @@ export default defineResolvers({
   workspaceDir: {
     $resolve: async (val, get) => {
       const rootDir = await get('rootDir')
-      return val && typeof val === 'string' ? resolve(rootDir, val) : await findWorkspaceDir(rootDir).catch(() => rootDir)
+      return val && typeof val === 'string'
+        ? resolve(rootDir, val)
+        : await findWorkspaceDir(rootDir, {
+          gitConfig: 'closest',
+          try: true,
+        }).catch(() => rootDir)
     },
   },
 
@@ -548,6 +553,7 @@ export default defineResolvers({
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
         '**/*.d.{cts,mts,ts}', // ignore type declarations
         '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        '**/*.sock',
         relative(rootDir, analyzeDir),
         relative(rootDir, buildDir),
       ])

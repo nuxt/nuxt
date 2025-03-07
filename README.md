@@ -43,7 +43,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 Use the following command to create a new starter project. This will create a starter project with all the necessary files and dependencies:
 
 ```bash
-npx nuxi@latest init <my-project>
+npm create nuxt <my-project>
 ```
 
 > [!TIP]

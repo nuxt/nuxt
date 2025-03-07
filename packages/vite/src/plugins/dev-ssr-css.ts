@@ -7,7 +7,7 @@ interface DevStyleSSRPluginOptions {
   buildAssetsURL: string
 }
 
-export function devStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
+export function DevStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
   return {
     name: 'nuxt:dev-style-ssr',
     apply: 'serve',

@@ -110,7 +110,7 @@ export interface NuxtLinkOptions extends
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
   ? {
       href: string
-      navigate: () => Promise<void>
+      navigate: (e?: MouseEvent) => Promise<void>
       prefetch: (nuxtApp?: NuxtApp) => Promise<void>
       route: (RouteLocation & { href: string }) | undefined
       rel: string | null
@@ -233,7 +233,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
       route: link?.route ?? computed(() => router.resolve(to.value)),
-      async navigate () {
+      async navigate (_e?: MouseEvent) {
         await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
       },
     } satisfies ReturnType<typeof useLink> & {
@@ -497,11 +497,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
     },
     // }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
-  }) as unknown as new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp>) => InstanceType<DefineSetupFnComponent<
+  }) as unknown as (new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp>) => InstanceType<DefineSetupFnComponent<
     NuxtLinkProps<CustomProp>,
     [],
     SlotsType<NuxtLinkSlots<CustomProp>>
-  >>
+  >>) & Record<string, any>
 }
 
 export default defineNuxtLink(nuxtLinkDefaults)

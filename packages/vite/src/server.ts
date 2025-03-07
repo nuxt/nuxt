@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { directoryToURL, logger, resolvePath, tryImportModule } from '@nuxt/kit'
+import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
@@ -114,22 +114,6 @@ export async function buildServer (ctx: ViteBuildContext) {
       hmr: false,
     },
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
-
-  if (!ctx.nuxt.options.dev) {
-    const { runtimeDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
-      url: ctx.nuxt.options.modulesDir.map(d => directoryToURL(d)),
-    }) || {}
-    if (Array.isArray(serverConfig.ssr!.external)) {
-      serverConfig.ssr!.external.push(
-        // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'rou3', 'unstorage', 'hookable',
-        // ensure we only have one version of vue if nitro is going to inline anyway
-        ...((ctx.nuxt as any)._nitro as Nitro).options.inlineDynamicImports ? ['vue', '@vue/server-renderer', '@unhead/vue'] : [],
-        // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...runtimeDependencies,
-      )
-    }
-  }
 
   // tell rollup's nitro build about the original sources of the generated vite server build
   if (ctx.nuxt.options.sourcemap.server && !ctx.nuxt.options.dev) {
