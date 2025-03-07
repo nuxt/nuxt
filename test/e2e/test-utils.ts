@@ -11,6 +11,7 @@ const test = base.extend<{ fetch: (path: string) => Promise<Response> }>({
       do {
         res = await fetch(joinURL(_nuxtHooks.ctx.url!, path), {
           headers: { 'accept': 'text/html' },
+          signal: AbortSignal.timeout(1000),
         }).catch(() => undefined)
       } while (!res || res?.status === 503)
 
