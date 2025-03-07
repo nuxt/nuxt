@@ -115,6 +115,10 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
+  if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
+    delete serverConfig.build.rollupOptions.output.manualChunks
+  }
+
   // tell rollup's nitro build about the original sources of the generated vite server build
   if (ctx.nuxt.options.sourcemap.server && !ctx.nuxt.options.dev) {
     const { vitePlugin, nitroPlugin } = createSourcemapPreserver()
