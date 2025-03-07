@@ -132,6 +132,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig: {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
+          paths: [
+            ...sharedDirs,
+          ],
         },
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
