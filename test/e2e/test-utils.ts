@@ -9,7 +9,6 @@ const test = base.extend<{ fetch: (path: string) => Promise<Response> }>({
     use(async (path) => {
       let res: Response | undefined
       do {
-        console.log(joinURL(_nuxtHooks.ctx.url!, path))
         res = await fetch(joinURL(_nuxtHooks.ctx.url!, path), {
           headers: { 'accept': 'text/html' },
         }).catch(() => undefined)
@@ -39,11 +38,8 @@ test.use({
   },
   goto: ({ page }, use) => {
     use(async (path, options) => {
-      console.log('about to fetch', path)
       const result = await page.goto(path, options as any)
-      console.log('waiting for hydration', path)
       await waitForHydration(page, path, 'hydration')
-      console.log('hydrated', path)
       return result
     })
   },
