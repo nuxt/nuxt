@@ -255,7 +255,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, PAYLOAD_FILENAME))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
