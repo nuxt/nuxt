@@ -13,9 +13,6 @@ setup('create temporary hmr fixture directory', async () => {
   await cp(sourceDir, fixtureDir, {
     recursive: true,
     filter: (src) => {
-      if (!src.includes('.cache') && !src.endsWith('.sock') && !src.includes('.output')) {
-        console.log(src)
-      }
       return !src.includes('.cache') && !src.endsWith('.sock') && !src.includes('.output') && !src.includes('.nuxt-')
     },
   })
