@@ -450,6 +450,31 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
 
+  // TODO: extract to shared utility?
+  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
+  const aliases = nitroConfig.alias!
+  const tsConfig = nitroConfig.typescript!.tsConfig!
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
+  for (const _alias in aliases) {
+    const alias = _alias as keyof typeof aliases
+    if (excludedAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) {
+      continue
+    }
+    if (alias in tsConfig.compilerOptions.paths) {
+      continue
+    }
+
+    const absolutePath = resolve(basePath, aliases[alias]!)
+    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    // note - nitro will check + remove the file extension as required
+    tsConfig.compilerOptions.paths[alias] = [absolutePath]
+    if (stats?.isDirectory()) {
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+    }
+  }
+
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
