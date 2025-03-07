@@ -227,7 +227,7 @@ export function useLazyFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev && import.meta.server) {
     // @ts-expect-error private property
     opts._functionName ||= 'useLazyFetch'
   }
