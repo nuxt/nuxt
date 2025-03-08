@@ -74,7 +74,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "@rspack/core": "1.2.7",
-    "@types/pify": "5.0.4",
+    "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
     "rollup": "4.35.0",
