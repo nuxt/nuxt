@@ -19,7 +19,7 @@
   "devDependencies": {
     "@unocss/reset": "66.0.0",
     "beasties": "0.2.0",
-    "html-validate": "9.4.1",
+    "html-validate": "9.4.2",
     "htmlnano": "2.1.1",
     "jiti": "2.4.2",
     "knitwork": "1.2.0",
@@ -30,6 +30,6 @@
     "tinyexec": "0.3.2",
     "tinyglobby": "0.2.12",
     "unocss": "66.0.0",
-    "vite": "6.2.0"
+    "vite": "6.2.1"
   }
 }
