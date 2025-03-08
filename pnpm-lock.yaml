@@ -672,8 +672,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@types/pify':
-        specifier: 5.0.4
-        version: 5.0.4
+        specifier: 6.1.0
+        version: 6.1.0
       '@types/webpack-bundle-analyzer':
         specifier: 4.7.0
         version: 4.7.0
@@ -1107,8 +1107,8 @@ importers:
         specifier: 1.2.7
         version: 1.2.7
       '@types/pify':
-        specifier: 5.0.4
-        version: 5.0.4
+        specifier: 6.1.0
+        version: 6.1.0
       '@types/webpack-bundle-analyzer':
         specifier: 4.7.0
         version: 4.7.0
@@ -2877,8 +2877,9 @@ packages:
   '@types/parse-path@7.0.3':
     resolution: {integrity: sha512-LriObC2+KYZD3FzCrgWGv/qufdUy4eXrxcLgQMfYXgPbLIecKIsVBaQgUPmxSSLcjmYbDTQbMgr6qr6l/eb7Bg==}
 
-  '@types/pify@5.0.4':
-    resolution: {integrity: sha512-gxKJ1Aw8LbyCsCQWIsip9bYKJCNsKHMoZoQMAe2IWH7U7hgp/l6TvJpbFvu8ZlGBimjZZNvEx2S1ZQlj02ayNQ==}
+  '@types/pify@6.1.0':
+    resolution: {integrity: sha512-HCVIdzNiVAi7OxWTAZagTBNzylgNhImtx442pMcu8QZHzDHElS3ccgqaYIuHskpaeG7rIbYlN5XP5tcOAf8F2w==}
+    deprecated: This is a stub types definition. pify provides its own type definitions, so you do not need this installed.
 
   '@types/pug@2.0.10':
     resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
@@ -9651,7 +9652,9 @@ snapshots:
 
   '@types/parse-path@7.0.3': {}
 
-  '@types/pify@5.0.4': {}
+  '@types/pify@6.1.0':
+    dependencies:
+      pify: 6.1.0
 
   '@types/pug@2.0.10': {}
 
