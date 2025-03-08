@@ -873,6 +873,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push(
+    'mocked-exports',
     'std-env', // we need to statically replace process.env when used in runtime code
   )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
