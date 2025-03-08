@@ -423,6 +423,9 @@ importers:
       mlly:
         specifier: ^1.7.4
         version: 1.7.4
+      mocked-exports:
+        specifier: ^0.1.0
+        version: 0.1.0
       nanotar:
         specifier: ^0.2.0
         version: 0.2.0
@@ -516,7 +519,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.11.0
-        version: 0.11.0(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.8(vue@3.5.13(typescript@5.8.2)))(nuxt@packages+nuxt)(typescript@5.8.2)
+        version: 0.11.0(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.8(vue@3.5.13(typescript@5.8.2)))(db0@0.1.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(typescript@5.8.2)
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -891,6 +894,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.2
+        version: 1.0.2
       get-port-please:
         specifier: ^3.1.2
         version: 3.1.2
@@ -909,6 +915,9 @@ importers:
       mlly:
         specifier: ^1.7.4
         version: 1.7.4
+      mocked-exports:
+        specifier: ^0.1.0
+        version: 0.1.0
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -5830,6 +5839,9 @@ packages:
   mlly@1.7.4:
     resolution: {integrity: sha512-qmdSIPC4bDJXgZTCR7XosJiNKySV7O215tsPtDN9iEO/7q/76b/ijtgRu/+epFXSJhijtTCCGp3DWS549P3xKw==}
 
+  mocked-exports@0.1.0:
+    resolution: {integrity: sha512-sD6J0bqR2L9OPz0Tmkb2iVFTft8u1VigiAb5vKC9wVk5Fmp70wkpnOYHIww4icXD5mn/kGW7q/kQN3VEOPL8QQ==}
+
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -8942,7 +8954,7 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.98.0
 
-  '@nuxt/scripts@0.11.0(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.8(vue@3.5.13(typescript@5.8.2)))(nuxt@packages+nuxt)(typescript@5.8.2)':
+  '@nuxt/scripts@0.11.0(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-rc.8(vue@3.5.13(typescript@5.8.2)))(db0@0.1.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(typescript@5.8.2)':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@unhead/vue': 2.0.0-rc.8(vue@3.5.13(typescript@5.8.2))
@@ -13447,6 +13459,8 @@ snapshots:
       pathe: 2.0.3
       pkg-types: 1.3.1
       ufo: 1.5.4
+
+  mocked-exports@0.1.0: {}
 
   mri@1.2.0: {}
 
