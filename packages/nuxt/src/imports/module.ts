@@ -36,7 +36,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
 
-    if (nuxt.options.imports.polyfills) {
+    if (options.polyfills) {
       presets.push(...appCompatPresets)
     }
 
