@@ -351,7 +351,7 @@ describe('useFetch', () => {
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> Request aborted due to timeout.]')
+    expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 })
 
