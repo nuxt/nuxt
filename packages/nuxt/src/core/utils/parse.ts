@@ -10,7 +10,7 @@ export async function transform<T extends TransformOptions> (input: string | Uin
   return await esbuildTransform(input, { ...tryUseNuxt()?.options.esbuild.options, ...options })
 }
 
-type WithLocations<T> = T & { start: number, end: number }
+export type WithLocations<T> = T & { start: number, end: number }
 type WalkerCallback = (this: ThisParameterType<SyncHandler>, node: WithLocations<Node>, parent: WithLocations<Node> | null, ctx: { key: string | number | symbol | null | undefined, index: number | null | undefined, ast: Program | Node }) => void
 
 interface WalkOptions {

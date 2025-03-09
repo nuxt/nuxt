@@ -6,9 +6,11 @@ import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 
+import type { ObjectExpression, Property } from 'estree'
 import {
   ScopeTracker,
   type ScopeTrackerNode,
+  type WithLocations,
   getUndeclaredIdentifiersInFunction,
   isNotReferencePosition,
   parseAndWalk,
@@ -22,6 +24,7 @@ interface PageMetaPluginOptions {
   sourcemap?: boolean
   isPage?: (file: string) => boolean
   routesPath?: string
+  extractedKeys?: string[]
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
@@ -227,6 +230,19 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const meta = withLocations(node.arguments[0])
 
           if (!meta) { return }
+          const metaCode = new MagicString(code!.slice(meta.start, meta.end))
+
+          function clearExtractedMeta (string: MagicString, node: ObjectExpression) {
+            for (const prop of node.properties) {
+              if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
+                string.overwrite((prop as WithLocations<Property>).start - meta.start, (prop as WithLocations<Property>).end - meta.start, '')
+              }
+            }
+          }
+
+          if (meta.type === 'ObjectExpression') {
+            clearExtractedMeta(metaCode, meta)
+          }
 
           const definePageMetaScope = scopeTracker.getCurrentScope()
 
@@ -270,7 +286,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const extracted = [
             importStatements,
             declarations,
-            `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+            `const __nuxt_page_meta = ${metaCode.toString() || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
           ].join('\n')
 
           s.overwrite(0, code.length, extracted.trim())
