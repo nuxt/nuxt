@@ -10,6 +10,7 @@ import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 import { resolveTSConfig } from 'pkg-types'
+import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
@@ -55,9 +56,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
   const isIgnored = createIsIgnored(nuxt)
 
-  const mockEmpty = resolveModulePath('unenv/mock/empty', { from: import.meta.url })
   const ctx: ViteBuildContext = {
     nuxt,
     entry,

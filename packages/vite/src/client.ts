@@ -12,6 +12,7 @@ import { defineEnv } from 'unenv'
 import { resolveModulePath } from 'exsolve'
 import { defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
+
 import type { ViteBuildContext } from './vite'
 import { DevStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { RuntimePathsPlugin } from './plugins/paths'
@@ -120,7 +121,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         ...ctx.config.resolve?.alias,
         '#internal/nitro': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
         // work around vite optimizer bug
-        '#app-manifest': resolveModulePath('unenv/mock/empty', { from: import.meta.url }),
+        '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
       dedupe: [
         'vue',
