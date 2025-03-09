@@ -2322,9 +2322,6 @@ packages:
   '@oxc-parser/wasm@0.56.5':
     resolution: {integrity: sha512-9vtn56ok7PHS0elihFP+Q+alveQuGR0vnF6OeZesxkKWLJr8mCk0kZJx5ZxLjibaPA/sxWTmOyn31UMM9jg9fg==}
 
-  '@oxc-project/types@0.56.3':
-    resolution: {integrity: sha512-zYw7js4CgLSQZ9bfPJjqc5AMS3mM98ur18OA7smCUZe9gpv6agHBLsC5NsXerZLVS7L5r06i8olPvymiymhWyw==}
-
   '@oxc-project/types@0.56.5':
     resolution: {integrity: sha512-skY3kOJwp22W4RkaadH1hZ3hqFHjkRrIIE0uQ4VUg+/Chvbl+2pF+B55IrIk2dgsKXS57YEUsJuN6I6s4rgFjA==}
 
@@ -2468,15 +2465,6 @@ packages:
   '@rollup/plugin-alias@5.1.1':
     resolution: {integrity: sha512-PR9zDb+rOzkRb2VD+EuKB7UC41vU5DIwZ5qqCpk0KJudcWAyi8rvYOhS7+L5aZCspw1stTViLgN5v6FF1p5cgQ==}
     engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: 4.35.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
-  '@rollup/plugin-commonjs@28.0.2':
-    resolution: {integrity: sha512-BEFI2EDqzl+vA1rl97IDRZ61AIwGH093d9nz8+dThxJNH8oSoB7MjWvPCX3dkaK1/RCJ/1v/R1XB15FuSs0fQw==}
-    engines: {node: '>=16.0.0 || 14 >= 14.17'}
     peerDependencies:
       rollup: 4.35.0
     peerDependenciesMeta:
@@ -9116,8 +9104,6 @@ snapshots:
     dependencies:
       '@oxc-project/types': 0.56.5
 
-  '@oxc-project/types@0.56.3': {}
-
   '@oxc-project/types@0.56.5': {}
 
   '@parcel/watcher-android-arm64@2.5.1':
@@ -9244,18 +9230,6 @@ snapshots:
       - supports-color
 
   '@rollup/plugin-alias@5.1.1(rollup@4.35.0)':
-    optionalDependencies:
-      rollup: 4.35.0
-
-  '@rollup/plugin-commonjs@28.0.2(rollup@4.35.0)':
-    dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.35.0)
-      commondir: 1.0.1
-      estree-walker: 2.0.2
-      fdir: 6.4.3(picomatch@4.0.2)
-      is-reference: 1.2.1
-      magic-string: 0.30.17
-      picomatch: 4.0.2
     optionalDependencies:
       rollup: 4.35.0
 
@@ -13505,7 +13479,7 @@ snapshots:
 
   oxc-parser@0.56.3:
     dependencies:
-      '@oxc-project/types': 0.56.3
+      '@oxc-project/types': 0.56.5
     optionalDependencies:
       '@oxc-parser/binding-darwin-arm64': 0.56.3
       '@oxc-parser/binding-darwin-x64': 0.56.3
@@ -14925,7 +14899,7 @@ snapshots:
   unbuild@3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2)):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.35.0)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.35.0)
+      '@rollup/plugin-commonjs': 28.0.3(rollup@4.35.0)
       '@rollup/plugin-json': 6.1.0(rollup@4.35.0)
       '@rollup/plugin-node-resolve': 16.0.0(rollup@4.35.0)
       '@rollup/plugin-replace': 6.0.2(rollup@4.35.0)
