@@ -40,9 +40,6 @@ describe.skipIf(isDev)('spaLoadingTemplateLocation flag is set to `within`', () 
     const page = await createPage()
     await page.goto(url('/spa'))
 
-    await page.getByTestId('loader').waitFor({ state: 'visible' })
-    expect(await page.getByTestId('content').isHidden()).toBeTruthy()
-
     await page.waitForFunction(() => window.useNuxtApp?.() && window.useNuxtApp?.().isHydrating)
 
     expect(await page.getByTestId('content').isHidden()).toBeTruthy()

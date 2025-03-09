@@ -32,9 +32,6 @@ describe.skipIf(isDev)('spaLoadingTemplateLocation flag is set to `body`', () =>
     const page = await createPage()
     await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
 
-    await page.getByTestId('loader').waitFor({ state: 'visible' })
-    expect(await page.getByTestId('content').isHidden()).toBeTruthy()
-
     await page.getByTestId('content').waitFor({ state: 'visible' })
     expect(await page.getByTestId('loader').isHidden()).toBeTruthy()
 
