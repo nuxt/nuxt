@@ -29,7 +29,7 @@ interface PageMeta {
   validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
   redirect?: RouteRecordRedirectOption
   name?: string
-  path?: string
+  path?: string | string[]
   props?: RouteRecordRaw['props']
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
@@ -60,9 +60,14 @@ interface PageMeta {
 
   **`path`**
 
-  - **Type**: `string`
+  - **Type**: `string | string[]`
 
+    `default: string`
     You may define a [custom regular expression](#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+
+
+    `special: string[]`
+    You can define multiple paths for the same page component. This is useful when you want to match multiple paths to the same page component.
 
   **`props`**
   
@@ -217,6 +222,58 @@ definePageMeta({
 
 For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
 
+### Using a Special Array Path
+
+You can define multiple paths for the same page component.
+
+::warning
+When using a special array path, the `name` property will be ignored.
+::
+
+::code-group
+```vue [pages/test.vue]
+<script setup lang="ts">
+definePageMeta({
+  path: ['/test', '/test-1'] 
+})
+</script>
+
+```
+
+```vue [pages/test/detail.vue]
+<template>
+  <div>i'm detail page</div>
+</template>
+
+```
+
+```ts [route.ts]
+// The routes will be generated like this
+[
+  {
+    name: 'test-0',
+    path: '/test',
+    children: [
+      {
+        name: 'test-detail',
+        path: 'detail'
+      }
+    ]
+  },
+  {
+    name: 'test-1',
+    path: '/test-1',
+    children: [
+      {
+        name: 'test-detail',
+        path: 'detail'
+      }
+    ]
+  },
+]
+```
+
+::
 ### Defining Layout
 
 You can define the layout that matches the layout's file name located (by default) in the [`layouts/` directory](/docs/guide/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:

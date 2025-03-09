@@ -1,4 +1,88 @@
 {
+  "generate array path from definePageMeta": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/test.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "test-0"",
+      "path": "mockMeta?.path ?? "/test"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/test.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "test-1"",
+      "path": "mockMeta?.path ?? "/test/:id"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
+  "generate array path with nested pages": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "children": [
+        {
+          "alias": "mockMeta?.alias || []",
+          "children": [
+            {
+              "alias": "mockMeta?.alias || []",
+              "component": "() => import("pages/test/detail/add.vue")",
+              "meta": "mockMeta || {}",
+              "name": "mockMeta?.name ?? "test-detail-add"",
+              "path": "mockMeta?.path ?? "add"",
+              "props": "mockMeta?.props ?? false",
+              "redirect": "mockMeta?.redirect",
+            },
+          ],
+          "component": "() => import("pages/test/detail.vue")",
+          "meta": "mockMeta || {}",
+          "name": "mockMeta?.name ?? "test-detail"",
+          "path": "mockMeta?.path ?? "detail"",
+          "props": "mockMeta?.props ?? false",
+          "redirect": "mockMeta?.redirect",
+        },
+      ],
+      "component": "() => import("pages/test.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "test-0"",
+      "path": "mockMeta?.path ?? "/test"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+    {
+      "alias": "mockMeta?.alias || []",
+      "children": [
+        {
+          "alias": "mockMeta?.alias || []",
+          "children": [
+            {
+              "alias": "mockMeta?.alias || []",
+              "component": "() => import("pages/test/detail/add.vue")",
+              "meta": "mockMeta || {}",
+              "name": "mockMeta?.name ?? "test-detail-add"",
+              "path": "mockMeta?.path ?? "add"",
+              "props": "mockMeta?.props ?? false",
+              "redirect": "mockMeta?.redirect",
+            },
+          ],
+          "component": "() => import("pages/test/detail.vue")",
+          "meta": "mockMeta || {}",
+          "name": "mockMeta?.name ?? "test-detail"",
+          "path": "mockMeta?.path ?? "detail"",
+          "props": "mockMeta?.props ?? false",
+          "redirect": "mockMeta?.redirect",
+        },
+      ],
+      "component": "() => import("pages/test.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "test-1"",
+      "path": "mockMeta?.path ?? "/test/:id"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "pushed route, skips generation from file": [
     {
       "alias": "["pushed-route-alias"].concat(mockMeta?.alias || [])",

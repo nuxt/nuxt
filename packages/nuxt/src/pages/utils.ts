@@ -165,7 +165,9 @@ interface AugmentPagesContext {
 
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
   ctx.augmentedPages ??= new Set()
-  for (const route of routes) {
+  const newRoutes: NuxtPage[] = []
+  const deleteRoutesIndex: number[] = []
+  for (const [index, route] of Object.entries(routes)) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = route.file in vfs
         ? vfs[route.file]!
@@ -175,7 +177,18 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
       }
 
-      Object.assign(route, routeMeta)
+      if (Array.isArray(routeMeta.path)) {
+        if (routeMeta.name) {
+          logger.warn(`\`path\` expect as array, \`name\` will be ignored`)
+        }
+        for (const [index, path] of Object.entries(routeMeta.path as string[])) {
+          const newRoute = { ...route, ...routeMeta, path, name: `${route.name}-${index}` }
+          newRoutes.push(newRoute)
+        }
+        deleteRoutesIndex.push(+index)
+      } else {
+        Object.assign(route, routeMeta)
+      }
       ctx.augmentedPages.add(route.file)
     }
 
@@ -183,6 +196,8 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       await augmentPages(route.children, vfs, ctx)
     }
   }
+  routes.push(...newRoutes)
+  deleteRoutesIndex.forEach(index => routes.splice(+index, 1))
   return ctx.augmentedPages
 }
 
