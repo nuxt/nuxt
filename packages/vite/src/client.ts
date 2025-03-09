@@ -12,7 +12,6 @@ import { defineEnv } from 'unenv'
 import { resolveModulePath } from 'exsolve'
 import { defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
-import { resolveModulePath } from 'exsolve'
 
 import type { ViteBuildContext } from './vite'
 import { DevStyleSSRPlugin } from './plugins/dev-ssr-css'
