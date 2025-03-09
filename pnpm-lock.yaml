@@ -1196,6 +1196,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/minimal-pages: {}
+
   test/fixtures/minimal-types:
     dependencies:
       nuxt:

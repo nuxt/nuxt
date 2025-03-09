@@ -10,7 +10,6 @@ import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 import { resolveTSConfig } from 'pkg-types'
-import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
