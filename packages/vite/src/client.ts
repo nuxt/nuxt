@@ -118,7 +118,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         ...ctx.config.resolve?.alias,
         'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
         // work around vite optimizer bug
-        '#app-manifest': resolveModulePath('mocked-exports/proxy', { from: import.meta.url }),
+        '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
       dedupe: [
         'vue',
