@@ -8,7 +8,8 @@ import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
-import { env, nodeless } from 'unenv'
+import { defineEnv } from 'unenv'
+import { resolveModulePath } from 'exsolve'
 import { defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
@@ -24,7 +25,10 @@ import { createViteLogger } from './utils/logger'
 export async function buildClient (ctx: ViteBuildContext) {
   const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat
     ? {
-        alias: env(nodeless).alias,
+        alias: defineEnv({
+          nodeCompat: true,
+          resolve: true,
+        }).env.alias,
         define: {
           global: 'globalThis',
         },

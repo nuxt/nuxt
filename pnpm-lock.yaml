@@ -635,8 +635,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-rc.10
+        version: 2.0.0-rc.14
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -934,8 +934,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-rc.10
+        version: 2.0.0-rc.14
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -1058,8 +1058,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^1.10.0
-        version: 1.10.0
+        specifier: ^2.0.0-rc.10
+        version: 2.0.0-rc.14
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -1892,10 +1892,6 @@ packages:
     resolution: {integrity: sha512-yaVPAiNAalnCZedKLdR21GOGILMLKPyqSLWaAjQFvYA2i/ciDi8ArYVr69Anohb6cH2Ukhqti4aFnYyPm8wdwQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/js@9.21.0':
-    resolution: {integrity: sha512-BqStZ3HX8Yz6LvsF5ByXYrtigrV5AXADWLAGc7PH/1SxOb7/FIYYMszZZWiUou/GB9P2lXWk2SV4d+Z8h0nknw==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@eslint/js@9.22.0':
     resolution: {integrity: sha512-vLFajx9o8d1/oL2ZkpMYbkLv8nDB6yaIwFNt7nI4+I80U/z03SxmfOMsLbvWr3p7C+Wnoh//aOu2pQW8cS0HCQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -2313,9 +2309,6 @@ packages:
 
   '@oxc-parser/wasm@0.56.5':
     resolution: {integrity: sha512-9vtn56ok7PHS0elihFP+Q+alveQuGR0vnF6OeZesxkKWLJr8mCk0kZJx5ZxLjibaPA/sxWTmOyn31UMM9jg9fg==}
-
-  '@oxc-project/types@0.56.3':
-    resolution: {integrity: sha512-zYw7js4CgLSQZ9bfPJjqc5AMS3mM98ur18OA7smCUZe9gpv6agHBLsC5NsXerZLVS7L5r06i8olPvymiymhWyw==}
 
   '@oxc-project/types@0.56.5':
     resolution: {integrity: sha512-skY3kOJwp22W4RkaadH1hZ3hqFHjkRrIIE0uQ4VUg+/Chvbl+2pF+B55IrIk2dgsKXS57YEUsJuN6I6s4rgFjA==}
@@ -7413,6 +7406,9 @@ packages:
   unenv@1.10.0:
     resolution: {integrity: sha512-wY5bskBQFL9n3Eca5XnhH6KbUo/tfvkwm9OpcdCvLaeA7piBNbavbOKJySEwQ1V0RH6HvNlSAFRTpvTqgKRQXQ==}
 
+  unenv@2.0.0-rc.14:
+    resolution: {integrity: sha512-od496pShMen7nOy5VmVJCnq8rptd45vh6Nx/r2iPbrba6pa6p+tS2ywuIHRZ/OBvSbQZB0kWvpO9XBNVFXHD3Q==}
+
   unhead@2.0.0-rc.8:
     resolution: {integrity: sha512-v460EaVW4nQsXTULM2Fx5qmbmHpIs0kF72p3IwV5KXLk1uynFha0KbRraf8Vg+1EOJP91vLpNtXTLJtAzzF4zg==}
 
@@ -8592,8 +8588,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/js@9.21.0': {}
-
   '@eslint/js@9.22.0': {}
 
   '@eslint/object-schema@2.1.6': {}
@@ -8910,7 +8904,7 @@ snapshots:
     dependencies:
       '@antfu/install-pkg': 1.0.0
       '@clack/prompts': 0.10.0
-      '@eslint/js': 9.21.0
+      '@eslint/js': 9.22.0
       '@nuxt/eslint-plugin': 1.1.0(eslint@9.22.0(jiti@2.4.2))(typescript@5.8.2)
       '@stylistic/eslint-plugin': 4.0.1(eslint@9.22.0(jiti@2.4.2))(typescript@5.8.2)
       '@typescript-eslint/eslint-plugin': 8.24.1(@typescript-eslint/parser@8.24.1(eslint@9.22.0(jiti@2.4.2))(typescript@5.8.2))(eslint@9.22.0(jiti@2.4.2))(typescript@5.8.2)
@@ -9217,8 +9211,6 @@ snapshots:
   '@oxc-parser/wasm@0.56.5':
     dependencies:
       '@oxc-project/types': 0.56.5
-
-  '@oxc-project/types@0.56.3': {}
 
   '@oxc-project/types@0.56.5': {}
 
@@ -13768,7 +13760,7 @@ snapshots:
 
   oxc-parser@0.56.3:
     dependencies:
-      '@oxc-project/types': 0.56.3
+      '@oxc-project/types': 0.56.5
     optionalDependencies:
       '@oxc-parser/binding-darwin-arm64': 0.56.3
       '@oxc-parser/binding-darwin-x64': 0.56.3
@@ -15255,6 +15247,14 @@ snapshots:
       mime: 3.0.0
       node-fetch-native: 1.6.6
       pathe: 1.1.2
+
+  unenv@2.0.0-rc.14:
+    dependencies:
+      defu: 6.1.4
+      exsolve: 1.0.2
+      ohash: 2.0.11
+      pathe: 2.0.3
+      ufo: 1.5.4
 
   unhead@2.0.0-rc.8:
     dependencies:
