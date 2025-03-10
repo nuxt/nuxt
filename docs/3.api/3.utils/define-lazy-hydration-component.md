@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-`defineLazyHydrationComponent` is a compiler macro that allows you to define a lazy hydration component. This enables delaying the hydration of a component until a specified time (in milliseconds) has passed.
+`defineLazyHydrationComponent` is a compiler macro that enables lazy hydration with specific strategy. In SSR, Vue needs to hydrate the entire component to ensure that it remains interactive. Lazy hydration defers this process using different strategies, which is very helpful for reducing the initial performance cost, especially for non-essential components.
 
 ## Usage
 
