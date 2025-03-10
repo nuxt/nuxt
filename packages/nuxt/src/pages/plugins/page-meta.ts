@@ -233,9 +233,17 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const metaCode = new MagicString(code!.slice(meta.start, meta.end))
 
           function clearExtractedMeta (string: MagicString, node: ObjectExpression) {
-            for (const prop of node.properties) {
+            for (let i = 0; i < node.properties.length; i++) {
+              const prop = withLocations(node.properties[i])
               if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
-                string.overwrite((prop as WithLocations<Property>).start - meta.start, (prop as WithLocations<Property>).end - meta.start, '')
+                const nextProperty = node.properties[i + 1] as WithLocations<Property> | undefined
+                if (nextProperty) {
+                  string.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
+                } else if (code[prop.end] === ',') {
+                  string.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
+                } else {
+                  string.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                }
               }
             }
           }

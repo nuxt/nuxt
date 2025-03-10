@@ -1,6 +1,7 @@
 import { type MockedFunction, describe, expect, it, vi } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import { klona } from 'klona'
+import { parse as toAst } from 'acorn'
 
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta'
 import { getRouteMeta, normalizeRoutes } from '../src/pages/utils'
@@ -318,7 +319,7 @@ describe('normalizeRoutes', () => {
 })
 
 describe('rewrite page meta', () => {
-  const transformPlugin = PageMetaPlugin().raw({}, {} as any) as { transform: (code: string, id: string) => { code: string } | null }
+  const transformPlugin = PageMetaPlugin({ extractedKeys: ['extracted'] }).raw({}, {} as any) as { transform: (code: string, id: string) => { code: string } | null }
 
   it('should extract metadata from vue components', () => {
     const sfc = `
@@ -709,5 +710,46 @@ const hoisted = ref('hoisted')
       }
       export default __nuxt_page_meta"
     `)
+  })
+
+  describe('strip extracted metadata', () => {
+    it.each([
+      {
+        input: `
+<script setup>
+definePageMeta({
+  foo :'foo',
+  extracted: 'value', })
+</script>
+      `,
+      },
+      {
+        input: `
+<script setup>
+definePageMeta({
+  extracted: 'value',foo :'foo'})
+</script>
+      `,
+      },
+      {
+        input: `
+<script setup>
+definePageMeta({
+  extracted: 'value',
+})
+</script>
+      `,
+      },
+
+    ])(`should strip extracted metadata from the script block`, ({ input }) => {
+      const res = compileScript(parse(input).descriptor, { id: 'component.vue' })
+      const result = transformPlugin.transform(res.content, 'component.vue?macro=true')?.code
+      expect(result).not.contain('extracted')
+      if (input.includes('foo')) {
+        expect(result).contain('foo')
+      }
+      // verify for valid JS
+      expect(() => toAst(result!, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()
+    })
   })
 })
