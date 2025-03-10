@@ -102,7 +102,7 @@
     "devalue": "5.1.1",
     "eslint": "9.22.0",
     "eslint-plugin-no-only-tests": "3.3.0",
-    "eslint-plugin-perfectionist": "4.10.0",
+    "eslint-plugin-perfectionist": "4.10.1",
     "eslint-typegen": "2.0.0",
     "estree-walker": "3.0.3",
     "h3": "npm:h3-nightly@1.15.1-20250222-111608-d1c00fc",
@@ -136,6 +136,6 @@
     "vue-tsc": "2.2.8",
     "webpack": "5.98.0"
   },
-  "packageManager": "pnpm@10.6.1",
+  "packageManager": "pnpm@10.6.2",
   "version": ""
 }
