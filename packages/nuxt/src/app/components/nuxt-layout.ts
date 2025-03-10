@@ -132,7 +132,7 @@ const LayoutProvider = defineComponent({
     if (import.meta.dev && import.meta.client) {
       onMounted(() => {
         nextTick(() => {
-          if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
+          if (['#comment', '#text'].includes(vnode?.el?.nodeName) && props.hasTransition) {
             if (name) {
               console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
             } else {
@@ -151,22 +151,12 @@ const LayoutProvider = defineComponent({
         }
         return context.slots.default?.()
       }
-
-      if (import.meta.dev && import.meta.client && props.hasTransition) {
-        vnode = h(
-          LayoutLoader,
-          { key: name, layoutProps: props.layoutProps, name },
-          context.slots,
-        )
-
-        return vnode
-      }
-
-      return h(
+      vnode = h(
         LayoutLoader,
         { key: name, layoutProps: props.layoutProps, name },
         context.slots,
       )
+      return vnode
     }
   },
 })
