@@ -13,5 +13,5 @@ defineOptions({
   name: 'LazyTimeDelayedComponentMacroPage',
 })
 
-const LazyTimeDelayedComponentMacro = defineLazyTimeComponent(() => import('~/components/DelayedComponent.vue'))
+const LazyTimeDelayedComponentMacro = defineLazyHydrationComponent('time', () => import('~/components/DelayedComponent.vue'))
 </script>

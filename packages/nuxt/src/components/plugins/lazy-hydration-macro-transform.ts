@@ -4,7 +4,7 @@ import { relative } from 'pathe'
 
 import MagicString from 'magic-string'
 import { genDynamicImport, genImport } from 'knitwork'
-import { pascalCase } from 'scule'
+import { pascalCase, upperFirst } from 'scule'
 import { isJS, isVue } from '../../core/utils'
 
 interface LoaderOptions {
@@ -15,8 +15,9 @@ interface LoaderOptions {
   clientDelayedComponentRuntime: string
 }
 
-const LAZY_HYDRATION_MACRO_RE = /(?:const\s+(\w+)\s*=\s*)?defineLazy(Idle|Visible|Interaction|MediaQuery|Time|If|Never)Component\(\(\)\s*=>\s*import\(['"](.+?)['"]\)\)/g
+const LAZY_HYDRATION_MACRO_RE = /(?:const\s+(\w+)\s*=\s*)?defineLazyHydrationComponent\(\s*['"]([^'"]+)['"]\s*,\s*\(\)\s*=>\s*import\(['"](.+?)['"]\)\)/g
 const COMPONENT_NAME = /import\(["'].*\/([^\\/]+?)\.\w+["']\)/
+const HYDRATION_STRATEGY = ['visible', 'idle', 'interaction', 'mediaQuery', 'if', 'time', 'never']
 
 export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -45,12 +46,17 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
       const components = options.getComponents()
 
       for (const match of matches) {
-        const [matchedString, variableName, hydrationMode] = match
+        const [matchedString, variableName, hydrationStrategy] = match
 
         const startIndex = match.index
         const endIndex = startIndex + matchedString.length
 
         if (!variableName) {
+          s.remove(startIndex, endIndex)
+          continue
+        }
+
+        if (!hydrationStrategy || !HYDRATION_STRATEGY.includes(hydrationStrategy)) {
           s.remove(startIndex, endIndex)
           continue
         }
@@ -70,10 +76,11 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
 
         const relativePath = relative(options.srcDir, component.filePath)
         const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
-        const replacement = `const ${variableName} = createLazy${hydrationMode}Component(${JSON.stringify(relativePath)}, ${dynamicImport})`
+        const replaceFunctionName = `createLazy${upperFirst(hydrationStrategy)}Component`
+        const replacement = `const ${variableName} = ${replaceFunctionName}(${JSON.stringify(relativePath)}, ${dynamicImport})`
 
         s.overwrite(startIndex, endIndex, replacement)
-        names.add(`createLazy${hydrationMode}Component`)
+        names.add(replaceFunctionName)
       }
 
       if (names.size) {
@@ -100,13 +107,13 @@ export const lazyHydrationMacroTypeTemplate: NuxtTypeTemplate = {
 type LazyHydrationComponent<T extends Component, Props> = T & DefineComponent<Props, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>
 
 declare global {
-  function defineLazyVisibleComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnVisible?: IntersectionObserverInit | true }>;
-  function defineLazyIdleComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnIdle?: number | true }>;
-  function defineLazyInteractionComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnInteraction?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> }>;
-  function defineLazyMediaQueryComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnMediaQuery: string }>;
-  function defineLazyIfComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateWhen?: boolean }>;
-  function defineLazyTimeComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateAfter: number | true }>;
-  function defineLazyNeverComponent<T extends Component = { new (): ComponentPublicInstance }>(source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateNever?: true }>;
+  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'visible', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnVisible?: IntersectionObserverInit | true }>;
+  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'idle', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnIdle?: number | true }>;
+  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'interaction', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnInteraction?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> }>;
+  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'mediaQuery', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnMediaQuery: string }>;
+  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'if', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateWhen: boolean }>;
+  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'time', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateAfter: number | true }>;
+  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'never', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateNever?: true }>;
 }
 `
   },

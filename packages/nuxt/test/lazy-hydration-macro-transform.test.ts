@@ -13,38 +13,38 @@ describe('lazy hydration macro transform', () => {
   it ('should correctly transform lazy hydration macro in sfc', async () => {
     const sfc = `
     <script setup>
-    const MacroLazyVisibleMyComponent = defineLazyVisibleComponent(() => import('~/components/MyComponent.vue'))
-    const MacroLazyIdleMyComponent = defineLazyIdleComponent(() => import('~/components/MyComponent.vue'))
-    const MacroLazyInteractionMyComponent = defineLazyInteractionComponent(() => import('~/components/MyComponent.vue'))
-    const MacroLazyMediaQueryMyComponent = defineLazyMediaQueryComponent(() => import('~/components/MyComponent.vue'))
-    const MacroLazyIfMyComponent = defineLazyIfComponent(() => import('~/components/MyComponent.vue'))
-    const MacroLazyTimeMyComponent = defineLazyTimeComponent(() => import('~/components/MyComponent.vue'))
-    const MacroLazyNeverMyComponent = defineLazyNeverComponent(() => import('~/components/MyComponent.vue'))
+    const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', () => import('~/components/MyComponent.vue'))
+    const LazyHydrationIdleMyComponent = defineLazyHydrationComponent('idle', () => import('~/components/MyComponent.vue'))
+    const LazyHydrationInteractionMyComponent = defineLazyHydrationComponent('interaction', () => import('~/components/MyComponent.vue'))
+    const LazyHydrationMediaQueryMyComponent = defineLazyHydrationComponent('mediaQuery', () => import('~/components/MyComponent.vue'))
+    const LazyHydrationIfMyComponent = defineLazyHydrationComponent('if', () => import('~/components/MyComponent.vue'))
+    const LazyHydrationTimeMyComponent = defineLazyHydrationComponent('time', () => import('~/components/MyComponent.vue'))
+    const LazyHydrationNeverMyComponent = defineLazyHydrationComponent('never', () => import('~/components/MyComponent.vue'))
     </script>
 
     <template>
-      <MacroLazyVisibleMyComponent />
-      <MacroLazyIdleMyComponent />
-      <MacroLazyInteractionMyComponent />
-      <MacroLazyMediaQueryMyComponent />
-      <MacroLazyIfMyComponent />
-      <MacroLazyTimeMyComponent />
-      <MacroLazyNeverMyComponent />
+      <LazyHydrationVisibleMyComponent />
+      <LazyHydrationIdleMyComponent />
+      <LazyHydrationInteractionMyComponent />
+      <LazyHydrationMediaQueryMyComponent />
+      <LazyHydrationIfMyComponent />
+      <LazyHydrationTimeMyComponent />
+      <LazyHydrationNeverMyComponent />
     </template>
     `
 
     const code = await transform(sfc, '/pages/index.vue')
     expect(code).toContain(`import { createLazyVisibleComponent, createLazyIdleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyIfComponent, createLazyTimeComponent, createLazyNeverComponent } from '../client-runtime.mjs';`)
 
-    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const MacroLazy')).join('\n')
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
     expect(components).toMatchInlineSnapshot(`
-      "const MacroLazyVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyInteractionMyComponent = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyMediaQueryMyComponent = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyIfMyComponent = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyTimeMyComponent = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyNeverMyComponent = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
+      "const LazyHydrationVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationInteractionMyComponent = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationMediaQueryMyComponent = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationIfMyComponent = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationTimeMyComponent = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationNeverMyComponent = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
     `)
   })
 
@@ -53,22 +53,22 @@ describe('lazy hydration macro transform', () => {
     import { defineComponent } from 'vue'
     export default defineComponent({
       setup () {
-        const MacroLazyVisibleMyComponent = defineLazyVisibleComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyIdleMyComponent = defineLazyIdleComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyInteractionMyComponent = defineLazyInteractionComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyMediaQueryMyComponent = defineLazyMediaQueryComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyIfMyComponent = defineLazyIfComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyTimeMyComponent = defineLazyTimeComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyNeverMyComponent = defineLazyNeverComponent(() => import('~/components/MyComponent.vue'))
+        const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationIdleMyComponent = defineLazyHydrationComponent('idle', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationInteractionMyComponent = defineLazyHydrationComponent('interaction', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationMediaQueryMyComponent = defineLazyHydrationComponent('mediaQuery', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationIfMyComponent = defineLazyHydrationComponent('if', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationTimeMyComponent = defineLazyHydrationComponent('time', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationNeverMyComponent = defineLazyHydrationComponent('never', () => import('~/components/MyComponent.vue'))
 
         return () => <>
-          <MacroLazyVisibleMyComponent />
-          <MacroLazyIdleMyComponent />
-          <MacroLazyInteractionMyComponent />
-          <MacroLazyMediaQueryMyComponent />
-          <MacroLazyIfMyComponent />
-          <MacroLazyTimeMyComponent />
-          <MacroLazyNeverMyComponent />
+          <LazyHydrationVisibleMyComponent />
+          <LazyHydrationIdleMyComponent />
+          <LazyHydrationInteractionMyComponent />
+          <LazyHydrationMediaQueryMyComponent />
+          <LazyHydrationIfMyComponent />
+          <LazyHydrationTimeMyComponent />
+          <LazyHydrationNeverMyComponent />
         </>
       }
     })
@@ -77,15 +77,15 @@ describe('lazy hydration macro transform', () => {
     const code = await transform(component, '/pages/index.tsx')
     expect(code).toContain(`import { createLazyVisibleComponent, createLazyIdleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyIfComponent, createLazyTimeComponent, createLazyNeverComponent } from '../client-runtime.mjs';`)
 
-    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const MacroLazy')).join('\n')
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
     expect(components).toMatchInlineSnapshot(`
-      "const MacroLazyVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyInteractionMyComponent = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyMediaQueryMyComponent = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyIfMyComponent = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyTimeMyComponent = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyNeverMyComponent = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
+      "const LazyHydrationVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationInteractionMyComponent = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationMediaQueryMyComponent = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationIfMyComponent = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationTimeMyComponent = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationNeverMyComponent = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
     `)
   })
 
@@ -94,22 +94,22 @@ describe('lazy hydration macro transform', () => {
     import { defineComponent, h } from 'vue'
     export default defineComponent({
       setup () {
-        const MacroLazyVisibleMyComponent = defineLazyVisibleComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyIdleMyComponent = defineLazyIdleComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyInteractionMyComponent = defineLazyInteractionComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyMediaQueryMyComponent = defineLazyMediaQueryComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyIfMyComponent = defineLazyIfComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyTimeMyComponent = defineLazyTimeComponent(() => import('~/components/MyComponent.vue'))
-        const MacroLazyNeverMyComponent = defineLazyNeverComponent(() => import('~/components/MyComponent.vue'))
+        const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationIdleMyComponent = defineLazyHydrationComponent('idle', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationInteractionMyComponent = defineLazyHydrationComponent('interaction', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationMediaQueryMyComponent = defineLazyHydrationComponent('mediaQuery', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationIfMyComponent = defineLazyHydrationComponent('if', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationTimeMyComponent = defineLazyHydrationComponent('time', () => import('~/components/MyComponent.vue'))
+        const LazyHydrationNeverMyComponent = defineLazyHydrationComponent('never', () => import('~/components/MyComponent.vue'))
 
         return () => h('div', undefined, [
-          h(MacroLazyVisibleMyComponent),
-          h(MacroLazyIdleMyComponent),
-          h(MacroLazyInteractionMyComponent),
-          h(MacroLazyMediaQueryMyComponent),
-          h(MacroLazyIfMyComponent),
-          h(MacroLazyTimeMyComponent),
-          h(MacroLazyNeverMyComponent),
+          h(LazyHydrationVisibleMyComponent),
+          h(LazyHydrationIdleMyComponent),
+          h(LazyHydrationInteractionMyComponent),
+          h(LazyHydrationMediaQueryMyComponent),
+          h(LazyHydrationIfMyComponent),
+          h(LazyHydrationTimeMyComponent),
+          h(LazyHydrationNeverMyComponent),
         ])
       }
     })
@@ -118,15 +118,15 @@ describe('lazy hydration macro transform', () => {
     const code = await transform(component, '/pages/index.tsx')
     expect(code).toContain(`import { createLazyVisibleComponent, createLazyIdleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyIfComponent, createLazyTimeComponent, createLazyNeverComponent } from '../client-runtime.mjs';`)
 
-    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const MacroLazy')).join('\n')
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
     expect(components).toMatchInlineSnapshot(`
-      "const MacroLazyVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyInteractionMyComponent = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyMediaQueryMyComponent = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyIfMyComponent = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyTimeMyComponent = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const MacroLazyNeverMyComponent = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
+      "const LazyHydrationVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationInteractionMyComponent = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationMediaQueryMyComponent = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationIfMyComponent = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationTimeMyComponent = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const LazyHydrationNeverMyComponent = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
     `)
   })
 })

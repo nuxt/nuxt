@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-const LazyInteractionDelayedComponentMacro = defineLazyInteractionComponent(() => import('~/components/DelayedModel.vue'))
+const LazyInteractionDelayedComponentMacro = defineLazyHydrationComponent('interaction', () => import('~/components/DelayedModel.vue'))
 
 const model = ref(0)
 function log () {
