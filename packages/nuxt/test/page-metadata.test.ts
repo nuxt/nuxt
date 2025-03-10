@@ -740,7 +740,15 @@ definePageMeta({
 </script>
       `,
       },
-
+      {
+        input: `
+<script setup>
+definePageMeta({
+  extracted: 'value'
+})
+</script>
+      `,
+      },
     ])(`should strip extracted metadata from the script block`, ({ input }) => {
       const res = compileScript(parse(input).descriptor, { id: 'component.vue' })
       const result = transformPlugin.transform(res.content, 'component.vue?macro=true')?.code
