@@ -306,7 +306,7 @@ export default defineResolvers({
      *
      * Defaults to true when `extractCSS` is enabled.
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
-     * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
+     * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<{}>}
      */
     optimizeCSS: {
       $resolve: async (val, get) => {

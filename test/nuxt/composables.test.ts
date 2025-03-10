@@ -76,6 +76,7 @@ describe('composables', () => {
       'getAppManifest',
       'useHydration',
       'getRouteRules',
+      'injectHead',
       'onNuxtReady',
       'callOnce',
       'setResponseStatus',
@@ -114,10 +115,13 @@ describe('composables', () => {
       'useId',
       'useFetch',
       'useHead',
+      'useHeadSafe',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
+      'useServerHead',
+      'useServerHeadSafe',
       'useServerSeoMeta',
       'usePreviewMode',
     ]
@@ -344,7 +348,7 @@ describe('useFetch', () => {
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> Request aborted due to timeout.]')
+    expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 })
 

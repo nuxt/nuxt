@@ -10,10 +10,9 @@ import type { H3Event } from 'h3'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
-import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { Head, HeadEntryOptions } from '@unhead/schema'
-import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
+import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
+import { resolveUnrefHeadInput } from '@unhead/vue/utils'
+import type { HeadEntryOptions, Link, Script, SerializableHead, Style } from '@unhead/vue/types'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -23,7 +22,7 @@ import { islandCache, islandPropCache, payloadCache, sharedPrerenderCache } from
 
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/payload'
 // @ts-expect-error virtual file
-import unheadPlugins from '#internal/unhead-plugins.mjs'
+import unheadOptions from '#internal/unhead-options.mjs'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
@@ -76,7 +75,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: Head
+  head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -172,9 +171,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  const head = createServerHead({
-    plugins: unheadPlugins,
-  })
+  const head = createHead(unheadOptions)
 
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
@@ -207,7 +204,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url, PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -258,7 +255,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url, PAYLOAD_FILENAME))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
@@ -315,14 +312,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 3. Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: Head = {}
-    for (const entry of head.headEntries()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
-        const currentValue = islandHead[key as keyof Head]
+    const islandHead: SerializableHead = {}
+    for (const entry of head.entries.values()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+        const currentValue = islandHead[key as keyof SerializableHead]
         if (Array.isArray(currentValue)) {
           currentValue.push(...value)
         }
-        islandHead[key as keyof Head] = value
+        islandHead[key as keyof SerializableHead] = value
       }
     }
 
