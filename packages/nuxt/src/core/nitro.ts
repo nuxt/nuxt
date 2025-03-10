@@ -6,13 +6,15 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
-import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { createIsIgnored, findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
+import { resolveModulePath } from 'exsolve'
+
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
@@ -61,6 +63,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
     }
   }
+
+  const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
@@ -198,11 +202,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
         : {
-            'estree-walker': 'unenv/runtime/mock/proxy',
-            '@babel/parser': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-core': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-ssr': 'unenv/runtime/mock/proxy',
+            'estree-walker': mockProxy,
+            '@babel/parser': mockProxy,
+            '@vue/compiler-core': mockProxy,
+            '@vue/compiler-dom': mockProxy,
+            '@vue/compiler-ssr': mockProxy,
           },
       '@vue/devtools-api': 'vue-devtools-stub',
 
@@ -384,7 +388,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // add stub alias to allow vite to resolve import
   if (!nuxt.options.experimental.appManifest) {
-    nuxt.options.alias['#app-manifest'] = 'unenv/runtime/mock/proxy'
+    nuxt.options.alias['#app-manifest'] = mockProxy
   }
 
   // Add fallback server for `ssr: false`
@@ -425,8 +429,55 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }),
   )
 
+  // Apply Nuxt's ignore configuration to the root and src unstorage mounts
+  // created by Nitro. This ensures that the unstorage watcher will use the
+  // same ignore list as Nuxt's watcher and can reduce unneccesary file handles.
+  const isIgnored = createIsIgnored(nuxt)
+  nitroConfig.devStorage ??= {}
+  nitroConfig.devStorage.root ??= {
+    driver: 'fs',
+    readOnly: true,
+    base: nitroConfig.rootDir,
+    watchOptions: {
+      ignored: [isIgnored],
+    },
+  }
+  nitroConfig.devStorage.src ??= {
+    driver: 'fs',
+    readOnly: true,
+    base: nitroConfig.srcDir,
+    watchOptions: {
+      ignored: [isIgnored],
+    },
+  }
+
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
+
+  // TODO: extract to shared utility?
+  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
+  const aliases = nitroConfig.alias!
+  const tsConfig = nitroConfig.typescript!.tsConfig!
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
+  for (const _alias in aliases) {
+    const alias = _alias as keyof typeof aliases
+    if (excludedAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) {
+      continue
+    }
+    if (alias in tsConfig.compilerOptions.paths) {
+      continue
+    }
+
+    const absolutePath = resolve(basePath, aliases[alias]!)
+    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    // note - nitro will check + remove the file extension as required
+    tsConfig.compilerOptions.paths[alias] = [absolutePath]
+    if (stats?.isDirectory()) {
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+    }
+  }
 
   // Init nitro
   const nitro = await createNitro(nitroConfig, {

@@ -9,6 +9,7 @@ import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
+import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
@@ -53,6 +54,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
   const isIgnored = createIsIgnored(nuxt)
   const ctx: ViteBuildContext = {
     nuxt,
@@ -64,9 +67,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
-            'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
+            'web-streams-polyfill/ponyfill/es2018': mockEmpty,
             // Cannot destructure property 'AbortController' of ..
-            'abort-controller': 'unenv/runtime/mock/empty',
+            'abort-controller': mockEmpty,
           },
         },
         css: await resolveCSSOptions(nuxt),

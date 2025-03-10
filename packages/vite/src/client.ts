@@ -8,9 +8,11 @@ import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
-import { env, nodeless } from 'unenv'
+import { defineEnv } from 'unenv'
+import { resolveModulePath } from 'exsolve'
 import { defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
+
 import type { ViteBuildContext } from './vite'
 import { DevStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { RuntimePathsPlugin } from './plugins/paths'
@@ -22,7 +24,10 @@ import { createViteLogger } from './utils/logger'
 export async function buildClient (ctx: ViteBuildContext) {
   const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat
     ? {
-        alias: env(nodeless).alias,
+        alias: defineEnv({
+          nodeCompat: true,
+          resolve: true,
+        }).env.alias,
         define: {
           global: 'globalThis',
         },
@@ -116,7 +121,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         ...ctx.config.resolve?.alias,
         'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
         // work around vite optimizer bug
-        '#app-manifest': 'unenv/runtime/mock/empty',
+        '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
       dedupe: [
         'vue',
