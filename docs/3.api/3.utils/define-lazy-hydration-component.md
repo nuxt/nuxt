@@ -191,4 +191,3 @@ const LazyHydrationMyComponent = defineLazyHydrationComponent(
 - **Required**: `true`
 
 A function that returns a `Promise` for the component to be hydrated.
-
