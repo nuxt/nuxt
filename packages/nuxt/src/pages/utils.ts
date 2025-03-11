@@ -163,26 +163,35 @@ interface AugmentPagesContext {
   extraExtractionKeys?: string[]
 }
 
-export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
+/**
+ * Augments pages with the contents of their `definePageMeta`, unless the page is in `ctx.pagesToSkip`.
+ */
+export async function augmentPages (pages: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
   ctx.augmentedPages ??= new Set()
-  for (const route of routes) {
-    if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      const fileContent = route.file in vfs
-        ? vfs[route.file]!
-        : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
-      const routeMeta = await getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
-      if (route.meta) {
-        routeMeta.meta = { ...routeMeta.meta, ...route.meta }
+
+  for (const page of pages) {
+    if (page.file && !ctx.pagesToSkip?.has(page.file)) {
+      const fileContent = page.file in vfs
+        ? vfs[page.file]!
+        : fs.readFileSync(ctx.fullyResolvedPaths?.has(page.file) ? page.file : await resolvePath(page.file), 'utf-8')
+
+      const extractedPageMeta = getRouteMeta(fileContent, page.file, ctx.extraExtractionKeys)
+
+      // Merge route meta properties with scanned meta
+      if (page.meta) {
+        extractedPageMeta.meta = { ...extractedPageMeta.meta, ...page.meta }
       }
 
-      Object.assign(route, routeMeta)
-      ctx.augmentedPages.add(route.file)
+      page._pathBeforeAugmented = page.path
+      Object.assign(page, extractedPageMeta)
+      ctx.augmentedPages.add(page.file)
     }
 
-    if (route.children && route.children.length > 0) {
-      await augmentPages(route.children, vfs, ctx)
+    if (page.children && page.children.length > 0) {
+      await augmentPages(page.children, vfs, ctx)
     }
   }
+
   return ctx.augmentedPages
 }
 

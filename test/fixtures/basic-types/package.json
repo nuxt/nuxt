@@ -3,7 +3,7 @@
   "name": "fixture-basic-types",
   "scripts": {
     "build": "nuxi build",
-    "test:types": "nuxi prepare && npx vue-tsc --noEmit"
+    "test:types": "nuxi prepare && npx vue-tsc --noEmit && vitest run --dir test"
   },
   "dependencies": {
     "nuxt": "workspace:*"

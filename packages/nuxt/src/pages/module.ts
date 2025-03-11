@@ -3,7 +3,7 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
-import { joinURL } from 'ufo'
+import { hasLeadingSlash, joinURL } from 'ufo'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
@@ -193,27 +193,45 @@ export default defineNuxtModule({
         logs: nuxt.options.debug && nuxt.options.debug.router,
         async beforeWriteFiles (rootPage) {
           rootPage.children.forEach(child => child.delete())
+
           const pages = nuxt.apps.default?.pages || await resolvePagesRoutes(options.pattern, nuxt)
+
           if (nuxt.apps.default) {
             nuxt.apps.default.pages = pages
           }
-          const addedPagePaths = new Set<string>()
-          function addPage (parent: EditableTreeNode, page: NuxtPage) {
-            // Avoid duplicate keys in the generated RouteNamedMap type
-            const absolutePagePath = joinURL(parent.path, page.path)
 
-            // @ts-expect-error TODO: either fix types upstream or figure out another
-            // way to add a route without a file, which must be possible
-            const route = addedPagePaths.has(absolutePagePath) ? parent : parent.insert(page.path, page.file)
+          const addedPagePaths = new Set<string>()
+
+          function addPage (parent: EditableTreeNode, page: NuxtPage) {
+            const pathBeforeAugmented = page._pathBeforeAugmented
+            delete page._pathBeforeAugmented
+
+            const path = pathBeforeAugmented ?? page.path
+
+            // Avoid duplicate keys in the generated RouteNamedMap type
+            const absolutePagePath = hasLeadingSlash(path)
+              ? path
+              : joinURL(parent.path, path)
+
+            const route = addedPagePaths.has(absolutePagePath)
+              ? parent
+              // @ts-expect-error TODO: either fix types upstream or figure out another
+              // way to add a route without a file, which must be possible
+              : parent.insert(path, page.file)
+
             addedPagePaths.add(absolutePagePath)
+
             if (page.meta) {
               route.addToMeta(page.meta)
             }
-            if (page.alias) {
+            if (page.alias !== undefined) {
               route.addAlias(page.alias)
             }
             if (page.name) {
               route.name = page.name
+            }
+            if (pathBeforeAugmented !== undefined && page.path !== pathBeforeAugmented) {
+              route.path = page.path
             }
             // TODO: implement redirect support
             // if (page.redirect) {}
