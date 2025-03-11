@@ -131,7 +131,7 @@ If you provide a function or ref as the `url` parameter, or if you provide funct
 If you use `useFetch` to call an (external) HTTPS URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
 
-::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
+::tip{icon="i-simple-icons-youtube" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
 Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
 ::
 
