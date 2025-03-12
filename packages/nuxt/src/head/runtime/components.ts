@@ -282,17 +282,18 @@ export const Style = defineComponent({
     },
   },
   setup (props, { slots }) {
-    const style = normalizeProps(props) as UnheadStyle
     const { input } = useHeadComponentCtx()
     input.style ||= []
-    const idx: keyof typeof input.style = input.style.push(style) - 1
+    const idx: keyof typeof input.style = input.style.push({}) - 1
     onUnmounted(() => input.style![idx] = null)
     return () => {
+      const style = normalizeProps(props) as UnheadStyle
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {
         if (import.meta.dev && typeof textContent !== 'string') {
           console.error('<Style> can only take a string in its default slot.')
         }
+        input.style![idx] = style
         style.textContent = textContent
       }
       return null
