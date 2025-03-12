@@ -195,6 +195,7 @@ export default defineNuxtModule({
           rootPage.children.forEach(child => child.delete())
 
           const pages = nuxt.apps.default?.pages || await resolvePagesRoutes(options.pattern, nuxt)
+          const augmentPagesContext = nuxt._augmentPagesContext ?? {}
 
           if (nuxt.apps.default) {
             nuxt.apps.default.pages = pages
@@ -203,8 +204,9 @@ export default defineNuxtModule({
           const addedPagePaths = new Set<string>()
 
           function addPage (parent: EditableTreeNode, page: NuxtPage) {
-            const pathBeforeAugmented = page._pathBeforeAugmented
-            delete page._pathBeforeAugmented
+            const pathBeforeAugmented = page.file
+              ? augmentPagesContext.augmentedPages?.get(page.file)?.originalPath
+              : undefined
 
             const path = pathBeforeAugmented ?? page.path
 

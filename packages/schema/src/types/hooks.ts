@@ -47,12 +47,6 @@ export type NuxtPage = {
   mode?: 'client' | 'server' | 'all'
   /** @internal */
   _sync?: boolean
-  /**
-   * Added when augmenting pages to preserve the original route path, so we can properly edit the route tree.
-   * This can be `undefined` for programmatically added routes when not augmenting pages in `after-resolve` mode.
-   * @internal
-   */
-  _pathBeforeAugmented?: string
 }
 
 export type NuxtMiddleware = {
