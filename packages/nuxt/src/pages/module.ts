@@ -185,7 +185,7 @@ export default defineNuxtModule({
     }
 
     if (useExperimentalTypedPages) {
-      const declarationFile = './types/typed-router.d.ts'
+      const declarationFile = 'types/typed-router.d.ts'
 
       const typedRouterOptions: TypedRouterOptions = {
         routesFolder: [],
