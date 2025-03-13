@@ -293,6 +293,7 @@ export const Style = defineComponent({
         if (import.meta.dev && typeof textContent !== 'string') {
           console.error('<Style> can only take a string in its default slot.')
         }
+        input.style![idx] = style
         style.textContent = textContent
       }
       return null
