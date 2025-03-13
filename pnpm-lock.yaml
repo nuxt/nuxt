@@ -228,6 +228,8 @@ importers:
         specifier: 5.98.0
         version: 5.98.0
 
+  docs: {}
+
   packages/kit:
     dependencies:
       c12:

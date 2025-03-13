@@ -1,4 +1,5 @@
 packages:
+  - "docs"
   - "packages/**"
   - "!packages/nuxi"
   - "!packages/test-utils"
