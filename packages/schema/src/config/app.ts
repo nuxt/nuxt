@@ -146,12 +146,12 @@ export default defineResolvers({
      *     ],
      *     // please note that this is an area that is likely to change
      *     style: [
-     *       // <style type="text/css">:root { color: red }</style>
-     *       { children: ':root { color: red }', type: 'text/css' }
+     *       // <style>:root { color: red }</style>
+     *       { textContent: ':root { color: red }' }
      *     ],
      *     noscript: [
      *       // <noscript>JavaScript is required</noscript>
-     *       { children: 'JavaScript is required' }
+     *       { textContent: 'JavaScript is required' }
      *     ]
      *   }
      * }
