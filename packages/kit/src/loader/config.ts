@@ -20,8 +20,11 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
   const localLayers = await globby('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() })
-  opts.overrides = defu(opts.overrides, { _extends: localLayers });
-
+  const viteServerOverrides = opts.overrides?.vite?.server
+  opts.overrides = defu(opts.overrides, { _extends: localLayers })
+  if (viteServerOverrides) {
+    delete opts.overrides.vite?.server
+  };
   (globalThis as any).defineNuxtConfig = (c: any) => c
   const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await loadConfig<NuxtConfig>({
     name: 'nuxt',
@@ -33,7 +36,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     ...opts,
   })
   delete (globalThis as any).defineNuxtConfig
-
+  // re-apply vite.server overrides
+  if (viteServerOverrides) {
+    nuxtConfig.vite ||= {}
+    nuxtConfig.vite.server = {
+      ...nuxtConfig.vite.server,
+      ...viteServerOverrides,
+      allowedHosts: nuxtConfig.vite.server?.allowedHosts === true ? nuxtConfig.vite.server?.allowedHosts : viteServerOverrides.allowedHosts,
+    }
+  }
   // Fill config
   nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
