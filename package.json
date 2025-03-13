@@ -105,7 +105,7 @@
     "eslint-plugin-perfectionist": "4.10.0",
     "eslint-typegen": "2.0.0",
     "estree-walker": "3.0.3",
-    "h3": "^1.15.1",
+    "h3": "1.15.1",
     "happy-dom": "17.4.3",
     "installed-check": "9.3.0",
     "jiti": "2.4.2",
