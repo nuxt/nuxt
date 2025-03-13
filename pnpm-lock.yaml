@@ -19,7 +19,7 @@ overrides:
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
   c12: 3.0.2
-  h3: ^1.15.1
+  h3: 1.15.1
   jiti: 2.4.2
   magic-string: ^0.30.17
   nitro: npm:nitro-nightly@3.0.0-20250312-093928.0e65680d
@@ -138,7 +138,7 @@ importers:
         specifier: 3.0.3
         version: 3.0.3
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       happy-dom:
         specifier: 17.4.3
@@ -397,7 +397,7 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       hookable:
         specifier: ^5.5.3
@@ -584,7 +584,7 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       jiti:
         specifier: 2.4.2
@@ -748,7 +748,7 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.98.0(esbuild@0.25.0))
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       hookable:
         specifier: 5.5.3
@@ -898,7 +898,7 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       jiti:
         specifier: 2.4.2
@@ -1004,7 +1004,7 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       h3:
-        specifier: ^1.15.1
+        specifier: 1.15.1
         version: 1.15.1
       jiti:
         specifier: 2.4.2
