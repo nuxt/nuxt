@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
-import { createPage, setup, url } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, setup, url } from '@nuxt/test-utils/e2e'
 import type { Page } from 'playwright-core'
 import { join } from 'pathe'
 
@@ -29,6 +29,13 @@ if (!isDev) {
 
 describe.skipIf(isDev)('spaLoadingTemplateLocation flag is set to `body`', () => {
   it('should render spa-loader', async () => {
+    const html = await $fetch<string>('/spa')
+
+    expect(html).toContain(`<div data-testid="loader">loading...</div>`)
+    expect(html).not.toContain(`<div data-testid="content">app content</div>`)
+  })
+
+  it('should render spa-loader content', async () => {
     const page = await createPage()
     await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
 
