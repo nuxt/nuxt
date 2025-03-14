@@ -139,7 +139,10 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
+        if (import.meta.dev && element.nodeType !== 1) {
+          console.warn(`[\`Server components(and islands)\`] must have a single root element. (HTML comments are considered elements as well.)`)
+        }
+        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
