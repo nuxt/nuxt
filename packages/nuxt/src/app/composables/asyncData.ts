@@ -342,7 +342,7 @@ export function useAsyncData<
         unregister(oldKey)
       }
       if (!nuxtApp._asyncData[key]) {
-        nuxtApp._asyncData[key] ??= createAsyncData(nuxtApp, key, _handler, options, initialCachedData)
+        nuxtApp._asyncData[key] ??= createAsyncData(nuxtApp, key, _handler, options, options.getCachedData!(key, nuxtApp))
       }
       nuxtApp._asyncData[key]._deps++
       if (options.immediate) {
