@@ -236,12 +236,12 @@ export function useAsyncData<
   // check and warn if different defaults/fetcher are provided
   if (isDev && nuxtApp._asyncData[key]) {
     const warnings: string[] = []
-    if (hash(_handler) !== nuxtApp._asyncData[key]._hash?.handler) {
+    const values = createHash(_handler, options)
+    if (values.handler !== nuxtApp._asyncData[key]._hash?.handler) {
       warnings.push(`different handler`)
     }
     for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
-      const value = options[opt] ? hash(options[opt]) : undefined
-      if (value !== nuxtApp._asyncData[key]._hash![opt]) {
+      if (values[opt] !== nuxtApp._asyncData[key]._hash![opt]) {
         warnings.push(`different \`${opt}\` option`)
       }
     }
@@ -616,14 +616,7 @@ function createAsyncData<
     _execute: debounce((...args) => asyncData.execute(...args), 0, { leading: true }),
     _default: options.default!,
     _deps: 0,
-    _hash: isDev
-      ? {
-          handler: hash(_handler),
-          transform: options.transform ? hash(options.transform) : undefined,
-          pick: options.pick ? hash(options.pick) : undefined,
-          getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
-        }
-      : undefined,
+    _hash: isDev ? createHash(_handler, options) : undefined,
     _off: nuxtApp.hook('app:data:refresh', async (keys) => {
       if (!keys || keys.includes(key)) {
         await asyncData.refresh()
@@ -632,4 +625,13 @@ function createAsyncData<
   }
 
   return asyncData
+}
+
+function createHash (_handler: () => unknown, options: Partial<Record<keyof AsyncDataOptions<any>, unknown>>) {
+  return {
+    handler: hash(_handler),
+    transform: options.transform ? hash(options.transform) : undefined,
+    pick: options.pick ? hash(options.pick) : undefined,
+    getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
+  }
 }
