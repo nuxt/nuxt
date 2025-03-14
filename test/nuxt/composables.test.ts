@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
@@ -131,6 +131,10 @@ describe('composables', () => {
 })
 
 describe('useAsyncData', () => {
+  let uniqueKey: string
+  beforeEach(() => {
+    uniqueKey = Math.random().toString(36)
+  })
   it('should work at basic level', async () => {
     const res = useAsyncData(() => Promise.resolve('test'))
     expect(Object.keys(res).sort()).toMatchInlineSnapshot(`
@@ -163,14 +167,14 @@ describe('useAsyncData', () => {
   })
 
   it('should capture errors', async () => {
-    const { data, error, status, pending } = await useAsyncData('error-test', () => Promise.reject(new Error('test')), { default: () => 'default' })
+    const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
     expect(error.value).toMatchInlineSnapshot('[Error: test]')
     expect(status.value).toBe('error')
     expect(pending.value).toBe(false)
-    expect(useNuxtApp().payload._errors['error-test']).toMatchInlineSnapshot('[Error: test]')
+    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[Error: test]')
 
-    const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData('error-test', () => ({} as any), { immediate: false })
+    const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData(uniqueKey, () => ({} as any), { immediate: false })
 
     expect(syncedData.value).toBe(data.value)
     expect(syncedError.value).toBe(error.value)
@@ -187,34 +191,34 @@ describe('useAsyncData', () => {
   })
 
   it('should be accessible with useNuxtData', async () => {
-    await useAsyncData('key', () => Promise.resolve('test'))
-    const data = useNuxtData('key')
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+    const data = useNuxtData(uniqueKey)
     expect(data.data.value).toMatchInlineSnapshot('"test"')
-    clearNuxtData('key')
+    clearNuxtData(uniqueKey)
     expect(data.data.value).toBeUndefined()
-    expect(useNuxtData('key').data.value).toBeUndefined()
+    expect(useNuxtData(uniqueKey).data.value).toBeUndefined()
   })
 
   it('should be usable _after_ a useNuxtData call', async () => {
-    useNuxtApp().payload.data.call = null
-    const { data: cachedData } = useNuxtData('call')
+    useNuxtApp().payload.data[uniqueKey] = null
+    const { data: cachedData } = useNuxtData(uniqueKey)
     expect(cachedData.value).toMatchInlineSnapshot('null')
-    const { data } = await useAsyncData('call', () => Promise.resolve({ resolved: true }), { server: false })
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve({ resolved: true }), { server: false })
     expect(cachedData.value).toMatchInlineSnapshot(`
       {
         "resolved": true,
       }
     `)
     expect(data.value).toEqual(cachedData.value)
-    clearNuxtData('call')
+    clearNuxtData(uniqueKey)
   })
 
   it('should be refreshable', async () => {
-    await useAsyncData('key', () => Promise.resolve('test'))
-    clearNuxtData('key')
-    const data = useNuxtData('key')
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+    clearNuxtData(uniqueKey)
+    const data = useNuxtData(uniqueKey)
     expect(data.data.value).toBeUndefined()
-    await refreshNuxtData('key')
+    await refreshNuxtData(uniqueKey)
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
@@ -228,6 +232,19 @@ describe('useAsyncData', () => {
     expect(error.value).toBe(undefined)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
+  })
+
+  it('should be refreshable with force and cache', async () => {
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'), {
+      getCachedData: (key, nuxtApp, ctx) => {
+        console.log(key, ctx.cause)
+        return ctx.cause
+      },
+    })
+    await refreshNuxtData(uniqueKey)
+    await nextTick()
+    const data = useNuxtData(uniqueKey)
+    expect(data.data.value).toMatchInlineSnapshot('"refresh:hook"')
   })
 
   it('allows custom access to a cache', async () => {
@@ -248,6 +265,37 @@ describe('useAsyncData', () => {
       }
     `)
     expect(getCachedData).toHaveBeenCalledTimes(1)
+  })
+
+  it('will use cache on refresh by default', async () => {
+    const { data, refresh } = await useAsyncData(() => Promise.resolve('other value'), { getCachedData: () => 'cached' })
+    expect(data.value).toBe('cached')
+    await refresh()
+    expect(data.value).toBe('cached')
+  })
+
+  it('getCachedData should receive triggeredBy on initial fetch', async () => {
+    const { data } = await useAsyncData(() => Promise.resolve(''), { getCachedData: (key, nuxtApp, ctx) => ctx.cause })
+    expect(data.value).toBe('initial')
+  })
+
+  it('getCachedData should receive triggeredBy on manual refresh', async () => {
+    const { data, refresh } = await useAsyncData(() => Promise.resolve(''), {
+      getCachedData: (key, nuxtApp, ctx) => ctx.cause,
+    })
+    await refresh()
+    expect(data.value).toBe('refresh:manual')
+  })
+
+  it('getCachedData should receive triggeredBy on watch', async () => {
+    const number = ref(0)
+    const { data } = await useAsyncData(() => Promise.resolve(''), {
+      getCachedData: (key, nuxtApp, ctx) => ctx.cause,
+      watch: [number],
+    })
+    number.value = 1
+    await flushPromises()
+    expect(data.value).toBe('watch')
   })
 
   it('should use default while pending', async () => {
