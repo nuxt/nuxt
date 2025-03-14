@@ -139,9 +139,6 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        if (import.meta.dev && element.nodeType !== 1) {
-          console.warn(`[\`Server components(and islands)\`] must have a single root element. (HTML comments are considered elements as well.)`)
-        }
         clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
@@ -166,7 +163,7 @@ export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: s
   return h('div')
 }
 
-function isStartFragment (element: RendererNode) {
+export function isStartFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 

@@ -12,7 +12,7 @@ import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
-import { getFragmentHTML } from './utils'
+import { getFragmentHTML, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
@@ -130,6 +130,20 @@ export default defineComponent({
     const ssrHTML = ref<string>('')
 
     if (import.meta.client && instance.vnode?.el) {
+      if (import.meta.dev) {
+        let currentEl = instance.vnode.el
+        while (currentEl) {
+          // find first non-comment node
+          if (!isStartFragment(currentEl)) {
+            // if don't have root element
+            if (currentEl.nodeType !== 1) {
+              console.warn(`[\`Server components(and islands)\`] must have a single root element. (HTML comments are considered elements as well.)`)
+            }
+            break
+          }
+          currentEl = currentEl.nextSibling
+        }
+      }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
       nuxtApp.payload.data[key] ||= {}
