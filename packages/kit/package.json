@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.2.7",
+    "@rspack/core": "1.2.8",
     "@types/semver": "7.5.8",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6",
     "unbuild": "3.5.0",
