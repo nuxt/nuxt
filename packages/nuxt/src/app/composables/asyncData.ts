@@ -1,5 +1,5 @@
-import { computed, getCurrentInstance, getCurrentScope, isShallow, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
-import type { MultiWatchSources, Ref } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, isShallow, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import type { MaybeRef, MultiWatchSources, Ref } from 'vue'
 import { captureStackTrace } from 'errx'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -170,7 +170,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (
-  key: string,
+  key: MaybeRef<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
@@ -188,7 +188,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
-  key: string,
+  key: MaybeRef<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
@@ -200,13 +200,14 @@ export function useAsyncData<
   DefaultT = undefined,
 > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-  if (typeof args[0] !== 'string') { args.unshift(autoKey) }
+  if (typeof args[0] !== 'string' && typeof args[0] !== 'object') { args.unshift(autoKey) }
 
   // eslint-disable-next-line prefer-const
-  let [key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  let [_key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   // Validate arguments
-  if (typeof key !== 'string') {
+  const key = computed(() => toValue(_key)!)
+  if (typeof key.value !== 'string') {
     throw new TypeError('[nuxt] [asyncData] key must be a string.')
   }
   if (typeof _handler !== 'function') {
@@ -218,7 +219,7 @@ export function useAsyncData<
 
   // Used to get default values
   const getDefault = () => undefined
-  const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
+  const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key.value] : nuxtApp.static.data[key.value]
 
   // Apply defaults
   options.server ??= true
@@ -234,50 +235,39 @@ export function useAsyncData<
   const functionName = options._functionName || 'asyncData'
 
   // check and warn if different defaults/fetcher are provided
-  if (isDev && nuxtApp._asyncData[key]) {
+  const currentData = nuxtApp._asyncData[key.value]
+  if (isDev && currentData) {
     const warnings: string[] = []
     const values = createHash(_handler, options)
-    if (values.handler !== nuxtApp._asyncData[key]._hash?.handler) {
+    if (values.handler !== currentData._hash?.handler) {
       warnings.push(`different handler`)
     }
     for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
-      if (values[opt] !== nuxtApp._asyncData[key]._hash![opt]) {
+      if (values[opt] !== currentData._hash![opt]) {
         warnings.push(`different \`${opt}\` option`)
       }
     }
-    if (nuxtApp._asyncData[key]._default.toString() !== options.default.toString()) {
+    if (currentData._default.toString() !== options.default.toString()) {
       warnings.push(`different \`default\` value`)
     }
-    if (options.deep && isShallow(nuxtApp._asyncData[key].data)) {
+    if (options.deep && isShallow(currentData.data)) {
       warnings.push(`mismatching \`deep\` option`)
     }
     if (warnings.length) {
       const distURL = `file://${distDir}`
       const { source, line, column } = captureStackTrace().find(entry => !entry.source.startsWith(distURL)) ?? {}
       const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
-      console.warn(`[nuxt] [${functionName}] Incompatible options detected for "${key}"${explanation}:\n${warnings.map(w => `- ${w}`).join('\n')}\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`)
+      console.warn(`[nuxt] [${functionName}] Incompatible options detected for "${key.value}"${explanation}:\n${warnings.map(w => `- ${w}`).join('\n')}\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`)
     }
   }
 
   // Create or use a shared asyncData entity
-  const initialCachedData = options.getCachedData!(key, nuxtApp)
-  nuxtApp._asyncData[key] ??= createAsyncData(nuxtApp, key, _handler, options, initialCachedData)
+  const initialCachedData = options.getCachedData!(key.value, nuxtApp)
+  const asyncData = nuxtApp._asyncData[key.value] ??= createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
 
-  // track when we can remove asyncData
-  nuxtApp._asyncData[key]!._deps++
+  asyncData._deps++
 
-  const asyncData = { ...nuxtApp._asyncData[key] } as Optional<CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT>, '_default' | '_deps' | '_off' | '_execute'>
-
-  const debouncedWatch = asyncData._execute!
-
-  // Don't expose default function to end user
-  delete asyncData._default
-  delete asyncData._deps
-  delete asyncData._off
-  delete asyncData._execute
-  delete asyncData._hash
-
-  const initialFetch = () => asyncData.refresh({ _initial: true, dedupe: options.dedupe })
+  const initialFetch = () => nuxtApp._asyncData[key.value]!.execute({ _initial: true, dedupe: options.dedupe })
 
   const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered
 
@@ -326,36 +316,77 @@ export function useAsyncData<
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
       initialFetch()
     }
+
     const hasScope = getCurrentScope()
     if (options.watch) {
-      const unsub = watch(options.watch, () => debouncedWatch({ dedupe: options.dedupe }))
+      const unsub = watch(options.watch, () => asyncData._execute({ dedupe: options.dedupe }), { flush: 'post' })
       if (hasScope) {
         onScopeDispose(unsub)
       }
     }
 
+    function unregister (key: string) {
+      const data = nuxtApp._asyncData[key]
+      if (data?._deps) {
+        data._deps--
+        // clean up memory when it no longer is needed
+        if (data._deps === 0) {
+          data?._off()
+          clearNuxtDataByKey(nuxtApp, key)
+        }
+      }
+    }
+
+    // setup watchers/instance
+    const unsub = watch(key, (key, oldKey) => {
+      if (oldKey) {
+        unregister(oldKey)
+      }
+      if (!nuxtApp._asyncData[key]) {
+        nuxtApp._asyncData[key] ??= createAsyncData(nuxtApp, key, _handler, options, initialCachedData)
+      }
+      nuxtApp._asyncData[key]._deps++
+      if (options.immediate) {
+        nuxtApp._asyncData[key]!.execute({ _initial: true, dedupe: options.dedupe })
+      }
+    })
+
     if (hasScope) {
       onScopeDispose(() => {
-        if (nuxtApp._asyncData[key]?._off) {
-          nuxtApp._asyncData[key]._off()
-        }
-        if (nuxtApp._asyncData[key]?._deps) {
-          nuxtApp._asyncData[key]._deps--
-          // clean up memory when it no longer is needed
-          if (nuxtApp._asyncData[key]._deps === 0) {
-            clearNuxtDataByKey(nuxtApp, key)
-          }
-        }
+        unsub()
+        unregister(key.value)
       })
     }
   }
 
+  const asyncReturn: _AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)> = {
+    data: writableComputedRef(() => nuxtApp._asyncData[key.value]!.data as Ref<ResT>),
+    pending: writableComputedRef(() => nuxtApp._asyncData[key.value]!.pending),
+    status: writableComputedRef(() => nuxtApp._asyncData[key.value]!.status),
+    error: writableComputedRef(() => nuxtApp._asyncData[key.value]!.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
+    refresh: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
+    execute: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
+    clear: () => clearNuxtDataByKey(nuxtApp, key.value),
+  }
+
   // Allow directly awaiting on asyncData
-  const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key]).then(() => asyncData) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
-  Object.assign(asyncDataPromise, asyncData)
+  const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+  Object.assign(asyncDataPromise, asyncReturn)
 
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 }
+
+function writableComputedRef<T> (getter: () => Ref<T>) {
+  return computed({
+    get () {
+      return getter().value
+    },
+    set (value) {
+      getter().value = value
+    },
+  })
+}
+
 /** @since 3.0.0 */
 export function useLazyAsyncData<
   ResT,
@@ -505,8 +536,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
-type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = _AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
 
 const isDev = import.meta.dev /* and in test */
 
@@ -541,7 +571,6 @@ function createAsyncData<
     pending: ref(!hasCachedData),
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: ref('idle'),
-    clear: () => clearNuxtDataByKey(nuxtApp, key),
     execute: (opts = {}) => {
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
@@ -612,14 +641,13 @@ function createAsyncData<
       nuxtApp._asyncDataPromises[key] = promise
       return nuxtApp._asyncDataPromises[key]!
     },
-    refresh: (...args) => asyncData.execute(...args),
     _execute: debounce((...args) => asyncData.execute(...args), 0, { leading: true }),
     _default: options.default!,
     _deps: 0,
     _hash: isDev ? createHash(_handler, options) : undefined,
     _off: nuxtApp.hook('app:data:refresh', async (keys) => {
       if (!keys || keys.includes(key)) {
-        await asyncData.refresh()
+        await asyncData.execute()
       }
     }),
   }
