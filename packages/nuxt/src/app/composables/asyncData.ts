@@ -6,7 +6,6 @@ import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
-import { distDir } from '../../dirs'
 import type { NuxtError } from './error'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
@@ -254,7 +253,7 @@ export function useAsyncData<
       warnings.push(`mismatching \`deep\` option`)
     }
     if (warnings.length) {
-      const distURL = `file://${distDir}`
+      const distURL = import.meta.url.replace(/\/app\/.*$/, '/app')
       const { source, line, column } = captureStackTrace().find(entry => !entry.source.startsWith(distURL)) ?? {}
       const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
       console.warn(`[nuxt] [${functionName}] Incompatible options detected for "${key.value}"${explanation}:\n${warnings.map(w => `- ${w}`).join('\n')}\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`)
