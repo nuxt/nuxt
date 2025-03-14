@@ -132,9 +132,11 @@ describe('composables', () => {
 
 describe('useAsyncData', () => {
   let uniqueKey: string
+
   beforeEach(() => {
     uniqueKey = Math.random().toString(36)
   })
+
   it('should work at basic level', async () => {
     const res = useAsyncData(() => Promise.resolve('test'))
     expect(Object.keys(res).sort()).toMatchInlineSnapshot(`
@@ -389,12 +391,11 @@ describe('useAsyncData', () => {
   })
 
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
-    const key = 'watched'
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const route = ref('/')
     const component = defineComponent({
       setup () {
-        const { data } = useAsyncData(key, promiseFn, { watch: [route] })
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [route] })
         return () => h('div', [data.value])
       },
     })
