@@ -224,6 +224,47 @@ describe('useAsyncData', () => {
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
+  it('should allow overriding requests', async () => {
+    let count = 0
+    let timeout = 0
+    // pretending we're hydrating a server rendered app
+    const nuxtApp = useNuxtApp()
+    nuxtApp.payload.data[uniqueKey] = 1
+
+    const fetcher = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(++count), timeout)))
+    const { data, refresh } = await useAsyncData(uniqueKey, fetcher, {
+      getCachedData (key, nuxtApp, context) {
+        // force bypass cache after first load (equivalent to previous `_initial: false`)
+        if (context.cause === 'initial') {
+          return nuxtApp.payload.data[key]
+        }
+      },
+    })
+
+    expect(fetcher).not.toHaveBeenCalled()
+    expect.soft(count).toBe(0)
+    expect.soft(data.value).toBe(1)
+
+    timeout = 100
+    const p = refresh({ dedupe: 'cancel' })
+
+    expect(fetcher).toHaveBeenCalled()
+
+    expect.soft(count).toBe(0)
+    expect.soft(data.value).toBe(1)
+
+    timeout = 0
+    await refresh()
+
+    expect.soft(count).toBe(1)
+    expect.soft(data.value).toBe(1)
+
+    await p
+
+    expect.soft(count).toBe(2)
+    expect.soft(data.value).toBe(1)
+  })
+
   it('should be clearable', async () => {
     const { data, error, pending, status, clear } = await useAsyncData(() => Promise.resolve('test'))
     expect(data.value).toBe('test')

@@ -609,7 +609,7 @@ function createAsyncData<
           }
         })
         .then(async (_result) => {
-        // If this request is cancelled, resolve to the latest request.
+          // If this request is cancelled, resolve to the latest request.
           if ((promise as any).cancelled) { return nuxtApp._asyncDataPromises[key] }
 
           let result = _result as unknown as DataT
