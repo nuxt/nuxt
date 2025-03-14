@@ -130,6 +130,12 @@ interface _NuxtApp {
     status: Ref<AsyncDataRequestStatus>
     /** @internal */
     _default: () => unknown
+    /** @internal */
+    _deps: number
+    /** @internal */
+    _off: () => void
+    /** @internal */
+    _hash?: Record<string, string | undefined>
   } | undefined>
 
   /** @internal */

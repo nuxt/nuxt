@@ -1,5 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
+import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
@@ -132,15 +133,15 @@ describe('composables', () => {
 describe('useAsyncData', () => {
   it('should work at basic level', async () => {
     const res = useAsyncData(() => Promise.resolve('test'))
-    expect(Object.keys(res)).toMatchInlineSnapshot(`
+    expect(Object.keys(res).sort()).toMatchInlineSnapshot(`
       [
-        "data",
-        "pending",
-        "error",
-        "status",
-        "execute",
-        "refresh",
         "clear",
+        "data",
+        "error",
+        "execute",
+        "pending",
+        "refresh",
+        "status",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
@@ -169,13 +170,12 @@ describe('useAsyncData', () => {
     expect(pending.value).toBe(false)
     expect(useNuxtApp().payload._errors['error-test']).toMatchInlineSnapshot('[Error: test]')
 
-    // TODO: fix the below
-    // const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData('error-test', () => ({}), { immediate: false })
+    const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData('error-test', () => ({} as any), { immediate: false })
 
-    // expect(syncedData.value).toEqual(null)
-    // expect(syncedError.value).toEqual(error.value)
-    // expect(syncedStatus.value).toEqual('idle')
-    // expect(syncedPending.value).toEqual(true)
+    expect(syncedData.value).toBe(data.value)
+    expect(syncedError.value).toBe(error.value)
+    expect(syncedStatus.value).toBe(status.value)
+    expect(syncedPending.value).toBe(false)
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -277,20 +277,120 @@ describe('useAsyncData', () => {
 
   it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    useAsyncData('dedupedKey', promiseFn)
-    useAsyncData('dedupedKey', promiseFn)
-    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey1', promiseFn)
+    useAsyncData('dedupedKey1', promiseFn)
+    useAsyncData('dedupedKey1', promiseFn)
 
     expect(promiseFn).toHaveBeenCalledTimes(3)
   })
 
   it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
-    useAsyncData('dedupedKey', promiseFn)
-    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey2', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey2', promiseFn)
+    useAsyncData('dedupedKey2', promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should warn if incompatible options are used', async () => {
+    const warn = vi.spyOn(console, 'warn')
+    const testFile = fileURLToPath(import.meta.url)
+
+    function mountWithAsyncData (...args: any[]) {
+      const component = defineComponent({
+        setup () {
+          const { data } = useAsyncData(...args as [any])
+          return () => h('div', [data.value as any])
+        },
+      })
+
+      return mountSuspended(component)
+    }
+
+    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
+    expect(warn).not.toHaveBeenCalled()
+    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
+    expect(warn).toHaveBeenCalledWith(
+      `[nuxt] [asyncData] Incompatible options detected for "dedupedKey3" (used at ${testFile}:303:28):
+- mismatching \`deep\` option
+You can use a different key or move the call to a composable to ensure the options are shared across calls.`,
+    )
+
+    let count = 0
+    for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+      warn.mockClear()
+      count++
+
+      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
+      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
+      expect(warn).not.toHaveBeenCalled()
+      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'))
+      expect(warn).toHaveBeenCalledWith(
+        `[nuxt] [asyncData] Incompatible options detected for "dedupedKey3-${count}" (used at ${testFile}:303:28):
+- different \`${opt}\` option
+You can use a different key or move the call to a composable to ensure the options are shared across calls.`,
+      )
+    }
+
+    warn.mockClear()
+    count++
+
+    await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'))
+    expect(warn).not.toHaveBeenCalled()
+    await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('bob'))
+    expect(warn).toHaveBeenCalledWith(
+      `[nuxt] [asyncData] Incompatible options detected for "dedupedKey3-${count}" (used at ${testFile}:303:28):
+- different handler
+You can use a different key or move the call to a composable to ensure the options are shared across calls.`,
+    )
+  })
+
+  it('should only refresh asyncdata once when watched dependency is updated', async () => {
+    const key = 'watched'
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const route = ref('/')
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(key, promiseFn, { watch: [route] })
+        return () => h('div', [data.value])
+      },
+    })
+
+    await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    route.value = '/about'
+    await nextTick()
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+  })
+
+  it('should clear memory when last component using asyncData is unmounted', async () => {
+    const key = 'several'
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(key, promiseFn)
+        return () => h('div', [data.value])
+      },
+    })
+
+    const comp1 = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    const comp2 = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    comp1.unmount()
+    await nextTick()
+    expect(useNuxtData(key).data.value).toMatchInlineSnapshot('"test"')
+
+    comp2.unmount()
+    await nextTick()
+    expect(useNuxtData(key).data.value).toBeUndefined()
   })
 
   it('should be synced with useNuxtData', async () => {
