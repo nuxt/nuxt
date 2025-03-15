@@ -16,5 +16,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@babd69bc8d78e6cdece903dfdcfb72d4e1a4f00d
       - if: ${{ github.repository_owner == 'nuxt' && github.event_name == 'push' }}
         run: curl "${{ secrets.DOCS_WEBHOOK }}"

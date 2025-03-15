@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'nuxt/nuxt'
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@babd69bc8d78e6cdece903dfdcfb72d4e1a4f00d
       - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
