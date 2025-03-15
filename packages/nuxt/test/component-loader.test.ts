@@ -121,6 +121,24 @@ describe('components:loader', () => {
       const __nuxt_component_0_lazy_never = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
     `)
   })
+
+  it.each([
+    ['hydrate-on-idle', 'createLazyIdleComponent'],
+    ['hydrate-on-visible', 'createLazyVisibleComponent'],
+    ['hydrate-on-interaction', 'createLazyInteractionComponent'],
+    ['hydrate-on-media-query', 'createLazyMediaQueryComponent'],
+    ['hydrate-after', 'createLazyTimeComponent'],
+    ['hydrate-when', 'createLazyIfComponent'],
+    ['hydrate-never', 'createLazyNeverComponent'],
+  ])('should correctly resolve lazy hydration components %s', async (prop, component) => {
+    const sfc = `
+    <template>
+      <LazyMyComponent ${prop} />
+    </template>
+    `
+    const result = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
+    expect(result.join('\n')).toContain(component)
+  })
 })
 
 async function transform (code: string, filename: string) {
