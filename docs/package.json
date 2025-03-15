@@ -4,7 +4,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
-    "directory": "packages/docs"
+    "directory": "docs"
   },
   "homepage": "https://nuxt.com",
   "description": "Documentation for Nuxt in raw markdown",
