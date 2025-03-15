@@ -492,5 +492,11 @@ export default defineResolvers({
      * Disable resolving imports into Nuxt templates from the path of the module that added the template.
      */
     templateImportResolution: true,
+
+    /**
+     * Enable the new experimental Vue Language plugin that brings Nuxt-specific
+     * IntelliSense improvements to your editor or IDE.
+     */
+    languageFeatures: false,
   },
 })

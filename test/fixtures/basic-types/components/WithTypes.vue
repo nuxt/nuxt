@@ -20,10 +20,12 @@ emit('some-event', 42)
 // @ts-expect-error an unknown event
 // eslint-disable-next-line vue/require-explicit-emits
 emit('unknown-event', 42)
+
+useRoute().name satisfies keyof import('vue-router/auto-routes').RouteNamedMap
 </script>
 
 <template>
   <div>
-    <!--  -->
+    {{ $route.name satisfies keyof import('vue-router/auto-routes').RouteNamedMap }}
   </div>
 </template>

@@ -199,6 +199,7 @@ describe('typed router integration', () => {
     router.push({ name: 'param-id', params: { id: 4 } })
     // @ts-expect-error this is an invalid route
     router.push({ name: 'param' })
+    // TODO: why is this suddenly causing a TS error?
     // @ts-expect-error this is an invalid route
     router.push({ name: '/param' })
   })

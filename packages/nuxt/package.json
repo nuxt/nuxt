@@ -72,6 +72,7 @@
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/devtools": "^2.2.1",
     "@nuxt/kit": "workspace:*",
+    "@nuxt/language-features": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.5",
     "@nuxt/vite-builder": "workspace:*",

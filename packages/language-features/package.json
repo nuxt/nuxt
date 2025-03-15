@@ -1,0 +1,37 @@
+{
+  "name": "@nuxt/language-features",
+  "version": "4.0.0-0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/language-features"
+  },
+  "description": "Nuxt Language Features",
+  "homepage": "https://nuxt.com",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "tsup"
+  },
+  "devDependencies": {
+    "@vue/language-core": "2.2.8",
+    "muggle-string": "^0.4.1",
+    "tsup": "^8.4.0"
+  },
+  "engines": {
+    "node": "^14.18.0 || >=16.10.0"
+  }
+}

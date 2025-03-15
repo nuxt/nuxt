@@ -88,6 +88,7 @@ export default defineNuxtConfig({
   experimental: {
     typedPages: true,
     appManifest: true,
+    languageFeatures: true,
   },
   compatibilityDate: '2024-06-28',
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
