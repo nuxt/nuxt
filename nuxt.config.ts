@@ -21,6 +21,19 @@ export default defineNuxtConfig({
   dir: {
     app: fileURLToPath(new URL('./test/runtime/app', import.meta.url)),
   },
+  vite: {
+    plugins: [
+      {
+        name: 'enable some dev logging',
+        enforce: 'pre',
+        transform (code) {
+          if (code.includes('import.meta.dev /* and in test */')) {
+            return code.replace('import.meta.dev /* and in test */', 'true')
+          }
+        },
+      },
+    ],
+  },
   typescript: {
     shim: process.env.DOCS_TYPECHECK === 'true',
     hoist: ['@vitejs/plugin-vue', 'vue-router'],
