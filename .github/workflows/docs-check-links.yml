@@ -17,6 +17,7 @@ jobs:
   link-checker:
     runs-on: ubuntu-latest
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@babd69bc8d78e6cdece903dfdcfb72d4e1a4f00d
       # Cache lychee results (e.g. to avoid hitting rate limits)
       - name: Restore lychee cache
         uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2

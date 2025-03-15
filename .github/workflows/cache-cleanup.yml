@@ -17,6 +17,7 @@ jobs:
       actions: write
       contents: read
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@babd69bc8d78e6cdece903dfdcfb72d4e1a4f00d
       - name: Cleanup
         run: |
           gh extension install actions/gh-actions-cache

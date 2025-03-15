@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@babd69bc8d78e6cdece903dfdcfb72d4e1a4f00d
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
       - name: Check workflow files
