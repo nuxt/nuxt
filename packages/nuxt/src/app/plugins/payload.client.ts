@@ -1,5 +1,5 @@
 import { defineNuxtPlugin } from '../nuxt'
-import { loadPayload, preloadPayload } from '../composables/payload'
+import { loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
@@ -30,7 +30,7 @@ export default defineNuxtPlugin({
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
         const { hostname } = new URL(url, window.location.href)
         if (hostname === window.location.hostname) {
-          await preloadPayload(url)
+          await loadPayload(url)
         }
       })
       if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
