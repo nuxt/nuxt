@@ -132,10 +132,25 @@ describe('composables', () => {
 
 describe('useAsyncData', () => {
   let uniqueKey: string
+  let counter = 0
 
   beforeEach(() => {
-    uniqueKey = Math.random().toString(36)
+    uniqueKey = `key-${++counter}`
   })
+
+  function mountWithAsyncData (...args: any[]) {
+    return new Promise<ReturnType<typeof useAsyncData> & ReturnType<typeof mountSuspended<unknown>>>((resolve) => {
+      let res: ReturnType<typeof useAsyncData & ReturnType<typeof mountSuspended>>
+      const component = defineComponent({
+        setup () {
+          res = useAsyncData(...args as [any])
+          return () => h('div', [res.data.value as any])
+        },
+      })
+
+      mountSuspended(component).then(c => resolve(Object.assign(c, res)))
+    })
+  }
 
   it('should work at basic level', async () => {
     const res = useAsyncData(() => Promise.resolve('test'))
@@ -277,6 +292,52 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
   })
 
+  it('should have correct status for previously fetched requests', async () => {
+    const route = useRoute()
+
+    const res = await mountWithAsyncData(route.fullPath,
+      async () => {
+        await new Promise(resolve => setTimeout(resolve, 1))
+        return 'test'
+      }, { lazy: true },
+    )
+
+    expect(res.data.value).toBe(undefined)
+    expect(res.status.value).toBe('pending')
+    expect(res.pending.value).toBe(true)
+
+    await new Promise(resolve => setTimeout(resolve, 1))
+
+    expect(res.data.value).toBe('test')
+    expect(res.status.value).toBe('success')
+    expect(res.pending.value).toBe(false)
+
+    res.unmount()
+
+    await flushPromises()
+
+    expect(res.data.value).toBe(undefined)
+    expect(res.status.value).toBe('idle')
+    expect(res.pending.value).toBe(false)
+
+    const res2 = await mountWithAsyncData(route.fullPath,
+      async () => {
+        await new Promise(resolve => setTimeout(resolve, 1))
+        return 'test'
+      }, { lazy: true },
+    )
+
+    expect(res2.data.value).toBe(undefined)
+    expect(res2.status.value).toBe('pending')
+    expect(res2.pending.value).toBe(true)
+
+    await new Promise(resolve => setTimeout(resolve, 1))
+
+    expect(res2.data.value).toBe('test')
+    expect(res2.status.value).toBe('success')
+    expect(res2.pending.value).toBe(false)
+  })
+
   it('should be refreshable with force and cache', async () => {
     await useAsyncData(uniqueKey, () => Promise.resolve('test'), {
       getCachedData: (key, nuxtApp, ctx) => {
@@ -386,17 +447,6 @@ describe('useAsyncData', () => {
 
   it('should warn if incompatible options are used', async () => {
     const warn = vi.spyOn(console, 'warn')
-
-    function mountWithAsyncData (...args: any[]) {
-      const component = defineComponent({
-        setup () {
-          const { data } = useAsyncData(...args as [any])
-          return () => h('div', [data.value as any])
-        },
-      })
-
-      return mountSuspended(component)
-    }
 
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
     expect(warn).not.toHaveBeenCalled()
