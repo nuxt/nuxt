@@ -656,6 +656,98 @@ describe('pages:generateRoutesFromFiles', () => {
         },
       ],
     },
+    {
+      description: 'generate array path from definePageMeta',
+      files: [
+        {
+          path: `${pagesDir}/test.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              path: ['/test', '/test/:id']
+            })
+            </script>
+          `,
+        },
+      ],
+      output: [
+        {
+          name: 'test-0',
+          path: '/test',
+          file: `${pagesDir}/test.vue`,
+          meta: undefined,
+          children: [],
+        },
+        {
+          name: 'test-1',
+          path: '/test/:id',
+          file: `${pagesDir}/test.vue`,
+          meta: undefined,
+          children: [],
+        },
+      ],
+    },
+    {
+      description: 'generate array path with nested pages',
+      files: [
+        {
+          path: `${pagesDir}/test.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              path: ['/test', '/test/:id']
+            })
+            </script>
+          `,
+        },
+        { path: `${pagesDir}/test/detail.vue` },
+        { path: `${pagesDir}/test/detail/add.vue` },
+      ],
+      output: [
+        {
+          name: 'test-0',
+          path: '/test',
+          file: `${pagesDir}/test.vue`,
+          meta: undefined,
+          children: [
+            {
+              name: 'test-detail',
+              path: 'detail',
+              file: `${pagesDir}/test/detail.vue`,
+              children: [
+                {
+                  name: 'test-detail-add',
+                  path: 'add',
+                  file: `${pagesDir}/test/detail/add.vue`,
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'test-1',
+          path: '/test/:id',
+          file: `${pagesDir}/test.vue`,
+          meta: undefined,
+          children: [
+            {
+              name: 'test-detail',
+              path: 'detail',
+              file: `${pagesDir}/test/detail.vue`,
+              children: [
+                {
+                  name: 'test-detail-add',
+                  path: 'add',
+                  file: `${pagesDir}/test/detail/add.vue`,
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
   ]
 
   const normalizedResults: Record<string, any> = {}

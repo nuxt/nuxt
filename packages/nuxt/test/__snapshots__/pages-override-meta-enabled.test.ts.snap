@@ -1,4 +1,56 @@
 {
+  "generate array path from definePageMeta": [
+    {
+      "component": "() => import("pages/test.vue")",
+      "name": ""test-0"",
+      "path": ""/test"",
+    },
+    {
+      "component": "() => import("pages/test.vue")",
+      "name": ""test-1"",
+      "path": ""/test/:id"",
+    },
+  ],
+  "generate array path with nested pages": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "component": "() => import("pages/test/detail/add.vue")",
+              "name": ""test-detail-add"",
+              "path": ""add"",
+            },
+          ],
+          "component": "() => import("pages/test/detail.vue")",
+          "name": ""test-detail"",
+          "path": ""detail"",
+        },
+      ],
+      "component": "() => import("pages/test.vue")",
+      "name": ""test-0"",
+      "path": ""/test"",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "component": "() => import("pages/test/detail/add.vue")",
+              "name": ""test-detail-add"",
+              "path": ""add"",
+            },
+          ],
+          "component": "() => import("pages/test/detail.vue")",
+          "name": ""test-detail"",
+          "path": ""detail"",
+        },
+      ],
+      "component": "() => import("pages/test.vue")",
+      "name": ""test-1"",
+      "path": ""/test/:id"",
+    },
+  ],
   "pushed route, skips generation from file": [
     {
       "alias": "["pushed-route-alias"]",
