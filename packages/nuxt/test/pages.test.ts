@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { NuxtPage } from 'nuxt/schema'
+import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
@@ -681,7 +681,7 @@ describe('pages:generateRoutesFromFiles', () => {
             }
           })
 
-          await augmentPages(result, vfs)
+          await augmentPages(result, { vfs } as Nuxt)
         } catch (error: any) {
           expect(error.message).toEqual(test.error)
         }
@@ -852,7 +852,7 @@ describe('page:extends', () => {
             </script>
           `]),
     ) as Record<string, string>
-    await augmentPages(files, vfs)
+    await augmentPages(files, { vfs } as Nuxt)
     expect(files).toEqual([
       {
         path: 'home',
