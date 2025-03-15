@@ -80,7 +80,7 @@ const { data: post } = await useFetch(() => `/api/posts/${id.value}`)
 </script>
 ```
 
-When using `useFetch` with the same URL and options in multiple components, they will share the same data, error, and status refs. This ensures consistency across components.
+When using `useFetch` with the same URL and options in multiple components, they will share the same `data`, `error` and `status` refs. This ensures consistency across components.
 
 ::warning
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.

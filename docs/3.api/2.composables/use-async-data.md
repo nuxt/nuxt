@@ -117,7 +117,7 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 
 ### Shared State and Option Consistency
 
-When using the same key for multiple `useAsyncData` calls, they will share the same data, error, and status refs. This ensures consistency across components but requires option consistency.
+When using the same key for multiple `useAsyncData` calls, they will share the same `data`, `error` and `status` refs. This ensures consistency across components but requires option consistency.
 
 The following options **must be consistent** across all calls with the same key:
 - `handler` function
