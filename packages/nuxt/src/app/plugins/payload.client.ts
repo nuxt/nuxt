@@ -1,5 +1,5 @@
 import { defineNuxtPlugin } from '../nuxt'
-import { loadPayload } from '../composables/payload'
+import { loadPayload, preloadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
@@ -18,6 +18,11 @@ export default defineNuxtPlugin({
       const payload = await loadPayload(to.path)
       if (!payload) { return }
       Object.assign(nuxtApp.static.data, payload.data)
+      nuxtApp.hooks.hookOnce('page:finish', () => {
+        for (const key in payload.data) {
+          delete nuxtApp.static.data[key]
+        }
+      })
     })
 
     onNuxtReady(() => {
@@ -25,7 +30,7 @@ export default defineNuxtPlugin({
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
         const { hostname } = new URL(url, window.location.href)
         if (hostname === window.location.hostname) {
-          await loadPayload(url)
+          await preloadPayload(url)
         }
       })
       if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
