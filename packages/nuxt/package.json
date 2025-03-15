@@ -76,7 +76,7 @@
     "@nuxt/telemetry": "^2.6.5",
     "@nuxt/vite-builder": "workspace:*",
     "@oxc-parser/wasm": "^0.58.1",
-    "@unhead/vue": "^2.0.0-rc.12",
+    "@unhead/vue": "^2.0.0-rc.13",
     "@vue/shared": "^3.5.13",
     "c12": "^3.0.2",
     "chokidar": "^4.0.3",
@@ -140,7 +140,7 @@
     "@vitejs/plugin-vue-jsx": "4.1.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.5.0",
-    "vite": "6.2.1",
+    "vite": "6.2.2",
     "vitest": "3.0.8"
   },
   "peerDependencies": {
