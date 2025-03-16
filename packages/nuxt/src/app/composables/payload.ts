@@ -27,15 +27,35 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   const payloadURL = await _getPayloadURL(url, opts)
   return await _importPayload(payloadURL) || null
 }
+let linkRelType: string | undefined
+function detectLinkRelType () {
+  if (import.meta.server) { return 'preload' }
+  if (linkRelType) { return linkRelType }
+  const relList = document.createElement('link').relList
+  linkRelType = relList && relList.supports && relList.supports('prefetch') ? 'prefetch' : 'preload'
+  return linkRelType
+}
 /** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
   const promise = _getPayloadURL(url, opts).then((payloadURL) => {
-    nuxtApp.runWithContext(() => useHead({
-      link: renderJsonPayloads
-        ? [{ rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL }]
-        : [{ rel: 'modulepreload', crossorigin: '', href: payloadURL }],
-    }))
+    const link = renderJsonPayloads
+      ? { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
+      : { rel: 'modulepreload', crossorigin: '', href: payloadURL } as const
+
+    if (import.meta.server) {
+      nuxtApp.runWithContext(() => useHead({ link: [link] }))
+    } else {
+      const linkEl = document.createElement('link')
+      for (const key of Object.keys(link) as Array<keyof typeof link>) {
+        linkEl[key === 'crossorigin' ? 'crossOrigin' : key] = link[key]!
+      }
+      document.head.appendChild(linkEl)
+      return new Promise<void>((resolve, reject) => {
+        linkEl.addEventListener('load', () => resolve())
+        linkEl.addEventListener('error', () => reject())
+      })
+    }
   })
   if (import.meta.server) {
     onServerPrefetch(() => promise)
