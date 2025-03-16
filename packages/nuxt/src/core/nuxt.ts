@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -661,6 +661,11 @@ async function initNuxt (nuxt: Nuxt) {
       name: 'NuxtIsland',
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
+    })
+
+    addServerHandler({
+      route: '/__nuxt_island/**',
+      handler: resolve(distDir, 'core/runtime/nitro/handlers/__nuxt_island'),
     })
 
     if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
