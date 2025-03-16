@@ -22,7 +22,7 @@ overrides:
   h3: 1.15.1
   jiti: 2.4.2
   magic-string: ^0.30.17
-  nitro: npm:nitro-nightly@3.0.0-20250312-093928.0e65680d
+  nitro: npm:nitro-nightly@3.0.0-20250315-135852.f038b042
   nuxt: workspace:*
   postcss: 8.5.3
   rollup: 4.35.0
@@ -162,8 +162,8 @@ importers:
         specifier: 4.17.0
         version: 4.17.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250312-093928.0e65680d
-        version: nitro-nightly@3.0.0-20250312-093928.0e65680d(typescript@5.8.2)
+        specifier: npm:nitro-nightly@3.0.0-20250315-135852.f038b042
+        version: nitro-nightly@3.0.0-20250315-135852.f038b042(typescript@5.8.2)
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -304,8 +304,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250312-093928.0e65680d
-        version: nitro-nightly@3.0.0-20250312-093928.0e65680d(typescript@5.8.2)
+        specifier: npm:nitro-nightly@3.0.0-20250315-135852.f038b042
+        version: nitro-nightly@3.0.0-20250315-135852.f038b042(typescript@5.8.2)
       unbuild:
         specifier: 3.5.0
         version: 3.5.0(typescript@5.8.2)(vue-tsc@2.2.8(typescript@5.8.2))(vue@3.5.13(typescript@5.8.2))
@@ -430,8 +430,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250312-093928.0e65680d
-        version: nitro-nightly@3.0.0-20250312-093928.0e65680d(typescript@5.8.2)
+        specifier: npm:nitro-nightly@3.0.0-20250315-135852.f038b042
+        version: nitro-nightly@3.0.0-20250315-135852.f038b042(typescript@5.8.2)
       nypm:
         specifier: ^0.6.0
         version: 0.6.0
@@ -760,8 +760,8 @@ importers:
         specifier: 2.9.2
         version: 2.9.2(webpack@5.98.0(esbuild@0.25.1))
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250312-093928.0e65680d
-        version: nitro-nightly@3.0.0-20250312-093928.0e65680d(typescript@5.8.2)
+        specifier: npm:nitro-nightly@3.0.0-20250315-135852.f038b042
+        version: nitro-nightly@3.0.0-20250315-135852.f038b042(typescript@5.8.2)
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -5728,8 +5728,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitro-nightly@3.0.0-20250312-093928.0e65680d:
-    resolution: {integrity: sha512-VFUCHpMocTyppYAV5SCxR3Ie8uW0ttAOJvpCMGpfncGNoxBtjFe1rtgB5NmDjkSHQVY0qscVci9uIUcIC2Ax2g==}
+  nitro-nightly@3.0.0-20250315-135852.f038b042:
+    resolution: {integrity: sha512-9Qh8xzBHZmsOTLSCY8WtW0tcbeHR1YkxkkeZr+OZAZ0cCeGzp/douoRENA4SCkoX7Wn2EcTvRjkMXXqsritrYw==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -13108,7 +13108,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitro-nightly@3.0.0-20250312-093928.0e65680d(typescript@5.8.2):
+  nitro-nightly@3.0.0-20250315-135852.f038b042(typescript@5.8.2):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.35.0)
       '@rollup/plugin-commonjs': 28.0.3(rollup@4.35.0)
