@@ -3,6 +3,7 @@ import { loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
+
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 
@@ -30,7 +31,7 @@ export default defineNuxtPlugin({
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
         const { hostname } = new URL(url, window.location.href)
         if (hostname === window.location.hostname) {
-          await loadPayload(url)
+          await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
         }
       })
       if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {
