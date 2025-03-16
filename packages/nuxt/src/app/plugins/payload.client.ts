@@ -31,6 +31,7 @@ export default defineNuxtPlugin({
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
         const { hostname } = new URL(url, window.location.href)
         if (hostname === window.location.hostname) {
+          // TODO: use preloadPayload instead once we can support preloading islands too
           await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
         }
       })
