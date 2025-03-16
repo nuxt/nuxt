@@ -1,9 +1,9 @@
-import { defineRenderHandler, useNitroApp } from 'nitro/runtime'
+import { useNitroApp } from 'nitro/runtime'
 import type { RenderResponse } from 'nitro/types'
 import type { SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'h3'
-import { getQuery, getResponseStatus, getResponseStatusText, readBody } from 'h3'
+import { defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
@@ -13,28 +13,28 @@ import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandRespons
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 
-// todo register event handler into nitro
-export default defineRenderHandler(async (event) => {
+export default defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
-  // todo change event url
 
+  setResponseHeaders(event, {
+    'content-type': 'application/json;charset=utf-8',
+    'x-powered-by': 'Nuxt',
+  })
+
+  // todo change event url
   if (import.meta.prerender && event.path && await islandCache!.hasItem(event.path)) {
     return islandCache!.getItem(event.path) as Promise<Partial<RenderResponse>>
   }
 
   const ssrContext = createSSRContext(event)
   const islandContext = ssrContext.islandContext = await getIslandContext(event)
-
+  if (islandContext.url) {
+    ssrContext.url = islandContext.url
+  }
   // Render app
   const renderer = await getRenderer(ssrContext)
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (error) => {
-    // We use error to bypass full render if we have an early response we can make
-
-    // _renderResponse is set in navigateTo() ... should we keep it ?
-    // if (ssrContext._renderResponse && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
-
-    // Use explicitly thrown error in preference to subsequent rendering errors
     await ssrContext.nuxt?.hooks.callHook('app:error', error)
     throw error
   })
@@ -72,20 +72,11 @@ export default defineRenderHandler(async (event) => {
 
   await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
 
-  const response = {
-    body: JSON.stringify(islandResponse, null, 2),
-    statusCode: getResponseStatus(event),
-    statusMessage: getResponseStatusText(event),
-    headers: {
-      'content-type': 'application/json;charset=utf-8',
-      'x-powered-by': 'Nuxt',
-    },
-  }
   if (import.meta.prerender) {
-    await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
+    await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)
     await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
   }
-  return response
+  return islandResponse
 })
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
