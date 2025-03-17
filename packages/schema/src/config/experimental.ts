@@ -597,6 +597,6 @@ export default defineResolvers({
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
       },
-    }
+    },
   },
 })
