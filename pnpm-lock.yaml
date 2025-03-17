@@ -108,8 +108,8 @@ importers:
         specifier: 0.6.1
         version: 0.6.1(magicast@0.3.5)
       consola:
-        specifier: 3.4.0
-        version: 3.4.0
+        specifier: 3.4.1
+        version: 3.4.1
       cssnano:
         specifier: 7.0.6
         version: 7.0.6(postcss@8.5.3)
@@ -234,8 +234,8 @@ importers:
         specifier: 3.0.2
         version: 3.0.2(magicast@0.3.5)
       consola:
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -364,8 +364,8 @@ importers:
         specifier: ^0.1.8
         version: 0.1.8
       consola:
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       cookie-es:
         specifier: ^2.0.0
         version: 2.0.0
@@ -635,8 +635,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^2.0.0-rc.14
-        version: 2.0.0-rc.14
+        specifier: ^2.0.0-rc.15
+        version: 2.0.0-rc.15
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -687,8 +687,8 @@ importers:
   packages/schema:
     dependencies:
       consola:
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -877,8 +877,8 @@ importers:
         specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.3)
       consola:
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       cssnano:
         specifier: ^7.0.6
         version: 7.0.6(postcss@8.5.3)
@@ -934,8 +934,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^2.0.0-rc.14
-        version: 2.0.0-rc.14
+        specifier: ^2.0.0-rc.15
+        version: 2.0.0-rc.15
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -1058,8 +1058,8 @@ importers:
         specifier: 1.5.4
         version: 1.5.4
       unenv:
-        specifier: ^2.0.0-rc.14
-        version: 2.0.0-rc.14
+        specifier: ^2.0.0-rc.15
+        version: 2.0.0-rc.15
       unplugin:
         specifier: ^2.2.0
         version: 2.2.0
@@ -3773,8 +3773,8 @@ packages:
   config-chain@1.1.13:
     resolution: {integrity: sha512-qj+f8APARXHrM0hraqXYb2/bOVSV4PvJQlNZ/DVj0QrmNM2q2euizkeuVckQ57J+W0mRH6Hvi+k50M4Jul2VRQ==}
 
-  consola@3.4.0:
-    resolution: {integrity: sha512-EiPU8G6dQG0GFHNR8ljnZFki/8a+cQwEQ+7wpxdChl02Q8HXlwEZWD5lqAF8vC2sEC3Tehr8hy7vErz88LHyUA==}
+  consola@3.4.1:
+    resolution: {integrity: sha512-zaUUWockhqxFf4bSXS+kTJwxWvAyMuKtShx0BWcGrMEUqbETcBCT91iQs9pECNx7yz8VH4VeWW/1KAbhE8kiww==}
     engines: {node: ^14.18.0 || >=16.10.0}
 
   constantinople@4.0.1:
@@ -7249,6 +7249,9 @@ packages:
   unenv@2.0.0-rc.14:
     resolution: {integrity: sha512-od496pShMen7nOy5VmVJCnq8rptd45vh6Nx/r2iPbrba6pa6p+tS2ywuIHRZ/OBvSbQZB0kWvpO9XBNVFXHD3Q==}
 
+  unenv@2.0.0-rc.15:
+    resolution: {integrity: sha512-J/rEIZU8w6FOfLNz/hNKsnY+fFHWnu9MH4yRbSZF3xbbGHovcetXPs7sD+9p8L6CeNC//I9bhRYAOsBt2u7/OA==}
+
   unhead@2.0.0-rc.13:
     resolution: {integrity: sha512-cuG4Uu6kS9/zF2+XL/5od6S1J4GJqm3xB/I6PVoXgqEVCKryziGdLo+uaqewgOWnv5y5kDRiSuRQz/7fh0nUfw==}
 
@@ -8592,7 +8595,7 @@ snapshots:
 
   '@mapbox/node-pre-gyp@2.0.0':
     dependencies:
-      consola: 3.4.0
+      consola: 3.4.1
       detect-libc: 2.0.3
       https-proxy-agent: 7.0.5(supports-color@9.4.0)
       node-fetch: 2.7.0
@@ -8670,7 +8673,7 @@ snapshots:
       chokidar: 4.0.3
       citty: 0.1.6
       clipboardy: 4.0.0
-      consola: 3.4.0
+      consola: 3.4.1
       defu: 6.1.4
       fuse.js: 7.1.0
       giget: 2.0.0
@@ -8703,7 +8706,7 @@ snapshots:
 
   '@nuxt/devtools-wizard@2.3.0':
     dependencies:
-      consola: 3.4.0
+      consola: 3.4.1
       diff: 7.0.0
       execa: 9.5.2
       magicast: 0.3.5
@@ -8720,7 +8723,7 @@ snapshots:
       '@vue/devtools-core': 7.7.2(vite@6.2.2(@types/node@22.13.10)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.2))
       '@vue/devtools-kit': 7.7.2
       birpc: 2.2.0
-      consola: 3.4.0
+      consola: 3.4.1
       destr: 2.0.3
       error-stack-parser-es: 1.0.5
       execa: 9.5.2
@@ -8793,7 +8796,7 @@ snapshots:
   '@nuxt/friendly-errors-webpack-plugin@2.6.0(webpack@5.98.0)':
     dependencies:
       chalk: 2.4.2
-      consola: 3.4.0
+      consola: 3.4.1
       error-stack-parser: 2.1.4
       string-width: 4.2.3
       webpack: 5.98.0
@@ -8803,7 +8806,7 @@ snapshots:
       '@nuxt/kit': link:packages/kit
       '@unhead/vue': 2.0.0-rc.13(vue@3.5.13(typescript@5.8.2))
       '@vueuse/core': 13.0.0(vue@3.5.13(typescript@5.8.2))
-      consola: 3.4.0
+      consola: 3.4.1
       defu: 6.1.4
       h3: 1.15.1
       magic-string: 0.30.17
@@ -8848,7 +8851,7 @@ snapshots:
     dependencies:
       '@nuxt/kit': link:packages/kit
       citty: 0.1.6
-      consola: 3.4.0
+      consola: 3.4.1
       destr: 2.0.3
       dotenv: 16.4.7
       git-url-parse: 16.0.0
@@ -8865,7 +8868,7 @@ snapshots:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
       c12: 3.0.2(magicast@0.3.5)
-      consola: 3.4.0
+      consola: 3.4.1
       defu: 6.1.4
       destr: 2.0.3
       estree-walker: 3.0.3
@@ -8917,7 +8920,7 @@ snapshots:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       '@vue/compiler-core': 3.5.13
-      consola: 3.4.0
+      consola: 3.4.1
       debug: 4.4.0(supports-color@9.4.0)
       defu: 6.1.4
       destr: 2.0.3
@@ -9798,7 +9801,7 @@ snapshots:
       cac: 6.7.14
       chokidar: 3.6.0
       colorette: 2.0.20
-      consola: 3.4.0
+      consola: 3.4.1
       magic-string: 0.30.17
       pathe: 2.0.3
       perfect-debounce: 1.0.0
@@ -10630,7 +10633,7 @@ snapshots:
     dependencies:
       c12: 3.0.2(magicast@0.3.5)
       confbox: 0.2.1
-      consola: 3.4.0
+      consola: 3.4.1
       convert-gitmoji: 0.1.5
       mri: 1.2.0
       node-fetch-native: 1.6.6
@@ -10686,7 +10689,7 @@ snapshots:
 
   citty@0.1.6:
     dependencies:
-      consola: 3.4.0
+      consola: 3.4.1
 
   cjs-module-lexer@1.4.1: {}
 
@@ -10787,7 +10790,7 @@ snapshots:
       ini: 1.3.8
       proto-list: 1.2.4
 
-  consola@3.4.0: {}
+  consola@3.4.1: {}
 
   constantinople@4.0.1:
     dependencies:
@@ -11767,7 +11770,7 @@ snapshots:
   giget@2.0.0:
     dependencies:
       citty: 0.1.6
-      consola: 3.4.0
+      consola: 3.4.1
       defu: 6.1.4
       node-fetch-native: 1.6.6
       nypm: 0.6.0
@@ -12541,7 +12544,7 @@ snapshots:
       '@parcel/watcher-wasm': 2.4.1
       citty: 0.1.6
       clipboardy: 4.0.0
-      consola: 3.4.0
+      consola: 3.4.1
       crossws: 0.3.4
       defu: 6.1.4
       get-port-please: 3.1.2
@@ -13226,7 +13229,7 @@ snapshots:
       citty: 0.1.6
       compatx: 0.1.8
       confbox: 0.2.1
-      consola: 3.4.0
+      consola: 3.4.1
       cookie-es: 2.0.0
       croner: 9.0.0
       crossws: 0.3.4
@@ -13390,7 +13393,7 @@ snapshots:
   nypm@0.6.0:
     dependencies:
       citty: 0.1.6
-      consola: 3.4.0
+      consola: 3.4.1
       pathe: 2.0.3
       pkg-types: 2.1.0
       tinyexec: 0.3.2
@@ -14872,7 +14875,7 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.36.0)
       '@rollup/pluginutils': 5.1.4(rollup@4.36.0)
       citty: 0.1.6
-      consola: 3.4.0
+      consola: 3.4.1
       defu: 6.1.4
       esbuild: 0.25.1
       fix-dts-default-cjs-exports: 1.0.0
@@ -14916,6 +14919,14 @@ snapshots:
   undici@6.21.1: {}
 
   unenv@2.0.0-rc.14:
+    dependencies:
+      defu: 6.1.4
+      exsolve: 1.0.4
+      ohash: 2.0.11
+      pathe: 2.0.3
+      ufo: 1.5.4
+
+  unenv@2.0.0-rc.15:
     dependencies:
       defu: 6.1.4
       exsolve: 1.0.4
@@ -15077,7 +15088,7 @@ snapshots:
   untun@0.1.3:
     dependencies:
       citty: 0.1.6
-      consola: 3.4.0
+      consola: 3.4.1
       pathe: 1.1.2
 
   untyped@2.0.0:
@@ -15582,7 +15593,7 @@ snapshots:
   webpackbar@7.0.0(@rspack/core@1.2.8)(webpack@5.98.0):
     dependencies:
       ansis: 3.16.0
-      consola: 3.4.0
+      consola: 3.4.1
       pretty-time: 1.1.0
       std-env: 3.8.1
     optionalDependencies:
