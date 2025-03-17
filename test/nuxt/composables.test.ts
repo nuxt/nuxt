@@ -204,9 +204,11 @@ describe('useAsyncData', () => {
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
     const { error, execute } = useAsyncData(() => Promise.resolve({}), { immediate: false })
-    expect(error.value).toBe(asyncDataDefaults.errorValue)
+    // TODO: update to asyncDataDefaults.errorValue in v4
+    expect(error.value).toBe(undefined)
     await execute()
-    expect(error.value).toBe(asyncDataDefaults.errorValue)
+    // TODO: update to asyncDataDefaults.errorValue in v4
+    expect(error.value).toBe(undefined)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -305,7 +307,7 @@ describe('useAsyncData', () => {
       }, { lazy: true },
     )
 
-    expect(res.data.value).toBe(undefined)
+    expect(res.data.value).toBe(asyncDataDefaults.errorValue)
     expect(res.status.value).toBe('pending')
     expect(res.pending.value).toBe(true)
 
