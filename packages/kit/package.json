@@ -52,13 +52,13 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.2.7",
+    "@rspack/core": "1.2.8",
     "@types/lodash-es": "4.17.12",
     "@types/semver": "7.5.8",
     "lodash-es": "4.17.21",
     "nitropack": "2.11.6",
     "unbuild": "latest",
-    "vite": "6.2.1",
+    "vite": "6.2.2",
     "vitest": "3.0.8",
     "webpack": "5.98.0"
   },
