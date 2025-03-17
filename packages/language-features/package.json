@@ -13,23 +13,25 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "import": "./dist/index.cjs",
+      "require": "./dist/index.cjs"
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "tsup"
+    "prepack": "unbuild"
+  },
+  "dependencies": {
+    "muggle-string": "^0.4.1"
   },
   "devDependencies": {
     "@vue/language-core": "2.2.8",
-    "muggle-string": "^0.4.1",
-    "tsup": "^8.4.0"
+    "unbuild": "3.5.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
