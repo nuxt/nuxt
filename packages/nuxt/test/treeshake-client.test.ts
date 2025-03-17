@@ -3,6 +3,7 @@ import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'
+import { createLogger } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
@@ -66,6 +67,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
   })
   // @ts-expect-error Types are not correct as they are too generic
   plugin.configResolved!({
+    logger: createLogger(),
     isProduction: options.isProduction,
     command: 'build',
     root: process.cwd(),
