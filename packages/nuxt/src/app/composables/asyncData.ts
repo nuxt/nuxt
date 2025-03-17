@@ -11,7 +11,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaults, purgeCachedData } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, granularCachedData, purgeCachedData } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -592,12 +592,14 @@ function createAsyncData<
         (nuxtApp._asyncDataPromises[key] as any).cancelled = true
       }
       // Avoid fetching same key that is already fetched
-      const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
-      if (typeof cachedData !== 'undefined') {
-        nuxtApp.payload.data[key] = asyncData.data.value = cachedData
-        asyncData.error.value = undefined
-        asyncData.status.value = 'success'
-        return Promise.resolve(cachedData)
+      if (!granularCachedData || (opts.cause === 'initial' || nuxtApp.isHydrating)) {
+        const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
+        if (typeof cachedData !== 'undefined') {
+          nuxtApp.payload.data[key] = asyncData.data.value = cachedData
+          asyncData.error.value = undefined
+          asyncData.status.value = 'success'
+          return Promise.resolve(cachedData)
+        }
       }
       asyncData.pending.value = true
       asyncData.status.value = 'pending'
