@@ -83,7 +83,7 @@ export default defineNuxtConfig({
     },
   },
   future: {
-    typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler',
+    typescriptBundlerResolution: process.env.MODULE_RESOLUTION !== 'node',
   },
   experimental: {
     typedPages: true,

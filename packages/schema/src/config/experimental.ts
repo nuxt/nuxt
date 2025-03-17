@@ -464,14 +464,46 @@ export default defineResolvers({
     /**
      * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
      *
-     * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
+     * This feature adds performance markers for Nuxt hooks, allowing you to track their execution time
+     * in the browser's Performance tab. This is particularly useful for debugging performance issues.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Enable performance markers for Nuxt hooks in browser devtools
+     *     browserDevtoolsTiming: true
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #29922](https://github.com/nuxt/nuxt/pull/29922)
+     * @see [Chrome DevTools Performance API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
      */
     browserDevtoolsTiming: {
       $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
     },
 
     /**
-     * Record mutations to `nuxt.options` in module context
+     * Record mutations to `nuxt.options` in module context, helping to debug configuration changes
+     * made by modules during the Nuxt initialization phase.
+     *
+     * When enabled, Nuxt will track which modules modify configuration options, making it
+     * easier to trace unexpected configuration changes.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Enable tracking of config mutations by modules
+     *     debugModuleMutation: true
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #30555](https://github.com/nuxt/nuxt/pull/30555)
      */
     debugModuleMutation: {
       $resolve: async (val, get) => {
@@ -481,6 +513,29 @@ export default defineResolvers({
 
     /**
      * Enable automatic configuration of hydration strategies for `<Lazy>` components.
+     *
+     * This feature intelligently determines when to hydrate lazy components based on
+     * visibility, idle time, or other triggers, improving performance by deferring
+     * hydration of components until they're needed.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     lazyHydration: true // Enable smart hydration strategies for Lazy components
+     *   }
+     * })
+     *
+     * // In your Vue components
+     * <template>
+     *   <Lazy>
+     *     <ExpensiveComponent />
+     *   </Lazy>
+     * </template>
+     * ```
+     *
+     * @see [PR #26468](https://github.com/nuxt/nuxt/pull/26468)
      */
     lazyHydration: {
       $resolve: (val) => {
@@ -490,7 +545,49 @@ export default defineResolvers({
 
     /**
      * Disable resolving imports into Nuxt templates from the path of the module that added the template.
+     *
+     * By default, Nuxt attempts to resolve imports in templates relative to the module that added them.
+     * Setting this to `false` disables this behavior, which may be useful if you're experiencing
+     * resolution conflicts in certain environments.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Disable template import resolution from module path
+     *     templateImportResolution: false
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #31175](https://github.com/nuxt/nuxt/pull/31175)
      */
     templateImportResolution: true,
+
+    /**
+     * Whether to clean up Nuxt static and asyncData caches on route navigation.
+     *
+     * Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`. This helps prevent memory leaks
+     * and ensures fresh data is loaded when needed, but it is possible to disable it.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Disable automatic cache cleanup (default is true)
+     *     purgeCachedData: false
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #31379](https://github.com/nuxt/nuxt/pull/31379)
+     */
+    purgeCachedData: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
+      },
+    },
   },
 })
