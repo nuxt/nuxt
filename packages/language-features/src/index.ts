@@ -3,31 +3,67 @@ import type { VueLanguagePlugin } from '@vue/language-core'
 import { augmentVlsCtx } from './utils/augment-vls-ctx'
 
 const plugin: VueLanguagePlugin = () => {
-  const vlsCtxRouteRe = /\b__VLS_ctx.\$route\b/g
+  const re = {
+    useRoute: {
+      /** Targets the spot between `useRoute` and `()` */
+      beforeParentheses: /(?<=useRoute)(\s*)(?=\(\))/g,
+      /** Targets the spot right before `useRoute()` */
+      before: /(?=useRoute(\s*)\(\))/g,
+      /** Targets the spot right after `useRoute()` */
+      after: /(?<=useRoute(\s*)\(\))/g,
+    },
+    $route: {
+      /**
+       * When using `$route` in a template, it is referred
+       * to as `__VLS_ctx.$route` in the virtual file.
+       */
+      vlsCtx: /\b__VLS_ctx.\$route\b/g,
+    },
+  }
 
   return {
     version: 2.1,
     resolveEmbeddedCode (fileName, sfc, embeddedFile) {
-      // TODO: do we want to apply this to *every* .vue file or only the Nuxt ones that the user wrote themselves?
-      if (embeddedFile.id.startsWith('script_')) {
-        const typedUseRoute = `useRoute<import('#app').GetRouteNameByPath<'${fileName}'>>`
+      if (!embeddedFile.id.startsWith('script_')) {
+        return
+      }
 
-        // replace `useRoute()` calls with typed version
+      // TODO: Do we want to apply this to EVERY .vue file or only to components that the user wrote themselves?
+
+      const routeNameGetter = `import('#app').GetRouteNameByPath<'${fileName}'>`
+      const routeNameGetterGeneric = `<${routeNameGetter}>`
+      const typedCall = `useRoute${routeNameGetterGeneric}`
+
+      if (embeddedFile.id.startsWith('script_ts')) {
+        // Inserts generic into `useRoute()` calls.
+        // We only apply this mutation on <script setup> blocks with lang="ts".
         replaceAll(
           embeddedFile.content,
-          // eslint-disable-next-line prefer-regex-literals
-          new RegExp('useRoute\\(\\)', 'g'),
-          `${typedUseRoute}()`,
+          re.useRoute.beforeParentheses,
+          routeNameGetterGeneric,
         )
+      } else if (embeddedFile.id.startsWith('script_js')) {
+        // Typecasts `useRoute()` calls.
+        // We only apply this mutation on plain JS <script setup> blocks.
+        replaceAll(
+          embeddedFile.content,
+          re.useRoute.before,
+          `(`,
+        )
+        replaceAll(
+          embeddedFile.content,
+          re.useRoute.after,
+          ` as ReturnType<typeof ${typedCall}>)`,
+        )
+      }
 
-        const contentStr = toString(embeddedFile.content)
+      const contentStr = toString(embeddedFile.content)
 
-        // augment __VLS_ctx.$route to override $route in template blocks
-        if (contentStr.match(vlsCtxRouteRe)) {
-          augmentVlsCtx(embeddedFile.content, () => ` & {
-  $route: ReturnType<typeof ${typedUseRoute}>();
+      // Augment `__VLS_ctx.$route` to override the typings of `$route` in template blocks
+      if (contentStr.match(re.$route.vlsCtx)) {
+        augmentVlsCtx(embeddedFile.content, () => ` & {
+  $route: ReturnType<typeof ${typedCall}>;
 }`)
-        }
       }
     },
   }
