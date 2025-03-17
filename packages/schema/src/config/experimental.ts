@@ -492,5 +492,30 @@ export default defineResolvers({
      * Disable resolving imports into Nuxt templates from the path of the module that added the template.
      */
     templateImportResolution: true,
+
+    /**
+     * Whether to clean up Nuxt static and asyncData caches on route navigation.
+     *
+     * Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`. This helps prevent memory leaks
+     * and ensures fresh data is loaded when needed, but it is possible to disable it.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Disable automatic cache cleanup (default is true)
+     *     purgeCachedData: false
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #31379](https://github.com/nuxt/nuxt/pull/31379)
+     */
+    purgeCachedData: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
+      },
+    },
   },
 })

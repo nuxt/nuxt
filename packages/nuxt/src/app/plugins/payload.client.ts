@@ -5,7 +5,7 @@ import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
 
 // @ts-expect-error virtual file
-import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
+import { appManifest as isAppManifestEnabled, purgeCachedData } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin({
   name: 'nuxt:payload',
@@ -20,7 +20,9 @@ export default defineNuxtPlugin({
       const payload = await loadPayload(to.path)
       if (!payload) { return }
       for (const key of staticKeysToRemove) {
-        delete nuxtApp.static.data[key]
+        if (purgeCachedData) {
+          delete nuxtApp.static.data[key]
+        }
       }
       for (const key in payload.data) {
         if (!(key in nuxtApp.static.data)) {
