@@ -11,7 +11,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaults } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, purgeCachedData } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -342,7 +342,9 @@ export function useAsyncData<
         // clean up memory when it no longer is needed
         if (data._deps === 0) {
           data?._off()
-          clearNuxtDataByKey(nuxtApp, key)
+          if (purgeCachedData) {
+            clearNuxtDataByKey(nuxtApp, key)
+          }
         }
       }
     }
