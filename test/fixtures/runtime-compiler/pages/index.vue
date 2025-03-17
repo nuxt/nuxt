@@ -4,18 +4,15 @@ import Helloworld from '../components/Helloworld.vue'
 
 const count = ref(0)
 
-const compTemplate = computed(() => `
-<div class='border'>
+const ComponentDefinedInSetup = computed(() => defineComponent({
+  template: `
+<div class="border">
     <div>hello i am defined in the setup of app.vue</div>
     <div>This component template is in a computed refreshed on count</div>
-    count: <span class="count">${count.value}</span>.
-    I dont recommend you to do this for performance issue, prefer passing props for mutable data.
+    count: <span data-testid="computed-count">${count.value}</span>.
+    I don't recommend doing this for performance reasons; prefer passing props for mutable data.
 </div>`,
-)
-
-const ComponentDefinedInSetup = computed(() => h({
-  template: compTemplate.value,
-}) as Component)
+}))
 
 const { data, pending } = await useAsyncData('templates', async () => {
   const [interactiveComponent, templateString] = await Promise.all([
@@ -29,8 +26,8 @@ const { data, pending } = await useAsyncData('templates', async () => {
   }
 }, {})
 
-const Interactive = h({
-  template: data.value?.interactiveComponent.template,
+const Interactive = defineComponent({
+  props: data.value?.interactiveComponent.props,
   setup (props) {
     return new Function(
       'ref',
@@ -39,33 +36,33 @@ const Interactive = h({
       data.value?.interactiveComponent.setup ?? '',
     )(ref, computed, props)
   },
-  props: data.value?.interactiveComponent.props,
-}) as Component
+  template: data.value?.interactiveComponent.template,
+})
 </script>
 
 <template>
   <!-- Edit this file to play around with Nuxt but never commit changes! -->
   <div>
-    <Helloworld id="hello-world" />
-    <ComponentDefinedInSetup id="component-defined-in-setup" />
+    <Helloworld data-testid="hello-world" />
+    <ComponentDefinedInSetup data-testid="component-defined-in-setup" />
     <button
-      id="increment-count"
+      data-testid="increment-count"
       @click="count++"
     >
       {{ count }}
     </button>
     <template v-if="!pending">
       <Name
-        id="name"
+        data-testid="name"
         template="<div>I am the Name.ts component</div>"
       />
       <show-template
-        id="show-template"
+        data-testid="show-template"
         :template="data?.templateString ?? ''"
         name="John"
       />
       <Interactive
-        id="interactive"
+        data-testid="interactive"
         lastname="Doe"
         firstname="John"
       />
