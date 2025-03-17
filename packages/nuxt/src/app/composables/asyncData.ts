@@ -592,7 +592,7 @@ function createAsyncData<
         (nuxtApp._asyncDataPromises[key] as any).cancelled = true
       }
       // Avoid fetching same key that is already fetched
-      if (granularCachedData || (opts.cause === 'initial' || nuxtApp.isHydrating)) {
+      if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (typeof cachedData !== 'undefined') {
           nuxtApp.payload.data[key] = asyncData.data.value = cachedData
