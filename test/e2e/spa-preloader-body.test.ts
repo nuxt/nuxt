@@ -80,6 +80,8 @@ test.describe('spaLoadingTemplateLocation flag is set to `body`', () => {
   })
 })
 
+// isVisible is preferred here as we want to snapshot the state of the page at a specific moment, since waiting would make this test flake.
+// https://github.com/nuxt/nuxt/pull/31273#issuecomment-2731002417
 async function getState (page: Page) {
   const [loader, content] = await Promise.all([
     page.getByTestId('loader').isVisible(),
