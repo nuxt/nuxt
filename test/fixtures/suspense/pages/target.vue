@@ -19,12 +19,18 @@ await new Promise(resolve => setTimeout(resolve, 100))
 
     <h3>Component Output:</h3>
     <div class="component-display">
-      <div data-testid="content" class="content-box">
+      <div
+        data-testid="content"
+        class="content-box"
+      >
         Hello {{ id }}
       </div>
 
       <div class="test-actions">
-        <NuxtLink to="/" class="test-button">
+        <NuxtLink
+          to="/"
+          class="test-button"
+        >
           Back to Home
         </NuxtLink>
       </div>
