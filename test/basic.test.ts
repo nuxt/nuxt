@@ -2068,13 +2068,14 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
     await gotoPath(page, '/prefetch')
     await page.waitForLoadState('networkidle')
 
-    const snapshot = [...requests]
+    expect(requests.some(req => req.startsWith('/__nuxt_island/AsyncServerComponent'))).toBe(true)
+    requests.length = 0
     await page.click('[href="/prefetch/server-components"]')
     await page.waitForLoadState('networkidle')
 
     expect(await page.innerHTML('#async-server-component-count')).toBe('34')
 
-    expect(requests).toEqual(snapshot)
+    expect(requests.some(req => req.startsWith('/__nuxt_island/AsyncServerComponent'))).toBe(false)
     await page.close()
   })
 
@@ -2434,13 +2435,16 @@ describe('component islands', () => {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
+      if (result.head.link?.[0]?.href) {
+        result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
+      }
 
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
             {
               "crossorigin": "",
-              "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+              "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=xxxxx&lang.css",
               "rel": "stylesheet",
             },
           ],
