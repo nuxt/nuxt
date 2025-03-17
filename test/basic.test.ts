@@ -2446,7 +2446,7 @@ describe('component islands', () => {
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
       if (result.head.link?.[0]?.href) {
-        result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?]+/, 'scoped=xxxxx')
+        result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
       }
 
       expect(result.head).toMatchInlineSnapshot(`
