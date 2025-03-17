@@ -572,7 +572,7 @@ function createAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (nuxtApp: NuxtApp, key: string, _handler: (ctx?: NuxtApp) => Promise<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
-  nuxtApp.payload._errors[key] ??= undefined
+  nuxtApp.payload._errors[key] ??= asyncDataDefaults.errorValue
 
   const _ref = options.deep ? ref : shallowRef
 
@@ -609,7 +609,7 @@ function createAsyncData<
         const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (typeof cachedData !== 'undefined') {
           nuxtApp.payload.data[key] = asyncData.data.value = cachedData
-          asyncData.error.value = undefined
+          asyncData.error.value = asyncDataDefaults.errorValue
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
         }
@@ -648,7 +648,7 @@ function createAsyncData<
           nuxtApp.payload.data[key] = result
 
           asyncData.data.value = result
-          asyncData.error.value = undefined
+          asyncData.error.value = asyncDataDefaults.errorValue
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
