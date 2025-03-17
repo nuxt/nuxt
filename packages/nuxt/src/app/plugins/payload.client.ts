@@ -14,16 +14,20 @@ export default defineNuxtPlugin({
     if (import.meta.dev) { return }
 
     // Load payload after middleware & once final route is resolved
+    const staticKeysToRemove = new Set<string>()
     useRouter().beforeResolve(async (to, from) => {
       if (to.path === from.path) { return }
       const payload = await loadPayload(to.path)
       if (!payload) { return }
-      Object.assign(nuxtApp.static.data, payload.data)
-      nuxtApp.hooks.hookOnce('page:finish', () => {
-        for (const key in payload.data) {
-          delete nuxtApp.static.data[key]
+      for (const key of staticKeysToRemove) {
+        delete nuxtApp.static.data[key]
+      }
+      for (const key in payload.data) {
+        if (!(key in nuxtApp.static.data)) {
+          staticKeysToRemove.add(key)
         }
-      })
+        nuxtApp.static.data[key] = payload.data[key]
+      }
     })
 
     onNuxtReady(() => {
