@@ -7,12 +7,12 @@ export default defineEventHandler(() => {
     props: ['lastname', 'firstname'],
     // don't forget to sanitize
     setup: `
-            const fullName = computed(() => props.lastname + ' ' + props.firstname);
+      const fullName = computed(() => props.lastname + ' ' + props.firstname);
 
-            const count = ref(0);
+      const count = ref(0);
 
-            return {fullName, count}
-        `,
+      return {fullName, count}
+    `,
     template: '<div>my name is {{ fullName }}, <button data-testid="inc-interactive-count" @click="count++">click here</button> count: <span data-testid="interactive-count">{{count}}</span>. I am defined by Interactive in the setup of App.vue. My full component definition is retrieved from the api </div>',
   }
 })
