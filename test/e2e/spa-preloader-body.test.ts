@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import type { Page } from 'playwright-core'
+import { waitForHydration } from '@nuxt/test-utils'
 import { expect, test } from './test-utils'
 
 /**
@@ -51,15 +52,18 @@ test.describe('spaLoadingTemplateLocation flag is set to `body`', () => {
     await page.goto('/spa')
 
     // Verify the loader is visible first and content is hidden
-    const snapshot = await getState(page)
-    expect(snapshot.loader).toBeTruthy()
-    expect(snapshot.content).toBeFalsy()
+    expect(await getState(page)).toEqual({
+      loader: true,
+      content: false,
+    })
 
-    // Wait for content to become visible after hydration
-    await expect(page.getByTestId('content')).toBeVisible()
+    page.dispatchEvent('html', 'finishHydration')
+    await waitForHydration(page, '/spa', 'hydration')
 
-    // Verify the loader is now hidden
-    await expect(page.getByTestId('loader')).toBeHidden()
+    expect(await getState(page)).toEqual({
+      loader: false,
+      content: true,
+    })
   })
 
   test('should render content without spa-loader for SSR pages', async ({ page, fetch }) => {
@@ -69,9 +73,10 @@ test.describe('spaLoadingTemplateLocation flag is set to `body`', () => {
     await page.goto('/ssr')
 
     // Verify the loader is hidden and content is visible for SSR pages
-    const snapshot = await getState(page)
-    expect(snapshot.loader).toBeFalsy()
-    expect(snapshot.content).toBeTruthy()
+    expect(await getState(page)).toEqual({
+      loader: false,
+      content: true,
+    })
   })
 })
 

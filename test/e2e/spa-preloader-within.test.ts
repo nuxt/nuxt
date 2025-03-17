@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import type { Page } from 'playwright-core'
+import { waitForHydration } from '@nuxt/test-utils'
 import { expect, test } from './test-utils'
 
 /**
@@ -49,16 +50,17 @@ test.describe('spaLoadingTemplateLocation flag is set to `within`', () => {
     // Navigate to the SPA page
     await page.goto('/spa')
 
-    // Verify the loader is visible first
-    const snapshot = await getState(page)
-    expect(snapshot.loader).toBeTruthy()
-    expect(snapshot.content).toBeFalsy()
+    // wait for intervening (less optimal!) current behaviour
+    await expect(page.getByTestId('loader')).toBeHidden()
+    await expect(page.getByTestId('content')).toBeHidden()
 
-    // Check hydration state
-    await page.waitForFunction(() => window.useNuxtApp?.() && window.useNuxtApp?.().isHydrating)
-    const hydrating = await getState(page)
-    expect(hydrating.loader).toBeFalsy() // current behaviour
-    expect(hydrating.content).toBeFalsy()
+    expect(await getState(page)).toEqual({
+      loader: false,
+      content: false,
+    })
+
+    page.dispatchEvent('html', 'finishHydration')
+    await waitForHydration(page, '/spa', 'hydration')
 
     // Wait for content to become visible after hydration
     await expect(page.getByTestId('content')).toBeVisible()
@@ -71,9 +73,10 @@ test.describe('spaLoadingTemplateLocation flag is set to `within`', () => {
     await page.goto('/ssr')
 
     // Verify the loader is hidden and content is visible for SSR pages
-    const snapshot = await getState(page)
-    expect(snapshot.loader).toBeFalsy()
-    expect(snapshot.content).toBeTruthy()
+    expect(await getState(page)).toEqual({
+      loader: false,
+      content: true,
+    })
   })
 })
 
