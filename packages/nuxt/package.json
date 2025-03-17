@@ -68,15 +68,15 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "@nuxt/cli": "^3.22.5",
+    "@nuxt/cli": "^3.23.0",
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^2.2.1",
+    "@nuxt/devtools": "^2.3.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.5",
     "@nuxt/vite-builder": "workspace:*",
-    "@oxc-parser/wasm": "^0.56.5",
-    "@unhead/vue": "^2.0.0-rc.9",
+    "@oxc-parser/wasm": "^0.58.1",
+    "@unhead/vue": "^2.0.0-rc.13",
     "@vue/shared": "^3.5.13",
     "c12": "^3.0.2",
     "chokidar": "^4.0.3",
@@ -87,12 +87,12 @@
     "destr": "^2.0.3",
     "devalue": "^5.1.1",
     "errx": "^0.1.0",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.25.1",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "exsolve": "^1.0.4",
     "globby": "^14.1.0",
-    "h3": "npm:h3-nightly@1.15.1-20250222-111608-d1c00fc",
+    "h3": "^1.15.1",
     "hookable": "^5.5.3",
     "ignore": "^7.0.3",
     "impound": "^0.2.2",
@@ -101,9 +101,9 @@
     "knitwork": "^1.2.0",
     "magic-string": "^0.30.17",
     "mlly": "^1.7.4",
-    "mocked-exports": "^0.1.0",
+    "mocked-exports": "^0.1.1",
     "nanotar": "^0.2.0",
-    "nitro": "npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6",
+    "nitro": "npm:nitro-nightly@3.0.0-20250315-135852.f038b042",
     "nypm": "^0.6.0",
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
@@ -133,14 +133,14 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@nuxt/scripts": "0.11.1",
+    "@nuxt/scripts": "0.11.2",
     "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.6",
     "@vitejs/plugin-vue": "5.2.1",
     "@vitejs/plugin-vue-jsx": "4.1.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.5.0",
-    "vite": "6.2.1",
+    "vite": "6.2.2",
     "vitest": "3.0.8"
   },
   "peerDependencies": {
@@ -156,6 +156,6 @@
     }
   },
   "engines": {
-    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
+    "node": "^20.11.1 || >=22.0.0"
   }
 }
