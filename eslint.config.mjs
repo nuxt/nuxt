@@ -5,6 +5,8 @@ import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
 import perfectionist from 'eslint-plugin-perfectionist'
 
+import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
+
 export default createConfigForNuxt({
   features: {
     stylistic: {
@@ -188,24 +190,7 @@ export default createConfigForNuxt({
                   'vue/server-renderer',
                   'vue',
                   'vue-router',
-                  // other deps
-                  'devalue',
-                  'klona',
-                  // unjs ecosystem
-                  'defu',
-                  'ufo',
-                  'h3',
-                  'destr',
-                  'consola',
-                  'hookable',
-                  'unctx',
-                  'cookie-es',
-                  'perfect-debounce',
-                  'radix3',
-                  'ohash',
-                  'ohash/utils',
-                  'pathe',
-                  'uncrypto',
+                  ...runtimeDependencies,
                   'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
