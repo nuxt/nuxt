@@ -27,7 +27,7 @@
     "prettier": "3.5.3",
     "scule": "1.3.0",
     "svgo": "3.3.2",
-    "tinyexec": "0.3.2",
+    "tinyexec": "1.0.0",
     "tinyglobby": "0.2.12",
     "unocss": "66.0.0",
     "vite": "6.2.2"
