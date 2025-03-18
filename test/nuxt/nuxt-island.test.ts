@@ -1,5 +1,4 @@
-import { beforeEach } from 'node:test'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, popScopeId, pushScopeId } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
@@ -34,6 +33,11 @@ function expectNoConsoleIssue () {
 beforeEach(() => {
   consoleError.mockClear()
   consoleWarn.mockClear()
+  useNuxtApp().payload.data = {}
+})
+
+afterEach(() => {
+  if (vi.isMockFunction(fetch)) { vi.mocked(fetch).mockReset() }
 })
 
 describe('runtime server component', () => {
@@ -135,6 +139,22 @@ describe('runtime server component', () => {
   })
 
   it('expect NuxtIsland to have parent scopeId', async () => {
+    const stubFetch = vi.fn(() => {
+      return {
+        id: '1234',
+        html: `<div data-island-uid>hello<div data-island-uid="not-to-be-replaced" data-island-component="r"></div></div>`,
+        head: {
+          link: [],
+          style: [],
+        },
+        json () {
+          return this
+        },
+      }
+    })
+
+    vi.stubGlobal('fetch', stubFetch)
+
     const wrapper = await mountSuspended(defineComponent({
       render () {
         pushScopeId('data-v-654e2b21')
@@ -330,6 +350,63 @@ describe('client components', () => {
       <!--teleport end-->"
     `)
 
+    vi.mocked(fetch).mockReset()
     expectNoConsoleIssue()
+  })
+})
+
+describe('reuse paylaod', () => {
+  let count = 0
+
+  const stubFetch = () => {
+    count++
+    return {
+      id: '123',
+      html: `<div>${count.toString()}</div>`,
+      state: {},
+      head: {
+        link: [],
+        style: [],
+      },
+      json () {
+        return this
+      },
+    }
+  }
+
+  beforeEach(() => {
+    count = 0
+    vi.mocked(fetch).mockReset()
+    vi.stubGlobal('fetch', vi.fn(stubFetch))
+  })
+  it('expect payload to be reused', async () => {
+    const component1 = await mountSuspended(createServerComponent('reuseCache'))
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(component1.html()).toBe('<div>1</div>')
+    await component1.unmount()
+    expect(fetch).toHaveBeenCalledOnce()
+    const component2 = await mountSuspended(createServerComponent('reuseCache'))
+    expect(component2.html()).toBe('<div>1</div>')
+  })
+  it('expect to re-fetch the island', async () => {
+    const component = await mountSuspended(createServerComponent('withoutCache'), {
+      props: {
+        useCache: false,
+        onError (e) {
+          console.log(e)
+        },
+      },
+    })
+    await nextTick()
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(component.html()).toBe('<div>1</div>')
+    await component.unmount()
+    const component2 = await mountSuspended(createServerComponent('withoutCache'), {
+      props: {
+        useCache: false,
+      },
+    })
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(component2.html()).toBe('<div>2</div>')
   })
 })

@@ -76,6 +76,14 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    /**
+     * use the NuxtIslandResponse which has been cached if available
+     * @default true
+     */
+    useCache: {
+      type: Boolean,
+      default: true,
+    },
   },
   emits: ['error'],
   async setup (props, { slots, expose, emit }) {
@@ -256,13 +264,13 @@ export default defineComponent({
     }
 
     if (import.meta.client) {
-      watch(props, debounce(() => fetchComponent(), 100), { deep: true })
+      watch(props, debounce(() => fetchComponent(!props.useCache), 100), { deep: true })
     }
 
     if (import.meta.client && !instance.vnode.el && props.lazy) {
-      fetchComponent()
+      fetchComponent(!instance.vnode.el && !props.useCache)
     } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
-      await fetchComponent()
+      await fetchComponent(!instance.vnode.el && !props.useCache)
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)
     }
