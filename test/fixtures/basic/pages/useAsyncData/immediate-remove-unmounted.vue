@@ -24,7 +24,7 @@ import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 
 const { data, execute } = await useAsyncData('immediateFalse', () => $fetch('/api/random'), { immediate: false })
 
-if (data.value !== asyncDataDefaults.errorValue) {
-  throw new Error(`Initial data should be ${asyncDataDefaults.errorValue}: ` + data.value)
+if (data.value !== asyncDataDefaults.value) {
+  throw new Error(`Initial data should be ${asyncDataDefaults.value}: ` + data.value)
 }
 </script>

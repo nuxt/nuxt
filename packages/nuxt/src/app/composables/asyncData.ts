@@ -254,7 +254,7 @@ export function useAsyncData<
   const functionName = options._functionName || 'asyncData'
 
   if (import.meta.dev && typeof options.dedupe === 'boolean') {
-    console.warn(`[nuxt] \`boolean\` values are deprecated for the \`dedupe\` option of \`${functionName}\` and will be removed in the future. Use \'cancel\' or \'defer\' instead.`)
+    console.warn(`[nuxt] \`boolean\` values are deprecated for the \`dedupe\` option of \`${functionName}\` and will be removed in the future. Use 'cancel' or 'defer' instead.`)
   }
 
   // check and warn if different defaults/fetcher are provided
@@ -574,10 +574,6 @@ function createAsyncData<
 > (nuxtApp: NuxtApp, key: string, _handler: (ctx?: NuxtApp) => Promise<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
   nuxtApp.payload._errors[key] ??= asyncDataDefaults.errorValue
 
-  const _ref = options.deep ? ref : shallowRef
-
-  const hasCachedData = typeof initialCachedData !== 'undefined'
-
   // When prerendering, share payload data automatically between requests
   const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
     ? _handler
@@ -591,6 +587,8 @@ function createAsyncData<
         return promise
       }
 
+  const _ref = options.deep ? ref : shallowRef
+  const hasCachedData = initialCachedData != null
   const asyncData: CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> = {
     data: _ref(hasCachedData ? initialCachedData : options.default!()) as any,
     pending: ref(!hasCachedData),
@@ -598,7 +596,7 @@ function createAsyncData<
     status: ref('idle'),
     execute: (opts = {}) => {
       if (nuxtApp._asyncDataPromises[key]) {
-        if ((opts.dedupe ?? options.dedupe) === 'defer') {
+        if (isDefer(opts.dedupe ?? options.dedupe)) {
         // Avoid fetching same key more than once at a time
           return nuxtApp._asyncDataPromises[key]!
         }
@@ -607,7 +605,7 @@ function createAsyncData<
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
-        if (typeof cachedData !== 'undefined') {
+        if (cachedData != null) {
           nuxtApp.payload.data[key] = asyncData.data.value = cachedData
           asyncData.error.value = asyncDataDefaults.errorValue
           asyncData.status.value = 'success'
