@@ -137,6 +137,9 @@ importers:
       estree-walker:
         specifier: 3.0.3
         version: 3.0.3
+      get-port-please:
+        specifier: 3.1.2
+        version: 3.1.2
       h3:
         specifier: 1.15.1
         version: 1.15.1
@@ -191,6 +194,9 @@ importers:
       sherif:
         specifier: 1.4.0
         version: 1.4.0
+      srvx:
+        specifier: 0.2.5
+        version: 0.2.5
       std-env:
         specifier: 3.8.1
         version: 3.8.1
@@ -1192,8 +1198,6 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-
-  test/fixtures/remote-provider: {}
 
   test/fixtures/runtime-compiler:
     dependencies:
@@ -6874,6 +6878,9 @@ packages:
   split-on-first@3.0.0:
     resolution: {integrity: sha512-qxQJTx2ryR0Dw0ITYyekNQWpz6f8dGd7vffGNflQQ3Iqj9NJ6qiZ7ELpZsJ/QBhIVAiDfXdag3+Gp8RvWa62AA==}
     engines: {node: '>=12'}
+
+  srvx@0.2.5:
+    resolution: {integrity: sha512-G63uf9Emf8PQPlWkBKFfcqTkVjwIF5Z8lfECidSiaAXrd19Pj6ijU676yRfYP3KShZY7KmLsfb4/unIOCtnWfA==}
 
   stable-hash@0.0.4:
     resolution: {integrity: sha512-LjdcbuBeLcdETCrPn9i8AYAZ1eCtu4ECAWtP7UleOiZ9LzVxRzzUZEoZ8zB24nhkQnDWyET0I+3sWokSDS3E7g==}
@@ -14476,6 +14483,10 @@ snapshots:
   speakingurl@14.0.1: {}
 
   split-on-first@3.0.0: {}
+
+  srvx@0.2.5:
+    dependencies:
+      cookie-es: 2.0.0
 
   stable-hash@0.0.4: {}
 
