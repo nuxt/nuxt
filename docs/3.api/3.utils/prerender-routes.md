@@ -29,7 +29,7 @@ prerenderRoutes(['/', '/about'])
 In the browser, or if called outside prerendering, `prerenderRoutes` will have no effect.
 ::
 
-You can even prerender API routes which is particularly useful for full Statically Generated Sites (SSG) because you can then `$fetch` data as if you have an available server!
+You can even prerender API routes which is particularly useful for full statically generated sites (SSG) because you can then `$fetch` data as if you have an available server!
 
 ```js
 prerenderRoutes('/api/content/article/name-of-article');
@@ -37,10 +37,10 @@ prerenderRoutes('/api/content/article/name-of-article');
 // Somewhere later in App
 const articleContent = await $fetch('/api/content/article/name-of-article', {
   responseType: 'json',
-});
+})
 ```
 
 ::warning
-Fetching prerendered API routes on production looses all headers you set up in `defineEventHandler` on server side! This means the data you fetch will most likely have `application/octet-stream` content type even if it is just a JSON and therefore break the application in unpredictable ways.
+Prerendered API routes in production may not return the expected response headers, depending on the provider you deploy to. For example, a JSON response might be served with an `application/octet-stream` content type. In this case, you may have to specify an explicit `responseType`.
 Always manually set `responseType` when fetching prerenderered API routes!
 ::
