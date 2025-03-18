@@ -45,15 +45,16 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
 
       - name: 🏷️ Create tag
+        env:
+          TAG_NAME: ${{ github.event.pull_request.head.ref }}
         run: |
-          TAG_NAME=${{ github.event.pull_request.head.ref }}
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
 
       - name: 🛳️ Create GitHub release
-        run: gh release create $TAG_NAME --title "$RELEASE_NAME" --notes "$BODY"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.event.pull_request.head.ref }}
           RELEASE_NAME: ${{ github.event.pull_request.head.ref }}
           BODY: ${{ github.event.pull_request.body }}
+        run: gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$BODY"
