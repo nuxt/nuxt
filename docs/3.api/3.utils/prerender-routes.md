@@ -42,5 +42,5 @@ const articleContent = await $fetch('/api/content/article/name-of-article', {
 
 ::warning
 Prerendered API routes in production may not return the expected response headers, depending on the provider you deploy to. For example, a JSON response might be served with an `application/octet-stream` content type.
-Always manually set `responseType` when fetching prerenderered API routes.
+Always manually set `responseType` when fetching prerendered API routes.
 ::
