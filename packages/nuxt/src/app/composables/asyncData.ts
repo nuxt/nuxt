@@ -220,7 +220,7 @@ export function useAsyncData<
   const nuxtApp = useNuxtApp()
 
   // Used to get default values
-  const getDefault = () => undefined
+  const getDefault = () => asyncDataDefaults.value
   const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
     if (nuxtApp.isHydrating) {
       return nuxtApp.payload.data[key]
@@ -469,7 +469,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
 
   // Initialize value when key is not already set
   if (!(key in nuxtApp.payload.data)) {
-    nuxtApp.payload.data[key] = undefined
+    nuxtApp.payload.data[key] = asyncDataDefaults.value
   }
 
   return {
@@ -521,12 +521,12 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (key in nuxtApp.payload._errors) {
-    nuxtApp.payload._errors[key] = undefined
+    nuxtApp.payload._errors[key] = asyncDataDefaults.errorValue
   }
 
   if (nuxtApp._asyncData[key]) {
     nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
-    nuxtApp._asyncData[key]!.error.value = undefined
+    nuxtApp._asyncData[key]!.error.value = asyncDataDefaults.errorValue
     nuxtApp._asyncData[key]!.pending.value = false
     nuxtApp._asyncData[key]!.status.value = 'idle'
   }
@@ -559,11 +559,7 @@ function createAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (nuxtApp: NuxtApp, key: string, _handler: (ctx?: NuxtApp) => Promise<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
-  nuxtApp.payload._errors[key] ??= undefined
-
-  const _ref = options.deep ? ref : shallowRef
-
-  const hasCachedData = typeof initialCachedData !== 'undefined'
+  nuxtApp.payload._errors[key] ??= asyncDataDefaults.errorValue
 
   // When prerendering, share payload data automatically between requests
   const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
@@ -578,6 +574,8 @@ function createAsyncData<
         return promise
       }
 
+  const _ref = options.deep ? ref : shallowRef
+  const hasCachedData = typeof initialCachedData !== 'undefined'
   const asyncData: CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> = {
     data: _ref(hasCachedData ? initialCachedData : options.default!()) as any,
     pending: ref(!hasCachedData),
@@ -596,7 +594,7 @@ function createAsyncData<
         const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (typeof cachedData !== 'undefined') {
           nuxtApp.payload.data[key] = asyncData.data.value = cachedData
-          asyncData.error.value = undefined
+          asyncData.error.value = asyncDataDefaults.errorValue
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
         }
@@ -635,7 +633,7 @@ function createAsyncData<
           nuxtApp.payload.data[key] = result
 
           asyncData.data.value = result
-          asyncData.error.value = undefined
+          asyncData.error.value = asyncDataDefaults.errorValue
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
