@@ -32,7 +32,7 @@ In the browser, or if called outside prerendering, `prerenderRoutes` will have n
 You can even prerender API routes which is particularly useful for full statically generated sites (SSG) because you can then `$fetch` data as if you have an available server!
 
 ```js
-prerenderRoutes('/api/content/article/name-of-article');
+prerenderRoutes('/api/content/article/name-of-article')
 
 // Somewhere later in App
 const articleContent = await $fetch('/api/content/article/name-of-article', {
@@ -41,6 +41,6 @@ const articleContent = await $fetch('/api/content/article/name-of-article', {
 ```
 
 ::warning
-Prerendered API routes in production may not return the expected response headers, depending on the provider you deploy to. For example, a JSON response might be served with an `application/octet-stream` content type. In this case, you may have to specify an explicit `responseType`.
-Always manually set `responseType` when fetching prerenderered API routes!
+Prerendered API routes in production may not return the expected response headers, depending on the provider you deploy to. For example, a JSON response might be served with an `application/octet-stream` content type.
+Always manually set `responseType` when fetching prerenderered API routes.
 ::
