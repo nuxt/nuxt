@@ -131,7 +131,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     })
   }
 
-  serverConfig.customLogger = createViteLogger(serverConfig)
+  serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !ctx.nuxt.options.dev })
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
