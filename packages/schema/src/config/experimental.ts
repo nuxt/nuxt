@@ -397,6 +397,7 @@ export default defineResolvers({
         prefetchOn: {
           visibility: true,
         },
+        whitelist: [],
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
