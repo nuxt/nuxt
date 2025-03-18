@@ -195,7 +195,7 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       srvx:
-        specifier: ^0.2.5
+        specifier: 0.2.5
         version: 0.2.5
       std-env:
         specifier: 3.8.1
