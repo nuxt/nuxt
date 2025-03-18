@@ -201,8 +201,8 @@ importers:
         specifier: 3.8.1
         version: 3.8.1
       tinyexec:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.0
+        version: 1.0.0
       tinyglobby:
         specifier: 0.2.12
         version: 0.2.12
@@ -853,8 +853,8 @@ importers:
         specifier: 3.3.2
         version: 3.3.2
       tinyexec:
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 1.0.0
+        version: 1.0.0
       tinyglobby:
         specifier: 0.2.12
         version: 0.2.12
@@ -7088,6 +7088,9 @@ packages:
 
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
+
+  tinyexec@1.0.0:
+    resolution: {integrity: sha512-djtKaAR3lnRo0uMT/IKYwj3s4E86IE/SdwCE3XXIJcozbDFKsfgAmi8IBIpIDmTd0Y6YKyfqo3vQ33OloPJPaQ==}
 
   tinyglobby@0.2.12:
     resolution: {integrity: sha512-qkf4trmKSIiMTs/E63cxH+ojC2unam7rJ0WrauAzpT3ECNTxGRMlaXxVbfxMUC/w0LaYk6jQ4y/nGR9uBO3tww==}
@@ -14683,6 +14686,8 @@ snapshots:
   tinybench@2.9.0: {}
 
   tinyexec@0.3.2: {}
+
+  tinyexec@1.0.0: {}
 
   tinyglobby@0.2.12:
     dependencies:
