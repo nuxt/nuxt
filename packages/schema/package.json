@@ -76,7 +76,7 @@
     "webpack-dev-middleware": "7.4.2"
   },
   "dependencies": {
-    "consola": "^3.4.1",
+    "consola": "^3.4.2",
     "defu": "^6.1.4",
     "pathe": "^2.0.3",
     "std-env": "^3.8.1"
