@@ -2685,6 +2685,8 @@ describe.skipIf(isWindows)('useAsyncData', () => {
     await page.click(`#refresh-nuxt-data`)
 
     expect(consoleLogs.map(l => l.text).filter(t => t.startsWith('[useAsyncData]'))).toEqual(['[useAsyncData] execute async data'])
+
+    await page.close()
   })
 })
 
