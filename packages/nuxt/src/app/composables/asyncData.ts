@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, onActivated, onBeforeMount, onDeactivated, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { MultiWatchSources, Ref } from 'vue'
 import { captureStackTrace } from 'errx'
 import type { NuxtApp } from '../nuxt'
