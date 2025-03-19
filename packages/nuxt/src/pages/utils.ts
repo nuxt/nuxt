@@ -328,7 +328,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
         : token.type === SegmentTokenType.dynamic
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
-            ? `:${token.value}(.*)*`
+            ? `:${token.value}([^/]*)*`
             : token.type === SegmentTokenType.group
               ? ''
               : encodePath(token.value).replace(COLON_RE, '\\:'))
