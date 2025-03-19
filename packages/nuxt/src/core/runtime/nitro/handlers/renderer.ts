@@ -281,7 +281,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   await nitroApp.hooks.callHook('render:html', htmlContext, { event })
 
   // Construct HTML response
-  const response = {
+  return {
     body: renderHTMLDocument(htmlContext),
     statusCode: getResponseStatus(event),
     statusMessage: getResponseStatusText(event),
@@ -290,8 +290,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       'x-powered-by': 'Nuxt',
     },
   } satisfies RenderResponse
-
-  return response
 })
 
 function normalizeChunks (chunks: (string | undefined)[]) {
