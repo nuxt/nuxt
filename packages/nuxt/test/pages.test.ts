@@ -576,6 +576,23 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
     },
     {
+      description: 'should use more performant regexp when catchall is used in middle of path',
+      files: [
+        {
+          path: `${pagesDir}/[...id]/suffix.vue`,
+        },
+      ],
+      output: [
+        {
+          name: 'id-suffix',
+          meta: undefined,
+          path: '/:id([^/]*)*/suffix',
+          file: `${pagesDir}/[...id]/suffix.vue`,
+          children: [],
+        },
+      ],
+    },
+    {
       description: 'should merge route.meta with meta from file',
       files: [
         {
