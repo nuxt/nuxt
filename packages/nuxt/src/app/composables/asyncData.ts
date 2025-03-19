@@ -1,10 +1,11 @@
-import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, onActivated, onBeforeMount, onDeactivated, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { MultiWatchSources, Ref } from 'vue'
 import { captureStackTrace } from 'errx'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import type { NuxtError } from './error'
+import { useActivated } from './activated'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
 
@@ -393,8 +394,10 @@ export function useAsyncData<
         onScopeDispose(unsub)
       }
     }
+
+    const isActivated = useActivated()
     const off = nuxtApp.hook('app:data:refresh', async (keys) => {
-      if (!keys || keys.includes(key)) {
+      if (isActivated.value && (!keys || keys.includes(key))) {
         await asyncData.refresh()
       }
     })
