@@ -32,7 +32,7 @@ const websiteConfig = useState('config')
 
 await callOnce(async () => {
   console.log('This will only be logged once')
-  websiteConfig.value = await $fetch('https://my-cms.com/api/website-config')
+  websiteConfig.value = await $fetch('/api/website-config')
 })
 </script>
 ```
@@ -45,7 +45,7 @@ const websiteConfig = useState('config')
 
 await callOnce(async () => {
   console.log('This will only be logged once and then on every client side navigation')
-  websiteConfig.value = await $fetch('https://my-cms.com/api/website-config')
+  websiteConfig.value = await $fetch('/api/website-config')
 }, { mode: 'navigation' })
 </script>
 ```
