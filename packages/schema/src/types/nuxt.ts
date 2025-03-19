@@ -86,20 +86,6 @@ export interface NuxtApp {
   pages?: NuxtPage[]
 }
 
-export interface NuxtAugmentPagesContext {
-  fullyResolvedPaths?: Set<string>
-  pagesToSkip?: Set<string>
-  /** A `Map` with file paths of augmented pages as keys and metadata as values. */
-  augmentedPages?: Map<string, {
-    /**
-     * Added when augmenting pages to preserve the original route path, so we can properly edit the route tree.
-     * This can be `undefined` for programmatically added routes when not augmenting pages in `after-resolve` mode.
-     */
-    originalPath: string
-  }>
-  extraExtractionKeys?: string[]
-}
-
 export interface Nuxt {
   // Private fields.
   __name: string
@@ -107,7 +93,6 @@ export interface Nuxt {
   _ignore?: Ignore
   _dependencies?: Set<string>
   _debug?: NuxtDebugContext
-  _augmentPagesContext?: NuxtAugmentPagesContext
   /** Async local storage for current running Nuxt module instance. */
   _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
 
