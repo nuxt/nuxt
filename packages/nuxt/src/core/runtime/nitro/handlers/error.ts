@@ -28,6 +28,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
+  // remove proto/hostname/port from URL
+  const url = new URL(errorObject.url)
+  errorObject.url = url.pathname + url.search + url.hash
+  // add default server message
   errorObject.message ||= 'Server Error'
 
   delete defaultRes.headers['content-type'] // this would be set to application/json
