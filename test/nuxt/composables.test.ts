@@ -215,7 +215,7 @@ describe('useAsyncData', () => {
     const data = useNuxtData('key')
     expect(data.data.value).toBeUndefined()
     await refreshNuxtData('key')
-    expect(data.data.value).toMatchInlineSnapshot(`undefined`)
+    expect(data.data.value).toMatchInlineSnapshot(`"test"`)
   })
 
   it('should be clearable', async () => {
