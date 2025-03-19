@@ -86,7 +86,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 }
 
 /**
- * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/main/src/runtime/internal/utils.ts
+ * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.ts
  */
 
 function isJsonRequest (event: H3Event) {

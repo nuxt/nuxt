@@ -80,3 +80,5 @@ eslint-typegen.d.ts
 .eslintcache
 test-results/
 playwright-report
+
+temp
