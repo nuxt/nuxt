@@ -101,7 +101,7 @@
     {
       "component": "() => import("pages/[...slug].vue")",
       "name": ""slug"",
-      "path": ""/:slug(.*)*"",
+      "path": ""/:slug([^/]*)*"",
     },
     {
       "component": "() => import("pages/index.vue")",
@@ -177,7 +177,7 @@
     {
       "component": "() => import("pages/[...stories].vue")",
       "name": ""stories"",
-      "path": ""/:stories(.*)*"",
+      "path": ""/:stories([^/]*)*"",
     },
     {
       "component": "() => import("pages/stories/[id].vue")",
@@ -194,7 +194,7 @@
     {
       "component": "() => import("pages/[...stories].vue")",
       "name": ""stories"",
-      "path": ""/:stories(.*)*"",
+      "path": ""/:stories([^/]*)*"",
     },
   ],
   "should generate correct route for kebab-case file": [

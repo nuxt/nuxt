@@ -105,7 +105,7 @@ describe('pages:generateRoutesFromFiles', () => {
       output: [
         {
           name: 'stories',
-          path: '/:stories(.*)*',
+          path: '/:stories([^/]*)*',
           file: `${pagesDir}/[...stories].vue`,
           children: [],
         },
@@ -132,7 +132,7 @@ describe('pages:generateRoutesFromFiles', () => {
         },
         {
           name: 'stories',
-          path: '/:stories(.*)*',
+          path: '/:stories([^/]*)*',
           file: `${pagesDir}/[...stories].vue`,
           children: [],
         },
@@ -263,7 +263,7 @@ describe('pages:generateRoutesFromFiles', () => {
       output: [
         {
           name: 'slug',
-          path: '/:slug(.*)*',
+          path: '/:slug([^/]*)*',
           file: `${pagesDir}/[...slug].vue`,
           children: [],
         },
