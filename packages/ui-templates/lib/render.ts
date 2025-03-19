@@ -201,7 +201,7 @@ export const RenderPlugin = () => {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
       for (const file of ['error-500.ts', 'error-dev.ts']) {
-        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro/handlers', file))
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro/templates', file))
       }
     },
   }
