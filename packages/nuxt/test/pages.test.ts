@@ -105,7 +105,7 @@ describe('pages:generateRoutesFromFiles', () => {
       output: [
         {
           name: 'stories',
-          path: '/:stories([^/]*)*',
+          path: '/:stories(.*)*',
           file: `${pagesDir}/[...stories].vue`,
           children: [],
         },
@@ -132,7 +132,7 @@ describe('pages:generateRoutesFromFiles', () => {
         },
         {
           name: 'stories',
-          path: '/:stories([^/]*)*',
+          path: '/:stories(.*)*',
           file: `${pagesDir}/[...stories].vue`,
           children: [],
         },
@@ -263,7 +263,7 @@ describe('pages:generateRoutesFromFiles', () => {
       output: [
         {
           name: 'slug',
-          path: '/:slug([^/]*)*',
+          path: '/:slug(.*)*',
           file: `${pagesDir}/[...slug].vue`,
           children: [],
         },
@@ -571,6 +571,23 @@ describe('pages:generateRoutesFromFiles', () => {
           file: `${pagesDir}/page-with-meta.vue`,
           children: [],
           meta: { test: 1 },
+        },
+      ],
+    },
+    {
+      description: 'should use more performant regexp when catchall is used in middle of path',
+      files: [
+        {
+          path: `${pagesDir}/[...id]/suffix.vue`,
+        },
+      ],
+      output: [
+        {
+          name: 'id-suffix',
+          meta: undefined,
+          path: '/:id([^/]*)*/suffix',
+          file: `${pagesDir}/[...id]/suffix.vue`,
+          children: [],
         },
       ],
     },
