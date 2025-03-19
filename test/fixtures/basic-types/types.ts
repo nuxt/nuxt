@@ -207,6 +207,7 @@ describe('typed router integration', () => {
   it('correctly reads custom names typed in `definePageMeta`', () => {
     const router = useRouter()
     router.push({ name: 'some-custom-name' })
+    router.push({ name: 'param-id-view-custom', params: { id: 4 } })
   })
 
   it('allows typing useRoute', () => {
@@ -225,6 +226,9 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     navigateTo({ name: 'param-id', params: { bob: 23 } })
     navigateTo({ name: 'param-id', params: { id: 4 } })
+    // @ts-expect-error this is an invalid param
+    navigateTo({ name: 'param-id-view-custom', params: { bob: 23 } })
+    navigateTo({ name: 'param-id-view-custom', params: { id: 4 } })
   })
 
   it('allows typing middleware', () => {
