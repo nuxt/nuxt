@@ -2670,23 +2670,10 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
     await page.close()
   })
-
   it('works with useId', async () => {
     const html = await $fetch<string>('/useAsyncData/use-id')
     expect(html).toContain('<div>v-0-0-0</div> v-0-0</div>')
     await expectNoClientErrors('/useAsyncData/use-id')
-  })
-
-  it('should not refetch data when component is deactivated', async () => {
-    const { page, consoleLogs } = await renderPage('/useAsyncData/keepalive')
-
-    await page.click('#to-other')
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/useAsyncData/keepalive/other')
-    await page.click(`#refresh-nuxt-data`)
-
-    expect(consoleLogs.map(l => l.text).filter(t => t.startsWith('[useAsyncData]'))).toEqual(['[useAsyncData] execute async data'])
-
-    await page.close()
   })
 })
 

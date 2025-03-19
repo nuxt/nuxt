@@ -5,7 +5,6 @@ import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import type { NuxtError } from './error'
-import { useActivated } from './activated'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
 
@@ -394,10 +393,8 @@ export function useAsyncData<
         onScopeDispose(unsub)
       }
     }
-
-    const isActivated = useActivated()
     const off = nuxtApp.hook('app:data:refresh', async (keys) => {
-      if (isActivated.value && (!keys || keys.includes(key))) {
+      if (!keys || keys.includes(key)) {
         await asyncData.refresh()
       }
     })
