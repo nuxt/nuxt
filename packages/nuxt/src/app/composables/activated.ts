@@ -4,7 +4,7 @@ import { getCurrentInstance, onActivated, onDeactivated, shallowRef } from 'vue'
  * Activated state in ref.
  */
 export function useActivated () {
-  const isActivated = shallowRef(false)
+  const isActivated = shallowRef(true)
 
   const instance = getCurrentInstance()
   if (instance) {
