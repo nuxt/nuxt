@@ -95,9 +95,9 @@ const INDEX_PAGE_RE = /\/index$/
 export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   const routes: NuxtPage[] = []
 
-  files.sort((a, b) => a.relativePath.length - b.relativePath.length)
+  const sortedFiles = [...files].sort((a, b) => a.relativePath.length - b.relativePath.length)
 
-  for (const file of files) {
+  for (const file of sortedFiles) {
     const segments = file.relativePath
       .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
       .split('/')
