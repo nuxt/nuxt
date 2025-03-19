@@ -182,18 +182,6 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
       output: [
         {
-          name: 'index',
-          path: '/',
-          file: `${pagesDir}/index.vue`,
-          children: [],
-        },
-        {
-          children: [],
-          name: 'slug',
-          file: `${pagesDir}/[slug].vue`,
-          path: '/:slug()',
-        },
-        {
           children: [
             {
 
@@ -207,10 +195,46 @@ describe('pages:generateRoutesFromFiles', () => {
           path: '/:foo?',
         },
         {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          children: [],
+        },
+        {
+          children: [],
+          name: 'slug',
+          file: `${pagesDir}/[slug].vue`,
+          path: '/:slug()',
+        },
+        {
+          children: [],
+          name: 'bar',
+          file: `${pagesDir}/[bar]/index.vue`,
+          path: '/:bar()',
+        },
+        {
+          name: 'opt-slug',
+          path: '/opt/:slug?',
+          file: `${pagesDir}/opt/[[slug]].vue`,
+          children: [],
+        },
+        {
+          name: 'nonopt-slug',
+          path: '/nonopt/:slug()',
+          file: `${pagesDir}/nonopt/[slug].vue`,
+          children: [],
+        },
+        {
           children: [],
           path: '/optional/:opt?',
           name: 'optional-opt',
           file: `${pagesDir}/optional/[[opt]].vue`,
+        },
+        {
+          name: 'sub-route-slug',
+          path: '/:sub?/route-:slug()',
+          file: `${pagesDir}/[[sub]]/route-[slug].vue`,
+          children: [],
         },
         {
           children: [],
@@ -231,30 +255,6 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'optional-prefix-opt-postfix',
           file: `${pagesDir}/optional/prefix-[[opt]]-postfix.vue`,
         },
-        {
-          children: [],
-          name: 'bar',
-          file: `${pagesDir}/[bar]/index.vue`,
-          path: '/:bar()',
-        },
-        {
-          name: 'nonopt-slug',
-          path: '/nonopt/:slug()',
-          file: `${pagesDir}/nonopt/[slug].vue`,
-          children: [],
-        },
-        {
-          name: 'opt-slug',
-          path: '/opt/:slug?',
-          file: `${pagesDir}/opt/[[slug]].vue`,
-          children: [],
-        },
-        {
-          name: 'sub-route-slug',
-          path: '/:sub?/route-:slug()',
-          file: `${pagesDir}/[[sub]]/route-[slug].vue`,
-          children: [],
-        },
       ],
     },
     {
@@ -262,15 +262,15 @@ describe('pages:generateRoutesFromFiles', () => {
       files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }],
       output: [
         {
-          name: 'slug',
-          path: '/:slug(.*)*',
-          file: `${pagesDir}/[...slug].vue`,
-          children: [],
-        },
-        {
           name: 'index',
           path: '/',
           file: `${pagesDir}/index.vue`,
+          children: [],
+        },
+        {
+          name: 'slug',
+          path: '/:slug(.*)*',
+          file: `${pagesDir}/[...slug].vue`,
           children: [],
         },
       ],
@@ -376,16 +376,16 @@ describe('pages:generateRoutesFromFiles', () => {
       output: [
         {
           name: 'foo',
+          path: '/:foo()',
+          file: `${pagesDir}/[foo].vue`,
+          children: [],
+        },
+        {
+          name: 'foo',
           path: '/:foo?',
           file: `${pagesDir}/[[foo]].vue`,
           children: [
           ],
-        },
-        {
-          name: 'foo',
-          path: '/:foo()',
-          file: `${pagesDir}/[foo].vue`,
-          children: [],
         },
       ],
     },
@@ -471,6 +471,34 @@ describe('pages:generateRoutesFromFiles', () => {
           file: `${pagesDir}/index/index.vue`,
           name: 'index',
           path: '/',
+        },
+      ],
+    },
+    {
+      description: 'should generate correct routes for nested pages',
+      files: [
+        { path: `${pagesDir}/page1/index.vue` },
+        { path: `${pagesDir}/page1/[id].vue` },
+        { path: `${pagesDir}/page1.vue` },
+      ],
+      output: [
+        {
+          children: [
+            {
+              children: [],
+              file: `${pagesDir}/page1/[id].vue`,
+              name: 'page1-id',
+              path: ':id()',
+            },
+            {
+              children: [],
+              file: `${pagesDir}/page1/index.vue`,
+              name: 'page1',
+              path: '',
+            },
+          ],
+          file: `${pagesDir}/page1.vue`,
+          path: '/page1',
         },
       ],
     },
@@ -709,7 +737,7 @@ describe('pages:generateRoutesFromFiles', () => {
       }
 
       if (result) {
-        expect(result).toEqual(test.output)
+        expect.soft(result).toEqual(test.output)
 
         normalizedResults[test.description] = normalizeRoutes(result, new Set(), {
           clientComponentRuntime: '<client-component-runtime>',
