@@ -142,7 +142,6 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       const routePath = getRoutePath(tokens, segments[i + 1] !== undefined)
       const path = withLeadingSlash(joinURL(route.path, routePath.replace(INDEX_PAGE_RE, '/')))
       const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
-      console.log({child, route})
 
       if (child && child.children) {
         parent = child.children
