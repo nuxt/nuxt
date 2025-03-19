@@ -502,8 +502,8 @@ importers:
         specifier: 4.1.2
         version: 4.1.2
       unplugin:
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.2.1
+        version: 2.2.1
       unplugin-vue-router:
         specifier: ^0.12.0
         version: 0.12.0(vue-router@4.5.0(vue@3.5.13(typescript@5.8.2)))(vue@3.5.13(typescript@5.8.2))
@@ -650,8 +650,8 @@ importers:
         specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15
       unplugin:
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.2.1
+        version: 2.2.1
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.98.0))(webpack@5.98.0)
@@ -964,8 +964,8 @@ importers:
         specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15
       unplugin:
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.2.1
+        version: 2.2.1
       vite:
         specifier: 6.2.2
         version: 6.2.2(@types/node@22.13.10)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -1082,8 +1082,8 @@ importers:
         specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15
       unplugin:
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.2.1
+        version: 2.2.1
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.98.0))(webpack@5.98.0)
@@ -1163,7 +1163,7 @@ importers:
         version: 1.5.4
       unplugin:
         specifier: latest
-        version: 2.2.0
+        version: 2.2.1
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.2)
@@ -7397,6 +7397,10 @@ packages:
     resolution: {integrity: sha512-m1ekpSwuOT5hxkJeZGRxO7gXbXT3gF26NjQ7GdVHoLoF8/nopLcd/QfPigpCy7i51oFHiRJg/CyHhj4vs2+KGw==}
     engines: {node: '>=18.12.0'}
 
+  unplugin@2.2.1:
+    resolution: {integrity: sha512-Q0YDhwViJaSnHf1cxLf+/VKhmfdr/ZAS/RL2GQVO0cAbAfJAVUef2bvNu+veyWcEPNwsTlFmMiFLjf8Xeqog8g==}
+    engines: {node: '>=18.12.0'}
+
   unstorage@1.15.0:
     resolution: {integrity: sha512-m40eHdGY/gA6xAPqo8eaxqXgBuzQTlAKfmB1iF7oCKXE1HfwHwzDJBywK+qQGn52dta+bPlZluPF7++yR3p/bg==}
     peerDependencies:
@@ -8862,7 +8866,7 @@ snapshots:
       sirv: 3.0.1
       std-env: 3.8.1
       ufo: 1.5.4
-      unplugin: 2.2.0
+      unplugin: 2.2.1
       unstorage: 1.15.0(db0@0.3.1)(ioredis@5.6.0)
       valibot: 1.0.0-rc.4(typescript@5.8.2)
     optionalDependencies:
@@ -8930,7 +8934,7 @@ snapshots:
       std-env: 3.8.1
       tinyexec: 0.3.2
       ufo: 1.5.4
-      unplugin: 2.2.0
+      unplugin: 2.2.1
       vite: 6.2.2(@types/node@22.13.10)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vitest-environment-nuxt: 1.0.1(@playwright/test@1.51.1)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.2)))(@types/node@22.13.10)(@vue/test-utils@2.4.6)(happy-dom@17.4.4)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.51.1)(terser@5.32.0)(tsx@4.19.2)(typescript@5.8.2)(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.13.10)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(yaml@2.7.0)
       vue: 3.5.13(typescript@5.8.2)
@@ -12183,7 +12187,7 @@ snapshots:
       mlly: 1.7.4
       mocked-exports: 0.1.1
       pathe: 2.0.3
-      unplugin: 2.2.0
+      unplugin: 2.2.1
     transitivePeerDependencies:
       - rollup
 
@@ -15092,7 +15096,7 @@ snapshots:
       mlly: 1.7.4
       pathe: 2.0.3
       scule: 1.3.0
-      unplugin: 2.2.0
+      unplugin: 2.2.1
       unplugin-utils: 0.2.4
       yaml: 2.7.0
     optionalDependencies:
@@ -15106,6 +15110,11 @@ snapshots:
       webpack-virtual-modules: 0.6.2
 
   unplugin@2.2.0:
+    dependencies:
+      acorn: 8.14.1
+      webpack-virtual-modules: 0.6.2
+
+  unplugin@2.2.1:
     dependencies:
       acorn: 8.14.1
       webpack-virtual-modules: 0.6.2

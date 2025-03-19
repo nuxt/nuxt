@@ -135,6 +135,6 @@
     "vue-tsc": "2.2.8",
     "webpack": "5.98.0"
   },
-  "packageManager": "pnpm@10.6.4",
+  "packageManager": "pnpm@10.6.5",
   "version": ""
 }
