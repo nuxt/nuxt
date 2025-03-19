@@ -167,6 +167,6 @@ export function isStartFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 
-function isEndFragment (element: RendererNode) {
+export function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
 }

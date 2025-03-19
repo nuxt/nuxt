@@ -1,4 +1,4 @@
-import type { Component, PropType, VNode } from 'vue'
+import type { Component, PropType, RendererNode, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -12,7 +12,7 @@ import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
-import { getFragmentHTML, isStartFragment } from './utils'
+import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
@@ -132,14 +132,21 @@ export default defineComponent({
     if (import.meta.client && instance.vnode?.el) {
       if (import.meta.dev) {
         let currentEl = instance.vnode.el
+        let startEl: RendererNode | null = null
+        let isFirstElement = true
+
         while (currentEl) {
-          // find first non-comment node
-          if (!isStartFragment(currentEl)) {
-            // if don't have root element
-            if (currentEl.nodeType !== 1) {
+          if (isEndFragment(currentEl)) {
+            if (startEl !== currentEl.previousSibling) {
               console.warn(`[\`Server components(and islands)\`] must have a single root element. (HTML comments are considered elements as well.)`)
             }
             break
+          } else if (!isStartFragment(currentEl) && isFirstElement) {
+            // find first non-comment node
+            isFirstElement = false
+            if (currentEl.nodeType === 1) {
+              startEl = currentEl
+            }
           }
           currentEl = currentEl.nextSibling
         }
