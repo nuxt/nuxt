@@ -75,7 +75,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.6",
     "@nuxt/vite-builder": "workspace:*",
-    "@oxc-parser/wasm": "^0.60.0",
+    "@oxc-parser/binding-wasm32-wasi": "^0.61.0",
     "@unhead/vue": "^2.0.8",
     "@vue/shared": "^3.5.13",
     "c12": "^3.0.3",
