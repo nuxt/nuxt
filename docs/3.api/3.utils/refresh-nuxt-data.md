@@ -61,9 +61,11 @@ async function refreshAll () {
 
 This example below refreshes only data where the key matches to `count`.
 
+::code-group
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
+const { data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
 
 async function refresh () {
   refreshing.value = true
@@ -82,6 +84,13 @@ async function refresh () {
   <button @click="refresh">Refresh</button>
 </template>
 ```
+```ts [api/count.ts]
+export default defineEventHandler(() => {
+  return { count: 1 }
+})
+```
+
+::
 
 ::note
 If you have access to the `asyncData` instance, it is recommended to use its `refresh` or `execute` method as the preferred way to refetch the data.
