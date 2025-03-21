@@ -37,6 +37,6 @@ Option | Default | Description
 `--prepare` | `false` | Prepare module for local development
 <!--/build-module-opts-->
 
-::read-more{to="https://github.com/nuxt/module-builder" icon="i-simple-icons-github" color="gray" target="\_blank"}
+::read-more{to="https://github.com/nuxt/module-builder" icon="i-simple-icons-github" target="\_blank"}
 Read more about `@nuxt/module-builder`.
 ::
