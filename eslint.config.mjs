@@ -23,7 +23,7 @@ export default createConfigForNuxt({
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
-        'packages/nuxt/src/core/runtime/nitro/handlers/error-*',
+        'packages/nuxt/src/core/runtime/nitro/templates/error-*',
       ],
     },
     {
