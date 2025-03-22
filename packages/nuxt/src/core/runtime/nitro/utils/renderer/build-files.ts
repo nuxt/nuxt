@@ -18,23 +18,15 @@ const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 
 // @ts-expect-error file will be produced after app build
-export const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
+const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
+
+// @ts-expect-error file will be produced after app build
+const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-export const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
-  // @ts-expect-error internal key set by CSS inlining configuration
-  r._globalCSS,
-).map(r => r.src!))
-
-// @ts-expect-error file will be produced after app build
-export const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
-
-// @ts-expect-error file will be produced after app build
-export const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
-
 // -- SSR Renderer --
-export const getSSRRenderer = lazyCachedFunction(async () => {
+const getSSRRenderer = lazyCachedFunction(async () => {
   // Load client manifest
   const manifest = await getClientManifest()
   if (!manifest) { throw new Error('client.manifest is not available') }
@@ -65,7 +57,7 @@ export const getSSRRenderer = lazyCachedFunction(async () => {
 })
 
 // -- SPA Renderer --
-export const getSPARenderer = lazyCachedFunction(async () => {
+const getSPARenderer = lazyCachedFunction(async () => {
   const manifest = await getClientManifest()
 
   // @ts-expect-error virtual file
@@ -117,3 +109,16 @@ function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
     return res
   }
 }
+
+export function getRenderer (ssrContext: NuxtSSRContext) {
+  return (process.env.NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
+}
+
+// @ts-expect-error file will be produced after app build
+export const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
+
+// for inlined styles
+export const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
+  // @ts-expect-error internal key set by CSS inlining configuration
+  r._globalCSS,
+).map(r => r.src!))
