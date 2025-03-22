@@ -83,6 +83,11 @@ export default defineComponent({
       nuxtApp._isNuxtPageUsed = true
     }
     let pageLoadingEndHookAlreadyCalled = false
+    if (import.meta.client) {
+      useRouter().beforeEach(() => {
+        pageLoadingEndHookAlreadyCalled = false
+      })
+    }
 
     const routerProviderLookup = new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
 
@@ -160,9 +165,9 @@ export default defineComponent({
               onResolve: () => {
                 nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
                   if (!pageLoadingEndHookAlreadyCalled) {
+                    pageLoadingEndHookAlreadyCalled = true
                     return nuxtApp.callHook('page:loading:end')
                   }
-                  pageLoadingEndHookAlreadyCalled = false
                 }).finally(done))
               },
             }, {
