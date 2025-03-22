@@ -36,6 +36,6 @@ const url = useRequestURL()
 
 ::
 
-::tip{icon="i-simple-icons-mdnwebdocs" color="gray" to="https://developer.mozilla.org/en-US/docs/Web/API/URL#instance_properties" target="_blank"}
+::tip{icon="i-simple-icons-mdnwebdocs" to="https://developer.mozilla.org/en-US/docs/Web/API/URL#instance_properties" target="_blank"}
 Read about the URL instance properties on the MDN documentation.
 ::
