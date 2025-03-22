@@ -659,6 +659,43 @@ describe('pages', () => {
 
     await page.close()
   })
+
+  it('should hide nuxt page load indicator after navigate from nested page to other nested page', async () => {
+    const LOAD_INDICATOR_SELECTOR = '.nuxt-loading-indicator'
+    const { page } = await renderPage('/page-load-hook')
+    await page.getByText('To sub page').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook/subpage')
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
+    let isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(true)
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(false)
+
+    await page.getByText('Add query').click()
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(true)
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(false)
+
+    await page.getByText('To other slug').click()
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(true)
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(false)
+
+    await page.close()
+  })
 })
 
 describe('nuxt composables', () => {
