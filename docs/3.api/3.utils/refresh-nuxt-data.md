@@ -59,7 +59,7 @@ async function refreshAll () {
 
 ### Refresh Specific Data
 
-This example below refreshes only data where the key matches to `count`.
+This example below refreshes only data where the key matches to `count` and `user`.
 
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
@@ -68,7 +68,8 @@ const refreshing = ref(false)
 async function refresh () {
   refreshing.value = true
   try {
-    await refreshNuxtData('count')
+    // you could also pass an array of keys to refresh multiple data
+    await refreshNuxtData(['count', 'user'])
   } finally {
     refreshing.value = false
   }
@@ -76,8 +77,8 @@ async function refresh () {
 </script>
 
 <template>
-  <div>
-    {{ refreshing ? 'Loading' : count }}
+  <div v-if="refreshing">
+    Loading
   </div>
   <button @click="refresh">Refresh</button>
 </template>
