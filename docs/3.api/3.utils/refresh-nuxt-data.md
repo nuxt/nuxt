@@ -59,29 +59,30 @@ async function refreshAll () {
 
 ### Refresh Specific Data
 
-This example below refreshes only data where the key matches to `count`.
+This example below refreshes only data where the key matches to `count` and `user`.
 
-::code-group
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
-const { data: count, refresh, status } = await useAsyncData('count', () => $fetch('/api/count'))
+
+async function refresh () {
+  refreshing.value = true
+  try {
+    // you could also pass an array of keys to refresh multiple data
+    await refreshNuxtData(['count', 'user'])
+  } finally {
+    refreshing.value = false
+  }
+}
 </script>
 
 <template>
-  <div>
-    {{ status === 'pending' ? 'Loading' : count }}
+  <div v-if="refreshing">
+    Loading
   </div>
   <button @click="refresh">Refresh</button>
 </template>
 ```
-```ts [api/count.ts]
-export default defineEventHandler(() => {
-  return { count: 1 }
-})
-```
-
-::
 
 ::note
 If you have access to the `asyncData` instance, it is recommended to use its `refresh` or `execute` method as the preferred way to refetch the data.
