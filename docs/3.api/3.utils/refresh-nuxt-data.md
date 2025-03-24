@@ -65,21 +65,12 @@ This example below refreshes only data where the key matches to `count`.
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
-const { data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
-
-async function refresh () {
-  refreshing.value = true
-  try {
-    await refreshNuxtData('count')
-  } finally {
-    refreshing.value = false
-  }
-}
+const { data: count, refresh, status } = await useAsyncData('count', () => $fetch('/api/count'))
 </script>
 
 <template>
   <div>
-    {{ refreshing ? 'Loading' : count }}
+    {{ status === 'pending' ? 'Loading' : count }}
   </div>
   <button @click="refresh">Refresh</button>
 </template>
