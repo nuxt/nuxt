@@ -202,9 +202,17 @@ export default defineNuxtModule({
             // Avoid duplicate keys in the generated RouteNamedMap type
             const absolutePagePath = joinURL(parent.path, page.path)
 
-            // @ts-expect-error TODO: either fix types upstream or figure out another
             // way to add a route without a file, which must be possible
-            const route = addedPagePaths.has(absolutePagePath) ? parent : parent.insert(page.path, page.file)
+            const route = addedPagePaths.has(absolutePagePath)
+              ? parent
+              : /^\//.test(page.path)
+                // @ts-expect-error TODO: either fix types upstream or figure out another
+                // way to add a route without a file, which must be possible
+                ? rootPage.insert(page.path, page.file)
+                // @ts-expect-error TODO: either fix types upstream or figure out another
+                // way to add a route without a file, which must be possible
+                : parent.insert(page.path, page.file)
+
             addedPagePaths.add(absolutePagePath)
             if (page.meta) {
               route.addToMeta(page.meta)

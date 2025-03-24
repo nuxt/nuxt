@@ -162,6 +162,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir })),
     ],
     prerender: {
+      ignoreUnprefixedPublicAssets: true,
       failOnError: true,
       concurrency: cpus().length * 4 || 4,
       routes: ([] as string[]).concat(nuxt.options.generate.routes),
