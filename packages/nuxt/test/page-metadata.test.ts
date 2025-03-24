@@ -298,6 +298,34 @@ definePageMeta({ name: 'bar' })
       }
     `)
   })
+
+  it('should not set default extraction keys into NuxtPage.meta', () => {
+    const page = {
+      path: '/',
+      file: filePath,
+      meta: {},
+    }
+    const meta = getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      alias: '/alias',
+      bar: true,
+    })
+    </script>
+    `, page, ['bar'])
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "alias": "/alias",
+        "bar": true,
+      }
+    `)
+    expect(page.meta).toMatchInlineSnapshot(`
+      {
+        "bar": true,
+      }
+    `)
+  })
 })
 
 describe('normalizeRoutes', () => {
