@@ -270,7 +270,12 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
-  it('should extract configured extra meta', () => {
+  it('should extract configured extra meta and add it into the page meta', () => {
+    const page = {
+      path: '/',
+      file: filePath,
+      meta: {},
+    }
     const meta = getRouteMeta(`
     <script setup>
     definePageMeta({
@@ -278,12 +283,15 @@ definePageMeta({ name: 'bar' })
       bar: true,
     })
     </script>
-    `, {
-      path: '/',
-      file: filePath,
-    }, ['bar', 'foo'])
+    `, page, ['bar', 'foo'])
 
     expect(meta).toMatchInlineSnapshot(`
+      {
+        "bar": true,
+        "foo": "bar",
+      }
+    `)
+    expect(page.meta).toMatchInlineSnapshot(`
       {
         "bar": true,
         "foo": "bar",
