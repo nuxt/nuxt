@@ -53,9 +53,9 @@
     "@nuxt/schema": "workspace:*",
     "@rspack/core": "1.2.8",
     "@types/semver": "7.5.8",
-    "nitro": "npm:nitro-nightly@3.0.0-20250318-221025.30b9c3e8",
+    "nitro": "npm:nitro-nightly@3.0.0-20250324-235814.71541d9b",
     "unbuild": "3.5.0",
-    "vite": "6.2.2",
+    "vite": "6.2.3",
     "vitest": "3.0.9",
     "webpack": "5.98.0"
   },
