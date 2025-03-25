@@ -1,4 +1,4 @@
-import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
+import { Fragment, Suspense, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
@@ -84,8 +84,11 @@ export default defineComponent({
     }
     let pageLoadingEndHookAlreadyCalled = false
     if (import.meta.client) {
-      useRouter().beforeEach(() => {
+      const unsub = useRouter().beforeResolve(() => {
         pageLoadingEndHookAlreadyCalled = false
+      })
+      onBeforeUnmount(() => {
+        unsub()
       })
     }
 
@@ -122,7 +125,9 @@ export default defineComponent({
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
-          if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
+
+          const willRenderAnotherChild = import.meta.client && hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
+          if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
             nuxtApp.callHook('page:loading:end')
             pageLoadingEndHookAlreadyCalled = true
           }
@@ -164,7 +169,7 @@ export default defineComponent({
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => {
                 nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
-                  if (!pageLoadingEndHookAlreadyCalled) {
+                  if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                     pageLoadingEndHookAlreadyCalled = true
                     return nuxtApp.callHook('page:loading:end')
                   }
@@ -247,6 +252,7 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
+  // console.log({ hasChildren: index < newRoute.matched.length - 1, component: newRoute.matched[index]?.components?.default?.name })
   return index < newRoute.matched.length - 1
 }
 
