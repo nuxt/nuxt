@@ -4,15 +4,12 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
-
-// TODO: update @nuxt/test-utils
-const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
@@ -1055,7 +1052,7 @@ describe('head tags', () => {
   it('should render http-equiv correctly', async () => {
     const html = await $fetch<string>('/head')
     // http-equiv should be rendered kebab case
-    expect(html).toContain('<meta content="default-src https" http-equiv="content-security-policy">')
+    expect(html).toContain('<meta http-equiv="content-security-policy" content="default-src https">')
   })
 
   // TODO: Doesn't adds header in test environment
@@ -1163,11 +1160,14 @@ describe('errors', () => {
     expect(res.statusText).toBe('This is a custom error')
     const error = await res.json()
     delete error.stack
+    const url = new URL(error.url)
+    url.host = 'localhost:3000'
+    error.url = url.toString()
     expect(error).toMatchObject({
-      message: 'This is a custom error',
+      message: isDev() ? 'This is a custom error' : 'Server Error',
       statusCode: 422,
       statusMessage: 'This is a custom error',
-      url: '/error',
+      url: 'http://localhost:3000/error',
     })
   })
 
@@ -1186,12 +1186,17 @@ describe('errors', () => {
     expect(res.status).toBe(404)
     const error = await res.json()
     delete error.stack
+    const url = new URL(error.url)
+    url.host = 'localhost:3000'
+    error.url = url.toString()
+
     expect(error).toMatchInlineSnapshot(`
       {
+        "error": true,
         "message": "Page Not Found: /__nuxt_error",
         "statusCode": 404,
         "statusMessage": "Page Not Found: /__nuxt_error",
-        "url": "/__nuxt_error",
+        "url": "http://localhost:3000/__nuxt_error",
       }
     `)
   })
@@ -2068,13 +2073,14 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
     await gotoPath(page, '/prefetch')
     await page.waitForLoadState('networkidle')
 
-    const snapshot = [...requests]
+    expect(requests.some(req => req.startsWith('/__nuxt_island/AsyncServerComponent'))).toBe(true)
+    requests.length = 0
     await page.click('[href="/prefetch/server-components"]')
     await page.waitForLoadState('networkidle')
 
     expect(await page.innerHTML('#async-server-component-count')).toBe('34')
 
-    expect(requests).toEqual(snapshot)
+    expect(requests.some(req => req.startsWith('/__nuxt_island/AsyncServerComponent'))).toBe(false)
     await page.close()
   })
 
@@ -2434,13 +2440,16 @@ describe('component islands', () => {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
+      if (result.head.link?.[0]?.href) {
+        result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
+      }
 
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
             {
               "crossorigin": "",
-              "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+              "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=xxxxx&lang.css",
               "rel": "stylesheet",
             },
           ],
