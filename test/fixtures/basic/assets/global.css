@@ -1,5 +1,5 @@
 :root {
   --global: 'global';
-  --asset: url('~/assets/css_only_asset.svg');
-  --public-asset: url('/css_only_public_asset.svg');
+  --asset: url('~/assets/css-only-asset.svg');
+  --public-asset: url('/css-only-public-asset.svg');
 }
