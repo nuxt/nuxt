@@ -252,7 +252,6 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
-  // console.log({ hasChildren: index < newRoute.matched.length - 1, component: newRoute.matched[index]?.components?.default?.name })
   return index < newRoute.matched.length - 1
 }
 
