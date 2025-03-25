@@ -41,7 +41,22 @@ describe('page loading indicator', () => {
           name: 'page-load-hook-slug',
           path: ':slug',
           component: defineComponent({
-            name: '~/pages/page-load-hook/slug.vue',
+            name: '~/pages/page-load-hook/[slug].vue',
+            async setup () {
+              const route = useRoute()
+              await new Promise<void>((r) => { resolve = r })
+              return () => h('div', [h('span', 'child'), route.fullPath])
+            },
+          }),
+        },
+        {
+          name: 'page-load-hook-custom-key-slug',
+          path: 'custom-key/:slug',
+          meta: {
+            key: to => to.path,
+          },
+          component: defineComponent({
+            name: '~/pages/page-load-hook/custom-key/[slug].vue',
             async setup () {
               const route = useRoute()
               await new Promise<void>((r) => { resolve = r })
@@ -123,6 +138,10 @@ describe('page loading indicator', () => {
         <div><span>child</span>/page-load-hook/other-slug</div>
       </div>"
     `)
+
+    await expectNavigatesWithLoading('/page-load-hook/custom-key/abc')
+    await expectNavigatesWithLoading('/page-load-hook/custom-key/abc?1')
+    await expectNavigatesWithLoading('/page-load-hook/custom-key/def')
 
     el.unmount()
   })
