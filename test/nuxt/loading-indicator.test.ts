@@ -15,6 +15,8 @@ describe('page loading indicator', () => {
 
   const { isLoading } = useLoadingIndicator({ duration: 1, throttle: 0, resetDelay: 0, hideDelay: 0 }) as any
 
+  const customProp = ref(false)
+
   beforeEach(() => {
     resolve = undefined
 
@@ -23,13 +25,14 @@ describe('page loading indicator', () => {
       path: '/page-load-hook',
       component: defineComponent({
         name: '~/pages/page-load-hook.vue',
-        setup: () => () => h('div', { id: 'page' }, [h('span', 'parent'), h(NuxtPage)]),
+        setup: () => () => h('div', { id: 'page' }, [h('span', 'parent'), h(NuxtPage, { customProp: customProp.value })]),
       }),
       children: [
         {
           name: 'page-load-hook-index',
           path: '',
           component: defineComponent({
+            props: { customProp: Boolean },
             name: '~/pages/page-load-hook/index.vue',
             async setup () {
               await new Promise<void>((r) => { resolve = r })
@@ -41,6 +44,7 @@ describe('page loading indicator', () => {
           name: 'page-load-hook-slug',
           path: ':slug',
           component: defineComponent({
+            props: { customProp: Boolean },
             name: '~/pages/page-load-hook/[slug].vue',
             async setup () {
               const route = useRoute()
@@ -56,6 +60,7 @@ describe('page loading indicator', () => {
             key: to => to.path,
           },
           component: defineComponent({
+            props: { customProp: Boolean },
             name: '~/pages/page-load-hook/custom-key/[slug].vue',
             async setup () {
               const route = useRoute()
@@ -142,6 +147,10 @@ describe('page loading indicator', () => {
     await expectNavigatesWithLoading('/page-load-hook/custom-key/abc')
     await expectNavigatesWithLoading('/page-load-hook/custom-key/abc?1')
     await expectNavigatesWithLoading('/page-load-hook/custom-key/def')
+
+    customProp.value = true
+    await nextTick(() => new Promise(r => setTimeout(r, 0))) // wait for page rerender
+    await expectNavigatesWithLoading('/page-load-hook/other-slug')
 
     el.unmount()
   })
