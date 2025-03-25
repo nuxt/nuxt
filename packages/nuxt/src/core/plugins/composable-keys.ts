@@ -68,7 +68,7 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
           const name = node.callee.name
           if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
-          imports = imports || detectImportNames(script, composableMeta)
+          imports ||= detectImportNames(script, composableMeta)
           if (imports.has(name)) { return }
 
           const meta = composableMeta[name]
@@ -108,7 +108,7 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
           s.appendLeft(
             codeIndex + (node as any).end - 1,
-            (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`) + '\'',
+            (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + '\'',
           )
         },
       })

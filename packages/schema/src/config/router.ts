@@ -1,6 +1,6 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   router: {
     /**
      * Additional router options passed to `vue-router`. On top of the options for `vue-router`,

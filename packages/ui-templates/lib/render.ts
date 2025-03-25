@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
-import { copyFile } from 'node:fs/promises'
+import { copyFile, mkdir } from 'node:fs/promises'
 import { basename, dirname, join } from 'pathe'
 import type { Plugin } from 'vite'
 import Beasties from 'beasties'
@@ -160,8 +160,8 @@ export const RenderPlugin = () => {
           `const props = defineProps(${props})`,
           title && 'useHead(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
-            ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))],
-            ['style', [{ children: `\`${globalStyles}\`` }]],
+            ['script', inlineScripts.map(s => ({ children: `\`${s.replace(/[`$]/g, '\\$&')}\`` }))],
+            ['style', [{ children: `\`${globalStyles.replace(/[`$]/g, '\\$&')}\`` }]],
           ]) + ')',
           '</script>',
           '<template>',
@@ -200,8 +200,9 @@ export const RenderPlugin = () => {
       for (const file of ['error-404.vue', 'error-500.vue', 'error-dev.vue', 'welcome.vue']) {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
+      await mkdir(join(nuxtRoot, 'src/core/runtime/nitro/templates'), { recursive: true })
       for (const file of ['error-500.ts', 'error-dev.ts']) {
-        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro', file))
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro/templates', file))
       }
     },
   }

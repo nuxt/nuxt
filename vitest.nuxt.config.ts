@@ -13,13 +13,17 @@ export default defineVitestConfig({
     environmentOptions: {
       nuxt: {
         overrides: {
-          runtimeConfig: {
-            app: {
-              buildId: 'override',
-            },
+          pages: true,
+          routeRules: {
+            '/specific-prerendered': { prerender: true },
+            '/pre/test': { redirect: '/' },
+            '/pre/**': { prerender: true },
           },
           experimental: {
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+          },
+          imports: {
+            polyfills: false,
           },
         },
       },

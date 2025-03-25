@@ -7,9 +7,10 @@ import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { globby } from 'globby'
 import defu from 'defu'
-import { join } from 'pathe'
-import { isWindows } from 'std-env'
-import { tryResolveModule } from '../internal/esm'
+import { basename, join, relative } from 'pathe'
+import { resolveModuleURL } from 'exsolve'
+
+import { directoryToURL } from '../internal/esm'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -18,14 +19,11 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  opts.overrides = defu(opts.overrides, {
-    _extends: await globby('layers/*', {
-      onlyDirectories: true,
-      cwd: opts.cwd || process.cwd(),
-    }),
-  });
+  const localLayers = await globby('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() })
+  opts.overrides = defu(opts.overrides, { _extends: localLayers });
+
   (globalThis as any).defineNuxtConfig = (c: any) => c
-  const result = await loadConfig<NuxtConfig>({
+  const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await loadConfig<NuxtConfig>({
     name: 'nuxt',
     configFile: 'nuxt.config',
     rcFile: '.nuxtrc',
@@ -35,13 +33,17 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     ...opts,
   })
   delete (globalThis as any).defineNuxtConfig
-  const { configFile, layers = [], cwd } = result
-  const nuxtConfig = result.config!
 
   // Fill config
-  nuxtConfig.rootDir = nuxtConfig.rootDir || cwd
+  nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
+  nuxtConfig.alias ||= {}
+
+  if (meta?.name) {
+    const alias = `#layers/${meta.name}`
+    nuxtConfig.alias[alias] ||= nuxtConfig.rootDir
+  }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
@@ -63,7 +65,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     layer.config ||= {}
-    layer.config.rootDir = layer.config.rootDir ?? layer.cwd!
+    layer.config.rootDir ??= layer.cwd!
 
     // Only process/resolve layers once
     if (processedLayers.has(layer.config.rootDir)) { continue }
@@ -74,6 +76,18 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
     // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
+
+    // Add layer name for local layers
+    if (layer.cwd && cwd && localLayers.includes(relative(cwd, layer.cwd))) {
+      layer.meta ||= {}
+      layer.meta.name ||= basename(layer.cwd)
+    }
+
+    // Add layer alias
+    if (layer.meta?.name) {
+      const alias = `#layers/${layer.meta.name}`
+      nuxtConfig.alias[alias] ||= layer.config.rootDir || layer.cwd
+    }
     _layers.push(layer)
   }
 
@@ -95,11 +109,12 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 }
 
 async function loadNuxtSchema (cwd: string) {
-  const paths = [cwd]
-  const nuxtPath = await tryResolveModule('nuxt', cwd) ?? await tryResolveModule('nuxt-nightly', cwd)
+  const url = directoryToURL(cwd)
+  const urls = [url]
+  const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
   if (nuxtPath) {
-    paths.unshift(nuxtPath)
+    urls.unshift(pathToFileURL(nuxtPath))
   }
-  const schemaPath = await tryResolveModule('@nuxt/schema', paths) ?? '@nuxt/schema'
-  return await import(isWindows ? pathToFileURL(schemaPath).href : schemaPath).then(r => r.NuxtConfigSchema)
+  const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
+  return await import(schemaPath).then(r => r.NuxtConfigSchema)
 }

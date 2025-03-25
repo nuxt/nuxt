@@ -7,7 +7,6 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import { transform } from 'esbuild'
 import type { Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
@@ -43,14 +42,14 @@ interface ScannedFile {
   absolutePath: string
 }
 
-export async function resolvePagesRoutes (nuxt = useNuxt()): Promise<NuxtPage[]> {
+export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = nuxt.options._layers.map(
     layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
   )
 
   const scannedFiles: ScannedFile[] = []
   for (const dir of pagesDirs) {
-    const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
+    const files = await resolveFiles(dir, pattern)
     scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
   }
 
@@ -96,7 +95,9 @@ const INDEX_PAGE_RE = /\/index$/
 export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   const routes: NuxtPage[] = []
 
-  for (const file of files) {
+  const sortedFiles = [...files].sort((a, b) => a.relativePath.length - b.relativePath.length)
+
+  for (const file of sortedFiles) {
     const segments = file.relativePath
       .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
       .split('/')
@@ -138,7 +139,8 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(INDEX_PAGE_RE, '/')))
+      const routePath = getRoutePath(tokens, segments[i + 1] !== undefined)
+      const path = withLeadingSlash(joinURL(route.path, routePath.replace(INDEX_PAGE_RE, '/')))
       const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {
@@ -147,7 +149,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       } else if (segmentName === 'index' && !route.path) {
         route.path += '/'
       } else if (segmentName !== 'index') {
-        route.path += getRoutePath(tokens)
+        route.path += routePath
       }
     }
 
@@ -193,7 +195,7 @@ export function extractScriptContent (sfc: string) {
   for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {
       contents.push({
-        loader: match.groups.attrs?.includes('tsx') ? 'tsx' : 'ts',
+        loader: match.groups.attrs && /[tj]sx/.test(match.groups.attrs) ? 'tsx' : 'ts',
         code: match.groups.content.trim(),
       })
     }
@@ -208,7 +210,7 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export async function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -235,20 +237,21 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
       continue
     }
 
-    const js = await transform(script.code, { loader: script.loader })
-
     const dynamicProperties = new Set<keyof NuxtPage>()
 
     let foundMeta = false
 
-    parseAndWalk(js.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (foundMeta) { return }
 
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
 
       foundMeta = true
       const pageMetaArgument = node.expression.arguments[0]
-      if (pageMetaArgument?.type !== 'ObjectExpression') { return }
+      if (pageMetaArgument?.type !== 'ObjectExpression') {
+        logger.warn(`\`definePageMeta\` must be called with an object literal (reading \`${absolutePath}\`).`)
+        return
+      }
 
       for (const key of extractionKeys) {
         const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
@@ -257,7 +260,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
         const propertyValue = withLocations(property.value)
 
         if (propertyValue.type === 'ObjectExpression') {
-          const valueString = js.code.slice(propertyValue.start, propertyValue.end)
+          const valueString = script.code.slice(propertyValue.start, propertyValue.end)
           try {
             extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
           } catch {
@@ -319,7 +322,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
 }
 
 const COLON_RE = /:/g
-function getRoutePath (tokens: SegmentToken[]): string {
+function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
   return tokens.reduce((path, token) => {
     return (
       path +
@@ -328,7 +331,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
         : token.type === SegmentTokenType.dynamic
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
-            ? `:${token.value}(.*)*`
+            ? hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`
             : token.type === SegmentTokenType.group
               ? ''
               : encodePath(token.value).replace(COLON_RE, '\\:'))
@@ -542,7 +545,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const pageImportName = genSafeVariableName(filename(file) + hash(file))
+      const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
       const metaImportName = pageImportName + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 

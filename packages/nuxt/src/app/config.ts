@@ -35,10 +35,11 @@ function deepDelete (obj: any, newObj: any) {
 
 function deepAssign (obj: any, newObj: any) {
   for (const key in newObj) {
+    if (key === '__proto__' || key === 'constructor') { continue }
     const val = newObj[key]
     if (isPojoOrArray(val)) {
       const defaultVal = Array.isArray(val) ? [] : {}
-      obj[key] = obj[key] || defaultVal
+      obj[key] ||= defaultVal
       deepAssign(obj[key], val)
     } else {
       obj[key] = val
@@ -48,10 +49,15 @@ function deepAssign (obj: any, newObj: any) {
 
 export function useAppConfig (): AppConfig {
   const nuxtApp = useNuxtApp()
-  if (!nuxtApp._appConfig) {
-    nuxtApp._appConfig = (import.meta.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
-  }
+  nuxtApp._appConfig ||= (import.meta.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
   return nuxtApp._appConfig
+}
+
+export function _replaceAppConfig (newConfig: AppConfig) {
+  const appConfig = useAppConfig()
+
+  deepAssign(appConfig, newConfig)
+  deepDelete(appConfig, newConfig)
 }
 
 /**

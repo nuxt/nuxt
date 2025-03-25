@@ -1,5 +1,5 @@
 import type { FetchError, FetchOptions } from 'ofetch'
-import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
@@ -144,7 +144,7 @@ export function useFetch<
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
   }
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev && import.meta.server) {
     // @ts-expect-error private property
     _asyncDataOptions._functionName = opts._functionName || 'useFetch'
   }
@@ -168,7 +168,7 @@ export function useFetch<
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
-    let _$fetch = opts.$fetch || globalThis.$fetch
+    let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
     if (import.meta.server && !opts.$fetch) {
@@ -227,7 +227,7 @@ export function useLazyFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev && import.meta.server) {
     // @ts-expect-error private property
     opts._functionName ||= 'useLazyFetch'
   }

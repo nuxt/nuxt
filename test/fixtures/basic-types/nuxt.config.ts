@@ -10,7 +10,7 @@ export default defineNuxtConfig({
       addTypeTemplate({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
-      })
+      }, { nuxt: true, nitro: true })
       function _test () {
         installModule('~/modules/example', {
           typeTest (val) {
@@ -83,7 +83,7 @@ export default defineNuxtConfig({
     },
   },
   future: {
-    typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler',
+    typescriptBundlerResolution: process.env.MODULE_RESOLUTION !== 'node',
   },
   experimental: {
     typedPages: true,

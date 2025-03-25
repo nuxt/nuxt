@@ -12,7 +12,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
+import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
@@ -206,6 +206,7 @@ describe('typed router integration', () => {
   it('correctly reads custom names typed in `definePageMeta`', () => {
     const router = useRouter()
     router.push({ name: 'some-custom-name' })
+    router.push({ name: 'param-id-view-custom', params: { id: 4 } })
   })
 
   it('allows typing useRoute', () => {
@@ -224,6 +225,9 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     navigateTo({ name: 'param-id', params: { bob: 23 } })
     navigateTo({ name: 'param-id', params: { id: 4 } })
+    // @ts-expect-error this is an invalid param
+    navigateTo({ name: 'param-id-view-custom', params: { bob: 23 } })
+    navigateTo({ name: 'param-id-view-custom', params: { id: 4 } })
   })
 
   it('allows typing middleware', () => {
@@ -254,11 +258,14 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     h(NuxtLink, { to: { name: 'param-id', params: { bob: 23 } } })
     h(NuxtLink, { to: { name: 'param-id', params: { id: 4 } } })
+
+    // doesn't throw an error when accessing properties of component
+    const _props = NuxtLink.props
   })
 })
 
 describe('layouts', () => {
-  it('recognizes named layouts', () => {
+  it('definePageMeta recognizes named layouts', () => {
     definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
     definePageMeta({ layout: 'override' })
@@ -266,11 +273,14 @@ describe('layouts', () => {
     definePageMeta({ layout: 'invalid-layout' })
   })
 
-  it('allows typing layouts', () => {
+  it('NuxtLayout recognizes named layouts', () => {
     h(NuxtLayout, { name: 'custom' })
-
     // @ts-expect-error Invalid layout
     h(NuxtLayout, { name: 'invalid-layout' })
+
+    h(NuxtLayout, { fallback: 'custom' })
+    // @ts-expect-error Invalid layout
+    h(NuxtLayout, { fallback: 'invalid-layout' })
   })
 })
 
@@ -443,6 +453,14 @@ describe('components', () => {
     h(WithTypes, { aProp: '40' })
 
     // TODO: assert typed slots, exposed, generics, etc.
+  })
+  it('includes types for lazy hydration', () => {
+    h(LazyWithTypes)
+    h(LazyWithTypes, { hydrateAfter: 300 })
+    h(LazyWithTypes, { hydrateOnIdle: true })
+
+    // @ts-expect-error wrong prop type for this hydration strategy
+    h(LazyWithTypes, { hydrateAfter: '' })
   })
   it('include fallback slot in server components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()

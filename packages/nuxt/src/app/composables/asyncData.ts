@@ -1,5 +1,6 @@
 import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { MultiWatchSources, Ref } from 'vue'
+import { captureStackTrace } from 'errx'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
@@ -230,14 +231,14 @@ export function useAsyncData<
   const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
 
   // Apply defaults
-  options.server = options.server ?? true
-  options.default = options.default ?? (getDefault as () => DefaultT)
-  options.getCachedData = options.getCachedData ?? getDefaultCachedData
+  options.server ??= true
+  options.default ??= getDefault as () => DefaultT
+  options.getCachedData ??= getDefaultCachedData
 
-  options.lazy = options.lazy ?? false
-  options.immediate = options.immediate ?? true
-  options.deep = options.deep ?? asyncDataDefaults.deep
-  options.dedupe = options.dedupe ?? 'cancel'
+  options.lazy ??= false
+  options.immediate ??= true
+  options.deep ??= asyncDataDefaults.deep
+  options.dedupe ??= 'cancel'
 
   // Create or use a shared asyncData entity
   const initialCachedData = options.getCachedData!(key, nuxtApp)
@@ -301,8 +302,11 @@ export function useAsyncData<
         }
 
         if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
+          const stack = captureStackTrace()
+          const { source, line, column } = stack[stack.length - 1] ?? {}
+          const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
           // @ts-expect-error private property
-          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
+          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
         }
 
         nuxtApp.payload.data[key] = result
