@@ -460,7 +460,7 @@ export default defineResolvers({
      * - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body`
      * - Adds the `PromisesPlugin`: supports promises as input
      *
-     * @see [`unhead` migration documentation](https://unhead-unjs-io.nuxt.dev/docs/typescript/head/guides/get-started/migration)
+     * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
      *
      * @example
      * ```ts
