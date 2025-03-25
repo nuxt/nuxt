@@ -609,8 +609,18 @@ describe('pages:generateRoutesFromFiles', () => {
         {
           path: `${pagesDir}/[...id]/suffix.vue`,
         },
+        {
+          path: `${pagesDir}/[...id]/index.vue`,
+        },
       ],
       output: [
+        {
+          name: 'id',
+          meta: undefined,
+          path: '/:id(.*)*',
+          file: `${pagesDir}/[...id]/index.vue`,
+          children: [],
+        },
         {
           name: 'id-suffix',
           meta: undefined,
