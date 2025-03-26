@@ -1,7 +1,6 @@
 import { nextTick } from 'vue'
 import type { RouterConfig } from 'nuxt/schema'
-import { START_LOCATION } from 'vue-router'
-import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
+import { type RouteLocationNormalized, type RouterScrollBehavior, START_LOCATION } from 'vue-router'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
