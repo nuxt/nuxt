@@ -38,6 +38,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   let allowDirs = [
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
+    ...nuxt.options.modulesDir,
     ...nuxt.options._layers.map(l => l.config.rootDir),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
