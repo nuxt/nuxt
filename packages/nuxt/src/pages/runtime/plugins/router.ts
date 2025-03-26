@@ -12,7 +12,7 @@ import { toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { clearError, showError, useError } from '#app/composables/error'
+import { clearError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
@@ -212,7 +212,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
 
         for (const entry of middlewareEntries) {
-          const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
+          const middleware: RouteMiddleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
           if (!middleware) {
             if (import.meta.dev) {
@@ -221,21 +221,35 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             throw new Error(`Unknown route middleware: '${entry}'.`)
           }
 
-          const result = await nuxtApp.runWithContext(() => middleware(to, from))
-          if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
-            if (result === false || result instanceof Error) {
-              const error = result || createError({
-                statusCode: 404,
-                statusMessage: `Page Not Found: ${initialURL}`,
-              })
-              await nuxtApp.runWithContext(() => showError(error))
-              return false
+          try {
+            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
+              if (result === false || result instanceof Error) {
+                const error = result || createError({
+                  statusCode: 404,
+                  statusMessage: `Page Not Found: ${initialURL}`,
+                })
+                await nuxtApp.runWithContext(() => showError(error))
+                return false
+              }
             }
-          }
 
-          if (result === true) { continue }
-          if (result || result === false) {
-            return result
+            if (result === true) { continue }
+            if (result === false) {
+              return result
+            }
+            if (result) {
+              if (isNuxtError(result) && result.fatal) {
+                await nuxtApp.runWithContext(() => showError(result))
+              }
+              return result
+            }
+          } catch (err: any) {
+            const error = createError(err)
+            if (error.fatal) {
+              await nuxtApp.runWithContext(() => showError(error))
+            }
+            return error
           }
         }
       }

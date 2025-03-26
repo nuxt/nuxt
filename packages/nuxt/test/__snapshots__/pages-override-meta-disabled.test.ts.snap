@@ -594,6 +594,15 @@
   "should use more performant regexp when catchall is used in middle of path": [
     {
       "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/[...id]/index.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "id"",
+      "path": "mockMeta?.path ?? "/:id(.*)*"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+    {
+      "alias": "mockMeta?.alias || []",
       "component": "() => import("pages/[...id]/suffix.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "id-suffix"",

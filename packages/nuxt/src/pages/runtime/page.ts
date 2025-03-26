@@ -1,4 +1,4 @@
-import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
+import { Fragment, Suspense, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
@@ -30,6 +30,8 @@ export interface NuxtPageProps extends RouterViewProps {
    */
   pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
 }
+
+const _routeProviders = import.meta.dev ? new Map<Component, ReturnType<typeof defineRouteProvider> | undefined>() : new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -83,8 +85,14 @@ export default defineComponent({
       nuxtApp._isNuxtPageUsed = true
     }
     let pageLoadingEndHookAlreadyCalled = false
-
-    const routerProviderLookup = new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
+    if (import.meta.client) {
+      const unsub = useRouter().beforeResolve(() => {
+        pageLoadingEndHookAlreadyCalled = false
+      })
+      onBeforeUnmount(() => {
+        unsub()
+      })
+    }
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
@@ -117,7 +125,9 @@ export default defineComponent({
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
-          if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
+
+          const willRenderAnotherChild = import.meta.client && hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
+          if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
             nuxtApp.callHook('page:loading:end')
             pageLoadingEndHookAlreadyCalled = true
           }
@@ -159,10 +169,10 @@ export default defineComponent({
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => {
                 nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
-                  if (!pageLoadingEndHookAlreadyCalled) {
+                  if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
+                    pageLoadingEndHookAlreadyCalled = true
                     return nuxtApp.callHook('page:loading:end')
                   }
-                  pageLoadingEndHookAlreadyCalled = false
                 }).finally(done))
               },
             }, {
@@ -181,11 +191,14 @@ export default defineComponent({
                 }
 
                 const routerComponentType = routeProps.Component.type as any
-                let PageRouteProvider = routerProviderLookup.get(routerComponentType)
+                const routeProviderKey = import.meta.dev ? routerComponentType.name || routerComponentType.__name : routerComponentType
+                let PageRouteProvider = import.meta.client ? _routeProviders.get(routeProviderKey) : undefined
 
                 if (!PageRouteProvider) {
                   PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
-                  routerProviderLookup.set(routerComponentType, PageRouteProvider)
+                  if (import.meta.client) {
+                    _routeProviders.set(routeProviderKey, PageRouteProvider)
+                  }
                 }
 
                 return h(PageRouteProvider, routeProviderProps)
