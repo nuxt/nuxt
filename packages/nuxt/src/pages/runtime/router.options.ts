@@ -57,7 +57,7 @@ export default <RouterConfig>{
         return nextTick(() => {
           // Without this setTimeout, the scroll behaviour is not applied, this is however working reliably
           // todo: figure out how we can solve this without setTimeout of 0ms
-          setTimeout(() => resolve(_calculatePosition(to, savedPosition, 'instant')), 0)
+          requestAnimationFrame(() => resolve(_calculatePosition(to, savedPosition, 'instant')))
         })
       })
     })
