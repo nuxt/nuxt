@@ -8,6 +8,6 @@
 export default defineNuxtComponent({
   asyncData () {
     throw new Error('OH NNNNNNOOOOOOOOOOO')
-  }
+  },
 })
 </script>

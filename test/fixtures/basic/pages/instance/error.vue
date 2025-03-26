@@ -2,7 +2,7 @@
 export default defineComponent({
   data () {
     throw new Error('💀')
-  }
+  },
 })
 </script>
 

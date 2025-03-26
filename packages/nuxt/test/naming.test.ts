@@ -7,7 +7,7 @@ describe('getNameFromPath', () => {
     'base.vue': 'base',
     'base/base.vue': 'base',
     'base/base-layout.vue': 'base-layout',
-    'base-1-layout': 'base-1-layout'
+    'base-1-layout': 'base-1-layout',
   }
   it.each(Object.keys(cases))('correctly deduplicates segments - %s', (filename) => {
     expect(getNameFromPath(filename)).toEqual(cases[filename])
@@ -32,7 +32,7 @@ const tests: Array<[string, string[], string]> = [
   ['Icon', ['Icones'], 'IconesIcon'],
   ['IconHolder', ['IconHolder'], 'IconHolder'],
   ['GameList', ['Desktop', 'ShareGame', 'Review', 'Detail'], 'DesktopShareGameReviewDetailGameList'],
-  ['base-1-layout', [], 'Base1Layout']
+  ['base-1-layout', [], 'Base1Layout'],
 ]
 
 describe('components:resolveComponentNameSegments', () => {

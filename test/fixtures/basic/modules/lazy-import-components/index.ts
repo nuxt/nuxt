@@ -2,7 +2,7 @@ import { addComponent, createResolver, defineNuxtModule } from 'nuxt/kit'
 
 export default defineNuxtModule({
   meta: {
-    name: 'lazy-import-components'
+    name: 'lazy-import-components',
   },
   setup () {
     const { resolve } = createResolver(import.meta.url)

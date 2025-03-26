@@ -15,7 +15,7 @@ You can use the built-in [`useRequestHeader`](/docs/api/composables/use-request-
 const authorization = useRequestHeader('authorization')
 ```
 
-::callout
+::tip
 In the browser, `useRequestHeader` will return `undefined`.
 ::
 

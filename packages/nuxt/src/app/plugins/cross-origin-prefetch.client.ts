@@ -1,7 +1,8 @@
 import { ref } from 'vue'
-import { parseURL } from 'ufo'
-import { useHead } from '@unhead/vue'
 import { defineNuxtPlugin } from '../nuxt'
+import { useHead } from '../composables/head'
+
+const SUPPORTED_PROTOCOLS = ['http:', 'https:']
 
 export default defineNuxtPlugin({
   name: 'nuxt:cross-origin-prefetch',
@@ -16,23 +17,22 @@ export default defineNuxtPlugin({
             {
               source: 'list',
               urls: [...externalURLs.value],
-              requires: ['anonymous-client-ip-when-cross-origin']
-            }
-          ]
-        })
+              requires: ['anonymous-client-ip-when-cross-origin'],
+            },
+          ],
+        }),
       }
     }
     const head = useHead({
-      script: [generateRules()]
+      script: [generateRules()],
     })
     nuxtApp.hook('link:prefetch', (url) => {
-      const { protocol } = parseURL(url)
-      if (protocol && ['http:', 'https:'].includes(protocol)) {
+      if (SUPPORTED_PROTOCOLS.some(p => url.startsWith(p)) && SUPPORTED_PROTOCOLS.includes(new URL(url).protocol)) {
         externalURLs.value.add(url)
         head?.patch({
-          script: [generateRules()]
+          script: [generateRules()],
         })
       }
     })
-  }
+  },
 })

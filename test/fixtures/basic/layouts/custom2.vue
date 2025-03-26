@@ -23,6 +23,6 @@ function logFoo () {
 }
 
 defineExpose({
-  logFoo
+  logFoo,
 })
 </script>

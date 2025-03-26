@@ -40,5 +40,5 @@ export default defineNuxtPlugin({
         layouts[layout]()
       }
     })
-  }
+  },
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useLifecyleLogs('keepalive-in-nuxtpage')
+useLifecycleLogs('keepalive-in-nuxtpage')
 </script>
 
 <template>

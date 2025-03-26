@@ -4,7 +4,7 @@ if (status1.value !== 'success') {
   throw new Error('status1 should be "success"')
 }
 
-const { status: status2 } = await useAsyncData(() => Promise.reject(Error('boom!')))
+const { status: status2 } = await useAsyncData(() => Promise.reject(new Error('boom!')))
 if (status2.value !== 'error') {
   throw new Error('status2 should be "error"')
 }

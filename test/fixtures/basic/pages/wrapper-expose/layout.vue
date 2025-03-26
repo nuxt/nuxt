@@ -27,7 +27,7 @@ const layout = ref()
 const currentLayout = useState('current-layout', () => 'custom')
 
 definePageMeta({
-  layout: 'custom'
+  layout: 'custom',
 })
 
 function logFoo () {

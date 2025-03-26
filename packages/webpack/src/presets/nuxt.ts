@@ -8,13 +8,13 @@ import { pug } from './pug'
 import { style } from './style'
 import { vue } from './vue'
 
-export function nuxt (ctx: WebpackConfigContext) {
-  applyPresets(ctx, [
+export async function nuxt (ctx: WebpackConfigContext) {
+  await applyPresets(ctx, [
     base,
     assets,
     esbuild,
     pug,
     style,
-    vue
+    vue,
   ])
 }

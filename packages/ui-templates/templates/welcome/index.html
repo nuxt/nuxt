@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ messages.title }}</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport" />
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <script type="module" src="/styles.ts"></script>
+  </head>
+  <body class="antialiased bg-white dark:bg-[#020420] text-[#020420] dark:text-white min-h-screen place-content-center flex flex-col items-center justify-center text-sm sm:text-base">
+    <div class="flex flex-col mt-6 sm:mt-0">
+      <h1 class="flex flex-col gap-y-4 items-center justify-center">
+        <a href="https://nuxt.com?utm_source=nuxt-welcome" target="_blank" class="inline-flex items-end gap-4">
+          <svg class="h-8 sm:h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 800 200">
+            <path fill="#00DC82" d="M168.303 200h111.522c3.543 0 7.022-.924 10.09-2.679A20.086 20.086 0 0 0 297.3 190a19.855 19.855 0 0 0 2.7-10.001 19.858 19.858 0 0 0-2.709-9.998L222.396 41.429a20.09 20.09 0 0 0-7.384-7.32 20.313 20.313 0 0 0-10.088-2.679c-3.541 0-7.02.925-10.087 2.68a20.082 20.082 0 0 0-7.384 7.32l-19.15 32.896L130.86 9.998a20.086 20.086 0 0 0-7.387-7.32A20.322 20.322 0 0 0 113.384 0c-3.542 0-7.022.924-10.09 2.679a20.091 20.091 0 0 0-7.387 7.319L2.709 170A19.853 19.853 0 0 0 0 179.999c-.002 3.511.93 6.96 2.7 10.001a20.091 20.091 0 0 0 7.385 7.321A20.322 20.322 0 0 0 20.175 200h70.004c27.737 0 48.192-12.075 62.266-35.633l34.171-58.652 18.303-31.389 54.93 94.285h-73.233L168.303 200Zm-79.265-31.421-48.854-.011 73.232-125.706 36.541 62.853-24.466 42.01c-9.347 15.285-19.965 20.854-36.453 20.854Z" />
+            <path fill="currentColor" d="M377 200a4 4 0 0 0 4-4v-93s5.244 8.286 15 25l38.707 66.961c1.789 3.119 5.084 5.039 8.649 5.039H470V50h-27a4 4 0 0 0-4 4v94l-17-30-36.588-62.98c-1.792-3.108-5.081-5.02-8.639-5.02H350v150h27ZM676.203 143.857 710.551 92h-25.73a9.972 9.972 0 0 0-8.333 4.522L660.757 120.5l-15.731-23.978A9.972 9.972 0 0 0 636.693 92h-25.527l34.348 51.643L608.524 200h24.966a9.969 9.969 0 0 0 8.29-4.458l19.18-28.756 18.981 28.72a9.968 9.968 0 0 0 8.313 4.494h24.736l-36.787-56.143ZM724.598 92h19.714V60.071h28.251V92H800v24.857h-27.437V159.5c0 10.5 5.284 15.429 14.43 15.429H800V200h-16.869c-23.576 0-38.819-14.143-38.819-39.214v-43.929h-19.714V92ZM590 92h-15c-3.489 0-6.218.145-8.5 2.523-2.282 2.246-2.5 3.63-2.5 7.066v52.486c0 8.058-.376 12.962-4 16.925-3.624 3.831-8.619 5-16 5-7.247 0-12.376-1.169-16-5-3.624-3.963-4-8.867-4-16.925v-52.486c0-3.435-.218-4.82-2.5-7.066C519.218 92.145 516.489 92 513 92h-15v62.422c0 14.004 3.892 25.101 11.676 33.292C517.594 195.905 529.103 200 544 200c14.897 0 26.204-4.095 34.123-12.286 7.918-8.191 11.877-19.288 11.877-33.292V92Z" />
+          </svg>
+          <span class="inline-block font-mono leading-none text-[#00DC82] group-hover:border-[#00DC42] text-[12px] sm:text-[14px] font-semibold border-[#00DC42]/50 bg-[#00DC42]/10 group-hover:bg-[#00DC42]/15 px-2 sm:px-2.5 py-1 sm:py-1.5 border rounded">{{ version }}</span>
+        </a>
+      </h1>
+      <div class="max-w-[980px] w-full grid grid-cols-1 sm:grid-cols-3 mt-6 sm:mt-10 gap-4 sm:gap-6 px-4">
+        <div class="sm:col-span-2 flex flex-col gap-1 border p-6 rounded-lg border-[#00DC42]/50 dark:bg-white/5 bg-gray-50/10">
+          <div class="w-[32px] h-[32px] bg-[#00DC82]/5 flex items-center justify-center border rounded border-[#00DC82] dark:border-[#00DC82]/80 dark:bg-[#020420] text-[#00DC82] dark:text-[#00DC82]">
+            <svg class="size-[18px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path fill="currentColor" d="m228.1 121.2l-143.9-88A8 8 0 0 0 72 40v176a8 8 0 0 0 12.2 6.8l143.9-88a7.9 7.9 0 0 0 0-13.6Z" opacity=".2"/><path fill="currentColor" d="M80 232a15.5 15.5 0 0 1-7.8-2.1A15.8 15.8 0 0 1 64 216V40a15.8 15.8 0 0 1 8.2-13.9a15.5 15.5 0 0 1 16.1.3l144 87.9a16 16 0 0 1 0 27.4l-144 87.9A15.4 15.4 0 0 1 80 232Zm0-192v176l144-88Z"/></svg>
+          </div>
+          <h2 class="font-semibold text-base mt-1">Get started</h2>
+          <p class="text-sm text-gray-700 dark:text-gray-200">Remove this welcome page by replacing <a class="bg-green-50 text-green-700 dark:text-[#00DC82] dark:bg-[#020420] rounded font-mono p-1 font-bold border dark:border-white/10 border-green-600/10">&lt;NuxtWelcome/&gt;</a> in <a href="https://nuxt.com/docs/guide/directory-structure/app" target="_blank" rel="noopener" class="bg-green-50 text-green-700 dark:text-[#00DC82] dark:bg-[#020420] dark:border-white/20 rounded font-mono p-1 font-bold border border-green-600/20 hover:border-[#00DC82]">app.vue</a> with your own code.</p>
+        </div>
+        <a href="https://nuxt.com/docs?utm_source=nuxt-welcome" target="_blank" class="relative flex flex-col gap-1 border p-6 rounded-lg border-gray-200 dark:border-white/10 dark:bg-white/5 bg-gray-50/10 group hover:dark:border-[#00DC82] hover:border-[#00DC82] transition-all">
+          <div class="w-[32px] h-[32px] bg-[#00DC82]/5 flex items-center justify-center border rounded border-[#00DC82] transition-all dark:border-[#00DC82]/50 group-hover:dark:border-[#00DC82]/80 dark:bg-[#020420] text-[#00DC82] dark:text-[#00DC82]">
+            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path fill="currentColor" d="M136 48v128H88V80H40V48a8 8 0 0 1 8-8h32a8 8 0 0 1 8 8a8 8 0 0 1 8-8h32a8 8 0 0 1 8 8Zm89.9 149.6l-8.3-30.9l-46.4 12.5l8.3 30.9a8 8 0 0 0 9.8 5.6l30.9-8.3a8 8 0 0 0 5.7-9.8ZM184.5 43.1a8.1 8.1 0 0 0-9.8-5.7l-30.9 8.3a8.1 8.1 0 0 0-5.7 9.8l8.3 30.9L192.8 74Z" opacity=".2"/><path fill="currentColor" d="M233.6 195.6L192.2 41a16 16 0 0 0-19.6-11.3L141.7 38l-1 .3A16 16 0 0 0 128 32H96a15.8 15.8 0 0 0-8 2.2a15.8 15.8 0 0 0-8-2.2H48a16 16 0 0 0-16 16v160a16 16 0 0 0 16 16h32a15.8 15.8 0 0 0 8-2.2a15.8 15.8 0 0 0 8 2.2h32a16 16 0 0 0 16-16v-99.6l27.8 103.7a16 16 0 0 0 15.5 11.9a19.9 19.9 0 0 0 4.1-.5l30.9-8.3a16 16 0 0 0 11.3-19.6ZM156.2 92.1l30.9-8.3l20.7 77.3l-30.9 8.3Zm20.5-46.9l6.3 23.1l-30.9 8.3l-6.3-23.1ZM128 48v120H96V48Zm-48 0v24H48V48ZM48 208V88h32v120Zm80 0H96v-24h32v24Zm90.2-8.3l-30.9 8.3l-6.3-23.2l31-8.3l6.2 23.2Z"/></svg>
+          </div>
+          <svg class="absolute right-4 top-4 dark:text-white/40 text-[#020420]/20 group-hover:text-[#00DC82] size-4 group-hover:size-5 transition-all" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 256 256"><path fill="currentColor" d="M200 64v104a8 8 0 0 1-16 0V83.3L69.7 197.7a8.2 8.2 0 0 1-11.4 0a8.1 8.1 0 0 1 0-11.4L172.7 72H88a8 8 0 0 1 0-16h104a8 8 0 0 1 8 8Z"/></svg>
+          <h2 class="font-semibold text-base mt-1">Documentation</h2>
+          <p class="text-sm text-gray-700 dark:text-gray-200 group-hover:dark:text-gray-100">We highly recommend you take a look at the Nuxt documentation to level up.</p>
+        </a>
+      </div>
+      <div class="max-w-[980px] w-full grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-6 px-4">
+        <a href="https://nuxt.com/modules?utm_source=nuxt-welcome" target="_blank" class="relative flex flex-col gap-1 border p-6 rounded-lg border-gray-200 dark:border-white/10 dark:bg-white/5 bg-gray-50/10 group hover:dark:border-[#00DC82] hover:border-[#00DC82] transition-all">
+          <div class="w-[32px] h-[32px] bg-[#00DC82]/5 flex items-center justify-center border rounded border-[#00DC82] transition-all dark:border-[#00DC82]/50 group-hover:dark:border-[#00DC82]/80 dark:bg-[#020420] text-[#00DC82] dark:text-[#00DC82]">
+            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path fill="currentColor" d="M64 216a8 8 0 0 1-8-8v-42.7a27.6 27.6 0 0 1-14.1 2.6A28 28 0 1 1 56 114.7V72a8 8 0 0 1 8-8h46.7a27.6 27.6 0 0 1-2.6-14.1A28 28 0 1 1 161.3 64H208a8 8 0 0 1 8 8v42.7a27.6 27.6 0 0 0-14.1-2.6a28 28 0 1 0 14.1 53.2V208a8 8 0 0 1-8 8Z" opacity=".2"/><path fill="currentColor" d="M220.3 158.5a8.1 8.1 0 0 0-7.7-.4a20.2 20.2 0 0 1-23.2-4.4a20 20 0 0 1 13.1-33.6a19.6 19.6 0 0 1 10.1 1.8a8.1 8.1 0 0 0 7.7-.4a8.2 8.2 0 0 0 3.7-6.8V72a16 16 0 0 0-16-16h-36.2c.1-1.3.2-2.7.2-4a36.1 36.1 0 0 0-38.3-35.9a36 36 0 0 0-33.6 33.3a36.4 36.4 0 0 0 .1 6.6H64a16 16 0 0 0-16 16v32.2l-4-.2a35.6 35.6 0 0 0-26.2 11.4a35.3 35.3 0 0 0-9.7 26.9a36 36 0 0 0 33.3 33.6a36.4 36.4 0 0 0 6.6-.1V208a16 16 0 0 0 16 16h144a16 16 0 0 0 16-16v-42.7a8.2 8.2 0 0 0-3.7-6.8ZM208 208H64v-42.7a8.2 8.2 0 0 0-3.7-6.8a8.1 8.1 0 0 0-7.7-.4a19.6 19.6 0 0 1-10.1 1.8a20 20 0 0 1-13.1-33.6a20.2 20.2 0 0 1 23.2-4.4a8.1 8.1 0 0 0 7.7-.4a8.2 8.2 0 0 0 3.7-6.8V72h46.7a8.2 8.2 0 0 0 6.8-3.7a8.1 8.1 0 0 0 .4-7.7a19.6 19.6 0 0 1-1.8-10.1a20 20 0 0 1 33.6-13.1a20.2 20.2 0 0 1 4.4 23.2a8.1 8.1 0 0 0 .4 7.7a8.2 8.2 0 0 0 6.8 3.7H208v32.2a36.4 36.4 0 0 0-6.6-.1a36 36 0 0 0-33.3 33.6A36.1 36.1 0 0 0 204 176l4-.2Z"/></svg>
+          </div>
+          <svg class="absolute right-4 top-4 dark:text-white/40 text-[#020420]/20 group-hover:text-[#00DC82] size-4 group-hover:size-5 transition-all" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 256 256"><path fill="currentColor" d="M200 64v104a8 8 0 0 1-16 0V83.3L69.7 197.7a8.2 8.2 0 0 1-11.4 0a8.1 8.1 0 0 1 0-11.4L172.7 72H88a8 8 0 0 1 0-16h104a8 8 0 0 1 8 8Z"/></svg>
+          <h2 class="font-semibold text-base mt-1">Modules</h2>
+          <p class="text-sm text-gray-700 dark:text-gray-200 group-hover:dark:text-gray-100">Discover our list of modules to supercharge your Nuxt project.</p>
+        </a>
+        <a href="https://nuxt.com/docs/examples?utm_source=nuxt-welcome" target="_blank" class="relative flex flex-col gap-1 border p-6 rounded-lg border-gray-200 dark:border-white/10 dark:bg-white/5 bg-gray-50/10 group hover:dark:border-[#00DC82] hover:border-[#00DC82] transition-all">
+          <div class="w-[32px] h-[32px] bg-[#00DC82]/5 flex items-center justify-center border rounded border-[#00DC82] transition-all dark:border-[#00DC82]/50 group-hover:dark:border-[#00DC82]/80 dark:bg-[#020420] text-[#00DC82] dark:text-[#00DC82]">
+            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path fill="currentColor" d="M224 56v144a8 8 0 0 1-8 8H40a8 8 0 0 1-8-8V56a8 8 0 0 1 8-8h176a8 8 0 0 1 8 8Z" opacity=".2"/><path fill="currentColor" d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16Zm0 160H40V56h176v144ZM80 84a12 12 0 1 1-12-12a12 12 0 0 1 12 12Zm40 0a12 12 0 1 1-12-12a12 12 0 0 1 12 12Z"/></svg>
+          </div>
+          <svg class="absolute right-4 top-4 dark:text-white/40 text-[#020420]/20 group-hover:text-[#00DC82] size-4 group-hover:size-5 transition-all" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 256 256"><path fill="currentColor" d="M200 64v104a8 8 0 0 1-16 0V83.3L69.7 197.7a8.2 8.2 0 0 1-11.4 0a8.1 8.1 0 0 1 0-11.4L172.7 72H88a8 8 0 0 1 0-16h104a8 8 0 0 1 8 8Z"/></svg>
+          <h2 class="font-semibold text-base mt-1">Examples</h2>
+          <p class="text-sm text-gray-700 dark:text-gray-200 group-hover:dark:text-gray-100">Explore different way of using Nuxt features and get inspired.</p>
+        </a>
+        <a href="https://nuxt.com/deploy?utm_source=nuxt-welcome" target="_blank" class="relative flex flex-col gap-1 border p-6 rounded-lg border-gray-200 dark:border-white/10 dark:bg-white/5 bg-gray-50/10 group hover:dark:border-[#00DC82] hover:border-[#00DC82] transition-all">
+          <div class="w-[32px] h-[32px] bg-[#00DC82]/5 flex items-center justify-center border rounded border-[#00DC82] transition-all dark:border-[#00DC82]/50 group-hover:dark:border-[#00DC82]/80 dark:bg-[#020420] text-[#00DC82] dark:text-[#00DC82]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 256 256"><path fill="currentColor" d="M94.1 184.6c-11.4 33.9-56.6 33.9-56.6 33.9s0-45.2 33.9-56.6Zm90.5-67.9v64.6a8 8 0 0 1-2.4 5.6l-32.3 32.4a8 8 0 0 1-13.5-4.1l-8.4-41.9Zm-45.3-45.3H74.7a8 8 0 0 0-5.6 2.4l-32.4 32.3a8 8 0 0 0 4.1 13.5l41.9 8.4Z" opacity=".2"/><path fill="currentColor" d="M96.6 177a7.9 7.9 0 0 0-10.1 5c-6.6 19.7-27.9 25.8-40.2 27.7c1.9-12.3 8-33.6 27.7-40.2a8 8 0 1 0-5.1-15.1c-16.4 5.4-28.4 18.4-34.8 37.5a91.8 91.8 0 0 0-4.6 26.6a8 8 0 0 0 8 8a91.8 91.8 0 0 0 26.6-4.6c19.1-6.4 32.1-18.4 37.5-34.8a7.9 7.9 0 0 0-5-10.1Z"/><path fill="currentColor" d="M227.6 41.8a15.7 15.7 0 0 0-13.4-13.4c-11.3-1.7-40.6-2.5-69.2 26.1l-9 8.9H74.7a16.2 16.2 0 0 0-11.3 4.7l-32.3 32.4a15.9 15.9 0 0 0-4 15.9a16 16 0 0 0 12.2 11.1l39.5 7.9l41.8 41.8l7.9 39.5a16 16 0 0 0 11.1 12.2a14.7 14.7 0 0 0 4.6.7a15.6 15.6 0 0 0 11.3-4.7l32.4-32.3a16.2 16.2 0 0 0 4.7-11.3V120l8.9-9c28.6-28.6 27.8-57.9 26.1-69.2ZM74.7 79.4H120l-39.9 39.9l-37.7-7.5Zm81.6-13.6c7.8-7.8 28.8-25.6 55.5-21.6c4 26.7-13.8 47.7-21.6 55.5L128 161.9L94.1 128Zm20.3 115.5l-32.4 32.3l-7.5-37.7l39.9-39.9Z"/></svg>
+          </div>
+          <svg class="absolute right-4 top-4 dark:text-white/40 text-[#020420]/20 group-hover:text-[#00DC82] size-4 group-hover:size-5 transition-all" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 256 256"><path fill="currentColor" d="M200 64v104a8 8 0 0 1-16 0V83.3L69.7 197.7a8.2 8.2 0 0 1-11.4 0a8.1 8.1 0 0 1 0-11.4L172.7 72H88a8 8 0 0 1 0-16h104a8 8 0 0 1 8 8Z"/></svg>
+          <h2 class="font-semibold text-base mt-1">Deploy</h2>
+          <p class="text-sm text-gray-700 dark:text-gray-200 group-hover:dark:text-gray-100">Learn how to deploy your Nuxt project on different providers.</p>
+        </a>
+      </div>
+      <footer class="mx-auto sm:px-6 lg:px-8 px-4 w-full mb-6 mt-6 sm:mt-10 sm:mb-0">
+        <ul class="flex items-center justify-center gap-4">
+          <li>
+            <a
+              href="https://go.nuxt.com/github"
+              target="_blank"
+              class="focus-visible:ring-2 text-gray-500 hover:text-[#020420] dark:text-gray-400 dark:hover:text-white"
+            >
+              <span class="sr-only">Nuxt GitHub Repository</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://go.nuxt.com/discord"
+              target="_blank"
+              class="focus-visible:ring-2 text-gray-500 hover:text-[#020420] dark:text-gray-400 dark:hover:text-white"
+            >
+              <span class="sr-only">Nuxt Discord Server</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M20.317 4.37a19.8 19.8 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.3 18.3 0 0 0-5.487 0a13 13 0 0 0-.617-1.25a.08.08 0 0 0-.079-.037A19.7 19.7 0 0 0 3.677 4.37a.1.1 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.08.08 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.08.08 0 0 0 .084-.028a14 14 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13 13 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10 10 0 0 0 .372-.292a.07.07 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.07.07 0 0 1 .078.01q.181.149.373.292a.077.077 0 0 1-.006.127a12.3 12.3 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.08.08 0 0 0 .084.028a19.8 19.8 0 0 0 6.002-3.03a.08.08 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.06.06 0 0 0-.031-.03M8.02 15.33c-1.182 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418m7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418"/></svg>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://go.nuxt.com/x"
+              target="_blank"
+              class="focus-visible:ring-2 text-gray-500 hover:text-[#020420] dark:text-gray-400 dark:hover:text-white"
+            >
+              <span class="sr-only">Nuxt on X</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584l-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://go.nuxt.com/bluesky"
+              target="_blank"
+              class="focus-visible:ring-2 text-gray-500 hover:text-[#020420] dark:text-gray-400 dark:hover:text-white"
+            >
+              <span class="sr-only">Nuxt Bluesky</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565C.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479c.815 2.736 3.713 3.66 6.383 3.364q.204-.03.415-.056q-.207.033-.415.056c-3.912.58-7.387 2.005-2.83 7.078c5.013 5.19 6.87-1.113 7.823-4.308c.953 3.195 2.05 9.271 7.733 4.308c4.267-4.308 1.172-6.498-2.74-7.078a9 9 0 0 1-.415-.056q.21.026.415.056c2.67.297 5.568-.628 6.383-3.364c.246-.828.624-5.79.624-6.478c0-.69-.139-1.861-.902-2.206c-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8"/></svg>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://go.nuxt.com/linkedin"
+              target="_blank"
+              class="focus-visible:ring-2 text-gray-500 hover:text-[#020420] dark:text-gray-400 dark:hover:text-white"
+            >
+              <span class="sr-only">Nuxt Linkedin</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037c-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85c3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.06 2.06 0 0 1-2.063-2.065a2.064 2.064 0 1 1 2.063 2.065m1.782 13.019H3.555V9h3.564zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg>
+            </a>
+          </li>
+        </ul>
+      </footer>
+    </div>
+  </body>
+</html>

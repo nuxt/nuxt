@@ -10,21 +10,21 @@ describe('nuxt module compatibility', () => {
         modules: [
           defineNuxtModule({
             meta: {
-              name: 'nuxt-module-foo'
-            }
+              name: 'nuxt-module-foo',
+            },
           }),
           [
             defineNuxtModule({
               meta: {
-                name: 'module-instance-with-options'
-              }
+                name: 'module-instance-with-options',
+              },
             }),
             {
-              foo: 'bar'
-            }
-          ]
-        ]
-      }
+              foo: 'bar',
+            },
+          ],
+        ],
+      },
     })
     expect(hasNuxtModule('nuxt-module-foo', nuxt)).toStrictEqual(true)
     expect(hasNuxtModule('module-instance-with-options', nuxt)).toStrictEqual(true)
@@ -35,8 +35,8 @@ describe('nuxt module compatibility', () => {
     const module = defineNuxtModule({
       meta: {
         name: 'nuxt-module-foo',
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     })
     expect(await getNuxtModuleVersion(module, nuxt)).toEqual('1.0.0')
     await nuxt.close()
@@ -46,8 +46,8 @@ describe('nuxt module compatibility', () => {
     const module = defineNuxtModule({
       meta: {
         name: 'nuxt-module-foo',
-        version: '1.0.0'
-      }
+        version: '1.0.0',
+      },
     })
     expect(await hasNuxtModuleCompatibility(module, '^1.0.0', nuxt)).toStrictEqual(true)
     expect(await hasNuxtModuleCompatibility(module, '^2.0.0', nuxt)).toStrictEqual(false)

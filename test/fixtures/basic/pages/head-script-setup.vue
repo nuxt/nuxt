@@ -1,4 +1,9 @@
 <script lang="ts" setup>
+import { TemplateParamsPlugin } from '@unhead/vue/plugins'
+// Unhead v2 requires an opt-in to template params
+const head = injectHead()
+head.use(TemplateParamsPlugin)
+
 const description = ref('head script setup description for %site.name')
 const siteName = ref()
 // server meta
@@ -8,14 +13,14 @@ useServerSeoMeta({
   ogImage: '%site.url/og-image.png',
   ogTitle: '%s %separator %site.name',
   ogType: 'website',
-  ogUrl: '%site.url/head-script-setup'
+  ogUrl: '%site.url/head-script-setup',
 })
 
 useServerHead({
   style: [
     '/* Custom styles */',
-    'h1 { color: salmon; }'
-  ]
+    'h1 { color: salmon; }',
+  ],
 })
 
 useHead({
@@ -25,9 +30,9 @@ useHead({
     separator: () => '-',
     site: {
       url: 'https://example.com',
-      name: siteName
-    }
-  }
+      name: siteName,
+    },
+  },
 })
 
 useHeadSafe({
@@ -35,16 +40,16 @@ useHeadSafe({
     {
       id: 'xss-script',
       // @ts-expect-error not allowed
-      innerHTML: 'alert("xss")'
-    }
+      innerHTML: 'alert("xss")',
+    },
   ],
   meta: [
     {
       // @ts-expect-error not allowed
       'http-equiv': 'refresh',
-      content: '0;javascript:alert(1)'
-    }
-  ]
+      'content': '0;javascript:alert(1)',
+    },
+  ],
 })
 
 siteName.value = 'Nuxt Playground'

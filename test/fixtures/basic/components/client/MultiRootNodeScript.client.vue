@@ -20,6 +20,6 @@ export default defineNuxtComponent({
 
     const add = () => count.value++
     return { count, add }
-  }
+  },
 })
 </script>

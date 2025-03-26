@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: () => '/hydration/spa-redirection/end'
+  middleware: () => '/hydration/spa-redirection/end',
 })
 </script>
 

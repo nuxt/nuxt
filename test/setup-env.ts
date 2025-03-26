@@ -1,6 +1,7 @@
 import { consola } from 'consola'
 import { vi } from 'vitest'
 import { logger } from '../packages/kit'
+import { initParser } from '../packages/nuxt/src/core/utils/parse'
 
 consola.mockTypes(() => vi.fn())
 logger.mockTypes(() => vi.fn())
@@ -10,7 +11,7 @@ const _warn = console.warn.bind(console)
 const hiddenWarns = [
   '[@vue/reactivity-transform]',
   '[Vue warn]: Component',
-  '[Vue router warn]'
+  '[Vue router warn]',
 ]
 
 console.warn = (arg0: any, ...args: any[]) => {
@@ -19,6 +20,8 @@ console.warn = (arg0: any, ...args: any[]) => {
   }
   _warn(...args)
 }
+
+await initParser()
 
 // for (const t of ['uncaughtException', 'unhandledRejection'] as const) {
 //   process.on(t, (err) => {

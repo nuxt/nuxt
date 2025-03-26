@@ -5,12 +5,12 @@ import { isJS, isVue } from '../utils'
 
 type ImportPath = string
 
-export interface TreeShakeComposablesPluginOptions {
+interface TreeShakeComposablesPluginOptions {
   sourcemap?: boolean
   composables: Record<ImportPath, string[]>
 }
 
-export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComposablesPluginOptions) => {
+export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOptions) => createUnplugin(() => {
   /**
    * @todo Use the options import-path to tree-shake composables in a safer way.
    */
@@ -31,7 +31,7 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
 
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
-      for (const match of strippedCode.matchAll(COMPOSABLE_RE_GLOBAL) || []) {
+      for (const match of strippedCode.matchAll(COMPOSABLE_RE_GLOBAL)) {
         s.overwrite(match.index!, match.index! + match[0].length, `${match[1]} false && /*@__PURE__*/ ${match[2]}`)
       }
 
@@ -40,9 +40,9 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

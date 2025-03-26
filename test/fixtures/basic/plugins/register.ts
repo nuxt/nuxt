@@ -5,7 +5,7 @@ const Spin = defineComponent({
     return () => {
       return h('div', slots.default?.())
     }
-  }
+  },
 })
 
 export default defineNuxtPlugin((nuxtApp) => {

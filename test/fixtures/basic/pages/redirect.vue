@@ -1,6 +1,6 @@
 <script setup>
 definePageMeta({
-  redirect: () => '/'
+  redirect: () => '/',
 })
 </script>
 

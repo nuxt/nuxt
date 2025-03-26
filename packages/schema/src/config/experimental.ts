@@ -1,11 +1,23 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * `future` is for early opting-in to new features that will become default in a future
    * (possibly major) version of the framework.
    */
   future: {
+    /**
+     * Enable early access to future features or flags.
+     *
+     * It is currently not configurable but may be in future.
+     * @type {4}
+     */
+    compatibilityVersion: 4,
+    /**
+     * This enables early access to the experimental multi-app support.
+     * @see [Nuxt Issue #21635](https://github.com/nuxt/nuxt/issues/21635)
+     */
+    multiApp: false,
     /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
      * for frameworks like Nuxt and Vite.
@@ -14,19 +26,19 @@ export default defineUntypedSchema({
      *
      * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
      *
-     * See https://github.com/microsoft/TypeScript/pull/51669
+     * @see [TypeScript PR implementing `bundler` module resolution](https://github.com/microsoft/TypeScript/pull/51669)
      */
     typescriptBundlerResolution: {
       async $resolve (val, get) {
-        // TODO: remove in v3.10
-        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then(e => e?.typescriptBundlerResolution)
+        // @ts-expect-error TODO: remove in v3.10
+        val = typeof val === 'boolean' ? val : await (get('experimental')).then(e => e?.typescriptBundlerResolution as string | undefined)
         if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution') as string | undefined
+        const setting = await get('typescript.tsConfig').then(r => r?.compilerOptions?.moduleResolution)
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
         return true
-      }
+      },
     },
   },
   /**
@@ -41,15 +53,40 @@ export default defineUntypedSchema({
      * @type {boolean | ((id?: string) => boolean)}
      */
     inlineStyles: {
-      async $resolve (val, get) {
-        // TODO: remove in v3.10
-        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.inlineSSRStyles)
-        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
+      async $resolve (_val, get) {
+        const val = typeof _val === 'boolean' || typeof _val === 'function'
+          ? _val
+          // @ts-expect-error TODO: legacy property - remove in v3.10
+          : await (get('experimental')).then(e => e?.inlineSSRStyles) as undefined | boolean
+        if (
+          val === false ||
+          (await get('dev')) ||
+          (await get('ssr')) === false ||
+          // @ts-expect-error TODO: handled normalised types
+          (await get('builder')) === '@nuxt/webpack-builder'
+        ) {
           return false
         }
-        // Enabled by default for vite prod with ssr
-        return val ?? true
-      }
+        // Enabled by default for vite prod with ssr (for vue components)
+        return val ?? ((await get('future')).compatibilityVersion === 4 ? (id?: string) => !!id && id.includes('.vue') : true)
+      },
+    },
+
+    /**
+     * Stream server logs to the client as you are developing. These logs can
+     * be handled in the `dev:ssr-logs` hook.
+     *
+     * If set to `silent`, the logs will not be printed to the browser console.
+     * @type {boolean | 'silent'}
+     */
+    devLogs: {
+      async $resolve (val, get) {
+        if (typeof val === 'boolean' || val === 'silent') {
+          return val
+        }
+        const [isDev, isTest] = await Promise.all([get('dev'), get('test')])
+        return isDev && !isTest
+      },
     },
 
     /**
@@ -58,21 +95,29 @@ export default defineUntypedSchema({
      */
     noScripts: {
       async $resolve (val, get) {
-        // TODO: remove in v3.10
-        return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
-      }
+        return typeof val === 'boolean'
+          ? val
+          // @ts-expect-error TODO: legacy property - remove in v3.10
+          : (await (get('experimental')).then(e => e?.noScripts as boolean | undefined) ?? false)
+      },
     },
   },
   experimental: {
     /**
+     * Enable to use experimental decorators in Nuxt and Nitro.
+     *
+     * @see https://github.com/tc39/proposal-decorators
+     */
+    decorators: false,
+    /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: val => val ?? false
+      $resolve: val => typeof val === 'boolean' ? val : false,
     },
 
     // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/unjs/nitro/issues/1118
+    // https://github.com/nitrojs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
@@ -80,22 +125,25 @@ export default defineUntypedSchema({
     externalVue: true,
 
     /**
-     * Tree shakes contents of client-only components from server bundle.
-     * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
+     * Enable accessing `appConfig` from server routes.
+     *
+     * @deprecated This option is not recommended.
      */
-    treeshakeClientOnly: true,
-
+    serverAppConfig: false,
     /**
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
      *
-     * By default, Nuxt will also perform a hard reload of the new route
-     * when a chunk fails to load when navigating to a new route.
+     * By default, Nuxt will also perform a reload of the new route
+     * when a chunk fails to load when navigating to a new route (`automatic`).
+     *
+     * Setting `automatic-immediate` will lead Nuxt to perform a reload of the current route
+     * right when a chunk fails to load (instead of waiting for navigation).
      *
      * You can disable automatic handling by setting this to `false`, or handle
      * chunk errors manually by setting it to `manual`.
      * @see [Nuxt PR #19038](https://github.com/nuxt/nuxt/pull/19038)
-     * @type {false | 'manual' | 'automatic'}
+     * @type {false | 'manual' | 'automatic' | 'automatic-immediate'}
      */
     emitRouteChunkError: {
       $resolve: (val) => {
@@ -105,8 +153,18 @@ export default defineUntypedSchema({
         if (val === 'reload') {
           return 'automatic'
         }
-        return val ?? 'automatic'
-      }
+        if (val === false) {
+          return false
+        }
+
+        const validOptions = ['manual', 'automatic', 'automatic-immediate'] as const
+        type EmitRouteChunkError = typeof validOptions[number]
+        if (typeof val === 'string' && validOptions.includes(val as EmitRouteChunkError)) {
+          return val as EmitRouteChunkError
+        }
+
+        return 'automatic'
+      },
     },
 
     /**
@@ -171,8 +229,11 @@ export default defineUntypedSchema({
     writeEarlyHints: false,
 
     /**
-     * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
+     *
+     * By default it is set to 'auto', which means it will be enabled only when there are islands,
+     * server components or server pages in your app.
+     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -182,26 +243,9 @@ export default defineUntypedSchema({
         if (val === 'local') {
           return true
         }
-        return val ?? false
-      }
+        return val ?? 'auto'
+      },
     },
-
-    /**
-     * Config schema support
-     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
-     */
-    configSchema: true,
-
-    /**
-     * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
-     * `@vueuse/head` API.
-     *
-     * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
-     */
-    polyfillVueUseHead: false,
-
-    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
-    respectNoSSRHeader: false,
 
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
@@ -214,26 +258,43 @@ export default defineUntypedSchema({
      */
     appManifest: true,
 
-    // This is enabled when `experimental.payloadExtraction` is set to `true`.
-    // appManifest: {
-    //   $resolve: (val, get) => val ?? get('experimental.payloadExtraction')
-    // },
+    /**
+     * Set the time interval (in ms) to check for new builds. Disabled when `experimental.appManifest` is `false`.
+     *
+     * Set to `false` to disable.
+     * @type {number | false}
+     */
+    checkOutdatedBuildInterval: 1000 * 60 * 60,
 
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
-     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
-     * (like `node_modules` and `.git`) that are excluded from watching.
+     * Nuxt uses 'chokidar-granular' if your source directory is the same as your root
+     * directory . This will ignore top-level directories (like `node_modules` and `.git`)
+     * that are excluded from watching.
      *
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
      * performance in large projects or on Windows platforms.
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
      * @see [chokidar](https://github.com/paulmillr/chokidar)
-     * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
+     * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular',
+    watcher: {
+      $resolve: async (val, get) => {
+        const validOptions = ['chokidar', 'parcel', 'chokidar-granular'] as const
+        type WatcherOption = typeof validOptions[number]
+        if (typeof val === 'string' && validOptions.includes(val as WatcherOption)) {
+          return val as WatcherOption
+        }
+        const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
+        if (srcDir === rootDir) {
+          return 'chokidar-granular' as const
+        }
+        return 'chokidar' as const
+      },
+    },
 
     /**
      * Enable native async context to be accessible for nested composables
@@ -243,11 +304,13 @@ export default defineUntypedSchema({
 
     /**
      * Use new experimental head optimisations:
+     *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
-     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
+     *
+     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
-    headNext: false,
+    headNext: true,
 
     /**
      * Allow defining `routeRules` directly within your `~/pages` directory using `defineRouteRules`.
@@ -266,9 +329,24 @@ export default defineUntypedSchema({
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
-     * https://github.com/nuxt/nuxt/issues/24770
+     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
+     * @type {boolean | 'after-resolve'}
      */
-    scanPageMeta: false,
+    scanPageMeta: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' || val === 'after-resolve' ? val : ((await get('future')).compatibilityVersion === 4 ? 'after-resolve' : true)
+      },
+    },
+
+    /**
+     * Configure additional keys to extract from the page metadata when using `scanPageMeta`.
+     *
+     * This allows modules to access additional metadata from the page metadata. It's recommended
+     * to augment the NuxtPage types with your keys.
+     *
+     * @type {string[]}
+     */
+    extraPageMetaExtractionKeys: [],
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
@@ -291,14 +369,19 @@ export default defineUntypedSchema({
      * const { data } = await useAsyncData(route.params.slug, async () => {
      *   return await $fetch(`/api/my-page/${route.params.slug}`)
      * })
+     * ```
      */
-    sharedPrerenderData: false,
+    sharedPrerenderData: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      },
+    },
 
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
      * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
      */
-    cookieStore: false,
+    cookieStore: true,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.
@@ -307,23 +390,27 @@ export default defineUntypedSchema({
      * `app/` directory.
      */
     defaults: {
-      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      /** @type {typeof import('nuxt/app')['NuxtLinkOptions']} */
       nuxtLink: {
-        componentName: 'NuxtLink'
+        componentName: 'NuxtLink',
+        prefetch: true,
+        prefetchOn: {
+          visibility: true,
+        },
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        deep: true
+        deep: false,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
-      useFetch: {}
+      useFetch: {},
     },
 
     /**
      * Automatically polyfill Node.js imports in the client build using `unenv`.
-     * @see https://github.com/unjs/unenv
+     * @see [unenv](https://github.com/unjs/unenv)
      *
      * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
      *
@@ -335,5 +422,172 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     clientNodeCompat: false,
-  }
+
+    /**
+     * Wait for a single animation frame before navigation, which gives an opportunity
+     * for the browser to repaint, acknowledging user interaction.
+     *
+     * It can reduce INP when navigating on prerendered routes.
+     */
+    navigationRepaint: true,
+
+    /**
+     * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
+     *
+     * This only works for source files within `srcDir` and `serverDir` for the Vue/Nitro parts of your app.
+     */
+    buildCache: false,
+
+    /**
+     * Ensure that auto-generated Vue component names match the full component name
+     * you would use to auto-import the component.
+     */
+    normalizeComponentNames: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      },
+    },
+
+    /**
+     * Keep showing the spa-loading-template until suspense:resolve
+     * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)
+     * @type {'body' | 'within'}
+     */
+    spaLoadingTemplateLocation: {
+      $resolve: async (val, get) => {
+        const validOptions = ['body', 'within'] as const
+        type SpaLoadingTemplateLocation = typeof validOptions[number]
+        return typeof val === 'string' && validOptions.includes(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : (((await get('future')).compatibilityVersion === 4) ? 'body' : 'within')
+      },
+    },
+
+    /**
+     * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
+     *
+     * This feature adds performance markers for Nuxt hooks, allowing you to track their execution time
+     * in the browser's Performance tab. This is particularly useful for debugging performance issues.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Enable performance markers for Nuxt hooks in browser devtools
+     *     browserDevtoolsTiming: true
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #29922](https://github.com/nuxt/nuxt/pull/29922)
+     * @see [Chrome DevTools Performance API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
+     */
+    browserDevtoolsTiming: {
+      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
+    },
+
+    /**
+     * Record mutations to `nuxt.options` in module context, helping to debug configuration changes
+     * made by modules during the Nuxt initialization phase.
+     *
+     * When enabled, Nuxt will track which modules modify configuration options, making it
+     * easier to trace unexpected configuration changes.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Enable tracking of config mutations by modules
+     *     debugModuleMutation: true
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #30555](https://github.com/nuxt/nuxt/pull/30555)
+     */
+    debugModuleMutation: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : Boolean(await get('debug'))
+      },
+    },
+
+    /**
+     * Enable automatic configuration of hydration strategies for `<Lazy>` components.
+     *
+     * This feature intelligently determines when to hydrate lazy components based on
+     * visibility, idle time, or other triggers, improving performance by deferring
+     * hydration of components until they're needed.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     lazyHydration: true // Enable smart hydration strategies for Lazy components
+     *   }
+     * })
+     *
+     * // In your Vue components
+     * <template>
+     *   <Lazy>
+     *     <ExpensiveComponent />
+     *   </Lazy>
+     * </template>
+     * ```
+     *
+     * @see [PR #26468](https://github.com/nuxt/nuxt/pull/26468)
+     */
+    lazyHydration: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
+      },
+    },
+
+    /**
+     * Disable resolving imports into Nuxt templates from the path of the module that added the template.
+     *
+     * By default, Nuxt attempts to resolve imports in templates relative to the module that added them.
+     * Setting this to `false` disables this behavior, which may be useful if you're experiencing
+     * resolution conflicts in certain environments.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Disable template import resolution from module path
+     *     templateImportResolution: false
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #31175](https://github.com/nuxt/nuxt/pull/31175)
+     */
+    templateImportResolution: true,
+
+    /**
+     * Whether to clean up Nuxt static and asyncData caches on route navigation.
+     *
+     * Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`. This helps prevent memory leaks
+     * and ensures fresh data is loaded when needed, but it is possible to disable it.
+     *
+     * @example
+     * ```ts
+     * // nuxt.config.ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     // Disable automatic cache cleanup (default is true)
+     *     purgeCachedData: false
+     *   }
+     * })
+     * ```
+     *
+     * @see [PR #31379](https://github.com/nuxt/nuxt/pull/31379)
+     */
+    purgeCachedData: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
+      },
+    },
+  },
 })

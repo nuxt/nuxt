@@ -4,7 +4,7 @@ description: 'Access runtime config variables with the useRuntimeConfig composab
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/nuxt.ts
     size: xs
 ---
 
@@ -44,7 +44,7 @@ export default defineNuxtConfig({
 })
 ```
 
-::callout
+::note
 Variables that need to be accessible on the server are added directly inside `runtimeConfig`. Variables that need to be accessible on both the client and the server are defined in `runtimeConfig.public`.
 ::
 
@@ -82,16 +82,16 @@ It is possible to update runtime config values using a matching environment vari
 
 We can set the environment variables inside the `.env` file to make them accessible during **development** and **build/generate**.
 
-``` [.env]
+```ini [.env]
 NUXT_PUBLIC_API_BASE = "https://api.localhost:5555"
 NUXT_API_SECRET = "123"
 ```
 
-::callout
+::note
 Any environment variables set within `.env` file are accessed using `process.env` in the Nuxt app during **development** and **build/generate**.
 ::
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
+::warning
 In **production runtime**, you should use platform environment variables and `.env` is not used.
 ::
 
@@ -101,7 +101,7 @@ In **production runtime**, you should use platform environment variables and `.e
 
 Nuxt uses `app` namespace in runtime-config with keys including `baseURL` and `cdnURL`. You can customize their values at runtime by setting environment variables.
 
-::callout
+::note
 This is a reserved namespace. You should not introduce additional keys inside `app`.
 ::
 
@@ -132,7 +132,7 @@ And then access the new CDN url using `config.app.cdnURL`.
 
 ```ts [server/api/foo.ts]
 export default defineEventHandler((event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
 
   // Access cdnURL universally
   const cdnURL = config.app.cdnURL

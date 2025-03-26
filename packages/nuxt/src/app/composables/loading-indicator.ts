@@ -1,12 +1,16 @@
 import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
   duration: number
   /** @default 200 */
   throttle: number
+  /** @default 500 */
+  hideDelay: number
+  /** @default 400 */
+  resetDelay: number
   /**
    * You can provide a custom function to customize the progress estimation,
    * which is a function that receives the duration of the loading bar (above)
@@ -15,22 +19,14 @@ export type LoadingIndicatorOpts = {
   estimatedProgress?: (duration: number, elapsed: number) => number
 }
 
-function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
-  if (import.meta.client) {
-    setTimeout(() => {
-      isLoading.value = false
-      setTimeout(() => { progress.value = 0 }, 400)
-    }, 500)
-  }
-}
-
 export type LoadingIndicator = {
   _cleanup: () => void
   progress: Ref<number>
   isLoading: Ref<boolean>
-  start: () => void
-  set: (value: number) => void
-  finish: () => void
+  error: Ref<boolean>
+  start: (opts?: { force?: boolean }) => void
+  set: (value: number, opts?: { force?: boolean }) => void
+  finish: (opts?: { force?: boolean, error?: boolean }) => void
   clear: () => void
 }
 
@@ -40,47 +36,81 @@ function defaultEstimatedProgress (duration: number, elapsed: number): number {
 }
 
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
-  const { duration = 2000, throttle = 200 } = opts
+  const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400 } = opts
   const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
   const isLoading = ref(false)
+  const error = ref(false)
   let done = false
   let rafId: number
 
-  let _throttle: any = null
+  let throttleTimeout: number | NodeJS.Timeout
+  let hideTimeout: number | NodeJS.Timeout
+  let resetTimeout: number | NodeJS.Timeout
 
-  const start = () => set(0)
+  const start = (opts: { force?: boolean } = {}) => {
+    _clearTimeouts()
+    error.value = false
+    set(0, opts)
+  }
 
-  function set (at = 0) {
+  function set (at = 0, opts: { force?: boolean } = {}) {
     if (nuxtApp.isHydrating) {
       return
     }
-    if (at >= 100) { return finish() }
+    if (at >= 100) { return finish({ force: opts.force }) }
     clear()
     progress.value = at < 0 ? 0 : at
-    if (throttle && import.meta.client) {
-      _throttle = setTimeout(() => {
+    const throttleTime = opts.force ? 0 : throttle
+    if (throttleTime && import.meta.client) {
+      throttleTimeout = setTimeout(() => {
         isLoading.value = true
         _startProgress()
-      }, throttle)
+      }, throttleTime)
     } else {
       isLoading.value = true
       _startProgress()
     }
   }
 
-  function finish () {
+  function _hide () {
+    if (import.meta.client) {
+      hideTimeout = setTimeout(() => {
+        isLoading.value = false
+        resetTimeout = setTimeout(() => { progress.value = 0 }, resetDelay)
+      }, hideDelay)
+    }
+  }
+
+  function finish (opts: { force?: boolean, error?: boolean } = {}) {
     progress.value = 100
     done = true
     clear()
-    _hide(isLoading, progress)
+    _clearTimeouts()
+    if (opts.error) {
+      error.value = true
+    }
+    if (opts.force) {
+      progress.value = 0
+      isLoading.value = false
+    } else {
+      _hide()
+    }
+  }
+
+  function _clearTimeouts () {
+    if (import.meta.client) {
+      clearTimeout(hideTimeout)
+      clearTimeout(resetTimeout)
+    }
   }
 
   function clear () {
-    clearTimeout(_throttle)
-    cancelAnimationFrame(rafId)
-    _throttle = null
+    if (import.meta.client) {
+      clearTimeout(throttleTimeout)
+      cancelAnimationFrame(rafId)
+    }
   }
 
   function _startProgress () {
@@ -93,7 +123,9 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
       startTimeStamp ??= timeStamp
       const elapsed = timeStamp - startTimeStamp
       progress.value = Math.max(0, Math.min(100, getProgress(duration, elapsed)))
-      rafId = requestAnimationFrame(step)
+      if (import.meta.client) {
+        rafId = requestAnimationFrame(step)
+      }
     }
 
     if (import.meta.client) {
@@ -109,7 +141,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     const unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
       finish()
     })
-    const unsubError = nuxtApp.hook('vue:error', finish)
+    const unsubError = nuxtApp.hook('vue:error', () => finish())
 
     _cleanup = () => {
       unsubError()
@@ -123,10 +155,11 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     _cleanup,
     progress: computed(() => progress.value),
     isLoading: computed(() => isLoading.value),
+    error: computed(() => error.value),
     start,
     set,
     finish,
-    clear
+    clear,
   }
 }
 
@@ -138,9 +171,9 @@ export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}): 
   const nuxtApp = useNuxtApp()
 
   // Initialise global loading indicator if it doesn't exist already
-  const indicator = nuxtApp._loadingIndicator = nuxtApp._loadingIndicator || createLoadingIndicator(opts)
+  const indicator = nuxtApp._loadingIndicator ||= createLoadingIndicator(opts)
   if (import.meta.client && getCurrentScope()) {
-    nuxtApp._loadingIndicatorDeps = nuxtApp._loadingIndicatorDeps || 0
+    nuxtApp._loadingIndicatorDeps ||= 0
     nuxtApp._loadingIndicatorDeps++
     onScopeDispose(() => {
       nuxtApp._loadingIndicatorDeps!--

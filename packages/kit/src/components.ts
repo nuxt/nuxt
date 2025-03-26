@@ -1,18 +1,15 @@
 import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { useNuxt } from './context'
-import { assertNuxtCompatibility } from './compatibility'
 import { logger } from './logger'
+import { MODE_RE } from './utils'
 
 /**
  * Register a directory to be scanned for components and imported only when used.
- *
- * Requires Nuxt 2.13+
  */
-export async function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
+export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
-  await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
-  nuxt.options.components = nuxt.options.components || []
+  nuxt.options.components ||= []
   dir.priority ||= 0
   nuxt.hook('components:dirs', (dirs) => { dirs[opts.prepend ? 'unshift' : 'push'](dir) })
 }
@@ -23,16 +20,13 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 
 /**
  * Register a component by its name and filePath.
- *
- * Requires Nuxt 2.13+
  */
-export async function addComponent (opts: AddComponentOptions) {
+export function addComponent (opts: AddComponentOptions) {
   const nuxt = useNuxt()
-  await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
-  nuxt.options.components = nuxt.options.components || []
+  nuxt.options.components ||= []
 
   if (!opts.mode) {
-    const [, mode = 'all'] = opts.filePath.match(/\.(server|client)(\.\w+)*$/) || []
+    const [, mode = 'all'] = opts.filePath.match(MODE_RE) || []
     opts.mode = mode as 'all' | 'client' | 'server'
   }
 
@@ -48,12 +42,14 @@ export async function addComponent (opts: AddComponentOptions) {
     mode: 'all',
     shortPath: opts.filePath,
     priority: 0,
-    ...opts
+    meta: {},
+    ...opts,
   }
 
   nuxt.hook('components:extend', (components: Component[]) => {
-    const existingComponent = components.find(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
-    if (existingComponent) {
+    const existingComponentIndex = components.findIndex(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
+    if (existingComponentIndex !== -1) {
+      const existingComponent = components[existingComponentIndex]!
       const existingPriority = existingComponent.priority ?? 0
       const newPriority = component.priority ?? 0
 
@@ -65,7 +61,7 @@ export async function addComponent (opts: AddComponentOptions) {
         const name = existingComponent.pascalName || existingComponent.kebabName
         logger.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`)
       }
-      Object.assign(existingComponent, component)
+      components.splice(existingComponentIndex, 1, component)
     } else {
       components.push(component)
     }

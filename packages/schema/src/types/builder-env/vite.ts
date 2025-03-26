@@ -30,7 +30,7 @@ export interface KnownAsTypeMap {
 
 export interface ImportGlobOptions<
   Eager extends boolean,
-  AsType extends string
+  AsType extends string,
 > {
   /**
    * Import type for the import url.
@@ -65,13 +65,13 @@ export interface ImportGlobFunction {
   <
     Eager extends boolean,
     As extends string,
-    T = As extends keyof KnownAsTypeMap ? KnownAsTypeMap[As] : unknown
+    T = As extends keyof KnownAsTypeMap ? KnownAsTypeMap[As] : unknown,
   >(
     glob: string | string[],
     options?: ImportGlobOptions<Eager, As>
   ): (Eager extends true
-  ? true
-  : false) extends true
+    ? true
+    : false) extends true
     ? Record<string, T>
     : Record<string, () => Promise<T>>
   /**
@@ -102,7 +102,7 @@ export interface ImportGlobEagerFunction {
    */
   <
     As extends string,
-    T = As extends keyof KnownAsTypeMap ? KnownAsTypeMap[As] : unknown
+    T = As extends keyof KnownAsTypeMap ? KnownAsTypeMap[As] : unknown,
   >(
     glob: string | string[],
     options?: Omit<ImportGlobOptions<boolean, As>, 'eager'>
@@ -119,10 +119,10 @@ export interface ImportGlobEagerFunction {
 }
 
 export interface ViteImportMeta {
-  /** Vite client HMR API - see https://vitejs.dev/guide/api-hmr.html */
+  /** Vite client HMR API - see https://vite.dev/guide/api-hmr.html */
   readonly hot?: ViteHot
 
-  /** vite glob import utility - https://vitejs.dev/guide/features.html#glob-import */
+  /** vite glob import utility - https://vite.dev/guide/features.html#glob-import */
   glob: ImportGlobFunction
 
   /**

@@ -30,7 +30,7 @@ describe('resolveApp', () => {
           ".vue",
         ],
         "layouts": {},
-        "mainComponent": "@nuxt/ui-templates/dist/templates/welcome.vue",
+        "mainComponent": "<repoRoot>/packages/nuxt/src/app/components/welcome.vue",
         "middleware": [
           {
             "global": true,
@@ -45,6 +45,10 @@ describe('resolveApp', () => {
           },
           {
             "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/navigation-repaint.client.ts",
+          },
+          {
+            "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
           },
           {
@@ -54,6 +58,10 @@ describe('resolveApp', () => {
           {
             "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
+          },
+          {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {
             "filename": "components.plugin.mjs",
@@ -68,10 +76,6 @@ describe('resolveApp', () => {
           {
             "mode": "all",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/router.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
         ],
         "rootComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-root.vue",
@@ -130,8 +134,8 @@ describe('resolveApp', () => {
       'plugins/object-named.ts',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
     // TODO: support overriding named plugins
@@ -167,8 +171,8 @@ describe('resolveApp', () => {
       'middleware/named.ts',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     const fixtureMiddleware = app.middleware.filter(p => p.path.includes('<rootDir>')).map(p => p.path)
     // TODO: fix this
@@ -196,8 +200,8 @@ describe('resolveApp', () => {
       'layouts/default.vue',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     expect(app.layouts).toMatchInlineSnapshot(`
       {
@@ -222,7 +226,7 @@ describe('resolveApp', () => {
       'layouts/thing/thing/thing.vue',
       'layouts/desktop-base/base.vue',
       'layouts/some.vue',
-      'layouts/SomeOther/layout.ts'
+      'layouts/SomeOther/layout.ts',
     ])
     expect(app.layouts).toMatchInlineSnapshot(`
       {
@@ -288,13 +292,15 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
   }
   for (const plugin of app.plugins) {
     plugin.src = normaliseToRepo(plugin.src)!
+    // @ts-expect-error untyped symbol
+    delete plugin[Symbol.for('nuxt plugin')]
   }
   for (const mw of app.middleware) {
     mw.path = normaliseToRepo(mw.path)!
   }
 
-  for (const layout in app.layouts) {
-    app.layouts[layout].file = normaliseToRepo(app.layouts[layout].file)!
+  for (const layout of Object.values(app.layouts)) {
+    layout.file = normaliseToRepo(layout.file)!
   }
 
   await nuxt.close()

@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-`useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, which is available on both client and server side. It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
+`useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, also known as the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), which is available on both client and server side (but not within Nitro routes). It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
 
 ```vue [app.vue]
 <script setup lang="ts">
@@ -17,6 +17,14 @@ const nuxtApp = useNuxtApp()
 ```
 
 If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
+
+<!--
+note
+By default, the shared runtime context of Nuxt is namespaced under the [`buildId`](/docs/api/nuxt-config#buildid) option. It allows the support of multiple runtime contexts.
+
+## Params
+
+- `appName`: an optional application name. If you do not provide it, the Nuxt `buildId` option is used. Otherwise, it must match with an existing `buildId`. -->
 
 ## Methods
 
@@ -51,7 +59,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
   nuxtApp.hook('vue:error', (..._args) => {
     console.log('vue:error')
-    // if (process.client) {
+    // if (import.meta.client) {
     //   console.log(..._args)
     // }
   })
@@ -120,7 +128,7 @@ Nuxt exposes the following properties through `ssrContext`:
   export const useColor = () => useState<string>('color', () => 'pink')
 
   export default defineNuxtPlugin((nuxtApp) => {
-    if (process.server) {
+    if (import.meta.server) {
       const color = useColor()
     }
   })
@@ -128,9 +136,13 @@ Nuxt exposes the following properties through `ssrContext`:
 
   It is also possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
 
-  Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own serializer/deserializer for types that are not supported by Nuxt.
+  Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own reducer/reviver for types that are not supported by Nuxt.
 
-  In the example below, we define a serializer for the [Luxon](https://moment.github.io/luxon/#/) DateTime class.
+  ::tip{icon="i-lucide-video" to="https://www.youtube.com/watch?v=8w6ffRBs8a4" target="_blank"}
+  Watch a video from Alexander Lichter about serializing payloads, especially with regards to classes.
+  ::
+
+  In the example below, we define a reducer (or a serializer) and a reviver (or deserializer) for the [Luxon](https://moment.github.io/luxon/#/) DateTime class, using a payload plugin.
 
   ```ts [plugins/date-time-payload.ts]
   /**
@@ -159,7 +171,7 @@ export default defineComponent({
   setup (_props, { slots, emit }) {
     const nuxtApp = useNuxtApp()
     onErrorCaptured((err) => {
-      if (process.client && !nuxtApp.isHydrating) {
+      if (import.meta.client && !nuxtApp.isHydrating) {
         // ...
       }
     })
@@ -169,7 +181,7 @@ export default defineComponent({
 
 ### `runWithContext`
 
-::callout
+::note
 You are likely here because you got a "Nuxt instance unavailable" message. Please use this method sparingly, and report examples that are causing issues, so that it can ultimately be solved at the framework level.
 ::
 
@@ -186,7 +198,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     user = null
   }
   if (!user) {
-    // apply the correct Nuxt context to our `navigateTo` call.  
+    // apply the correct Nuxt context to our `navigateTo` call.
     return nuxtApp.runWithContext(() => navigateTo('/auth'))
   }
 })
@@ -240,11 +252,11 @@ For a better description of what Vue actually does, see [unjs/unctx#2 (comment)]
 
 This is where `runWithContext` can be used to restore context, similarly to how `<script setup>` works.
 
-Nuxt 3 internally uses [unjs/unctx](https://github.com/unjs/unctx) to support composables similar to Vue for plugins and middleware. This enables composables like `navigateTo()` to work without directly passing `nuxtApp` to them - bringing the DX and performance benefits of Composition API to the whole Nuxt framework.
+Nuxt internally uses [unjs/unctx](https://github.com/unjs/unctx) to support composables similar to Vue for plugins and middleware. This enables composables like `navigateTo()` to work without directly passing `nuxtApp` to them - bringing the DX and performance benefits of Composition API to the whole Nuxt framework.
 
 Nuxt composables have the same design as the Vue Composition API and therefore need a similar solution to magically do this transform. Check out [unjs/unctx#2](https://github.com/unjs/unctx/issues/2) (proposal), [unjs/unctx#4](https://github.com/unjs/unctx/pull/4) (transform implementation), and [nuxt/framework#3884](https://github.com/nuxt/framework/pull/3884) (Integration to Nuxt).
 
-Vue currently only supports async context restoration for `<script setup>` for async/await usage. In Nuxt 3, the transform support for `defineNuxtPlugin()` and `defineNuxtRouteMiddleware()` was added, which means when you use them Nuxt automatically transforms them with context restoration.
+Vue currently only supports async context restoration for `<script setup>` for async/await usage. In Nuxt, the transform support for `defineNuxtPlugin()` and `defineNuxtRouteMiddleware()` was added, which means when you use them Nuxt automatically transforms them with context restoration.
 
 #### Remaining Issues
 
@@ -254,7 +266,7 @@ The `unjs/unctx` transformation to automatically restore context seems buggy wit
 
 Using a new experimental feature, it is possible to enable native async context support using [Node.js `AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) and new unctx support to make async context available **natively** to **any nested async composable** without needing a transform or manual passing/calling with context.
 
-::callout
+::tip
 Native async context support works currently in Bun and Node.
 ::
 
@@ -278,3 +290,7 @@ export function useStandType() {
   }
 }
 ```
+
+<!-- ### Params
+
+- `appName`: an optional application name. If you do not provide it, the Nuxt `buildId` option is used. Otherwise, it must match with an existing `buildId`. -->

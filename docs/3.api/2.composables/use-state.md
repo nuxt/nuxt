@@ -17,12 +17,16 @@ const count = useState('counter', () => Math.round(Math.random() * 100))
 
 :read-more{to="/docs/getting-started/state-management"}
 
-::callout
+::important
 Because the data inside `useState` will be serialized to JSON, it is important that it does not contain anything that cannot be serialized, such as classes, functions or symbols.
 ::
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
+::warning
 `useState` is a reserved function name transformed by the compiler, so you should not name your own function `useState`.
+::
+
+::tip{icon="i-lucide-video" to="https://www.youtube.com/watch?v=mv0WcBABcIk" target="_blank"}
+Watch a video from Alexander Lichter about why and when to use `useState()`.
 ::
 
 ## Using `shallowRef`

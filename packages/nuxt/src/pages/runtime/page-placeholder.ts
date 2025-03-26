@@ -9,5 +9,5 @@ export default defineComponent({
       console.warn(`Create a Vue component in the \`${devPagesDir}/\` directory to enable \`<NuxtPage>\``)
     }
     return () => props.slots.default?.()
-  }
+  },
 })

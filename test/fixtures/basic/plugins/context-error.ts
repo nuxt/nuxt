@@ -3,7 +3,7 @@ export default defineNuxtPlugin(() => {
   const vueApp = getCurrentInstance()
   return {
     provide: {
-      wasVueAppInstanceWronglyPreserved: !!vueApp
-    }
+      wasVueAppInstanceWronglyPreserved: !!vueApp,
+    },
   }
 })

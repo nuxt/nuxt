@@ -7,9 +7,9 @@ export default defineNuxtComponent({
   render () {
     return h({
       props: ['name'],
-      template: this.template
+      template: this.template,
     }, {
-      name: this.name
+      name: this.name,
     })
-  }
+  },
 })

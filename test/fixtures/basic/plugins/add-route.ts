@@ -10,7 +10,7 @@ export default defineNuxtPlugin((_nuxtApp) => {
     router.addRoute({
       path: to.path,
       name: to.path,
-      component: () => import('~/pages/index.vue')
+      component: () => import('~/pages/index.vue'),
     })
 
     return to.path

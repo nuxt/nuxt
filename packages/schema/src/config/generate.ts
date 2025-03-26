@@ -1,6 +1,6 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   generate: {
     /**
      * The routes to generate.
@@ -21,6 +21,6 @@ export default defineUntypedSchema({
      * This option is no longer used. Instead, use `nitro.prerender.ignore`.
      * @deprecated
      */
-    exclude: []
-  }
+    exclude: [],
+  },
 })

@@ -1,5 +1,5 @@
 <script setup>
-prerenderRoutes(['/some/url/from/server-only/component'])
+prerenderRoutes(['/catchall/some/url/from/server-only/component'])
 </script>
 
 <template>

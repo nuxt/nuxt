@@ -17,7 +17,13 @@ describe('auto-imports', () => {
     defineNuxtConfig({
       modules: [],
       // @ts-expect-error Should show error on unknown properties
-      unknownProp: ''
+      unknownProp: '',
+    })
+    defineNuxtConfig({
+      routeRules: {
+        // Should accept any string
+        '/named': { appMiddleware: 'named' },
+      },
     })
   })
   it('core composables', () => {
@@ -25,7 +31,7 @@ describe('auto-imports', () => {
     useHead({
       script: [],
       // @ts-expect-error Should show error on unknown properties
-      unknown: []
+      unknown: [],
     })
   })
 })
@@ -45,7 +51,8 @@ describe('config typings', () => {
   it('appConfig', () => {
     expectTypeOf(useAppConfig().foo).toEqualTypeOf<unknown>()
     expectTypeOf(useAppConfig()).toEqualTypeOf<{
-      nuxt: { buildId: string }
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+      nuxt: {}
       [key: string]: unknown
     }>()
   })

@@ -18,6 +18,8 @@ import '~/assets/assets.css'
 </style>
 
 <style scoped>
+  /* Regression test for https: //github.com/nuxt/nuxt/issues/26057 */
+  /* definePageMeta( */
   div {
     --scoped: 'scoped';
   }

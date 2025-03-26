@@ -8,6 +8,6 @@
 
 <script setup lang="ts">
 definePageMeta({
-  layout: 'custom-async'
+  layout: 'custom-async',
 })
 </script>

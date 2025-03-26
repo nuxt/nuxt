@@ -3,12 +3,13 @@ import { fileURLToPath } from 'node:url'
 const testWithInlineVue = process.env.EXTERNAL_VUE === 'false'
 
 export default defineNuxtConfig({
-  experimental: {
-    externalVue: !testWithInlineVue
-  },
   buildDir: testWithInlineVue ? '.nuxt-inline' : '.nuxt',
-  nitro: {
-    output: { dir: fileURLToPath(new URL(testWithInlineVue ? './.output-inline' : './.output', import.meta.url)) }
+  sourcemap: false,
+  experimental: {
+    externalVue: !testWithInlineVue,
   },
-  sourcemap: false
+  compatibilityDate: '2024-06-28',
+  nitro: {
+    output: { dir: fileURLToPath(new URL(testWithInlineVue ? './.output-inline' : './.output', import.meta.url)) },
+  },
 })

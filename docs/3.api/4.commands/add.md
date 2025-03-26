@@ -4,20 +4,34 @@ description: "Scaffold an entity into your Nuxt application."
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/add.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/add.ts
     size: xs
 ---
 
+<!--add-cmd-->
 ```bash [Terminal]
-npx nuxi add [--cwd] [--force] <TEMPLATE> <NAME>
+npx nuxi add <TEMPLATE> <NAME> [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--force]
 ```
+<!--/add-cmd-->
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`TEMPLATE` | - | Specify a template of the file to be generated.
-`NAME` | - | Specify a name of the file that will be created.
-`--cwd` | `.` | The directory of the target application.
-`--force` | `false` | Force override file if it already exists.
+### Arguments
+
+<!--add-args-->
+Argument | Description
+--- | ---
+`TEMPLATE` | Specify which template to generate (options: <api\|plugin\|component\|composable\|middleware\|layout\|page\|layer>)
+`NAME` | Specify name of the generated file
+<!--/add-args-->
+
+### Options
+
+<!--add-opts-->
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` | `.` | Specify the working directory
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--force` | `false` | Force override file if it already exists
+<!--/add-opts-->
 
 **Modifiers:**
 
@@ -88,4 +102,11 @@ npx nuxi add middleware auth
 ```bash [Terminal]
 # Generates `server/api/hello.ts`
 npx nuxi add api hello
+```
+
+## `nuxi add layer`
+
+```bash [Terminal]
+# Generates `layers/subscribe/nuxt.config.ts`
+npx nuxi add layer subscribe
 ```

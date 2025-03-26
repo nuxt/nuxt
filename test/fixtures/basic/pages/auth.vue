@@ -1,6 +1,6 @@
 <script setup>
 definePageMeta({
-  middleware: 'inject-auth'
+  middleware: 'inject-auth',
 })
 </script>
 

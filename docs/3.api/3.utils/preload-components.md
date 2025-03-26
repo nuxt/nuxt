@@ -18,6 +18,6 @@ await preloadComponents('MyGlobalComponent')
 await preloadComponents(['MyGlobalComponent1', 'MyGlobalComponent2'])
 ```
 
-::callout
+::note
 On server, `preloadComponents` will have no effect.
 ::

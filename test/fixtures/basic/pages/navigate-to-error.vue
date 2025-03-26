@@ -5,7 +5,7 @@
 <script setup>
 definePageMeta({
   alias: ['/setup-should-not-run'],
-  middleware: to => to.path === '/navigate-to-error' ? navigateTo('/setup-should-not-run') : undefined
+  middleware: to => to.path === '/navigate-to-error' ? navigateTo('/setup-should-not-run') : undefined,
 })
 if (import.meta.client) {
   console.log('running setup')

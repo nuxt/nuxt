@@ -14,6 +14,6 @@ async function fn2 () {
   await delay()
   const app = tryUseNuxtApp()
   return {
-    hasApp: !!app
+    hasApp: !!app,
   }
 }

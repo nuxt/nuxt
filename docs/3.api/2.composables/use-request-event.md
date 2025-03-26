@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-Within your pages, components, and plugins you can use `useRequestEvent` to access the incoming request.
+Within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) you can use `useRequestEvent` to access the incoming request.
 
 ```ts
 // Get underlying request event
@@ -18,6 +18,6 @@ const event = useRequestEvent()
 const url = event?.path
 ```
 
-::callout
+::tip
 In the browser, `useRequestEvent` will return `undefined`.
 ::

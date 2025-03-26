@@ -1,13 +1,12 @@
-import type { DefineComponent, MaybeRef, VNode } from 'vue'
-import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
+import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
-// eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _wrapIf } from './utils'
+import { _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
 // @ts-expect-error virtual file
@@ -17,37 +16,37 @@ import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 
-// TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
   inheritAttrs: false,
   props: {
     name: String,
-    layoutProps: Object
+    layoutProps: Object,
   },
-  async setup (props, context) {
+  setup (props, context) {
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
     // that setup reruns when the name changes.
-
-    const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
-
-    return () => h(LayoutComponent, props.layoutProps, context.slots)
-  }
+    return () => h(layouts[props.name], props.layoutProps, context.slots)
+  },
 })
+
+// props are moved outside of defineComponent to later explicitly assert the prop types
+// this avoids type loss/simplification resulting in things like MaybeRef<string | false>, keeping type hints for layout names
+const nuxtLayoutProps = {
+  name: {
+    type: [String, Boolean, Object] as PropType<unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']>,
+    default: null,
+  },
+  fallback: {
+    type: [String, Object] as PropType<unknown extends PageMeta['layout'] ? MaybeRef<string> : PageMeta['layout']>,
+    default: null,
+  },
+}
 
 export default defineComponent({
   name: 'NuxtLayout',
   inheritAttrs: false,
-  props: {
-    name: {
-      type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout'],
-      default: null
-    },
-    fallback: {
-      type: [String, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string> : PageMeta['layout'],
-      default: null
-    }
-  },
+  props: nuxtLayoutProps,
   setup (props, context) {
     const nuxtApp = useNuxtApp()
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
@@ -85,7 +84,7 @@ export default defineComponent({
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
 
       // We avoid rendering layout transition if there is no layout to render
-      return _wrapIf(Transition, hasLayout && transitionProps, {
+      return _wrapInTransition(hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
           default: () => h(
             LayoutProvider,
@@ -94,32 +93,30 @@ export default defineComponent({
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
-              hasTransition: !!transitionProps
-            }, context.slots)
-        })
+              hasTransition: !!transitionProps,
+            }, context.slots),
+        }),
       }).default()
     }
-  }
-}) as unknown as DefineComponent<{
-  name?: (unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']) | undefined
-}>
+  },
+}) as DefineComponent<ExtractPublicPropTypes<typeof nuxtLayoutProps>>
 
 const LayoutProvider = defineComponent({
   name: 'NuxtLayoutProvider',
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean] as unknown as () => string | false
+      type: [String, Boolean] as unknown as () => string | false,
     },
     layoutProps: {
-      type: Object
+      type: Object,
     },
     hasTransition: {
-      type: Boolean
+      type: Boolean,
     },
     shouldProvide: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -127,7 +124,7 @@ const LayoutProvider = defineComponent({
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default')
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default'),
       })
     }
 
@@ -159,7 +156,7 @@ const LayoutProvider = defineComponent({
         vnode = h(
           LayoutLoader,
           { key: name, layoutProps: props.layoutProps, name },
-          context.slots
+          context.slots,
         )
 
         return vnode
@@ -168,8 +165,8 @@ const LayoutProvider = defineComponent({
       return h(
         LayoutLoader,
         { key: name, layoutProps: props.layoutProps, name },
-        context.slots
+        context.slots,
       )
     }
-  }
+  },
 })

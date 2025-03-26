@@ -13,8 +13,8 @@ export default defineNuxtComponent({
   setup () {
     const state = ref(0)
     return {
-      state
+      state,
     }
-  }
+  },
 })
 </script>
