@@ -31,6 +31,8 @@ export interface NuxtPageProps extends RouterViewProps {
   pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
 }
 
+const _routeProviders = import.meta.dev ? new Map<Component, ReturnType<typeof defineRouteProvider> | undefined>() : new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
+
 export default defineComponent({
   name: 'NuxtPage',
   inheritAttrs: false,
@@ -91,8 +93,6 @@ export default defineComponent({
         unsub()
       })
     }
-
-    const routerProviderLookup = new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
@@ -191,11 +191,14 @@ export default defineComponent({
                 }
 
                 const routerComponentType = routeProps.Component.type as any
-                let PageRouteProvider = routerProviderLookup.get(routerComponentType)
+                const routeProviderKey = import.meta.dev ? routerComponentType.name || routerComponentType.__name : routerComponentType
+                let PageRouteProvider = import.meta.client ? _routeProviders.get(routeProviderKey) : undefined
 
                 if (!PageRouteProvider) {
                   PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
-                  routerProviderLookup.set(routerComponentType, PageRouteProvider)
+                  if (import.meta.client) {
+                    _routeProviders.set(routeProviderKey, PageRouteProvider)
+                  }
                 }
 
                 return h(PageRouteProvider, routeProviderProps)
