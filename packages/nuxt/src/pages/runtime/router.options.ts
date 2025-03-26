@@ -15,7 +15,7 @@ export default <RouterConfig>{
   scrollBehavior: (
     to: RouteLocationNormalized,
     from: RouteLocationNormalized,
-    savedPosition: ScrollPosition | null
+    savedPosition: ScrollPosition | null,
   ) => {
     // Check if the navigation is the first page load
     const isFirstLoad = from === START_LOCATION
@@ -79,7 +79,7 @@ function _getHashElementScrollMarginTop (selector: string): number {
 function _calculatePosition (
   to: RouteLocationNormalized,
   savedPosition: ScrollPosition | null,
-  scrollBehaviorType: ScrollBehavior
+  scrollBehaviorType: ScrollBehavior,
 ): ScrollPosition {
   // Handle saved position for backward/forward navigation
   if (savedPosition) {
