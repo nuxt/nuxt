@@ -14,7 +14,7 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.13.13
-  '@unhead/vue': 2.0.1
+  '@unhead/vue': 2.0.2
   '@vue/compiler-core': 3.5.13
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
@@ -87,8 +87,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       '@unhead/vue':
-        specifier: 2.0.1
-        version: 2.0.1(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.2
+        version: 2.0.2(vue@3.5.13(typescript@5.8.2))
       '@vitest/coverage-v8':
         specifier: 3.0.9
         version: 3.0.9(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.13.13)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
@@ -355,8 +355,8 @@ importers:
         specifier: 22.13.13
         version: 22.13.13
       '@unhead/vue':
-        specifier: 2.0.1
-        version: 2.0.1(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.2
+        version: 2.0.2(vue@3.5.13(typescript@5.8.2))
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
@@ -522,7 +522,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.11.5
-        version: 0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.1(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.2)(vue@3.5.13(typescript@5.8.2))
+        version: 0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.2(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.2)(vue@3.5.13(typescript@5.8.2))
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -715,8 +715,8 @@ importers:
         specifier: 2.25.9
         version: 2.25.9(esbuild@0.25.1)
       '@unhead/vue':
-        specifier: 2.0.1
-        version: 2.0.1(vue@3.5.13(typescript@5.8.2))
+        specifier: 2.0.2
+        version: 2.0.2(vue@3.5.13(typescript@5.8.2))
       '@vitejs/plugin-vue':
         specifier: 5.2.3
         version: 5.2.3(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.2))
@@ -2122,7 +2122,7 @@ packages:
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
-      '@unhead/vue': 2.0.1
+      '@unhead/vue': 2.0.2
       nuxt: workspace:*
     peerDependenciesMeta:
       '@stripe/stripe-js':
@@ -2950,8 +2950,8 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unhead/vue@2.0.1':
-    resolution: {integrity: sha512-B5/MyP2HUCh6xtr/kcuEz5Es/ZlU9IQWdUOpkOGKSRgo3Fb4Clg4PuB8pjytegkA5qyeZC7HtXyerTa3JJKsqg==}
+  '@unhead/vue@2.0.2':
+    resolution: {integrity: sha512-pUGcbmPNCALOVWnQRtIjJ5ubNaZus3nHfCBDPEVwhbiLzeLF6wbhgTakwksZ1EegKNOZwRAkmVbV6i+23OYEUQ==}
     peerDependencies:
       vue: 3.5.13
 
@@ -7160,8 +7160,8 @@ packages:
   unenv@2.0.0-rc.15:
     resolution: {integrity: sha512-J/rEIZU8w6FOfLNz/hNKsnY+fFHWnu9MH4yRbSZF3xbbGHovcetXPs7sD+9p8L6CeNC//I9bhRYAOsBt2u7/OA==}
 
-  unhead@2.0.1:
-    resolution: {integrity: sha512-OiZ/3lQTbcdSUwSVtIK9U+cmf9uJYVdDA0BbY7rFcdUv1YFdyCWb+QmOzFyMoUNbwkqOLUqDQISWegXJXjCjSA==}
+  unhead@2.0.2:
+    resolution: {integrity: sha512-1pcK/rSA70sezpdgmupQPd/yrul8pVFJRwMvWjEthbsXoTXMqjNQlV7NBXWeWt5r2uje1lZJsvRTHF7IvdOhcg==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -8666,10 +8666,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.98.0
 
-  '@nuxt/scripts@0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.1(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.2)(vue@3.5.13(typescript@5.8.2))':
+  '@nuxt/scripts@0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.2(vue@3.5.13(typescript@5.8.2)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.2)(vue@3.5.13(typescript@5.8.2))':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 2.0.1(vue@3.5.13(typescript@5.8.2))
+      '@unhead/vue': 2.0.2(vue@3.5.13(typescript@5.8.2))
       '@vueuse/core': 13.0.0(vue@3.5.13(typescript@5.8.2))
       consola: 3.4.2
       defu: 6.1.4
@@ -9618,10 +9618,10 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unhead/vue@2.0.1(vue@3.5.13(typescript@5.8.2))':
+  '@unhead/vue@2.0.2(vue@3.5.13(typescript@5.8.2))':
     dependencies:
       hookable: 5.5.3
-      unhead: 2.0.1
+      unhead: 2.0.2
       vue: 3.5.13(typescript@5.8.2)
 
   '@unocss/astro@66.0.0(vite@6.2.3(@types/node@22.13.13)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.2))':
@@ -14670,7 +14670,7 @@ snapshots:
       pathe: 2.0.3
       ufo: 1.5.4
 
-  unhead@2.0.1:
+  unhead@2.0.2:
     dependencies:
       hookable: 5.5.3
 
