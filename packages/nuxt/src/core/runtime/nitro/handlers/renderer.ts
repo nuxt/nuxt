@@ -200,25 +200,23 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
   }
-  // no island
-  if (import.meta.dev) {
-    const link: Link[] = []
-    for (const resource of Object.values(styles)) {
-      // Do not add links to resources that are inlined (vite v5+)
-      if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
-        continue
-      }
-      // Add CSS links in <head> for CSS files
-      // - in production
-      // - in dev mode when not rendering an island
-      // - in dev mode when rendering an island and the file has scoped styles and is not a page
-      if (!import.meta.dev || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
-      }
+  // todo refactor to island for dev mode
+  const link: Link[] = []
+  for (const resource of Object.values(styles)) {
+    // Do not add links to resources that are inlined (vite v5+)
+    if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+      continue
     }
-    if (link.length) {
-      ssrContext.head.push({ link }, headEntryOptions)
+    // Add CSS links in <head> for CSS files
+    // - in production
+    // - in dev mode when not rendering an island
+    // - in dev mode when rendering an island and the file has scoped styles and is not a page
+    if (!import.meta.dev || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
+      link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
     }
+  }
+  if (link.length) {
+    ssrContext.head.push({ link }, headEntryOptions)
   }
 
   if (!NO_SCRIPTS) {
