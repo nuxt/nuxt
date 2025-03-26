@@ -51,7 +51,7 @@
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/node": "22.13.13",
-    "@unhead/vue": "2.0.1",
+    "@unhead/vue": "2.0.2",
     "@vue/compiler-core": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
@@ -85,7 +85,7 @@
     "@types/babel__helper-plugin-utils": "7.10.3",
     "@types/node": "22.13.13",
     "@types/semver": "7.5.8",
-    "@unhead/vue": "2.0.1",
+    "@unhead/vue": "2.0.2",
     "@vitest/coverage-v8": "3.0.9",
     "@vue/test-utils": "2.4.6",
     "acorn": "8.14.1",
@@ -111,7 +111,7 @@
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.44.0",
     "memfs": "4.17.0",
-    "nitropack": "2.11.7",
+    "nitropack": "2.11.8",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
@@ -135,6 +135,6 @@
     "vue-tsc": "2.2.8",
     "webpack": "5.98.0"
   },
-  "packageManager": "pnpm@10.6.5",
+  "packageManager": "pnpm@10.7.0",
   "version": ""
 }
