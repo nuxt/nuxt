@@ -4,13 +4,13 @@ import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import type { BuildOptions, ServerOptions } from 'vite'
-import { logger } from '@nuxt/kit'
+import { logger, useNitro } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
 import { defineEnv } from 'unenv'
 import { resolveModulePath } from 'exsolve'
-import { defineEventHandler, handleCors, setHeader } from 'h3'
+import { createError, defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 
 import type { ViteBuildContext } from './vite'
@@ -241,6 +241,13 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
     })
 
+    const staticBases: string[] = []
+    for (const folder of useNitro().options.publicAssets) {
+      if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
+        staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
+      }
+    }
+
     const viteMiddleware = defineEventHandler(async (event) => {
       const viteRoutes: string[] = []
       for (const viteRoute of viteServer.middlewares.stack) {
@@ -268,6 +275,13 @@ export async function buildClient (ctx: ViteBuildContext) {
           return err ? reject(err) : resolve(null)
         })
       })
+
+      // if vite has not handled the request, we want to send a 404 for paths which are not in any static base
+      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL))) {
+        throw createError({
+          statusCode: 404,
+        })
+      }
     })
     await ctx.nuxt.callHook('server:devHandler', viteMiddleware)
   } else {
