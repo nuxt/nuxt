@@ -95,7 +95,9 @@ const INDEX_PAGE_RE = /\/index$/
 export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   const routes: NuxtPage[] = []
 
-  for (const file of files) {
+  const sortedFiles = [...files].sort((a, b) => a.relativePath.length - b.relativePath.length)
+
+  for (const file of sortedFiles) {
     const segments = file.relativePath
       .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
       .split('/')
@@ -137,7 +139,8 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(INDEX_PAGE_RE, '/')))
+      const routePath = getRoutePath(tokens, segments[i + 1] !== undefined && segments[i + 1] !== 'index')
+      const path = withLeadingSlash(joinURL(route.path, routePath.replace(INDEX_PAGE_RE, '/')))
       const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {
@@ -146,7 +149,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       } else if (segmentName === 'index' && !route.path) {
         route.path += '/'
       } else if (segmentName !== 'index') {
-        route.path += getRoutePath(tokens)
+        route.path += routePath
       }
     }
 
@@ -319,7 +322,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 }
 
 const COLON_RE = /:/g
-function getRoutePath (tokens: SegmentToken[]): string {
+function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
   return tokens.reduce((path, token) => {
     return (
       path +
@@ -328,7 +331,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
         : token.type === SegmentTokenType.dynamic
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
-            ? `:${token.value}(.*)*`
+            ? hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`
             : token.type === SegmentTokenType.group
               ? ''
               : encodePath(token.value).replace(COLON_RE, '\\:'))

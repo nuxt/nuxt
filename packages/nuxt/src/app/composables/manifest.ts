@@ -28,7 +28,7 @@ function fetchManifest () {
   }
   if (import.meta.server) {
     // @ts-expect-error virtual file
-    manifest = import('#app-manifest')
+    manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest')
   } else {
     manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',

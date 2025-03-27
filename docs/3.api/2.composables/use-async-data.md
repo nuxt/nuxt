@@ -111,7 +111,7 @@ Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the rout
 You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `useAsyncData`.
 ::
 
-::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
+::tip{icon="i-simple-icons-youtube" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
 Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
 ::
 
