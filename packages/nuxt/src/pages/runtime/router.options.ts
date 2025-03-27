@@ -1,8 +1,8 @@
+import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import type { RouterConfig } from 'nuxt/schema'
-import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
 import { useNuxtApp } from '#app/nuxt'
-import { useRouter } from '#app/composables/router'
 import { isChangingPage } from '#app/components/utils'
+import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -10,7 +10,7 @@ type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
 // Default router options
 // https://router.vuejs.org/api/#routeroptions
-export default <RouterConfig>{
+export default <RouterConfig> {
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
     // @ts-expect-error untyped, nuxt-injected option
@@ -27,6 +27,7 @@ export default <RouterConfig>{
       position = { left: 0, top: 0 }
     }
 
+    // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path === from.path) {
       if (from.hash && !to.hash) {
         return { left: 0, top: 0 }
