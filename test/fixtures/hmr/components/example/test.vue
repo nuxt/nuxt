@@ -1,3 +1,5 @@
 <template>
-  <div data-testid="example">test.vue</div>
+  <div data-testid="example">
+    test.vue
+  </div>
 </template>
