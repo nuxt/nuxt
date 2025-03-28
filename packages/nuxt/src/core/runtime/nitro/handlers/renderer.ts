@@ -134,15 +134,22 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
     : null
 
-  if (ssrError && ssrError.statusCode) {
-    ssrError.statusCode = Number.parseInt(ssrError.statusCode as any)
-  }
-
   if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {
     throw createError({
       statusCode: 404,
       statusMessage: 'Page Not Found: /__nuxt_error',
     })
+  }
+
+  if (ssrError) {
+    ssrError.statusCode &&= Number.parseInt(ssrError.statusCode as any)
+    if (typeof ssrError.data === 'string' && ssrError.data.startsWith('{')) {
+      try {
+        ssrError.data = JSON.parse(ssrError.data)
+      } catch {
+        // ignore
+      }
+    }
   }
 
   // Check for island component rendering
