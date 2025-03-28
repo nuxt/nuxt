@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs'
+import { readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
