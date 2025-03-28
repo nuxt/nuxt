@@ -143,7 +143,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (ssrError) {
     ssrError.statusCode &&= Number.parseInt(ssrError.statusCode as any)
-    if (typeof ssrError.data === 'string' && ssrError.data.startsWith('{')) {
+    if (typeof ssrError.data === 'string') {
       try {
         ssrError.data = JSON.parse(ssrError.data)
       } catch {
