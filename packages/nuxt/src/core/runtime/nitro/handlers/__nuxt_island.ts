@@ -1,10 +1,12 @@
 import { useNitroApp } from 'nitro/runtime'
 import type { RenderResponse } from 'nitro/types'
-import type { SerializableHead } from '@unhead/vue/types'
+import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'h3'
 import { defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
+import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
+import { getQuery as getURLQuery } from 'ufo'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getRenderer } from '../utils/renderer/build-files'
@@ -21,7 +23,6 @@ export default defineEventHandler(async (event) => {
     'x-powered-by': 'Nuxt',
   })
 
-  // todo change event url
   if (import.meta.prerender && event.path && await islandCache!.hasItem(event.path)) {
     return islandCache!.getItem(event.path) as Promise<Partial<RenderResponse>>
   }
@@ -45,6 +46,28 @@ export default defineEventHandler(async (event) => {
 
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
+  }
+
+  if (import.meta.dev) {
+    const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
+
+    const link: Link[] = []
+    for (const resource of Object.values(styles)) {
+      // Do not add links to resources that are inlined (vite v5+)
+      if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+        continue
+      }
+      // Add CSS links in <head> for CSS files
+      // - in production
+      // - in dev mode when not rendering an island
+      // - in dev mode when rendering an island and the file has scoped styles and is not a page
+      if (!import.meta.dev || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+      }
+    }
+    if (link.length) {
+      ssrContext.head.push({ link }, { mode: 'server' })
+    }
   }
 
   const islandHead: SerializableHead = {}
