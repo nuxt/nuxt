@@ -90,7 +90,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Whether we are rendering payload route
-  // no island
   const isRenderingPayload = process.env.NUXT_PAYLOAD_EXTRACTION && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
@@ -110,9 +109,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Whether we are prerendering route
-  // no island
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
-  // no island
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
 
   // Render app
@@ -126,7 +123,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
   }
 
-  // noisland
   if (process.env.NUXT_INLINE_STYLES) {
     for (const id of await getEntryIds()) {
       ssrContext.modules!.add(id)
@@ -152,7 +148,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Directly render payload routes
-  // payload _ no island
   if (isRenderingPayload) {
     const response = renderPayloadResponse(ssrContext)
     if (import.meta.prerender) {
@@ -160,7 +155,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
     return response
   }
-  // no island
+
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
     appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
@@ -178,7 +173,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
   // 1. Preload payloads and app manifest
-  // no island
   if (_PAYLOAD_EXTRACTION && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
@@ -188,7 +182,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       ],
     }, headEntryOptions)
   }
-  // island yes
+
   if (isAppManifestEnabled && ssrContext._preloadManifest) {
     ssrContext.head.push({
       link: [
@@ -196,11 +190,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       ],
     }, { ...headEntryOptions, tagPriority: 'low' })
   }
+
   // 2. Styles
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
   }
-  // todo refactor to island for dev mode
+
   const link: Link[] = []
   for (const resource of Object.values(styles)) {
     // Do not add links to resources that are inlined (vite v5+)
