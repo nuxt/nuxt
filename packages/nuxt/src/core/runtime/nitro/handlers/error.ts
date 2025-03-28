@@ -34,6 +34,8 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   errorObject.url = url.pathname + url.search + url.hash
   // add default server message
   errorObject.message ||= 'Server Error'
+  // we will be rendering this error internally so we can pass along the error.data safely
+  errorObject.data ||= error.data
 
   delete defaultRes.headers['content-type'] // this would be set to application/json
   delete defaultRes.headers['content-security-policy'] // this would disable JS execution in the error page
