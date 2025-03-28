@@ -1,9 +1,10 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import {readFileSync, renameSync, writeFileSync} from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { expect, test } from './test-utils'
+import {readdirSync} from "fs";
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
@@ -172,6 +173,27 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
       // Verify no unexpected errors
       expect(filteredLogs).toStrictEqual([])
+    })
+
+    test.only('should support renaming files to same import name', async ({ page, goto })=>{
+      await goto('/rename-component')
+
+      await expect(page.getByTestId('example')).toHaveText('test.vue')
+      console.log(await page.getByTestId('example').innerHTML())
+
+      renameSync(join(fixtureDir, 'components/example/test.vue'), join(fixtureDir, 'components/example/example-test.vue'))
+
+      writeFileSync(
+        join(fixtureDir, 'components/example/example-test.vue'),
+        `<template><div data-testid="example">example-test.vue</div></template>`,
+      )
+
+      await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+
+      await page.reload()
+
+      await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+
     })
   }
 }
