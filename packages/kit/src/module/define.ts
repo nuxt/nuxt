@@ -98,7 +98,13 @@ function _defineNuxtModule<
     if (module.meta.compatibility) {
       const issues = await checkNuxtCompatibility(module.meta.compatibility, nuxt)
       if (issues.length) {
-        logger.warn(`Module \`${module.meta.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`)
+        if (nuxt.options.experimental.enforceModuleCompatibility) {
+          const error = new Error(`Module \`${module.meta.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`)
+          error.name = 'ModuleCompatibilityError'
+          throw error
+        } else {
+          logger.warn(`Module \`${module.meta.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`)
+        }
         return
       }
     }
