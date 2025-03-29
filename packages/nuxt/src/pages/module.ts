@@ -495,6 +495,7 @@ export default defineNuxtModule({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         isPage,
         routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
+        extractedKeys: nuxt.options.experimental.extraPageMetaExtractionKeys,
       }))
     })
 

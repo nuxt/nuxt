@@ -173,7 +173,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       const fileContent = route.file in vfs
         ? vfs[route.file]!
         : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
-      const routeMeta = await getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
+      const routeMeta = getRouteMeta(fileContent, route, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
       }
@@ -210,7 +210,9 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
+export function getRouteMeta (contents: string, page: NuxtPage, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
+  const absolutePath = page.file
+  if (!absolutePath) { return {} }
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -293,6 +295,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
           continue
         }
         extractedMeta[key] = propertyValue.value
+        if (extraExtractionKeys.includes(key)) {
+          page.meta ??= {}
+          page.meta[key] = propertyValue.value
+        }
       }
 
       for (const property of pageMetaArgument.properties) {
@@ -316,7 +322,6 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
     })
   }
-
   metaCache[absolutePath] = extractedMeta
   return klona(extractedMeta)
 }
