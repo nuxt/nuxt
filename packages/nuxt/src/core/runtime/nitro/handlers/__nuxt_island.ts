@@ -48,17 +48,6 @@ export default defineEventHandler(async (event) => {
     ssrContext.head.push({ style: inlinedStyles })
   }
 
-  const islandHead: SerializableHead = {}
-  for (const entry of ssrContext.head.entries.values()) {
-    for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
-      const currentValue = islandHead[key as keyof SerializableHead]
-      if (Array.isArray(currentValue)) {
-        currentValue.push(...value)
-      }
-      islandHead[key as keyof SerializableHead] = value
-    }
-  }
-
   if (import.meta.dev) {
     const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
@@ -69,8 +58,6 @@ export default defineEventHandler(async (event) => {
         continue
       }
       // Add CSS links in <head> for CSS files
-      // - in production
-      // - in dev mode when not rendering an island
       // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
@@ -78,6 +65,17 @@ export default defineEventHandler(async (event) => {
     }
     if (link.length) {
       ssrContext.head.push({ link }, { mode: 'server' })
+    }
+  }
+
+  const islandHead: SerializableHead = {}
+  for (const entry of ssrContext.head.entries.values()) {
+    for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+      const currentValue = islandHead[key as keyof SerializableHead]
+      if (Array.isArray(currentValue)) {
+        currentValue.push(...value)
+      }
+      islandHead[key as keyof SerializableHead] = value
     }
   }
 
