@@ -48,28 +48,6 @@ export default defineEventHandler(async (event) => {
     ssrContext.head.push({ style: inlinedStyles })
   }
 
-  if (import.meta.dev) {
-    const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
-
-    const link: Link[] = []
-    for (const resource of Object.values(styles)) {
-      // Do not add links to resources that are inlined (vite v5+)
-      if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
-        continue
-      }
-      // Add CSS links in <head> for CSS files
-      // - in production
-      // - in dev mode when not rendering an island
-      // - in dev mode when rendering an island and the file has scoped styles and is not a page
-      if (!import.meta.dev || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
-      }
-    }
-    if (link.length) {
-      ssrContext.head.push({ link }, { mode: 'server' })
-    }
-  }
-
   const islandHead: SerializableHead = {}
   for (const entry of ssrContext.head.entries.values()) {
     for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
@@ -78,6 +56,28 @@ export default defineEventHandler(async (event) => {
         currentValue.push(...value)
       }
       islandHead[key as keyof SerializableHead] = value
+    }
+  }
+
+  if (import.meta.dev) {
+    const { styles } = getRequestDependencies(ssrContext, renderer.rendererContext)
+
+    const link: Link[] = []
+    for (const resource of Object.values(styles)) {
+      // Do not add links to resources that are inlined (vite v5+)
+      if ('inline' in getURLQuery(resource.file)) {
+        continue
+      }
+      // Add CSS links in <head> for CSS files
+      // - in production
+      // - in dev mode when not rendering an island
+      // - in dev mode when rendering an island and the file has scoped styles and is not a page
+      if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+      }
+    }
+    if (link.length) {
+      ssrContext.head.push({ link }, { mode: 'server' })
     }
   }
 
