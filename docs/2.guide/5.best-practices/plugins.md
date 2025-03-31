@@ -16,7 +16,7 @@ A large number of plugins can cause performance issues, especially if they requi
 
 Whenever possible, favor composition over plugins. Just like in Vue, many utilities and composables can be used directly without the need for a plugin. This keeps your project lightweight and improves maintainability.
 
-## If `async`, enable `parralel`
+## If `async`, enable `parallel`
 
 By default, all plugins loads synchronously.
 When defining asynchronous plugins, setting `parallel: true` allows multiple plugins to load concurrently, improving performance by preventing blocking operations.
