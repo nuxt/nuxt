@@ -211,7 +211,6 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
-  if (!absolutePath) { return {} }
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -296,6 +295,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
     })
   }
+
   metaCache[absolutePath] = extractedMeta
   return klona(extractedMeta)
 }

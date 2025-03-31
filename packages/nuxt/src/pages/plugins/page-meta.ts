@@ -235,7 +235,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (meta.type === 'ObjectExpression') {
             for (let i = 0; i < meta.properties.length; i++) {
               const prop = withLocations(meta.properties[i])
-              if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name) && isSerializable(metaCode, prop.value)) {
+              if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
+                const { serializable } = isSerializable(metaCode, prop.value)
+                if (!serializable) {
+                  continue
+                }
                 const nextProperty = withLocations(meta.properties[i + 1])
                 if (nextProperty) {
                   m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
