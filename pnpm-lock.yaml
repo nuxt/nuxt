@@ -90,8 +90,8 @@ importers:
         specifier: 2.0.2
         version: 2.0.2(vue@3.5.13(typescript@5.8.2))
       '@vitest/coverage-v8':
-        specifier: 3.1.0
-        version: 3.1.0(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.13.14)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
+        specifier: 3.1.1
+        version: 3.1.1(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.13.14)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
       '@vue/test-utils':
         specifier: 2.4.6
         version: 2.4.6
@@ -949,7 +949,7 @@ importers:
         specifier: 6.2.4
         version: 6.2.4(@types/node@22.13.14)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-node:
-        specifier: ^3.1.0
+        specifier: ^3.1.1
         version: 3.1.1(@types/node@22.13.14)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-plugin-checker:
         specifier: ^0.9.1
@@ -3313,11 +3313,11 @@ packages:
       vite: 6.2.4
       vue: 3.5.13
 
-  '@vitest/coverage-v8@3.1.0':
-    resolution: {integrity: sha512-Q7oB/dh1aI1rxujQCdJob8OccV1WrzcFTomfKfwxb3rkWhyV2PPIyS1YpLfARtM/NUrFLM32zT3pMJqZAewEZw==}
+  '@vitest/coverage-v8@3.1.1':
+    resolution: {integrity: sha512-MgV6D2dhpD6Hp/uroUoAIvFqA8AuvXEFBC2eepG3WFc1pxTfdk1LEqqkWoWhjz+rytoqrnUUCdf6Lzco3iHkLQ==}
     peerDependencies:
-      '@vitest/browser': 3.1.0
-      vitest: 3.1.0
+      '@vitest/browser': 3.1.1
+      vitest: 3.1.1
     peerDependenciesMeta:
       '@vitest/browser':
         optional: true
@@ -10247,7 +10247,7 @@ snapshots:
       vite: 6.2.4(@types/node@22.13.14)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vue: 3.5.13(typescript@5.8.2)
 
-  '@vitest/coverage-v8@3.1.0(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.13.14)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))':
+  '@vitest/coverage-v8@3.1.1(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.13.14)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
