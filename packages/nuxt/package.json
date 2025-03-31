@@ -92,7 +92,7 @@
     "destr": "^2.0.3",
     "devalue": "^5.1.1",
     "errx": "^0.1.0",
-    "esbuild": "^0.25.1",
+    "esbuild": "^0.25.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "exsolve": "^1.0.4",
