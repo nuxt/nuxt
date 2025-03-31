@@ -481,10 +481,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Init user modules
   await nuxt.callHook('modules:before')
 
-  const {
-    paths: modulePaths,
-    modules,
-  } = await resolveModules(nuxt)
+  const { paths: modulePaths, modules } = await resolveModules(nuxt)
 
   nuxt.options.watch.push(...modulePaths)
 
@@ -939,9 +936,9 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
 }
 
 function resolveModule (
-  definition: NuxtModule<any> | string | [(NuxtModule | string)?, Record<string, any>?],
+  definition: NuxtModule<any> | string | false | undefined | null | [(NuxtModule | string)?, Record<string, any>?],
   nuxt: Nuxt,
-): { module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
+): { resolvedPath?: string, module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
   const [module, options = {}] = Array.isArray(definition) ? definition : [definition, {}]
 
   if (!module) {
@@ -964,7 +961,8 @@ function resolveModule (
   })
 
   return {
-    module: modPath || modAlias,
+    module,
+    resolvedPath: modPath || modAlias,
     options,
   }
 }
@@ -972,6 +970,7 @@ function resolveModule (
 async function resolveModules (nuxt: Nuxt) {
   const modules = new Map<string | NuxtModule, Record<string, any>>()
   const paths = new Set<string>()
+  const resolvedModulePaths = new Set<string>()
 
   // Loop layers in reverse order, so that the extends are loaded first and project is the last
   const configs = nuxt.options._layers.map(layer => layer.config).reverse()
@@ -979,9 +978,13 @@ async function resolveModules (nuxt: Nuxt) {
     // First register modules defined in layer's config
     const definedModules = config.modules ?? []
     for (const module of definedModules) {
-      const resolvedModule = module ? resolveModule(module, nuxt) : undefined
-      if (resolvedModule) {
+      const resolvedModule = resolveModule(module, nuxt)
+      if (resolvedModule && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
         modules.set(resolvedModule.module, resolvedModule.options)
+        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        if (typeof path === 'string') {
+          resolvedModulePaths.add(path)
+        }
       }
     }
 
@@ -1005,10 +1008,14 @@ async function resolveModules (nuxt: Nuxt) {
   // Lastly register private modules and modules added after loading config
   for (const key of ['modules', '_modules'] as const) {
     for (const module of nuxt.options[key as 'modules']) {
-      const resolvedModule = module ? resolveModule(module, nuxt) : undefined
+      const resolvedModule = resolveModule(module, nuxt)
 
-      if (resolvedModule && !modules.has(resolvedModule.module)) {
+      if (resolvedModule && !modules.has(resolvedModule.module) && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
         modules.set(resolvedModule.module, resolvedModule.options)
+        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        if (typeof path === 'string') {
+          resolvedModulePaths.add(path)
+        }
       }
     }
   }
