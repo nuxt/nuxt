@@ -6,7 +6,7 @@ import type { H3Event$Fetch } from 'nitropack'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
-import { useServerHead } from './head'
+import { useHead } from './head'
 
 /** @since 3.0.0 */
 export function useRequestEvent (nuxtApp?: NuxtApp) {
@@ -132,7 +132,7 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
     ? `document.querySelectorAll('[${PREHYDRATE_ATTR_KEY}*=${JSON.stringify(key)}]').forEach` + callback
     : (callback + '()')
 
-  useServerHead({
+  useHead({
     script: [{
       key: vm && key ? key : undefined,
       tagPosition: 'bodyClose',
