@@ -177,8 +177,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       pkg-pr-new:
-        specifier: 0.0.41
-        version: 0.0.41
+        specifier: 0.0.42
+        version: 0.0.42
       playwright-core:
         specifier: 1.51.1
         version: 1.51.1
@@ -6332,8 +6332,8 @@ packages:
     resolution: {integrity: sha512-KocF8ve28eFjjuBKKGvzOBGzG8ew2OqOOSxTTZhirkzH7h3BI1vyzqlR0qbfcDBve1Yzo3FVlWUAtCRrbVN8Fw==}
     engines: {node: '>=14.16'}
 
-  pkg-pr-new@0.0.41:
-    resolution: {integrity: sha512-jpxquPsewDDx2pn33gZBgrlczN41gsCrqOkhBoW00rBBcwqLyBD5baQzp/nbZZf53LCgSrGVM9xp2rgAkgjTfg==}
+  pkg-pr-new@0.0.42:
+    resolution: {integrity: sha512-Fgx4PRJyjEaT5iicEHi08ENNhejOi4Fq2buord/ubGbFoo86VZRZuKzmZ2AKxdFV+zk5e79VgRjCIyGDOXnwYg==}
     hasBin: true
 
   pkg-types@1.3.1:
@@ -13986,7 +13986,7 @@ snapshots:
 
   pify@6.1.0: {}
 
-  pkg-pr-new@0.0.41:
+  pkg-pr-new@0.0.42:
     dependencies:
       '@jsdevtools/ez-spawn': 3.0.4
       '@octokit/action': 6.1.0
