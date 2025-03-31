@@ -50,6 +50,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   let resetTimeout: number | NodeJS.Timeout
 
   const start = (opts: { force?: boolean } = {}) => {
+    _clearTimeouts()
     error.value = false
     set(0, opts)
   }
