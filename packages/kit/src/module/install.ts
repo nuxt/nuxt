@@ -1,12 +1,13 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
-import { dirname, isAbsolute, resolve } from 'pathe'
+import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import { parseNodeModulePath } from 'mlly'
 import { resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
+import { resolvePackageJSON } from 'pkg-types'
 import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias } from '../resolve'
@@ -39,11 +40,13 @@ export async function installModule<
   const modulePath = resolvedModulePath || moduleToInstall
   if (typeof modulePath === 'string') {
     const parsed = parseNodeModulePath(modulePath)
-    const moduleRoot = parsed.dir ? parsed.dir + parsed.name : modulePath
+    const moduleRoot = parsed.dir
+      ? parsed.dir + parsed.name
+      : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-    const directory = (parsed.dir ? moduleRoot : getDirectory(modulePath)).replace(/\/?$/, '/')
-    if (directory !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
-      nuxt.options.modulesDir.push(resolve(directory, 'node_modules'))
+    const directory = moduleRoot.replace(/\/?$/, '/')
+    if (moduleRoot !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
+      nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
     }
   }
 

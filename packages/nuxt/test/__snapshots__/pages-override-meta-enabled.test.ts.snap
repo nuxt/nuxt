@@ -372,6 +372,11 @@
   ],
   "should use more performant regexp when catchall is used in middle of path": [
     {
+      "component": "() => import("pages/[...id]/index.vue")",
+      "name": ""id"",
+      "path": ""/:id(.*)*"",
+    },
+    {
       "component": "() => import("pages/[...id]/suffix.vue")",
       "name": ""id-suffix"",
       "path": ""/:id([^/]*)*/suffix"",

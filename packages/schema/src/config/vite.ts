@@ -114,13 +114,12 @@ export default defineResolvers({
       fs: {
         allow: {
           $resolve: async (val, get) => {
-            const [buildDir, srcDir, rootDir, workspaceDir, modulesDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir'), get('modulesDir')])
+            const [buildDir, srcDir, rootDir, workspaceDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir')])
             return [...new Set([
               buildDir,
               srcDir,
               rootDir,
               workspaceDir,
-              ...(modulesDir),
               ...Array.isArray(val) ? val : [],
             ])]
           },
