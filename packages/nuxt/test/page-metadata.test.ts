@@ -134,6 +134,26 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
+  it('should not extract non-serialisable meta', () => {
+    const meta = getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      redirect: () => '/',
+    })
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "redirect",
+          },
+        },
+      }
+    `)
+  })
+
   it('should extract serialisable metadata from files with multiple blocks', () => {
     const meta = getRouteMeta(`
     <script lang="ts">

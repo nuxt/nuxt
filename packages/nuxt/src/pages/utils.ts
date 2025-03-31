@@ -643,7 +643,6 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
-  const serializable = true
   if (propertyValue.type === 'ArrayExpression') {
     const values: string[] = []
     for (const element of propertyValue.elements) {
@@ -658,9 +657,10 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
       }
       values.push(value)
     }
+
     return {
       value: values,
-      serializable,
+      serializable: true,
     }
   }
 
