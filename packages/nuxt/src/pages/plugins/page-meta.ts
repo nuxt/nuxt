@@ -6,11 +6,9 @@ import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 
-import type { ObjectExpression, Property } from 'estree'
 import {
   ScopeTracker,
   type ScopeTrackerNode,
-  type WithLocations,
   getUndeclaredIdentifiersInFunction,
   isNotReferencePosition,
   parseAndWalk,
@@ -18,6 +16,7 @@ import {
   withLocations,
 } from '../../core/utils/parse'
 import { logger } from '../../utils'
+import { isSerializable } from '../utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -230,26 +229,23 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const meta = withLocations(node.arguments[0])
 
           if (!meta) { return }
-          const metaCode = new MagicString(code!.slice(meta.start, meta.end))
+          const metaCode = code!.slice(meta.start, meta.end)
+          const m = new MagicString(metaCode)
 
-          function clearExtractedMeta (string: MagicString, node: ObjectExpression) {
-            for (let i = 0; i < node.properties.length; i++) {
-              const prop = withLocations(node.properties[i])
-              if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
-                const nextProperty = node.properties[i + 1] as WithLocations<Property> | undefined
+          if (meta.type === 'ObjectExpression') {
+            for (let i = 0; i < meta.properties.length; i++) {
+              const prop = withLocations(meta.properties[i])
+              if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name) && isSerializable(metaCode, prop.value)) {
+                const nextProperty = withLocations(meta.properties[i + 1])
                 if (nextProperty) {
-                  string.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
+                  m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
                 } else if (code[prop.end] === ',') {
-                  string.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
                 } else {
-                  string.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
                 }
               }
             }
-          }
-
-          if (meta.type === 'ObjectExpression') {
-            clearExtractedMeta(metaCode, meta)
           }
 
           const definePageMetaScope = scopeTracker.getCurrentScope()
@@ -294,7 +290,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const extracted = [
             importStatements,
             declarations,
-            `const __nuxt_page_meta = ${metaCode.toString() || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+            `const __nuxt_page_meta = ${m.toString() || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
           ].join('\n')
 
           s.overwrite(0, code.length, extracted.trim())

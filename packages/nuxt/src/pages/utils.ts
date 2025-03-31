@@ -7,7 +7,7 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { Property } from 'estree'
+import type { Node, Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
@@ -173,7 +173,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       const fileContent = route.file in vfs
         ? vfs[route.file]!
         : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
-      const routeMeta = getRouteMeta(fileContent, route, ctx.extraExtractionKeys)
+      const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
       }
@@ -205,13 +205,12 @@ export function extractScriptContent (sfc: string) {
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
-const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
+export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export function getRouteMeta (contents: string, page: NuxtPage, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
-  const absolutePath = page.file
+export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
   if (!absolutePath) { return {} }
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
@@ -261,43 +260,18 @@ export function getRouteMeta (contents: string, page: NuxtPage, extraExtractionK
 
         const propertyValue = withLocations(property.value)
 
-        if (propertyValue.type === 'ObjectExpression') {
-          const valueString = script.code.slice(propertyValue.start, propertyValue.end)
-          try {
-            extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
-          } catch {
-            logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-            dynamicProperties.add(key)
-            continue
-          }
-        }
-
-        if (propertyValue.type === 'ArrayExpression') {
-          const values: string[] = []
-          for (const element of propertyValue.elements) {
-            if (!element) {
-              continue
-            }
-            if (element.type !== 'Literal' || typeof element.value !== 'string') {
-              logger.debug(`Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
-              dynamicProperties.add(key)
-              continue
-            }
-            values.push(element.value)
-          }
-          extractedMeta[key] = values
-          continue
-        }
-
-        if (propertyValue.type !== 'Literal' || (typeof propertyValue.value !== 'string' && typeof propertyValue.value !== 'boolean')) {
-          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+        const { value, serializable } = isSerializable(script.code, propertyValue)
+        if (!serializable) {
+          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
           dynamicProperties.add(key)
           continue
         }
-        extractedMeta[key] = propertyValue.value
+
         if (extraExtractionKeys.includes(key)) {
-          page.meta ??= {}
-          page.meta[key] = propertyValue.value
+          extractedMeta.meta ??= {}
+          extractedMeta.meta[key] = value
+        } else {
+          extractedMeta[key] = value
         }
       }
 
@@ -534,7 +508,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         redirect: serializeRouteValue(page.redirect),
       }
 
-      for (const key of ['path', 'props', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+      for (const key of [...defaultExtractionKeys, 'meta'] satisfies NormalizedRouteKeys) {
         if (route[key] === undefined) {
           delete route[key]
         }
@@ -650,4 +624,54 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
     joinURL(parent, page.path),
     ...page.children?.flatMap(child => resolveRoutePaths(child, joinURL(parent, page.path))) || [],
   ]
+}
+
+export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
+  const propertyValue = withLocations(node)
+
+  if (propertyValue.type === 'ObjectExpression') {
+    const valueString = code.slice(propertyValue.start, propertyValue.end)
+    try {
+      return {
+        value: JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {})),
+        serializable: true,
+      }
+    } catch {
+      return {
+        serializable: false,
+      }
+    }
+  }
+
+  const serializable = true
+  if (propertyValue.type === 'ArrayExpression') {
+    const values: string[] = []
+    for (const element of propertyValue.elements) {
+      if (!element) {
+        continue
+      }
+      const { serializable, value } = isSerializable(code, element)
+      if (!serializable) {
+        return {
+          serializable: false,
+        }
+      }
+      values.push(value)
+    }
+    return {
+      value: values,
+      serializable,
+    }
+  }
+
+  if (propertyValue.type === 'Literal' && (typeof propertyValue.value === 'string' || typeof propertyValue.value === 'boolean' || typeof propertyValue.value === 'number' || propertyValue.value === null)) {
+    return {
+      value: propertyValue.value,
+      serializable: true,
+    }
+  }
+
+  return {
+    serializable: false,
+  }
 }

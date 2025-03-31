@@ -13,23 +13,14 @@ vi.mock('klona', { spy: true })
 
 describe('page metadata', () => {
   it('should not extract metadata from empty files', () => {
-    expect(getRouteMeta('', {
-      path: '/',
-      file: filePath,
-    })).toEqual({})
-    expect(getRouteMeta('<template><div>Hi</div></template>', {
-      path: '/',
-      file: filePath,
-    })).toEqual({})
+    expect(getRouteMeta('', filePath)).toEqual({})
+    expect(getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})
   })
 
   it('should extract metadata from JS/JSX files', () => {
     const fileContents = `definePageMeta({ name: 'bar' })`
     for (const ext of ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']) {
-      const meta = getRouteMeta(fileContents, {
-        path: '/',
-        file: `/app/pages/index.${ext}`,
-      })
+      const meta = getRouteMeta(fileContents, `/app/pages/index.${ext}`)
       expect(meta).toStrictEqual({
         name: 'bar',
       })
@@ -45,10 +36,7 @@ export default {
   }
 }
     `
-    const meta = getRouteMeta(fileContents, {
-      path: '/',
-      file: `/app/pages/index.jsx`,
-    })
+    const meta = getRouteMeta(fileContents, `/app/pages/index.jsx`)
     expect(meta).toStrictEqual({
       name: 'bar',
     })
@@ -61,10 +49,7 @@ export default {
   definePageMeta({ name: 'bar' })
   </script>`
 
-    const meta = getRouteMeta(fileContents, {
-      file: `/app/pages/index.vue`,
-      path: '/',
-    })
+    const meta = getRouteMeta(fileContents, `/app/pages/index.vue`)
     expect(meta).toStrictEqual({
       name: 'bar',
     })
@@ -85,10 +70,7 @@ class SomeClass {
 definePageMeta({ name: 'bar' })
 </script>
     `
-    const meta = getRouteMeta(fileContents, {
-      path: '/',
-      file: `/app/pages/index.vue`,
-    })
+    const meta = getRouteMeta(fileContents, `/app/pages/index.vue`)
     expect(meta).toStrictEqual({
       name: 'bar',
     })
@@ -98,37 +80,17 @@ definePageMeta({ name: 'bar' })
     const _klona = klona as unknown as MockedFunction<typeof klona>
     _klona.mockImplementation(obj => obj)
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
-    const meta = getRouteMeta(fileContents, {
-      path: '/',
-      file: filePath,
-    })
-    expect(meta === getRouteMeta(fileContents, {
-
-      path: '/',
-      file: filePath,
-
-    })).toBeTruthy()
-    expect(meta === getRouteMeta(fileContents, {
-      path: '/',
-      file: '/app/pages/other.vue',
-    })).toBeFalsy()
-    expect(meta === getRouteMeta('<template><div>Hi</div></template>' + fileContents, {
-      path: '/',
-      file: filePath,
-    })).toBeFalsy()
+    const meta = getRouteMeta(fileContents, filePath)
+    expect(meta === getRouteMeta(fileContents, filePath)).toBeTruthy()
+    expect(meta === getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
+    expect(meta === getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
     _klona.mockReset()
   })
 
   it('should not share state between page metadata', () => {
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
-    const meta = getRouteMeta(fileContents, {
-      path: '/',
-      file: filePath,
-    })
-    expect(meta === getRouteMeta(fileContents, {
-      path: '/',
-      file: filePath,
-    })).toBeFalsy()
+    const meta = getRouteMeta(fileContents, filePath)
+    expect(meta === getRouteMeta(fileContents, filePath)).toBeFalsy()
   })
 
   it('should extract serialisable metadata', () => {
@@ -151,10 +113,7 @@ definePageMeta({ name: 'bar' })
       alias: ['/alias'],
     })
     </script>
-    `, {
-      path: '/',
-      file: filePath,
-    })
+    `, filePath)
 
     expect(meta).toMatchInlineSnapshot(`
       {
@@ -163,7 +122,6 @@ definePageMeta({ name: 'bar' })
         ],
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
-            "props",
             "meta",
           },
         },
@@ -196,10 +154,7 @@ definePageMeta({ name: 'bar' })
       },
     })
     </script>
-    `, {
-      path: '/',
-      file: filePath,
-    })
+    `, filePath)
 
     expect(meta).toMatchInlineSnapshot(`
       {
@@ -227,10 +182,7 @@ definePageMeta({ name: 'bar' })
       },
     };
     </script>
-    `, {
-      path: '/',
-      file: filePath,
-    })
+    `, filePath)
 
     expect(meta).toMatchInlineSnapshot(`
       {
@@ -254,10 +206,7 @@ definePageMeta({ name: 'bar' })
       },
     })
     </script>
-    `, {
-      path: '/',
-      file: filePath,
-    })
+    `, filePath)
 
     expect(meta).toMatchInlineSnapshot(`
       {
@@ -271,11 +220,6 @@ definePageMeta({ name: 'bar' })
   })
 
   it('should extract configured extra meta and add it into the page meta', () => {
-    const page = {
-      path: '/',
-      file: filePath,
-      meta: {},
-    }
     const meta = getRouteMeta(`
     <script setup>
     definePageMeta({
@@ -283,28 +227,19 @@ definePageMeta({ name: 'bar' })
       bar: true,
     })
     </script>
-    `, page, ['bar', 'foo'])
+    `, filePath, ['bar', 'foo'])
 
     expect(meta).toMatchInlineSnapshot(`
       {
-        "bar": true,
-        "foo": "bar",
-      }
-    `)
-    expect(page.meta).toMatchInlineSnapshot(`
-      {
-        "bar": true,
-        "foo": "bar",
+        "meta": {
+          "bar": true,
+          "foo": "bar",
+        },
       }
     `)
   })
 
   it('should not set default extraction keys into NuxtPage.meta', () => {
-    const page = {
-      path: '/',
-      file: filePath,
-      meta: {},
-    }
     const meta = getRouteMeta(`
     <script setup>
     definePageMeta({
@@ -312,17 +247,14 @@ definePageMeta({ name: 'bar' })
       bar: true,
     })
     </script>
-    `, page, ['bar'])
+    `, filePath, ['bar'])
 
     expect(meta).toMatchInlineSnapshot(`
       {
         "alias": "/alias",
-        "bar": true,
-      }
-    `)
-    expect(page.meta).toMatchInlineSnapshot(`
-      {
-        "bar": true,
+        "meta": {
+          "bar": true,
+        },
       }
     `)
   })
@@ -346,10 +278,7 @@ describe('normalizeRoutes', () => {
         },
       })
       </script>
-      `, {
-      path: '/',
-      file: filePath,
-    }))
+      `, filePath))
 
     page.meta ||= {}
     page.meta.layout = 'test'
@@ -844,9 +773,9 @@ definePageMeta({
     ])(`should strip extracted metadata from the script block`, ({ input }) => {
       const res = compileScript(parse(input).descriptor, { id: 'component.vue' })
       const result = transformPlugin.transform(res.content, 'component.vue?macro=true')?.code
-      expect(result).not.contain('extracted')
+      expect.soft(result).not.contain('extracted')
       if (input.includes('foo')) {
-        expect(result).contain('foo')
+        expect.soft(result).contain('foo')
       }
       // verify for valid JS
       expect(() => toAst(result!, { ecmaVersion: 'latest', sourceType: 'module' })).not.toThrow()
