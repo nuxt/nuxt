@@ -159,6 +159,7 @@ definePageMeta({ name: 'bar' })
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
             "redirect",
+            "meta",
           },
         },
       }
@@ -284,6 +285,9 @@ definePageMeta({ name: 'bar' })
       {
         "alias": "/alias",
         "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
           "bar": true,
         },
       }
