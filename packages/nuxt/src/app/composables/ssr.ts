@@ -9,7 +9,9 @@ import { toArray } from '../utils'
 import { useServerHead } from './head'
 
 /** @since 3.0.0 */
-export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()) {
+export function useRequestEvent (nuxtApp?: NuxtApp) {
+  if (import.meta.client) { return }
+  nuxtApp ||= useNuxtApp()
   return nuxtApp.ssrContext?.event
 }
 
