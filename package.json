@@ -90,7 +90,7 @@
     "@vue/test-utils": "2.4.6",
     "acorn": "8.14.1",
     "autoprefixer": "10.4.21",
-    "case-police": "1.0.0",
+    "case-police": "2.0.0",
     "changelogen": "0.6.1",
     "consola": "3.4.2",
     "cssnano": "7.0.6",
