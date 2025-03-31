@@ -40,7 +40,7 @@
     "esbuild-loader": "^4.3.0",
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
-    "fork-ts-checker-webpack-plugin": "^9.0.2",
+    "fork-ts-checker-webpack-plugin": "^9.0.3",
     "globby": "^14.1.0",
     "h3": "^1.15.1",
     "jiti": "^2.4.2",
