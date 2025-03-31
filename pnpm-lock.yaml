@@ -99,8 +99,8 @@ importers:
         specifier: 10.4.21
         version: 10.4.21(postcss@8.5.3)
       case-police:
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 2.0.0
+        version: 2.0.0
       changelogen:
         specifier: 0.6.1
         version: 0.6.1(magicast@0.3.5)
@@ -3610,8 +3610,8 @@ packages:
   caniuse-lite@1.0.30001707:
     resolution: {integrity: sha512-3qtRjw/HQSMlDWf+X79N206fepf4SOOU6SQLMaq/0KkZLmSjPxAkBOQQ+FxbHKfHmYLZFfdWsO3KA90ceHPSnw==}
 
-  case-police@1.0.0:
-    resolution: {integrity: sha512-THHWd3TZmtB5sSrd8bt5t0shPQ/MVBXWChIULc9Fome4NN4SagoxNlc/V+lpl5uA4pNcCsBv5Z3wMmCqlYilxw==}
+  case-police@2.0.0:
+    resolution: {integrity: sha512-jPVlo+mrmaLQOc4PH00noGFcJsZBWy+eKnAoiqdDJZAx23l6JqvxzElug0GgvZf8zDOODWs9PmEY9GjZb+oMHg==}
     hasBin: true
 
   ccount@2.0.1:
@@ -10574,7 +10574,7 @@ snapshots:
 
   caniuse-lite@1.0.30001707: {}
 
-  case-police@1.0.0: {}
+  case-police@2.0.0: {}
 
   ccount@2.0.1: {}
 
