@@ -157,7 +157,7 @@ Apart from the built-in features, Nuxt offers multiple plug-in solutions such as
 
 Not optimized images can have a significant impact on your website performance, specifically targeting the [Largest Contentful Paint (LCP)](https://web.dev/articles/lcp) score.
 
-Thankfully, in Nuxt we can use [Nuxt Image](https://image.nuxt.com/) module that is a plug-and-play image optimization for Nuxt apps. It allows to resize and transform your images using built-in optimizer or your favorite images CDN. 
+Thankfully, in Nuxt we can use [Nuxt Image](https://image.nuxt.com/) module that is a plug-and-play image optimization for Nuxt apps. It allows to resize and transform your images using built-in optimizer or your favorite images CDN.
 
 ::tip{icon="i-lucide-video" to="https://www.youtube.com/watch?v=_UBff2eqGY0" target="_blank"}
 Watch the video by LearnVue about Nuxt Image
@@ -251,7 +251,6 @@ onLoaded((gtag) => {
 
 Check out all available script options in the registry [here](https://scripts.nuxt.com/scripts).
 
-
 ## Profiling Tools
 
 To improve performance, we need to first know how to measure it, starting with measuring performance during development - on local environment, and then moving to auditing application that are deployed on production.
@@ -292,11 +291,9 @@ If you interact with the page, it also captures **Interaction to Next Paint (INP
 
 Each audit has a reference document explaining why the audit is important, as well as how to fix it.
 
-
-
 ### PageSpeed Insights
 
-[PageSpeed Insights (PSI)](https://developers.google.com/speed/docs/insights/v5/about) reports on the user experience of a page on both mobile and desktop devices, and provides suggestions on how that page may be improved. 
+[PageSpeed Insights (PSI)](https://developers.google.com/speed/docs/insights/v5/about) reports on the user experience of a page on both mobile and desktop devices, and provides suggestions on how that page may be improved.
 
 It provides both lab and field data about a page. Lab data is useful for debugging issues, as it is collected in a controlled environment while field data is useful for capturing true, real-world user experience.
 
