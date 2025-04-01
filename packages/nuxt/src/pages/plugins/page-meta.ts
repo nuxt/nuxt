@@ -76,8 +76,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       }
 
       const matches = code.matchAll(PAGEMETA_MACRO_RE)
-
-      if (matches && Array.from(matches).length > 1) {
+      const matchArray = Array.from(matches)
+      if (matchArray.length > 1) {
         throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id)
       }
 
@@ -107,7 +107,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         return result()
       }
 
-      if (!matches && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
+      if (!matchArray.length && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
         if (!code) {
           s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
