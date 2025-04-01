@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.16.2",
+  "version": "3.16.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
