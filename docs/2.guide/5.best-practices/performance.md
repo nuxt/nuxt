@@ -6,11 +6,11 @@ description: Best practices for improving performance of Nuxt apps
 
 # Performance
 
-Nuxt comes with several built-in optimizations designed to improve your application's performance and contribute to better [Core Web Vitals](https://web.dev/articles/vitals) score. Additionally, there are also multiple plug-in solutions such as modules that will help improve performance and User Experience even more. This guide outlines best practices to optimize performance of your Nuxt application.
+Nuxt comes with several built-in features designed to improve your application's performance and contribute to better [Core Web Vitals](https://web.dev/articles/vitals). There are also multiple Nuxt core modules that assist in improving performance in specific areas. This guide outlines best practices to optimize performance of your Nuxt application.
 
-## Built-in Solutions
+## Built-in Features
 
-Nuxt offers several built-in solutions that help you optimize performance of your website. Understanding how this works and how you can further customize it to suit your needs is crucial for achieving blazingly fast performance.
+Nuxt offers several built-in features that help you optimize performance of your website. Understanding how these features work is crucial for achieving blazingly-fast performance.
 
 ### Links
 
@@ -27,7 +27,21 @@ Nuxt offers several built-in solutions that help you optimize performance of you
 
 Nuxt automatically includes smart prefetching. That means it detects when a link is visible (by default), either in the viewport or when scrolling and prefetches the JavaScript for those pages so that they are ready when the user clicks the link.
 
-Read more about it [here](https://nuxt.com/docs/api/components/nuxt-link).
+You can also opt for prefetching on interaction instead:
+
+```ts
+export default defineNuxtConfig({
+  experimental: {
+    defaults: {
+      nuxtLink: {
+        prefetchOn: 'interaction',
+      },
+    }
+  }
+})
+```
+
+:read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
 
 ### Server Components
 
@@ -44,7 +58,7 @@ Server components are currently experimental and in order to use them, you need 
 </template>
 ```
 
-Read more about it [here](https://nuxt.com/docs/guide/directory-structure/components#server-components).
+:read-more{title="Server components" to="/docs/guide/directory-structure/components#server-components"}
 
 ### Hybrid Rendering
 
@@ -73,11 +87,12 @@ export default defineNuxtConfig({
 
 Nuxt server will automatically register corresponding middleware and wrap routes with cache handlers using Nitro caching layer.
 
-Read more about it [here](https://nuxt.com/docs/guide/concepts/rendering#hybrid-rendering).
+
+:read-more{title="Hybrid rendering" to="/docs/guide/concepts/rendering#hybrid-rendering"}
 
 ### Lazy Loading Components
 
-To dynamically import a component (also known as lazy-loading a component) all you need to do is add the Lazy prefix to the component's name. This is particularly useful if the component is not always needed.
+To dynamically import a component (also known as lazy-loading a component) all you need to do is add the Lazy prefix to the component's name. This is useful if the component is not always needed.
 
 ```html
 <script setup lang="ts">
@@ -95,11 +110,11 @@ const show = ref(false)
 
 By using the Lazy prefix you can delay loading the component code until the right moment, which can be helpful for optimizing your JavaScript bundle size.
 
-Read more about it [here](https://nuxt.com/docs/guide/directory-structure/components#dynamic-imports).
+:read-more{title="Lazy loading components" to="/docs/guide/directory-structure/components#dynamic-imports"}
 
 ### Lazy Hydration
 
-To utilize lazy components even further, you can implement the concept of delayed hydration (added in Nuxt 3.16) that allows you to control when components become interactive contributing to better performance. If you are not on Nuxt 3.16 yet, you can use [this](https://github.com/Baroshem/nuxt-lazy-hydrate) third-party module to handle lazy hydration in your app.
+It is not always necessary to hydrate (or make interactive) all the components of your site on the initial load. Using lazy hydration, you can control when components can have their code loaded, which can improve the time-to-interactive metric for your app. Nuxt allows you to control when components become interactive with lazy hydration (added in Nuxt v3.16).
 
 ```html
 <template>
@@ -111,53 +126,23 @@ To utilize lazy components even further, you can implement the concept of delaye
 
 To optimize your app, you may want to delay the hydration of some components until they're visible, or until the browser is done with more important tasks.
 
-Read more about it [here](https://nuxt.com/docs/guide/directory-structure/components#delayed-or-lazy-hydration).
+:read-more{title="Lazy hydration" to="/docs/guide/directory-structure/components#delayed-or-lazy-hydration"}
 
 ### Fetching data
 
-To avoid fetching same data twice (once on the server and once on client) Nuxt provides composables `useFetch` and `useAsyncData` - they ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
+To avoid fetching same data twice (once on the server and once on client) Nuxt provides `useFetch` and `useAsyncData`. They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
 
-```ts
-<script setup lang="ts">
-const { data } = await useAsyncData('users', () => fetchUsers())
-</script>
-```
+:read-more{title="Data fetching" to="/docs/getting-started/data-fetching"}
 
-The first argument of `useAsyncData` is a unique key used to cache the response of the second argument, the querying function.
+## Core Nuxt Modules
 
-Data fetching composables will wait for the resolution of their asynchronous function before navigating to a new page by using Vue’s Suspense. This feature can be ignored on client-side navigation with the `lazy` option but requires manual handling of loading state:
-
-```html
-<script setup lang="ts">
-const { status, data: posts } = useFetch('/api/posts', {
-  lazy: true // <- will not block the client side navigation
-})
-</script>
-
-<template>
-  <!-- you will need to handle a loading state -->
-  <div v-if="status === 'pending'">
-    Loading ...
-  </div>
-  <div v-else>
-    <div v-for="post in posts">
-      <!-- do something -->
-    </div>
-  </div>
-</template>
-```
-
-Read more about it [here](https://nuxt.com/docs/getting-started/data-fetching).
-
-## Plug-in Solutions
-
-Apart from the built-in features, Nuxt offers multiple plug-in solutions such as modules to improve performance even further. These modules help efficiently handle assets such as images, custom fonts, or third party scripts because they can negatively impact the Performance and User Experience of your Nuxt application. Below, you will learn how you can optimize them to deliver the best experience and improve Core Web Vitals.
+Apart from Nuxt's built-in features, there are also core modules maintained by the Nuxt team which help improve performance even further. These modules help handle assets such as images, custom fonts, or third party scripts.
 
 ### Images
 
-Not optimized images can have a significant impact on your website performance, specifically targeting the [Largest Contentful Paint (LCP)](https://web.dev/articles/lcp) score.
+Unoptimized images can have a significant negative impact on your website performance, specifically the [Largest Contentful Paint (LCP)](https://web.dev/articles/lcp) score.
 
-Thankfully, in Nuxt we can use [Nuxt Image](https://image.nuxt.com/) module that is a plug-and-play image optimization for Nuxt apps. It allows to resize and transform your images using built-in optimizer or your favorite images CDN.
+In Nuxt we can use [Nuxt Image](https://image.nuxt.com/) module that is a plug-and-play image optimization for Nuxt apps. It allows resizing and transforming your images using built-in optimizer or your favorite images CDN.
 
 ::tip{icon="i-lucide-video" to="https://www.youtube.com/watch?v=_UBff2eqGY0" target="_blank"}
 Watch the video by LearnVue about Nuxt Image
@@ -198,13 +183,13 @@ Images in your website can usually be separated by importance; the ones that are
 </template>
 ```
 
-Check out all the available options [here](https://image.nuxt.com/usage/nuxt-img).
+:read-more{title="Nuxt Image" to="https://image.nuxt.com/usage/nuxt-img"}
 
 ### Fonts
 
 [Nuxt Fonts](https://fonts.nuxt.com/) will automatically optimize your fonts (including custom fonts) and remove external network requests for improved privacy and performance.
 
-It includes built-in automatic self-hosting for any font file which means you can optimally load web fonts with reduced layout shift, thanks to the underlying package [Fontaine](https://github.com/unjs/fontaine).
+It includes built-in automatic self-hosting for any font file which means you can optimally load web fonts with reduced layout shift, thanks to the underlying package [fontaine](https://github.com/unjs/fontaine).
 
 ::tip{icon="i-lucide-video" to="https://www.youtube.com/watch?v=D3F683UViBY" target="_blank"}
 Watch the talk by Daniel Roe about the idea behind Nuxt Fonts
@@ -222,7 +207,7 @@ It supports multiple providers that are designed to be pluggable and extensible,
 
 ### Scripts
 
-Third-party resources like analytics tools, video embeds, maps, and social media integrations enhance website functionality but can significantly degrade user experience and negatively impact [Interaction to Next Paint (INP)](https://web.dev/articles/inp?hl=en) and Largest Contentful Paint (LCP) scores.
+Third-party resources like analytics tools, video embeds, maps, and social media integrations enhance website functionality but can significantly degrade user experience and negatively impact [Interaction to Next Paint (INP)](https://web.dev/articles/inp) and Largest Contentful Paint (LCP) scores.
 
 [Nuxt Scripts](https://scripts.nuxt.com/) lets you load third-party scripts with better performance, privacy, security and DX.
 
@@ -249,7 +234,7 @@ onLoaded((gtag) => {
 })
 ```
 
-Check out all available script options in the registry [here](https://scripts.nuxt.com/scripts).
+:read-more{title="Nuxt Scripts" to="[/docs/api/components/nuxt-link](https://scripts.nuxt.com/scripts)"}
 
 ## Profiling Tools
 
@@ -257,7 +242,7 @@ To improve performance, we need to first know how to measure it, starting with m
 
 ### Nuxi Analyze
 
-[This](https://nuxt.com/docs/api/commands/analyze) command of `nuxi` allows to analyze the production bundle or your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
+[This](/docs/api/commands/analyze) command of `nuxi` allows to analyze the production bundle or your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
 
 When you see a large block in the visualization, it often signals an opportunity for optimization—whether by splitting it into smaller parts, implementing lazy loading, or replacing it with a more efficient alternative, especially for third-party libraries.
 
