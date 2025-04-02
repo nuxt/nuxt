@@ -248,10 +248,10 @@ export async function buildClient (ctx: ViteBuildContext) {
       }
     }
 
-    const devHandlerBases: RegExp[] = []
+    const devHandlerRegexes: RegExp[] = []
     for (const handler of ctx.nuxt.options.devServerHandlers) {
       if (handler.route && handler.route !== '/' && handler.route.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
-        devHandlerBases.push(new RegExp(
+        devHandlerRegexes.push(new RegExp(
           `^${handler.route
             .replace(/:[^/]+/g, '[^/]+') // dynamic segments (:param)
             .replace(/\*\*/g, '.*') // double wildcard (**) to match any path
@@ -289,7 +289,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       })
 
       // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerBases.some(baseRegex => baseRegex.test(event.path))) {
+      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
         throw createError({
           statusCode: 404,
         })
