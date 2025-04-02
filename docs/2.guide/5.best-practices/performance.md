@@ -87,7 +87,6 @@ export default defineNuxtConfig({
 
 Nuxt server will automatically register corresponding middleware and wrap routes with cache handlers using Nitro caching layer.
 
-
 :read-more{title="Hybrid rendering" to="/docs/guide/concepts/rendering#hybrid-rendering"}
 
 ### Lazy Loading Components
