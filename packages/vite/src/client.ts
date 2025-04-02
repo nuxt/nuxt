@@ -253,6 +253,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       if (handler.route && handler.route !== '/' && handler.route.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
         devHandlerRegexes.push(new RegExp(
           `^${handler.route
+            .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // escape regex syntax characters
             .replace(/:[^/]+/g, '[^/]+') // dynamic segments (:param)
             .replace(/\*\*/g, '.*') // double wildcard (**) to match any path
             .replace(/\*/g, '[^/]*')}$`, // single wildcard (*) to match any segment
