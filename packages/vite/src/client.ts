@@ -276,8 +276,8 @@ export async function buildClient (ctx: ViteBuildContext) {
         })
       })
 
-      // if vite has not handled the request, we want to send a 404 for paths which are not in any static base
-      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL))) {
+      // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
+      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !ctx.nuxt.options.devServerHandlers.some(handler => handler.route && event.path.startsWith(handler.route))) {
         throw createError({
           statusCode: 404,
         })
