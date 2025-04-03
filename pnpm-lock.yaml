@@ -287,7 +287,7 @@ importers:
         specifier: ^3.8.1
         version: 3.8.1
       tinyglobby:
-        specifier: 0.2.12
+        specifier: ^0.2.12
         version: 0.2.12
       ufo:
         specifier: 1.5.4
@@ -637,7 +637,7 @@ importers:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.98.0)
       tinyglobby:
-        specifier: 0.2.12
+        specifier: ^0.2.12
         version: 0.2.12
       ufo:
         specifier: 1.5.4
@@ -1060,7 +1060,7 @@ importers:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.98.0)
       tinyglobby:
-        specifier: 0.2.12
+        specifier: ^0.2.12
         version: 0.2.12
       ufo:
         specifier: 1.5.4
