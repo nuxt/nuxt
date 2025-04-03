@@ -1,4 +1,3 @@
-import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
@@ -25,7 +24,7 @@ describe('pages:generateRoutesFromFiles', () => {
     description: string
     files?: Array<{ path: string, template?: string, meta?: Record<string, any> }>
     output?: NuxtPage[]
-    testApi?: TestAPI
+    focus?: boolean
     normalized?: Record<string, any>[]
     error?: string
   }> = [
@@ -720,8 +719,13 @@ describe('pages:generateRoutesFromFiles', () => {
   const normalizedResults: Record<string, any> = {}
   const normalizedOverrideMetaResults: Record<string, any> = {}
 
+  const isFocusedRun = tests.some(t => t.focus)
   for (const test of tests) {
-    (test.testApi ?? it)(test.description, async () => {
+    if (isFocusedRun && !test.focus) {
+      it.skip(test.description)
+      continue
+    }
+    it(test.description, async () => {
       let result
       if (test.files) {
         const vfs = Object.fromEntries(
@@ -804,12 +808,12 @@ describe('pages:generateRouteKey', () => {
     description: string
     route: RouterViewSlotProps
     override?: string | ((route: RouteLocationNormalizedLoaded) => string)
-    output?: string
-    testApi?: TestAPI
+    output?: string | false
+    focus?: boolean
   }> = [
     { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
     { description: 'should handle overrides', override: (route: any) => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
-    { description: 'should handle overrides', override: false as any, route: getRouteProps(), output: false as any },
+    { description: 'should handle overrides', override: false as any, route: getRouteProps(), output: false },
     {
       description: 'should key dynamic routes without keys',
       route: getRouteProps({
@@ -876,8 +880,13 @@ describe('pages:generateRouteKey', () => {
     },
   ]
 
+  const isFocusedRun = tests.some(t => t.focus)
   for (const test of tests) {
-    (test.testApi ?? it)(test.description, () => {
+    if (isFocusedRun && !test.focus) {
+      it.skip(test.description)
+      continue
+    }
+    it(test.description, () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
