@@ -13,6 +13,8 @@ import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
+import { resolveModulePath } from 'exsolve'
+
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
@@ -61,6 +63,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
     }
   }
+
+  const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
@@ -118,8 +122,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
-      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'],
-      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, ''),
+      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
+      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
     },
     routeRules: {
@@ -158,6 +162,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir })),
     ],
     prerender: {
+      ignoreUnprefixedPublicAssets: true,
       failOnError: true,
       concurrency: cpus().length * 4 || 4,
       routes: ([] as string[]).concat(nuxt.options.generate.routes),
@@ -198,11 +203,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
         : {
-            'estree-walker': 'unenv/runtime/mock/proxy',
-            '@babel/parser': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-core': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-            '@vue/compiler-ssr': 'unenv/runtime/mock/proxy',
+            'estree-walker': mockProxy,
+            '@babel/parser': mockProxy,
+            '@vue/compiler-core': mockProxy,
+            '@vue/compiler-dom': mockProxy,
+            '@vue/compiler-ssr': mockProxy,
           },
       '@vue/devtools-api': 'vue-devtools-stub',
 
@@ -213,15 +218,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/utils/paths'),
     },
     replace: {
-      'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
-      'process.env.NUXT_EARLY_HINTS': nuxt.options.experimental.writeEarlyHints !== false,
-      'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.features.noScripts && !nuxt.options.dev,
-      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.features.inlineStyles,
-      'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
-      'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
-      'process.env.NUXT_SHARED_DATA': !!nuxt.options.experimental.sharedPrerenderData,
-      'process.dev': nuxt.options.dev,
-      '__VUE_PROD_DEVTOOLS__': false,
+      'process.env.NUXT_NO_SSR': String(nuxt.options.ssr === false),
+      'process.env.NUXT_EARLY_HINTS': String(nuxt.options.experimental.writeEarlyHints !== false),
+      'process.env.NUXT_NO_SCRIPTS': String(!!nuxt.options.features.noScripts && !nuxt.options.dev),
+      'process.env.NUXT_INLINE_STYLES': String(!!nuxt.options.features.inlineStyles),
+      'process.env.NUXT_JSON_PAYLOADS': String(!!nuxt.options.experimental.renderJsonPayloads),
+      'process.env.NUXT_ASYNC_CONTEXT': String(!!nuxt.options.experimental.asyncContext),
+      'process.env.NUXT_SHARED_DATA': String(!!nuxt.options.experimental.sharedPrerenderData),
+      'process.dev': String(nuxt.options.dev),
+      '__VUE_PROD_DEVTOOLS__': String(false),
     },
     rollupConfig: {
       output: {},
@@ -384,7 +389,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // add stub alias to allow vite to resolve import
   if (!nuxt.options.experimental.appManifest) {
-    nuxt.options.alias['#app-manifest'] = 'unenv/runtime/mock/proxy'
+    nuxt.options.alias['#app-manifest'] = mockProxy
   }
 
   // Add fallback server for `ssr: false`
@@ -449,6 +454,31 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
+
+  // TODO: extract to shared utility?
+  const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+  const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
+  const aliases = nitroConfig.alias!
+  const tsConfig = nitroConfig.typescript!.tsConfig!
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
+  for (const _alias in aliases) {
+    const alias = _alias as keyof typeof aliases
+    if (excludedAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) {
+      continue
+    }
+    if (alias in tsConfig.compilerOptions.paths) {
+      continue
+    }
+
+    const absolutePath = resolve(basePath, aliases[alias]!)
+    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    // note - nitro will check + remove the file extension as required
+    tsConfig.compilerOptions.paths[alias] = [absolutePath]
+    if (stats?.isDirectory()) {
+      tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
+    }
+  }
 
   // Init nitro
   const nitro = await createNitro(nitroConfig, {

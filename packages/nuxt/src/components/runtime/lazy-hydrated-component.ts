@@ -22,7 +22,7 @@ function defineLazyComponent<P extends ComponentObjectPropsOptions> (props: P, d
         loader: () => Promise.resolve(child),
       })
       const onVnodeMounted = () => { ctx.emit('hydrated') }
-      return () => h(comp, mergeProps(ctx.attrs, { onVnodeMounted }))
+      return () => h(comp, mergeProps(ctx.attrs, { onVnodeMounted }), ctx.slots)
     },
   })
 }

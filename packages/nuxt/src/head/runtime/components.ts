@@ -293,6 +293,7 @@ export const Style = defineComponent({
         if (import.meta.dev && typeof textContent !== 'string') {
           console.error('<Style> can only take a string in its default slot.')
         }
+        input.style![idx] = style
         style.textContent = textContent
       }
       return null
@@ -324,7 +325,7 @@ export const Html = defineComponent({
     const { input } = useHeadComponentCtx()
     onUnmounted(() => input.htmlAttrs = null)
     return () => {
-      input.htmlAttrs = { ..._props } as HtmlAttributes
+      input.htmlAttrs = { ..._props, ...ctx.attrs } as HtmlAttributes
       return ctx.slots.default?.()
     }
   },
@@ -339,7 +340,7 @@ export const Body = defineComponent({
     const { input } = useHeadComponentCtx()
     onUnmounted(() => input.bodyAttrs = null)
     return () => {
-      input.bodyAttrs = { ..._props } as BodyAttributes
+      input.bodyAttrs = { ..._props, ...ctx.attrs } as BodyAttributes
       return ctx.slots.default?.()
     }
   },

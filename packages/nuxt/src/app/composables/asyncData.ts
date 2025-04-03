@@ -250,9 +250,9 @@ export function useAsyncData<
     const _ref = options.deep ? ref : shallowRef
     nuxtApp._asyncData[key] = {
       data: _ref(hasCachedData ? initialCachedData : options.default!()),
-      pending: ref(!hasCachedData),
+      pending: shallowRef(!hasCachedData),
       error: toRef(nuxtApp.payload._errors, key),
-      status: ref('idle'),
+      status: shallowRef('idle'),
       _default: options.default!,
     }
   }

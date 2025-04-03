@@ -348,7 +348,7 @@ describe('useFetch', () => {
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> Request aborted due to timeout.]')
+    expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 })
 
@@ -793,6 +793,17 @@ describe('useCookie', () => {
       user.value.score++
       expect(computedVal.value).toBe(-1)
     }
+  })
+
+  it('should set cookie value when called on client', () => {
+    useCookie('cookie-watch-false', { default: () => 'foo', watch: false })
+    expect(document.cookie).toContain('cookie-watch-false=foo')
+
+    useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
+    expect(document.cookie).toContain('cookie-watch-true=foo')
+
+    useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
+    expect(document.cookie).toContain('cookie-readonly=foo')
   })
 })
 

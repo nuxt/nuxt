@@ -15,7 +15,7 @@ import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { logger } from '../utils'
-import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
+import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
@@ -202,9 +202,17 @@ export default defineNuxtModule({
             // Avoid duplicate keys in the generated RouteNamedMap type
             const absolutePagePath = joinURL(parent.path, page.path)
 
-            // @ts-expect-error TODO: either fix types upstream or figure out another
             // way to add a route without a file, which must be possible
-            const route = addedPagePaths.has(absolutePagePath) ? parent : parent.insert(page.path, page.file)
+            const route = addedPagePaths.has(absolutePagePath)
+              ? parent
+              : /^\//.test(page.path)
+                // @ts-expect-error TODO: either fix types upstream or figure out another
+                // way to add a route without a file, which must be possible
+                ? rootPage.insert(page.path, page.file)
+                // @ts-expect-error TODO: either fix types upstream or figure out another
+                // way to add a route without a file, which must be possible
+                : parent.insert(page.path, page.file)
+
             addedPagePaths.add(absolutePagePath)
             if (page.meta) {
               route.addToMeta(page.meta)
@@ -481,12 +489,17 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
+    const extractedKeys = nuxt.options.future.compatibilityVersion === 4
+      ? [...defaultExtractionKeys, ...nuxt.options.experimental.extraPageMetaExtractionKeys]
+      : nuxt.options.experimental.extraPageMetaExtractionKeys
+
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
         dev: nuxt.options.dev,
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         isPage,
         routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
+        extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
       }))
     })
 
