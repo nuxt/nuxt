@@ -4,7 +4,7 @@ title: Nuxt performance
 description: Best practices for improving performance of Nuxt apps.
 ---
 
-Nuxt comes with several built-in features designed to improve your application's performance and contribute to better [Core Web Vitals](https://web.dev/articles/vitals). There are also multiple Nuxt core modules that assist in improving performance in specific areas. This guide outlines best practices to optimize performance of your Nuxt application.
+Nuxt comes with built-in features designed to improve your application's performance and contribute to better [Core Web Vitals](https://web.dev/articles/vitals). There are also multiple Nuxt core modules that assist in improving performance in specific areas. This guide outlines best practices to optimize performance of your Nuxt application.
 
 ## Built-in Features
 
@@ -12,7 +12,7 @@ Nuxt offers several built-in features that help you optimize performance of your
 
 ### Links
 
-`<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag. It intelligently determines whether the link is internal or external and renders it accordingly with available optimizations (prefetching, default attributes, etc.)
+[`<NuxtLink>`](/docs/api/components/nuxt-link) is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag. It intelligently determines whether the link is internal or external and renders it accordingly with available optimizations (prefetching, default attributes, etc.)
 
 ```html
 <template>
@@ -110,7 +110,7 @@ To optimize your app, you may want to delay the hydration of some components unt
 
 ### Fetching data
 
-To avoid fetching same data twice (once on the server and once on client) Nuxt provides `useFetch` and `useAsyncData`. They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
+To avoid fetching same data twice (once on the server and once on client) Nuxt provides [`useFetch`](/docs/api/composables/use-fetch) and [`useAsyncData`](/docs/api/composables/use-async-data). They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
 
 :read-more{title="Data fetching" to="/docs/getting-started/data-fetching"}
 
@@ -124,11 +124,9 @@ Unoptimized images can have a significant negative impact on your website perfor
 
 In Nuxt we can use [Nuxt Image](https://image.nuxt.com/) module that is a plug-and-play image optimization for Nuxt apps. It allows resizing and transforming your images using built-in optimizer or your favorite images CDN.
 
-::tip{icon="i-lucide-video" to="https://www.youtube.com/watch?v=_UBff2eqGY0" target="_blank"}
-Watch the video by LearnVue about Nuxt Image
-::
+:video-accordion{title="Watch the video by LearnVue about Nuxt Image" videoId="_UBff2eqGY0"}
 
-`<NuxtImg>` is a drop-in replacement for the native `<img>` tag that comes with following enhancements:
+[`<NuxtImg>`](/docs/api/components/nuxt-img) is a drop-in replacement for the native `<img>` tag that comes with following enhancements:
 
 * Uses built-in provider to optimize local and remote images
 * Converts `src` to provider optimized URLs with modern formats such as WebP or Avif
@@ -171,9 +169,7 @@ Images in your website can usually be separated by importance; the ones that are
 
 It includes built-in automatic self-hosting for any font file which means you can optimally load web fonts with reduced layout shift, thanks to the underlying package [fontaine](https://github.com/unjs/fontaine).
 
-::tip{icon="i-lucide-video" to="https://www.youtube.com/watch?v=D3F683UViBY" target="_blank"}
-Watch the talk by Daniel Roe about the idea behind Nuxt Fonts
-::
+:video-accordion{title="Watch the talk by Daniel Roe about the idea behind Nuxt Fonts" videoId="D3F683UViBY"}
 
 Nuxt Fonts processes all your CSS and does the following things automatically when it encounters a font-family declaration.
 
@@ -191,9 +187,7 @@ Third-party resources like analytics tools, video embeds, maps, and social media
 
 [Nuxt Scripts](https://scripts.nuxt.com/) lets you load third-party scripts with better performance, privacy, security and DX.
 
-::tip{icon="i-lucide-video" to="https://youtu.be/sjMqUUvH9AE" target="_blank"}
-Watch the video by Alex Lichter about Nuxt Scripts
-::
+:video-accordion{title="Watch the video by Alex Lichter about Nuxt Scripts" videoId="sjMqUUvH9AE"}
 
 Nuxt Scripts provides an abstraction layer on top of third-party scripts, providing SSR support and type-safety and while still giving you full low-level control over how a script is loaded.
 
