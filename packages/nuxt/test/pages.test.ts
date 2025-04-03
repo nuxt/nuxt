@@ -1,3 +1,4 @@
+import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
@@ -24,7 +25,7 @@ describe('pages:generateRoutesFromFiles', () => {
     description: string
     files?: Array<{ path: string, template?: string, meta?: Record<string, any> }>
     output?: NuxtPage[]
-    focus?: boolean
+    it?: TestAPI
     normalized?: Record<string, any>[]
     error?: string
   }> = [
@@ -719,13 +720,9 @@ describe('pages:generateRoutesFromFiles', () => {
   const normalizedResults: Record<string, any> = {}
   const normalizedOverrideMetaResults: Record<string, any> = {}
 
-  const isFocusedRun = tests.some(t => t.focus)
   for (const test of tests) {
-    if (isFocusedRun && !test.focus) {
-      it.skip(test.description)
-      continue
-    }
-    it(test.description, async () => {
+    const _it = test.it || it
+    _it(test.description, async () => {
       let result
       if (test.files) {
         const vfs = Object.fromEntries(
@@ -809,7 +806,7 @@ describe('pages:generateRouteKey', () => {
     route: RouterViewSlotProps
     override?: string | ((route: RouteLocationNormalizedLoaded) => string)
     output?: string | false
-    focus?: boolean
+    it?: TestAPI
   }> = [
     { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
     { description: 'should handle overrides', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
@@ -886,13 +883,9 @@ describe('pages:generateRouteKey', () => {
     },
   ]
 
-  const isFocusedRun = tests.some(t => t.focus)
   for (const test of tests) {
-    if (isFocusedRun && !test.focus) {
-      it.skip(test.description)
-      continue
-    }
-    it(test.description, () => {
+    const _it = test.it || it
+    _it(test.description, () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
