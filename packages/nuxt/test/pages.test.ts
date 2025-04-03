@@ -812,8 +812,14 @@ describe('pages:generateRouteKey', () => {
     focus?: boolean
   }> = [
     { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
-    { description: 'should handle overrides', override: (route: any) => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
-    { description: 'should handle overrides', override: false as any, route: getRouteProps(), output: false },
+    { description: 'should handle overrides', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
+    {
+      description: 'should handle overrides',
+      // @ts-expect-error testing behaviour with invalid prop
+      override: false,
+      route: getRouteProps(),
+      output: false,
+    },
     {
       description: 'should key dynamic routes without keys',
       route: getRouteProps({
