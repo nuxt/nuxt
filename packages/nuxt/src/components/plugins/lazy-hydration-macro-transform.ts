@@ -100,25 +100,6 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
   }
 })
 
-export const lazyHydrationMacroTypeTemplate: NuxtTypeTemplate = {
-  filename: 'types/lazy-hydration-macro.d.ts',
-  getContents () {
-    return `import { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent } from 'vue'
-type LazyHydrationComponent<T extends Component, Props> = T & DefineComponent<Props, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>
-
-declare global {
-  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'visible', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnVisible?: IntersectionObserverInit | true }>;
-  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'idle', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnIdle?: number | true }>;
-  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'interaction', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnInteraction?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> }>;
-  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'mediaQuery', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateOnMediaQuery: string }>;
-  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'if', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateWhen: boolean }>;
-  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'time', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateAfter: number | true }>;
-  function defineLazyHydrationComponent<T extends Component = { new (): ComponentPublicInstance }>(strategy: 'never', source: AsyncComponentLoader<T>): LazyHydrationComponent<T, { hydrateNever?: true }>;
-}
-`
-  },
-}
-
 function findComponent (components: Component[], name: string) {
   const id = pascalCase(name)
   return components.find(c => c.pascalName === id)
