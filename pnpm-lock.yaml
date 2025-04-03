@@ -256,9 +256,6 @@ importers:
       exsolve:
         specifier: ^1.0.4
         version: 1.0.4
-      globby:
-        specifier: ^14.1.0
-        version: 14.1.0
       ignore:
         specifier: ^7.0.3
         version: 7.0.3
@@ -289,6 +286,9 @@ importers:
       std-env:
         specifier: ^3.8.1
         version: 3.8.1
+      tinyglobby:
+        specifier: 0.2.12
+        version: 0.2.12
       ufo:
         specifier: 1.5.4
         version: 1.5.4
@@ -588,9 +588,6 @@ importers:
       fork-ts-checker-webpack-plugin:
         specifier: ^9.0.3
         version: 9.0.3(typescript@5.8.2)(webpack@5.98.0)
-      globby:
-        specifier: ^14.1.0
-        version: 14.1.0
       h3:
         specifier: 1.15.1
         version: 1.15.1
@@ -1008,9 +1005,6 @@ importers:
       fork-ts-checker-webpack-plugin:
         specifier: ^9.0.3
         version: 9.0.3(typescript@5.8.2)(webpack@5.98.0)
-      globby:
-        specifier: ^14.1.0
-        version: 14.1.0
       h3:
         specifier: 1.15.1
         version: 1.15.1
@@ -1062,6 +1056,9 @@ importers:
       time-fix-plugin:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.98.0)
+      tinyglobby:
+        specifier: 0.2.12
+        version: 0.2.12
       ufo:
         specifier: 1.5.4
         version: 1.5.4
