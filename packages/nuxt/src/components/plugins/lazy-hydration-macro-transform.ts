@@ -1,5 +1,5 @@
 import { createUnplugin } from 'unplugin'
-import type { Component, ComponentsOptions, NuxtTypeTemplate } from 'nuxt/schema'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
 import { relative } from 'pathe'
 
 import MagicString from 'magic-string'
