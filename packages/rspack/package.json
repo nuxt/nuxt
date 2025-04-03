@@ -58,6 +58,7 @@
     "pug-plain-loader": "^1.1.0",
     "std-env": "^3.8.1",
     "time-fix-plugin": "^2.0.7",
+    "tinyglobby": "0.2.12",
     "ufo": "^1.5.4",
     "unenv": "^2.0.0-rc.15",
     "unplugin": "^2.2.2",
