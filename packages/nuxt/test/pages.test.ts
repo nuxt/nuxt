@@ -1,6 +1,9 @@
+import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
+import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
@@ -22,6 +25,7 @@ describe('pages:generateRoutesFromFiles', () => {
     description: string
     files?: Array<{ path: string, template?: string, meta?: Record<string, any> }>
     output?: NuxtPage[]
+    it?: TestAPI
     normalized?: Record<string, any>[]
     error?: string
   }> = [
@@ -608,8 +612,18 @@ describe('pages:generateRoutesFromFiles', () => {
         {
           path: `${pagesDir}/[...id]/suffix.vue`,
         },
+        {
+          path: `${pagesDir}/[...id]/index.vue`,
+        },
       ],
       output: [
+        {
+          name: 'id',
+          meta: undefined,
+          path: '/:id(.*)*',
+          file: `${pagesDir}/[...id]/index.vue`,
+          children: [],
+        },
         {
           name: 'id-suffix',
           meta: undefined,
@@ -707,7 +721,8 @@ describe('pages:generateRoutesFromFiles', () => {
   const normalizedOverrideMetaResults: Record<string, any> = {}
 
   for (const test of tests) {
-    it(test.description, async () => {
+    const _it = test.it || it
+    _it(test.description, async () => {
       let result
       if (test.files) {
         const vfs = Object.fromEntries(
@@ -784,12 +799,24 @@ describe('pages:generateRouteKey', () => {
         },
       ],
     },
-  }) as any
+  } as unknown as RouterViewSlotProps)
 
-  const tests = [
+  const tests: Array<{
+    description: string
+    route: RouterViewSlotProps
+    override?: string | ((route: RouteLocationNormalizedLoaded) => string)
+    output?: string | false
+    it?: TestAPI
+  }> = [
     { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
-    { description: 'should handle overrides', override: (route: any) => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
-    { description: 'should handle overrides', override: false as any, route: getRouteProps(), output: false },
+    { description: 'should handle overrides', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
+    {
+      description: 'should handle overrides',
+      // @ts-expect-error testing behaviour with invalid prop
+      override: false,
+      route: getRouteProps(),
+      output: false,
+    },
     {
       description: 'should key dynamic routes without keys',
       route: getRouteProps({
@@ -857,7 +884,8 @@ describe('pages:generateRouteKey', () => {
   ]
 
   for (const test of tests) {
-    it(test.description, () => {
+    const _it = test.it || it
+    _it(test.description, () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }

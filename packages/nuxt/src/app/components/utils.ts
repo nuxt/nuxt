@@ -140,7 +140,7 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
+        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
@@ -164,11 +164,11 @@ export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: s
   return h('div')
 }
 
-function isStartFragment (element: RendererNode) {
+export function isStartFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 
-function isEndFragment (element: RendererNode) {
+export function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
 }
 

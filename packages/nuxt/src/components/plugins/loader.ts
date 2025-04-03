@@ -22,7 +22,8 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?(Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?([^'"]*)["'][^)]*\)/g
+
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)/g
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin((_, { framework }) => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -62,7 +63,8 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin((_, { fra
       const map = new Map<Component, string>()
       const s = new MagicString(code)
       // replace `_resolveComponent("...")` to direct import
-      s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, lazy: string, modifier: string, name: string) => {
+      s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
+        const { lazy, modifier, name } = args.pop()
         const normalComponent = findComponent(components, name, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent

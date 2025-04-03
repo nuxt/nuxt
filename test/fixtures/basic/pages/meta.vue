@@ -10,22 +10,24 @@ definePageMeta({
 })
 
 const serialisedMeta: Record<string, string> = {}
-const meta = useRoute().meta
-for (const key in meta) {
-  if (Array.isArray(meta[key])) {
-    serialisedMeta[key] = meta[key].map((fn: () => unknown) => fn.toString())
+const route = useRoute()
+const meta = route.meta
+for (const key of ['name', 'path', ...Object.keys(meta)]) {
+  const value = meta[key] || route[key]
+  if (Array.isArray(value)) {
+    serialisedMeta[key] = value.map((fn: () => unknown) => fn.toString())
     continue
   }
-  if (typeof meta[key] === 'string') {
-    serialisedMeta[key] = meta[key]
+  if (typeof value === 'string') {
+    serialisedMeta[key] = value
     continue
   }
-  if (typeof meta[key] === 'object') {
-    serialisedMeta[key] = JSON.stringify(meta[key])
+  if (typeof value === 'object') {
+    serialisedMeta[key] = JSON.stringify(value)
     continue
   }
-  if (typeof meta[key] === 'function') {
-    serialisedMeta[key] = meta[key].toString()
+  if (typeof value === 'function') {
+    serialisedMeta[key] = value.toString()
     continue
   }
 }
