@@ -43,23 +43,6 @@ export default defineNuxtConfig({
 
 :read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
 
-### Server Components
-
-Server components allow server-rendering individual components within your client-side apps. It's possible to use server components within Nuxt, even if you are generating a static site. That makes it possible to build complex sites that mix dynamic components, server-rendered HTML and even static chunks of markup.
-
-Server components are currently experimental and in order to use them, you need to enable the 'component islands' feature in your `nuxt.config.ts`, name the file like `HighlightedMarkdown.server.vue`, and use it like following:
-
-```html
-<template>
-  <div>
-    <!-- this will automatically be rendered on the server, meaning your markdown parsing + highlighting libraries are not included in your client bundle. -->
-    <HighlightedMarkdown markdown="# Headline" />
-  </div>
-</template>
-```
-
-:read-more{title="Server components" to="/docs/guide/directory-structure/components#server-components"}
-
 ### Hybrid Rendering
 
 In more complex applications, we may need a full control over how our application is rendered to support cases where some pages could be generated at build time, while others should be client-side rendered
