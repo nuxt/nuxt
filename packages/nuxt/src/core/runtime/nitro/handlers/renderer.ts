@@ -204,11 +204,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
     // Add CSS links in <head> for CSS files
     // - in production
-    // - in dev mode when not rendering an island
-    // - in dev mode when rendering an island and the file has scoped styles and is not a page
-    if (!import.meta.dev || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
-      link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
-    }
+    link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
   }
   if (link.length) {
     ssrContext.head.push({ link }, headEntryOptions)
