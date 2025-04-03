@@ -1,10 +1,8 @@
 ---
 navigation.title: 'Nuxt Performance'
 title: Nuxt performance
-description: Best practices for improving performance of Nuxt apps
+description: Best practices for improving performance of Nuxt apps.
 ---
-
-# Performance
 
 Nuxt comes with several built-in features designed to improve your application's performance and contribute to better [Core Web Vitals](https://web.dev/articles/vitals). There are also multiple Nuxt core modules that assist in improving performance in specific areas. This guide outlines best practices to optimize performance of your Nuxt application.
 
