@@ -226,7 +226,6 @@ function onHydrate() {
 </template>
 ```
 
-
 ## Parameters
 
 ::warning
