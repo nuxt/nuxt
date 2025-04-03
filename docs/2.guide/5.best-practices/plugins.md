@@ -1,10 +1,8 @@
 ---
-navigation.title: 'Nuxt plugins'
-title: Nuxt plugins
-description: Best practices when using Nuxt plugins
+navigation.title: 'Nuxt Plugins'
+title: Nuxt Plugins
+description: Best practices when using Nuxt plugins.
 ---
-
-# Nuxt Plugins
 
 Plugins in Nuxt allow you to extend your application with additional functionality. However, improper use can lead to performance bottlenecks. This guide outlines best practices to optimize your Nuxt plugins.
 
