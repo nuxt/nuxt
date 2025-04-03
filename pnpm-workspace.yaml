@@ -1,7 +1,10 @@
 packages:
-  - "docs"
-  - "packages/**"
-  - "!packages/nuxi"
-  - "!packages/test-utils"
-  - "playground"
-  - "test/fixtures/*"
+  - docs
+  - packages/**
+  - '!packages/nuxi'
+  - '!packages/test-utils'
+  - playground
+  - test/fixtures/*
+ignoredBuiltDependencies:
+  - vue-demi
+  - esbuild
