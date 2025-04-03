@@ -480,52 +480,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init user modules
   await nuxt.callHook('modules:before')
-  const modulesToInstall = new Map<string | NuxtModule, Record<string, any>>()
 
-  const modulePaths = new Set<string>()
-  const specifiedModules = new Set<string>()
-
-  for (const _mod of nuxt.options.modules) {
-    const mod = Array.isArray(_mod) ? _mod[0] : _mod
-    if (typeof mod !== 'string') { continue }
-    const modAlias = resolveAlias(mod)
-    const modPath = resolveModulePath(modAlias, {
-      try: true,
-      from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-      suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-      extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
-    })
-    specifiedModules.add(modPath || modAlias)
-  }
-
-  // Automatically register user modules
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
-    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
-    const layerModules = await resolveFiles(config.srcDir, [
-      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
-      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,
-    ])
-    for (const mod of layerModules) {
-      modulePaths.add(mod)
-      if (specifiedModules.has(mod)) { continue }
-      specifiedModules.add(mod)
-      modulesToInstall.set(mod, {})
-    }
-  }
+  const { paths: modulePaths, modules } = await resolveModules(nuxt)
 
   nuxt.options.watch.push(...modulePaths)
-
-  // Register user and then ad-hoc modules
-  for (const key of ['modules', '_modules'] as const) {
-    for (const item of nuxt.options[key as 'modules']) {
-      if (item) {
-        const [key, options = {}] = Array.isArray(item) ? item : [item]
-        if (!modulesToInstall.has(key)) {
-          modulesToInstall.set(key, options)
-        }
-      }
-    }
-  }
 
   // Add <NuxtWelcome>
   // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
@@ -645,7 +603,7 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
   }
 
-  for (const [key, options] of modulesToInstall) {
+  for (const [key, options] of modules) {
     await installModule(key, options)
   }
 
@@ -654,6 +612,10 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
+
+  // remove duplicate css after modules are done
+  nuxt.options.css = nuxt.options.css
+    .filter((value, index, array) => !array.includes(value, index + 1))
 
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {
@@ -821,21 +783,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     options.app.head[key as 'link'] = deduplicateArray(options.app.head[key as 'link'])
   }
 
-  // Ensure CSS from project overrides CSS from layers
-  const orderedCSS = new Set<string>()
-  const optionsCSS = new Set(options.css)
-  for (const config of options._layers.map(layer => layer.config).reverse()) {
-    for (const style of config.css || []) {
-      if (typeof style === 'string') {
-        // ensure later layer CSS has priority over earlier layers
-        orderedCSS.delete(style)
-        optionsCSS.delete(style)
-        orderedCSS.add(style)
-      }
-    }
-  }
-  options.css = [...orderedCSS, ...optionsCSS]
-
   // Nuxt DevTools only works for Vite
   if (options.builder === '@nuxt/vite-builder') {
     const isDevToolsEnabled = typeof options.devtools === 'boolean'
@@ -990,6 +937,97 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
         },
       },
     })
+  }
+}
+
+function resolveModule (
+  definition: NuxtModule<any> | string | false | undefined | null | [(NuxtModule | string)?, Record<string, any>?],
+  nuxt: Nuxt,
+): { resolvedPath?: string, module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
+  const [module, options = {}] = Array.isArray(definition) ? definition : [definition, {}]
+
+  if (!module) {
+    return
+  }
+
+  if (typeof module !== 'string') {
+    return {
+      module,
+      options,
+    }
+  }
+
+  const modAlias = resolveAlias(module)
+  const modPath = resolveModulePath(modAlias, {
+    try: true,
+    from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+    suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
+    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+  })
+
+  return {
+    module,
+    resolvedPath: modPath || modAlias,
+    options,
+  }
+}
+
+async function resolveModules (nuxt: Nuxt) {
+  const modules = new Map<string | NuxtModule, Record<string, any>>()
+  const paths = new Set<string>()
+  const resolvedModulePaths = new Set<string>()
+
+  // Loop layers in reverse order, so that the extends are loaded first and project is the last
+  const configs = nuxt.options._layers.map(layer => layer.config).reverse()
+  for (const config of configs) {
+    // First register modules defined in layer's config
+    const definedModules = config.modules ?? []
+    for (const module of definedModules) {
+      const resolvedModule = resolveModule(module, nuxt)
+      if (resolvedModule && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
+        modules.set(resolvedModule.module, resolvedModule.options)
+        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        if (typeof path === 'string') {
+          resolvedModulePaths.add(path)
+        }
+      }
+    }
+
+    // Secondly automatically register modules from layer's module directory
+    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
+    const layerModules = await resolveFiles(config.srcDir, [
+      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
+      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,
+    ])
+
+    for (const module of layerModules) {
+      // add path to watch
+      paths.add(module)
+
+      if (!modules.has(module)) {
+        modules.set(module, {})
+      }
+    }
+  }
+
+  // Lastly register private modules and modules added after loading config
+  for (const key of ['modules', '_modules'] as const) {
+    for (const module of nuxt.options[key as 'modules']) {
+      const resolvedModule = resolveModule(module, nuxt)
+
+      if (resolvedModule && !modules.has(resolvedModule.module) && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
+        modules.set(resolvedModule.module, resolvedModule.options)
+        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        if (typeof path === 'string') {
+          resolvedModulePaths.add(path)
+        }
+      }
+    }
+  }
+
+  return {
+    paths,
+    modules,
   }
 }
 
