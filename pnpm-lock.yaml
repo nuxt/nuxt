@@ -401,9 +401,6 @@ importers:
       exsolve:
         specifier: ^1.0.4
         version: 1.0.4
-      globby:
-        specifier: ^14.1.0
-        version: 14.1.0
       h3:
         specifier: 1.15.1
         version: 1.15.1
