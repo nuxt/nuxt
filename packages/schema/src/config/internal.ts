@@ -19,7 +19,7 @@ export default defineResolvers({
   _requiredModules: {},
   /**
    * @private
-   * @type {import('@nuxt/kit').LoadNuxtConfigOptions}
+   * @type {{ dotenv?: boolean | import('c12').DotenvOptions }}
    */
   _loadOptions: undefined,
   /** @private */
