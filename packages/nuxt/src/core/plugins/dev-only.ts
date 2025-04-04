@@ -23,7 +23,10 @@ export const DevOnlyPlugin = (options: DevOnlyPluginOptions) => createUnplugin((
       const s = new MagicString(code)
       for (const match of code.matchAll(DEVONLY_COMP_RE)) {
         const ast: Node = parse(match[0]).children[0]
-        const fallback: Node | undefined = ast.children?.find((n: Node) => n.name === 'template' && Object.values(n.attributes).includes('#fallback'))
+        const fallback: Node | undefined = ast.children?.find((n: Node) => {
+          if (n.name !== 'template') { return false }
+          return 'fallback' in n.attributes || '#fallback' in n.attributes
+        })
         const replacement = fallback ? match[0].slice(fallback.loc[0].end, fallback.loc[fallback.loc.length - 1].start) : ''
         s.overwrite(match.index!, match.index! + match[0].length, replacement)
       }
