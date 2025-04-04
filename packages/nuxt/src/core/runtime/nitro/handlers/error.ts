@@ -1,4 +1,4 @@
-import { joinURL, withQuery } from 'ufo'
+import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 
@@ -30,7 +30,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
   // remove proto/hostname/port from URL
   const url = new URL(errorObject.url)
-  errorObject.url = url.pathname + url.search + url.hash
+  errorObject.url = withoutBase(useRuntimeConfig(event).app.baseURL, url.pathname) + url.search + url.hash
   // add default server message
   errorObject.message ||= 'Server Error'
   // we will be rendering this error internally so we can pass along the error.data safely
