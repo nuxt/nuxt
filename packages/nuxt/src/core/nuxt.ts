@@ -632,7 +632,7 @@ async function initNuxt (nuxt: Nuxt) {
         if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
           return `export { default } from '${resolve(distDir, 'core/runtime/nitro/handlers/island')}'`
         }
-        return `export default defineEventHandler(() => {})`
+        return `import { defineEventHandler } from 'h3'; export default defineEventHandler(() => {});`
       },
     })
     addServerHandler({
