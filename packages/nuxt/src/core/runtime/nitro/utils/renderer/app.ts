@@ -14,10 +14,7 @@ export function createSSRContext (event: H3Event): NuxtSSRContext {
     url: event.path,
     event,
     runtimeConfig: useRuntimeConfig(event) as NuxtSSRContext['runtimeConfig'],
-    noSSR:
-          !!(process.env.NUXT_NO_SSR) ||
-          event.context.nuxt?.noSSR ||
-          (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(event.path) : false),
+    noSSR: !!(process.env.NUXT_NO_SSR) || event.context.nuxt?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(event.path) : false),
     head: createHead(unheadOptions),
     error: false,
     nuxt: undefined!, /* NuxtApp */
@@ -32,6 +29,7 @@ export function createSSRContext (event: H3Event): NuxtSSRContext {
     }
     ssrContext.payload.prerenderedAt = Date.now()
   }
+
   return ssrContext
 }
 

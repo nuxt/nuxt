@@ -26,7 +26,7 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
 // -- SSR Renderer --
-const getSSRRenderer = lazyCachedFunction(async () => {
+export const getSSRRenderer = lazyCachedFunction(async () => {
   // Load client manifest
   const manifest = await getClientManifest()
   if (!manifest) { throw new Error('client.manifest is not available') }

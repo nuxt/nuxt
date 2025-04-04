@@ -9,7 +9,7 @@ import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
-import { getRenderer } from '../utils/renderer/build-files'
+import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
 
@@ -27,13 +27,17 @@ export default defineEventHandler(async (event) => {
     return islandCache!.getItem(event.path) as Promise<Partial<RenderResponse>>
   }
 
-  const ssrContext = createSSRContext(event)
-  const islandContext = ssrContext.islandContext = await getIslandContext(event)
-  if (islandContext.url) {
-    ssrContext.url = islandContext.url
+  const islandContext = await getIslandContext(event)
+
+  const ssrContext = {
+    ...createSSRContext(event),
+    islandContext,
+    noSSR: false,
+    url: islandContext.url,
   }
+
   // Render app
-  const renderer = await getRenderer(ssrContext)
+  const renderer = await getSSRRenderer()
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (error) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', error)
