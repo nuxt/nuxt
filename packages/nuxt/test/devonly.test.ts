@@ -75,6 +75,8 @@ describe('test devonly transform ', () => {
     expect(result).toMatchInlineSnapshot(`
       "<template>
           
+              <div class="red">This should also be red.</div>
+            
         </template>
         "
     `)
