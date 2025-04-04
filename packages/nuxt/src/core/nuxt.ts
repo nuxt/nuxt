@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { join, normalize, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
@@ -192,6 +192,7 @@ async function initNuxt (nuxt: Nuxt) {
         default: true,
       })
       if (result !== true) {
+        await fsp.mkdir(dirname(cacheFile), { recursive: true })
         await fsp.writeFile(cacheFile, NO_COMPATIBILITY_DATE_PROMPT)
 
         logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
