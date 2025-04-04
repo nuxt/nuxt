@@ -4,6 +4,8 @@ import type { Component } from '@nuxt/schema'
 import { tryUseNuxt } from '@nuxt/kit'
 import { LoaderPlugin } from '../src/components/plugins/loader'
 import { normalizeLineEndings } from './utils'
+import { join } from 'node:path'
+import { distDir } from 'vitest/node'
 
 vi.mock('@nuxt/kit', async (og) => {
   return {
@@ -59,7 +61,9 @@ const viteTransform = async (source: string, id: string) => {
   const vitePlugin = LoaderPlugin({
     getComponents,
     mode: 'server',
-    serverComponentRuntime: 'nuxt',
+    serverComponentRuntime: join(distDir, 'components/runtime/server-component'),
+    clientDelayedComponentRuntime: join(distDir, 'components/runtime/lazy-hydrated-component'),
+    srcDir: '/src'
   }).raw({}, { framework: 'vite' }) as Plugin
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
