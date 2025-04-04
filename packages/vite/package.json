@@ -56,7 +56,7 @@
     "pkg-types": "^2.1.0",
     "postcss": "^8.5.3",
     "rollup-plugin-visualizer": "^5.14.0",
-    "std-env": "^3.8.1",
+    "std-env": "^3.9.0",
     "ufo": "^1.5.4",
     "unenv": "^2.0.0-rc.15",
     "unplugin": "^2.2.2",
