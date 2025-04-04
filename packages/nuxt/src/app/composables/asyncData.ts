@@ -411,7 +411,7 @@ export function useAsyncData<
 }
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * See {@link https://nuxt.com/docs/api/composables/use-lazy-async-data}
  * @since 3.0.0
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useLazyAsyncData
@@ -428,7 +428,7 @@ export function useLazyAsyncData<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * See {@link https://nuxt.com/docs/api/composables/use-lazy-async-data}
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useLazyAsyncData
  */
@@ -444,7 +444,7 @@ export function useLazyAsyncData<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * See {@link https://nuxt.com/docs/api/composables/use-lazy-async-data}
  * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useLazyAsyncData
@@ -462,7 +462,7 @@ export function useLazyAsyncData<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * See {@link https://nuxt.com/docs/api/composables/use-lazy-async-data}
  * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
  * @param handler An asynchronous function that must return a value (it should not be `undefined`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useLazyAsyncData
