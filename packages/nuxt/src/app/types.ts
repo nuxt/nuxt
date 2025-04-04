@@ -4,4 +4,5 @@ export interface NuxtAppLiterals {
   [key: string]: string
 }
 
-export type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from '../core/runtime/nitro/handlers/renderer'
+export type { NuxtRenderHTMLContext } from '../core/runtime/nitro/handlers/renderer'
+export type { NuxtIslandResponse, NuxtIslandContext } from '../core/runtime/nitro/utils/renderer/islands'
