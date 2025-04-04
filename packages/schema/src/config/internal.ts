@@ -17,6 +17,11 @@ export default defineResolvers({
   _cli: false,
   /** @private */
   _requiredModules: {},
+  /**
+   * @private
+   * @type {import('@nuxt/kit').LoadNuxtConfigOptions}
+   */
+  _loadOptions: undefined,
   /** @private */
   _nuxtConfigFile: undefined,
   /** @private */
