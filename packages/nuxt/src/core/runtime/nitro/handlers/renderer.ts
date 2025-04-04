@@ -139,6 +139,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
   })
+
+  // Render inline styles
+  const inlinedStyles = process.env.NUXT_INLINE_STYLES && !ssrContext._renderResponse && !isRenderingPayload
+    ? await renderInlineStyles(ssrContext.modules ?? [])
+    : []
+
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
 
   if (ssrContext._renderResponse) { return ssrContext._renderResponse }
@@ -163,11 +169,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(withoutTrailingSlash(ssrContext.url), renderPayloadResponse(ssrContext))
   }
-
-  // Render inline styles
-  const inlinedStyles = process.env.NUXT_INLINE_STYLES
-    ? await renderInlineStyles(ssrContext.modules ?? [])
-    : []
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
 

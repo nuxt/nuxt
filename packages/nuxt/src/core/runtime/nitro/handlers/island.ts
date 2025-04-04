@@ -44,9 +44,9 @@ export default defineEventHandler(async (event) => {
     throw error
   })
 
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
-
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
+
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
 
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
