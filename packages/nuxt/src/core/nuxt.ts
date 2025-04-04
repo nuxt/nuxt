@@ -174,9 +174,14 @@ async function initNuxt (nuxt: Nuxt) {
 
     const cacheFile = resolve(join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/', 'show-compatibility-date-prompt'))
 
-    const cacheFileContent = await fsp.readFile(cacheFile, 'utf-8')
+    let shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
 
-    const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI && cacheFileContent !== NO_COMPATIBILITY_DATE_PROMPT
+    if (shouldShowPrompt && existsSync(cacheFile)) {
+      const cacheFileContent = await fsp.readFile(cacheFile, 'utf-8')
+
+      shouldShowPrompt &&= (cacheFileContent !== NO_COMPATIBILITY_DATE_PROMPT)
+    }
+
     if (!shouldShowPrompt) {
       logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
