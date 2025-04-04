@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
@@ -37,7 +37,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
-    const files = (await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
+    const files = (await glob(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
 
     // Check if the directory exists (globby will otherwise read it case insensitively on MacOS)
     if (files.length) {
