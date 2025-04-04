@@ -1,5 +1,4 @@
-import { useNitroApp } from 'nitro/runtime'
-import type { RenderResponse } from 'nitro/types'
+import type { RenderResponse } from 'nitropack'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'h3'
@@ -12,6 +11,8 @@ import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+
+import { useNitroApp } from '#internal/nitro'
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 
