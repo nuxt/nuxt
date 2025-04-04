@@ -625,10 +625,13 @@ async function initNuxt (nuxt: Nuxt) {
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
     })
 
-    addServerHandler({
-      route: '/__nuxt_island/**',
-      handler: resolve(distDir, 'core/runtime/nitro/handlers/__nuxt_island'),
-    })
+    // sync conditions with /packages/nuxt/src/core/templates.ts#L539
+    if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
+      addServerHandler({
+        route: '/__nuxt_island/**',
+        handler: resolve(distDir, 'core/runtime/nitro/handlers/island'),
+      })
+    }
 
     if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true
