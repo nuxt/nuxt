@@ -5,7 +5,7 @@ import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import defu from 'defu'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
@@ -19,7 +19,8 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  const localLayers = await globby('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() })
+  const localLayers = (await glob('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() }))
+    .map((d: string) => d.endsWith('/') ? d.substring(0, d.length - 1) : d)
   opts.overrides = defu(opts.overrides, { _extends: localLayers });
 
   (globalThis as any).defineNuxtConfig = (c: any) => c
