@@ -1,8 +1,7 @@
-import { existsSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
+import { existsSync, promises as fsp } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { join, normalize, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
@@ -156,6 +155,7 @@ export const keyDependencies = [
 ]
 
 let warnedAboutCompatDate = false
+const NO_COMPATIBILITY_DATE_PROMPT = 'no'
 
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
@@ -172,7 +172,16 @@ async function initNuxt (nuxt: Nuxt) {
     const todaysDate = formatDate(new Date())
     nuxt.options.compatibilityDate.default = fallbackCompatibilityDate
 
-    const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
+    const cacheFile = resolve(join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/', 'show-compatibility-date-prompt'))
+
+    let shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
+
+    if (shouldShowPrompt && existsSync(cacheFile)) {
+      const cacheFileContent = await fsp.readFile(cacheFile, 'utf-8')
+
+      shouldShowPrompt &&= (cacheFileContent !== NO_COMPATIBILITY_DATE_PROMPT)
+    }
+
     if (!shouldShowPrompt) {
       logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
@@ -183,6 +192,9 @@ async function initNuxt (nuxt: Nuxt) {
         default: true,
       })
       if (result !== true) {
+        await fsp.mkdir(dirname(cacheFile), { recursive: true })
+        await fsp.writeFile(cacheFile, NO_COMPATIBILITY_DATE_PROMPT)
+
         logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
         return
       }
@@ -457,7 +469,7 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('build:manifest', async (manifest) => {
       for (const chunk of Object.values(manifest)) {
         if (chunk.resourceType === 'script') {
-          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), chunk.file), { force: true })
+          await fsp.rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), chunk.file), { force: true })
           chunk.file = ''
         }
       }
