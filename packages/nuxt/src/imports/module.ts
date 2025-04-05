@@ -32,143 +32,145 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     virtualImports: ['#imports'],
     polyfills: true,
   }),
-  async setup (options, nuxt) {
+  setup (options, nuxt) {
+    nuxt.hook('modules:resolved', async () => {
     // TODO: fix sharing of defaults between invocations of modules
-    const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
+      const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
 
-    if (options.polyfills) {
-      presets.push(...appCompatPresets)
-    }
+      if (options.polyfills) {
+        presets.push(...appCompatPresets)
+      }
 
-    // Allow modules extending sources
-    await nuxt.callHook('imports:sources', presets)
+      // Allow modules extending sources
+      await nuxt.callHook('imports:sources', presets)
 
-    // Filter disabled sources
-    // options.sources = options.sources.filter(source => source.disabled !== true)
+      // Filter disabled sources
+      // options.sources = options.sources.filter(source => source.disabled !== true)
 
-    const { addons: inlineAddons, ...rest } = options
+      const { addons: inlineAddons, ...rest } = options
 
-    const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
+      const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
 
-    // Create a context to share state between module internals
-    const ctx = createUnimport({
-      injectAtEnd: true,
-      ...rest,
-      addons: {
-        addons,
-        vueTemplate: options.autoImport,
-        vueDirectives: options.autoImport === false ? undefined : true,
-        ...addonsOptions,
-      },
-      presets,
-    })
+      // Create a context to share state between module internals
+      const ctx = createUnimport({
+        injectAtEnd: true,
+        ...rest,
+        addons: {
+          addons,
+          vueTemplate: options.autoImport,
+          vueDirectives: options.autoImport === false ? undefined : true,
+          ...addonsOptions,
+        },
+        presets,
+      })
 
-    await nuxt.callHook('imports:context', ctx)
+      await nuxt.callHook('imports:context', ctx)
 
-    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+      const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
 
-    // composables/ dirs from all layers
-    let composablesDirs: string[] = []
-    if (options.scan) {
-      for (const layer of nuxt.options._layers) {
+      // composables/ dirs from all layers
+      let composablesDirs: string[] = []
+      if (options.scan) {
+        for (const layer of nuxt.options._layers) {
         // Layer disabled scanning for itself
-        if (layer.config?.imports?.scan === false) {
-          continue
-        }
-        composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
-        composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
-
-        if (isNuxtV4) {
-          composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
-          composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
-        }
-
-        for (const dir of (layer.config.imports?.dirs ?? [])) {
-          if (!dir) {
+          if (layer.config?.imports?.scan === false) {
             continue
           }
-          composablesDirs.push(resolve(layer.config.srcDir, dir))
-        }
-      }
+          composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
+          composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
 
-      await nuxt.callHook('imports:dirs', composablesDirs)
-      composablesDirs = composablesDirs.map(dir => normalize(dir))
-
-      // Restart nuxt when composable directories are added/removed
-      nuxt.hook('builder:watch', (event, relativePath) => {
-        if (!['addDir', 'unlinkDir'].includes(event)) { return }
-
-        const path = resolve(nuxt.options.srcDir, relativePath)
-        if (composablesDirs.includes(path)) {
-          logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
-          return nuxt.callHook('restart')
-        }
-      })
-    }
-
-    // Support for importing from '#imports'
-    addTemplate({
-      filename: 'imports.mjs',
-      getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }',
-    })
-    nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
-
-    // Transform to inject imports in production mode
-    addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
-
-    const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
-
-    const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
-    function isImportsTemplate (template: ResolvedNuxtTemplate) {
-      return IMPORTS_TEMPLATE_RE.test(template.filename)
-    }
-
-    const isIgnored = createIsIgnored(nuxt)
-    const regenerateImports = async () => {
-      await ctx.modifyDynamicImports(async (imports) => {
-        // Clear old imports
-        imports.length = 0
-
-        // Scan for `composables/` and `utils/` directories
-        if (options.scan) {
-          const scannedImports = await scanDirExports(composablesDirs, {
-            fileFilter: file => !isIgnored(file),
-          })
-          for (const i of scannedImports) {
-            i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+          if (isNuxtV4) {
+            composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
+            composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
           }
-          imports.push(...scannedImports)
+
+          for (const dir of (layer.config.imports?.dirs ?? [])) {
+            if (!dir) {
+              continue
+            }
+            composablesDirs.push(resolve(layer.config.srcDir, dir))
+          }
         }
 
-        // Modules extending
-        await nuxt.callHook('imports:extend', imports)
-        return imports
+        await nuxt.callHook('imports:dirs', composablesDirs)
+        composablesDirs = composablesDirs.map(dir => normalize(dir))
+
+        // Restart nuxt when composable directories are added/removed
+        nuxt.hook('builder:watch', (event, relativePath) => {
+          if (!['addDir', 'unlinkDir'].includes(event)) { return }
+
+          const path = resolve(nuxt.options.srcDir, relativePath)
+          if (composablesDirs.includes(path)) {
+            logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+            return nuxt.callHook('restart')
+          }
+        })
+      }
+
+      // Support for importing from '#imports'
+      addTemplate({
+        filename: 'imports.mjs',
+        getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }',
+      })
+      nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
+
+      // Transform to inject imports in production mode
+      addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+
+      const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
+
+      const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
+      function isImportsTemplate (template: ResolvedNuxtTemplate) {
+        return IMPORTS_TEMPLATE_RE.test(template.filename)
+      }
+
+      const isIgnored = createIsIgnored(nuxt)
+      const regenerateImports = async () => {
+        await ctx.modifyDynamicImports(async (imports) => {
+        // Clear old imports
+          imports.length = 0
+
+          // Scan for `composables/` and `utils/` directories
+          if (options.scan) {
+            const scannedImports = await scanDirExports(composablesDirs, {
+              fileFilter: file => !isIgnored(file),
+            })
+            for (const i of scannedImports) {
+              i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+            }
+            imports.push(...scannedImports)
+          }
+
+          // Modules extending
+          await nuxt.callHook('imports:extend', imports)
+          return imports
+        })
+
+        await updateTemplates({
+          filter: isImportsTemplate,
+        })
+      }
+
+      await regenerateImports()
+
+      // Generate types
+      addDeclarationTemplates(ctx, options)
+
+      // Watch composables/ directory
+      nuxt.hook('builder:watch', async (_, relativePath) => {
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        if (options.scan && composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+          await regenerateImports()
+        }
       })
 
-      await updateTemplates({
-        filter: isImportsTemplate,
+      // Watch for template generation
+      nuxt.hook('app:templatesGenerated', async (_app, templates) => {
+        // Only regenerate when non-imports templates are updated
+        if (templates.some(t => !isImportsTemplate(t))) {
+          await regenerateImports()
+        }
       })
-    }
-
-    await regenerateImports()
-
-    // Generate types
-    addDeclarationTemplates(ctx, options)
-
-    // Watch composables/ directory
-    nuxt.hook('builder:watch', async (_, relativePath) => {
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (options.scan && composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
-        await regenerateImports()
-      }
-    })
-
-    // Watch for template generation
-    nuxt.hook('app:templatesGenerated', async (_app, templates) => {
-      // Only regenerate when non-imports templates are updated
-      if (templates.some(t => !isImportsTemplate(t))) {
-        await regenerateImports()
-      }
     })
   },
 })

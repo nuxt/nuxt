@@ -613,6 +613,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
+  await nuxt.callHook('modules:resolved')
+
   // remove duplicate css after modules are done
   nuxt.options.css = nuxt.options.css
     .filter((value, index, array) => !array.includes(value, index + 1))
