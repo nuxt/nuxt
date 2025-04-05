@@ -556,7 +556,7 @@ importers:
         specifier: 3.1.1
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.14.0)(happy-dom@17.4.4)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vue-sfc-transformer:
-        specifier: ^0.1.4
+        specifier: 0.1.4
         version: 0.1.4(vue@3.5.13(typescript@5.8.3))
 
   packages/rspack:
