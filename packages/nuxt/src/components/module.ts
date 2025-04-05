@@ -242,12 +242,15 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
+      if (selectiveClient) {
+        // write empty file to prevent vite/rollup not finding the chunk
+        writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+      }
       // TODO: refactor this
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
         config.plugins ||= []
 
         if (isClient && selectiveClient) {
-          writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           if (!nuxt.options.dev) {
             config.plugins.push(ComponentsChunkPlugin.vite({
               getComponents,
