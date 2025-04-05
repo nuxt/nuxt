@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
@@ -6,6 +7,7 @@ import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { tryUseNuxt } from '@nuxt/kit'
+import { parseURL } from 'ufo'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 import { installNuxtModule } from '../../core/features'
 import { logger } from '../../utils'
@@ -18,14 +20,28 @@ interface LoaderOptions {
   clientDelayedComponentRuntime: string
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
-  experimentalComponentIslands?: boolean
 }
 
+
 const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)/g
-export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
+export const LoaderPlugin = (options: LoaderOptions) => createUnplugin((_, { framework }) => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const nuxt = tryUseNuxt()
+  const isNuxtClientEnabled = typeof nuxt?.options.experimental?.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
+  const isDeepClientComponentEnabled = typeof nuxt?.options.experimental?.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient === 'deep'
+  const isVite = framework === 'vite'
+
+  function isServerOnlyComponent (id: string) {
+    if (!isVue(id)) { return false }
+    const components = options.getComponents()
+
+    const islands = components.filter(component =>
+      component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
+    )
+    const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+    return islands.some(c => c.filePath === pathname)
+  }
 
   return {
     name: 'nuxt:components-loader',
@@ -41,7 +57,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
     },
     transform (code, id) {
       const components = options.getComponents()
-
+      const serverOnlyComp = isServerOnlyComponent(id)
       let num = 0
       const imports = new Set<string>()
       const map = new Map<Component, string>()
@@ -71,7 +87,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           if (isServerOnly) {
             imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
-            if (!options.experimentalComponentIslands) {
+            if (!nuxt?.options.experimental?.componentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
             return identifier
@@ -142,6 +158,12 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             if (isClientOnly) {
               imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
               identifier += '_wrapped'
+            } else if (isVite && options.mode === 'server') {
+              if ((isNuxtClientEnabled && serverOnlyComp) || isDeepClientComponentEnabled) {
+                imports.add(genImport('#app/components/utils', [{ name: 'withIslandTeleport' }]))
+                imports.add(`const ${identifier}_wrapped = withIslandTeleport(${identifier})`)
+                identifier += '_wrapped'
+              }
             }
           }
 
