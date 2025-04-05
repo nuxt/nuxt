@@ -105,6 +105,11 @@ export interface NuxtLinkOptions extends
    * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
    */
   prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
+  /**
+   * A white list of domains that is used for useLinkWhitelist to check href.
+   * @example ['nuxt.com', 'nuxtjs.org']
+   */
+  whitelist?: string[]
 }
 
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
@@ -126,7 +131,7 @@ type NuxtLinkSlots<CustomProp extends boolean = false> = {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function defineNuxtLink (options: NuxtLinkOptions) {
+export function defineNuxtLink (options: Omit<NuxtLinkOptions, 'whitelist'>) {
   const componentName = options.componentName || 'NuxtLink'
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {
