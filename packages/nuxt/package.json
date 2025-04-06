@@ -147,7 +147,7 @@
     "unbuild": "latest",
     "vite": "6.2.4",
     "vitest": "3.1.1",
-    "vue-sfc-transformer": "0.1.4"
+    "vue-sfc-transformer": "0.1.5"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
