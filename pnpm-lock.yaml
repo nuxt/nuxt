@@ -14,7 +14,7 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.14.0
-  '@unhead/vue': 2.0.3
+  '@unhead/vue': 2.0.4
   '@vue/compiler-core': 3.5.13
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
@@ -87,8 +87,8 @@ importers:
         specifier: 7.7.0
         version: 7.7.0
       '@unhead/vue':
-        specifier: 2.0.3
-        version: 2.0.3(vue@3.5.13(typescript@5.8.3))
+        specifier: 2.0.4
+        version: 2.0.4(vue@3.5.13(typescript@5.8.3))
       '@vitest/coverage-v8':
         specifier: 3.1.1
         version: 3.1.1(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.14.0)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
@@ -153,8 +153,8 @@ importers:
         specifier: 2.4.2
         version: 2.4.2
       knip:
-        specifier: 5.46.5
-        version: 5.46.5(@types/node@22.14.0)(typescript@5.8.3)
+        specifier: 5.47.0
+        version: 5.47.0(@types/node@22.14.0)(typescript@5.8.3)
       magic-string:
         specifier: ^0.30.17
         version: 0.30.17
@@ -192,8 +192,8 @@ importers:
         specifier: 7.7.1
         version: 7.7.1
       sherif:
-        specifier: 1.4.0
-        version: 1.4.0
+        specifier: 1.5.0
+        version: 1.5.0
       srvx:
         specifier: 0.2.7
         version: 0.2.7
@@ -357,8 +357,8 @@ importers:
         specifier: 22.14.0
         version: 22.14.0
       '@unhead/vue':
-        specifier: 2.0.3
-        version: 2.0.3(vue@3.5.13(typescript@5.8.3))
+        specifier: 2.0.4
+        version: 2.0.4(vue@3.5.13(typescript@5.8.3))
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
@@ -521,7 +521,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.11.5
-        version: 0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.3(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
+        version: 0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.4(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -717,8 +717,8 @@ importers:
         specifier: 2.25.9
         version: 2.25.9(esbuild@0.25.2)
       '@unhead/vue':
-        specifier: 2.0.3
-        version: 2.0.3(vue@3.5.13(typescript@5.8.3))
+        specifier: 2.0.4
+        version: 2.0.4(vue@3.5.13(typescript@5.8.3))
       '@vitejs/plugin-vue':
         specifier: 5.2.3
         version: 5.2.3(vite@6.2.4(@types/node@22.14.0)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.3))
@@ -1977,7 +1977,7 @@ packages:
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
-      '@unhead/vue': 2.0.3
+      '@unhead/vue': 2.0.4
       nuxt: workspace:*
     peerDependenciesMeta:
       '@stripe/stripe-js':
@@ -2827,8 +2827,8 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unhead/vue@2.0.3':
-    resolution: {integrity: sha512-6Yci+MTunYuJLYwujBA68hEr5PabBl87yEhImrG4AUogaYWqIwtMHukn0bQvcjaBksXartLJtGUhxhmKgBdyPw==}
+  '@unhead/vue@2.0.4':
+    resolution: {integrity: sha512-bTpxG/P6cRgniBxTJbivQBjpz3chR9842N/5zYc5Jr2mgvAuCsIHffRVC+4B3yGAVBj/ey1duTY7iQQOxIeWAQ==}
     peerDependencies:
       vue: 3.5.13
 
@@ -5164,8 +5164,8 @@ packages:
     resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
     engines: {node: '>= 8'}
 
-  knip@5.46.5:
-    resolution: {integrity: sha512-w5t4K/raY8R8nJ9TZZBi/rZNsrJie6qYUJiL+A8l/4/002WQwzBfFMJftEo1opxgsV0ounFPJYy/9AAw3CO4Rg==}
+  knip@5.47.0:
+    resolution: {integrity: sha512-ikjijudvI81Iv49YJqgujJlGSXnCTFBTU9/NwHqW9wLA31IslEs+6npRL1TAdvT7Q+5mOOh6c8xrIwGd9sV+IQ==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -6644,38 +6644,38 @@ packages:
   shell-quote@1.8.1:
     resolution: {integrity: sha512-6j1W9l1iAs/4xYBI1SYOVZyFcCis9b4KCLQ8fgAGG07QvzaRLVVRQvAy85yNmmZSjYjg4MWh4gNvlPujU/5LpA==}
 
-  sherif-darwin-arm64@1.4.0:
-    resolution: {integrity: sha512-7PTK+BMC7zHxie3dDi/TPJXrHvCVs+Kf80NO6G9dm/DHFwLi/EJpw/i49H9W3NgN2ND9+MlR0/q0g2rSiaCmkg==}
+  sherif-darwin-arm64@1.5.0:
+    resolution: {integrity: sha512-4BYYCEXVJ8+xqfnntxnyGcwgByjrHSeKOitPYdBPMB3aauptC4GUMeVqXRXf5JNbx3lRKg8bZdoq0QPnbsr6BQ==}
     cpu: [arm64]
     os: [darwin]
 
-  sherif-darwin-x64@1.4.0:
-    resolution: {integrity: sha512-r4pwDHjPgeothxvl+d58BvJ1WhSiWfiukivltJJXgQDg4p64K4nv9dsQw1+zO4I2gYSlsUOXA9LDYlka79JyTA==}
+  sherif-darwin-x64@1.5.0:
+    resolution: {integrity: sha512-Y8wkqXzpZt2D5n0KnEXKK1QosoPofDpx4IDzxjyVjGvhR4YBoKcyU93tY9mEyYXMlzQGlyezGHpZkFeP0bioDA==}
     cpu: [x64]
     os: [darwin]
 
-  sherif-linux-arm64@1.4.0:
-    resolution: {integrity: sha512-cABgykKbFYruIZkU07ubiKgJS6qooIbMpwBTpivCb7/5Xwgw2Jm1oryhKFFv4i8I3R1TPdNxHpz2yyGuaW+7Uw==}
+  sherif-linux-arm64@1.5.0:
+    resolution: {integrity: sha512-l4JBoYCD+mJkwxNuQhLXloySXqSNOdTwJ9euBw8GbRjW+iXK2LxFOya1SlZy8CXZngTOBpNNoO9jH4E9NgI0XA==}
     cpu: [arm64]
     os: [linux]
 
-  sherif-linux-x64@1.4.0:
-    resolution: {integrity: sha512-igofjXjgov2QTyivMCkPuXklqBHfVDikicyilQlPTEMO3ZIsz1uE6D6IC1iq7iDV/cbx0IYJo6v0cSSpiYTrSA==}
+  sherif-linux-x64@1.5.0:
+    resolution: {integrity: sha512-RaSRnYe58Y6yLTeE8Hw5xmEDn7ted1F4kT1FFSR+ola36R5lnCeWV+xZqjKWU7JE8fVSqApJ4EL0mwtwGZT98Q==}
     cpu: [x64]
     os: [linux]
 
-  sherif-windows-arm64@1.4.0:
-    resolution: {integrity: sha512-1oQ178TfmRYrhMOyRrQ3AOKwt7hmGXZJJwyJE4LV3c7PgKvOiWz3USBI1FapLbNBmslgsTnzJJVD7CFZNOqDZA==}
+  sherif-windows-arm64@1.5.0:
+    resolution: {integrity: sha512-xcOnhsCTcg0fg1/SYhFN4AErk1k8QfW4sRK8ziaEt/SDtUGIYmt/+3CsWCBIGoMSaURS8upcU2JtofI3P82qHQ==}
     cpu: [arm64]
     os: [win32]
 
-  sherif-windows-x64@1.4.0:
-    resolution: {integrity: sha512-hTY6gYKRlOA0SqpK4yklAPzFZhn6NJGeM50ida67b2k7B6ApsStru9U3yt//b6cqy+6z3HxgxH9IpVVBiWJnVQ==}
+  sherif-windows-x64@1.5.0:
+    resolution: {integrity: sha512-kWFctc7kEgYq9IoTFWVGQdZv725eMOwhkF3JpkuApMLF/K+pDb1JKHUbmU52nHdMMKpT3SDVqrHyCaUOKmxU5w==}
     cpu: [x64]
     os: [win32]
 
-  sherif@1.4.0:
-    resolution: {integrity: sha512-mo7zKtRsDrRadbXa8tuoK5mtov5kV4qw2iuzD/ZyEVSeZfY0BpR1+KUhvJHCUJDHBv2nh0dJMwKkmlbbq/QKOg==}
+  sherif@1.5.0:
+    resolution: {integrity: sha512-sCn0w5b3APLRJauj4UDaK5TV5fyuc1ndDGv2cgt0lnb7zVUAekFm6D2duHVg4sf8/ZlDGFcLRc9Y/DxSRXdOAA==}
     hasBin: true
 
   shiki@1.23.1:
@@ -7115,8 +7115,8 @@ packages:
   unenv@2.0.0-rc.15:
     resolution: {integrity: sha512-J/rEIZU8w6FOfLNz/hNKsnY+fFHWnu9MH4yRbSZF3xbbGHovcetXPs7sD+9p8L6CeNC//I9bhRYAOsBt2u7/OA==}
 
-  unhead@2.0.3:
-    resolution: {integrity: sha512-l2O1DSzEid8Fp+I+FMMhFnl1IewyAvBhbdYipaq9Jh2AMndv//yWZ2amjzDLpYpUmDr9E8WTcdoAXkm9wH60Aw==}
+  unhead@2.0.4:
+    resolution: {integrity: sha512-lluXKaKrirCiHr/SRezWDNezQMkIlJ8enxaGPlvD5qU+wPx87zKjDz8EwKX1Mlj+h+7lbgNEgJmfKBQNdnIWww==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -8560,10 +8560,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.98.0
 
-  '@nuxt/scripts@0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.3(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))':
+  '@nuxt/scripts@0.11.5(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.4(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 2.0.3(vue@3.5.13(typescript@5.8.3))
+      '@unhead/vue': 2.0.4(vue@3.5.13(typescript@5.8.3))
       '@vueuse/core': 13.0.0(vue@3.5.13(typescript@5.8.3))
       consola: 3.4.2
       defu: 6.1.4
@@ -9548,10 +9548,10 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unhead/vue@2.0.3(vue@3.5.13(typescript@5.8.3))':
+  '@unhead/vue@2.0.4(vue@3.5.13(typescript@5.8.3))':
     dependencies:
       hookable: 5.5.3
-      unhead: 2.0.3
+      unhead: 2.0.4
       vue: 3.5.13(typescript@5.8.3)
 
   '@unocss/astro@66.0.0(vite@6.2.4(@types/node@22.14.0)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.3))':
@@ -12193,7 +12193,7 @@ snapshots:
 
   klona@2.0.6: {}
 
-  knip@5.46.5(@types/node@22.14.0)(typescript@5.8.3):
+  knip@5.47.0(@types/node@22.14.0)(typescript@5.8.3):
     dependencies:
       '@nodelib/fs.walk': 3.0.1
       '@snyk/github-codeowners': 1.1.0
@@ -14146,32 +14146,32 @@ snapshots:
 
   shell-quote@1.8.1: {}
 
-  sherif-darwin-arm64@1.4.0:
+  sherif-darwin-arm64@1.5.0:
     optional: true
 
-  sherif-darwin-x64@1.4.0:
+  sherif-darwin-x64@1.5.0:
     optional: true
 
-  sherif-linux-arm64@1.4.0:
+  sherif-linux-arm64@1.5.0:
     optional: true
 
-  sherif-linux-x64@1.4.0:
+  sherif-linux-x64@1.5.0:
     optional: true
 
-  sherif-windows-arm64@1.4.0:
+  sherif-windows-arm64@1.5.0:
     optional: true
 
-  sherif-windows-x64@1.4.0:
+  sherif-windows-x64@1.5.0:
     optional: true
 
-  sherif@1.4.0:
+  sherif@1.5.0:
     optionalDependencies:
-      sherif-darwin-arm64: 1.4.0
-      sherif-darwin-x64: 1.4.0
-      sherif-linux-arm64: 1.4.0
-      sherif-linux-x64: 1.4.0
-      sherif-windows-arm64: 1.4.0
-      sherif-windows-x64: 1.4.0
+      sherif-darwin-arm64: 1.5.0
+      sherif-darwin-x64: 1.5.0
+      sherif-linux-arm64: 1.5.0
+      sherif-linux-x64: 1.5.0
+      sherif-windows-arm64: 1.5.0
+      sherif-windows-x64: 1.5.0
 
   shiki@1.23.1:
     dependencies:
@@ -14626,7 +14626,7 @@ snapshots:
       pathe: 2.0.3
       ufo: 1.5.4
 
-  unhead@2.0.3:
+  unhead@2.0.4:
     dependencies:
       hookable: 5.5.3
 
