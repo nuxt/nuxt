@@ -185,7 +185,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }, headEntryOptions)
   }
 
-  if (isAppManifestEnabled && ssrContext._preloadManifest) {
+  if (isAppManifestEnabled && ssrContext._preloadManifest && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
         { rel: 'preload', as: 'fetch', fetchpriority: 'low', crossorigin: 'anonymous', href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) },
