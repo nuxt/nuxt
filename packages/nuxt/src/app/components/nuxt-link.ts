@@ -106,10 +106,10 @@ export interface NuxtLinkOptions extends
    */
   prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
   /**
-   * A white list of domains that is used for useLinkWhitelist to check href.
+   * A allow list of domains that is used for useLinkAllowlist to check href.
    * @example ['nuxt.com', 'nuxtjs.org']
    */
-  whitelist?: string[]
+  allowlist?: string[]
 }
 
 type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp extends true
@@ -131,7 +131,7 @@ type NuxtLinkSlots<CustomProp extends boolean = false> = {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function defineNuxtLink (options: Omit<NuxtLinkOptions, 'whitelist'>) {
+export function defineNuxtLink (options: Omit<NuxtLinkOptions, 'allowlist'>) {
   const componentName = options.componentName || 'NuxtLink'
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {

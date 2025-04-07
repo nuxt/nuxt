@@ -4,7 +4,7 @@ import { withQuery } from 'ufo'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'
-import { useLinkWhitelist } from '../src/app/composables/link-whitelist'
+import { useLinkAllowlist } from '../src/app/composables/link-allowlist'
 
 // mocks `useRuntimeConfig()`
 vi.mock('../src/app/nuxt', () => ({
@@ -317,25 +317,25 @@ describe('nuxt-link:propsOrAttributes', () => {
     })
   })
 })
-describe('useLinkWhitelist', () => {
-  it('should return the default whitelist', () => {
-    const { whitelist } = useLinkWhitelist({
-      whitelist: ['nuxt.com', 'nuxtjs.org'],
+describe('useLinkAllowlist', () => {
+  it('should return the default allowlist', () => {
+    const { allowlist } = useLinkAllowlist({
+      allowlist: ['nuxt.com', 'nuxtjs.org'],
     })
-    expect(whitelist).toEqual(['nuxt.com', 'nuxtjs.org'])
+    expect(allowlist).toEqual(['nuxt.com', 'nuxtjs.org'])
   })
-  it('should check url from whitelist', () => {
-    const { checkUrlInWhitelist } = useLinkWhitelist({
-      whitelist: ['nuxt.com', '.nuxt.com'],
+  it('should check url from allowlist', () => {
+    const { checkUrlInAllowlist } = useLinkAllowlist({
+      allowlist: ['nuxt.com', '.nuxt.com'],
     })
-    expect(checkUrlInWhitelist('https://nuxt.com')).toBe(true)
-    expect(checkUrlInWhitelist('https://nuxters.nuxt.com')).toBe(true)
-    expect(checkUrlInWhitelist('https://nuxtjs.org')).toBe(false)
-    expect(checkUrlInWhitelist('/test')).toBe(false)
+    expect(checkUrlInAllowlist('https://nuxt.com')).toBe(true)
+    expect(checkUrlInAllowlist('https://nuxters.nuxt.com')).toBe(true)
+    expect(checkUrlInAllowlist('https://nuxtjs.org')).toBe(false)
+    expect(checkUrlInAllowlist('/test')).toBe(false)
   })
-  it('should check url from whitelist with externalRelAttribute', () => {
-    const { getCustomRel } = useLinkWhitelist({
-      whitelist: ['nuxt.com', '.nuxt.com'],
+  it('should check url from allowlist with externalRelAttribute', () => {
+    const { getCustomRel } = useLinkAllowlist({
+      allowlist: ['nuxt.com', '.nuxt.com'],
       externalRelAttribute: 'noopener',
     })
     expect(getCustomRel('https://nuxt.com')).toBe('noopener')
@@ -343,9 +343,9 @@ describe('useLinkWhitelist', () => {
     expect(getCustomRel('https://nuxtjs.org')).toBe(undefined)
     expect(getCustomRel('/test')).toBe(undefined)
   })
-  it('should check url from whitelist with externalRelAttribute and force', () => {
-    const { getCustomRel } = useLinkWhitelist({
-      whitelist: ['nuxt.com', '.nuxt.com'],
+  it('should check url from allowlist with externalRelAttribute and force', () => {
+    const { getCustomRel } = useLinkAllowlist({
+      allowlist: ['nuxt.com', '.nuxt.com'],
       externalRelAttribute: 'noopener',
     })
     expect(getCustomRel('https://nuxt.com', { force: true })).toBe('noopener')
