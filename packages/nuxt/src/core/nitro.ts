@@ -122,8 +122,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
-      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'],
-      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, ''),
+      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
+      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
     },
     routeRules: {
@@ -162,6 +162,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         .map(dir => ({ dir })),
     ],
     prerender: {
+      ignoreUnprefixedPublicAssets: true,
       failOnError: true,
       concurrency: cpus().length * 4 || 4,
       routes: ([] as string[]).concat(nuxt.options.generate.routes),
@@ -217,15 +218,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/utils/paths'),
     },
     replace: {
-      'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
-      'process.env.NUXT_EARLY_HINTS': nuxt.options.experimental.writeEarlyHints !== false,
-      'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.features.noScripts && !nuxt.options.dev,
-      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.features.inlineStyles,
-      'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
-      'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
-      'process.env.NUXT_SHARED_DATA': !!nuxt.options.experimental.sharedPrerenderData,
-      'process.dev': nuxt.options.dev,
-      '__VUE_PROD_DEVTOOLS__': false,
+      'process.env.NUXT_NO_SSR': String(nuxt.options.ssr === false),
+      'process.env.NUXT_EARLY_HINTS': String(nuxt.options.experimental.writeEarlyHints !== false),
+      'process.env.NUXT_NO_SCRIPTS': String(!!nuxt.options.features.noScripts && !nuxt.options.dev),
+      'process.env.NUXT_INLINE_STYLES': String(!!nuxt.options.features.inlineStyles),
+      'process.env.NUXT_JSON_PAYLOADS': String(!!nuxt.options.experimental.renderJsonPayloads),
+      'process.env.NUXT_ASYNC_CONTEXT': String(!!nuxt.options.experimental.asyncContext),
+      'process.env.NUXT_SHARED_DATA': String(!!nuxt.options.experimental.sharedPrerenderData),
+      'process.dev': String(nuxt.options.dev),
+      '__VUE_PROD_DEVTOOLS__': String(false),
     },
     rollupConfig: {
       output: {},
@@ -482,6 +483,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
+    // @ts-expect-error this will be present in next nitro release
+    dotenv: nuxt.options._loadOptions?.dotenv,
   })
 
   // Trigger Nitro reload when SPA loading template changes

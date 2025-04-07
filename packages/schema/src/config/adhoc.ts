@@ -54,6 +54,15 @@ export default defineResolvers({
   /**
    * Whether to use the vue-router integration in Nuxt 3. If you do not provide a value it will be
    * enabled if you have a `pages/` directory in your source folder.
+   *
+   * Additionally, you can provide a glob pattern or an array of patterns
+   * to scan only certain files for pages.
+   * @example
+   * ```js
+   * pages: {
+   *   pattern: ['**\/*\/*.vue', '!**\/*.spec.*'],
+   * }
+   * ```
    * @type {boolean | { enabled?: boolean, pattern?: string | string[] }}
    */
   pages: undefined,
