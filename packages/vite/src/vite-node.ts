@@ -50,6 +50,7 @@ export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
       })
 
       server.watcher.on('all', (event, file) => {
+        invalidates.add(file)
         markInvalidates(server.moduleGraph.getModulesByFile(normalize(file)))
       })
     },
