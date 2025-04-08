@@ -55,6 +55,7 @@
     "@vue/compiler-core": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
+    "compatx": "0.2.0",
     "magic-string": "^0.30.17",
     "memfs": "4.17.0",
     "nuxt": "workspace:*",
@@ -62,11 +63,11 @@
     "rollup": "4.39.0",
     "send": ">=1.2.0",
     "typescript": "5.8.3",
-    "ufo": "1.5.4",
+    "ufo": "1.6.1",
     "unimport": "5.0.0",
-    "vite": "6.2.4",
+    "vite": "6.2.5",
     "vue": "3.5.13",
-    "webpack": "5.99.2"
+    "webpack": "5.99.3"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.4",
@@ -127,14 +128,14 @@
     "tinyglobby": "0.2.12",
     "ts-blank-space": "0.6.1",
     "typescript": "5.8.3",
-    "ufo": "1.5.4",
+    "ufo": "1.6.1",
     "unbuild": "3.5.0",
     "vitest": "3.1.1",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.2.8",
-    "webpack": "5.99.2"
+    "webpack": "5.99.3"
   },
-  "packageManager": "pnpm@10.7.1",
+  "packageManager": "pnpm@10.8.0",
   "version": ""
 }

@@ -85,7 +85,7 @@
     "@vue/shared": "^3.5.13",
     "c12": "^3.0.3",
     "chokidar": "^4.0.3",
-    "compatx": "^0.1.8",
+    "compatx": "^0.2.0",
     "consola": "^3.4.2",
     "cookie-es": "^2.0.0",
     "defu": "^6.1.4",
@@ -113,7 +113,7 @@
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
     "on-change": "^5.0.1",
-    "oxc-parser": "^0.56.3",
+    "oxc-parser": "^0.56.5",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^2.1.0",
@@ -123,7 +123,7 @@
     "std-env": "^3.9.0",
     "strip-literal": "^3.0.0",
     "tinyglobby": "0.2.12",
-    "ufo": "^1.5.4",
+    "ufo": "^1.6.1",
     "ultrahtml": "^1.6.0",
     "uncrypto": "^0.1.3",
     "unctx": "^2.4.1",
@@ -145,9 +145,9 @@
     "@vitejs/plugin-vue-jsx": "4.1.2",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "latest",
-    "vite": "6.2.4",
+    "vite": "6.2.5",
     "vitest": "3.1.1",
-    "vue-sfc-transformer": "0.1.5"
+    "vue-sfc-transformer": "0.1.8"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

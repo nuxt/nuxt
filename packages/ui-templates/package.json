@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/lodash-es": "4.17.12",
     "@unocss/reset": "66.0.0",
-    "beasties": "0.3.1",
+    "beasties": "0.3.2",
     "html-validate": "9.5.2",
     "htmlnano": "2.1.1",
     "jiti": "2.4.2",
@@ -32,6 +32,6 @@
     "tinyexec": "1.0.1",
     "tinyglobby": "0.2.12",
     "unocss": "66.0.0",
-    "vite": "6.2.4"
+    "vite": "6.2.5"
   }
 }
