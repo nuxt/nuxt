@@ -34,13 +34,6 @@
         "nuxt3",
         "@nuxt/kit"
       ]
-    },
-    {
-      "groupName": "webpack",
-      "matchPackageNames": [
-        "webpack",
-        "memfs"
-      ]
     }
   ]
 }
