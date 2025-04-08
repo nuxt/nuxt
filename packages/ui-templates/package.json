@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@unocss/reset": "66.0.0",
-    "beasties": "0.3.1",
+    "beasties": "0.3.2",
     "html-validate": "9.5.2",
     "htmlnano": "2.1.1",
     "jiti": "2.4.2",
