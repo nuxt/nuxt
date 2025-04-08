@@ -86,12 +86,16 @@ function getManifest (ctx: ViteBuildContext) {
       module: true,
       isEntry: true,
     },
-    [ctx.entry]: {
-      file: ctx.entry,
-      isEntry: true,
-      module: true,
-      resourceType: 'script',
-    },
+    ...ctx.nuxt.options.features.noScripts === 'all'
+      ? {}
+      : {
+          [ctx.entry]: {
+            file: ctx.entry,
+            isEntry: true,
+            module: true,
+            resourceType: 'script',
+          },
+        },
   })
 
   return manifest
@@ -142,6 +146,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
       throw createError({ statusCode: 403 /* Restricted */ })
     }
     const node = getNode(ctx.ssrServer)
+
     const module = await node.fetchModule(moduleId).catch(async (err) => {
       const errorData = {
         code: 'VITE_ERROR',
