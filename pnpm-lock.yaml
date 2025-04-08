@@ -30,7 +30,7 @@ overrides:
   typescript: 5.8.3
   ufo: 1.5.4
   unbuild: 3.5.0
-  unimport: 4.1.3
+  unimport: 5.0.0
   vite: 6.2.4
   vue: 3.5.13
 
@@ -296,8 +296,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       unimport:
-        specifier: 4.1.3
-        version: 4.1.3
+        specifier: 5.0.0
+        version: 5.0.0
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -492,8 +492,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       unimport:
-        specifier: 4.1.3
-        version: 4.1.3
+        specifier: 5.0.0
+        version: 5.0.0
       unplugin:
         specifier: ^2.2.2
         version: 2.2.2
@@ -795,8 +795,8 @@ importers:
         specifier: 2.4.1
         version: 2.4.1
       unimport:
-        specifier: 4.1.3
-        version: 4.1.3
+        specifier: 5.0.0
+        version: 5.0.0
       untyped:
         specifier: 2.0.0
         version: 2.0.0
@@ -7140,8 +7140,8 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@4.1.3:
-    resolution: {integrity: sha512-H+IVJ7rAkE3b+oC8rSJ2FsPaVsweeMC8eKZc+C6Mz7+hxDF45AnrY/tVCNRBvzMwWNcJEV67WdAVcal27iMjOw==}
+  unimport@5.0.0:
+    resolution: {integrity: sha512-8jL3T+FKDg+qLFX55X9j92uFRqH5vWrNlf/eJb5IQlQB5q5wjooXQDXP1ulhJJQHbosBmlKhBo/ZVS5jHlcJGA==}
     engines: {node: '>=18.12.0'}
 
   unist-builder@4.0.0:
@@ -13004,7 +13004,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.4.1
       unenv: 2.0.0-rc.15
-      unimport: 4.1.3
+      unimport: 5.0.0
       unplugin-utils: 0.2.4
       unstorage: 1.15.0(db0@0.3.1)(ioredis@5.6.0)
       untyped: 2.0.0
@@ -14661,7 +14661,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@4.1.3:
+  unimport@5.0.0:
     dependencies:
       acorn: 8.14.1
       escape-string-regexp: 5.0.0
