@@ -67,7 +67,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 ```
 
 ::warning
-if you are using `onRequest` to set `options.params` is invalid(`ofetch>=1.4.0`), please use `options.query` instead. And the `params` might be deprecated in next major version. So it's better to use `query` instead.
+If you are using `onRequest` to set `options.params`, please note that this is invalid for `ofetch ≥ 1.4.0`, please use `options.query` instead. As `params` may be deprecated in next major version. So it's better to use `query` instead.
 ::
 
 ::warning
