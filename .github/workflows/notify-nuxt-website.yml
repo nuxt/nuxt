@@ -1,7 +1,6 @@
 name: notify-nuxt-website
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - 3.x
     paths:
@@ -11,7 +10,6 @@ permissions: {}
 
 jobs:
   notify:
-    if: github.event.pull_request.merged == true
     strategy:
       matrix:
         repo: ["nuxt/nuxt.com"]
