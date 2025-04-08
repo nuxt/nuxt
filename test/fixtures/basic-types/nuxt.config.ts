@@ -90,7 +90,7 @@ export default defineNuxtConfig({
     typedPages: true,
     appManifest: true,
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {

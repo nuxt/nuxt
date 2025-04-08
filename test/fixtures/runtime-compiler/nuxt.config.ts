@@ -8,5 +8,5 @@ export default defineNuxtConfig({
   experimental: {
     externalVue: false,
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
 })
