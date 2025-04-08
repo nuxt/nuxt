@@ -208,7 +208,7 @@ onLoaded((gtag) => {
 })
 ```
 
-:read-more{title="Nuxt Scripts" to="[/docs/api/components/nuxt-link](https://scripts.nuxt.com/scripts)"}
+:read-more{title="Nuxt Scripts" to="https://scripts.nuxt.com/scripts"}
 
 ## Profiling Tools
 
