@@ -19,6 +19,7 @@ overrides:
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
   c12: 3.0.3
+  compatx: 0.2.0
   h3: 1.15.1
   jiti: 2.4.2
   magic-string: ^0.30.17
@@ -369,8 +370,8 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
       compatx:
-        specifier: ^0.1.8
-        version: 0.1.8
+        specifier: 0.2.0
+        version: 0.2.0
       consola:
         specifier: ^3.4.2
         version: 3.4.2
@@ -741,8 +742,8 @@ importers:
         specifier: 4.0.3
         version: 4.0.3
       compatx:
-        specifier: 0.1.8
-        version: 0.1.8
+        specifier: 0.2.0
+        version: 0.2.0
       css-minimizer-webpack-plugin:
         specifier: 7.0.2
         version: 7.0.2(esbuild@0.25.2)(webpack@5.98.0(esbuild@0.25.2))
@@ -3666,8 +3667,8 @@ packages:
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
 
-  compatx@0.1.8:
-    resolution: {integrity: sha512-jcbsEAR81Bt5s1qOFymBufmCbXCXbk0Ql+K5ouj6gCyx2yHlu6AgmGIi9HxfKixpUDO5bCFJUHQ5uM6ecbTebw==}
+  compatx@0.2.0:
+    resolution: {integrity: sha512-6gLRNt4ygsi5NyMVhceOCFv14CIdDFN7fQjX1U4+47qVE/+kjPoXMK65KWK+dWxmFzMTuKazoQ9sch6pM0p5oA==}
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
@@ -4013,9 +4014,6 @@ packages:
 
   domutils@2.8.0:
     resolution: {integrity: sha512-w96Cjofp72M5IIhpjgobBimYEfoPjx1Vx0BSX9P30WBdZW2WIKU0T1Bd0kz2eNZ9ikjKgHbEyKx8BB6H1L3h3A==}
-
-  domutils@3.1.0:
-    resolution: {integrity: sha512-H78uMmQtI2AhgDJjWeQmHwJJ2bLPD3GMmO7Zja/ZZh84wkm+4ut+IUnUdRa8uCGX88DiVx1j6FRe1XfxEgjEZA==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -10557,7 +10555,7 @@ snapshots:
 
   commondir@1.0.1: {}
 
-  compatx@0.1.8: {}
+  compatx@0.2.0: {}
 
   concat-map@0.0.1: {}
 
@@ -10672,7 +10670,7 @@ snapshots:
       boolbase: 1.0.0
       css-what: 6.1.0
       domhandler: 5.0.3
-      domutils: 3.1.0
+      domutils: 3.2.2
       nth-check: 2.1.1
 
   css-tree@2.2.1:
@@ -10886,12 +10884,6 @@ snapshots:
       dom-serializer: 1.4.1
       domelementtype: 2.3.0
       domhandler: 4.3.1
-
-  domutils@3.1.0:
-    dependencies:
-      dom-serializer: 2.0.0
-      domelementtype: 2.3.0
-      domhandler: 5.0.3
 
   domutils@3.2.2:
     dependencies:
@@ -12954,7 +12946,7 @@ snapshots:
       c12: 3.0.3(magicast@0.3.5)
       chokidar: 4.0.3
       citty: 0.1.6
-      compatx: 0.1.8
+      compatx: 0.2.0
       confbox: 0.2.2
       consola: 3.4.2
       cookie-es: 2.0.0

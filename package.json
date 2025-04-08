@@ -56,6 +56,7 @@
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
     "c12": "3.0.3",
+    "compatx": "0.2.0",
     "h3": "1.15.1",
     "jiti": "2.4.2",
     "magic-string": "^0.30.17",
