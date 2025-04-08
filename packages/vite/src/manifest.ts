@@ -22,12 +22,16 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
       module: true,
       resourceType: 'script',
     },
-    [ctx.entry]: {
-      isEntry: true,
-      file: ctx.entry,
-      module: true,
-      resourceType: 'script',
-    },
+    ...ctx.nuxt.options.features.noScripts === 'all'
+      ? {}
+      : {
+          [ctx.entry]: {
+            isEntry: true,
+            file: ctx.entry,
+            module: true,
+            resourceType: 'script',
+          },
+        },
   }
 
   const manifestFile = resolve(clientDist, 'manifest.json')
