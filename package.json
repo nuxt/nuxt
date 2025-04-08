@@ -55,6 +55,7 @@
     "@vue/compiler-core": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
+    "compatx": "0.2.0",
     "magic-string": "^0.30.17",
     "memfs": "4.17.0",
     "nuxt": "workspace:*",
