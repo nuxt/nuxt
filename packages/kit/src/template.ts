@@ -177,6 +177,8 @@ export async function _generateTypes (nuxt: Nuxt) {
   const exclude = new Set<string>([
     // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
     relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+    // nitro generate .data in development when kv storage is used
+    relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, '.data')),
   ])
 
   for (const dir of nuxt.options.modulesDir) {
