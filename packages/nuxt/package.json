@@ -102,7 +102,7 @@
     "mlly": "^1.7.4",
     "mocked-exports": "^0.1.1",
     "nanotar": "^0.2.0",
-    "nitro": "npm:nitro-nightly@3.0.0-20250404-081807.9f0c8e3c",
+    "nitro": "npm:nitro-nightly@3.0.0-20250409-071744.8f02bc2d",
     "nypm": "^0.6.0",
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
@@ -141,7 +141,7 @@
     "unbuild": "3.5.0",
     "vite": "6.2.4",
     "vitest": "3.1.1",
-    "vue-sfc-transformer": "0.1.8"
+    "vue-sfc-transformer": "0.1.10"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
