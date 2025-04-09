@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/pages/#page-metadata"}
+:read-more{to="/docs/guide/directory-structure/pages#page-metadata"}
 
 ## Type
 
