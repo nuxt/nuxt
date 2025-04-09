@@ -637,12 +637,12 @@ export default defineNuxtModule({
           const runtimeDir = resolve(distDir, 'pages/runtime')
           const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
           return [
-            'import type { ComputedRef, MaybeRef } from \'vue\'',
             `declare module ${genString(composablesFile)} {`,
             '  interface PageMeta {',
             '    viewTransition?: boolean | \'always\'',
             '  }',
             '}',
+            'export {}',
           ].join('\n')
         },
       })
