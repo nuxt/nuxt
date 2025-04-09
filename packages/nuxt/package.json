@@ -113,7 +113,7 @@
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
     "on-change": "^5.0.1",
-    "oxc-parser": "^0.56.5",
+    "oxc-parser": "^0.63.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^2.1.0",
@@ -147,7 +147,7 @@
     "unbuild": "latest",
     "vite": "6.2.5",
     "vitest": "3.1.1",
-    "vue-sfc-transformer": "0.1.8"
+    "vue-sfc-transformer": "0.1.10"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
