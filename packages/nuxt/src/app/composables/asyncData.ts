@@ -332,7 +332,7 @@ export function useAsyncData<
         asyncData.data.value = unref(options.default!())
         asyncData.status.value = 'error'
 
-        if (options.showError === true || typeof options.showError === 'function') {
+        if (options.showError) {
           const _error = typeof options.showError === 'function' ? options.showError(error) : createError(error)
           return nuxtApp.runWithContext(() => showError(_error))
         }
