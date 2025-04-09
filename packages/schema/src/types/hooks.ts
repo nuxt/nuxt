@@ -125,6 +125,11 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'modules:done': () => HookResult
+  /**
+   * Called during Nuxt initialization, after installing user modules and `modules:done` hook finish.
+   * @returns Promise
+   */
+  'modules:resolved': () => HookResult
 
   /**
    * Called after resolving the `app` instance.
