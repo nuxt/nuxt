@@ -5,7 +5,7 @@ import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import type { NuxtError } from './error'
-import { createError } from './error'
+import { createError, showError } from './error'
 import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
@@ -93,6 +93,15 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
+
+  /**
+   * Whether to trigger `showError` when an error occurs.
+   * Accepts a function that returns a NuxtError object or a boolean value.
+   * If set to true, `showError` will be called with the error object when an error occurs.
+   * If a function is provided, it will be called with the error object and should return a NuxtError object which will be used for `showError`.
+   * @default false
+   */
+  showError?: boolean | ((e: unknown) => NuxtError)
 }
 
 export interface AsyncDataExecuteOptions {
@@ -322,6 +331,11 @@ export function useAsyncData<
         asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
         asyncData.data.value = unref(options.default!())
         asyncData.status.value = 'error'
+
+        if (options.showError === true || typeof options.showError === 'function') {
+          const _error = typeof options.showError === 'function' ? options.showError(error) : createError(error)
+          return nuxtApp.runWithContext(() => showError(_error))
+        }
       })
       .finally(() => {
         if ((promise as any).cancelled) { return }
