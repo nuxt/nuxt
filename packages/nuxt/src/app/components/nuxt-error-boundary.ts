@@ -19,6 +19,7 @@ export default defineComponent({
         emit('error', err)
 
         nuxtApp.hooks.callHook('vue:error', err, instance, info)
+
         error.value = err
       }
 
