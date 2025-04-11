@@ -14,14 +14,14 @@ export default defineComponent({
     const error = ref<Error | null>(null)
     const nuxtApp = useNuxtApp()
 
-    function handleError (err: Error, instance: ComponentPublicInstance | null, info: string) {
-      emit('error', err)
-
-      nuxtApp.hooks.callHook('vue:error', err, instance, info)
-      error.value = err
-    }
-
     if (import.meta.client) {
+      function handleError (err: Error, instance: ComponentPublicInstance | null, info: string) {
+        emit('error', err)
+
+        nuxtApp.hooks.callHook('vue:error', err, instance, info)
+        error.value = err
+      }
+
       onErrorCaptured((err, instance, info) => {
         if (nuxtApp.isHydrating) {
           onNuxtReady(() => handleError(err, instance, info))
