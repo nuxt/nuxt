@@ -163,8 +163,8 @@ importers:
         specifier: 4.17.0
         version: 4.17.0
       nitropack:
-        specifier: 2.11.8
-        version: 2.11.8
+        specifier: 2.11.9
+        version: 2.11.9
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -319,8 +319,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: 2.11.8
-        version: 2.11.8
+        specifier: 2.11.9
+        version: 2.11.9
       unbuild:
         specifier: latest
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
@@ -445,8 +445,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitropack:
-        specifier: ^2.11.8
-        version: 2.11.8
+        specifier: ^2.11.9
+        version: 2.11.9
       nypm:
         specifier: ^0.6.0
         version: 0.6.0
@@ -505,8 +505,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
       unplugin:
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^2.3.1
+        version: 2.3.1
       unplugin-vue-router:
         specifier: ^0.12.0
         version: 0.12.0(vue-router@4.5.0(vue@3.5.13(typescript@5.8.3)))(vue@3.5.13(typescript@5.8.3))
@@ -653,8 +653,8 @@ importers:
         specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15
       unplugin:
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^2.3.1
+        version: 2.3.1
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.99.5(esbuild@0.25.2)))(webpack@5.99.5(esbuild@0.25.2))
@@ -775,8 +775,8 @@ importers:
         specifier: 2.9.2
         version: 2.9.2(webpack@5.99.5(esbuild@0.25.2))
       nitropack:
-        specifier: 2.11.8
-        version: 2.11.8
+        specifier: 2.11.9
+        version: 2.11.9
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -967,8 +967,8 @@ importers:
         specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15
       unplugin:
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^2.3.1
+        version: 2.3.1
       vite:
         specifier: 6.2.6
         version: 6.2.6(@types/node@22.14.0)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -1085,8 +1085,8 @@ importers:
         specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15
       unplugin:
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^2.3.1
+        version: 2.3.1
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.99.5(esbuild@0.25.2)))(webpack@5.99.5(esbuild@0.25.2))
@@ -1166,7 +1166,7 @@ importers:
         version: 1.6.1
       unplugin:
         specifier: latest
-        version: 2.3.0
+        version: 2.3.1
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.3)
@@ -1920,12 +1920,12 @@ packages:
   '@napi-rs/wasm-runtime@0.2.8':
     resolution: {integrity: sha512-OBlgKdX7gin7OIq4fadsjpg+cp2ZphvAIKucHsNfTdJiqdOmOEwQd/bHi0VwNrcw5xpBJyUw6cK/QilCqy1BSg==}
 
-  '@netlify/functions@3.0.2':
-    resolution: {integrity: sha512-9bngT722zbsdW7ri7j9ItrgOO33M1141cIBP7l+VE79EEP78JubM5fV4a58I+ZVQU4KRK0PJIbpUAlojXExl5Q==}
+  '@netlify/functions@3.0.4':
+    resolution: {integrity: sha512-Ox8+ABI+nsLK+c4/oC5dpquXuEIjzfTlJrdQKgQijCsDQoje7inXFAtKDLvvaGvuvE+PVpMLwQcIUL6P9Ob1hQ==}
     engines: {node: '>=18.0.0'}
 
-  '@netlify/serverless-functions-api@1.35.0':
-    resolution: {integrity: sha512-BH9eF3s7bUbqkcEUMR7dne/iCXSpZD10KVkGcs53eDrON5pKxsMdXvrdAx/q0HD24vJgHXGXObGSr5sjPllGEA==}
+  '@netlify/serverless-functions-api@1.36.0':
+    resolution: {integrity: sha512-z6okREyK8in0486a22Oro0k+YsuyEjDXJt46FpgeOgXqKJ9ElM8QPll0iuLBkpbH33ENiNbIPLd1cuClRQnhiw==}
     engines: {node: '>=18.0.0'}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -5548,8 +5548,8 @@ packages:
     engines: {node: '>=10.0.0'}
     hasBin: true
 
-  mime@4.0.6:
-    resolution: {integrity: sha512-4rGt7rvQHBbaSOF9POGkk1ocRP16Md1x36Xma8sz8h8/vfCUI2OtEIeCqe4Ofes853x4xDoPiFLIT47J5fI/7A==}
+  mime@4.0.7:
+    resolution: {integrity: sha512-2OfDPL+e03E0LrXaGYOtTFIYhiuzep94NSsuhrNULq+stylcJedcHdzHtz0atMUuGwJfFYs0YL5xeC/Ca2x0eQ==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -5675,8 +5675,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitropack@2.11.8:
-    resolution: {integrity: sha512-ummTu4R8Lhd1nO3nWrW7eeiHA2ey3ntbWFKkYakm4rcbvT6meWp+oykyrYBNFQKhobQl9CydmUWlCyztYXFPJw==}
+  nitropack@2.11.9:
+    resolution: {integrity: sha512-SL5L3EDMJFXbEX0zZbNl67jRW+5312UGAkw6t0PGjjP1cuLULvR9trhx2rz/RYltRCfzrJG1hp6j3vxxhDLohg==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -6668,9 +6668,9 @@ packages:
   serve-placeholder@2.0.2:
     resolution: {integrity: sha512-/TMG8SboeiQbZJWRlfTCqMs2DD3SZgWp0kDQePz9yUuCnDfDh/92gf7/PxGhzXTKBIPASIHxFcZndoNbp6QOLQ==}
 
-  serve-static@1.16.2:
-    resolution: {integrity: sha512-VqpjJZKadQB/PEbEwvFdO43Ax5dFBZ2UECszz8bQ7pi7wt//PWe1P6MN7eCnjsatYtBT6EuiClbjSWP2WrIoTw==}
-    engines: {node: '>= 0.8.0'}
+  serve-static@2.2.0:
+    resolution: {integrity: sha512-61g9pCh0Vnh7IutZjtLGGpTA355+OPn2TyDv/6ivP2h/AdAVX9azsoxmg2/M6nZeQZNYBEwIcsne1mJd9oQItQ==}
+    engines: {node: '>= 18'}
 
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
@@ -7256,8 +7256,8 @@ packages:
     resolution: {integrity: sha512-Qp+iiD+qCRnUek+nDoYvtWX7tfnYyXsrOnJ452FRTgOyKmTM7TUJ3l+PLPJOOWPTUyKISKp4isC5JJPSXUjGgw==}
     engines: {node: '>=18.12.0'}
 
-  unplugin@2.3.0:
-    resolution: {integrity: sha512-zNTDfbzOZzkbgXvH1QgQFW5nAyvjA0q3q9FGPFx2sKpDnaoU09VP1wT1mE+LYa6EF2rfezfd1y2EPLLR8ka6nw==}
+  unplugin@2.3.1:
+    resolution: {integrity: sha512-l9lOQPGN82rUAnyX7Qw8z0E9oLgQ8tkPxFyAqX3x7DnX/jvgLHUqKX1b8u5RP6u6K0/GKfgvaiaB018j7zr+Nw==}
     engines: {node: '>=18.12.0'}
 
   unrs-resolver@1.3.3:
@@ -7796,6 +7796,10 @@ packages:
 
   youch@4.1.0-beta.6:
     resolution: {integrity: sha512-y1aNsEeoLXnWb6pI9TvfNPIxySyo4Un3OGxKn7rsNj8+tgSquzXEWkzfA5y6gU0fvzmQgvx3JBn/p51qQ8Xg9A==}
+    engines: {node: '>=18'}
+
+  youch@4.1.0-beta.7:
+    resolution: {integrity: sha512-HUn0M24AUTMvjdkoMtH8fJz2FEd+k1xvtR9EoTrDUoVUi6o7xl5X+pST/vjk4T3GEQo2mJ9FlAvhWBm8dIdD4g==}
     engines: {node: '>=18'}
 
   zip-stream@6.0.1:
@@ -8482,11 +8486,11 @@ snapshots:
       '@tybys/wasm-util': 0.9.0
     optional: true
 
-  '@netlify/functions@3.0.2':
+  '@netlify/functions@3.0.4':
     dependencies:
-      '@netlify/serverless-functions-api': 1.35.0
+      '@netlify/serverless-functions-api': 1.36.0
 
-  '@netlify/serverless-functions-api@1.35.0': {}
+  '@netlify/serverless-functions-api@1.36.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -8661,7 +8665,7 @@ snapshots:
       sirv: 3.0.1
       std-env: 3.9.0
       ufo: 1.6.1
-      unplugin: 2.3.0
+      unplugin: 2.3.1
       unstorage: 1.15.0(db0@0.3.1)(ioredis@5.6.0)
       valibot: 1.0.0(typescript@5.8.3)
     optionalDependencies:
@@ -8729,7 +8733,7 @@ snapshots:
       std-env: 3.9.0
       tinyexec: 0.3.2
       ufo: 1.6.1
-      unplugin: 2.3.0
+      unplugin: 2.3.1
       vite: 6.2.6(@types/node@22.14.0)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vitest-environment-nuxt: 1.0.1(@playwright/test@1.51.1)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.8.3)))(@types/node@22.14.0)(@vue/test-utils@2.4.6)(happy-dom@17.4.4)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.51.1)(terser@5.32.0)(tsx@4.19.2)(typescript@5.8.3)(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.14.0)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(yaml@2.7.0)
       vue: 3.5.13(typescript@5.8.3)
@@ -11909,7 +11913,7 @@ snapshots:
       mlly: 1.7.4
       mocked-exports: 0.1.1
       pathe: 2.0.3
-      unplugin: 2.3.0
+      unplugin: 2.3.1
     transitivePeerDependencies:
       - rollup
 
@@ -12829,7 +12833,7 @@ snapshots:
 
   mime@3.0.0: {}
 
-  mime@4.0.6: {}
+  mime@4.0.7: {}
 
   mimic-fn@4.0.0: {}
 
@@ -12934,10 +12938,10 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitropack@2.11.8:
+  nitropack@2.11.9:
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
-      '@netlify/functions': 3.0.2
+      '@netlify/functions': 3.0.4
       '@rollup/plugin-alias': 5.1.1(rollup@4.39.0)
       '@rollup/plugin-commonjs': 28.0.3(rollup@4.39.0)
       '@rollup/plugin-inject': 5.0.5(rollup@4.39.0)
@@ -12976,7 +12980,7 @@ snapshots:
       listhen: 1.9.0
       magic-string: 0.30.17
       magicast: 0.3.5
-      mime: 4.0.6
+      mime: 4.0.7
       mlly: 1.7.4
       node-fetch-native: 1.6.6
       node-mock-http: 1.0.0
@@ -12992,7 +12996,7 @@ snapshots:
       scule: 1.3.0
       semver: 7.7.1
       serve-placeholder: 2.0.2
-      serve-static: 1.16.2
+      serve-static: 2.2.0
       source-map: 0.7.4
       std-env: 3.9.0
       ufo: 1.6.1
@@ -13005,7 +13009,7 @@ snapshots:
       unstorage: 1.15.0(db0@0.3.1)(ioredis@5.6.0)
       untyped: 2.0.0
       unwasm: 0.3.9
-      youch: 4.1.0-beta.6
+      youch: 4.1.0-beta.7
       youch-core: 0.3.2
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -14136,7 +14140,7 @@ snapshots:
     dependencies:
       defu: 6.1.4
 
-  serve-static@1.16.2:
+  serve-static@2.2.0:
     dependencies:
       encodeurl: 2.0.0
       escape-html: 1.0.3
@@ -14781,7 +14785,7 @@ snapshots:
       mlly: 1.7.4
       pathe: 2.0.3
       scule: 1.3.0
-      unplugin: 2.3.0
+      unplugin: 2.3.1
       unplugin-utils: 0.2.4
       yaml: 2.7.0
     optionalDependencies:
@@ -14799,7 +14803,7 @@ snapshots:
       acorn: 8.14.1
       webpack-virtual-modules: 0.6.2
 
-  unplugin@2.3.0:
+  unplugin@2.3.1:
     dependencies:
       acorn: 8.14.1
       picomatch: 4.0.2
@@ -15363,6 +15367,13 @@ snapshots:
       error-stack-parser-es: 1.0.5
 
   youch@4.1.0-beta.6:
+    dependencies:
+      '@poppinss/dumper': 0.6.3
+      '@speed-highlight/core': 1.2.7
+      cookie: 1.0.2
+      youch-core: 0.3.2
+
+  youch@4.1.0-beta.7:
     dependencies:
       '@poppinss/dumper': 0.6.3
       '@speed-highlight/core': 1.2.7
