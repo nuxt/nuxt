@@ -25,15 +25,11 @@ export default defineComponent({
       onErrorCaptured((err, instance, info) => {
         if (nuxtApp.isHydrating) {
           onNuxtReady(() => handleError(err, instance, info))
-
-          return false
-        }
-
-        if (!nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
+        } else {
           handleError(err, instance, info)
-
-          return false
         }
+
+        return false
       })
     }
 
