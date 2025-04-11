@@ -432,7 +432,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Apply Nuxt's ignore configuration to the root and src unstorage mounts
   // created by Nitro. This ensures that the unstorage watcher will use the
-  // same ignore list as Nuxt's watcher and can reduce unneccesary file handles.
+  // same ignore list as Nuxt's watcher and can reduce unnecessary file handles.
   const isIgnored = createIsIgnored(nuxt)
   nitroConfig.devStorage ??= {}
   nitroConfig.devStorage.root ??= {
