@@ -840,6 +840,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     options._modules.push('@nuxt/telemetry')
   }
 
+  // warn if user is using reserved namespaces
+  const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
+  for (const key in options.runtimeConfig.app) {
+    if (!allowedKeys.has(key)) {
+      logger.warn(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`)
+      delete options.runtimeConfig.app[key]
+    }
+  }
+
   // Ensure we share key config between Nuxt and Nitro
   createPortalProperties(options.nitro.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(options.nitro.routeRules, options, ['nitro.routeRules', 'routeRules'])
