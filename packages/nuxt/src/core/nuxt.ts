@@ -793,7 +793,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   for (const key in options.runtimeConfig.app) {
     if (!allowedKeys.has(key)) {
       logger.warn(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`)
-      delete options.runtimeConfig[key]
+      delete options.runtimeConfig.app[key]
     }
   }
 
