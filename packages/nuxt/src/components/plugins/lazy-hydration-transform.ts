@@ -14,6 +14,17 @@ interface LoaderOptions {
 }
 
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
+const EXCLUDE_RE = [
+  // imported/exported from other module
+  /\b(import|export)\b([\w$*{},\s]+?)\bfrom\s*["']/g,
+  // defined as function
+  /\bfunction\s*([\w$]+)\s*\(/g,
+  // defined as class
+  /\bclass\s*([\w$]+)\s*\{/g,
+  // defined as local variable
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
+  /\b(?:const|let|var)\s+?(\[.*?\]|\{.*?\}|.+?)\s*?[=;\n]/gs,
+]
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
   hydrateOnVisible: 'Visible',
@@ -41,6 +52,14 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       return isVue(id)
     },
     async transform (code) {
+      const variables = new Set<string>()
+      // TODO: strip comments
+      for (const regex of EXCLUDE_RE) {
+        for (const match of code.matchAll(regex)) {
+          variables.add(match[1])
+        }
+      }
+
       // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
       const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
       if (!template) { return }
@@ -58,6 +77,11 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
           if (!/^(?:Lazy|lazy-)/.test(node.name)) {
             return
           }
+
+          if (variables.has(node.name)) {
+            return
+          }
+
           const pascalName = pascalCase(node.name.slice(4))
           if (!components.some(c => c.pascalName === pascalName)) {
             // not auto-imported
