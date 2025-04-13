@@ -25,8 +25,10 @@ export default defineNuxtPlugin({
         }
       }
       for (const key in payload.data) {
-        if (!(key in nuxtApp.static.data)) {
-          staticKeysToRemove.add(key)
+        if (purgeCachedData) {
+          if (!(key in nuxtApp.static.data)) {
+            staticKeysToRemove.add(key)
+          }
         }
         nuxtApp.static.data[key] = payload.data[key]
       }
