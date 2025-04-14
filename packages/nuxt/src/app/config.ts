@@ -76,7 +76,9 @@ if (import.meta.dev) {
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
       const newConfig = newModule?._getAppConfig()
-      _replaceAppConfig(newConfig)
+      if (newConfig) {
+        _replaceAppConfig(newConfig)
+      }
     })
   }
 
