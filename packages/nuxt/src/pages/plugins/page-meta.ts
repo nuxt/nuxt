@@ -305,7 +305,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       })
 
       if (instances > 1) {
-        throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id)
+        throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id.replace(/\?.+$/, ''))
       }
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
