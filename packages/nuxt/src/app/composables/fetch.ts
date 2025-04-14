@@ -267,5 +267,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     }
     segments.push(unwrapped)
   }
+  if (opts.body) {
+    segments.push(hash(toValue(opts.body)))
+  }
   return segments
 }
