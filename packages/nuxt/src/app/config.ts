@@ -72,26 +72,18 @@ export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
 
 // HMR Support
 if (import.meta.dev) {
-  const applyHMR = (newConfig: AppConfig) => {
-    const appConfig = useAppConfig()
-    if (newConfig && appConfig) {
-      deepAssign(appConfig, newConfig)
-      deepDelete(appConfig, newConfig)
-    }
-  }
-
   // Vite
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
       const newConfig = newModule?._getAppConfig()
-      applyHMR(newConfig)
+      _replaceAppConfig(newConfig)
     })
   }
 
   // webpack
   if (import.meta.webpackHot) {
     import.meta.webpackHot.accept('#build/app.config.mjs', () => {
-      applyHMR(__appConfig)
+      _replaceAppConfig(__appConfig)
     })
   }
 }
