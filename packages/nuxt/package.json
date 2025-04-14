@@ -70,7 +70,7 @@
   "dependencies": {
     "@nuxt/cli": "^3.24.1",
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^2.3.2",
+    "@nuxt/devtools": "^2.4.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.6",
@@ -102,7 +102,7 @@
     "mlly": "^1.7.4",
     "mocked-exports": "^0.1.1",
     "nanotar": "^0.2.0",
-    "nitro": "npm:nitro-nightly@3.0.0-20250404-081807.9f0c8e3c",
+    "nitro": "npm:nitro-nightly@3.0.0-20250411-094421.5736f5be",
     "nypm": "^0.6.0",
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
@@ -122,7 +122,7 @@
     "uncrypto": "^0.1.3",
     "unctx": "^2.4.1",
     "unimport": "^5.0.0",
-    "unplugin": "^2.2.2",
+    "unplugin": "^2.3.2",
     "unplugin-vue-router": "^0.12.0",
     "unstorage": "^1.15.0",
     "untyped": "^2.0.0",
@@ -141,7 +141,7 @@
     "unbuild": "3.5.0",
     "vite": "6.2.6",
     "vitest": "3.1.1",
-    "vue-sfc-transformer": "0.1.8"
+    "vue-sfc-transformer": "0.1.10"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
