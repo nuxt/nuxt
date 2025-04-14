@@ -484,7 +484,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
-    // @ts-expect-error this will be present in next nitro release
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
 
