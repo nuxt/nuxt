@@ -597,5 +597,14 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+
+    /**
+     * Whether to parse `error.data` when rendering a server error page.
+     */
+    parseErrorData: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion === 4
+      },
+    },
   },
 })

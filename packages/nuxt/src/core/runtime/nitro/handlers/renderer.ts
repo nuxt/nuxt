@@ -10,8 +10,9 @@ import { appendResponseHeader, createError, getQuery, getResponseStatus, getResp
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
-
+import destr from 'destr'
 import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitro/runtime'
+
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
 import { getEntryIds, getRenderer } from '../utils/renderer/build-files'
@@ -28,7 +29,6 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
-import destr from 'destr'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -87,7 +87,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (ssrError) {
     ssrError.statusCode &&= Number.parseInt(ssrError.statusCode as any)
-    if (typeof ssrError.data === 'string') {
+    if (process.env.PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
       try {
         ssrError.data = destr(ssrError.data)
       } catch {
