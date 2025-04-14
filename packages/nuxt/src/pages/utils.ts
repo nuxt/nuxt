@@ -69,7 +69,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   }
 
   const augmentCtx = {
-    extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys,
+    extraExtractionKeys: ['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys],
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
   }
   if (shouldAugment === 'after-resolve') {
@@ -205,7 +205,7 @@ export function extractScriptContent (sfc: string) {
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
-export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
+export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
@@ -262,7 +262,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         const { value, serializable } = isSerializable(script.code, propertyValue)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-          dynamicProperties.add(key)
+          dynamicProperties.add(extraExtractionKeys.includes(key) ? 'meta' : key)
           continue
         }
 
