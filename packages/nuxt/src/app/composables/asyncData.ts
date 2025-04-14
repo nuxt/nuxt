@@ -358,6 +358,8 @@ export function useAsyncData<
           data?._off()
           if (purgeCachedData) {
             clearNuxtDataByKey(nuxtApp, key)
+            // TODO: remove when upgrading to v4
+            nuxtApp._asyncData[key]!.data.value = asyncDataDefaults.value
           }
         }
       }
