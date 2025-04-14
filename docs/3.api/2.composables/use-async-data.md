@@ -55,7 +55,7 @@ const { data: posts } = await useAsyncData(
 
 ### Reactive Keys
 
-You can use a computed ref or a plain ref as the key, allowing for dynamic data fetching that automatically updates when the key changes:
+You can use a computed ref, plain ref or a getter function as the key, allowing for dynamic data fetching that automatically updates when the key changes:
 
 ```vue [pages/[id\\].vue]
 <script setup lang="ts">
