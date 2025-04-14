@@ -26,7 +26,7 @@ interface PageMetaPluginOptions {
   extractedKeys?: string[]
 }
 
-const PAGEMETA_MACRO_RE = /\bdefinePageMeta\s*\(\s*/g
+const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
 
 const CODE_EMPTY = `
 const __nuxt_page_meta = null
@@ -75,11 +75,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const matches = code.matchAll(PAGEMETA_MACRO_RE)
-      const matchArray = Array.from(matches)
-      if (matchArray.length > 1) {
-        throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id)
-      }
+      const hasMacro = HAS_MACRO_RE.test(code)
 
       const imports = findStaticImports(code)
 
@@ -107,7 +103,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         return result()
       }
 
-      if (!matchArray.length && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
+      if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
         if (!code) {
           s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
@@ -224,12 +220,15 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
       scopeTracker.freeze()
 
+      let instances = 0
+
       walk(ast, {
         scopeTracker,
         enter: (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
           if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
 
+          instances++
           const meta = withLocations(node.arguments[0])
 
           if (!meta) { return }
@@ -304,6 +303,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           s.overwrite(0, code.length, extracted.trim())
         },
       })
+
+      if (instances > 1) {
+        throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id)
+      }
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
         s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
