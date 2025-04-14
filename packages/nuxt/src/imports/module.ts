@@ -124,6 +124,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     const isIgnored = createIsIgnored(nuxt)
+    const defaultImportSources = new Set(defaultPresets.flatMap(i => i.from))
+    const defaultImports = new Set(presets.flatMap(p => defaultImportSources.has(p.from) ? p.imports : []))
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -134,25 +136,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           const scannedImports = await scanDirExports(composablesDirs, {
             fileFilter: file => !isIgnored(file),
           })
-
-          const presetMap = new Map<string, string>()
-
-          for (const preset of presets) {
-            preset.imports = preset.imports ?? []
-            for (const i of preset.imports) {
-              presetMap.set(i, preset.from)
-            }
-            presetMap.set(preset.as, preset.from)
-          }
-
           for (const i of scannedImports) {
-            const name = i.as ?? i.name
-            const preset = presetMap.get(name)
-
-            if (preset) {
-              console.warn(`[imports] "${name}" is already defined and auto imported from "${preset ?? 'unknown preset'}" within nuxt itself. Please consider renaming "${name}" at ${i.from}.`)
-            }
-
             i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
           }
           imports.push(...scannedImports)
@@ -160,6 +144,16 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
+        for (const i of imports) {
+          if (!defaultImportSources.has(i.from)) {
+            const value = i.as || i.name
+            if (defaultImports.has(value)) {
+              const relativePath = relative(nuxt.options.srcDir, i.from)
+              logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` at \`~/${relativePath}\`.`)
+            }
+          }
+        }
+
         return imports
       })
 
