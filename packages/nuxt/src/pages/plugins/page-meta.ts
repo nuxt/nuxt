@@ -16,12 +16,14 @@ import {
   withLocations,
 } from '../../core/utils/parse'
 import { logger } from '../../utils'
+import { isSerializable } from '../utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
   isPage?: (file: string) => boolean
   routesPath?: string
+  extractedKeys?: string[]
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
@@ -212,7 +214,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const ast = parseAndWalk(code, id, {
+      const ast = parseAndWalk(code, id + (query.lang ? '.' + query.lang : '.ts'), {
         scopeTracker,
       })
 
@@ -227,6 +229,28 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const meta = withLocations(node.arguments[0])
 
           if (!meta) { return }
+          const metaCode = code!.slice(meta.start, meta.end)
+          const m = new MagicString(metaCode)
+
+          if (meta.type === 'ObjectExpression') {
+            for (let i = 0; i < meta.properties.length; i++) {
+              const prop = withLocations(meta.properties[i])
+              if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
+                const { serializable } = isSerializable(metaCode, prop.value)
+                if (!serializable) {
+                  continue
+                }
+                const nextProperty = withLocations(meta.properties[i + 1])
+                if (nextProperty) {
+                  m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
+                } else if (code[prop.end] === ',') {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
+                } else {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                }
+              }
+            }
+          }
 
           const definePageMetaScope = scopeTracker.getCurrentScope()
 
@@ -270,7 +294,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const extracted = [
             importStatements,
             declarations,
-            `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+            `const __nuxt_page_meta = ${m.toString() || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
           ].join('\n')
 
           s.overwrite(0, code.length, extracted.trim())

@@ -35,7 +35,7 @@ export default defineNuxtConfig({
         }
       })
     },
-    '~/modules/subpath',
+    '~/custom-modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {
@@ -159,6 +159,7 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    decorators: true,
     serverAppConfig: true,
     typedPages: true,
     clientFallback: true,
@@ -173,7 +174,7 @@ export default defineNuxtConfig({
     headNext: true,
     inlineRouteRules: true,
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
   nitro: {
     publicAssets: [
       {
@@ -193,7 +194,7 @@ export default defineNuxtConfig({
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
-      '/no-scripts': { experimentalNoScripts: true },
+      '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
     },
     prerender: {

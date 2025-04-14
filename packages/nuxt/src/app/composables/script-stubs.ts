@@ -1,4 +1,4 @@
-import type { UseScriptInput } from '@unhead/vue'
+import type { UseScriptInput } from '@unhead/vue/scripts'
 import { createError } from './error'
 
 function renderStubMessage (name: string) {
@@ -119,4 +119,14 @@ export function useScriptGoogleAdsense (...args: unknown[]) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptYouTubePlayer (...args: unknown[]) {
   renderStubMessage('useScriptYouTubePlayer')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptUmamiAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptUmamiAnalytics')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptSnapchatPixel (...args: unknown[]) {
+  renderStubMessage('useScriptSnapchatPixel')
 }

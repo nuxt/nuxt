@@ -1,9 +1,8 @@
-import { transform } from 'esbuild'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
 
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { parseAndWalk, transform, withLocations } from '../../core/utils/parse'
 import { isJS, isVue } from '../utils'
 
 export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {
@@ -34,7 +33,7 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
             const cleaned = result.slice('forEach'.length).replace(/;\s+$/, '')
             const args = [JSON.stringify(cleaned)]
             if (needsAttr) {
-              args.push(JSON.stringify(hash(result)))
+              args.push(JSON.stringify(hash(result).slice(0, 10)))
             }
             s.overwrite(callback.start, callback.end, args.join(', '))
           }))

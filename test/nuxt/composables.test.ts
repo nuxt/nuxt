@@ -76,6 +76,7 @@ describe('composables', () => {
       'getAppManifest',
       'useHydration',
       'getRouteRules',
+      'injectHead',
       'onNuxtReady',
       'callOnce',
       'setResponseStatus',
@@ -114,10 +115,13 @@ describe('composables', () => {
       'useId',
       'useFetch',
       'useHead',
+      'useHeadSafe',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
+      'useServerHead',
+      'useServerHeadSafe',
       'useServerSeoMeta',
       'usePreviewMode',
     ]
@@ -344,7 +348,7 @@ describe('useFetch', () => {
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
+    expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 })
 
@@ -527,6 +531,23 @@ describe('loading state', () => {
   })
 })
 
+describe('loading state', () => {
+  it('expect state from set opts: { force: true }', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading, start, finish, set } = useLoadingIndicator()
+    await nuxtApp.callHook('page:loading:start')
+    start({ force: true })
+    expect(isLoading.value).toBeTruthy()
+    finish()
+    expect(isLoading.value).toBeFalsy()
+    set(0, { force: true })
+    expect(isLoading.value).toBeTruthy()
+    set(100, { force: true })
+    expect(isLoading.value).toBeFalsy()
+  })
+})
+
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
@@ -534,14 +555,15 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "id": "override",
+        "id": "test",
         "matcher": {
           "dynamic": {},
           "static": {
-            "/": null,
-            "/pre": null,
             "/pre/test": {
-              "redirect": true,
+              "redirect": "/",
+            },
+            "/specific-prerendered": {
+              "prerender": true,
             },
           },
           "wildcard": {
@@ -550,9 +572,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
             },
           },
         },
-        "prerendered": [
-          "/specific-prerendered",
-        ],
+        "prerendered": [],
       }
     `)
   })
@@ -563,10 +583,10 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
         "prerender": true,
       }
     `)
-    expect(await getRouteRules('/pre/test')).toMatchInlineSnapshot(`
+    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
-        "redirect": true,
+        "redirect": "/",
       }
     `)
   })
@@ -773,6 +793,17 @@ describe('useCookie', () => {
       user.value.score++
       expect(computedVal.value).toBe(-1)
     }
+  })
+
+  it('should set cookie value when called on client', () => {
+    useCookie('cookie-watch-false', { default: () => 'foo', watch: false })
+    expect(document.cookie).toContain('cookie-watch-false=foo')
+
+    useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
+    expect(document.cookie).toContain('cookie-watch-true=foo')
+
+    useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
+    expect(document.cookie).toContain('cookie-readonly=foo')
   })
 })
 

@@ -59,9 +59,9 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
       }
       return elToStaticVNode(ctx._.vnode.el, STATIC_DIV)
     }
-  } else if (clone.template) {
+  } else {
     // handle runtime-compiler template
-    clone.template = `
+    clone.template &&= `
       <template v-if="mounted$">${component.template}</template>
       <template v-else>${STATIC_DIV}</template>
     `

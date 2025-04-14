@@ -1,5 +1,5 @@
 import { defineComponent, h } from 'vue'
-import { useLoadingIndicator } from '#app/composables/loading-indicator'
+import { useLoadingIndicator } from '../composables/loading-indicator'
 
 export default defineComponent({
   name: 'NuxtLoadingIndicator',
@@ -11,6 +11,14 @@ export default defineComponent({
     duration: {
       type: Number,
       default: 2000,
+    },
+    hideDelay: {
+      type: Number,
+      default: 500,
+    },
+    resetDelay: {
+      type: Number,
+      default: 400,
     },
     height: {
       type: Number,
@@ -33,6 +41,8 @@ export default defineComponent({
     const { progress, isLoading, error, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle,
+      hideDelay: props.hideDelay,
+      resetDelay: props.resetDelay,
       estimatedProgress: props.estimatedProgress,
     })
 

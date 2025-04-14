@@ -1,9 +1,10 @@
 import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { globby } from 'globby'
-import { resolvePath as _resolvePath } from 'mlly'
+import { glob } from 'tinyglobby'
+import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
+import { directoryToURL } from './internal/esm'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
 import { toArray } from './utils'
@@ -71,9 +72,7 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
  * Resolve path aliases respecting Nuxt alias options
  */
 export function resolveAlias (path: string, alias?: Record<string, string>): string {
-  if (!alias) {
-    alias = tryUseNuxt()?.options.alias || {}
-  }
+  alias ||= tryUseNuxt()?.options.alias || {}
   return _resolveAlias(path, alias)
 }
 
@@ -173,7 +172,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
-  path = resolveAlias(path)
+  path = _resolveAlias(path, opts.alias ?? nuxt?.options.alias ?? {})
 
   // Resolve relative to cwd
   if (!isAbsolute(path)) {
@@ -201,7 +200,11 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   }
 
   // Try to resolve as module id
-  const resolvedModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir] }).catch(() => null)
+  const resolvedModulePath = resolveModulePath(_path, {
+    try: true,
+    suffixes: ['', 'index'],
+    from: [cwd, ...modulesDir].map(d => directoryToURL(d)),
+  })
   if (resolvedModulePath) {
     return {
       path: resolvedModulePath,
@@ -234,7 +237,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
   const files: string[] = []
-  for (const file of await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
+  for (const file of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
     const p = resolve(path, file)
     if (!isIgnored(p)) {
       files.push(p)

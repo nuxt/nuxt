@@ -4,24 +4,30 @@ import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import type { BuildOptions, ServerOptions } from 'vite'
-import { logger } from '@nuxt/kit'
+import { logger, useNitro } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
-import { env, nodeless } from 'unenv'
-import { defineEventHandler, handleCors, setHeader } from 'h3'
+import { defineEnv } from 'unenv'
+import { resolveModulePath } from 'exsolve'
+import { createError, defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
+
 import type { ViteBuildContext } from './vite'
-import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
-import { runtimePathsPlugin } from './plugins/paths'
-import { typeCheckPlugin } from './plugins/type-check'
-import { viteNodePlugin } from './vite-node'
+import { DevStyleSSRPlugin } from './plugins/dev-ssr-css'
+import { RuntimePathsPlugin } from './plugins/paths'
+import { TypeCheckPlugin } from './plugins/type-check'
+import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
+import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
   const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat
     ? {
-        alias: env(nodeless).alias,
+        alias: defineEnv({
+          nodeCompat: true,
+          resolve: true,
+        }).env.alias,
         define: {
           global: 'globalThis',
         },
@@ -115,7 +121,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         ...ctx.config.resolve?.alias,
         'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
         // work around vite optimizer bug
-        '#app-manifest': 'unenv/runtime/mock/empty',
+        '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
       dedupe: [
         'vue',
@@ -131,14 +137,14 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
     },
     plugins: [
-      devStyleSSRPlugin({
+      DevStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir),
       }),
-      runtimePathsPlugin({
+      RuntimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client,
       }),
-      viteNodePlugin(ctx),
+      ViteNodePlugin(ctx),
     ],
     appType: 'custom',
     server: {
@@ -198,8 +204,13 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Add type checking client panel
   if (!ctx.nuxt.options.test && ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
-    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
+    clientConfig.plugins!.push(TypeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
+
+  clientConfig.plugins!.push(ModulePreloadPolyfillPlugin({
+    sourcemap: !!ctx.nuxt.options.sourcemap.client,
+    entry: ctx.entry,
+  }))
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
@@ -230,6 +241,26 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
     })
 
+    const staticBases: string[] = []
+    for (const folder of useNitro().options.publicAssets) {
+      if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
+        staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
+      }
+    }
+
+    const devHandlerRegexes: RegExp[] = []
+    for (const handler of ctx.nuxt.options.devServerHandlers) {
+      if (handler.route && handler.route !== '/' && handler.route.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
+        devHandlerRegexes.push(new RegExp(
+          `^${handler.route
+            .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // escape regex syntax characters
+            .replace(/:[^/]+/g, '[^/]+') // dynamic segments (:param)
+            .replace(/\*\*/g, '.*') // double wildcard (**) to match any path
+            .replace(/\*/g, '[^/]*')}$`, // single wildcard (*) to match any segment
+        ))
+      }
+    }
+
     const viteMiddleware = defineEventHandler(async (event) => {
       const viteRoutes: string[] = []
       for (const viteRoute of viteServer.middlewares.stack) {
@@ -257,6 +288,13 @@ export async function buildClient (ctx: ViteBuildContext) {
           return err ? reject(err) : resolve(null)
         })
       })
+
+      // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
+      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
+        throw createError({
+          statusCode: 404,
+        })
+      }
     })
     await ctx.nuxt.callHook('server:devHandler', viteMiddleware)
   } else {

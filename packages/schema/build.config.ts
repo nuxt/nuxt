@@ -28,7 +28,7 @@ export default defineBuildConfig({
   },
   externals: [
     // Type imports
-    '@unhead/schema',
+    '@unhead/vue',
     '@vitejs/plugin-vue',
     'chokidar',
     '@vitejs/plugin-vue-jsx',
@@ -39,6 +39,7 @@ export default defineBuildConfig({
     'consola',
     'css-minimizer-webpack-plugin',
     'cssnano',
+    'esbuild',
     'esbuild-loader',
     'file-loader',
     'h3',
