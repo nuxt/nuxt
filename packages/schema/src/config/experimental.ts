@@ -92,13 +92,21 @@ export default defineResolvers({
     /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
      * You can also disable scripts more granularly within `routeRules`.
+     *
+     * If set to 'production' or `true`, JS will be disabled in production mode only.
+     * @type {'production' | 'all' | boolean}
      */
     noScripts: {
       async $resolve (val, get) {
-        return typeof val === 'boolean'
-          ? val
-          // @ts-expect-error TODO: legacy property - remove in v3.10
-          : (await (get('experimental')).then(e => e?.noScripts as boolean | undefined) ?? false)
+        const isValidLiteral = (val: unknown): val is 'production' | 'all' => {
+          return typeof val === 'string' && ['production', 'all'].includes(val)
+        }
+        return val === true
+          ? 'production'
+          : val === false || isValidLiteral(val)
+            ? val
+            // @ts-expect-error TODO: legacy property - remove in v3.10
+            : (await (get('experimental')).then(e => e?.noScripts as boolean | undefined && 'production') ?? false)
       },
     },
   },
@@ -598,5 +606,10 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
       },
     },
+
+    /**
+     * Whether Nuxt should stop if a Nuxt module is incompatible.
+     */
+    enforceModuleCompatibility: false,
   },
 })

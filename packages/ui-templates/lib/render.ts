@@ -160,8 +160,8 @@ export const RenderPlugin = () => {
           `const props = defineProps(${props})`,
           title && 'useHead(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
-            ['script', inlineScripts.map(s => ({ children: `\`${s.replace(/[`$]/g, '\\$&')}\`` }))],
-            ['style', [{ children: `\`${globalStyles.replace(/[`$]/g, '\\$&')}\`` }]],
+            ['script', inlineScripts.map(s => ({ innerHTML: `\`${s.replace(/[`$]/g, '\\$&')}\`` }))],
+            ['style', [{ innerHTML: `\`${globalStyles.replace(/[`$]/g, '\\$&')}\`` }]],
           ]) + ')',
           '</script>',
           '<template>',
