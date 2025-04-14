@@ -758,6 +758,15 @@ export default defineResolvers({
     },
 
     /**
+     * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
+     */
+    granularCachedData: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      },
+    },
+
+    /**
      * Whether to parse `error.data` when rendering a server error page.
      */
     parseErrorData: {
