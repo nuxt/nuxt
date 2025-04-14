@@ -9,25 +9,25 @@ const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL
 
 describe('build', () => {
   beforeAll(async () => {
-    await rm(join(basicTestFixtureDir, '.nuxt'), { recursive: true, force: true })
+    await rm(join(basicTestFixtureDir, 'node_modules/build/.nuxt'), { recursive: true, force: true })
   })
 
   bench('initial dev server build in the basic test fixture', async () => {
-    const nuxt = await loadNuxt({
-      cwd: basicTestFixtureDir,
-      ready: true,
-      overrides: {
-        dev: true,
-        sourcemap: false,
-        builder: {
-          bundle: () => Promise.resolve(),
+    await new Promise((resolve) => {
+      loadNuxt({
+        cwd: basicTestFixtureDir,
+        ready: true,
+        overrides: {
+          dev: true,
+          buildDir: join(basicTestFixtureDir, 'node_modules/build/.nuxt'),
+          sourcemap: false,
+          builder: {
+            async bundle (nuxt) {
+              resolve(await nuxt.close())
+            },
+          },
         },
-      },
+      }).then(build)
     })
-    await new Promise<void>((resolve) => {
-      nuxt.hook('build:done', () => resolve())
-      build(nuxt)
-    })
-    await nuxt.close()
   })
 })

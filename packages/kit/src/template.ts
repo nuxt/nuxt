@@ -1,5 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
-import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
+import { fileURLToPath } from 'node:url'
+import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
@@ -7,9 +8,11 @@ import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
+import { resolveModulePath } from 'exsolve'
+import { captureStackTrace } from 'errx'
 
-import { filterInPlace } from './utils'
-import { tryResolveModule } from './internal/esm'
+import { distDirURL, filterInPlace } from './utils'
+import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
@@ -25,6 +28,19 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
 
   // Remove any existing template with the same destination path
   filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
+
+  try {
+    const distDir = distDirURL.toString()
+    const { source } = captureStackTrace().find(e => e.source && !e.source.startsWith(distDir)) ?? {}
+    if (source) {
+      const path = normalize(fileURLToPath(source))
+      if (existsSync(path)) {
+        template._path = path
+      }
+    }
+  } catch {
+    // ignore errors as this is an additive feature
+  }
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -47,8 +63,12 @@ export function addServerTemplate (template: NuxtServerTemplate) {
 /**
  * Renders given types during build to disk in the project `buildDir`
  * and register them as types.
+ *
+ * You can pass a second context object to specify in which context the type should be added.
+ *
+ * If no context object is passed, then it will only be added to the nuxt context.
  */
-export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
+export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean }) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -58,9 +78,16 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
   }
 
   // Add template to types reference
-  nuxt.hook('prepare:types', ({ references }) => {
-    references.push({ path: template.dst })
-  })
+  if (!context || context.nuxt) {
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.push({ path: template.dst })
+    })
+  }
+  if (context?.nitro) {
+    nuxt.hook('nitro:prepare:types', ({ references }) => {
+      references.push({ path: template.dst })
+    })
+  }
 
   return template
 }
@@ -87,7 +114,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
+      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src).replace(/-/g, '_')}${srcPath.ext}`
     }
   }
 
@@ -105,9 +132,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   // Resolve dst
-  if (!template.dst) {
-    template.dst = resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
-  }
+  template.dst ||= resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
 
   return template as ResolvedNuxtTemplate<T>
 }
@@ -121,7 +146,7 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-const EXTENSION_RE = /\b\.\w+$/g
+const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 export async function _generateTypes (nuxt: Nuxt) {
@@ -152,6 +177,8 @@ export async function _generateTypes (nuxt: Nuxt) {
   const exclude = new Set<string>([
     // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
     relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+    // nitro generate .data in development when kv storage is used
+    relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, '.data')),
   ])
 
   for (const dir of nuxt.options.modulesDir) {
@@ -176,9 +203,23 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const isV4 = nuxt.options.future?.compatibilityVersion === 4
-  const hasTypescriptVersionWithModulePreserve = await readPackageJSON('typescript', { url: nuxt.options.modulesDir })
-    .then(r => r?.version && gte(r.version, '5.4.0'))
-    .catch(() => isV4)
+  const nestedModulesDirs: string[] = []
+  for (const dir of [...nuxt.options.modulesDir].sort()) {
+    const withSlash = withTrailingSlash(dir)
+    if (nestedModulesDirs.every(d => !d.startsWith(withSlash))) {
+      nestedModulesDirs.push(withSlash)
+    }
+  }
+
+  let hasTypescriptVersionWithModulePreserve
+  for (const parent of nestedModulesDirs) {
+    hasTypescriptVersionWithModulePreserve ??= await readPackageJSON('typescript', { parent })
+      .then(r => r?.version && gte(r.version, '5.4.0'))
+      .catch(() => undefined)
+  }
+  hasTypescriptVersionWithModulePreserve ??= isV4
+
+  const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
@@ -197,12 +238,19 @@ export async function _generateTypes (nuxt: Nuxt) {
       noUncheckedIndexedAccess: isV4,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
+      /* Decorator support */
+      ...useDecorators
+        ? {
+            experimentalDecorators: false,
+          }
+        : {},
       /* If NOT transpiling with TypeScript: */
       module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
       noEmit: true,
       /* If your code runs in the DOM: */
       lib: [
         'ESNext',
+        ...useDecorators ? ['esnext.decorators'] : [],
         'dom',
         'dom.iterable',
         'webworker',
@@ -234,6 +282,8 @@ export async function _generateTypes (nuxt: Nuxt) {
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
 
+  const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
@@ -241,7 +291,11 @@ export async function _generateTypes (nuxt: Nuxt) {
     let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = await tryResolveModule(aliases[alias]!, nuxt.options.modulesDir)
+      const resolvedModule = resolveModulePath(aliases[alias]!, {
+        try: true,
+        from: importPaths,
+        extensions: [...nuxt.options.extensions, '.d.ts', '.d.mts', '.d.cts'],
+      })
       if (resolvedModule) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)
@@ -275,8 +329,15 @@ export async function _generateTypes (nuxt: Nuxt) {
   await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
     if (typeof id !== 'string') { return }
 
-    const pkg = await readPackageJSON(id, { url: nuxt.options.modulesDir }).catch(() => null)
-    references.push(({ types: pkg?.name || id }))
+    for (const parent of nestedModulesDirs) {
+      const pkg = await readPackageJSON(id, { parent }).catch(() => null)
+      if (pkg) {
+        references.push(({ types: pkg.name ?? id }))
+        return
+      }
+    }
+
+    references.push(({ types: id }))
   }))
 
   const declarations: string[] = []

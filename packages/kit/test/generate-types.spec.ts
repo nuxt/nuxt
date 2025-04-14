@@ -20,6 +20,7 @@ const mockNuxt = {
     buildDir: '/my-app/.nuxt',
     modulesDir: ['/my-app/node_modules', '/node_modules'],
     modules: [],
+    extensions: ['.ts', '.mjs', '.js'],
     _layers: [{ config: { srcDir: '/my-app' } }],
     _installedModules: [],
     _modules: [],
@@ -51,6 +52,7 @@ describe('tsConfig generation', () => {
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
         "../dist",
+        "../.data",
         "../modules/test/node_modules",
         "../modules/node_modules",
         "../node_modules/@some/module/node_modules",

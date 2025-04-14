@@ -4,7 +4,7 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
-import { env, nodeless } from 'unenv'
+import { defineEnv } from 'unenv'
 
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
@@ -58,7 +58,10 @@ function clientNodeCompat (ctx: WebpackConfigContext) {
 
   ctx.config.resolve ||= {}
   ctx.config.resolve.fallback = {
-    ...env(nodeless).alias,
+    ...defineEnv({
+      nodeCompat: true,
+      resolve: true,
+    }).env.alias,
     ...ctx.config.resolve.fallback,
   }
 

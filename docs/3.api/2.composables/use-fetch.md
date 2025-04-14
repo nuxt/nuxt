@@ -74,9 +74,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 If you encounter the `data` variable destructured from a `useFetch` returns a string and not a JSON parsed object then make sure your component doesn't include an import statement like `import { useFetch } from '@vueuse/core`.
 ::
 
-::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
-Watch the video from Alexander Lichter to avoid using `useFetch` the wrong way!
-::
+:video-accordion{title="Watch the video from Alexander Lichter to avoid using useFetch the wrong way" videoId="njsGVmcWviY"}
 
 :link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
 
@@ -111,7 +109,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   - `transform`: a function that can be used to alter `handler` function result after resolving
   - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
     ```ts
-    const getDefaultCachedData = (key) => nuxtApp.isHydrating 
+    const getDefaultCachedData = (key, nuxtApp) => nuxtApp.isHydrating 
       ? nuxtApp.payload.data[key] 
       : nuxtApp.static.data[key]
     ```
@@ -131,9 +129,7 @@ If you provide a function or ref as the `url` parameter, or if you provide funct
 If you use `useFetch` to call an (external) HTTPS URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
 
-::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
-Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
-::
+:video-accordion{title="Watch a video from Alexander Lichter about client-side caching with getCachedData" videoId="aQPR0xn-MMk"}
 
 ## Return Values
 
@@ -174,7 +170,7 @@ type UseFetchOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
+  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT | undefined
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
   default?: () => DataT
