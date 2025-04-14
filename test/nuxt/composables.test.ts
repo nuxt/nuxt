@@ -184,6 +184,8 @@ describe('useAsyncData', () => {
   })
 
   it('should capture errors', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
     expect(error.value).toMatchInlineSnapshot('[Error: test]')
@@ -197,6 +199,11 @@ describe('useAsyncData', () => {
     expect(syncedError.value).toBe(error.value)
     expect(syncedStatus.value).toBe(status.value)
     expect(syncedPending.value).toBe(false)
+
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
+      /\[nuxt\] \[asyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
+    ))
+    warn.mockClear()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -446,7 +453,7 @@ describe('useAsyncData', () => {
   })
 
   it('should warn if incompatible options are used', async () => {
-    const warn = vi.spyOn(console, 'warn')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
     expect(warn).not.toHaveBeenCalled()
@@ -479,6 +486,8 @@ describe('useAsyncData', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
       new RegExp(`\\[nuxt\\] \\[asyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
     ))
+
+    warn.mockReset()
   })
 
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
@@ -607,6 +616,10 @@ describe('useFetch', () => {
     /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { params: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
+  })
+
+  it('should work with reactive keys', async () => {
+
   })
 
   it('should timeout', async () => {
