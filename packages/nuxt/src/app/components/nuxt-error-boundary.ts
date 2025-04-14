@@ -1,4 +1,4 @@
-import { type ComponentPublicInstance, defineComponent, onErrorCaptured, ref } from 'vue'
+import { defineComponent, onErrorCaptured, ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { onNuxtReady } from '../../app'
 
@@ -12,23 +12,18 @@ export default defineComponent({
   },
   setup (_props, { slots, emit }) {
     const error = ref<Error | null>(null)
-    const nuxtApp = useNuxtApp()
 
     if (import.meta.client) {
-      function handleError (err: Error, instance: ComponentPublicInstance | null, info: string) {
-        emit('error', err)
-
-        nuxtApp.hooks.callHook('vue:error', err, instance, info)
-
-        error.value = err
-      }
+      const nuxtApp = useNuxtApp()
 
       onErrorCaptured((err, instance, info) => {
-        if (nuxtApp.isHydrating) {
-          onNuxtReady(() => handleError(err, instance, info))
-        } else {
-          handleError(err, instance, info)
-        }
+        onNuxtReady(() => {
+          emit('error', err)
+
+          nuxtApp.hooks.callHook('vue:error', err, instance, info)
+
+          error.value = err
+        })
 
         return false
       })
