@@ -33,6 +33,7 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
       filename: 'filename' in analyzeOptions ? analyzeOptions.filename!.replace('{name}', 'client') : undefined,
       title: 'Client bundle stats',
       gzipSize: true,
+      brotliSize: true,
     }),
   ]
 }
