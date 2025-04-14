@@ -20,7 +20,7 @@ export default defineNuxtConfig({
     },
   },
   sourcemap: false,
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
   typescript: {
     typeCheck: isStubbed ? false : 'build',
   },

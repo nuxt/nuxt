@@ -8,5 +8,5 @@ export default defineNuxtConfig({
   experimental: {
     spaLoadingTemplateLocation: 'within',
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
 })
