@@ -262,7 +262,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         const { value, serializable } = isSerializable(script.code, propertyValue)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-          dynamicProperties.add(key)
+          dynamicProperties.add(extraExtractionKeys.includes(key) ? 'meta' : key)
           continue
         }
 
