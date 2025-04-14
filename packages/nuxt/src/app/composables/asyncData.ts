@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance, getCurrentScope, isShallow, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
-import type { MaybeRef, MultiWatchSources, Ref } from 'vue'
+import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { captureStackTrace } from 'errx'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -172,7 +172,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (
-  key: MaybeRef<string>,
+  key: MaybeRefOrGetter<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
@@ -190,7 +190,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
-  key: MaybeRef<string>,
+  key: MaybeRefOrGetter<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
@@ -202,7 +202,7 @@ export function useAsyncData<
   DefaultT = undefined,
 > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-  if (typeof args[0] !== 'string' && typeof args[0] !== 'object') { args.unshift(autoKey) }
+  if (typeof args[0] !== 'string' && typeof args[0] !== 'object' && !(typeof args[0] === 'function' && typeof args[1] === 'function')) { args.unshift(autoKey) }
 
   // eslint-disable-next-line prefer-const
   let [_key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
@@ -446,7 +446,7 @@ export function useLazyAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (
-  key: MaybeRef<string>,
+  key: MaybeRefOrGetter<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
@@ -464,7 +464,7 @@ export function useLazyAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
-  key: MaybeRef<string>,
+  key: MaybeRefOrGetter<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>

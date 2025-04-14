@@ -502,28 +502,39 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(3)
   })
 
-  it('should work with computed keys', async () => {
-    const key = ref('firstKey')
+  const key = ref()
+  const cases = [
+    { name: 'ref', getter: key },
+    { name: 'getter', getter: () => key.value },
+  ]
+
+  it.each(cases)('should work with keys computed from $name', async ({ name, getter }) => {
+    const firstKey = `${name}-firstKey`
+    const secondKey = `${name}-secondKey`
+    key.value = firstKey
+
     const promiseFn = vi.fn(() => Promise.resolve(key.value))
     const component = defineComponent({
       setup () {
-        const { data } = useAsyncData(key, promiseFn)
+        const { data } = useAsyncData(getter, promiseFn)
         return () => h('div', [data.value])
       },
     })
 
-    await mountSuspended(component)
+    const comp = await mountSuspended(component)
     expect(promiseFn).toHaveBeenCalledTimes(1)
 
-    key.value = 'secondKey'
+    key.value = secondKey
     await flushPromises()
     expect(promiseFn).toHaveBeenCalledTimes(2)
 
-    expect(useNuxtData('firstKey').data.value).toBeUndefined()
-    expect(useNuxtData('secondKey').data.value).toBe('secondKey')
+    expect(useNuxtData(firstKey).data.value).toBeUndefined()
+    expect(useNuxtData(secondKey).data.value).toBe(secondKey)
 
-    expect(useNuxtApp()._asyncData.firstKey!.data.value).toBeUndefined()
-    expect(useNuxtApp()._asyncData.secondKey!.data.value).toBe('secondKey')
+    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBeUndefined()
+    expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
+
+    comp.unmount()
   })
 
   it('should clear memory when last component using asyncData is unmounted', async () => {
