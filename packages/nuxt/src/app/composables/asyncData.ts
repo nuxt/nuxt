@@ -615,7 +615,7 @@ function createAsyncData<
       }
 
   const _ref = options.deep ? ref : shallowRef
-  const hasCachedData = typeof initialCachedData !== 'undefined'
+  const hasCachedData = initialCachedData != null
   const asyncData: CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> = {
     data: _ref(hasCachedData ? initialCachedData : options.default!()) as any,
     pending: shallowRef(!hasCachedData),
@@ -632,7 +632,7 @@ function createAsyncData<
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
-        if (typeof cachedData !== 'undefined') {
+        if (cachedData != null) {
           nuxtApp.payload.data[key] = asyncData.data.value = cachedData
           asyncData.error.value = asyncDataDefaults.errorValue
           asyncData.status.value = 'success'
