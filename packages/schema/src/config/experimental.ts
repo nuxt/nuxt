@@ -758,6 +758,15 @@ export default defineResolvers({
     },
 
     /**
+     * Whether to parse `error.data` when rendering a server error page.
+     */
+    parseErrorData: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion === 4
+      },
+    },
+
+    /**
      * Whether Nuxt should stop if a Nuxt module is incompatible.
      */
     enforceModuleCompatibility: false,
