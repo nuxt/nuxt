@@ -5,26 +5,26 @@ export default defineNuxtModule({
     name: 'lazy-import-components',
   },
   setup () {
-    const { resolve } = createResolver(import.meta.url)
+    const resolver = createResolver(import.meta.url)
 
     addComponent({
       name: 'NCompClient',
       export: 'NComp',
-      filePath: resolve('./runtime/components'),
+      filePath: resolver.resolve('./runtime/components'),
       mode: 'client',
     })
 
     addComponent({
       name: 'NCompServer',
       export: 'NComp',
-      filePath: resolve('./runtime/components'),
+      filePath: resolver.resolve('./runtime/components'),
       mode: 'server',
     })
 
     addComponent({
       name: 'NCompAll',
       export: 'NComp',
-      filePath: resolve('./runtime/components'),
+      filePath: resolver.resolve('./runtime/components'),
       mode: 'all',
     })
   },
