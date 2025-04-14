@@ -756,5 +756,10 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+
+    /**
+     * Whether Nuxt should stop if a Nuxt module is incompatible.
+     */
+    enforceModuleCompatibility: false,
   },
 })
