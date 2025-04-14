@@ -223,6 +223,7 @@ definePageMeta({ name: 'bar' })
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
             "middleware",
+            "meta",
           },
         },
         "name": "some-custom-name",
