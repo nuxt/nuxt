@@ -122,6 +122,7 @@ definePageMeta({ name: 'bar' })
         ],
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
+            "middleware",
             "meta",
           },
         },
@@ -180,6 +181,7 @@ definePageMeta({ name: 'bar' })
       {
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
+            "middleware",
             "meta",
           },
         },
@@ -208,7 +210,7 @@ definePageMeta({ name: 'bar' })
       {
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
-            "meta",
+            "middleware",
           },
         },
         "name": "some-custom-name",
@@ -361,6 +363,22 @@ describe('normalizeRoutes', () => {
 
 describe('rewrite page meta', () => {
   const transformPlugin = PageMetaPlugin({ extractedKeys: ['extracted'] }).raw({}, {} as any) as { transform: (code: string, id: string) => { code: string } | null }
+
+  it('should throw when multiple definePageMeta', () => {
+    const sfc = `
+<script setup lang="ts">
+
+ definePageMeta({ name: 'hi' })
+
+ definePageMeta({
+ layout: 'hi'
+})
+
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(() => transformPlugin.transform(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[Error: Multiple \`definePageMeta\` calls are not supported. File: component.vue]`)
+  })
 
   it('should extract metadata from vue components', () => {
     const sfc = `

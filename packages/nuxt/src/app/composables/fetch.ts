@@ -1,6 +1,6 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
-import type { MaybeRef, Ref } from 'vue'
+import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
 
@@ -35,7 +35,7 @@ export interface UseFetchOptions<
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
-  key?: string
+  key?: MaybeRefOrGetter<string>
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
 }
@@ -97,15 +97,15 @@ export function useFetch<
 
   const _request = computed(() => toValue(request))
 
-  const _key = opts.key || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])
-  if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
+  const _key = computed(() => toValue(opts.key) || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)]))
+  if (!_key.value || typeof _key.value !== 'string') {
+    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key.value)
   }
   if (!request) {
     throw new Error('[nuxt] [useFetch] request is missing.')
   }
 
-  const key = _key === autoKey ? '$f' + _key : _key
+  const key = computed(() => _key.value === autoKey ? '$f' + _key.value : _key.value)
 
   if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
@@ -266,6 +266,9 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       unwrapped[toValue(key)] = toValue(value)
     }
     segments.push(unwrapped)
+  }
+  if (opts.body) {
+    segments.push(hash(toValue(opts.body)))
   }
   return segments
 }

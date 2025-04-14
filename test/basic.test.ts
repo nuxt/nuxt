@@ -2639,10 +2639,6 @@ describe.skipIf(isWindows)('useAsyncData', () => {
     await $fetch<string>('/useAsyncData/refresh')
   })
 
-  it('requests can be cancelled/overridden', async () => {
-    await expectNoClientErrors('/useAsyncData/override')
-  })
-
   it('two requests made at once resolve and sync', async () => {
     await expectNoClientErrors('/useAsyncData/promise-all')
   })

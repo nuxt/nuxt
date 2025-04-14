@@ -51,13 +51,13 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.3.3",
+    "@rspack/core": "1.3.4",
     "@types/semver": "7.7.0",
-    "nitro": "npm:nitro-nightly@3.0.0-20250404-081807.9f0c8e3c",
+    "nitro": "npm:nitro-nightly@3.0.0-20250411-094421.5736f5be",
     "unbuild": "3.5.0",
-    "vite": "6.2.4",
+    "vite": "6.2.6",
     "vitest": "3.1.1",
-    "webpack": "5.99.3"
+    "webpack": "5.99.5"
   },
   "engines": {
     "node": ">=18.12.0"
