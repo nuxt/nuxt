@@ -446,7 +446,7 @@ export function useLazyAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (
-  key: string,
+  key: MaybeRef<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
@@ -464,7 +464,7 @@ export function useLazyAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
-  key: string,
+  key: MaybeRef<string>,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
