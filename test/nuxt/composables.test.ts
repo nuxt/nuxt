@@ -326,7 +326,7 @@ describe('useAsyncData', () => {
 
     await flushPromises()
 
-    expect(res.data.value).toBe(undefined)
+    expect(res.data.value).toBe(asyncDataDefaults.value)
     expect(res.status.value).toBe('idle')
     expect(res.pending.value).toBe(false)
 
@@ -337,7 +337,7 @@ describe('useAsyncData', () => {
       }, { lazy: true },
     )
 
-    expect(res2.data.value).toBe(undefined)
+    expect(res2.data.value).toBe(asyncDataDefaults.value)
     expect(res2.status.value).toBe('pending')
     expect(res2.pending.value).toBe(true)
 
@@ -543,7 +543,7 @@ describe('useAsyncData', () => {
     expect(useNuxtData(firstKey).data.value).toBeUndefined()
     expect(useNuxtData(secondKey).data.value).toBe(secondKey)
 
-    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBeUndefined()
+    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(asyncDataDefaults.value)
     expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
 
     comp.unmount()
