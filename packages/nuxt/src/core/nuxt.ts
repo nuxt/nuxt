@@ -6,15 +6,14 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 import consola from 'consola'
 import onChange from 'on-change'
-import { colorize } from 'consola/utils'
-import { updateConfig } from 'c12/update'
+import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
@@ -169,67 +168,12 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
 
   if (!nuxt.options.compatibilityDate.default) {
-    const todaysDate = formatDate(new Date())
     nuxt.options.compatibilityDate.default = fallbackCompatibilityDate
 
-    const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
-    if (!shouldShowPrompt) {
-      logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+    if (nuxt.options.dev && hasTTY && !isCI && !nuxt.options.test && !warnedAboutCompatDate) {
+      warnedAboutCompatDate = true
+      consola.warn(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback. More info at: ${colors.underline('https://nitro.build/deploy#compatibility-date')}`)
     }
-
-    async function promptAndUpdate () {
-      const result = await consola.prompt(`Do you want to update your ${colorize('cyan', 'nuxt.config')} to set ${colorize('cyan', `compatibilityDate: '${todaysDate}'`)}?`, {
-        type: 'confirm',
-        default: true,
-      })
-      if (result !== true) {
-        logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
-        return
-      }
-
-      try {
-        const res = await updateConfig({
-          configFile: 'nuxt.config',
-          cwd: nuxt.options.rootDir,
-          async onCreate ({ configFile }) {
-            const shallCreate = await consola.prompt(`Do you want to create ${colorize('cyan', relative(nuxt.options.rootDir, configFile))}?`, {
-              type: 'confirm',
-              default: true,
-            })
-            if (shallCreate !== true) {
-              return false
-            }
-            return _getDefaultNuxtConfig()
-          },
-          onUpdate (config) {
-            config.compatibilityDate = todaysDate
-          },
-        })
-
-        if (res?.configFile) {
-          nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(todaysDate)
-          consola.success(`Compatibility date set to \`${todaysDate}\` in \`${relative(nuxt.options.rootDir, res.configFile)}\``)
-          return
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : err
-
-        consola.error(`Failed to update config: ${message}`)
-      }
-
-      logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
-    }
-
-    nuxt.hooks.hookOnce('nitro:init', (nitro) => {
-      if (warnedAboutCompatDate) { return }
-
-      nitro.hooks.hookOnce('compiled', () => {
-        warnedAboutCompatDate = true
-        // Print warning
-        logger.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
-        if (shouldShowPrompt) { promptAndUpdate() }
-      })
-    })
   }
 
   // Restart Nuxt when layer directories are added or removed
@@ -625,6 +569,21 @@ async function initNuxt (nuxt: Nuxt) {
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
     })
 
+    // sync conditions with /packages/nuxt/src/core/templates.ts#L539
+    addServerTemplate({
+      filename: '#internal/nuxt/island-renderer.mjs',
+      getContents () {
+        if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
+          return `export { default } from '${resolve(distDir, 'core/runtime/nitro/handlers/island')}'`
+        }
+        return `import { defineEventHandler } from 'h3'; export default defineEventHandler(() => {});`
+      },
+    })
+    addServerHandler({
+      route: '/__nuxt_island/**',
+      handler: '#internal/nuxt/island-renderer.mjs',
+    })
+
     if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true
       nuxt.options.nitro.routeRules ||= {}
@@ -829,6 +788,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     options._modules.push('@nuxt/telemetry')
   }
 
+  // warn if user is using reserved namespaces
+  const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
+  for (const key in options.runtimeConfig.app) {
+    if (!allowedKeys.has(key)) {
+      logger.warn(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`)
+      delete options.runtimeConfig.app[key]
+    }
+  }
+
   // Ensure we share key config between Nuxt and Nitro
   createPortalProperties(options.nitro.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(options.nitro.routeRules, options, ['nitro.routeRules', 'routeRules'])
@@ -1025,10 +993,3 @@ async function resolveModules (nuxt: Nuxt) {
     modules,
   }
 }
-
-const _getDefaultNuxtConfig = () => /* js */
-  `// https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
-  devtools: { enabled: true }
-})
-`

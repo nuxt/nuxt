@@ -220,7 +220,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     replace: {
       'process.env.NUXT_NO_SSR': String(nuxt.options.ssr === false),
       'process.env.NUXT_EARLY_HINTS': String(nuxt.options.experimental.writeEarlyHints !== false),
-      'process.env.NUXT_NO_SCRIPTS': String(!!nuxt.options.features.noScripts && !nuxt.options.dev),
+      'process.env.NUXT_NO_SCRIPTS': String(nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)),
       'process.env.NUXT_INLINE_STYLES': String(!!nuxt.options.features.inlineStyles),
       'process.env.NUXT_JSON_PAYLOADS': String(!!nuxt.options.experimental.renderJsonPayloads),
       'process.env.NUXT_ASYNC_CONTEXT': String(!!nuxt.options.experimental.asyncContext),
@@ -432,7 +432,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Apply Nuxt's ignore configuration to the root and src unstorage mounts
   // created by Nitro. This ensures that the unstorage watcher will use the
-  // same ignore list as Nuxt's watcher and can reduce unneccesary file handles.
+  // same ignore list as Nuxt's watcher and can reduce unnecessary file handles.
   const isIgnored = createIsIgnored(nuxt)
   nitroConfig.devStorage ??= {}
   nitroConfig.devStorage.root ??= {
@@ -483,6 +483,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
+    // @ts-expect-error this will be present in next nitro release
+    dotenv: nuxt.options._loadOptions?.dotenv,
   })
 
   // Trigger Nitro reload when SPA loading template changes
