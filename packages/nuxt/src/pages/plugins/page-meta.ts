@@ -220,12 +220,15 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
       scopeTracker.freeze()
 
+      let instances = 0
+
       walk(ast, {
         scopeTracker,
         enter: (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
           if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
 
+          instances++
           const meta = withLocations(node.arguments[0])
 
           if (!meta) { return }
@@ -300,6 +303,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           s.overwrite(0, code.length, extracted.trim())
         },
       })
+
+      if (instances > 1) {
+        throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id.replace(/\?.+$/, ''))
+      }
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
         s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
