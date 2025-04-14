@@ -69,7 +69,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   }
 
   const augmentCtx = {
-    extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys,
+    extraExtractionKeys: ['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys],
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
   }
   if (shouldAugment === 'after-resolve') {
@@ -258,10 +258,6 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         if (!property) { continue }
 
         const propertyValue = withLocations(property.value)
-
-        if (key === 'middleware') {
-          dynamicProperties.add('meta')
-        }
 
         const { value, serializable } = isSerializable(script.code, propertyValue)
         if (!serializable) {

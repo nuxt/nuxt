@@ -122,8 +122,8 @@ definePageMeta({ name: 'bar' })
         ],
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
-            "meta",
             "middleware",
+            "meta",
           },
         },
         "name": "some-custom-name",
@@ -181,8 +181,8 @@ definePageMeta({ name: 'bar' })
       {
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
-            "meta",
             "middleware",
+            "meta",
           },
         },
         "name": "some-custom-name",
@@ -210,7 +210,6 @@ definePageMeta({ name: 'bar' })
       {
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
-            "meta",
             "middleware",
           },
         },
