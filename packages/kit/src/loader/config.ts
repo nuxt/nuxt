@@ -5,8 +5,8 @@ import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
-import { globby } from 'globby'
-import defu from 'defu'
+import { glob } from 'tinyglobby'
+import defu, { createDefu } from 'defu'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
@@ -17,27 +17,38 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
   overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
 }
 
+const merger = createDefu((obj, key, value) => {
+  if (Array.isArray(obj[key]) && Array.isArray(value)) {
+    obj[key] = obj[key].concat(value)
+    return true
+  }
+})
+
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  const localLayers = await globby('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() })
-  opts.overrides = defu(opts.overrides, { _extends: localLayers });
+  const localLayers = (await glob('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() }))
+    .map((d: string) => d.endsWith('/') ? d.substring(0, d.length - 1) : d)
+  opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
-  (globalThis as any).defineNuxtConfig = (c: any) => c
+  const globalSelf = globalThis as any
+  globalSelf.defineNuxtConfig = (c: any) => c
   const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await loadConfig<NuxtConfig>({
     name: 'nuxt',
     configFile: 'nuxt.config',
     rcFile: '.nuxtrc',
-    extend: { extendKey: ['theme', 'extends', '_extends'] },
+    extend: { extendKey: ['theme', '_extends', 'extends'] },
     dotenv: true,
     globalRc: true,
+    merger: merger as any, // TODO: fix type in c12, it should accept createDefu directly
     ...opts,
   })
-  delete (globalThis as any).defineNuxtConfig
+  delete globalSelf.defineNuxtConfig
 
   // Fill config
   nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
+  nuxtConfig._loadOptions = opts
   nuxtConfig.alias ||= {}
 
   if (meta?.name) {

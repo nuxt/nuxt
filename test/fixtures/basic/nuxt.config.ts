@@ -174,7 +174,7 @@ export default defineNuxtConfig({
     headNext: true,
     inlineRouteRules: true,
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
   nitro: {
     publicAssets: [
       {

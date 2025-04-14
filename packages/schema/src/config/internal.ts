@@ -17,6 +17,11 @@ export default defineResolvers({
   _cli: false,
   /** @private */
   _requiredModules: {},
+  /**
+   * @private
+   * @type {{ dotenv?: boolean | import('c12').DotenvOptions }}
+   */
+  _loadOptions: undefined,
   /** @private */
   _nuxtConfigFile: undefined,
   /** @private */
