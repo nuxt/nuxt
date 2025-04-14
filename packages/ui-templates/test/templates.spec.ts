@@ -5,7 +5,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { format } from 'prettier'
 import { createJiti } from 'jiti'
-// @ts-expect-error types not valid for bundler resolution
 import { HtmlValidate } from 'html-validate'
 
 const distDir = fileURLToPath(new URL('../node_modules/.temp/dist/templates', import.meta.url))
@@ -57,7 +56,7 @@ describe('template', () => {
     const contents = readFileSync(`${distDir}/${file}.vue`, 'utf-8')
 
     const scopedStyle = contents.match(/<style scoped>([\s\S]*)<\/style>/)
-    const globalStyle = contents.match(/style: \[[\s\S]*children: `([\s\S]*)`/)
+    const globalStyle = contents.match(/style: \[[\s\S]*innerHTML: `([\s\S]*)`/)
 
     expect(await formatCss(scopedStyle?.[1] || '')).toMatchSnapshot()
     expect(await formatCss(globalStyle?.[1] || '')).toMatchSnapshot()

@@ -8,8 +8,8 @@ import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import type { Schema, SchemaDefinition } from 'untyped'
-import type { RouteLocationRaw } from 'vue-router'
-import type { VueCompilerOptions } from '@vue/language-core'
+import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
+import type { RawVueCompilerOptions } from '@vue/language-core'
 import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Component, ComponentsOptions } from './components'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
@@ -21,13 +21,14 @@ export type TSReference = { types: string } | { path: string }
 
 export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 
-// If the user does not have `@vue/language-core` installed, VueCompilerOptions will be typed as `any`,
-// thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if VueCompilerOptions is available.
-export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: VueCompilerOptions }
+// If the user does not have `@vue/language-core` installed, RawVueCompilerOptions will be typed as `any`,
+// thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if RawVueCompilerOptions is available.
+export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
 export type NuxtPage = {
   name?: string
   path: string
+  props?: RouteRecordRaw['props']
   file?: string
   meta?: Record<string, any>
   alias?: string[] | string
@@ -183,11 +184,18 @@ export interface NuxtHooks {
   'builder:watch': (event: WatchEvent, path: string) => HookResult
 
   /**
-   * Called after pages routes are resolved.
-   * @param pages Array containing resolved pages
+   * Called after page routes are scanned from the file system.
+   * @param pages Array containing scanned pages
    * @returns Promise
    */
   'pages:extend': (pages: NuxtPage[]) => HookResult
+
+  /**
+   * Called after page routes have been augmented with scanned metadata.
+   * @param pages Array containing resolved pages
+   * @returns Promise
+   */
+  'pages:resolved': (pages: NuxtPage[]) => HookResult
 
   /**
    * Called when resolving `app/router.options` files. It allows modifying the detected router options files
@@ -249,6 +257,12 @@ export interface NuxtHooks {
   'components:extend': (components: Component[]) => HookResult
 
   // Nitropack
+  /**
+   * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
+   * @param options Objects containing `references`, `declarations`
+   * @returns Promise
+   */
+  'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
   /**
    * Called before initializing Nitro, allowing customization of Nitro's configuration.
    * @param nitroConfig The nitro config to be extended
@@ -408,6 +422,55 @@ export interface NuxtHooks {
    * @returns void
    */
   'webpack:progress': (statesArray: any[]) => void
+
+  // rspack
+  /**
+   * Called before configuring the webpack compiler.
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
+  'rspack:config': (webpackConfigs: Configuration[]) => HookResult
+  /**
+   * Allows to read the resolved webpack config
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
+  'rspack:configResolved': (webpackConfigs: Readonly<Configuration>[]) => HookResult
+  /**
+   * Called right before compilation.
+   * @param options The options to be added
+   * @returns Promise
+   */
+  'rspack:compile': (options: { name: string, compiler: Compiler }) => HookResult
+  /**
+   * Called after resources are loaded.
+   * @param options The compiler options
+   * @returns Promise
+   */
+  'rspack:compiled': (options: { name: string, compiler: Compiler, stats: Stats }) => HookResult
+
+  /**
+   * Called on `change` on WebpackBar.
+   * @param shortPath the short path
+   * @returns void
+   */
+  'rspack:change': (shortPath: string) => void
+  /**
+   * Called on `done` if has errors on WebpackBar.
+   * @returns void
+   */
+  'rspack:error': () => void
+  /**
+   * Called on `allDone` on WebpackBar.
+   * @returns void
+   */
+  'rspack:done': () => void
+  /**
+   * Called on `progress` on WebpackBar.
+   * @param statesArray The array containing the states on progress
+   * @returns void
+   */
+  'rspack:progress': (statesArray: any[]) => void
 }
 
 export type NuxtHookName = keyof NuxtHooks

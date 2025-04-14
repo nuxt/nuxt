@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
@@ -12,7 +12,7 @@ import * as composables from '#app/composables'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
-import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
+import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
@@ -20,6 +20,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
+import { useRuntimeHook } from '#app/composables/runtime-hook'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -75,6 +76,7 @@ describe('composables', () => {
       'getAppManifest',
       'useHydration',
       'getRouteRules',
+      'injectHead',
       'onNuxtReady',
       'callOnce',
       'setResponseStatus',
@@ -83,6 +85,7 @@ describe('composables', () => {
       'useRequestFetch',
       'isPrerendered',
       'useRequestHeaders',
+      'useResponseHeader',
       'useCookie',
       'clearNuxtState',
       'useState',
@@ -92,6 +95,7 @@ describe('composables', () => {
       'abortNavigation',
       'setPageLayout',
       'defineNuxtComponent',
+      'useRuntimeHook',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -111,10 +115,13 @@ describe('composables', () => {
       'useId',
       'useFetch',
       'useHead',
+      'useHeadSafe',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
+      'useServerHead',
+      'useServerHeadSafe',
       'useServerSeoMeta',
       'usePreviewMode',
     ]
@@ -341,7 +348,7 @@ describe('useFetch', () => {
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
+    expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 })
 
@@ -394,6 +401,7 @@ describe('ssr composables', () => {
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
+    expect(useResponseHeader('x-test').value).toBeUndefined()
   })
 })
 
@@ -523,6 +531,23 @@ describe('loading state', () => {
   })
 })
 
+describe('loading state', () => {
+  it('expect state from set opts: { force: true }', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading, start, finish, set } = useLoadingIndicator()
+    await nuxtApp.callHook('page:loading:start')
+    start({ force: true })
+    expect(isLoading.value).toBeTruthy()
+    finish()
+    expect(isLoading.value).toBeFalsy()
+    set(0, { force: true })
+    expect(isLoading.value).toBeTruthy()
+    set(100, { force: true })
+    expect(isLoading.value).toBeFalsy()
+  })
+})
+
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
@@ -530,14 +555,15 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "id": "override",
+        "id": "test",
         "matcher": {
           "dynamic": {},
           "static": {
-            "/": null,
-            "/pre": null,
             "/pre/test": {
-              "redirect": true,
+              "redirect": "/",
+            },
+            "/specific-prerendered": {
+              "prerender": true,
             },
           },
           "wildcard": {
@@ -546,23 +572,21 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
             },
           },
         },
-        "prerendered": [
-          "/specific-prerendered",
-        ],
+        "prerendered": [],
       }
     `)
   })
   it('getRouteRules', async () => {
-    expect(await getRouteRules('/')).toMatchInlineSnapshot('{}')
-    expect(await getRouteRules('/pre')).toMatchInlineSnapshot(`
+    expect(await getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(await getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
       }
     `)
-    expect(await getRouteRules('/pre/test')).toMatchInlineSnapshot(`
+    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
-        "redirect": true,
+        "redirect": "/",
       }
     `)
   })
@@ -572,6 +596,36 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+  })
+})
+
+describe('useRuntimeHook', () => {
+  it('types work', () => {
+    // @ts-expect-error should not allow unknown hooks
+    useRuntimeHook('test', () => {})
+    useRuntimeHook('app:beforeMount', (_app) => {
+      // @ts-expect-error argument should be typed
+      _app = 'test'
+    })
+  })
+
+  it('should call hooks', async () => {
+    const nuxtApp = useNuxtApp()
+    let called = 1
+    const wrapper = await mountSuspended(defineNuxtComponent({
+      setup () {
+        useRuntimeHook('test-hook' as any, () => {
+          called++
+        })
+      },
+      render: () => h('div', 'hi there'),
+    }))
+    expect(called).toBe(1)
+    await nuxtApp.callHook('test-hook' as any)
+    expect(called).toBe(2)
+    wrapper.unmount()
+    await nuxtApp.callHook('test-hook' as any)
+    expect(called).toBe(2)
   })
 })
 
@@ -588,6 +642,18 @@ describe('routing utilities: `navigateTo`', () => {
     for (const [url, protocol] of urls) {
       expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
+  })
+  it('navigateTo should replace current navigation state if called within middleware', () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    expect(navigateTo('/')).toMatchInlineSnapshot(`"/"`)
+    expect(navigateTo('/', { replace: true })).toMatchInlineSnapshot(`
+      {
+        "path": "/",
+        "replace": true,
+      }
+    `)
+    nuxtApp._processingMiddleware = false
   })
 })
 
@@ -615,14 +681,13 @@ describe('routing utilities: `encodeURL`', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
-  it('should show provide a mock route', () => {
+  it('should provide a route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
-      href: '/',
-      matched: [],
+      matched: expect.arrayContaining([]),
       meta: {},
-      name: undefined,
+      name: 'catchall',
       params: {},
       path: '/',
       query: {},
@@ -729,36 +794,69 @@ describe('useCookie', () => {
       expect(computedVal.value).toBe(-1)
     }
   })
+
+  it('should set cookie value when called on client', () => {
+    useCookie('cookie-watch-false', { default: () => 'foo', watch: false })
+    expect(document.cookie).toContain('cookie-watch-false=foo')
+
+    useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
+    expect(document.cookie).toContain('cookie-watch-true=foo')
+
+    useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
+    expect(document.cookie).toContain('cookie-readonly=foo')
+  })
 })
 
 describe('callOnce', () => {
-  it('should only call composable once', async () => {
-    const fn = vi.fn()
-    const execute = () => callOnce(fn)
-    await execute()
-    await execute()
-    expect(fn).toHaveBeenCalledTimes(1)
-  })
+  describe.each([
+    ['without options', undefined],
+    ['with "render" option', { mode: 'render' as const }],
+    ['with "navigation" option', { mode: 'navigation' as const }],
+  ])('%s', (_name, options) => {
+    const nuxtApp = useNuxtApp()
+    afterEach(() => {
+      nuxtApp.payload.once.clear()
+    })
+    it('should only call composable once', async () => {
+      const fn = vi.fn()
+      const execute = () => options ? callOnce(fn, options) : callOnce(fn)
+      await execute()
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(1)
+    })
 
-  it('should only call composable once when called in parallel', async () => {
-    const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
-    const execute = () => callOnce(fn)
-    await Promise.all([execute(), execute(), execute()])
-    expect(fn).toHaveBeenCalledTimes(1)
+    it('should only call composable once when called in parallel', async () => {
+      const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
+      const execute = () => options ? callOnce(fn, options) : callOnce(fn)
+      await Promise.all([execute(), execute(), execute()])
+      expect(fn).toHaveBeenCalledTimes(1)
 
-    const fnSync = vi.fn().mockImplementation(() => {})
-    const executeSync = () => callOnce(fnSync)
-    await Promise.all([executeSync(), executeSync(), executeSync()])
-    expect(fnSync).toHaveBeenCalledTimes(1)
-  })
+      const fnSync = vi.fn().mockImplementation(() => {})
+      const executeSync = () => options ? callOnce(fnSync, options) : callOnce(fnSync)
+      await Promise.all([executeSync(), executeSync(), executeSync()])
+      expect(fnSync).toHaveBeenCalledTimes(1)
+    })
 
-  it('should use key to dedupe', async () => {
-    const fn = vi.fn()
-    const execute = (key?: string) => callOnce(key, fn)
-    await execute('first')
-    await execute('first')
-    await execute('second')
-    expect(fn).toHaveBeenCalledTimes(2)
+    it('should use key to dedupe', async () => {
+      const fn = vi.fn()
+      const execute = (key?: string) => options ? callOnce(key, fn, options) : callOnce(key, fn)
+      await execute('first')
+      await execute('first')
+      await execute('second')
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation')('should rerun on navigation', async () => {
+      const fn = vi.fn()
+      const execute = () => options ? callOnce(fn, options) : callOnce(fn)
+      await execute()
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      await nuxtApp.callHook('page:start')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
   })
 })
 

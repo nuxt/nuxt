@@ -2,11 +2,12 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
+import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
 import type { Nitro } from 'nitro/types'
+import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
@@ -58,10 +59,6 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     resolve: {
       conditions: ((ctx.nuxt as any)._nitro as Nitro)?.options.exportConditions,
-      alias: {
-        '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
-        '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server'),
-      },
     },
     ssr: {
       external: [
@@ -84,8 +81,16 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['nitro/runtime', '#internal/nuxt/paths', '#internal/nuxt/app-config'],
+        external: [
+          'nitro/runtime',
+          '#internal/nuxt/paths',
+          '#internal/nuxt/app-config',
+          '#app-manifest',
+          '#shared',
+          new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
+        ],
         output: {
+          preserveModules: true,
           entryFileNames: '[name].mjs',
           format: 'module',
           generatedCode: {
@@ -111,20 +116,8 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
-  if (!ctx.nuxt.options.dev) {
-    const { runtimeDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
-      paths: ctx.nuxt.options.modulesDir,
-    }) || {}
-    if (Array.isArray(serverConfig.ssr!.external)) {
-      serverConfig.ssr!.external.push(
-        // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'rou3', 'unstorage', 'hookable',
-        // ensure we only have one version of vue if nitro is going to inline anyway
-        ...((ctx.nuxt as any)._nitro as Nitro).options.inlineDynamicImports ? ['vue', '@vue/server-renderer', '@unhead/vue'] : [],
-        // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...runtimeDependencies,
-      )
-    }
+  if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
+    delete serverConfig.build.rollupOptions.output.manualChunks
   }
 
   // tell rollup's nitro build about the original sources of the generated vite server build
@@ -138,7 +131,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     })
   }
 
-  serverConfig.customLogger = createViteLogger(serverConfig)
+  serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !ctx.nuxt.options.dev })
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 

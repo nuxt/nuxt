@@ -1,5 +1,5 @@
 import type { FetchError, FetchOptions } from 'ofetch'
-import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
@@ -144,7 +144,7 @@ export function useFetch<
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
   }
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev && import.meta.server) {
     // @ts-expect-error private property
     _asyncDataOptions._functionName = opts._functionName || 'useFetch'
   }
@@ -168,7 +168,7 @@ export function useFetch<
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
-    let _$fetch = opts.$fetch || globalThis.$fetch
+    let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
     if (import.meta.server && !opts.$fetch) {
@@ -184,7 +184,13 @@ export function useFetch<
   return asyncData
 }
 
-/** @since 3.0.0 */
+/**
+ * Fetch data from an API endpoint with an SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
+ * @since 3.0.0
+ * @param request The URL to fetch
+ * @param opts extends $fetch options and useAsyncData options
+ */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -198,6 +204,12 @@ export function useLazyFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+/**
+ * Fetch data from an API endpoint with an SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
+ * @param request The URL to fetch
+ * @param opts extends $fetch options and useAsyncData options
+ */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -227,7 +239,7 @@ export function useLazyFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev && import.meta.server) {
     // @ts-expect-error private property
     opts._functionName ||= 'useLazyFetch'
   }

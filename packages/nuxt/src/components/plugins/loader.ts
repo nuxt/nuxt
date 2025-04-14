@@ -2,25 +2,29 @@ import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
-import { relative, resolve } from 'pathe'
+import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
-import { logger, tryUseNuxt } from '@nuxt/kit'
-import { distDir } from '../../dirs'
-import { isVue } from '../../core/utils'
+import { tryUseNuxt } from '@nuxt/kit'
+import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
+import { installNuxtModule } from '../../core/features'
+import { logger } from '../../utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
   mode: 'server' | 'client'
+  srcDir: string
+  serverComponentRuntime: string
+  clientDelayedComponentRuntime: string
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
 }
 
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)/g
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
-  const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
   const nuxt = tryUseNuxt()
 
   return {
@@ -33,7 +37,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] }) || !!id.match(/\.[tj]sx$/)
+      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
     },
     transform (code, id) {
       const components = options.getComponents()
@@ -42,10 +46,13 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const imports = new Set<string>()
       const map = new Map<Component, string>()
       const s = new MagicString(code)
-
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
-        const component = findComponent(components, name, options.mode)
+      s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
+        const { lazy, modifier, name } = args.pop()
+        const normalComponent = findComponent(components, name, options.mode)
+        const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
+        const component = normalComponent || modifierComponent
+
         if (component) {
           // TODO: refactor to nuxi
           const internalInstall = ((component as any)._internal_install) as string
@@ -54,7 +61,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
               const relativePath = relative(nuxt.options.rootDir, id)
               throw new Error(`[nuxt] \`~/${relativePath}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
             }
-            import('../../core/features').then(({ installNuxtModule }) => installNuxtModule(internalInstall))
+            installNuxtModule(internalInstall)
           }
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
@@ -62,7 +69,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const isServerOnly = !component._raw && component.mode === 'server' &&
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
-            imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
+            imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
@@ -77,9 +84,58 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           }
 
           if (lazy) {
-            imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
-            identifier += '_lazy'
-            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
+            if (modifier && normalComponent) {
+              const relativePath = relative(options.srcDir, component.filePath)
+              switch (modifier) {
+                case 'Visible':
+                case 'visible-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
+                  identifier += '_lazy_visible'
+                  imports.add(`const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
+                case 'Interaction':
+                case 'interaction-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
+                  identifier += '_lazy_event'
+                  imports.add(`const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
+                case 'Idle':
+                case 'idle-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
+                  identifier += '_lazy_idle'
+                  imports.add(`const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
+                case 'MediaQuery':
+                case 'media-query-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
+                  identifier += '_lazy_media'
+                  imports.add(`const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
+                case 'If':
+                case 'if-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
+                  identifier += '_lazy_if'
+                  imports.add(`const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
+                case 'Never':
+                case 'never-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
+                  identifier += '_lazy_never'
+                  imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
+                case 'Time':
+                case 'time-':
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
+                  identifier += '_lazy_time'
+                  imports.add(`const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  break
+              }
+            } else {
+              imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
+              identifier += '_lazy'
+              imports.add(`const ${identifier} = __defineAsyncComponent(${dynamicImport}${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            }
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
 
@@ -112,7 +168,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 })
 
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
-  const id = pascalCase(name).replace(/["']/g, '')
+  const id = pascalCase(name).replace(QUOTE_RE, '')
   // Prefer exact match
   const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
   if (component) { return component }

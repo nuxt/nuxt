@@ -1,13 +1,18 @@
 import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
-import { isIgnored, logger, useNuxt } from '@nuxt/kit'
+import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
-import { resolveComponentNameSegments } from '../core/utils'
+import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
+import { logger } from '../utils'
 
+const ISLAND_RE = /\.island(?:\.global)?$/
+const GLOBAL_RE = /\.global(?:\.island)?$/
+const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
+const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
@@ -32,7 +37,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
-    const files = (await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
+    const files = (await glob(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
 
     // Check if the directory exists (globby will otherwise read it case insensitively on MacOS)
     if (files.length) {
@@ -83,17 +88,17 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       let fileName = basename(filePath, extname(filePath))
 
-      const island = /\.island(?:\.global)?$/.test(fileName) || dir.island
-      const global = /\.global(?:\.island)?$/.test(fileName) || dir.global
-      const mode = island ? 'server' : (fileName.match(/(?<=\.)(client|server)(\.global|\.island)*$/)?.[1] || 'all') as 'client' | 'server' | 'all'
-      fileName = fileName.replace(/(\.(client|server))?(\.global|\.island)*$/, '')
+      const island = ISLAND_RE.test(fileName) || dir.island
+      const global = GLOBAL_RE.test(fileName) || dir.global
+      const mode = island ? 'server' : (fileName.match(COMPONENT_MODE_RE)?.[1] || 'all') as 'client' | 'server' | 'all'
+      fileName = fileName.replace(MODE_REPLACEMENT_RE, '')
 
       if (fileName.toLowerCase() === 'index') {
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
       }
 
       const suffix = (mode !== 'all' ? `-${mode}` : '')
-      const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
+      const componentNameSegments = resolveComponentNameSegments(fileName.replace(QUOTE_RE, ''), prefixParts)
       const pascalName = pascalCase(componentNameSegments)
 
       if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {

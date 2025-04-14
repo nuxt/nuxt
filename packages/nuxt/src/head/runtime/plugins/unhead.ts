@@ -1,9 +1,8 @@
-import { createHead as createClientHead, setHeadInjectionHandler } from '@unhead/vue'
-import { renderDOMHead } from '@unhead/dom'
-import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
+import { createHead as createClientHead, renderDOMHead } from '@unhead/vue/client'
+import { defineNuxtPlugin } from '#app/nuxt'
 
 // @ts-expect-error virtual file
-import unheadPlugins from '#build/unhead-plugins.mjs'
+import unheadOptions from '#build/unhead-options.mjs'
 
 export default defineNuxtPlugin({
   name: 'nuxt:head',
@@ -11,14 +10,7 @@ export default defineNuxtPlugin({
   setup (nuxtApp) {
     const head = import.meta.server
       ? nuxtApp.ssrContext!.head
-      : createClientHead({
-        plugins: unheadPlugins,
-      })
-    // allow useHead to be used outside a Vue context but within a Nuxt context
-    setHeadInjectionHandler(
-      // need a fresh instance of the nuxt app to avoid parallel requests interfering with each other
-      () => useNuxtApp().vueApp._context.provides.usehead,
-    )
+      : createClientHead(unheadOptions)
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
 

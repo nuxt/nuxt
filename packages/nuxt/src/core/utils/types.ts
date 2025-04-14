@@ -1,11 +1,15 @@
 import { resolvePackageJSON } from 'pkg-types'
-import { resolvePath as _resolvePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 import { dirname } from 'pathe'
-import { tryUseNuxt } from '@nuxt/kit'
+import { directoryToURL, tryUseNuxt } from '@nuxt/kit'
 
 export async function resolveTypePath (path: string, subpath: string, searchPaths = tryUseNuxt()?.options.modulesDir) {
   try {
-    const r = await _resolvePath(path, { url: searchPaths, conditions: ['types', 'import', 'require'] })
+    const r = resolveModulePath(path, {
+      from: searchPaths?.map(d => directoryToURL(d)),
+      conditions: ['types', 'import', 'require'],
+      extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    })
     if (subpath) {
       return r.replace(/(?:\.d)?\.[mc]?[jt]s$/, '')
     }

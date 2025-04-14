@@ -1,11 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { readPackageJSON } from 'pkg-types'
-import { inc } from 'semver'
+import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src'
-import { version } from '../package.json'
+import type { NuxtConfig } from '../schema'
 
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
@@ -15,6 +14,7 @@ vi.stubGlobal('console', {
   warn: vi.fn(console.warn),
 })
 
+const loggerWarn = vi.spyOn(logger, 'warn')
 vi.mock('pkg-types', async (og) => {
   const originalPkgTypes = (await og<typeof import('pkg-types')>())
   return {
@@ -23,6 +23,9 @@ vi.mock('pkg-types', async (og) => {
   }
 })
 
+beforeEach(() => {
+  loggerWarn.mockClear()
+})
 afterEach(() => {
   vi.clearAllMocks()
 })
@@ -44,46 +47,112 @@ describe('loadNuxt', () => {
     await nuxt.close()
     expect(hookRan).toBe(true)
   })
+
+  it('ensures layer CSS remains in order', async () => {
+    const layerFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))))
+    const nuxt = await loadNuxt({
+      cwd: layerFixtureDir,
+      overrides: {
+        css: ['override.css'],
+      },
+    })
+    await nuxt.close()
+
+    expect(nuxt.options.css).toMatchInlineSnapshot(`
+      [
+        "custom.css",
+        "auto.css",
+        "final-project.css",
+        "duplicate.css",
+        "override.css",
+        "new-css-added-by-module.css",
+      ]
+    `)
+  })
+
+  it('load multiple nuxt', async () => {
+    await Promise.all([
+      loadNuxt({
+        cwd: repoRoot,
+      }),
+      loadNuxt({
+        cwd: repoRoot,
+      }),
+    ])
+    expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('expect hooks to get the correct context outside of initNuxt', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+    })
+
+    // @ts-expect-error - random hook
+    nuxt.hook('test', () => {
+      expect(useNuxt().__name).toBe(nuxt.__name)
+    })
+
+    expect(tryUseNuxt()?.__name).not.toBe(nuxt.__name)
+
+    // second nuxt context
+    const second = await loadNuxt({
+      cwd: repoRoot,
+    })
+
+    expect(second.__name).not.toBe(nuxt.__name)
+    expect(tryUseNuxt()?.__name).not.toBe(nuxt.__name)
+
+    // @ts-expect-error - random hook
+    await nuxt.callHook('test')
+
+    expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('ensures layer modules remain in order', async () => {
+    const layerFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))))
+    const nuxt = await loadNuxt({ cwd: layerFixtureDir })
+    await nuxt.close()
+
+    const modules = nuxt.options._installedModules.map(item => item.meta.name ?? item.module.name)
+
+    expect(modules).toMatchInlineSnapshot(`
+      [
+        "customLayerInlineModule",
+        "customLayerModule",
+        "customLayerAutoModule",
+        "autoLayerInlineModule",
+        "autoLayerModule",
+        "autoLayerAutoModule",
+        "projectModule",
+        "projectInlineModule",
+        "css",
+        "projectAutoModule",
+        "@nuxt/devtools",
+        "nuxt:pages",
+        "nuxt:meta",
+        "nuxt:components",
+        "nuxt:imports",
+        "nuxt:nuxt-config-schema",
+        "@nuxt/telemetry",
+      ]
+    `)
+  })
 })
 
-describe('dependency mismatch', () => {
-  it('expect mismatched dependency to log a warning', async () => {
-    vi.mocked(readPackageJSON).mockReturnValue(Promise.resolve({
-      version: '3.0.0',
-    }))
+const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
+  ['pages dir', {}, { enabled: true }],
+  ['pages dir empty', { dir: { pages: 'empty-dir' } }, { enabled: false }],
+  ['user config', { pages: false }, { enabled: false }],
+  ['user config', { pages: { enabled: false } }, { enabled: false }],
+  ['user config', { pages: { enabled: true, pattern: '**/*{.vue}' } }, { enabled: true, pattern: '**/*{.vue}' }],
+]
 
-    const nuxt = await loadNuxt({
-      cwd: repoRoot,
-    })
-
-    // @nuxt/kit is explicitly installed in repo root but @nuxt/schema isn't, so we only
-    // get warnings about @nuxt/schema
-    expect(console.warn).toHaveBeenCalledWith(`[nuxt] Expected \`@nuxt/kit\` to be at least \`${version}\` but got \`3.0.0\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
-
-    vi.mocked(readPackageJSON).mockRestore()
+const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
+describe('pages detection', () => {
+  it.each(pagesDetectionTests)('%s `%s`', async (_, overrides, result) => {
+    const nuxt = await loadNuxt({ cwd: pagesFixtureDir, overrides, ready: true })
+    // @ts-expect-error should resolve to object?
+    expect(nuxt.options.pages).toMatchObject(result)
     await nuxt.close()
-  })
-  it.each([
-    {
-      name: 'nuxt version is lower',
-      depVersion: inc(version, 'minor'),
-    },
-    {
-      name: 'version matches',
-      depVersion: version,
-    },
-  ])('expect no warning when $name.', async ({ depVersion }) => {
-    vi.mocked(readPackageJSON).mockReturnValue(Promise.resolve({
-      depVersion,
-    }))
-
-    const nuxt = await loadNuxt({
-      cwd: repoRoot,
-    })
-
-    expect(console.warn).not.toHaveBeenCalled()
-
-    await nuxt.close()
-    vi.mocked(readPackageJSON).mockRestore()
   })
 })

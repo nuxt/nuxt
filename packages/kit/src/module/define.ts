@@ -65,7 +65,7 @@ function _defineNuxtModule<
 
     const optionsDefaults: TOptionsDefaults =
       module.defaults instanceof Function
-        ? module.defaults(nuxt)
+        ? await module.defaults(nuxt)
         : module.defaults ?? <TOptionsDefaults> {}
 
     let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
@@ -87,7 +87,7 @@ function _defineNuxtModule<
     // Avoid duplicate installs
     const uniqueKey = module.meta.name || module.meta.configKey
     if (uniqueKey) {
-      nuxt.options._requiredModules = nuxt.options._requiredModules || {}
+      nuxt.options._requiredModules ||= {}
       if (nuxt.options._requiredModules[uniqueKey]) {
         return false
       }
@@ -98,7 +98,13 @@ function _defineNuxtModule<
     if (module.meta.compatibility) {
       const issues = await checkNuxtCompatibility(module.meta.compatibility, nuxt)
       if (issues.length) {
-        logger.warn(`Module \`${module.meta.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`)
+        const errorMessage = `Module \`${module.meta.name}\` is disabled due to incompatibility issues:\n${issues.toString()}`
+        if (nuxt.options.experimental.enforceModuleCompatibility) {
+          const error = new Error(errorMessage)
+          error.name = 'ModuleCompatibilityError'
+          throw error
+        }
+        logger.warn(errorMessage)
         return
       }
     }
@@ -120,7 +126,7 @@ function _defineNuxtModule<
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
       logger.warn(`Slow module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
-    } else if (nuxt.options.debug) {
+    } else if (nuxt.options.debug && nuxt.options.debug.modules) {
       logger.info(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
     }
 
