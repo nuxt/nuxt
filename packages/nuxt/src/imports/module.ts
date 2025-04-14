@@ -147,9 +147,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         for (const i of imports) {
           if (!defaultImportSources.has(i.from)) {
             const value = i.as || i.name
-            if (defaultImports.has(value)) {
-              const relativePath = relative(nuxt.options.srcDir, i.from)
-              logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` at \`~/${relativePath}\`.`)
+            if (defaultImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
+              const relativePath = isAbsolute(i.from) ? `~/${relative(nuxt.options.srcDir, i.from)}` : i.from
+              logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
             }
           }
         }
