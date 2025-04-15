@@ -31,12 +31,110 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   // All scanned paths
   const scannedPaths: string[] = []
 
+  // A map from resolved path to component name (used for making duplicate warning message)
+  const resolvedNames = new Map<string, string>()
+
+  async function getComponents (dir: ComponentsDir, filePath: string, exportName: string): Promise<Component | null> {
+    /**
+     * Create an array of prefixes base on the prefix config
+     * Empty prefix will be an empty array
+     * @example prefix: 'nuxt' -> ['nuxt']
+     * @example prefix: 'nuxt-test' -> ['nuxt', 'test']
+     */
+    const prefixParts = ([] as string[]).concat(
+      dir.prefix ? splitByCase(dir.prefix) : [],
+      (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : [],
+    )
+
+    /**
+     * In case we have index as filename the component become the parent path
+     * @example third-components/index.vue -> third-component
+     * if not take the filename
+     * @example third-components/Awesome.vue -> Awesome
+     */
+
+    let fileName = basename(filePath, extname(filePath))
+
+    const island = ISLAND_RE.test(fileName) || dir.island
+    const global = GLOBAL_RE.test(fileName) || dir.global
+    const mode = island ? 'server' : (fileName.match(COMPONENT_MODE_RE)?.[1] || 'all') as 'client' | 'server' | 'all'
+    fileName = fileName.replace(MODE_REPLACEMENT_RE, '')
+
+    if (fileName.toLowerCase() === 'index') {
+      fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
+    }
+
+    const suffix = (mode !== 'all' ? `-${mode}` : '')
+    const defaultComponentNameSegments = resolveComponentNameSegments(fileName.replace(QUOTE_RE, ''), prefixParts)
+
+    const componentNameSegment = exportName === 'default' ? defaultComponentNameSegments : resolveComponentNameSegments(exportName, defaultComponentNameSegments)
+    const pascalName = pascalCase(componentNameSegment)
+    if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
+      logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+    }
+
+    if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
+      warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
+      return null
+    }
+    resolvedNames.set(pascalName + suffix, filePath)
+
+    const kebabName = kebabCase(componentNameSegment)
+    const shortPath = relative(srcDir, filePath)
+    const chunkName = 'components/' + kebabName + suffix
+
+    let component: Component = {
+      // inheritable from directory configuration
+      mode,
+      global,
+      island,
+      prefetch: Boolean(dir.prefetch),
+      preload: Boolean(dir.preload),
+      // specific to the file
+      filePath,
+      pascalName,
+      kebabName,
+      chunkName,
+      shortPath,
+      export: exportName,
+      // by default, give priority to scanned components
+      priority: dir.priority ?? 1,
+    }
+
+    if (typeof dir.extendComponent === 'function') {
+      component = (await dir.extendComponent(component)) || component
+    }
+
+    // Ignore files like `~/components/index.vue` which end up not having a name at all
+    if (!pascalName) {
+      logger.warn(`Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
+      return null
+    }
+
+    const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+    // Ignore component if component is already defined (with same mode)
+    if (existingComponent) {
+      const existingPriority = existingComponent.priority ?? 0
+      const newPriority = component.priority ?? 0
+
+      // Replace component if priority is higher
+      if (newPriority > existingPriority) {
+        components.splice(components.indexOf(existingComponent), 1, component)
+      }
+      // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
+      if (newPriority > 0 && newPriority === existingPriority) {
+        warnAboutDuplicateComponent(pascalName, filePath, existingComponent.filePath)
+      }
+
+      return null
+    }
+    return component
+  }
+
   for (const dir of dirs) {
     if (dir.enabled === false) {
       continue
     }
-    // A map from resolved path to component name (used for making duplicate warning message)
-    const resolvedNames = new Map<string, string>()
 
     const files = (await glob(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
 
@@ -66,112 +164,18 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       // Avoid duplicate paths
-      if (filePaths.has(filePath)) { continue }
+      if (filePaths.has(filePath)) {
+        continue
+      }
 
       filePaths.add(filePath)
 
-      /**
-       * Create an array of prefixes base on the prefix config
-       * Empty prefix will be an empty array
-       * @example prefix: 'nuxt' -> ['nuxt']
-       * @example prefix: 'nuxt-test' -> ['nuxt', 'test']
-       */
-      const prefixParts = ([] as string[]).concat(
-        dir.prefix ? splitByCase(dir.prefix) : [],
-        (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : [],
-      )
-
-      const fileExt = extname(filePath)
-      /**
-       * In case we have index as filename the component become the parent path
-       * @example third-components/index.vue -> third-component
-       * if not take the filename
-       * @example third-components/Awesome.vue -> Awesome
-       */
-      let fileName = basename(filePath, fileExt)
-
-      const island = ISLAND_RE.test(fileName) || dir.island
-      const global = GLOBAL_RE.test(fileName) || dir.global
-      const mode = island ? 'server' : (fileName.match(COMPONENT_MODE_RE)?.[1] || 'all') as 'client' | 'server' | 'all'
-      fileName = fileName.replace(MODE_REPLACEMENT_RE, '')
-
-      if (fileName.toLowerCase() === 'index') {
-        fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
-      }
-
-      const getComponents = async (exportName: string): Promise<Component | null> => {
-        const componentNameSegment = exportName === 'default' ? defaultComponentNameSegments : resolveComponentNameSegments(exportName, defaultComponentNameSegments)
-        const pascalName = pascalCase(componentNameSegment)
-        if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
-          logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
-        }
-
-        if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
-          warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
-          return null
-        }
-        resolvedNames.set(pascalName + suffix, filePath)
-
-        const kebabName = kebabCase(componentNameSegment)
-        const shortPath = relative(srcDir, filePath)
-        const chunkName = 'components/' + kebabName + suffix
-
-        let component: Component = {
-          // inheritable from directory configuration
-          mode,
-          global,
-          island,
-          prefetch: Boolean(dir.prefetch),
-          preload: Boolean(dir.preload),
-          // specific to the file
-          filePath,
-          pascalName,
-          kebabName,
-          chunkName,
-          shortPath,
-          export: exportName,
-          // by default, give priority to scanned components
-          priority: dir.priority ?? 1,
-        }
-
-        if (typeof dir.extendComponent === 'function') {
-          component = (await dir.extendComponent(component)) || component
-        }
-
-        // Ignore files like `~/components/index.vue` which end up not having a name at all
-        if (!pascalName) {
-          logger.warn(`Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
-          return null
-        }
-
-        const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
-        // Ignore component if component is already defined (with same mode)
-        if (existingComponent) {
-          const existingPriority = existingComponent.priority ?? 0
-          const newPriority = component.priority ?? 0
-
-          // Replace component if priority is higher
-          if (newPriority > existingPriority) {
-            components.splice(components.indexOf(existingComponent), 1, component)
-          }
-          // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
-          if (newPriority > 0 && newPriority === existingPriority) {
-            warnAboutDuplicateComponent(pascalName, filePath, existingComponent.filePath)
-          }
-
-          return null
-        }
-        return component
-      }
-
-      const suffix = (mode !== 'all' ? `-${mode}` : '')
-      const defaultComponentNameSegments = resolveComponentNameSegments(fileName.replace(QUOTE_RE, ''), prefixParts)
-
-      const componentsDefinitions = fileExt === '.vue'
-        ? [await getComponents('default')]
-        : await Promise.all((await resolveModuleExportNames(filePath, {
-          extensions: ['.ts', '.js', '.tsx', '.jsx'],
-        })).map(getComponents))
+      const componentsDefinitions = extname(filePath) === '.vue'
+        ? [await getComponents(dir, filePath, 'default')]
+        : await Promise.all(
+          (await resolveModuleExportNames(filePath, { extensions: ['.ts', '.js', '.tsx', '.jsx'] }))
+            .map(exportName => getComponents(dir, filePath, exportName)),
+        )
 
       components.push(...componentsDefinitions.filter<Component>((c): c is Component => Boolean(c)))
     }
