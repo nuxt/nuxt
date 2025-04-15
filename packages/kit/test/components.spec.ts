@@ -26,22 +26,22 @@ describe('addComponentExports', () => {
   it('should add components exports', async () => {
     const resolver = createResolver(import.meta.url)
     addComponentExports({
-      filePath: resolver.resolve('../../nuxt/test/components-fixture/components/Named'),
+      filePath: resolver.resolve('./components-fixture/Named'),
       prefix: 'test',
     })
     await mockHooks.callHook('components:dirs', [])
     const components: Component[] = []
     await mockHooks.callHook('components:extend', components)
     for (const c of components) {
-      c.filePath = relative(resolver.resolve('../../nuxt/test/components-fixture'), c.filePath)
-      c.shortPath = relative(resolver.resolve('../../nuxt/test/components-fixture'), c.shortPath)
+      c.filePath = relative(resolver.resolve('./components-fixture'), c.filePath)
+      c.shortPath = relative(resolver.resolve('./components-fixture'), c.shortPath)
     }
     expect(components).toMatchInlineSnapshot(`
       [
         {
           "chunkName": "components/test-named-export",
           "export": "NamedExport",
-          "filePath": "components/Named",
+          "filePath": "Named",
           "global": false,
           "kebabName": "test-named-export",
           "meta": {},
@@ -52,12 +52,12 @@ describe('addComponentExports', () => {
           "prefix": "test",
           "preload": false,
           "priority": 0,
-          "shortPath": "components/Named",
+          "shortPath": "Named",
         },
         {
           "chunkName": "components/test",
           "export": "default",
-          "filePath": "components/Named",
+          "filePath": "Named",
           "global": false,
           "kebabName": "test",
           "meta": {},
@@ -68,7 +68,7 @@ describe('addComponentExports', () => {
           "prefix": "test",
           "preload": false,
           "priority": 0,
-          "shortPath": "components/Named",
+          "shortPath": "Named",
         },
       ]
     `)
