@@ -111,7 +111,7 @@
     "happy-dom": "17.4.4",
     "installed-check": "9.3.0",
     "jiti": "2.4.2",
-    "knip": "5.50.3",
+    "knip": "5.50.4",
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.44.0",
     "memfs": "4.17.0",
@@ -139,6 +139,6 @@
     "vue-tsc": "2.2.8",
     "webpack": "5.99.5"
   },
-  "packageManager": "pnpm@10.8.0",
+  "packageManager": "pnpm@10.8.1",
   "version": ""
 }
