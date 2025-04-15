@@ -1247,6 +1247,14 @@ describe('errors', () => {
 
     await page.close()
   })
+
+  it('should allow catching errors within error boundaries', async () => {
+    const { page } = await renderPage('/error/error-boundary')
+    await page.getByText('This is the error rendering')
+    await page.close()
+
+    await expectNoClientErrors('/error/error-boundary')
+  })
 })
 
 describe('navigate external', () => {
