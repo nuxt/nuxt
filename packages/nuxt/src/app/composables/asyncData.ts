@@ -220,10 +220,10 @@ export function useAsyncData<
   // Validate arguments
   const key = computed(() => toValue(_key)!)
   if (typeof key.value !== 'string') {
-    throw new TypeError('[nuxt] [asyncData] key must be a string.')
+    throw new TypeError('[nuxt] [useAsyncData] key must be a string.')
   }
   if (typeof _handler !== 'function') {
-    throw new TypeError('[nuxt] [asyncData] handler must be a function.')
+    throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
   }
 
   // Setup nuxt instance payload
@@ -252,7 +252,7 @@ export function useAsyncData<
   options.dedupe ??= 'cancel'
 
   // @ts-expect-error private property
-  const functionName = options._functionName || 'asyncData'
+  const functionName = options._functionName || 'useAsyncData'
 
   if (import.meta.dev && typeof options.dedupe === 'boolean') {
     console.warn(`[nuxt] \`boolean\` values are deprecated for the \`dedupe\` option of \`${functionName}\` and will be removed in the future. Use 'cancel' or 'defer' instead.`)
