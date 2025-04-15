@@ -210,10 +210,10 @@ export function useAsyncData<
   // Validate arguments
   const key = computed(() => toValue(_key)!)
   if (typeof key.value !== 'string') {
-    throw new TypeError('[nuxt] [asyncData] key must be a string.')
+    throw new TypeError('[nuxt] [useAsyncData] key must be a string.')
   }
   if (typeof _handler !== 'function') {
-    throw new TypeError('[nuxt] [asyncData] handler must be a function.')
+    throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
   }
 
   // Setup nuxt instance payload
