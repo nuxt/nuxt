@@ -6,7 +6,6 @@ import MagicString from 'magic-string'
 
 interface LayerAliasingOptions {
   sourcemap?: boolean
-  transform?: boolean
   root: string
   dev: boolean
   layers: NuxtConfigLayer[]
@@ -15,7 +14,7 @@ interface LayerAliasingOptions {
 const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 
-export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions) => {
+export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnplugin((_options, meta) => {
   const aliases: Record<string, Record<string, string>> = {}
   for (const layer of options.layers) {
     const srcDir = layer.config.srcDir || layer.cwd
@@ -52,12 +51,13 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
 
     // webpack-only transform
     transformInclude: (id) => {
-      if (!options.transform) { return false }
+      if (meta.framework === 'vite') { return false }
+
       const _id = normalize(id)
       return layers.some(dir => _id.startsWith(dir))
     },
     transform (code, id) {
-      if (!options.transform) { return }
+      if (meta.framework === 'vite') { return }
 
       const _id = normalize(id)
       const layer = layers.find(l => _id.startsWith(l))

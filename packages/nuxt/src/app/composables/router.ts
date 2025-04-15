@@ -2,7 +2,7 @@ import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { PageMeta } from '../../pages/runtime/composables'
 
@@ -18,7 +18,7 @@ export const useRouter: typeof _useRouter = () => {
 
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = () => {
-  if (import.meta.dev && isProcessingMiddleware()) {
+  if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
   }
   if (hasInjectionContext()) {
@@ -114,11 +114,10 @@ export interface NavigateToOptions {
   open?: OpenOptions
 }
 
+const URL_QUOTE_RE = /"/g
 /** @since 3.0.0 */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
-  if (!to) {
-    to = '/'
-  }
+  to ||= '/'
 
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
@@ -151,6 +150,18 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early redirect on client-side
   if (import.meta.client && !isExternal && inMiddleware) {
+    if (options?.replace) {
+      if (typeof to === 'string') {
+        const { pathname, search, hash } = parseURL(to)
+        return {
+          path: pathname,
+          ...(search && { query: parseQuery(search) }),
+          ...(hash && { hash }),
+          replace: true,
+        }
+      }
+      return { ...to, replace: true }
+    }
     return to
   }
 
@@ -166,7 +177,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
-        const encodedLoc = location.replace(/"/g, '%22')
+        const encodedLoc = location.replace(URL_QUOTE_RE, '%22')
         const encodedHeader = encodeURL(location, isExternalHost)
 
         nuxtApp.ssrContext!._renderResponse = {

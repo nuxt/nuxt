@@ -3,13 +3,20 @@ import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context'
 
+const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
 export function normalizeSemanticVersion (version: string) {
-  return version.replace(/-\d+\.[0-9a-f]+/, '') // Remove edge prefix
+  return version.replace(SEMANTIC_VERSION_RE, '') // Remove edge prefix
 }
 
 const builderMap = {
+  '@nuxt/rspack-builder': 'rspack',
   '@nuxt/vite-builder': 'vite',
   '@nuxt/webpack-builder': 'webpack',
+}
+
+export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()) {
+  const nuxtVersion = getNuxtVersion(nuxt)
+  return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }
 
 /**
@@ -21,7 +28,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
   // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    if (!satisfies(normalizeSemanticVersion(nuxtVersion), constraints.nuxt, { includePrerelease: true })) {
+    if (!checkNuxtVersion(constraints.nuxt, nuxt)) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``,
@@ -40,12 +47,17 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
           message: `Not compatible with \`${nuxt.options.builder}\`.`,
         })
       } else {
-        const builderVersion = await readPackageJSON(nuxt.options.builder, { url: nuxt.options.modulesDir }).then(r => r.version).catch(() => undefined)
-        if (builderVersion && !satisfies(normalizeSemanticVersion(builderVersion), constraint, { includePrerelease: true })) {
-          issues.push({
-            name: 'builder',
-            message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`,
-          })
+        for (const parent of [nuxt.options.rootDir, nuxt.options.workspaceDir, import.meta.url]) {
+          const builderVersion = await readPackageJSON(nuxt.options.builder, { parent }).then(r => r.version).catch(() => undefined)
+          if (builderVersion) {
+            if (!satisfies(normalizeSemanticVersion(builderVersion), constraint, { includePrerelease: true })) {
+              issues.push({
+                name: 'builder',
+                message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`,
+              })
+            }
+            break
+          }
         }
       }
     }
@@ -103,6 +115,7 @@ export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
   return isNuxtMajorVersion(3, nuxt)
 }
 
+const NUXT_VERSION_RE = /^v/g
 /**
  * Get nuxt version
  */
@@ -111,5 +124,5 @@ export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt
   if (typeof rawVersion !== 'string') {
     throw new TypeError('Cannot determine nuxt version! Is current instance passed?')
   }
-  return rawVersion.replace(/^v/g, '')
+  return rawVersion.replace(NUXT_VERSION_RE, '')
 }

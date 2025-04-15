@@ -11,8 +11,9 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /** @since 3.0.0 */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface NuxtError<DataT = unknown> extends H3Error<DataT> {}
+export interface NuxtError<DataT = unknown> extends H3Error<DataT> {
+  error?: true
+}
 
 /** @since 3.0.0 */
 export const showError = <DataT = unknown>(
@@ -31,7 +32,7 @@ export const showError = <DataT = unknown>(
       nuxtApp.hooks.callHook('app:error', nuxtError)
     }
 
-    error.value = error.value || nuxtError
+    error.value ||= nuxtError
   } catch {
     throw nuxtError
   }

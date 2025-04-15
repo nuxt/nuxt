@@ -84,7 +84,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
     )
 
     const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
-      return `"page:${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
+      return `"page_${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
     }) || []
 
     return [
@@ -102,27 +102,37 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   },
 }
 
+const NON_VUE_RE = /\b\.(?!vue)\w+$/g
 export const componentsTypeTemplate = {
   filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
     const componentTypes = app.components.filter(c => !c.island).map((c) => {
       const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-        ? relative(buildDir, c.filePath).replace(/\b\.(?!vue)\w+$/g, '')
-        : c.filePath.replace(/\b\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
+        ? relative(buildDir, c.filePath).replace(NON_VUE_RE, '')
+        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
       return [
         c.pascalName,
         c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
       ]
     })
-
     const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
+type HydrationStrategies = {
+  hydrateOnVisible?: IntersectionObserverInit | true
+  hydrateOnIdle?: number | true
+  hydrateOnInteraction?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> | true
+  hydrateOnMediaQuery?: string
+  hydrateAfter?: number
+  hydrateWhen?: boolean
+  hydrateNever?: true
+}
+type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>)
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {
@@ -130,7 +140,7 @@ declare module 'vue' {
 }
 
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
 
 export const componentNames: string[]
 `

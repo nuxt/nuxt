@@ -53,6 +53,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   const hasExpired = delay !== undefined && delay <= 0
+  const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use basic ref
@@ -74,8 +75,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       // BroadcastChannel will fail in certain situations when cookies are disabled
       // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
     }
-    const callback = () => {
-      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+    const callback = (force = false) => {
+      if (!force) {
+        if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
 
       cookies[name] = klona(cookie.value)
@@ -130,8 +133,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         callback()
       },
       { deep: opts.watch !== 'shallow' })
-    } else {
-      callback()
+    }
+
+    if (shouldSetInitialClientCookie) {
+      callback(shouldSetInitialClientCookie)
     }
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()

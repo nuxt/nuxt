@@ -3,7 +3,7 @@ import type { Plugin } from 'vite'
 
 const QUERY_RE = /\?.+$/
 
-export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin {
+export function TypeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin {
   let entry: string
   return {
     name: 'nuxt:type-check',

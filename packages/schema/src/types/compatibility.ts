@@ -26,7 +26,7 @@ export interface NuxtCompatibility {
    * })
    * ```
    */
-  builder?: Partial<Record<'vite' | 'webpack' | (string & {}), false | string>>
+  builder?: Partial<Record<'vite' | 'webpack' | 'rspack' | (string & {}), false | string>>
 }
 
 export interface NuxtCompatibilityIssue {

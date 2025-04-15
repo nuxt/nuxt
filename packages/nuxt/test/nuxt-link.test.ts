@@ -55,8 +55,9 @@ const nuxtLink = (
 ): { type: string, props: Record<string, unknown>, slots: unknown } => {
   const component = defineNuxtLink({ componentName: 'NuxtLink', ...nuxtLinkOptions })
 
-  const [type, _props, slots] = (component.setup as unknown as (props: NuxtLinkProps, context: { slots: Record<string, () => unknown> }) =>
-  () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
+  const [type, _props, slots] = (
+    component as unknown as { setup: (props: NuxtLinkProps, context: { slots: Record<string, () => unknown> }) => () => [string, Record<string, unknown>, unknown] }
+  ).setup(props, { slots: { default: () => null } })()
 
   return { type, props: _props, slots }
 }
@@ -118,6 +119,11 @@ describe('nuxt-link:isExternal', () => {
     expect(nuxtLink({ to: '/foo', target: '_blank' }).type).toBe(EXTERNAL)
     expect(nuxtLink({ to: '/foo/bar', target: '_blank' }).type).toBe(EXTERNAL)
     expect(nuxtLink({ to: '/foo/bar?baz=qux', target: '_blank' }).type).toBe(EXTERNAL)
+  })
+
+  it('returns `true` if link starts with hash', () => {
+    expect(nuxtLink({ href: '#hash' }).type).toBe(EXTERNAL)
+    expect(nuxtLink({ to: '#hash' }).type).toBe(EXTERNAL)
   })
 })
 

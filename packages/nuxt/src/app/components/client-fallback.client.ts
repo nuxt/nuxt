@@ -1,13 +1,10 @@
-import { createElementBlock, defineComponent, onMounted, ref } from 'vue'
+import { createElementBlock, defineComponent, onMounted, ref, useId } from 'vue'
 import { useState } from '../composables/state'
 
 export default defineComponent({
   name: 'NuxtClientFallback',
   inheritAttrs: false,
   props: {
-    uid: {
-      type: String,
-    },
     fallbackTag: {
       type: String,
       default: () => 'div',
@@ -30,8 +27,7 @@ export default defineComponent({
   emits: ['ssr-error'],
   setup (props, ctx) {
     const mounted = ref(false)
-    // This is deliberate - `uid` should not be provided by user but by a transform plugin and will not be reactive.
-    const ssrFailed = useState(`${props.uid}`)
+    const ssrFailed = useState(useId())
 
     if (ssrFailed.value) {
       onMounted(() => { mounted.value = true })

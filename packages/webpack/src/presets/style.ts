@@ -1,8 +1,9 @@
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 import { getPostcssConfig } from '../utils/postcss'
+
+import { MiniCssExtractPlugin } from '#builder'
 
 export async function style (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -91,7 +92,7 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any)
     if (ctx.isServer) {
       // https://webpack.js.org/loaders/css-loader/#exportonlylocals
       if (cssLoader.options.modules) {
-        cssLoader.options.modules.exportOnlyLocals = cssLoader.options.modules.exportOnlyLocals ?? true
+        cssLoader.options.modules.exportOnlyLocals ??= true
       }
       return [cssLoader]
     }

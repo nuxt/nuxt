@@ -36,10 +36,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     sourceMap: nuxt.options.webpack.cssSourceMap,
   })
 
-  const jiti = createJiti(nuxt.options.rootDir, {
-    interopDefault: true,
-    alias: nuxt.options.alias,
-  })
+  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
 
   // Keep the order of default plugins
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
@@ -51,7 +48,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
 
       let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
       for (const parentURL of nuxt.options.modulesDir) {
-        pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true }) as (opts: Record<string, any>) => Plugin
+        pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true, default: true }) as (opts: Record<string, any>) => Plugin
         if (typeof pluginFn === 'function') {
           plugins.push(pluginFn(pluginOptions))
           break
