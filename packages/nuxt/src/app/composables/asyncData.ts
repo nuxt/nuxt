@@ -242,7 +242,7 @@ export function useAsyncData<
   options.dedupe ??= 'cancel'
 
   // @ts-expect-error private property
-  const functionName = options._functionName || 'asyncData'
+  const functionName = options._functionName || 'useAsyncData'
 
   // check and warn if different defaults/fetcher are provided
   const currentData = nuxtApp._asyncData[key.value]
