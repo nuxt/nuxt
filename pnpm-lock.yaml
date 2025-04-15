@@ -312,6 +312,9 @@ importers:
       '@types/semver':
         specifier: 7.7.0
         version: 7.7.0
+      hookable:
+        specifier: 5.5.3
+        version: 5.5.3
       nitro:
         specifier: npm:nitro-nightly@3.0.0-20250411-094421.5736f5be
         version: nitro-nightly@3.0.0-20250411-094421.5736f5be
