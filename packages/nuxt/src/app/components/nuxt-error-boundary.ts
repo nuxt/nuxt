@@ -1,6 +1,6 @@
 import { defineComponent, onErrorCaptured, ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { onNuxtReady } from '../../app'
+import { onNuxtReady } from '../composables/ready'
 
 export default defineComponent({
   name: 'NuxtErrorBoundary',
