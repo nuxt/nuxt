@@ -14,7 +14,7 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.14.1
-  '@unhead/vue': 2.0.5
+  '@unhead/vue': 2.0.7
   '@vue/compiler-core': 3.5.13
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
@@ -85,8 +85,8 @@ importers:
         specifier: 7.7.0
         version: 7.7.0
       '@unhead/vue':
-        specifier: 2.0.5
-        version: 2.0.5(vue@3.5.13(typescript@5.8.3))
+        specifier: 2.0.7
+        version: 2.0.7(vue@3.5.13(typescript@5.8.3))
       '@vitest/coverage-v8':
         specifier: 3.1.1
         version: 3.1.1(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.14.1)(happy-dom@17.4.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
@@ -215,7 +215,7 @@ importers:
         version: 1.6.1
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vitest:
         specifier: 3.1.1
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.14.1)(happy-dom@17.4.4)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -323,7 +323,7 @@ importers:
         version: 2.11.9
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vite:
         specifier: 6.3.0
         version: 6.3.0(@types/node@22.14.1)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -364,8 +364,8 @@ importers:
         specifier: 22.14.1
         version: 22.14.1
       '@unhead/vue':
-        specifier: 2.0.5
-        version: 2.0.5(vue@3.5.13(typescript@5.8.3))
+        specifier: 2.0.7
+        version: 2.0.7(vue@3.5.13(typescript@5.8.3))
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
@@ -531,7 +531,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.11.6
-        version: 0.11.6(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.5(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
+        version: 0.11.6(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.7(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -549,7 +549,7 @@ importers:
         version: 3.5.13
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vite:
         specifier: 6.3.0
         version: 6.3.0(@types/node@22.14.1)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -557,8 +557,8 @@ importers:
         specifier: 3.1.1
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.14.1)(happy-dom@17.4.4)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vue-sfc-transformer:
-        specifier: 0.1.10
-        version: 0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3))
+        specifier: 0.1.11
+        version: 0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3))
 
   packages/rspack:
     dependencies:
@@ -694,7 +694,7 @@ importers:
         version: 4.40.0
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.3)
@@ -724,8 +724,8 @@ importers:
         specifier: 2.25.9
         version: 2.25.9(esbuild@0.25.2)
       '@unhead/vue':
-        specifier: 2.0.5
-        version: 2.0.5(vue@3.5.13(typescript@5.8.3))
+        specifier: 2.0.7
+        version: 2.0.7(vue@3.5.13(typescript@5.8.3))
       '@vitejs/plugin-vue':
         specifier: 5.2.3
         version: 5.2.3(vite@6.3.0(@types/node@22.14.1)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.3))
@@ -797,7 +797,7 @@ importers:
         version: 1.3.0
       unbuild:
         specifier: 3.5.0
-        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       unctx:
         specifier: 2.4.1
         version: 2.4.1
@@ -990,7 +990,7 @@ importers:
         version: 4.40.0
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.3)
@@ -1129,7 +1129,7 @@ importers:
         version: 2.25.9(esbuild@0.25.2)
       unbuild:
         specifier: latest
-        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.3)
@@ -1154,7 +1154,7 @@ importers:
     devDependencies:
       '@vue/devtools-api':
         specifier: latest
-        version: 7.7.2
+        version: 7.7.3
       defu:
         specifier: latest
         version: 6.1.4
@@ -1998,7 +1998,7 @@ packages:
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
-      '@unhead/vue': 2.0.5
+      '@unhead/vue': 2.0.7
       nuxt: workspace:*
     peerDependenciesMeta:
       '@stripe/stripe-js':
@@ -2846,8 +2846,8 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@unhead/vue@2.0.5':
-    resolution: {integrity: sha512-csjNmBHvJGzSestlpApOpgxqaTdXSN2zwNIPFuWB+C4rtLX4x3+Tm7C5rQwU0iYy3CNJGjJT9cCcSyV55Jg4EQ==}
+  '@unhead/vue@2.0.7':
+    resolution: {integrity: sha512-aG8wb1v17gs3UZVcPXAuWmv72iJKPTQaW6ffs6cyLnEAC8dqTBmpobTyQp7/FGvfkpcI5HBUiSH4cQCi5a/0hg==}
     peerDependencies:
       vue: 3.5.13
 
@@ -3130,8 +3130,8 @@ packages:
   '@vue/devtools-api@6.6.4':
     resolution: {integrity: sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==}
 
-  '@vue/devtools-api@7.7.2':
-    resolution: {integrity: sha512-1syn558KhyN+chO5SjlZIwJ8bV/bQ1nOVTG66t2RbG66ZGekyiYNmRO7X9BJCXQqPsFHlnksqvPhce2qpzxFnA==}
+  '@vue/devtools-api@7.7.3':
+    resolution: {integrity: sha512-LZTp7ga+7KWY0sW+B0p/GFo5l0S58iV0aXcf693LpCm7gSWqEgeFRoQZEY/lc7foSM3chEdG00zL0EwRSi4v0w==}
 
   '@vue/devtools-core@7.7.2':
     resolution: {integrity: sha512-lexREWj1lKi91Tblr38ntSsy6CvI8ba7u+jmwh2yruib/ltLUcsIzEjCnrkh1yYGGIKXbAuYV2tOG10fGDB9OQ==}
@@ -3141,8 +3141,14 @@ packages:
   '@vue/devtools-kit@7.7.2':
     resolution: {integrity: sha512-CY0I1JH3Z8PECbn6k3TqM1Bk9ASWxeMtTCvZr7vb+CHi+X/QwQm5F1/fPagraamKMAHVfuuCbdcnNg1A4CYVWQ==}
 
+  '@vue/devtools-kit@7.7.3':
+    resolution: {integrity: sha512-IbR8q5jCaBcoMmWaJGMOqaD8KAW+DfNitOptSPNagTSLsMzpHxpM5Lf/dK0H/vVe0t4XRInzwpuWCKn5jecigQ==}
+
   '@vue/devtools-shared@7.7.2':
     resolution: {integrity: sha512-uBFxnp8gwW2vD6FrJB8JZLUzVb6PNRG0B0jBnHsOH8uKyva2qINY8PTF5Te4QlTbMDqU5K6qtJDr6cNsKWhbOA==}
+
+  '@vue/devtools-shared@7.7.3':
+    resolution: {integrity: sha512-a59Tmv9WxBMN5tnacKui8jwKpU5662qVhC6wo17eLS02Xh3PG+d13bu7bFv/8BgrXsez4ClRLAPdAJTrE8huDg==}
 
   '@vue/language-core@2.1.10':
     resolution: {integrity: sha512-DAI289d0K3AB5TUG3xDp9OuQ71CnrujQwJrQnfuZDwo6eGNf0UoRlPuaVNO+Zrn65PC3j0oB2i7mNmVPggeGeQ==}
@@ -6916,6 +6922,10 @@ packages:
     resolution: {integrity: sha512-8iGv75BYOa0xRJHK5vRLEjE2H/i4lulTjzpUXic3Eg8akftYjkmQDa8JARQ42rlczXyFR3IeRoeFCc7RxHsYZA==}
     engines: {node: '>=16'}
 
+  superjson@2.2.2:
+    resolution: {integrity: sha512-5JRxVqC8I8NuOUjzBbvVJAKNM8qoVuH0O77h4WInc/qC2q5IreqKxYwgkga3PfA22OayK2ikceb/B26dztPl+Q==}
+    engines: {node: '>=16'}
+
   supports-color@10.0.0:
     resolution: {integrity: sha512-HRVVSbCCMbj7/kdWF9Q+bbckjBHLtHMEoJWlkmYzzdwhYMkjkOwubLM6t7NbWKjgKamGDrWL1++KrjUO1t9oAQ==}
     engines: {node: '>=18'}
@@ -7174,8 +7184,8 @@ packages:
   unenv@2.0.0-rc.15:
     resolution: {integrity: sha512-J/rEIZU8w6FOfLNz/hNKsnY+fFHWnu9MH4yRbSZF3xbbGHovcetXPs7sD+9p8L6CeNC//I9bhRYAOsBt2u7/OA==}
 
-  unhead@2.0.5:
-    resolution: {integrity: sha512-bG4wyp+KuW+ivQYtTQvnvtMM55ziIrQ9Yq1/VAm099buBgH0CoBWgu39jkSUoE4oZ4Qki8SsnMbq2gL0h3/sUA==}
+  unhead@2.0.7:
+    resolution: {integrity: sha512-vQNxgd7AgJBNozKiuaX10jIzZHGGN3l1lvfwCjIantHUGDqN782WiVULhI8QleEEQGeS5x07ygz9vFWWqjJe5A==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -7580,8 +7590,8 @@ packages:
     peerDependencies:
       vue: 3.5.13
 
-  vue-sfc-transformer@0.1.10:
-    resolution: {integrity: sha512-cGc+15xzK27TnfM4q0Kx+Byif9gpeDtbsEFC/OANkjy6iKOJ9x0nkqLPxUfaMtdBOCUEzINOZhJZ82zspl2cwg==}
+  vue-sfc-transformer@0.1.11:
+    resolution: {integrity: sha512-nfh8jfBuZKtHv/TRbCfCChQJr28dObEa+SH1IiKWOrRjIZkzPPFyW9wSfY8F5dCN2IV4C1o0n7e59luV4dTlxg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       esbuild: '*'
@@ -8648,10 +8658,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.99.5(esbuild@0.25.2)
 
-  '@nuxt/scripts@0.11.6(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.5(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))':
+  '@nuxt/scripts@0.11.6(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.7(vue@3.5.13(typescript@5.8.3)))(db0@0.3.1)(ioredis@5.6.0)(nuxt@packages+nuxt)(typescript@5.8.3)(vue@3.5.13(typescript@5.8.3))':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 2.0.5(vue@3.5.13(typescript@5.8.3))
+      '@unhead/vue': 2.0.7(vue@3.5.13(typescript@5.8.3))
       '@vueuse/core': 13.1.0(vue@3.5.13(typescript@5.8.3))
       consola: 3.4.2
       defu: 6.1.4
@@ -9609,10 +9619,10 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unhead/vue@2.0.5(vue@3.5.13(typescript@5.8.3))':
+  '@unhead/vue@2.0.7(vue@3.5.13(typescript@5.8.3))':
     dependencies:
       hookable: 5.5.3
-      unhead: 2.0.5
+      unhead: 2.0.7
       vue: 3.5.13(typescript@5.8.3)
 
   '@unocss/astro@66.0.0(vite@6.3.0(@types/node@22.14.1)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.3))':
@@ -9999,9 +10009,9 @@ snapshots:
 
   '@vue/devtools-api@6.6.4': {}
 
-  '@vue/devtools-api@7.7.2':
+  '@vue/devtools-api@7.7.3':
     dependencies:
-      '@vue/devtools-kit': 7.7.2
+      '@vue/devtools-kit': 7.7.3
 
   '@vue/devtools-core@7.7.2(vite@6.3.0(@types/node@22.14.1)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.8.3))':
     dependencies:
@@ -10025,7 +10035,21 @@ snapshots:
       speakingurl: 14.0.1
       superjson: 2.2.1
 
+  '@vue/devtools-kit@7.7.3':
+    dependencies:
+      '@vue/devtools-shared': 7.7.3
+      birpc: 2.3.0
+      hookable: 5.5.3
+      mitt: 3.0.1
+      perfect-debounce: 1.0.0
+      speakingurl: 14.0.1
+      superjson: 2.2.2
+
   '@vue/devtools-shared@7.7.2':
+    dependencies:
+      rfdc: 1.4.1
+
+  '@vue/devtools-shared@7.7.3':
     dependencies:
       rfdc: 1.4.1
 
@@ -12882,7 +12906,7 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
-  mkdist@2.3.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3)):
+  mkdist@2.3.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3)):
     dependencies:
       autoprefixer: 10.4.21(postcss@8.5.3)
       citty: 0.1.6
@@ -12900,7 +12924,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
       vue: 3.5.13(typescript@5.8.3)
-      vue-sfc-transformer: 0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3))
+      vue-sfc-transformer: 0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3))
       vue-tsc: 2.2.8(typescript@5.8.3)
 
   mlly@1.7.4:
@@ -14396,6 +14420,10 @@ snapshots:
     dependencies:
       copy-anything: 3.0.5
 
+  superjson@2.2.2:
+    dependencies:
+      copy-anything: 3.0.5
+
   supports-color@10.0.0: {}
 
   supports-color@5.5.0:
@@ -14605,7 +14633,7 @@ snapshots:
 
   ultrahtml@1.6.0: {}
 
-  unbuild@3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3)):
+  unbuild@3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3)):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.40.0)
       '@rollup/plugin-commonjs': 28.0.3(rollup@4.40.0)
@@ -14621,7 +14649,7 @@ snapshots:
       hookable: 5.5.3
       jiti: 2.4.2
       magic-string: 0.30.17
-      mkdist: 2.3.0(typescript@5.8.3)(vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+      mkdist: 2.3.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       mlly: 1.7.4
       pathe: 2.0.3
       pkg-types: 2.1.0
@@ -14666,7 +14694,7 @@ snapshots:
       pathe: 2.0.3
       ufo: 1.6.1
 
-  unhead@2.0.5:
+  unhead@2.0.7:
     dependencies:
       hookable: 5.5.3
 
@@ -15130,7 +15158,7 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.13(typescript@5.8.3)
 
-  vue-sfc-transformer@0.1.10(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)):
+  vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)):
     dependencies:
       '@babel/parser': 7.27.0
       esbuild: 0.25.2
