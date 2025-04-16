@@ -315,6 +315,9 @@ importers:
       '@types/semver':
         specifier: 7.7.0
         version: 7.7.0
+      hookable:
+        specifier: 5.5.3
+        version: 5.5.3
       lodash-es:
         specifier: 4.17.21
         version: 4.17.21
@@ -322,7 +325,7 @@ importers:
         specifier: 2.11.9
         version: 2.11.9
       unbuild:
-        specifier: latest
+        specifier: 3.5.0
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vite:
         specifier: 6.3.2
@@ -548,7 +551,7 @@ importers:
         specifier: 3.5.13
         version: 3.5.13
       unbuild:
-        specifier: latest
+        specifier: 3.5.0
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vite:
         specifier: 6.3.2
@@ -693,7 +696,7 @@ importers:
         specifier: 4.40.0
         version: 4.40.0
       unbuild:
-        specifier: latest
+        specifier: 3.5.0
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vue:
         specifier: 3.5.13
@@ -989,7 +992,7 @@ importers:
         specifier: 4.40.0
         version: 4.40.0
       unbuild:
-        specifier: latest
+        specifier: 3.5.0
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vue:
         specifier: 3.5.13
@@ -1128,7 +1131,7 @@ importers:
         specifier: 2.25.9
         version: 2.25.9(esbuild@0.25.2)
       unbuild:
-        specifier: latest
+        specifier: 3.5.0
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.11(esbuild@0.25.2)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.8(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vue:
         specifier: 3.5.13
