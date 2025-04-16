@@ -102,10 +102,10 @@ export interface AsyncDataOptions<
    * Throw an error if handler function fails
    * Accepts a boolean value or a function that returns a NuxtError object.
    * If set to true, the returned promise will reject when an error occurs.
-   * If a function is provided, it will be called with the error object and should return a NuxtError object.
+   * If a function is provided, it will be called with the error object and should return a NuxtError object or undefined. If undefined is returned, no error is thrown.
    * @default false
    */
-  throwOnError?: boolean | ((e: unknown) => NuxtError)
+  throwOnError?: boolean | ((e: unknown) => NuxtError | undefined)
 }
 
 export interface AsyncDataExecuteOptions {
@@ -681,7 +681,10 @@ function createAsyncData<
 
           if (options.throwOnError) {
             const _error = typeof options.throwOnError === 'function' ? options.throwOnError(error) : asyncData.error.value
-            throw _error
+
+            if (_error) {
+              throw _error
+            }
           }
         })
         .finally(() => {
