@@ -147,12 +147,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve'], trailingSlash?: NuxtLinkOptions['trailingSlash']): string
   function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve'], trailingSlash?: NuxtLinkOptions['trailingSlash']): Exclude<RouteLocationRaw, string>
   function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve'], trailingSlash?: NuxtLinkOptions['trailingSlash']): RouteLocationRaw | RouteLocation | undefined {
-    if (!to || (trailingSlash !== 'append' && trailingSlash !== 'remove')) {
+    const effectiveTrailingSlash = trailingSlash ?? options.trailingSlash
+    if (!to || (effectiveTrailingSlash !== 'append' && effectiveTrailingSlash !== 'remove')) {
       return to
     }
 
     if (typeof to === 'string') {
-      return applyTrailingSlashBehavior(to, trailingSlash)
+      return applyTrailingSlashBehavior(to, effectiveTrailingSlash)
     }
 
     const path = 'path' in to && to.path !== undefined ? to.path : resolve(to).path
@@ -160,7 +161,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const resolvedPath = {
       ...to,
       name: undefined, // named routes would otherwise always override trailing slash behavior
-      path: applyTrailingSlashBehavior(path, trailingSlash),
+      path: applyTrailingSlashBehavior(path, effectiveTrailingSlash),
     }
 
     return resolvedPath
@@ -210,6 +211,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
+      const effectiveTrailingSlash = props.trailingSlash ?? options.trailingSlash
       if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
         return to.value as string
       }
@@ -218,14 +220,14 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
         // separately resolve route objects with a 'name' property and without 'path'
         const href = typeof path === 'object' ? router.resolve(path).href : path
-        return applyTrailingSlashBehavior(href, props.trailingSlash)
+        return applyTrailingSlashBehavior(href, effectiveTrailingSlash)
       }
 
       if (typeof to.value === 'object') {
         return router.resolve(to.value)?.href ?? null
       }
 
-      return applyTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), props.trailingSlash)
+      return applyTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), effectiveTrailingSlash)
     })
 
     return {
