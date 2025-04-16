@@ -593,7 +593,7 @@ export default defineNuxtModule({
         return [
           'import type { NavigationGuard } from \'vue-router\'',
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          `declare module 'vue-router' {`,
+          'declare module \'vue-router\' {',
           '  interface PageMeta {',
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
           '  }',
@@ -628,7 +628,7 @@ export default defineNuxtModule({
         return [
           'import type { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-          `declare module 'vue-router' {`,
+          'declare module \'vue-router\' {',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
@@ -643,7 +643,7 @@ export default defineNuxtModule({
         filename: 'types/view-transitions.d.ts',
         getContents: () => {
           return [
-            `declare module 'vue-router' {`,
+            'declare module \'vue-router\' {',
             '  interface PageMeta {',
             '    viewTransition?: boolean | \'always\'',
             '  }',
