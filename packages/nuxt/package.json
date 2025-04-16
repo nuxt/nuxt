@@ -76,7 +76,7 @@
     "@nuxt/telemetry": "^2.6.6",
     "@nuxt/vite-builder": "workspace:*",
     "@oxc-parser/wasm": "^0.60.0",
-    "@unhead/vue": "^2.0.5",
+    "@unhead/vue": "^2.0.7",
     "@vue/shared": "^3.5.13",
     "c12": "^3.0.3",
     "chokidar": "^4.0.3",
