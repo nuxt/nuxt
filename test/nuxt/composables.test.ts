@@ -183,7 +183,7 @@ describe('useAsyncData', () => {
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
     expect(nonimmediate.data.value).toBe(undefined)
     expect(nonimmediate.status.value).toBe('idle')
-    expect(nonimmediate.pending.value).toBe(true)
+    expect(nonimmediate.pending.value).toBe(false)
   })
 
   it('should capture errors', async () => {

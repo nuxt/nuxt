@@ -620,5 +620,14 @@ export default defineResolvers({
      * Whether Nuxt should stop if a Nuxt module is incompatible.
      */
     enforceModuleCompatibility: false,
+
+    /**
+     * For `useAsyncData` and `useFetch`, whether `pending` should be true when data has not yet started to be fetched.
+     */
+    pendingWhenIdle: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion !== 4
+      },
+    },
   },
 })
