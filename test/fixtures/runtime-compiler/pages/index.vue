@@ -17,7 +17,7 @@ const ComponentDefinedInSetup = computed(() => h({
   template: compTemplate.value,
 }) as Component)
 
-const { data, status } = await useAsyncData('templates', async () => {
+const { data, pending } = await useAsyncData('templates', async () => {
   const [interactiveComponent, templateString] = await Promise.all([
     $fetch('/api/full-component'),
     $fetch('/api/template'),
@@ -54,7 +54,7 @@ const Interactive = h({
     >
       {{ count }}
     </button>
-    <template v-if="status !== 'pending'">
+    <template v-if="!pending">
       <Name
         id="name"
         template="<div>I am the Name.ts component</div>"
