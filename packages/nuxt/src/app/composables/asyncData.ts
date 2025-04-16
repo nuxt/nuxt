@@ -97,6 +97,15 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
+
+  /**
+   * Throw an error if handler function fails
+   * Accepts a boolean value or a function that returns a NuxtError object.
+   * If set to true, the returned promise will reject when an error occurs.
+   * If a function is provided, it will be called with the error object and should return a NuxtError object.
+   * @default false
+   */
+  throwOnError?: boolean | ((e: unknown) => NuxtError)
 }
 
 export interface AsyncDataExecuteOptions {
@@ -669,6 +678,11 @@ function createAsyncData<
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
+
+          if (options.throwOnError) {
+            const _error = typeof options.throwOnError === 'function' ? options.throwOnError(error) : asyncData.error.value
+            throw _error
+          }
         })
         .finally(() => {
           if ((promise as any).cancelled) { return }

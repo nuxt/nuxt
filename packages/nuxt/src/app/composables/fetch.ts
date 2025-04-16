@@ -122,6 +122,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    throwOnError,
     ...fetchOptions
   } = opts
 
@@ -141,6 +142,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    throwOnError,
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
   }
 
