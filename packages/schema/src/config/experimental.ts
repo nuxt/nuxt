@@ -622,7 +622,7 @@ export default defineResolvers({
     enforceModuleCompatibility: false,
 
     /**
-     * For `useAsyncData` and `useFetch`, whether `pending` should be true when data has not yet started to be fetched.
+     * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
      */
     pendingWhenIdle: {
       $resolve: async (val, get) => {
