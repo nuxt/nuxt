@@ -7,7 +7,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 
 import { normalizeWebpackManifest } from 'vue-bundle-renderer'
 import { dirname } from 'pathe'
-import hash from 'hash-sum'
+import { hash } from 'ohash'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'
@@ -104,9 +104,7 @@ export default class VueSSRClientPlugin {
         if (Array.isArray(m.modules)) {
           for (const concatenatedModule of m.modules) {
             const id = hash(concatenatedModule.identifier!.replace(/\s\w+$/, ''))
-            if (!webpackManifest.modules[id]) {
-              webpackManifest.modules[id] = files
-            }
+            webpackManifest.modules[id] ||= files
           }
         }
 

@@ -1,16 +1,17 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtTemplate } from 'nuxt/schema'
+import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
+import { EXTENSION_RE } from './utils'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -57,8 +58,9 @@ export const cssTemplate: NuxtTemplate = {
   getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n'),
 }
 
+const PLUGIN_TEMPLATE_RE = /_(45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
-  filename: 'plugins/client.mjs',
+  filename: 'plugins.client.mjs',
   async getContents (ctx) {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
@@ -66,7 +68,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -78,7 +80,7 @@ export const clientPluginTemplate: NuxtTemplate = {
 }
 
 export const serverPluginTemplate: NuxtTemplate = {
-  filename: 'plugins/server.mjs',
+  filename: 'plugins.server.mjs',
   async getContents (ctx) {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
@@ -86,7 +88,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -98,7 +100,9 @@ export const serverPluginTemplate: NuxtTemplate = {
 }
 
 const TS_RE = /\.[cm]?tsx?$/
-
+const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
+const JS_RE = /\.[cm]jsx?$/
+const JS_CAPTURE_RE = /\.[cm](jsx?)$/
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async ({ nuxt, app }) => {
@@ -120,18 +124,18 @@ export const pluginsDeclaration: NuxtTemplate = {
       const pluginPath = resolve(typesDir, plugin.src)
       const relativePath = relative(typesDir, pluginPath)
 
-      const correspondingDeclaration = pluginPath.replace(/\.(?<letter>[cm])?jsx?$/, '.d.$<letter>ts')
+      const correspondingDeclaration = pluginPath.replace(JS_LETTER_RE, '.d.$<letter>ts')
       // if `.d.ts` file exists alongside a `.js` plugin, or if `.d.mts` file exists alongside a `.mjs` plugin, we can use the entire path
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
         continue
       }
 
-      const incorrectDeclaration = pluginPath.replace(/\.[cm]jsx?$/, '.d.ts')
+      const incorrectDeclaration = pluginPath.replace(JS_RE, '.d.ts')
       // if `.d.ts` file exists, but plugin is `.mjs`, add `.js` extension to the import
       // to hotfix issue until ecosystem updates to `@nuxt/module-builder@>=0.8.0`
       if (incorrectDeclaration !== pluginPath && exists(incorrectDeclaration)) {
-        tsImports.push(relativePath.replace(/\.[cm](jsx?)$/, '.$1'))
+        tsImports.push(relativePath.replace(JS_CAPTURE_RE, '.$1'))
         continue
       }
 
@@ -173,16 +177,26 @@ export { }
   },
 }
 
-const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
+const IMPORT_NAME_RE = /\.\w+$/
+const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
+    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
-    const modules = nuxt.options._installedModules
-      .filter(m => m.meta && m.meta.configKey && m.meta.name && !adHocModules.includes(m.meta.name))
-      .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
+    const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
+    for (const m of nuxt.options._installedModules) {
+      // modules without sufficient metadata
+      if (!m.meta || !m.meta.configKey || !m.meta.name) {
+        continue
+      }
+      // core nuxt modules
+      if (m.meta.name.startsWith('nuxt:') || m.meta.name === 'nuxt-config-schema') {
+        continue
+      }
+      modules.push([genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m])
+    }
 
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
@@ -205,12 +219,12 @@ export const schemaTemplate: NuxtTemplate = {
         } else if (mod.meta?.repository) {
           if (typeof mod.meta.repository === 'string') {
             link = mod.meta.repository
-          } else if (typeof mod.meta.repository.url === 'string') {
+          } else if (typeof mod.meta.repository === 'object' && 'url' in mod.meta.repository && typeof mod.meta.repository.url === 'string') {
             link = mod.meta.repository.url
           }
           if (link) {
             if (link.startsWith('git+')) {
-              link = link.replace(/^git\+/, '')
+              link = link.replace(GIT_RE, '')
             }
             if (!link.startsWith('http')) {
               link = 'https://github.com/' + link
@@ -279,9 +293,10 @@ export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file)]
+      return [name, `defineAsyncComponent(${genDynamicImport(file, { interopDefault: true })})`]
     }))
     return [
+      `import { defineAsyncComponent } from 'vue'`,
       `export default ${layoutsObject}`,
     ].join('\n')
   },
@@ -302,10 +317,38 @@ export const middlewareTemplate: NuxtTemplate = {
   },
 }
 
+function renderAttr (key: string, value?: string) {
+  return value ? `${key}="${value}"` : ''
+}
+
+function renderAttrs (obj: Record<string, string>) {
+  const attrs: string[] = []
+  for (const key in obj) {
+    attrs.push(renderAttr(key, obj[key]))
+  }
+  return attrs.join(' ')
+}
+
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
-  getContents () {
+  async getContents ({ nuxt }) {
+    const references = [] as TSReference[]
+    const declarations = [] as string[]
+    await nuxt.callHook('nitro:prepare:types', { references, declarations })
+
+    const sourceDir = join(nuxt.options.buildDir, 'types')
+    const lines = [
+      ...references.map((ref) => {
+        if ('path' in ref && isAbsolute(ref.path)) {
+          ref.path = relative(sourceDir, ref.path)
+        }
+        return `/// <reference ${renderAttrs(ref)} />`
+      }),
+      ...declarations,
+    ]
+
     return /* typescript */`
+${lines.join('\n')}
 /// <reference path="./schema.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
@@ -321,10 +364,14 @@ declare module 'nitro/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }
@@ -342,10 +389,14 @@ declare module 'nitropack/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }
@@ -377,7 +428,7 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
     const typesDir = join(nuxt.options.buildDir, 'types')
-    const configPaths = app.configs.map(path => relative(typesDir, path).replace(/\b\.\w+$/g, ''))
+    const configPaths = app.configs.map(path => relative(typesDir, path).replace(EXTENSION_RE, ''))
 
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
@@ -422,12 +473,12 @@ import { defuFn } from 'defu'
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 /** client **/
-import { updateAppConfig } from '#app/config'
+import { _replaceAppConfig } from '#app/config'
 
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    updateAppConfig(newModule.default)
+    _replaceAppConfig(newModule.default)
   })
 }
 /** client-end **/
@@ -460,7 +511,7 @@ export const publicPathTemplate: NuxtTemplate = {
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
 
-      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
+      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts
       'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',
@@ -518,6 +569,9 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!((ctx.nuxt as any)._nitro as Nitro).options.prerender.crawlLinks}`,
+      `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
+      `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
+      `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
     ].join('\n\n')
   },
 }

@@ -41,14 +41,10 @@ export default <RouterConfig> {
 
     // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
     const hasTransition = (route: RouteLocationNormalized) => !!(route.meta.pageTransition ?? defaultPageTransition)
-    const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:finish'
+    const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:loading:end'
     return new Promise((resolve) => {
-      nuxtApp.hooks.hookOnce(hookToWait, async () => {
-        await new Promise(resolve => setTimeout(resolve, 0))
-        if (to.hash) {
-          position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
-        }
-        resolve(position)
+      nuxtApp.hooks.hookOnce(hookToWait, () => {
+        requestAnimationFrame(() => resolve(_calculatePosition(to, 'instant', position)))
       })
     })
   },
@@ -64,4 +60,27 @@ function _getHashElementScrollMarginTop (selector: string): number {
     // ignore any errors parsing scrollMarginTop
   }
   return 0
+}
+
+function _calculatePosition (
+  to: RouteLocationNormalized,
+  scrollBehaviorType: ScrollBehavior,
+  position?: ScrollPosition,
+): ScrollPosition {
+  // Handle saved position for backward/forward navigation
+  if (position) {
+    return position
+  }
+
+  // Scroll to the element specified in the URL hash, if present
+  if (to.hash) {
+    return {
+      el: to.hash,
+      top: _getHashElementScrollMarginTop(to.hash),
+      behavior: scrollBehaviorType,
+    }
+  }
+
+  // Default scroll to the top left of the page
+  return { left: 0, top: 0, behavior: scrollBehaviorType }
 }

@@ -9,12 +9,14 @@ import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
-import type { MergeHead, VueHeadClient } from '@unhead/vue'
+import type { VueHeadClient } from '@unhead/vue/types'
+
+import type { NuxtAppLiterals } from 'nuxt/app'
 
 import type { NuxtIslandContext } from '../app/types'
 import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
-import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
@@ -22,9 +24,7 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-import type { NuxtAppLiterals } from '#app'
-
-function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id = appId || 'nuxt-app') {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -45,11 +45,10 @@ export interface RuntimeNuxtHooks {
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'app:manifest:update': (meta?: NuxtAppManifestMeta) => HookResult
-  'dev:ssr-logs': (logs: LogObject[]) => void | Promise<void>
+  'dev:ssr-logs': (logs: LogObject[]) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
-  'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
   'page:view-transition:start': (transition: ViewTransition) => HookResult
   'page:loading:start': () => HookResult
@@ -67,7 +66,7 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: Partial<NuxtPayload>
-  head: VueHeadClient<MergeHead>
+  head: VueHeadClient
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
@@ -81,6 +80,8 @@ export interface NuxtSSRContext extends SSRContext {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
+  /** @internal */
+  _preloadManifest?: boolean
 }
 
 export interface NuxtPayload {
@@ -114,11 +115,6 @@ interface _NuxtApp {
    * The id of the Nuxt application.
    * @internal */
   _id: string
-  /**
-   * The next id that can be used for generating unique ids via `useId`.
-   * @internal
-   */
-  _genId?: number
   /** @internal */
   _scope: EffectScope
   /** @internal */
@@ -132,8 +128,17 @@ interface _NuxtApp {
     pending: Ref<boolean>
     error: Ref<Error | undefined>
     status: Ref<AsyncDataRequestStatus>
+    execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _default: () => unknown
+    /** @internal */
+    _deps: number
+    /** @internal */
+    _off: () => void
+    /** @internal */
+    _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+    /** @internal */
+    _hash?: Record<string, string | undefined>
   } | undefined>
 
   /** @internal */
@@ -154,8 +159,6 @@ interface _NuxtApp {
 
   /** @internal */
   _observer?: { observe: (element: Element, callback: () => void) => () => void }
-  /** @internal */
-  _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any> | null>
 
   /** @internal */
   _appConfig: AppConfig
@@ -380,7 +383,7 @@ export function createNuxtApp (options: CreateOptions) {
         }
       })
     }
-    window.useNuxtApp = window.useNuxtApp || useNuxtApp
+    window.useNuxtApp ||= useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
@@ -520,7 +523,7 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(id).tryUse()
+  nuxtAppInstance ||= getNuxtAppCtx(id).tryUse()
 
   return nuxtAppInstance || null
 }

@@ -9,5 +9,8 @@
   },
   "devDependencies": {
     "typescript": "latest"
+  },
+  "engines": {
+    "node": "^20.11.1 || >=22.0.0"
   }
 }

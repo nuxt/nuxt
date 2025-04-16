@@ -1,5 +1,5 @@
-import { h } from 'vue'
-import type { Component, RendererNode } from 'vue'
+import { Transition, createStaticVNode, h } from 'vue'
+import type { RendererNode, VNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
@@ -10,18 +10,20 @@ import { START_LOCATION } from '#build/pages'
  * Internal utility
  * @private
  */
-export const _wrapIf = (component: Component, props: any, slots: any) => {
-  props = props === true ? {} : props
-  return { default: () => props ? h(component, props, slots) : slots.default?.() }
+export const _wrapInTransition = (props: any, children: any) => {
+  return { default: () => import.meta.client && props ? h(Transition, props === true ? {} : props, children) : children.default?.() }
 }
 
+const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
+const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
+const ROUTE_KEY_NORMAL_RE = /:\w+/g
 // TODO: consider refactoring into single utility
 // See https://github.com/nuxt/nuxt/tree/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
 function generateRouteKey (route: RouteLocationNormalized) {
   const source = route?.meta.key ?? route.path
-    .replace(/(:\w+)\([^)]+\)/g, '$1')
-    .replace(/(:\w+)[?+*]/g, '$1')
-    .replace(/:\w+/g, r => route.params[r.slice(1)]?.toString() || '')
+    .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
+    .replace(ROUTE_KEY_SYMBOLS_RE, '$1')
+    .replace(ROUTE_KEY_NORMAL_RE, r => route.params[r.slice(1)]?.toString() || '')
   return typeof source === 'function' ? source(route) : source
 }
 
@@ -114,9 +116,9 @@ export function vforToArray (source: any): any[] {
  * Handles `<!--[-->` Fragment elements
  * @param element the element to retrieve the HTML
  * @param withoutSlots purge all slots from the HTML string retrieved
- * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
+ * @returns {string[]|undefined} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
  */
-export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | null {
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | undefined {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)
@@ -128,7 +130,6 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     }
     return [element.outerHTML]
   }
-  return null
 }
 
 function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {
@@ -138,7 +139,7 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
+        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
@@ -148,10 +149,24 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
   return blocks
 }
 
-function isStartFragment (element: RendererNode) {
+/**
+ * Return a static vnode from an element
+ * Default to a div if the element is not found and if a fallback is not provided
+ * @param el renderer node retrieved from the component internal instance
+ * @param staticNodeFallback fallback string to use if the element is not found. Must be a valid HTML string
+ */
+export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: string): VNode {
+  const fragment: string[] | undefined = el ? getFragmentHTML(el) : staticNodeFallback ? [staticNodeFallback] : undefined
+  if (fragment) {
+    return createStaticVNode(fragment.join(''), fragment.length)
+  }
+  return h('div')
+}
+
+export function isStartFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 
-function isEndFragment (element: RendererNode) {
+export function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
 }
