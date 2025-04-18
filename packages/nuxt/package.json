@@ -95,7 +95,7 @@
     "esbuild": "^0.25.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
-    "exsolve": "^1.0.4",
+    "exsolve": "^1.0.5",
     "globby": "^14.1.0",
     "h3": "^1.15.1",
     "hookable": "^5.5.3",
