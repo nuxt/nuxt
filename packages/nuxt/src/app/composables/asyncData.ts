@@ -15,7 +15,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaults, granularCachedData, purgeCachedData, resetAsyncDataToUndefined } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, resetAsyncDataToUndefined } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -119,9 +119,6 @@ export interface AsyncDataExecuteOptions {
 
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
-  /**
-   * @deprecated Use `status` instead. This may be removed in a future major version.
-   */
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
@@ -330,7 +327,9 @@ export function useAsyncData<
 
     if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || initialCachedData != null)) {
       // 1. Hydration (server: true): no fetch
-      asyncData.pending.value = false
+      if (pendingWhenIdle) {
+        asyncData.pending.value = false
+      }
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
     } else if (instance && ((nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || options.lazy) && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
@@ -569,7 +568,9 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   if (nuxtApp._asyncData[key]) {
     nuxtApp._asyncData[key]!.data.value = resetAsyncDataToUndefined ? undefined : unref(nuxtApp._asyncData[key]!._default())
     nuxtApp._asyncData[key]!.error.value = asyncDataDefaults.errorValue
-    nuxtApp._asyncData[key]!.pending.value = false
+    if (pendingWhenIdle) {
+      nuxtApp._asyncData[key]!.pending.value = false
+    }
     nuxtApp._asyncData[key]!.status.value = 'idle'
   }
 
@@ -620,7 +621,7 @@ function createAsyncData<
   const hasCachedData = initialCachedData != null
   const asyncData: CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> = {
     data: _ref(hasCachedData ? initialCachedData : options.default!()) as any,
-    pending: shallowRef(!hasCachedData),
+    pending: pendingWhenIdle ? shallowRef(!hasCachedData) : computed(() => asyncData.status.value === 'pending'),
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: shallowRef('idle'),
     execute: (opts = {}) => {
@@ -641,7 +642,9 @@ function createAsyncData<
           return Promise.resolve(cachedData)
         }
       }
-      asyncData.pending.value = true
+      if (pendingWhenIdle) {
+        asyncData.pending.value = true
+      }
       asyncData.status.value = 'pending'
       // TODO: Cancel previous promise
       const promise = new Promise<ResT>(
@@ -689,7 +692,9 @@ function createAsyncData<
         .finally(() => {
           if ((promise as any).cancelled) { return }
 
-          asyncData.pending.value = false
+          if (pendingWhenIdle) {
+            asyncData.pending.value = false
+          }
 
           delete nuxtApp._asyncDataPromises[key]
         })
