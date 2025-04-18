@@ -23,6 +23,9 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 
+// @ts-expect-error virtual file
+import { asyncDataDefaults } from '#build/nuxt.config.mjs'
+
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries()),
@@ -180,7 +183,7 @@ describe('useAsyncData', () => {
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
     expect(nonimmediate.data.value).toBe(undefined)
     expect(nonimmediate.status.value).toBe('idle')
-    expect(nonimmediate.pending.value).toBe(true)
+    expect(nonimmediate.pending.value).toBe(false)
   })
 
   it('should capture errors', async () => {
@@ -201,7 +204,7 @@ describe('useAsyncData', () => {
     expect(syncedPending.value).toBe(false)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt\] \[asyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
+      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
     ))
     warn.mockClear()
   })
@@ -323,7 +326,7 @@ describe('useAsyncData', () => {
 
     await flushPromises()
 
-    expect(res.data.value).toBe(undefined)
+    expect(res.data.value).toBe(asyncDataDefaults.value)
     expect(res.status.value).toBe('idle')
     expect(res.pending.value).toBe(false)
 
@@ -334,7 +337,7 @@ describe('useAsyncData', () => {
       }, { lazy: true },
     )
 
-    expect(res2.data.value).toBe(undefined)
+    expect(res2.data.value).toBe(asyncDataDefaults.value)
     expect(res2.status.value).toBe('pending')
     expect(res2.pending.value).toBe(true)
 
@@ -459,7 +462,7 @@ describe('useAsyncData', () => {
     expect(warn).not.toHaveBeenCalled()
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt\] \[asyncData\] Incompatible options detected for "dedupedKey3" \(used at .*:\d+:\d+\):\n- mismatching `deep` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
+      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "dedupedKey3" \(used at .*:\d+:\d+\):\n- mismatching `deep` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
     ))
 
     let count = 0
@@ -473,7 +476,7 @@ describe('useAsyncData', () => {
       await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'))
       expect(warn).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`\\[nuxt\\] \\[asyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different \`${opt}\` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+          new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different \`${opt}\` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
         ))
     }
 
@@ -484,7 +487,7 @@ describe('useAsyncData', () => {
     expect(warn).not.toHaveBeenCalled()
     await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('bob'))
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      new RegExp(`\\[nuxt\\] \\[asyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+      new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
     ))
 
     warn.mockReset()
@@ -540,7 +543,7 @@ describe('useAsyncData', () => {
     expect(useNuxtData(firstKey).data.value).toBeUndefined()
     expect(useNuxtData(secondKey).data.value).toBe(secondKey)
 
-    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBeUndefined()
+    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(asyncDataDefaults.value)
     expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
 
     comp.unmount()

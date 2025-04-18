@@ -1,5 +1,6 @@
 import { defineComponent, onErrorCaptured, ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { onNuxtReady } from '../composables/ready'
 
 export default defineComponent({
   name: 'NuxtErrorBoundary',
@@ -11,16 +12,27 @@ export default defineComponent({
   },
   setup (_props, { slots, emit }) {
     const error = ref<Error | null>(null)
-    const nuxtApp = useNuxtApp()
 
     if (import.meta.client) {
-      onErrorCaptured((err, target, info) => {
-        if (!nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
-          emit('error', err)
-          nuxtApp.hooks.callHook('vue:error', err, target, info)
-          error.value = err
-          return false
+      const nuxtApp = useNuxtApp()
+
+      function handleError (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) {
+        const [err, instance, info] = args
+        emit('error', err)
+
+        nuxtApp.hooks.callHook('vue:error', err, instance, info)
+
+        error.value = err as Error
+      }
+
+      onErrorCaptured((err, instance, info) => {
+        if (!nuxtApp.isHydrating) {
+          handleError(err, instance, info)
+        } else {
+          onNuxtReady(() => handleError(err, instance, info))
         }
+
+        return false
       })
     }
 
