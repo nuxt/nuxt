@@ -41,7 +41,7 @@
     "defu": "^6.1.4",
     "esbuild": "^0.25.2",
     "escape-string-regexp": "^5.0.0",
-    "exsolve": "^1.0.4",
+    "exsolve": "^1.0.5",
     "externality": "^1.0.2",
     "get-port-please": "^3.1.2",
     "h3": "^1.15.1",
