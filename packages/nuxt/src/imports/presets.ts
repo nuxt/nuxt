@@ -30,7 +30,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/component',
   },
   {
-    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
+    imports: ['useAsyncData', 'useLazyAsyncData', 'useStaticAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
     from: '#app/composables/asyncData',
   },
   {

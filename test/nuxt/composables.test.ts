@@ -128,6 +128,7 @@ describe('composables', () => {
       'useServerHeadSafe',
       'useServerSeoMeta',
       'usePreviewMode',
+      'useStaticAsyncData',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
