@@ -193,9 +193,9 @@ export default defineNuxtModule({
             nuxt.apps.default.pages = pages
           }
           const addedPagePaths = new Set<string>()
-          function addPage (parent: EditableTreeNode, page: NuxtPage) {
+          function addPage (parent: EditableTreeNode, page: NuxtPage, basePath: string = '') {
             // Avoid duplicate keys in the generated RouteNamedMap type
-            const absolutePagePath = joinURL(parent.path, page.path)
+            const absolutePagePath = joinURL(basePath, page.path)
 
             // way to add a route without a file, which must be possible
             const route = addedPagePaths.has(absolutePagePath)
@@ -221,7 +221,7 @@ export default defineNuxtModule({
             // TODO: implement redirect support
             // if (page.redirect) {}
             if (page.children) {
-              page.children.forEach(child => addPage(route, child))
+              page.children.forEach(child => addPage(route, child, absolutePagePath))
             }
           }
 
