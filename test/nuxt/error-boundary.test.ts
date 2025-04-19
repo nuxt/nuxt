@@ -33,8 +33,9 @@ describe('NuxtErrorBoundary', () => {
               return () => h('span', 'default')
             },
           })),
-          // @ts-expect-error TODO: add types for error slot
-          error: ({ error, clearError }) => h('button', { onClick: () => clearError() }, error.value.toString()),
+          error: (
+            { error, clearError }: Parameters<InstanceType<typeof NuxtErrorBoundary>['$slots']['error']>[0],
+          ) => h('button', { onClick: () => clearError() }, error.toString()),
         }))
       },
     })
