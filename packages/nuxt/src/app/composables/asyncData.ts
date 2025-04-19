@@ -498,6 +498,29 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
+export type StaticAsyncData<DataT> = {
+  data: Ref<DataT>
+  pending: Ref<boolean>
+  status: Ref<AsyncDataRequestStatus>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+}
+
+export function useStaticAsyncData<
+  ResT,
+  NuxtErrorDataT = unknown,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+> (
+  key: MaybeRefOrGetter<string>,
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options: Omit<AsyncDataOptions<ResT, DataT, PickKeys>, 'lazy' | 'server' | 'default' | 'immediate' | 'throwOnError'> = {},
+): Promise<StaticAsyncData<DataT>> {
+  const nuxtApp = useNuxtApp()
+  const { data, pending, status, refresh } = useAsyncData<ResT, NuxtErrorDataT, DataT, PickKeys>(key, handler, { ...options, throwOnError: true })
+  const asyncReturn = { data: data as Ref<DataT>, pending, status, refresh }
+  return Promise.resolve(nuxtApp._asyncDataPromises[toValue(key)]).then(() => asyncReturn)
+}
+
 /** @since 3.1.0 */
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {
   const nuxtApp = useNuxtApp()
