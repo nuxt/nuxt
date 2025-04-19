@@ -23,6 +23,12 @@
       ]
     },
     {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "webpack"
+      ]
+    },
+    {
       "matchBaseBranches": [
         "main",
         "3.x"
