@@ -26,8 +26,8 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  error: (props: { error: Error, clearError: () => void }) => void
-  default: () => void
+  error(props: { error: Error, clearError: () => void }): any
+  default(): any
 }>()
 
 const error = shallowRef<Error | null>(null)
