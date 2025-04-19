@@ -1,8 +1,7 @@
 <template>
   <slot
     v-if="error"
-    :error="error"
-    :clear-error="clearError"
+    v-bind="{ error, clearError }"
     name="error"
   />
 
@@ -23,11 +22,11 @@ defineOptions({
 })
 
 const emit = defineEmits<{
-  error: [error: unknown]
+  error: [error: Error]
 }>()
 
 defineSlots<{
-  error: (props: { error: Error | null, clearError: () => void }) => void
+  error: (props: { error: Error, clearError: () => void }) => void
   default: () => void
 }>()
 
@@ -42,6 +41,7 @@ if (import.meta.client) {
 
   function handleError (...args: Parameters<Parameters<typeof onErrorCaptured<Error>>[0]>) {
     const [err, instance, info] = args
+
     emit('error', err)
 
     nuxtApp.hooks.callHook('vue:error', err, instance, info)
