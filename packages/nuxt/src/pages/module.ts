@@ -583,13 +583,12 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/middleware.d.ts',
-      getContents: ({ nuxt, app }) => {
-        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+      getContents: ({ app }) => {
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           'import type { NavigationGuard } from \'vue-router\'',
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          `declare module ${genString(composablesFile)} {`,
+          'declare module \'nuxt/app\' {',
           '  interface PageMeta {',
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
           '  }',
@@ -615,12 +614,11 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ nuxt, app }) => {
-        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+      getContents: ({ app }) => {
         return [
           'import type { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-          `declare module ${genString(composablesFile)} {`,
+          'declare module \'nuxt/app\' {',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
@@ -633,11 +631,9 @@ export default defineNuxtModule({
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
         filename: 'types/view-transitions.d.ts',
-        getContents: ({ nuxt }) => {
-          const runtimeDir = resolve(distDir, 'pages/runtime')
-          const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+        getContents: () => {
           return [
-            `declare module ${genString(composablesFile)} {`,
+            'declare module \'nuxt/app\' {',
             '  interface PageMeta {',
             '    viewTransition?: boolean | \'always\'',
             '  }',
