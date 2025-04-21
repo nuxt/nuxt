@@ -25,6 +25,7 @@ function toImports (specifiers: ImportSpecifier[]) {
 }
 
 const UnheadVue = '@unhead/vue'
+const UnheadVueRE = /@unhead\/vue/
 
 /**
  * To use composable in an async context we need to pass Nuxt context to the Unhead composables.
@@ -46,7 +47,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
     },
     transform: {
       filter: {
-        code: { include: UnheadVue },
+        code: { include: UnheadVueRE },
       },
       handler (code, id) {
         const s = new MagicString(code)

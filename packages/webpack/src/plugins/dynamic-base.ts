@@ -20,7 +20,7 @@ export const DynamicBasePlugin = createUnplugin((options: DynamicBasePluginOptio
     enforce: 'post' as const,
     transform: {
       filter: {
-        id: { include: 'entry' },
+        id: { include: /entry/ },
         code: { include: ENTRY_RE },
       },
       handler (code) {

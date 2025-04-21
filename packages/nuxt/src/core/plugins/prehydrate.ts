@@ -13,7 +13,7 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
     },
     transform: {
       filter: {
-        code: { include: 'onPrehydrate(' },
+        code: { include: /onPrehydrate\(/ },
       },
       async handler (code, id) {
         const s = new MagicString(code)

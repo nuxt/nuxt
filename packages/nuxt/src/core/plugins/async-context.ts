@@ -11,7 +11,7 @@ export const AsyncContextInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => 
     },
     transform: {
       filter: {
-        code: { include: '_withAsyncContext' },
+        code: { include: /_withAsyncContext/ },
       },
       handler (code) {
         const s = new MagicString(code)
