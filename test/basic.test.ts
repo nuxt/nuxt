@@ -3077,7 +3077,7 @@ describe('nuxt-time', () => {
     const logs: string[] = []
 
     page.on('console', (event) => {
-      if (!event.text().includes('<Suspense>')) {
+      if (!event.text().includes('<Suspense>') && !event.text().includes('[vite]')) {
         logs.push(event.text())
       }
     })
@@ -3108,7 +3108,7 @@ describe('nuxt-time', () => {
     const logs: string[] = []
 
     page.on('console', (event) => {
-      if (!event.text().includes('<Suspense>')) {
+      if (!event.text().includes('<Suspense>') && !event.text().includes('[vite]')) {
         logs.push(event.text())
       }
     })
