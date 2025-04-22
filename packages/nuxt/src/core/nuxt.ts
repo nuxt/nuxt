@@ -529,6 +529,13 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator'),
   })
 
+  // Add <NuxtTime>
+  addComponent({
+    name: 'NuxtTime',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-time.vue'),
+  })
+
   // Add <NuxtRouteAnnouncer>
   addComponent({
     name: 'NuxtRouteAnnouncer',
