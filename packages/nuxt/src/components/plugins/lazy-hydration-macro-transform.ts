@@ -15,7 +15,7 @@ interface LoaderOptions {
   clientDelayedComponentRuntime: string
 }
 
-const LAZY_HYDRATION_MACRO_RE = /(?:const\s+(\w+)\s*=\s*)?defineLazyHydrationComponent\(\s*['"]([^'"]+)['"]\s*,\s*\(\)\s*=>\s*import\(['"](.+?)['"]\)\)/g
+const LAZY_HYDRATION_MACRO_RE = /(?:\b(?:const|let|var)\s+(\w+)\s*=\s*)?defineLazyHydrationComponent\(\s*['"]([^'"]+)['"]\s*,\s*\(\s*\)\s*=>\s*import\s*\(\s*['"]([^'"]+)['"]\s*\)\s*\)/g
 const COMPONENT_NAME = /import\(["'].*\/([^\\/]+?)\.\w+["']\)/
 const HYDRATION_STRATEGY = ['visible', 'idle', 'interaction', 'mediaQuery', 'if', 'time', 'never']
 
