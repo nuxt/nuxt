@@ -7,7 +7,7 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/ui-templates"
   },
-  "license": "CC-BY-ND-4.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "vite build",
