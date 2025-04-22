@@ -2136,7 +2136,7 @@ describe('public directories', () => {
 })
 
 // TODO: dynamic paths in dev
-describe.only('dynamic paths', () => {
+describe.skipIf(isDev())('dynamic paths', () => {
   const publicFiles = ['/public.svg', '/css-only-public-asset.svg']
   const isPublicFile = (base = '/', file: string) => {
     if (isWebpack) {
