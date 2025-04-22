@@ -1,17 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
-import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-
 import { RouteInjectionPlugin } from '../src/pages/plugins/route-injection'
 
 describe('route-injection:transform', () => {
-  const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } } } as Nuxt).raw({}, { framework: 'rollup' }) as Plugin
+  const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } } } as Nuxt).raw({}, { framework: 'rollup' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
   const transform = async (source: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    const result = await (injectionPlugin.transform! as Function).call({ error: null, warn: null } as any, source, 'test.vue')
-    const code: string = typeof result === 'string' ? result : result?.code
+    const result = await injectionPlugin.transform.handler.call({ error: null, warn: null } as any, source, 'test.vue')
+    const code: string = typeof result === 'string' ? result : result!.code
     let depth = 0
     return code.split('\n').map((l) => {
       l = l.trim()
