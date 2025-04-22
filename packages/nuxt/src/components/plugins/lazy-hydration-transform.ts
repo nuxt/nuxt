@@ -14,6 +14,8 @@ interface LoaderOptions {
 }
 
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
+const SINGLE_LINE_COMMENT_RE = /\/\/.*(?:\n|$)/g
+const MULTI_LINE_COMMENT_RE = /\/\*[\s\S]*?\*\//g
 const EXCLUDE_RE = [
   // imported/exported from other module
   /\b(import|export)\b([\w$*{},\s]+?)\bfrom\s*["']/g,
@@ -52,11 +54,17 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       return isVue(id)
     },
     async transform (code) {
+      const codeWithoutComments = code
+        .replace(MULTI_LINE_COMMENT_RE, '')
+        .replace(SINGLE_LINE_COMMENT_RE, '\n')
+
       const variables = new Set<string>()
-      // TODO: strip comments
-      for (const regex of EXCLUDE_RE) {
-        for (const match of code.matchAll(regex)) {
-          variables.add(match[1])
+      if (codeWithoutComments !== code) {
+        for (const regex of EXCLUDE_RE) {
+          for (const match of codeWithoutComments.matchAll(regex)) {
+            if (!match[1]) { continue }
+            variables.add(match[1])
+          }
         }
       }
 
