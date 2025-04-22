@@ -92,13 +92,21 @@ export default defineResolvers({
     /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
      * You can also disable scripts more granularly within `routeRules`.
+     *
+     * If set to 'production' or `true`, JS will be disabled in production mode only.
+     * @type {'production' | 'all' | boolean}
      */
     noScripts: {
       async $resolve (val, get) {
-        return typeof val === 'boolean'
-          ? val
-          // @ts-expect-error TODO: legacy property - remove in v3.10
-          : (await (get('experimental')).then(e => e?.noScripts as boolean | undefined) ?? false)
+        const isValidLiteral = (val: unknown): val is 'production' | 'all' => {
+          return typeof val === 'string' && ['production', 'all'].includes(val)
+        }
+        return val === true
+          ? 'production'
+          : val === false || isValidLiteral(val)
+            ? val
+            // @ts-expect-error TODO: legacy property - remove in v3.10
+            : (await (get('experimental')).then(e => e?.noScripts as boolean | undefined && 'production') ?? false)
       },
     },
   },
@@ -325,7 +333,7 @@ export default defineResolvers({
     inlineRouteRules: false,
 
     /**
-     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect, props, middleware).
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
@@ -587,6 +595,38 @@ export default defineResolvers({
     purgeCachedData: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
+      },
+    },
+
+    /**
+     * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
+     */
+    granularCachedData: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      },
+    },
+
+    /**
+     * Whether to parse `error.data` when rendering a server error page.
+     */
+    parseErrorData: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion === 4
+      },
+    },
+
+    /**
+     * Whether Nuxt should stop if a Nuxt module is incompatible.
+     */
+    enforceModuleCompatibility: false,
+
+    /**
+     * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
+     */
+    pendingWhenIdle: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion !== 4
       },
     },
   },

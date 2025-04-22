@@ -77,8 +77,8 @@ describe('API routes', () => {
     expectTypeOf(useLazyAsyncData('lazy-api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useLazyAsyncData<TestResponse>('lazy-api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
   })
 
   it('works with useFetch', () => {
@@ -544,6 +544,16 @@ describe('composables', () => {
   it('provides proper type support when using overloads', () => {
     expectTypeOf(useState('test')).toEqualTypeOf(useState())
     expectTypeOf(useState('test', () => ({ foo: Math.random() }))).toEqualTypeOf(useState(() => ({ foo: Math.random() })))
+
+    expectTypeOf(useAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() })))
+      .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() })))
+    expectTypeOf(useAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+
+    expectTypeOf(useLazyAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() })))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
+    expectTypeOf(useLazyAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
 
     expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: Math.random() })))
       .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() })))

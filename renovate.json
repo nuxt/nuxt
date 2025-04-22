@@ -11,8 +11,7 @@
   ],
   "ignoreDeps": [
     "node",
-    "npm",
-    "oxc-parser"
+    "npm"
   ],
   "packageRules": [
     {
@@ -24,6 +23,12 @@
       ]
     },
     {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "webpack"
+      ]
+    },
+    {
       "matchBaseBranches": [
         "main",
         "3.x"
@@ -32,13 +37,6 @@
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
-      ]
-    },
-    {
-      "groupName": "webpack",
-      "matchPackageNames": [
-        "webpack",
-        "memfs"
       ]
     }
   ]
