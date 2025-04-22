@@ -421,8 +421,8 @@ importers:
         specifier: ^7.0.3
         version: 7.0.3
       impound:
-        specifier: ^0.2.2
-        version: 0.2.2(rollup@4.40.0)
+        specifier: ^1.0.0
+        version: 1.0.0
       jiti:
         specifier: ^2.4.2
         version: 2.4.2
@@ -4875,8 +4875,8 @@ packages:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
 
-  impound@0.2.2:
-    resolution: {integrity: sha512-9CNg+Ly8QjH4FwCUoE9nl1zeqY1NPK1s1P6Btp4L8lJxn8oZLN/0p6RZhitnyEL0BnVWrcVPfbs0Q3x+O/ucHg==}
+  impound@1.0.0:
+    resolution: {integrity: sha512-8lAJ+1Arw2sMaZ9HE2ZmL5zOcMnt18s6+7Xqgq2aUVy4P1nlzAyPtzCDxsk51KVFwHEEdc6OWvUyqwHwhRYaug==}
 
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
@@ -11997,15 +11997,13 @@ snapshots:
       parent-module: 1.0.1
       resolve-from: 4.0.0
 
-  impound@0.2.2(rollup@4.40.0):
+  impound@1.0.0:
     dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.40.0)
-      mlly: 1.7.4
+      exsolve: 1.0.5
       mocked-exports: 0.1.1
       pathe: 2.0.3
       unplugin: 2.3.2
-    transitivePeerDependencies:
-      - rollup
+      unplugin-utils: 0.2.4
 
   imurmurhash@0.1.4: {}
 
