@@ -14,10 +14,6 @@ Within your pages, components and plugins you can use `useCookie`, an SSR-friend
 const cookie = useCookie(name, options)
 ```
 
-::note
-`useCookie` only works in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
-::
-
 ::tip
 `useCookie` ref will automatically serialize and deserialize cookie value to JSON.
 ::
