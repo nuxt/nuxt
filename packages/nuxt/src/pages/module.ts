@@ -198,9 +198,9 @@ export default defineNuxtModule({
             nuxt.apps.default.pages = pages
           }
           const addedPagePaths = new Set<string>()
-          function addPage (parent: EditableTreeNode, page: NuxtPage) {
+          function addPage (parent: EditableTreeNode, page: NuxtPage, basePath: string = '') {
             // Avoid duplicate keys in the generated RouteNamedMap type
-            const absolutePagePath = joinURL(parent.path, page.path)
+            const absolutePagePath = joinURL(basePath, page.path)
 
             // way to add a route without a file, which must be possible
             const route = addedPagePaths.has(absolutePagePath)
@@ -226,7 +226,7 @@ export default defineNuxtModule({
             // TODO: implement redirect support
             // if (page.redirect) {}
             if (page.children) {
-              page.children.forEach(child => addPage(route, child))
+              page.children.forEach(child => addPage(route, child, absolutePagePath))
             }
           }
 
@@ -490,8 +490,8 @@ export default defineNuxtModule({
 
     // Extract macros from pages
     const extractedKeys = nuxt.options.future.compatibilityVersion === 4
-      ? [...defaultExtractionKeys, ...nuxt.options.experimental.extraPageMetaExtractionKeys]
-      : nuxt.options.experimental.extraPageMetaExtractionKeys
+      ? [...defaultExtractionKeys, 'middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]
+      : ['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]
 
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
@@ -588,13 +588,12 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/middleware.d.ts',
-      getContents: ({ nuxt, app }) => {
-        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+      getContents: ({ app }) => {
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           'import type { NavigationGuard } from \'vue-router\'',
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          `declare module ${genString(composablesFile)} {`,
+          'declare module \'nuxt/app\' {',
           '  interface PageMeta {',
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
           '  }',
@@ -625,12 +624,11 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ nuxt, app }) => {
-        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+      getContents: ({ app }) => {
         return [
           'import type { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-          `declare module ${genString(composablesFile)} {`,
+          'declare module \'nuxt/app\' {',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
@@ -643,11 +641,9 @@ export default defineNuxtModule({
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
         filename: 'types/view-transitions.d.ts',
-        getContents: ({ nuxt }) => {
-          const runtimeDir = resolve(distDir, 'pages/runtime')
-          const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+        getContents: () => {
           return [
-            `declare module ${genString(composablesFile)} {`,
+            'declare module \'nuxt/app\' {',
             '  interface PageMeta {',
             '    viewTransition?: boolean | \'always\'',
             '  }',

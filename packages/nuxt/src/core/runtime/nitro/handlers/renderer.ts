@@ -10,8 +10,9 @@ import { appendResponseHeader, createError, getQuery, getResponseStatus, getResp
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
-
+import destr from 'destr'
 import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitro/runtime'
+
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
 import { getEntryIds, getRenderer } from '../utils/renderer/build-files'
@@ -84,8 +85,15 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
   ssrContext.head.push(appHead, headEntryOptions)
 
-  if (ssrError && ssrError.statusCode) {
-    ssrError.statusCode = Number.parseInt(ssrError.statusCode as any)
+  if (ssrError) {
+    ssrError.statusCode &&= Number.parseInt(ssrError.statusCode as any)
+    if (process.env.PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
+      try {
+        ssrError.data = destr(ssrError.data)
+      } catch {
+        // ignore
+      }
+    }
     setSSRError(ssrContext, ssrError)
   }
 

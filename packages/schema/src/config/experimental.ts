@@ -333,7 +333,7 @@ export default defineResolvers({
     inlineRouteRules: false,
 
     /**
-     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect, props, middleware).
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
@@ -595,6 +595,38 @@ export default defineResolvers({
     purgeCachedData: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
+      },
+    },
+
+    /**
+     * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
+     */
+    granularCachedData: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      },
+    },
+
+    /**
+     * Whether to parse `error.data` when rendering a server error page.
+     */
+    parseErrorData: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion === 4
+      },
+    },
+
+    /**
+     * Whether Nuxt should stop if a Nuxt module is incompatible.
+     */
+    enforceModuleCompatibility: false,
+
+    /**
+     * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
+     */
+    pendingWhenIdle: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion !== 4
       },
     },
   },

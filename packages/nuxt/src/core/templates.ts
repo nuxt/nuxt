@@ -571,6 +571,8 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const crawlLinks = ${!!((ctx.nuxt as any)._nitro as Nitro).options.prerender.crawlLinks}`,
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
+      `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
+      `export const pendingWhenIdle = ${!!ctx.nuxt.options.experimental.pendingWhenIdle}`,
     ].join('\n\n')
   },
 }

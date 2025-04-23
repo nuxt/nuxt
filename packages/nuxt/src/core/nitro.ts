@@ -222,6 +222,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_EARLY_HINTS': String(nuxt.options.experimental.writeEarlyHints !== false),
       'process.env.NUXT_NO_SCRIPTS': String(nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)),
       'process.env.NUXT_INLINE_STYLES': String(!!nuxt.options.features.inlineStyles),
+      'process.env.PARSE_ERROR_DATA': String(!!nuxt.options.experimental.parseErrorData),
       'process.env.NUXT_JSON_PAYLOADS': String(!!nuxt.options.experimental.renderJsonPayloads),
       'process.env.NUXT_ASYNC_CONTEXT': String(!!nuxt.options.experimental.asyncContext),
       'process.env.NUXT_SHARED_DATA': String(!!nuxt.options.experimental.sharedPrerenderData),
@@ -483,7 +484,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
-    // @ts-expect-error this will be present in next nitro release
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
 

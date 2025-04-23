@@ -6,7 +6,7 @@
     </div>
     <button
       id="execute-btn"
-      @click="execute"
+      @click="() => execute()"
     >
       execute
     </button>
@@ -20,9 +20,12 @@
 </template>
 
 <script setup lang="ts">
+// @ts-expect-error virtual file
+import { asyncDataDefaults } from '#build/nuxt.config.mjs'
+
 const { data, execute } = await useAsyncData('immediateFalse', () => $fetch('/api/random'), { immediate: false })
 
-if (data.value !== undefined) {
-  throw new Error(`Initial data should be undefined: ` + data.value)
+if (data.value !== asyncDataDefaults.value) {
+  throw new Error(`Initial data should be ${asyncDataDefaults.value}: ` + data.value)
 }
 </script>
