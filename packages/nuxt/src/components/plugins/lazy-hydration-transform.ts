@@ -14,7 +14,7 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
-const SCRIPT_RE = /<script\b[^>]*>([\s\S]*?)<\/script>/g
+const SCRIPT_RE = /<script\b[^>]*>([\s\S]*?)<\/script>/gi
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
