@@ -155,6 +155,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const include = new Set<string>([
     join(relativeRootDir, '**/*'),
+    join(relativeRootDir, '.config/nuxt.*'),
     './nuxt.d.ts',
   ])
 
