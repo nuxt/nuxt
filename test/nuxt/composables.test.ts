@@ -23,7 +23,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 
-import { asyncDataDefaults, nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, nuxtDefaultErrorValue, pendingWhenIdle } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -182,7 +182,7 @@ describe('useAsyncData', () => {
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
     expect(nonimmediate.data.value).toBe(asyncDataDefaults.value)
     expect(nonimmediate.status.value).toBe('idle')
-    expect(nonimmediate.pending.value).toBe(false)
+    expect(nonimmediate.pending.value).toBe(pendingWhenIdle)
   })
 
   it('should capture errors', async () => {
