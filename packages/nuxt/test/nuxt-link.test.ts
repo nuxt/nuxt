@@ -283,7 +283,7 @@ describe('nuxt-link:propsOrAttributes', () => {
     })
 
     describe('trailingSlashBehavior', () => {
-      it('append slash', () => {
+      it('append slash using options', () => {
         const appendSlashOptions: NuxtLinkOptions = { trailingSlash: 'append' }
 
         expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
@@ -299,7 +299,7 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ href: 'mailto:test@example.com' }, appendSlashOptions).props.href).toEqual('mailto:test@example.com')
       })
 
-      it('remove slash', () => {
+      it('remove slash using options', () => {
         const removeSlashOptions: NuxtLinkOptions = { trailingSlash: 'remove' }
 
         expect(nuxtLink({ to: '/to' }, removeSlashOptions).props.to).toEqual('/to')
@@ -312,6 +312,39 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: '/to/?param=1' }, removeSlashOptions).props.to).toEqual('/to?param=1')
         expect(nuxtLink({ to: '/to/?param=1#abc' }, removeSlashOptions).props.to).toEqual('/to?param=1#abc')
         expect(nuxtLink({ href: 'mailto:test@example.com' }, removeSlashOptions).props.href).toEqual('mailto:test@example.com')
+      })
+
+      it('prop overrides option: append', () => {
+        const removeSlashOptions: NuxtLinkOptions = { trailingSlash: 'remove' }
+        // Prop takes priority
+        expect(nuxtLink({ to: '/to', trailingSlash: 'append' }, removeSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: '/to/', trailingSlash: 'append' }, removeSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: { path: '/to' }, trailingSlash: 'append' }, removeSlashOptions).props.to).toHaveProperty('path', '/to/')
+        // External links
+        expect(nuxtLink({ to: '/to', external: true, trailingSlash: 'append' }, removeSlashOptions).props.href).toBe('/to/')
+      })
+
+      it('prop overrides option: remove', () => {
+        const appendSlashOptions: NuxtLinkOptions = { trailingSlash: 'append' }
+        // Prop takes priority
+        expect(nuxtLink({ to: '/to/', trailingSlash: 'remove' }, appendSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: '/to', trailingSlash: 'remove' }, appendSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: { path: '/to/' }, trailingSlash: 'remove' }, appendSlashOptions).props.to).toHaveProperty('path', '/to')
+        // External links
+        expect(nuxtLink({ to: '/to/', external: true, trailingSlash: 'remove' }, appendSlashOptions).props.href).toBe('/to')
+      })
+
+      it('uses option when prop is not provided', () => {
+        const appendSlashOptions: NuxtLinkOptions = { trailingSlash: 'append' }
+        const removeSlashOptions: NuxtLinkOptions = { trailingSlash: 'remove' }
+
+        // Use append option
+        expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
+        // Use remove option
+        expect(nuxtLink({ to: '/to/' }, removeSlashOptions).props.to).toEqual('/to')
+        // External links with options
+        expect(nuxtLink({ to: '/to', external: true }, appendSlashOptions).props.href).toBe('/to/')
+        expect(nuxtLink({ to: '/to/', external: true }, removeSlashOptions).props.href).toBe('/to')
       })
     })
   })
