@@ -3,7 +3,10 @@ import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
+import type { Node } from 'estree'
 import { parse, walk } from 'ultrahtml'
+import { parse as toAcornAst } from 'acorn'
+import { walk as esWalk } from 'estree-walker'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
 
@@ -13,20 +16,8 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
+const SCRIPT_RE = /<script\b[^>]*>([\s\S]*?)<\/script>/g
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
-const SINGLE_LINE_COMMENT_RE = /\/\/.*(?:\n|$)/g
-const MULTI_LINE_COMMENT_RE = /\/\*[\s\S]*?\*\//g
-const EXCLUDE_RE = [
-  // imported/exported from other module
-  /\b(import|export)\b([\w$*{},\s]+?)\bfrom\s*["']/g,
-  // defined as function
-  /\bfunction\s*([\w$]+)\s*\(/g,
-  // defined as class
-  /\bclass\s*([\w$]+)\s*\{/g,
-  // defined as local variable
-  // eslint-disable-next-line regexp/no-super-linear-backtracking
-  /\b(?:const|let|var)\s+?(\[.*?\]|\{.*?\}|.+?)\s*?[=;\n]/gs,
-]
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
   hydrateOnVisible: 'Visible',
@@ -54,15 +45,65 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       return isVue(id)
     },
     async transform (code) {
-      const codeWithoutComments = code
-        .replace(MULTI_LINE_COMMENT_RE, '')
-        .replace(SINGLE_LINE_COMMENT_RE, '\n')
+      const declarations = new Set<string>()
 
-      const variables = new Set<string>()
-      for (const regex of EXCLUDE_RE) {
-        for (const match of codeWithoutComments.matchAll(regex)) {
-          if (!match[1]) { continue }
-          variables.add(match[1])
+      for (const { 1: script } of code.matchAll(SCRIPT_RE)) {
+        if (!script) { continue }
+
+        try {
+          const ast = toAcornAst(script, {
+            sourceType: 'module',
+            ecmaVersion: 'latest',
+            locations: true,
+          }) as Node
+
+          esWalk(ast, {
+            enter (node) {
+              switch (node.type) {
+                case 'ImportSpecifier':
+                case 'ImportDefaultSpecifier':
+                case 'ImportNamespaceSpecifier':
+                  declarations.add(node.local.name)
+                  return
+                case 'FunctionDeclaration':
+                case 'ClassDeclaration':
+                  if (node.id) {
+                    declarations.add(node.id.name)
+                  }
+                  return
+                case 'VariableDeclarator':
+                  if (node.id.type === 'Identifier') {
+                    declarations.add(node.id.name)
+                  } else {
+                    esWalk(node.id, {
+                      enter (node) {
+                        if (node.type === 'ObjectPattern') {
+                          node.properties.forEach((i) => {
+                            if (i.type === 'Property' && i.value.type === 'Identifier') {
+                              declarations.add(i.value.name)
+                            } else if (i.type === 'RestElement' && i.argument.type === 'Identifier') {
+                              declarations.add(i.argument.name)
+                            }
+                          })
+                        } else if (node.type === 'ArrayPattern') {
+                          node.elements.forEach((i) => {
+                            if (i?.type === 'Identifier') {
+                              declarations.add(i.name)
+                            }
+                            if (i?.type === 'RestElement' && i.argument.type === 'Identifier') {
+                              declarations.add(i.argument.name)
+                            }
+                          })
+                        }
+                      },
+                    })
+                  }
+                  return
+              }
+            },
+          })
+        } catch {
+          // ignore errors
         }
       }
 
@@ -84,7 +125,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             return
           }
 
-          if (variables.has(node.name)) {
+          if (declarations.has(node.name)) {
             return
           }
 
