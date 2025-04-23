@@ -3,10 +3,8 @@ import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
-import type { Node } from 'estree'
 import { parse, walk } from 'ultrahtml'
-import { parse as toAcornAst } from 'acorn'
-import { walk as esWalk } from 'estree-walker'
+import { ScopeTracker, parseAndWalk } from '../../core/utils/parse'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
 
@@ -45,66 +43,15 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       return isVue(id)
     },
     async transform (code) {
-      const declarations = new Set<string>()
+      const scopeTracker = new ScopeTracker({ keepExitedScopes: true })
 
       for (const { 1: script } of code.matchAll(SCRIPT_RE)) {
         if (!script) { continue }
-
         try {
-          const ast = toAcornAst(script, {
-            sourceType: 'module',
-            ecmaVersion: 'latest',
-            locations: true,
-          }) as Node
-
-          esWalk(ast, {
-            enter (node) {
-              switch (node.type) {
-                case 'ImportSpecifier':
-                case 'ImportDefaultSpecifier':
-                case 'ImportNamespaceSpecifier':
-                  declarations.add(node.local.name)
-                  return
-                case 'FunctionDeclaration':
-                case 'ClassDeclaration':
-                  if (node.id) {
-                    declarations.add(node.id.name)
-                  }
-                  return
-                case 'VariableDeclarator':
-                  if (node.id.type === 'Identifier') {
-                    declarations.add(node.id.name)
-                  } else {
-                    esWalk(node.id, {
-                      enter (node) {
-                        if (node.type === 'ObjectPattern') {
-                          node.properties.forEach((i) => {
-                            if (i.type === 'Property' && i.value.type === 'Identifier') {
-                              declarations.add(i.value.name)
-                            } else if (i.type === 'RestElement' && i.argument.type === 'Identifier') {
-                              declarations.add(i.argument.name)
-                            }
-                          })
-                        } else if (node.type === 'ArrayPattern') {
-                          node.elements.forEach((i) => {
-                            if (i?.type === 'Identifier') {
-                              declarations.add(i.name)
-                            }
-                            if (i?.type === 'RestElement' && i.argument.type === 'Identifier') {
-                              declarations.add(i.argument.name)
-                            }
-                          })
-                        }
-                      },
-                    })
-                  }
-                  return
-              }
-            },
+          parseAndWalk(script, 'inline.vue.ts', {
+            scopeTracker,
           })
-        } catch {
-          // ignore errors
-        }
+        } catch { /* ignore */ }
       }
 
       // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
@@ -125,7 +72,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             return
           }
 
-          if (declarations.has(node.name)) {
+          if (scopeTracker.getDeclaration(node.name)) {
             return
           }
 
