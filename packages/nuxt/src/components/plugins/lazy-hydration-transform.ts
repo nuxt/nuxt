@@ -14,7 +14,7 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
-const SCRIPT_RE = /<script\b[^>]*>([\s\S]*?)<\/script>/gi
+const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
@@ -45,7 +45,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
     async transform (code) {
       const scopeTracker = new ScopeTracker({ keepExitedScopes: true })
 
-      for (const { 1: script } of code.matchAll(SCRIPT_RE)) {
+      for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
         if (!script) { continue }
         try {
           parseAndWalk(script, 'inline.vue.ts', {
