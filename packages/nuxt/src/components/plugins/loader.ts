@@ -90,43 +90,57 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
+                  if (!code.includes('createLazyVisibleComponent')) {
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
+                  }
                   identifier += '_lazy_visible'
                   imports.add(`const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Interaction':
                 case 'interaction-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
+                  if (!code.includes('createLazyInteractionComponent')) {
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
+                  }
                   identifier += '_lazy_event'
                   imports.add(`const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Idle':
                 case 'idle-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
+                  if (!code.includes('createLazyIdleComponent')) {
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
+                  }
                   identifier += '_lazy_idle'
                   imports.add(`const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'MediaQuery':
                 case 'media-query-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
+                  if (!code.includes('createLazyMediaQueryComponent')) {
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
+                  }
                   identifier += '_lazy_media'
                   imports.add(`const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'If':
                 case 'if-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
+                  if (!code.includes('createLazyIfComponent')) {
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
+                  }
                   identifier += '_lazy_if'
                   imports.add(`const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Never':
                 case 'never-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
+                  if (!code.includes('createLazyNeverComponent')) {
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
+                  }
                   identifier += '_lazy_never'
                   imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
                 case 'Time':
                 case 'time-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
+                  if (!code.includes('createLazyTimeComponent')) {
+                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
+                  }
                   identifier += '_lazy_time'
                   imports.add(`const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
                   break
