@@ -59,12 +59,10 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
         .replace(SINGLE_LINE_COMMENT_RE, '\n')
 
       const variables = new Set<string>()
-      if (codeWithoutComments !== code) {
-        for (const regex of EXCLUDE_RE) {
-          for (const match of codeWithoutComments.matchAll(regex)) {
-            if (!match[1]) { continue }
-            variables.add(match[1])
-          }
+      for (const regex of EXCLUDE_RE) {
+        for (const match of codeWithoutComments.matchAll(regex)) {
+          if (!match[1]) { continue }
+          variables.add(match[1])
         }
       }
 
