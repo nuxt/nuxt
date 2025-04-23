@@ -11,9 +11,7 @@
   ],
   "ignoreDeps": [
     "node",
-    "npm",
-    "oxc-parser",
-    "@oxc-parser/binding-wasm32-wasi"
+    "npm"
   ],
   "packageRules": [
     {
