@@ -123,9 +123,6 @@ export async function buildClient (ctx: ViteBuildContext) {
         // work around vite optimizer bug
         '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
-      dedupe: [
-        'vue',
-      ],
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
     build: {
