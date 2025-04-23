@@ -8,6 +8,7 @@ import { createResolver } from '../src/resolve'
 
 const mockHooks = createHooks()
 const mockNuxt = {
+  version: '3.0.0',
   options: {
     components: [],
     modulesDir: [],
