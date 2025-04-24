@@ -117,7 +117,7 @@ export default defineNuxtModule({
 
     // Restart Nuxt when pages dir is added or removed
     const restartPaths = nuxt.options._layers.flatMap((layer) => {
-      const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'
+      const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : layer.config.dir)?.pages || 'pages'
       return [
         resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.app || 'app', 'router.options.ts'),
         resolve(layer.config.srcDir || layer.cwd, pagesDir),
@@ -279,7 +279,7 @@ export default defineNuxtModule({
 
     // Regenerate templates when adding or removing pages
     const updateTemplatePaths = nuxt.options._layers.flatMap((l) => {
-      const dir = (l.config.rootDir === nuxt.options.rootDir ? nuxt.options : l.config).dir
+      const dir = l.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : l.config.dir
       return [
         resolve(l.config.srcDir || l.cwd, dir?.pages || 'pages') + '/',
         resolve(l.config.srcDir || l.cwd, dir?.layouts || 'layouts') + '/',
