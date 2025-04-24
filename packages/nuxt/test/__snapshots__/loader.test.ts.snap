@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`LoaderPlugin > wrap WithIslandTeleport() > vite > componentIslands === true > should not wrap components with WithIslandTeleport 1`] = `
+"import { default as __nuxt_component_0 } from "/root/Counter.vue";
+
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_Counter = __nuxt_component_0;
+  _push(\`<div\`);
+  _push(\`</div>\`);
+}
+"
+`;
+
+exports[`LoaderPlugin > wrap WithIslandTeleport() > vite > componentIslands.selectiveClient === 'deep' > should wrap components with WithIslandTeleport 1`] = `
+"import { default as __nuxt_component_0 } from "/root/Counter.vue";
+import { withIslandTeleport } from "#app/components/utils";
+const __nuxt_component_0_wrapped = withIslandTeleport(__nuxt_component_0)
+
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_Counter = __nuxt_component_0_wrapped;
+  _push(\`<div\`);
+  _push(\`</div>\`);
+}
+"
+`;
+
+exports[`LoaderPlugin > wrap WithIslandTeleport() > vite > componentIslands.selectiveClient === 'deep' > should wrap components with WithIslandTeleport 2`] = `
+"import { default as __nuxt_component_0 } from "/root/Counter.vue";
+import { withIslandTeleport } from "#app/components/utils";
+const __nuxt_component_0_wrapped = withIslandTeleport(__nuxt_component_0)
+
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_Counter = __nuxt_component_0_wrapped;
+  _push(\`<div\`);
+  _push(\`</div>\`);
+}
+"
+`;
+
+exports[`LoaderPlugin > wrap WithIslandTeleport() > vite > componentIslands.selectiveClient === true > should not wrap components with WithIslandTeleport if not in island 1`] = `
+"import { default as __nuxt_component_0 } from "/root/Counter.vue";
+
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_Counter = __nuxt_component_0;
+  _push(\`<div\`);
+  _push(\`</div>\`);
+}
+"
+`;
+
+exports[`LoaderPlugin > wrap WithIslandTeleport() > vite > componentIslands.selectiveClient === true > should wrap components with WithIslandTeleport in island 1`] = `
+"import { default as __nuxt_component_0 } from "/root/Counter.vue";
+import { withIslandTeleport } from "#app/components/utils";
+const __nuxt_component_0_wrapped = withIslandTeleport(__nuxt_component_0)
+
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  const _component_Counter = __nuxt_component_0_wrapped;
+  _push(\`<div\`);
+  _push(\`</div>\`);
+}
+"
+`;

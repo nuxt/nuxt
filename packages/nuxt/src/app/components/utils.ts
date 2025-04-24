@@ -1,8 +1,9 @@
-import { Transition, createStaticVNode, h } from 'vue'
-import type { RendererNode, VNode } from 'vue'
+import { Transition, createStaticVNode, defineComponent, h, mergeProps } from 'vue'
+import type { DefineComponent, RendererNode, VNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
+import nuxtTeleportIslandComponent from './nuxt-teleport-island-component'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -169,4 +170,38 @@ export function isStartFragment (element: RendererNode) {
 
 export function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+
+const componentWithTeleport = new WeakMap()
+
+/**
+ * Wrapper for components that should be teleported to islands placeholders
+ */
+export function withIslandTeleport (Component: DefineComponent) {
+  if (componentWithTeleport.has(Component)) {
+    return componentWithTeleport.get(Component)
+  }
+
+  const wrapper = defineComponent({
+    props: {
+      nuxtClient: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    setup (props, { attrs, slots }) {
+      return () => {
+        if ('nuxtClient' in props && props.nuxtClient) {
+          return h(nuxtTeleportIslandComponent, mergeProps(attrs, props), {
+            default: () => h(Component, attrs, slots),
+          })
+        }
+        return h(Component, attrs, slots)
+      }
+    },
+  })
+
+  componentWithTeleport.set(Component, wrapper)
+
+  return wrapper
 }
