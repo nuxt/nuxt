@@ -51,93 +51,99 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return islands.some(c => c.filePath === pathname)
     },
-    async transform (code, id) {
-      if (!HAS_SLOT_OR_CLIENT_RE.test(code)) { return }
-      const template = code.match(TEMPLATE_RE)
-      if (!template) { return }
-      const startingIndex = template.index || 0
-      const s = new MagicString(code)
+    transform: {
+      filter: {
+        code: {
+          include: [HAS_SLOT_OR_CLIENT_RE],
+        },
+      },
+      async handler (code, id) {
+        const template = code.match(TEMPLATE_RE)
+        if (!template) { return }
+        const startingIndex = template.index || 0
+        const s = new MagicString(code)
 
-      if (!code.match(SCRIPT_RE)) {
-        s.prepend('<script setup>' + IMPORT_CODE + '</script>')
-      } else {
-        s.replace(SCRIPT_RE, (full) => {
-          return full + IMPORT_CODE
+        if (!code.match(SCRIPT_RE)) {
+          s.prepend('<script setup>' + IMPORT_CODE + '</script>')
+        } else {
+          s.replace(SCRIPT_RE, (full) => {
+            return full + IMPORT_CODE
+          })
+        }
+
+        let hasNuxtClient = false
+
+        const ast = parse(template[0])
+        await walk(ast, (node) => {
+          if (node.type !== ELEMENT_NODE) {
+            return
+          }
+          if (node.name === 'slot') {
+            const { attributes, children, loc } = node
+
+            const slotName = attributes.name ?? 'default'
+
+            if (attributes.name) { delete attributes.name }
+            if (attributes['v-bind']) {
+              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
+            }
+            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+            const bindings = getPropsToString(attributes)
+            // add the wrapper
+            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
+
+            if (children.length) {
+              // pass slot fallback to NuxtTeleportSsrSlot fallback
+              const attrString = attributeToString(attributes)
+              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
+            } else {
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
+            }
+
+            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
+            return
+          }
+
+          if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
+            return
+          }
+
+          hasNuxtClient = true
+
+          if (!isVite || !options.selectiveClient) {
+            return
+          }
+
+          const { loc, attributes } = node
+          const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
+          const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+
+          let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
+          if (wrapperAttributes) {
+            startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
+          }
+
+          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
+          s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
+          s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
         })
-      }
 
-      let hasNuxtClient = false
-
-      const ast = parse(template[0])
-      await walk(ast, (node) => {
-        if (node.type !== ELEMENT_NODE) {
-          return
-        }
-        if (node.name === 'slot') {
-          const { attributes, children, loc } = node
-
-          const slotName = attributes.name ?? 'default'
-
-          if (attributes.name) { delete attributes.name }
-          if (attributes['v-bind']) {
-            attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
+        if (hasNuxtClient) {
+          if (!options.selectiveClient) {
+            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
+          } else if (!isVite) {
+            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
           }
-          const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-          const bindings = getPropsToString(attributes)
-          // add the wrapper
-          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
+        }
 
-          if (children.length) {
-            // pass slot fallback to NuxtTeleportSsrSlot fallback
-            const attrString = attributeToString(attributes)
-            const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
-            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
-          } else {
-            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: s.generateMap({ source: id, includeContent: true }),
           }
-
-          s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
-          return
         }
-
-        if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
-          return
-        }
-
-        hasNuxtClient = true
-
-        if (!isVite || !options.selectiveClient) {
-          return
-        }
-
-        const { loc, attributes } = node
-        const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
-        const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-
-        let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
-        if (wrapperAttributes) {
-          startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
-        }
-
-        s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
-        s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
-        s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
-      })
-
-      if (hasNuxtClient) {
-        if (!options.selectiveClient) {
-          console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
-        } else if (!isVite) {
-          console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
-        }
-      }
-
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: s.generateMap({ source: id, includeContent: true }),
-        }
-      }
+      },
     },
   }
 })

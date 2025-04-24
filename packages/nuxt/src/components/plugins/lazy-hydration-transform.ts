@@ -38,70 +38,75 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
+
       return isVue(id)
     },
-    async transform (code) {
-      // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
-      const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
-      if (!template) { return }
-      if (!LAZY_HYDRATION_PROPS_RE.test(template)) {
-        return
-      }
-      const s = new MagicString(code)
-      try {
-        const ast = parse(template)
-        const components = options.getComponents()
-        await walk(ast, (node) => {
-          if (node.type !== 1 /* ELEMENT_NODE */) {
-            return
-          }
-          if (!/^(?:Lazy|lazy-)/.test(node.name)) {
-            return
-          }
-          const pascalName = pascalCase(node.name.slice(4))
-          if (!components.some(c => c.pascalName === pascalName)) {
-            // not auto-imported
-            return
-          }
+    transform: {
+      filter: {
+        code: { include: TEMPLATE_RE },
+      },
+      async handler (code) {
+        // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
+        const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE)!
+        if (!LAZY_HYDRATION_PROPS_RE.test(template)) {
+          return
+        }
+        const s = new MagicString(code)
+        try {
+          const ast = parse(template)
+          const components = options.getComponents()
+          await walk(ast, (node) => {
+            if (node.type !== 1 /* ELEMENT_NODE */) {
+              return
+            }
+            if (!/^(?:Lazy|lazy-)/.test(node.name)) {
+              return
+            }
+            const pascalName = pascalCase(node.name.slice(4))
+            if (!components.some(c => c.pascalName === pascalName)) {
+              // not auto-imported
+              return
+            }
 
-          let strategy: string | undefined
+            let strategy: string | undefined
 
-          for (const attr in node.attributes) {
-            const isDynamic = attr.startsWith(':')
-            const prop = camelCase(isDynamic ? attr.slice(1) : attr)
-            if (prop in hydrationStrategyMap) {
-              if (strategy) {
-                logger.warn(`Multiple hydration strategies are not supported in the same component`)
-              } else {
-                strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
+            for (const attr in node.attributes) {
+              const isDynamic = attr.startsWith(':')
+              const prop = camelCase(isDynamic ? attr.slice(1) : attr)
+              if (prop in hydrationStrategyMap) {
+                if (strategy) {
+                  logger.warn(`Multiple hydration strategies are not supported in the same component`)
+                } else {
+                  strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
+                }
               }
             }
-          }
 
-          if (strategy) {
-            const newName = 'Lazy' + strategy + pascalName
-            const chunk = template.slice(node.loc[0].start, node.loc.at(-1)!.end)
-            const chunkOffset = node.loc[0].start + offset
-            const { 0: startingChunk, index: startingPoint = 0 } = chunk.match(new RegExp(`<${node.name}[^>]*>`)) || {}
-            s.overwrite(startingPoint + chunkOffset, startingPoint + chunkOffset + startingChunk!.length, startingChunk!.replace(node.name, newName))
+            if (strategy) {
+              const newName = 'Lazy' + strategy + pascalName
+              const chunk = template.slice(node.loc[0].start, node.loc.at(-1)!.end)
+              const chunkOffset = node.loc[0].start + offset
+              const { 0: startingChunk, index: startingPoint = 0 } = chunk.match(new RegExp(`<${node.name}[^>]*>`)) || {}
+              s.overwrite(startingPoint + chunkOffset, startingPoint + chunkOffset + startingChunk!.length, startingChunk!.replace(node.name, newName))
 
-            const { 0: endingChunk, index: endingPoint } = chunk.match(new RegExp(`<\\/${node.name}[^>]*>$`)) || {}
-            if (endingChunk && endingPoint) {
-              s.overwrite(endingPoint + chunkOffset, endingPoint + chunkOffset + endingChunk.length, endingChunk.replace(node.name, newName))
+              const { 0: endingChunk, index: endingPoint } = chunk.match(new RegExp(`<\\/${node.name}[^>]*>$`)) || {}
+              if (endingChunk && endingPoint) {
+                s.overwrite(endingPoint + chunkOffset, endingPoint + chunkOffset + endingChunk.length, endingChunk.replace(node.name, newName))
+              }
             }
-          }
-        })
-      } catch {
-        // ignore errors if it's not html-like
-      }
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap
-            ? s.generateMap({ hires: true })
-            : undefined,
+          })
+        } catch {
+          // ignore errors if it's not html-like
         }
-      }
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
+          }
+        }
+      },
     },
   }
 })

@@ -56,22 +56,27 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
       const _id = normalize(id)
       return layers.some(dir => _id.startsWith(dir))
     },
-    transform (code, id) {
-      if (meta.framework === 'vite') { return }
+    transform: {
+      filter: {
+        code: { include: ALIAS_RE_SINGLE },
+      },
+      handler (code, id) {
+        if (meta.framework === 'vite') { return }
 
-      const _id = normalize(id)
-      const layer = layers.find(l => _id.startsWith(l))
-      if (!layer || !ALIAS_RE_SINGLE.test(code)) { return }
+        const _id = normalize(id)
+        const layer = layers.find(l => _id.startsWith(l))
+        if (!layer) { return }
 
-      const s = new MagicString(code)
-      s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
+        const s = new MagicString(code)
+        s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
+          }
         }
-      }
+      },
     },
   }
 })
