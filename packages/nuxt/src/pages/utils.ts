@@ -8,7 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import type { Node, Property } from 'estree'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NuxtOptions, NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
 import { parseAndWalk, withLocations } from '../core/utils/parse'
@@ -44,7 +44,7 @@ interface ScannedFile {
 
 export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
+    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config as NuxtOptions).dir?.pages || 'pages'),
   )
 
   const scannedFiles: ScannedFile[] = []

@@ -189,7 +189,7 @@ export default defineResolvers({
        */
       composables: {
         server: {
-          $resolve: async (val, get) => defu(val || {},
+          $resolve: async (val, get) => defu(typeof val === 'object' ? val as Record<string, string[]> || {} : {},
             await get('dev')
               ? {}
               : {
@@ -199,7 +199,7 @@ export default defineResolvers({
           ),
         },
         client: {
-          $resolve: async (val, get) => defu(val || {},
+          $resolve: async (val, get) => defu(typeof val === 'object' ? val as Record<string, string[]> || {} : {},
             await get('dev')
               ? {}
               : {
