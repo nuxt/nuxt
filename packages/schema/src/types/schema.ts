@@ -26,6 +26,7 @@ import type { Configuration, WebpackError } from 'webpack'
 import type { ProcessOptions } from 'postcss'
 import type { Options as Options3 } from 'webpack-dev-middleware'
 import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
+import type { AppConfig as VueAppConfig } from 'vue'
 
 import type { RouterConfigSerializable } from './router'
 import type { NuxtHooks } from './hooks'
@@ -82,7 +83,7 @@ export interface ConfigSchema {
    *
    * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
    */
-  devtools: { enabled: boolean, [key: string]: any }
+  devtools: boolean | { enabled: boolean, [key: string]: any }
 
   /**
    * Vue.js config
@@ -116,7 +117,8 @@ export interface ConfigSchema {
      *
      * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
      */
-    config: any
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    config: { [K in keyof VueAppConfig]: Exclude<VueAppConfig[K], Function> }
   }
 
   /**
@@ -551,13 +553,8 @@ export interface ConfigSchema {
        * ```
        */
       composables: {
-        server: {
-          [key: string]: any
-        }
-
-        client: {
-          [key: string]: any
-        }
+        server: Record<string, string[]>
+        client: Record<string, string[]>
       }
     }
 
@@ -939,10 +936,10 @@ export interface ConfigSchema {
    * The watchers property lets you overwrite watchers configuration in your `nuxt.config`.
    */
   watchers: {
-  /**
-   * An array of event types, which, when received, will cause the watcher to restart.
-   */
-    rewatchOnRawEvents: any
+    /**
+     * An array of event types, which, when received, will cause the watcher to restart.
+     */
+    rewatchOnRawEvents: string[]
 
     /**
      * `watchOptions` to pass directly to webpack.
@@ -1686,7 +1683,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _requiredModules: any
+  _requiredModules: Record<string, boolean>
 
   /**
    *
@@ -1698,13 +1695,13 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _nuxtConfigFile: any
+  _nuxtConfigFile: string
 
   /**
    *
    * @private
    */
-  _nuxtConfigFiles: Array<any>
+  _nuxtConfigFiles: Array<string>
 
   /**
    * @default ""
