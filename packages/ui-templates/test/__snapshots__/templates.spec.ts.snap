@@ -545,6 +545,9 @@ exports[`template > produces correct output for error-dev template 1`] = `
   height: 60vh;
   opacity: 0.8;
 }
+.pointer-events-none {
+  pointer-events: none;
+}
 .fixed {
   position: fixed;
 }
