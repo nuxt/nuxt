@@ -3,6 +3,7 @@ import type { Node, SyncHandler } from 'estree-walker'
 import type { ArrowFunctionExpression, CatchClause, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program, VariableDeclaration } from 'estree'
 import { type SameShape, type TransformOptions, type TransformResult, transform as esbuildTransform } from 'esbuild'
 import { tryUseNuxt } from '@nuxt/kit'
+import { parseSync } from 'oxc-parser'
 
 export type { Node }
 
@@ -32,21 +33,6 @@ export function walk (ast: Program | Node, callback: Partial<WalkOptions>) {
       callback.leave?.call(this, node as WithLocations<Node>, parent as WithLocations<Node> | null, { key, index, ast })
     },
   })
-}
-
-let parseSync: typeof import('oxc-parser').parseSync
-
-export async function initParser () {
-  try {
-    parseSync = await import('oxc-parser').then(r => r.parseSync)
-  } catch {
-    // this can fail on stackblitz so we fall back to wasm build
-    const { parseSync: wasmParse } = await import('@oxc-parser/wasm')
-    parseSync = (sourceFilename, code, options) => wasmParse(code, {
-      sourceFilename: sourceFilename.replace(/\?.*$/, '') + `.${options?.lang || 'ts'}`,
-      sourceType: 'module',
-    }) as any
-  }
 }
 
 export function parseAndWalk (code: string, sourceFilename: string, callback: WalkerCallback): Program
