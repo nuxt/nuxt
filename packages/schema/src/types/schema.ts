@@ -71,7 +71,6 @@ export interface ConfigSchema {
   /**
    * Manually disable nuxt telemetry.
    *
-   *
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
    */
   telemetry: boolean | Record<string, any>
@@ -80,7 +79,6 @@ export interface ConfigSchema {
    * Enable Nuxt DevTools for development.
    *
    * Breaking changes for devtools might not reflect on the version of Nuxt.
-   *
    *
    * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
    */
@@ -326,7 +324,6 @@ export interface ConfigSchema {
    *   default Nuxt image will be used.
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    *
-   *
    * @example ~/app/spa-loading-template.html
    * ```html
    * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
@@ -379,7 +376,6 @@ export interface ConfigSchema {
    * Each plugin can be a string (which can be an absolute or relative path to a file). If it ends with `.client` or `.server` then it will be automatically loaded only in the appropriate context.
    * It can also be an object with `src` and `mode` keys.
    *
-   *
    * @note Plugins are also auto-registered from the `~/plugins` directory
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
@@ -404,7 +400,6 @@ export interface ConfigSchema {
    * You can define the CSS files/modules/libraries you want to set globally (included in every page).
    *
    * Nuxt will automatically guess the file type by its extension and use the appropriate pre-processor. You will still need to install the required loader if you need to use them.
-   *
    *
    * @example
    * ```js
@@ -489,7 +484,6 @@ export interface ConfigSchema {
    * If you want to transpile specific dependencies with Babel, you can add them here. Each item in transpile can be a package name, a function, a string or regex object matching the dependency's file name.
    *
    * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
-   *
    *
    * @example
    * ```js
@@ -579,7 +573,6 @@ export interface ConfigSchema {
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
-   *
    *
    * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
    *
@@ -765,7 +758,6 @@ export interface ConfigSchema {
    * Each module is either a string (which can refer to a package, or be a path to a file), a tuple with the module as first string and the options as a second object, or an inline module function.
    * Nuxt tries to resolve each item in the modules array using node require path (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
    *
-   *
    * @note Modules are executed sequentially so the order is important. First, the modules defined in `nuxt.config.ts` are loaded. Then, modules found in the `modules/`
    * directory are executed, and they load in alphabetical order.
    *
@@ -868,7 +860,6 @@ export interface ConfigSchema {
   /**
    * You can improve your DX by defining additional aliases to access custom directories within your JavaScript and CSS.
    *
-   *
    * @note Within a webpack context (image sources, CSS - but not JavaScript) you _must_ access
    * your alias by prefixing it with `~`.
    *
@@ -911,7 +902,6 @@ export interface ConfigSchema {
 
   /**
    * Pass options directly to `node-ignore` (which is used by Nuxt to ignore files).
-   *
    *
    * @see [node-ignore](https://github.com/kaelzhang/node-ignore)
    *
@@ -978,7 +968,6 @@ export interface ConfigSchema {
    * Internally, hooks follow a naming pattern using colons (e.g., build:done).
    * For ease of configuration, you can also structure them as an hierarchical object in `nuxt.config` (as below).
    *
-   *
    * @example
    * ```js
    * import fs from 'node:fs'
@@ -1007,7 +996,6 @@ export interface ConfigSchema {
    * It mainly should hold _private_ configuration which is not exposed on the frontend. This could include a reference to your API secret tokens.
    * Anything under `public` and `app` will be exposed to the frontend as well.
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment variable `NUXT_API_KEY=my-api-key NUXT_PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
-   *
    *
    * @example
    * ```js
@@ -1630,7 +1618,6 @@ export interface ConfigSchema {
    * If you are using the crawler, this will be only the starting point for route generation. This is often necessary when using dynamic routes.
    * It is preferred to use `nitro.prerender.routes`.
    *
-   *
    * @example
    * ```js
    * routes: ['/users/1', '/users/2', '/users/3']
@@ -1741,14 +1728,12 @@ export interface ConfigSchema {
   /**
    * Configuration for Nitro.
    *
-   *
    * @see [Nitro configuration docs](https://nitro.unjs.io/config/)
    */
   nitro: NitroConfig
 
   /**
    * Global route options applied to matching server routes.
-   *
    *
    * @experimental This is an experimental feature and API may change in the future.
    *
@@ -1761,7 +1746,6 @@ export interface ConfigSchema {
    *
    * Each handler accepts the following options:
    * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/unjs/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
-   *
    *
    * @see [`server/` directory documentation](https://nuxt.com/docs/guide/directory-structure/server)
    *
@@ -1778,7 +1762,6 @@ export interface ConfigSchema {
 
   /**
    * Nitro development-only server handlers.
-   *
    *
    * @see [Nitro server routes documentation](https://nitro.unjs.io/guide/routing)
    */
@@ -1801,7 +1784,6 @@ export interface ConfigSchema {
   router: {
   /**
    * Additional router options passed to `vue-router`. On top of the options for `vue-router`, Nuxt offers additional options to customize the router (see below).
-   *
    *
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
@@ -1883,7 +1865,6 @@ export interface ConfigSchema {
   /**
    * Configuration that will be passed directly to Vite.
    *
-   *
    * @see [Vite configuration docs](https://vite.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
@@ -1894,7 +1875,6 @@ export interface ConfigSchema {
    * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
    *
    * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
-   *
    *
    * @example
    * ```js
