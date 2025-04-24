@@ -42,13 +42,13 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       }
       return isVue(id)
     },
-    async transform (code) {
+    async transform (code, id) {
       const scopeTracker = new ScopeTracker({ keepExitedScopes: true })
 
       for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
         if (!script) { continue }
         try {
-          parseAndWalk(script, 'inline.vue.ts', {
+          parseAndWalk(script, id, {
             scopeTracker,
           })
         } catch { /* ignore */ }
