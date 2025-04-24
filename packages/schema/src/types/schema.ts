@@ -117,8 +117,7 @@ export interface ConfigSchema {
      *
      * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    config: { [K in keyof VueAppConfig]: Exclude<VueAppConfig[K], Function> }
+    config: Serializable<VueAppConfig>
   }
 
   /**
