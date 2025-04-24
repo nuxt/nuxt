@@ -2,7 +2,7 @@ import type { InputObject } from 'untyped'
 
 import { defineUntypedSchema } from 'untyped'
 
-import type { ConfigSchema } from '../../schema/config'
+import type { ConfigSchema } from '../types/schema'
 
 type KeysOf<T, Prefix extends string | unknown = unknown> = keyof T extends string
   ?
