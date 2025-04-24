@@ -154,9 +154,9 @@ export async function _generateTypes (nuxt: Nuxt) {
   const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
 
   const include = new Set<string>([
-    './nuxt.d.ts',
-    join(relativeRootDir, '.config/nuxt.*'),
     join(relativeRootDir, '**/*'),
+    join(relativeRootDir, '.config/nuxt.*'),
+    './nuxt.d.ts',
   ])
 
   if (nuxt.options.srcDir !== nuxt.options.rootDir) {
