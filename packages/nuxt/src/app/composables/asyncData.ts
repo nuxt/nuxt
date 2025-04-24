@@ -497,6 +497,23 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
     nuxtApp.payload.data[key] = asyncDataDefaults.value
   }
 
+  if (nuxtApp._asyncData[key]) {
+    const data = nuxtApp._asyncData[key]
+    data._deps++
+    if (getCurrentScope()) {
+      onScopeDispose(() => {
+        data._deps--
+        // clean up memory when it no longer is needed
+        if (data._deps === 0) {
+          data?._off()
+          if (purgeCachedData) {
+            clearNuxtDataByKey(nuxtApp, key)
+          }
+        }
+      })
+    }
+  }
+
   return {
     data: computed({
       get () {
