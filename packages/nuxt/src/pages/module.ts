@@ -4,7 +4,7 @@ import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, 
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
-import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
@@ -58,7 +58,7 @@ export default defineNuxtModule({
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
 
     const pagesDirs = nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
+      layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config as NuxtOptions).dir?.pages || 'pages'),
     )
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
@@ -117,7 +117,7 @@ export default defineNuxtModule({
 
     // Restart Nuxt when pages dir is added or removed
     const restartPaths = nuxt.options._layers.flatMap((layer) => {
-      const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'
+      const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : layer.config.dir)?.pages || 'pages'
       return [
         resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.app || 'app', 'router.options.ts'),
         resolve(layer.config.srcDir || layer.cwd, pagesDir),
@@ -279,7 +279,7 @@ export default defineNuxtModule({
 
     // Regenerate templates when adding or removing pages
     const updateTemplatePaths = nuxt.options._layers.flatMap((l) => {
-      const dir = (l.config.rootDir === nuxt.options.rootDir ? nuxt.options : l.config).dir
+      const dir = l.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : l.config.dir
       return [
         resolve(l.config.srcDir || l.cwd, dir?.pages || 'pages') + '/',
         resolve(l.config.srcDir || l.cwd, dir?.layouts || 'layouts') + '/',

@@ -961,7 +961,7 @@ async function resolveModules (nuxt: Nuxt) {
     }
 
     // Secondly automatically register modules from layer's module directory
-    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
+    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
       `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
       `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,

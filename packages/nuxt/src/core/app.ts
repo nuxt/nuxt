@@ -157,7 +157,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   const reversedConfigs = layerConfigs.slice().reverse()
   app.layouts = {}
   for (const config of layerConfigs) {
-    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
+    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.layouts || 'layouts'
     const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
@@ -173,7 +173,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve middleware/ from all config layers, layers first
   app.middleware = []
   for (const config of reversedConfigs) {
-    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
+    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
       `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`,
       ...nuxt.options.future.compatibilityVersion === 4
@@ -194,7 +194,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve plugins, first extended layers and then base
   app.plugins = []
   for (const config of reversedConfigs) {
-    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
+    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
