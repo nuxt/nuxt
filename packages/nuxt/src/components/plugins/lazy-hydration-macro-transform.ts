@@ -19,6 +19,8 @@ const LAZY_HYDRATION_MACRO_RE = /(?:\b(?:const|let|var)\s+(\w+)\s*=\s*)?defineLa
 const COMPONENT_NAME = /import\(["'].*\/([^\\/]+?)\.\w+["']\)/
 const HYDRATION_STRATEGY = ['visible', 'idle', 'interaction', 'mediaQuery', 'if', 'time', 'never']
 
+export const LAZY_HYDRATION_MAGIC_COMMENT = '/* #__LAZY_HYDRATION_MACRO__ */'
+
 export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -89,6 +91,7 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
       }
 
       if (s.hasChanged()) {
+        s.prepend(LAZY_HYDRATION_MAGIC_COMMENT)
         return {
           code: s.toString(),
           map: options.sourcemap

@@ -9,6 +9,8 @@ import { tryUseNuxt } from '@nuxt/kit'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 import { installNuxtModule } from '../../core/features'
 import { logger } from '../../utils'
+import { ScopeTracker, parseAndWalk } from '../../core/utils/parse'
+import { LAZY_HYDRATION_MAGIC_COMMENT } from './lazy-hydration-macro-transform'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -44,6 +46,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 
       let num = 0
       const imports = new Set<string>()
+      const lazyHydrationImports = new Map<string, Set<string>>()
       const map = new Map<Component, string>()
       const s = new MagicString(code)
       // replace `_resolveComponent("...")` to direct import
@@ -89,61 +92,61 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
               const relativePath = relative(options.srcDir, component.filePath)
               switch (modifier) {
                 case 'Visible':
-                case 'visible-':
-                  if (!code.includes('createLazyVisibleComponent')) {
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
-                  }
+                case 'visible-': {
                   identifier += '_lazy_visible'
-                  imports.add(`const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  const importer = `const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`
+                  const set = (lazyHydrationImports.get('createLazyVisibleComponent') || new Set()).add(importer)
+                  lazyHydrationImports.set('createLazyVisibleComponent', set)
                   break
+                }
                 case 'Interaction':
-                case 'interaction-':
-                  if (!code.includes('createLazyInteractionComponent')) {
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
-                  }
+                case 'interaction-': {
                   identifier += '_lazy_event'
-                  imports.add(`const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  const importer = `const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`
+                  const set = (lazyHydrationImports.get('createLazyInteractionComponent') || new Set()).add(importer)
+                  lazyHydrationImports.set('createLazyInteractionComponent', set)
                   break
+                }
                 case 'Idle':
-                case 'idle-':
-                  if (!code.includes('createLazyIdleComponent')) {
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
-                  }
+                case 'idle-': {
                   identifier += '_lazy_idle'
-                  imports.add(`const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  const importer = `const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`
+                  const set = (lazyHydrationImports.get('createLazyIdleComponent') || new Set()).add(importer)
+                  lazyHydrationImports.set('createLazyIdleComponent', set)
                   break
+                }
                 case 'MediaQuery':
-                case 'media-query-':
-                  if (!code.includes('createLazyMediaQueryComponent')) {
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
-                  }
-                  identifier += '_lazy_media'
-                  imports.add(`const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                case 'media-query-':{
+                  identifier += '_lazy_media_query'
+                  const importer = `const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`
+                  const set = (lazyHydrationImports.get('createLazyMediaQueryComponent') || new Set()).add(importer)
+                  lazyHydrationImports.set('createLazyMediaQueryComponent', set)
                   break
+                }
                 case 'If':
-                case 'if-':
-                  if (!code.includes('createLazyIfComponent')) {
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
-                  }
+                case 'if-': {
                   identifier += '_lazy_if'
-                  imports.add(`const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  const importer = `const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`
+                  const set = (lazyHydrationImports.get('createLazyIfComponent') || new Set()).add(importer)
+                  lazyHydrationImports.set('createLazyIfComponent', set)
                   break
+                }
                 case 'Never':
-                case 'never-':
-                  if (!code.includes('createLazyNeverComponent')) {
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
-                  }
+                case 'never-': {
                   identifier += '_lazy_never'
-                  imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  const importer = `const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`
+                  const set = (lazyHydrationImports.get('createLazyNeverComponent') || new Set()).add(importer)
+                  lazyHydrationImports.set('createLazyNeverComponent', set)
                   break
+                }
                 case 'Time':
-                case 'time-':
-                  if (!code.includes('createLazyTimeComponent')) {
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
-                  }
+                case 'time-': {
                   identifier += '_lazy_time'
-                  imports.add(`const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
+                  const importer = `const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`
+                  const set = (lazyHydrationImports.get('createLazyTimeComponent') || new Set()).add(importer)
+                  lazyHydrationImports.set('createLazyTimeComponent', set)
                   break
+                }
               }
             } else {
               imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
@@ -164,6 +167,22 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
         // no matched
         return full
       })
+
+      if (lazyHydrationImports.size) {
+        let scopeTracker: ScopeTracker | undefined
+        if (code.includes(LAZY_HYDRATION_MAGIC_COMMENT)) {
+          scopeTracker = new ScopeTracker({ keepExitedScopes: true })
+          parseAndWalk(code, id, { scopeTracker })
+        }
+
+        for (const [name, imps] of lazyHydrationImports) {
+          s.prepend([
+            ...(!scopeTracker?.isDeclared(name) ? [genImport(options.clientDelayedComponentRuntime, [{ name }])] : []),
+            ...imps,
+            '',
+          ].join('\n'))
+        }
+      }
 
       if (imports.size) {
         s.prepend([...imports, ''].join('\n'))
