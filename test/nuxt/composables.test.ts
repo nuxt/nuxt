@@ -558,6 +558,19 @@ describe('useAsyncData', () => {
         return () => h('div', [data.value])
       },
     })
+    const getData = async () => {
+      const component = await mountSuspended(defineComponent({
+        setup () {
+          const { data } = useNuxtData(key)
+          return () => data.value === undefined ? 'undefined' : data.value
+        },
+      }))
+      try {
+        return component.html({ raw: true })
+      } finally {
+        component.unmount()
+      }
+    }
 
     const comp1 = await mountSuspended(component)
     expect(promiseFn).toHaveBeenCalledTimes(1)
@@ -567,11 +580,11 @@ describe('useAsyncData', () => {
 
     comp1.unmount()
     await nextTick()
-    expect(useNuxtData(key).data.value).toMatchInlineSnapshot('"test"')
+    expect(await getData()).toMatchInlineSnapshot('"test"')
 
     comp2.unmount()
     await nextTick()
-    expect(useNuxtData(key).data.value).toBeUndefined()
+    expect(await getData()).toBe('undefined')
   })
 
   it('should be synced with useNuxtData', async () => {

@@ -6,7 +6,7 @@ import type { SchemaDefinition } from 'untyped'
 import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
-import type { ConfigSchema } from '../../schema/config'
+import type { ConfigSchema } from './schema'
 import type { Nuxt } from './nuxt'
 import type { AppHeadMetaObject } from './head'
 
@@ -140,7 +140,7 @@ export interface AppConfigInput extends CustomAppConfig {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
+export type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
 
 type ValueOf<T> = T[keyof T]
 type Filter<T extends Record<string, any>, V> = Pick<T, ValueOf<{ [K in keyof T]: NonNullable<T[K]> extends V ? K : never }>>

@@ -32,7 +32,7 @@
     "defu": "^6.1.4",
     "destr": "^2.0.5",
     "errx": "^0.1.0",
-    "exsolve": "^1.0.4",
+    "exsolve": "^1.0.5",
     "ignore": "^7.0.3",
     "jiti": "^2.4.2",
     "klona": "^2.0.6",
@@ -43,7 +43,7 @@
     "scule": "^1.3.0",
     "semver": "^7.7.1",
     "std-env": "^3.9.0",
-    "tinyglobby": "^0.2.12",
+    "tinyglobby": "^0.2.13",
     "ufo": "^1.6.1",
     "unctx": "^2.4.1",
     "unimport": "^5.0.0",
@@ -56,8 +56,8 @@
     "hookable": "5.5.3",
     "nitro": "npm:nitro-nightly@3.0.0-20250411-094421.5736f5be",
     "unbuild": "3.5.0",
-    "vite": "6.3.0",
-    "vitest": "3.1.1",
+    "vite": "6.3.2",
+    "vitest": "3.1.2",
     "webpack": "5.99.5"
   },
   "engines": {

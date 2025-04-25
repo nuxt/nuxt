@@ -44,7 +44,7 @@ interface ScannedFile {
 
 export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
+    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : layer.config.dir)?.pages || 'pages'),
   )
 
   const scannedFiles: ScannedFile[] = []

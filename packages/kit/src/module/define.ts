@@ -51,17 +51,14 @@ function _defineNuxtModule<
   module.meta.configKey ||= module.meta.name
 
   // Resolves module options from inline options, [configKey] in nuxt.config, defaults and schema
-  async function getOptions (
-    inlineOptions?: Partial<TOptions>,
-    nuxt: Nuxt = useNuxt(),
-  ): Promise<
-      TWith extends true
-        ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
-        : TOptions
-    > {
+  async function getOptions (inlineOptions?: Partial<TOptions>, nuxt: Nuxt = useNuxt()): Promise<
+    TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions
+  > {
     const nuxtConfigOptionsKey = module.meta.configKey || module.meta.name
 
-    const nuxtConfigOptions: Partial<TOptions> = nuxtConfigOptionsKey && nuxtConfigOptionsKey in nuxt.options ? nuxt.options[<keyof NuxtOptions> nuxtConfigOptionsKey] : {}
+    const nuxtConfigOptions: Partial<TOptions> = nuxtConfigOptionsKey && nuxtConfigOptionsKey in nuxt.options ? nuxt.options[nuxtConfigOptionsKey as keyof NuxtOptions] as Partial<TOptions> : {}
 
     const optionsDefaults: TOptionsDefaults =
       module.defaults instanceof Function

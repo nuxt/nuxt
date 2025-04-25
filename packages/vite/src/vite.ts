@@ -72,6 +72,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             // Cannot destructure property 'AbortController' of ..
             'abort-controller': mockEmpty,
           },
+          dedupe: [
+            'vue',
+          ],
         },
         css: await resolveCSSOptions(nuxt),
         define: {

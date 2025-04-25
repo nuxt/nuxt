@@ -25,6 +25,7 @@ function toImports (specifiers: ImportSpecifier[]) {
 }
 
 const UnheadVue = '@unhead/vue'
+const UnheadVueRE = /@unhead\/vue/
 
 /**
  * To use composable in an async context we need to pass Nuxt context to the Unhead composables.
@@ -44,41 +45,43 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         !UNHEAD_LIB_RE.test(id)
       )
     },
-    transform (code, id) {
-      if (!code.includes(UnheadVue)) {
-        return
-      }
-      const s = new MagicString(code)
-      const importsToAdd: ImportSpecifier[] = []
-      parseAndWalk(code, id, function (node) {
-        if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
-          importsToAdd.push(...node.specifiers as ImportSpecifier[])
-          const { start, end } = withLocations(node)
-          s.remove(start, end)
-        }
-      })
+    transform: {
+      filter: {
+        code: { include: UnheadVueRE },
+      },
+      handler (code, id) {
+        const s = new MagicString(code)
+        const importsToAdd: ImportSpecifier[] = []
+        parseAndWalk(code, id, function (node) {
+          if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
+            importsToAdd.push(...node.specifiers as ImportSpecifier[])
+            const { start, end } = withLocations(node)
+            s.remove(start, end)
+          }
+        })
 
-      const importsFromUnhead = importsToAdd.filter(specifier => unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
-      const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
-      if (importsFromUnhead.length) {
-        // warn if user has imported from @unhead/vue themselves
-        if (!normalize(id).includes('node_modules')) {
-          logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(normalize(options.rootDir), normalize(id))}\`. Please import from \`#imports\` instead for full type safety.`)
+        const importsFromUnhead = importsToAdd.filter(specifier => unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
+        const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
+        if (importsFromUnhead.length) {
+          // warn if user has imported from @unhead/vue themselves
+          if (!normalize(id).includes('node_modules')) {
+            logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(normalize(options.rootDir), normalize(id))}\`. Please import from \`#imports\` instead for full type safety.`)
+          }
+          s.prepend(`${genImport('#app/composables/head', toImports(importsFromUnhead))}\n`)
         }
-        s.prepend(`${genImport('#app/composables/head', toImports(importsFromUnhead))}\n`)
-      }
-      if (importsFromHead.length) {
-        s.prepend(`${genImport(UnheadVue, toImports(importsFromHead))}\n`)
-      }
+        if (importsFromHead.length) {
+          s.prepend(`${genImport(UnheadVue, toImports(importsFromHead))}\n`)
+        }
 
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap
-            ? s.generateMap({ hires: true })
-            : undefined,
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
+          }
         }
-      }
+      },
     },
   }
 })

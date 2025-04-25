@@ -41,85 +41,89 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return !NUXT_LIB_RE.test(pathname) && SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
     },
-    transform (code, id) {
-      if (!KEYED_FUNCTIONS_RE.test(code)) { return }
-      const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { index: 0, 0: code }
-      const s = new MagicString(code)
-      // https://github.com/unjs/unplugin/issues/90
-      let imports: Set<string> | undefined
-      let count = 0
-      const relativeID = isAbsolute(id) ? relative(options.rootDir, id) : id
-      const { pathname: relativePathname } = parseURL(relativeID)
+    transform: {
+      filter: {
+        code: { include: KEYED_FUNCTIONS_RE },
+      },
+      handler (code, id) {
+        const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { index: 0, 0: code }
+        const s = new MagicString(code)
+        // https://github.com/unjs/unplugin/issues/90
+        let imports: Set<string> | undefined
+        let count = 0
+        const relativeID = isAbsolute(id) ? relative(options.rootDir, id) : id
+        const { pathname: relativePathname } = parseURL(relativeID)
 
-      // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
-      const scopeTracker = new ScopeTracker({
-        keepExitedScopes: true,
-      })
-      const ast = parseAndWalk(script, id, {
-        scopeTracker,
-      })
+        // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
+        const scopeTracker = new ScopeTracker({
+          keepExitedScopes: true,
+        })
+        const ast = parseAndWalk(script, id, {
+          scopeTracker,
+        })
 
-      scopeTracker.freeze()
+        scopeTracker.freeze()
 
-      walk(ast, {
-        scopeTracker,
-        enter (node) {
-          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
-          const name = node.callee.name
-          if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
+        walk(ast, {
+          scopeTracker,
+          enter (node) {
+            if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+            const name = node.callee.name
+            if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
-          imports ||= detectImportNames(script, composableMeta)
-          if (imports.has(name)) { return }
+            imports ||= detectImportNames(script, composableMeta)
+            if (imports.has(name)) { return }
 
-          const meta = composableMeta[name]
+            const meta = composableMeta[name]
 
-          const declaration = scopeTracker.getDeclaration(name)
+            const declaration = scopeTracker.getDeclaration(name)
 
-          if (declaration && declaration.type !== 'Import') {
-            let skip = true
-            if (meta.source) {
-              skip = !matchWithStringOrRegex(relativePathname, meta.source)
+            if (declaration && declaration.type !== 'Import') {
+              let skip = true
+              if (meta.source) {
+                skip = !matchWithStringOrRegex(relativePathname, meta.source)
+              }
+
+              if (skip) { return }
             }
 
-            if (skip) { return }
+            if (node.arguments.length >= meta.argumentLength) { return }
+
+            switch (name) {
+              case 'useState':
+                if (stringTypes.includes(node.arguments[0]?.type)) { return }
+                break
+
+              case 'useFetch':
+              case 'useLazyFetch':
+                if (stringTypes.includes(node.arguments[1]?.type)) { return }
+                break
+
+              case 'useAsyncData':
+              case 'useLazyAsyncData':
+                if (stringTypes.includes(node.arguments[0]?.type) || stringTypes.includes(node.arguments[node.arguments.length - 1]?.type)) { return }
+                break
+            }
+
+            // TODO: Optimize me (https://github.com/nuxt/framework/pull/8529)
+            const newCode = code.slice(codeIndex + (node as any).start, codeIndex + (node as any).end - 1).trim()
+            const endsWithComma = newCode[newCode.length - 1] === ','
+
+            s.appendLeft(
+              codeIndex + (node as any).end - 1,
+              (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + '\'',
+            )
+          },
+        })
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
           }
-
-          if (node.arguments.length >= meta.argumentLength) { return }
-
-          switch (name) {
-            case 'useState':
-              if (stringTypes.includes(node.arguments[0]?.type)) { return }
-              break
-
-            case 'useFetch':
-            case 'useLazyFetch':
-              if (stringTypes.includes(node.arguments[1]?.type)) { return }
-              break
-
-            case 'useAsyncData':
-            case 'useLazyAsyncData':
-              if (stringTypes.includes(node.arguments[0]?.type) || stringTypes.includes(node.arguments[node.arguments.length - 1]?.type)) { return }
-              break
-          }
-
-          // TODO: Optimize me (https://github.com/nuxt/framework/pull/8529)
-          const newCode = code.slice(codeIndex + (node as any).start, codeIndex + (node as any).end - 1).trim()
-          const endsWithComma = newCode[newCode.length - 1] === ','
-
-          s.appendLeft(
-            codeIndex + (node as any).end - 1,
-            (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + '\'',
-          )
-        },
-      })
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap
-            ? s.generateMap({ hires: true })
-            : undefined,
         }
-      }
+      },
     },
   }
 })

@@ -352,14 +352,14 @@ describe('runtimeConfig', () => {
     expectTypeOf(runtimeConfig.public.testConfig).toEqualTypeOf<number>()
     expectTypeOf(runtimeConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
-    expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<number[]>()
+    expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
     expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<unknown>()
 
     const injectedConfig = useNuxtApp().$config
     expectTypeOf(injectedConfig.public.testConfig).toEqualTypeOf<number>()
     expectTypeOf(injectedConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(injectedConfig.privateConfig).toEqualTypeOf<string>()
-    expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<number[]>()
+    expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
     expectTypeOf(injectedConfig.unknown).toEqualTypeOf<unknown>()
   })
   it('provides hints on overriding these values', () => {
@@ -376,7 +376,7 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
     expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
     expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
-    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
+    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<(1 | 2 | 3)[], 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
   })
 
