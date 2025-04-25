@@ -39,21 +39,21 @@ await setup({
 describe('server api', () => {
   it('should serialize', async () => {
     expect(await $fetch<string>('/api/hello')).toBe('Hello API')
-    expect(await $fetch<string>('/api/hey')).toEqual({
+    expect(await $fetch('/api/hey')).toEqual({
       foo: 'bar',
       baz: 'qux',
     })
   })
 
   it('should preserve states', async () => {
-    expect(await $fetch<string>('/api/counter')).toEqual({ count: 0 })
-    expect(await $fetch<string>('/api/counter')).toEqual({ count: 1 })
-    expect(await $fetch<string>('/api/counter')).toEqual({ count: 2 })
-    expect(await $fetch<string>('/api/counter')).toEqual({ count: 3 })
+    expect(await $fetch('/api/counter')).toEqual({ count: 0 })
+    expect(await $fetch('/api/counter')).toEqual({ count: 1 })
+    expect(await $fetch('/api/counter')).toEqual({ count: 2 })
+    expect(await $fetch('/api/counter')).toEqual({ count: 3 })
   })
 
   it('should auto-import', async () => {
-    const res = await $fetch<string>('/api/auto-imports')
+    const res = await $fetch('/api/auto-imports')
     expect(res).toMatchInlineSnapshot(`
       {
         "autoImported": "utils",
