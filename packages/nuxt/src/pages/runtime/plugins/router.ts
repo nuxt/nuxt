@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { isSamePath, withoutBase } from 'ufo'
 
 import type { Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
@@ -41,7 +41,7 @@ function createCurrentLocation (
     return withoutBase(pathFromHash, '')
   }
   const displayedPath = withoutBase(pathname, base)
-  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
+  const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
 
