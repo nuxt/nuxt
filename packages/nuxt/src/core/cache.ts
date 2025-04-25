@@ -1,6 +1,6 @@
 import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { isAbsolute, resolve } from 'node:path'
 import { existsSync } from 'node:fs'
 import { createIsIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
@@ -38,7 +38,23 @@ export async function getVueHash (nuxt: Nuxt) {
     },
   })
 
-  const cacheFile = join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/builds', id, hash + '.tar')
+  const cacheDir = resolveCacheDir(nuxt)
+
+  function resolveCacheDir (nuxt: Nuxt): string {
+    const buildCache = nuxt.options.experimental.buildCache
+    const rootDir = nuxt.options.rootDir
+    const workspaceDir = nuxt.options.workspaceDir
+    if (typeof buildCache === 'object') {
+      const cacheDir = buildCache.cacheDir
+      if (isAbsolute(cacheDir)) {
+        return cacheDir
+      }
+      return join(rootDir, cacheDir)
+    }
+    return workspaceDir
+  }
+
+  const cacheFile = join(cacheDir, 'node_modules/.cache/nuxt/builds', id, hash + '.tar')
 
   return {
     hash,

@@ -1442,7 +1442,7 @@ export interface ConfigSchema {
      *
      * @default false
      */
-    buildCache: boolean
+    buildCache: boolean | { cacheDir: string }
 
     /**
      * Ensure that auto-generated Vue component names match the full component name you would use to auto-import the component.
