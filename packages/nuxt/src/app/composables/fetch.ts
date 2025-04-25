@@ -93,11 +93,11 @@ export function useFetch<
   arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
   arg2?: string,
 ) {
-  const [opts = {}] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+  const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
   const _request = computed(() => toValue(request))
 
-  const key = computed(() => toValue(opts.key) || ('$f' + hash([typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])))
+  const key = computed(() => toValue(opts.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])))
   if (!key.value || typeof key.value !== 'string') {
     throw new TypeError('[nuxt] [useFetch] key must be a string: ' + key.value)
   }

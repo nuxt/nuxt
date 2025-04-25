@@ -94,6 +94,11 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
                 if (stringTypes.includes(node.arguments[0]?.type)) { return }
                 break
 
+              case 'useFetch':
+              case 'useLazyFetch':
+                if (stringTypes.includes(node.arguments[1]?.type)) { return }
+                break
+
               case 'useAsyncData':
               case 'useLazyAsyncData':
                 if (stringTypes.includes(node.arguments[0]?.type) || stringTypes.includes(node.arguments[node.arguments.length - 1]?.type)) { return }
