@@ -635,7 +635,22 @@ describe('useFetch', () => {
   })
 
   it('should work with reactive keys', async () => {
+    registerEndpoint('/api/initial', defineEventHandler(() => ({ url: '/api/initial' })))
+    registerEndpoint('/api/updated', defineEventHandler(() => ({ url: '/api/updated' })))
 
+    const key = ref('/api/initial')
+
+    const { data, error } = await useFetch(key)
+    expect(data.value).toEqual({ url: '/api/initial' })
+
+    key.value = '/api/updated'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/updated' })
+    expect(error.value).toBe(undefined)
   })
 
   it('should timeout', async () => {
