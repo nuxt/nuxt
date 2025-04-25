@@ -158,9 +158,9 @@ export function useFetch<
         ],
   }
 
-  if (import.meta.dev && import.meta.server) {
+  if (import.meta.dev) {
     // @ts-expect-error private property
-    _asyncDataOptions._functionName = opts._functionName || 'useFetch'
+    _asyncDataOptions._functionName ||= 'useFetch'
   }
 
   let controller: AbortController
@@ -253,7 +253,7 @@ export function useLazyFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  if (import.meta.dev && import.meta.server) {
+  if (import.meta.dev) {
     // @ts-expect-error private property
     opts._functionName ||= 'useLazyFetch'
   }
