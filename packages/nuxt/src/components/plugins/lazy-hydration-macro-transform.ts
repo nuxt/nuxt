@@ -38,67 +38,73 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
       return isVue(id, { type: ['template', 'script'] }) || isJS(id)
     },
 
-    transform (code) {
-      const matches = Array.from(code.matchAll(LAZY_HYDRATION_MACRO_RE))
-      if (!matches.length) { return }
+    transform: {
+      filter: {
+        code: { include: LAZY_HYDRATION_MACRO_RE },
+      },
 
-      const s = new MagicString(code)
-      const names = new Set<string>()
+      handler (code) {
+        const matches = Array.from(code.matchAll(LAZY_HYDRATION_MACRO_RE))
+        if (!matches.length) { return }
 
-      const components = options.getComponents()
+        const s = new MagicString(code)
+        const names = new Set<string>()
 
-      for (const match of matches) {
-        const [matchedString, variableName, hydrationStrategy] = match
+        const components = options.getComponents()
 
-        const startIndex = match.index
-        const endIndex = startIndex + matchedString.length
+        for (const match of matches) {
+          const [matchedString, variableName, hydrationStrategy] = match
 
-        if (!variableName) {
-          s.remove(startIndex, endIndex)
-          continue
+          const startIndex = match.index
+          const endIndex = startIndex + matchedString.length
+
+          if (!variableName) {
+            s.remove(startIndex, endIndex)
+            continue
+          }
+
+          if (!hydrationStrategy || !HYDRATION_STRATEGY.includes(hydrationStrategy)) {
+            s.remove(startIndex, endIndex)
+            continue
+          }
+
+          const componentNameMatch = matchedString.match(COMPONENT_NAME)
+          if (!componentNameMatch || !componentNameMatch[1]) {
+            s.remove(startIndex, endIndex)
+            continue
+          }
+
+          const name = componentNameMatch[1]
+          const component = findComponent(components, name)
+          if (!component) {
+            s.remove(startIndex, endIndex)
+            continue
+          }
+
+          const relativePath = relative(options.srcDir, component.filePath)
+          const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
+          const replaceFunctionName = `createLazy${upperFirst(hydrationStrategy)}Component`
+          const replacement = `const ${variableName} = ${replaceFunctionName}(${JSON.stringify(relativePath)}, ${dynamicImport})`
+
+          s.overwrite(startIndex, endIndex, replacement)
+          names.add(replaceFunctionName)
         }
 
-        if (!hydrationStrategy || !HYDRATION_STRATEGY.includes(hydrationStrategy)) {
-          s.remove(startIndex, endIndex)
-          continue
+        if (names.size) {
+          const imports = genImport(options.clientDelayedComponentRuntime, [...names].map(name => ({ name })))
+          s.prepend(imports)
         }
 
-        const componentNameMatch = matchedString.match(COMPONENT_NAME)
-        if (!componentNameMatch || !componentNameMatch[1]) {
-          s.remove(startIndex, endIndex)
-          continue
+        if (s.hasChanged()) {
+          s.prepend(LAZY_HYDRATION_MAGIC_COMMENT)
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
+          }
         }
-
-        const name = componentNameMatch[1]
-        const component = findComponent(components, name)
-        if (!component) {
-          s.remove(startIndex, endIndex)
-          continue
-        }
-
-        const relativePath = relative(options.srcDir, component.filePath)
-        const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
-        const replaceFunctionName = `createLazy${upperFirst(hydrationStrategy)}Component`
-        const replacement = `const ${variableName} = ${replaceFunctionName}(${JSON.stringify(relativePath)}, ${dynamicImport})`
-
-        s.overwrite(startIndex, endIndex, replacement)
-        names.add(replaceFunctionName)
-      }
-
-      if (names.size) {
-        const imports = genImport(options.clientDelayedComponentRuntime, [...names].map(name => ({ name })))
-        s.prepend(imports)
-      }
-
-      if (s.hasChanged()) {
-        s.prepend(LAZY_HYDRATION_MAGIC_COMMENT)
-        return {
-          code: s.toString(),
-          map: options.sourcemap
-            ? s.generateMap({ hires: true })
-            : undefined,
-        }
-      }
+      },
     },
   }
 })
