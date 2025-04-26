@@ -38,17 +38,7 @@ export async function getVueHash (nuxt: Nuxt) {
     },
   })
 
-  let cacheDir = join(nuxt.options.workspaceDir, 'node_modules')
-  if (!existsSync(cacheDir)) {
-    for (const dir of [...nuxt.options.modulesDir].sort((a, b) => a.length - b.length)) {
-      if (existsSync(dir)) {
-        cacheDir = dir
-        break
-      }
-    }
-  }
-
-  const cacheFile = join(cacheDir, '.cache/nuxt/builds', id, hash + '.tar')
+  const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
 
   return {
     hash,
@@ -73,7 +63,7 @@ export async function getVueHash (nuxt: Nuxt) {
 export async function cleanupCaches (nuxt: Nuxt) {
   const start = Date.now()
   const caches = await glob(['*/*.tar'], {
-    cwd: join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/builds'),
+    cwd: getCacheDir(nuxt),
     absolute: true,
   })
   if (caches.length >= 10) {
@@ -283,4 +273,17 @@ async function writeCache (cwd: string, sources: string | string[], cacheFile: s
   const tarData = createTar(fileEntries)
   await mkdir(dirname(cacheFile), { recursive: true })
   await writeFile(cacheFile, tarData)
+}
+
+function getCacheDir (nuxt: Nuxt) {
+  let cacheDir = join(nuxt.options.workspaceDir, 'node_modules')
+  if (!existsSync(cacheDir)) {
+    for (const dir of [...nuxt.options.modulesDir].sort((a, b) => a.length - b.length)) {
+      if (existsSync(dir)) {
+        cacheDir = dir
+        break
+      }
+    }
+  }
+  return join(cacheDir, '.cache/nuxt/builds')
 }
