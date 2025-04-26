@@ -576,8 +576,8 @@ export default defineResolvers({
     /**
      * Whether to clean up Nuxt static and asyncData caches on route navigation.
      *
-     * Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`. This helps prevent memory leaks
-     * and ensures fresh data is loaded when needed, but it is possible to disable it.
+     * In the future, Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`.
+     * This will help prevent memory leaks and ensure fresh data is loaded when needed. You can enable it.
      *
      * @example
      * ```ts
@@ -585,7 +585,7 @@ export default defineResolvers({
      * export default defineNuxtConfig({
      *   experimental: {
      *     // Disable automatic cache cleanup (default is true)
-     *     purgeCachedData: false
+     *     purgeCachedData: true
      *   }
      * })
      * ```
@@ -593,8 +593,8 @@ export default defineResolvers({
      * @see [PR #31379](https://github.com/nuxt/nuxt/pull/31379)
      */
     purgeCachedData: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
       },
     },
 
