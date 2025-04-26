@@ -495,7 +495,7 @@ export function useLazyAsyncData<
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev) {
     // @ts-expect-error private property
     options._functionName ||= 'useLazyAsyncData'
   }
