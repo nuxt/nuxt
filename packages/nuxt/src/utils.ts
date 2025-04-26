@@ -14,7 +14,7 @@ export const logger = useLogger('nuxt')
 
 export function getFirstNodeModulesDir () {
   const nuxt = useNuxt()
-  for(const dir of nuxt.options.modulesDir) {
+  for (const dir of nuxt.options.modulesDir) {
     if (existsSync(dir)) {
       return dir
     }
