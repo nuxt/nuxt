@@ -39,10 +39,12 @@ export async function getVueHash (nuxt: Nuxt) {
   })
 
   let cacheDir = join(nuxt.options.workspaceDir, 'node_modules')
-  for (const dir of nuxt.options.modulesDir) {
-    if (existsSync(dir)) {
-      cacheDir = dir
-      break
+  if (!existsSync(cacheDir)) {
+    for (const dir of [...nuxt.options.modulesDir].sort((a, b) => a.length - b.length)) {
+      if (existsSync(dir)) {
+        cacheDir = dir
+        break
+      }
     }
   }
 
