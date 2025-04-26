@@ -479,7 +479,7 @@ export function useLazyAsyncData<
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
-  if (import.meta.dev && import.meta.client) {
+  if (import.meta.dev) {
     // @ts-expect-error private property
     options._functionName ||= 'useLazyAsyncData'
   }
@@ -495,6 +495,23 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
   // Initialize value when key is not already set
   if (!(key in nuxtApp.payload.data)) {
     nuxtApp.payload.data[key] = asyncDataDefaults.value
+  }
+
+  if (nuxtApp._asyncData[key]) {
+    const data = nuxtApp._asyncData[key]
+    data._deps++
+    if (getCurrentScope()) {
+      onScopeDispose(() => {
+        data._deps--
+        // clean up memory when it no longer is needed
+        if (data._deps === 0) {
+          data?._off()
+          if (purgeCachedData) {
+            clearNuxtDataByKey(nuxtApp, key)
+          }
+        }
+      })
+    }
   }
 
   return {

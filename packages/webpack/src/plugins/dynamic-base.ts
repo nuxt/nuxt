@@ -18,16 +18,21 @@ export const DynamicBasePlugin = createUnplugin((options: DynamicBasePluginOptio
   return {
     name: 'nuxt:dynamic-base-path',
     enforce: 'post' as const,
-    transform (code, id) {
-      if (!id.includes('entry') || !ENTRY_RE.test(code)) { return }
-      const s = new MagicString(code)
-      s.prepend(`import { buildAssetsURL } from '#internal/nuxt/paths';\n${options.globalPublicPath} = buildAssetsURL();\n`)
-      return {
-        code: s.toString(),
-        map: options.sourcemap
-          ? s.generateMap({ hires: true })
-          : undefined,
-      }
+    transform: {
+      filter: {
+        id: { include: /entry/ },
+        code: { include: ENTRY_RE },
+      },
+      handler (code) {
+        const s = new MagicString(code)
+        s.prepend(`import { buildAssetsURL } from '#internal/nuxt/paths';\n${options.globalPublicPath} = buildAssetsURL();\n`)
+        return {
+          code: s.toString(),
+          map: options.sourcemap
+            ? s.generateMap({ hires: true })
+            : undefined,
+        }
+      },
     },
   }
 })

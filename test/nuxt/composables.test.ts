@@ -558,6 +558,19 @@ describe('useAsyncData', () => {
         return () => h('div', [data.value])
       },
     })
+    const getData = async () => {
+      const component = await mountSuspended(defineComponent({
+        setup () {
+          const { data } = useNuxtData(key)
+          return () => data.value === undefined ? 'undefined' : data.value
+        },
+      }))
+      try {
+        return component.html({ raw: true })
+      } finally {
+        component.unmount()
+      }
+    }
 
     const comp1 = await mountSuspended(component)
     expect(promiseFn).toHaveBeenCalledTimes(1)
@@ -567,11 +580,11 @@ describe('useAsyncData', () => {
 
     comp1.unmount()
     await nextTick()
-    expect(useNuxtData(key).data.value).toMatchInlineSnapshot('"test"')
+    expect(await getData()).toMatchInlineSnapshot('"test"')
 
     comp2.unmount()
     await nextTick()
-    expect(useNuxtData(key).data.value).toBeUndefined()
+    expect(await getData()).toBe('undefined')
   })
 
   it('should be synced with useNuxtData', async () => {
@@ -622,7 +635,22 @@ describe('useFetch', () => {
   })
 
   it('should work with reactive keys', async () => {
+    registerEndpoint('/api/initial', defineEventHandler(() => ({ url: '/api/initial' })))
+    registerEndpoint('/api/updated', defineEventHandler(() => ({ url: '/api/updated' })))
 
+    const key = ref('/api/initial')
+
+    const { data, error } = await useFetch(key)
+    expect(data.value).toEqual({ url: '/api/initial' })
+
+    key.value = '/api/updated'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/updated' })
+    expect(error.value).toBe(undefined)
   })
 
   it('should timeout', async () => {
