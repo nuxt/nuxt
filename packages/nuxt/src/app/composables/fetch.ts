@@ -145,8 +145,7 @@ export function useFetch<
           ...(watch || []),
           opts.key
             ? _fetchOptions
-            :
-              () => ({
+            : reactive({
                 ..._fetchOptions,
                 // these methods are included in the `key`
                 method: undefined,
