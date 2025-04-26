@@ -97,15 +97,13 @@ export function useFetch<
 
   const _request = computed(() => toValue(request))
 
-  const _key = computed(() => toValue(opts.key) || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)]))
-  if (!_key.value || typeof _key.value !== 'string') {
-    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key.value)
+  const key = computed(() => toValue(opts.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])))
+  if (!key.value || typeof key.value !== 'string') {
+    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + key.value)
   }
   if (!request) {
     throw new Error('[nuxt] [useFetch] request is missing.')
   }
-
-  const key = computed(() => _key.value === autoKey ? '$f' + _key.value : _key.value)
 
   if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
@@ -125,7 +123,7 @@ export function useFetch<
     ...fetchOptions
   } = opts
 
-  const _fetchOptions = reactive({
+  const _fetchOptions = reactive<typeof fetchOptions>({
     ...fetchDefaults,
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache,
@@ -141,12 +139,27 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
-    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
+    watch: watch === false
+      ? []
+      : [
+          ...(watch || []),
+          opts.key
+            ? _fetchOptions
+            : reactive({
+                ..._fetchOptions,
+                // these methods are included in the `key`
+                method: undefined,
+                baseURL: undefined,
+                params: undefined,
+                query: undefined,
+                body: undefined,
+              }),
+        ],
   }
 
-  if (import.meta.dev && import.meta.server) {
+  if (import.meta.dev) {
     // @ts-expect-error private property
-    _asyncDataOptions._functionName = opts._functionName || 'useFetch'
+    _asyncDataOptions._functionName ||= 'useFetch'
   }
 
   let controller: AbortController
@@ -239,7 +252,7 @@ export function useLazyFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  if (import.meta.dev && import.meta.server) {
+  if (import.meta.dev) {
     // @ts-expect-error private property
     opts._functionName ||= 'useLazyFetch'
   }
