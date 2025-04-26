@@ -1,5 +1,5 @@
-import { promises as fsp } from 'node:fs'
-import { useLogger } from '@nuxt/kit'
+import { existsSync, promises as fsp } from 'node:fs'
+import { useLogger, useNuxt } from '@nuxt/kit'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
@@ -11,3 +11,12 @@ export async function isDirectory (path: string) {
 }
 
 export const logger = useLogger('nuxt')
+
+export function getFirstNodeModulesDir () {
+  const nuxt = useNuxt()
+  for(const dir of nuxt.options.modulesDir) {
+    if (existsSync(dir)) {
+      return dir
+    }
+  }
+}

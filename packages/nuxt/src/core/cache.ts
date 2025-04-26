@@ -10,6 +10,7 @@ import { consola } from 'consola'
 import { dirname, join, relative } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
+import { getFirstNodeModulesDir } from '../utils'
 
 export async function getVueHash (nuxt: Nuxt) {
   const id = 'vue'
@@ -38,7 +39,7 @@ export async function getVueHash (nuxt: Nuxt) {
     },
   })
 
-  const cacheFile = join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/builds', id, hash + '.tar')
+  const cacheFile = join(getFirstNodeModulesDir() ?? join(nuxt.options.workspaceDir, 'node_modules'), '.cache/nuxt/builds', id, hash + '.tar')
 
   return {
     hash,
