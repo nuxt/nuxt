@@ -97,6 +97,15 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
+
+  /**
+   * Throw an error if handler function fails
+   * Accepts a boolean value or a function that returns a NuxtError object.
+   * If set to true, the returned promise will reject when an error occurs.
+   * If a function is provided, it will be called with the error object and should return a NuxtError object or undefined. If undefined is returned, no error is thrown.
+   * @default false
+   */
+  throwOnError?: boolean | ((e: unknown) => NuxtError | undefined)
 }
 
 export interface AsyncDataExecuteOptions {
@@ -488,6 +497,29 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
+export type StaticAsyncData<DataT> = {
+  data: Ref<DataT>
+  pending: Ref<boolean>
+  status: Ref<AsyncDataRequestStatus>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+}
+
+export function useStaticAsyncData<
+  ResT,
+  NuxtErrorDataT = unknown,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+> (
+  key: MaybeRefOrGetter<string>,
+  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  options: Omit<AsyncDataOptions<ResT, DataT, PickKeys>, 'lazy' | 'server' | 'default' | 'immediate' | 'throwOnError'> = {},
+): Promise<StaticAsyncData<DataT>> {
+  const nuxtApp = useNuxtApp()
+  const { data, pending, status, refresh } = useAsyncData<ResT, NuxtErrorDataT, DataT, PickKeys>(key, handler, { ...options, throwOnError: true })
+  const asyncReturn = { data: data as Ref<DataT>, pending, status, refresh }
+  return Promise.resolve(nuxtApp._asyncDataPromises[toValue(key)]).then(() => asyncReturn)
+}
+
 /** @since 3.1.0 */
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {
   const nuxtApp = useNuxtApp()
@@ -689,6 +721,14 @@ function createAsyncData<
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
+
+          if (options.throwOnError) {
+            const _error = typeof options.throwOnError === 'function' ? options.throwOnError(error) : asyncData.error.value
+
+            if (_error) {
+              throw _error
+            }
+          }
         })
         .finally(() => {
           if ((promise as any).cancelled) { return }
