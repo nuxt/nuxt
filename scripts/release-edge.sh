@@ -3,7 +3,7 @@
 set -xe
 
 # Restore all git changes
-git restore -s@ -SW  -- packages examples
+git restore -s@ -SW  -- packages examples docs
 
 TAG=${1:-latest}
 
@@ -22,7 +22,7 @@ fi
 sed -i.bak 's/\.\/\.github\/assets/https:\/\/github.com\/nuxt\/nuxt\/tree\/main\/\.github\/assets/g' README.md
 
 # Release packages
-for p in packages/* ; do
+for p in packages/* docs ; do
   if [[ $p == "packages/nuxi" ]] ; then
     continue
   fi

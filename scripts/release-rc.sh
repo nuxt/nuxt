@@ -3,7 +3,7 @@
 set -e
 
 # Restore all git changes
-git restore -s@ -SW  -- packages examples
+git restore -s@ -SW  -- packages examples docs
 
 # Build all once to ensure things are nice
 pnpm build
@@ -12,7 +12,7 @@ pnpm build
 sed -i.bak 's/\.\/\.github\/assets/https:\/\/github.com\/nuxt\/nuxt\/tree\/main\/\.github\/assets/g' README.md
 
 # Release packages
-for PKG in packages/* ; do
+for PKG in packages/* docs ; do
   if [[ $PKG == "packages/nuxi" ]] ; then
     continue
   fi
