@@ -98,12 +98,6 @@ export function useFetch<
   const _request = computed(() => toValue(request))
 
   const key = computed(() => toValue(opts.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])))
-  if (!key.value || typeof key.value !== 'string') {
-    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + key.value)
-  }
-  if (!request) {
-    throw new Error('[nuxt] [useFetch] request is missing.')
-  }
 
   if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
