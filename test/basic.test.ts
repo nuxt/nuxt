@@ -3017,6 +3017,34 @@ describe('defineNuxtComponent', () => {
   })
 })
 
+describe('scrollToTop', () => {
+  it('should not scroll to top when `scrollToTop` is `false`', async () => {
+    const { page } = await renderPage('/route-scroll-behavior/scroll-to-top')
+
+    await page.locator('#do-not-scroll-to-top').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+
+    await page.click('#do-not-scroll-to-top')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/scroll-to-top/do-not-scroll-to-top'))
+
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY !== 0).toBe(true)
+  })
+
+  it('should scroll to top when `scrollToTop` is `true`', async () => {
+    const { page } = await renderPage('/route-scroll-behavior/scroll-to-top')
+
+    await page.locator('#scroll-to-top').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+
+    await page.click('#scroll-to-top')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/scroll-to-top/scroll-to-top'))
+
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY).toBe(0)
+  })
+})
+
 describe('namespace access to useNuxtApp', () => {
   it('should return the nuxt instance when used with correct appId', async () => {
     const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
