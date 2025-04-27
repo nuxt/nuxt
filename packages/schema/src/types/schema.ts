@@ -1559,8 +1559,9 @@ export interface ConfigSchema {
     /**
      * Whether to clean up Nuxt static and asyncData caches on route navigation.
      *
-     * In the future, Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`.
-     * This will help prevent memory leaks and ensure fresh data is loaded when needed. You can enable it.
+     * Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`. This helps prevent memory leaks and ensures fresh data is loaded when needed, but it is possible to disable it.
+     *
+     * @default true
      *
      * @example
      * ```ts
@@ -1568,7 +1569,7 @@ export interface ConfigSchema {
      * export default defineNuxtConfig({
      *   experimental: {
      *     // Disable automatic cache cleanup (default is true)
-     *     purgeCachedData: true
+     *     purgeCachedData: false
      *   }
      * })
      * ```
