@@ -1,10 +1,9 @@
+import { START_LOCATION } from 'vue-router'
 import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { isChangingPage } from '#app/components/utils'
 import { useRouter } from '#app/composables/router'
-// @ts-expect-error virtual file
-import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
@@ -30,7 +29,7 @@ export default <RouterConfig> {
 
     const routeAllowsScrollToTop = typeof to.meta.scrollToTop === 'function' ? to.meta.scrollToTop(to, from) : to.meta.scrollToTop
 
-    if (routeAllowsScrollToTop === false) { return }
+    if (routeAllowsScrollToTop === false) { return false }
 
     // By default when the returned position is falsy or an empty object, vue-router will retain the current scroll position
     // savedPosition is only available for popstate navigations (back button)
@@ -41,10 +40,13 @@ export default <RouterConfig> {
       position = { left: 0, top: 0 }
     }
 
-    // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
-    const hasTransition = (route: RouteLocationNormalized) => !!(route.meta.pageTransition ?? defaultPageTransition)
-    const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:loading:end'
+    const hookToWait = nuxtApp._runningTransition ? 'page:transition:finish' : 'page:loading:end'
     return new Promise((resolve) => {
+      if (from === START_LOCATION) {
+        resolve(_calculatePosition(to, 'instant', position))
+        return
+      }
+
       nuxtApp.hooks.hookOnce(hookToWait, () => {
         requestAnimationFrame(() => resolve(_calculatePosition(to, 'instant', position)))
       })

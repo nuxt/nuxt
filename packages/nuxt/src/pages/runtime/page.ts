@@ -144,9 +144,6 @@ export default defineComponent({
                 nextTick(() => {
                   pageLoadingEndHookAlreadyCalled = true
                   nuxtApp.callHook('page:loading:end')
-                  if (hasTransition) {
-                    nuxtApp.callHook('page:transition:finish', routeProps.Component)
-                  }
                 })
               }
 
@@ -157,7 +154,15 @@ export default defineComponent({
                 props.transition,
                 routeProps.route.meta.pageTransition,
                 defaultPageTransition,
-                { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } },
+                {
+                  onBeforeLeave () {
+                    nuxtApp._runningTransition = true
+                  },
+                  onAfterLeave () {
+                    delete nuxtApp._runningTransition
+                    nuxtApp.callHook('page:transition:finish', routeProps.Component)
+                  },
+                },
               ])
 
               const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
