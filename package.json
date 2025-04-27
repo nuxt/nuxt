@@ -67,7 +67,7 @@
     "unimport": "5.0.0",
     "vite": "6.3.3",
     "vue": "3.5.13",
-    "webpack": "5.99.5"
+    "webpack": "5.99.7"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.4",
@@ -135,7 +135,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.2.10",
-    "webpack": "5.99.5"
+    "webpack": "5.99.7"
   },
   "packageManager": "pnpm@10.9.0",
   "version": ""
