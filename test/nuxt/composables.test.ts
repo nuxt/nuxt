@@ -650,7 +650,7 @@ describe('useFetch', () => {
     await flushPromises()
 
     expect(data.value).toEqual({ url: '/api/updated' })
-    expect(error.value).toBe(undefined)
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
   })
 
   it('should timeout', async () => {

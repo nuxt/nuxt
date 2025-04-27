@@ -20,6 +20,7 @@ export default defineVitestConfig({
             '/pre/**': { prerender: true },
           },
           experimental: {
+            purgeCachedData: true,
             granularCachedData: true,
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
           },
