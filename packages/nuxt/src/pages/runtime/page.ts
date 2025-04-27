@@ -141,13 +141,17 @@ export default defineComponent({
 
               const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
               if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
-                nuxtApp.callHook('page:loading:end')
-                pageLoadingEndHookAlreadyCalled = true
+                nextTick(() => {
+                  pageLoadingEndHookAlreadyCalled = true
+                  nuxtApp.callHook('page:loading:end')
+                  if (hasTransition) {
+                    nuxtApp.callHook('page:transition:finish', routeProps.Component)
+                  }
+                })
               }
 
               previousPageKey = key
 
-              // Client side rendering
               const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
               const transitionProps = hasTransition && _mergeTransitionProps([
                 props.transition,
