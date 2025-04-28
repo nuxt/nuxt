@@ -704,6 +704,9 @@ importers:
 
   packages/schema:
     dependencies:
+      '@vue/shared':
+        specifier: 3.5.13
+        version: 3.5.13
       consola:
         specifier: ^3.4.2
         version: 3.4.2
