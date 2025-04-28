@@ -133,22 +133,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
-    watch: watch === false
-      ? []
-      : [
-          ...(watch || []),
-          opts.key
-            ? _fetchOptions
-            : reactive({
-                ..._fetchOptions,
-                // these methods are included in the `key`
-                method: undefined,
-                baseURL: undefined,
-                params: undefined,
-                query: undefined,
-                body: undefined,
-              }),
-        ],
+    watch: watch === false ? [] : [...(watch || []), _fetchOptions],
   }
 
   if (import.meta.dev) {
