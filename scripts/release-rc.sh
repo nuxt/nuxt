@@ -11,6 +11,8 @@ pnpm build
 # use absolute urls for better rendering on npm
 sed -i.bak 's/\.\/\.github\/assets/https:\/\/github.com\/nuxt\/nuxt\/tree\/main\/\.github\/assets/g' README.md
 
+REPO_ROOT=$(pwd)
+
 # Release packages
 for PKG in packages/* docs ; do
   if [[ $PKG == "packages/nuxi" ]] ; then
@@ -19,7 +21,7 @@ for PKG in packages/* docs ; do
   if [[ $PKG == "packages/test-utils" ]] ; then
     continue
   fi
-  if [[ $p == "packages/ui-templates" ]] ; then
+  if [[ $PKG == "packages/ui-templates" ]] ; then
     continue
   fi
   pushd $PKG
@@ -28,8 +30,10 @@ for PKG in packages/* docs ; do
     TAG="rc"
   fi
   echo "⚡ Publishing $PKG with tag $TAG"
-  cp ../../LICENSE .
-  cp ../../README.md .
+  cp $REPO_ROOT/LICENSE .
+  if [[ $PKG != "docs" ]]; then
+    cp $REPO_ROOT/README.md .
+  fi
   pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done
