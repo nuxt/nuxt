@@ -672,6 +672,25 @@ describe('useFetch', () => {
     expect(error.value).toBe(asyncDataDefaults.errorValue)
   })
 
+  it('should work with reactive keys and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch('/api/immediate-false', {
+      query: { q },
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
   it('should timeout', async () => {
     const { status, error } = await useFetch(
       // @ts-expect-error should resolve to a string
