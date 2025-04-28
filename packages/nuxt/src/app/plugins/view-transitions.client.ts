@@ -9,8 +9,15 @@ export default defineNuxtPlugin((nuxtApp) => {
     return
   }
 
+  let transition: undefined | ViewTransition
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)
+
+  window.addEventListener('popstate', (event) => {
+    if (event.hasUAVisualTransition && transition) {
+      transition.skipTransition()
+    }
+  })
 
   const router = useRouter()
 
@@ -31,7 +38,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     let changeRoute: () => void
     const ready = new Promise<void>(resolve => (changeRoute = resolve))
 
-    const transition = document.startViewTransition!(() => {
+    transition = document.startViewTransition!(() => {
       changeRoute()
       return promise
     })
