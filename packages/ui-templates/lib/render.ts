@@ -101,16 +101,19 @@ export const RenderPlugin = () => {
         // Serialize into a js function
         const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
+        let hasExpression = false
         let templateString = chunks.shift()
         for (const [_, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
           if (expression) {
-            templateString += ` + (${expression.trim()}) + ${chunks.shift()}`
+            hasExpression = true
+            templateString += ` + escapeHtml(${expression.trim()}) + ${chunks.shift()}`
           }
         }
         if (chunks.length > 0) {
           templateString += ' + ' + chunks.join(' + ')
         }
         const functionalCode = [
+          hasExpression ? 'import { escapeHtml } from \'@vue/shared\'\n' : '',
           hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
           hasMessages ? `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}` : '',
           `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}) => {`,
