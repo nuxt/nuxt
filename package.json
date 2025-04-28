@@ -50,7 +50,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "@types/node": "22.15.2",
+    "@types/node": "22.15.3",
     "@unhead/vue": "2.0.8",
     "@vue/compiler-core": "3.5.13",
     "@vue/compiler-dom": "3.5.13",
@@ -60,7 +60,7 @@
     "memfs": "4.17.0",
     "nuxt": "workspace:*",
     "postcss": "8.5.3",
-    "rollup": "4.40.0",
+    "rollup": "4.40.1",
     "send": ">=1.2.0",
     "typescript": "5.8.3",
     "ufo": "1.6.1",
@@ -84,7 +84,7 @@
     "@testing-library/vue": "8.1.0",
     "@types/babel__core": "7.20.5",
     "@types/babel__helper-plugin-utils": "7.10.3",
-    "@types/node": "22.15.2",
+    "@types/node": "22.15.3",
     "@types/semver": "7.7.0",
     "@unhead/vue": "2.0.8",
     "@vitest/coverage-v8": "3.1.2",
@@ -120,7 +120,7 @@
     "pathe": "2.0.3",
     "pkg-pr-new": "0.0.43",
     "playwright-core": "1.52.0",
-    "rollup": "4.40.0",
+    "rollup": "4.40.1",
     "semver": "7.7.1",
     "sherif": "1.5.0",
     "srvx": "0.6.0",
@@ -137,6 +137,6 @@
     "vue-tsc": "2.2.10",
     "webpack": "5.99.5"
   },
-  "packageManager": "pnpm@10.9.0",
+  "packageManager": "pnpm@10.10.0",
   "version": ""
 }
