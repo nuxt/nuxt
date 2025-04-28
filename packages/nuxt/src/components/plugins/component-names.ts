@@ -26,7 +26,10 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
         id: { include: FILENAME_RE },
       },
       handler (code, id) {
-        const filename = id.match(FILENAME_RE)![1]!
+        const filename = id.match(FILENAME_RE)?.[1]
+        if (!filename) {
+          return
+        }
         const component = options.getComponents().find(c => c.filePath === id)
 
         if (!component) {
