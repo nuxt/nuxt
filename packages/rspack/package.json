@@ -42,7 +42,7 @@
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
-    "h3": "^1.15.2",
+    "h3": "^1.15.3",
     "jiti": "^2.4.2",
     "knitwork": "^1.2.0",
     "magic-string": "^0.30.17",
