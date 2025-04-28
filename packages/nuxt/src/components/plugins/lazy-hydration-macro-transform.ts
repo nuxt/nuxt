@@ -19,8 +19,6 @@ const LAZY_HYDRATION_MACRO_RE = /(?:\b(?:const|let|var)\s+(\w+)\s*=\s*)?defineLa
 const COMPONENT_NAME = /import\(["'].*\/([^\\/]+?)\.\w+["']\)/
 const HYDRATION_STRATEGY = ['visible', 'idle', 'interaction', 'mediaQuery', 'if', 'time', 'never']
 
-export const LAZY_HYDRATION_MAGIC_COMMENT = '/* #__LAZY_HYDRATION_MACRO__ */'
-
 export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -84,19 +82,18 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           const relativePath = relative(options.srcDir, component.filePath)
           const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
           const replaceFunctionName = `createLazy${upperFirst(hydrationStrategy)}Component`
-          const replacement = `const ${variableName} = ${replaceFunctionName}(${JSON.stringify(relativePath)}, ${dynamicImport})`
+          const replacement = `const ${variableName} = __${replaceFunctionName}(${JSON.stringify(relativePath)}, ${dynamicImport})`
 
           s.overwrite(startIndex, endIndex, replacement)
           names.add(replaceFunctionName)
         }
 
         if (names.size) {
-          const imports = genImport(options.clientDelayedComponentRuntime, [...names].map(name => ({ name })))
+          const imports = genImport(options.clientDelayedComponentRuntime, [...names].map(name => ({ name, as: `__${name}` })))
           s.prepend(imports)
         }
 
         if (s.hasChanged()) {
-          s.prepend(LAZY_HYDRATION_MAGIC_COMMENT)
           return {
             code: s.toString(),
             map: options.sourcemap
