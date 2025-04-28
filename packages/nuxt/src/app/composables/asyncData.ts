@@ -338,6 +338,7 @@ export function useAsyncData<
           data?._off()
           if (purgeCachedData) {
             clearNuxtDataByKey(nuxtApp, key)
+            data.execute = () => Promise.resolve()
           }
         }
       }
