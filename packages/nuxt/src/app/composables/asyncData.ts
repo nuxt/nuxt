@@ -270,7 +270,10 @@ export function useAsyncData<
 
   // Create or use a shared asyncData entity
   const initialCachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-  const asyncData = nuxtApp._asyncData[key.value] ??= createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
+  if (!nuxtApp._asyncData[key.value]?._deps) {
+    nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
+  }
+  const asyncData = nuxtApp._asyncData[key.value]!
 
   asyncData._deps++
 
@@ -353,8 +356,8 @@ export function useAsyncData<
       if (oldKey) {
         unregister(oldKey)
       }
-      if (!nuxtApp._asyncData[key]) {
-        nuxtApp._asyncData[key] ??= createAsyncData(nuxtApp, key, _handler, options, options.getCachedData!(key, nuxtApp, { cause: 'initial' }))
+      if (!nuxtApp._asyncData[key]?._deps) {
+        nuxtApp._asyncData[key] = createAsyncData(nuxtApp, key, _handler, options, options.getCachedData!(key, nuxtApp, { cause: 'initial' }))
       }
       nuxtApp._asyncData[key]._deps++
       if (options.immediate) {
