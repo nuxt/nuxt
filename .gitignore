@@ -6,6 +6,7 @@ package-lock.json
 packages/*/README.md
 !packages/nuxi/README.md
 packages/*/LICENSE
+docs/LICENSE
 */**/yarn.lock
 /.yarn
 
