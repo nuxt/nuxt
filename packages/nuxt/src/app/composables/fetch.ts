@@ -1,7 +1,7 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
-import { computed, reactive, toValue } from 'vue'
+import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
 import { useRequestFetch } from './ssr'
@@ -109,7 +109,7 @@ export function useFetch<
     default: defaultFn,
     transform,
     pick,
-    watch,
+    watch: watchSources,
     immediate,
     getCachedData,
     deep,
@@ -133,27 +133,19 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
-    watch: watch === false
-      ? []
-      : [
-          ...(watch || []),
-          opts.key
-            ? _fetchOptions
-            : reactive({
-                ..._fetchOptions,
-                // these methods are included in the `key`
-                method: undefined,
-                baseURL: undefined,
-                params: undefined,
-                query: undefined,
-                body: undefined,
-              }),
-        ],
+    watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
   }
 
   if (import.meta.dev) {
     // @ts-expect-error private property
     _asyncDataOptions._functionName ||= 'useFetch'
+  }
+
+  // ensure that updates to watched sources trigger an update
+  if (watchSources !== false && !immediate) {
+    watch([...(watchSources || []), _fetchOptions], () => {
+      _asyncDataOptions.immediate = true
+    }, { flush: 'pre', once: true })
   }
 
   let controller: AbortController
