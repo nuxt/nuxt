@@ -37,7 +37,14 @@ interface Route {
 }
 
 function getRouteFromPath (fullPath: string | Partial<Route>) {
+  let params: Route['params'] = {}
+  let matched: Route['matched'] = []
+  let meta: Route['meta'] = {}
+  
   if (typeof fullPath === 'object') {
+    params = fullPath.params || {}
+    matched = fullPath.matched || []
+    meta = fullPath.meta || {}
     fullPath = stringifyParsedURL({
       pathname: fullPath.path || '',
       search: stringifyQuery(fullPath.query || {}),
@@ -52,11 +59,11 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     query: parseQuery(url.search),
     hash: url.hash,
     // stub properties for compat with vue-router
-    params: {},
+    params,
     name: undefined,
-    matched: [],
+    matched,
     redirectedFrom: undefined,
-    meta: {},
+    meta,
     href: fullPath,
   }
 }
