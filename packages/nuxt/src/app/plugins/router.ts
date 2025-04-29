@@ -40,7 +40,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
   let params: Route['params'] = {}
   let matched: Route['matched'] = []
   let meta: Route['meta'] = {}
-  
+
   if (typeof fullPath === 'object') {
     params = fullPath.params || {}
     matched = fullPath.matched || []
