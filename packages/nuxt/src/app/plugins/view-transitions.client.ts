@@ -23,7 +23,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   window.addEventListener('popstate', (event) => {
     hasUAVisualTransition = event.hasUAVisualTransition
-    if (hasUAVisualTransition) transition?.skipTransition()
+    if (hasUAVisualTransition) { transition?.skipTransition() }
   })
 
   const router = useRouter()
