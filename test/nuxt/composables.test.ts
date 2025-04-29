@@ -681,7 +681,7 @@ describe('useFetch', () => {
       immediate: false,
     })
 
-    expect(data.value).toBe(undefined)
+    expect(data.value).toBe(asyncDataDefaults.value)
     q.value = 'test'
 
     await flushPromises()
