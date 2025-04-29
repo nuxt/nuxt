@@ -148,7 +148,7 @@ export function useFetch<
   if (watchSources !== false && !immediate) {
     watch([...(watchSources || []), _fetchOptions], () => {
       _asyncDataOptions.immediate = true
-    }, { flush: 'pre', once: true })
+    }, { flush: 'sync', once: true })
   }
 
   let controller: AbortController

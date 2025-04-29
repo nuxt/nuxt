@@ -691,6 +691,27 @@ describe('useFetch', () => {
     expect(data.value).toEqual({ url: '/api/immediate-false' })
   })
 
+  it('should be accessible immediately', async () => {
+    registerEndpoint('/api/watchable-fetch', defineEventHandler(() => ({ url: '/api/watchable-fetch' })))
+
+    const searchTerm = ref('')
+
+    const { data } = await useFetch('/api/watchable-fetch', {
+      params: { q: searchTerm },
+    })
+
+    for (const value of [undefined, 'pre', 'post', 'sync'] as const) {
+      watchEffect(() => {
+        expect(() => data.value).not.toThrow()
+      }, { flush: value })
+    }
+
+    searchTerm.value = 'new'
+
+    await nextTick()
+    await flushPromises()
+  })
+
   it('should timeout', async () => {
     const { status, error } = await useFetch(
       // @ts-expect-error should resolve to a string
