@@ -36,8 +36,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (
       viewTransitionMode === false ||
       prefersNoTransition ||
-      !isChangingPage(to, from) ||
-      hasUAVisualTransition
+      hasUAVisualTransition ||
+      !isChangingPage(to, from)
     ) {
       return
     }
