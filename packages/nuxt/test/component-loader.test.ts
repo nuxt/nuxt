@@ -107,18 +107,18 @@ describe('components:loader', () => {
     const lines = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
     const imports = lines.filter(l => l.startsWith('import'))
     expect(imports.join('\n')).toMatchInlineSnapshot(`
-      "import { createLazyNeverComponent, createLazyIfComponent, createLazyTimeComponent, createLazyMediaQueryComponent, createLazyInteractionComponent, createLazyVisibleComponent, createLazyIdleComponent } from '../client-runtime.mjs';
+      "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyTimeComponent, createLazyIfComponent, createLazyNeverComponent } from '../client-runtime.mjs';
       import { createElementBlock, openBlock, Fragment, createVNode, withCtx } from 'vue';"
     `)
     const components = lines.filter(l => l.startsWith('const __nuxt_component'))
     expect(components.join('\n')).toMatchInlineSnapshot(`
-      "const __nuxt_component_0_lazy_never = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_lazy_if = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_lazy_time = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_lazy_media_query = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_lazy_event = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      "const __nuxt_component_0_lazy_idle = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_lazy_visible = createLazyVisibleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_lazy_idle = createLazyIdleComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
+      const __nuxt_component_0_lazy_event = createLazyInteractionComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_media = createLazyMediaQueryComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_time = createLazyTimeComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_if = createLazyIfComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy_never = createLazyNeverComponent("components/MyComponent.vue", () => import('../components/MyComponent.vue').then(c => c.default || c));"
     `)
   })
 
