@@ -270,7 +270,10 @@ export function useAsyncData<
 
   // Create or use a shared asyncData entity
   const initialCachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-  const asyncData = nuxtApp._asyncData[key.value] ??= createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
+  if (!nuxtApp._asyncData[key.value]?._deps) {
+    nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
+  }
+  const asyncData = nuxtApp._asyncData[key.value]!
 
   asyncData._deps++
 
@@ -326,14 +329,6 @@ export function useAsyncData<
       initialFetch()
     }
 
-    const hasScope = getCurrentScope()
-    if (options.watch) {
-      const unsub = watch(options.watch, () => asyncData._execute({ cause: 'watch', dedupe: options.dedupe }), { flush: 'post' })
-      if (hasScope) {
-        onScopeDispose(unsub)
-      }
-    }
-
     function unregister (key: string) {
       const data = nuxtApp._asyncData[key]
       if (data?._deps) {
@@ -343,28 +338,38 @@ export function useAsyncData<
           data?._off()
           if (purgeCachedData) {
             clearNuxtDataByKey(nuxtApp, key)
+            data.execute = () => Promise.resolve()
           }
         }
       }
     }
 
     // setup watchers/instance
-    const unsub = watch(key, (key, oldKey) => {
+    const hasScope = getCurrentScope()
+    if (options.watch) {
+      const unsubExecute = watch(options.watch, () => {
+        asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
+      }, { flush: 'post' })
+      if (hasScope) {
+        onScopeDispose(() => unsubExecute())
+      }
+    }
+    const unsubKey = watch(key, (newKey, oldKey) => {
       if (oldKey) {
         unregister(oldKey)
       }
-      if (!nuxtApp._asyncData[key]) {
-        nuxtApp._asyncData[key] ??= createAsyncData(nuxtApp, key, _handler, options, options.getCachedData!(key, nuxtApp, { cause: 'initial' }))
+      if (!nuxtApp._asyncData[newKey]?._deps) {
+        nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
       }
-      nuxtApp._asyncData[key]._deps++
+      nuxtApp._asyncData[newKey]._deps++
       if (options.immediate) {
-        nuxtApp._asyncData[key]!.execute({ cause: 'initial', dedupe: options.dedupe })
+        nuxtApp._asyncData[newKey]!.execute({ cause: 'initial', dedupe: options.dedupe })
       }
-    })
+    }, { flush: 'sync' })
 
     if (hasScope) {
       onScopeDispose(() => {
-        unsub()
+        unsubKey()
         unregister(key.value)
       })
     }

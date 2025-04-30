@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "rollup": "4.40.0",
+    "rollup": "4.40.1",
     "unbuild": "3.5.0",
     "vue": "3.5.13"
   },
@@ -39,11 +39,11 @@
     "consola": "^3.4.2",
     "cssnano": "^7.0.6",
     "defu": "^6.1.4",
-    "esbuild": "^0.25.2",
+    "esbuild": "^0.25.3",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.5",
     "get-port-please": "^3.1.2",
-    "h3": "^1.15.1",
+    "h3": "^1.15.3",
     "jiti": "^2.4.2",
     "knitwork": "^1.2.0",
     "magic-string": "^0.30.17",
@@ -57,7 +57,7 @@
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.15",
     "unplugin": "^2.3.2",
-    "vite": "^6.3.2",
+    "vite": "^6.3.3",
     "vite-node": "^3.1.2",
     "vite-plugin-checker": "^0.9.1",
     "vue-bundle-renderer": "^2.1.1"

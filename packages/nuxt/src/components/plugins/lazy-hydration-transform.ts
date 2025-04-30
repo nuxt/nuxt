@@ -61,8 +61,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
 
         // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
         const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
-        if (!template) { return }
-        if (!LAZY_HYDRATION_PROPS_RE.test(template)) {
+        if (!template || !LAZY_HYDRATION_PROPS_RE.test(template)) {
           return
         }
         const s = new MagicString(code)

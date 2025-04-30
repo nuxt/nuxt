@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "@unocss/reset": "66.0.0",
+    "@vue/shared": "3.5.13",
     "beasties": "0.3.3",
     "html-validate": "9.5.3",
     "htmlnano": "2.1.1",
@@ -30,6 +31,6 @@
     "tinyexec": "1.0.1",
     "tinyglobby": "0.2.13",
     "unocss": "66.0.0",
-    "vite": "6.3.2"
+    "vite": "6.3.3"
   }
 }
