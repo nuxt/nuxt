@@ -28,26 +28,30 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
 
   return {
     name: 'nuxt:virtual',
-    resolveId (id, importer) {
-      id = resolveAlias(id, alias)
 
-      if (process.platform === 'win32' && isAbsolute(id)) {
-        // Add back C: prefix on Windows
-        id = resolve(id)
-      }
+    resolveId: {
+      order: 'pre',
+      handler (id, importer) {
+        id = resolveAlias(id, alias)
 
-      const resolvedId = resolveWithExt(id)
-      if (resolvedId) {
-        return PREFIX + encodeURIComponent(resolvedId)
-      }
-
-      if (importer && RELATIVE_ID_RE.test(id)) {
-        const path = resolve(dirname(withoutPrefix(decodeURIComponent(importer))), id)
-        const resolved = resolveWithExt(path)
-        if (resolved) {
-          return PREFIX + encodeURIComponent(resolved)
+        if (process.platform === 'win32' && isAbsolute(id)) {
+          // Add back C: prefix on Windows
+          id = resolve(id)
         }
-      }
+
+        const resolvedId = resolveWithExt(id)
+        if (resolvedId) {
+          return PREFIX + encodeURIComponent(resolvedId)
+        }
+
+        if (importer && RELATIVE_ID_RE.test(id)) {
+          const path = resolve(dirname(withoutPrefix(decodeURIComponent(importer))), id)
+          const resolved = resolveWithExt(path)
+          if (resolved) {
+            return PREFIX + encodeURIComponent(resolved)
+          }
+        }
+      },
     },
 
     loadInclude (id) {
