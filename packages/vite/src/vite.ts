@@ -190,7 +190,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const clientCSSMap = {}
 
     nuxt.hook('vite:extendConfig', (config, { isServer }) => {
-      config.plugins!.push(ssrStylesPlugin({
+      config.plugins!.unshift(ssrStylesPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         clientCSSMap,
         chunksWithInlinedCSS,
