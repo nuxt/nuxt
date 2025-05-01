@@ -712,6 +712,24 @@ describe('useFetch', () => {
     await flushPromises()
   })
 
+  it('should handle complex objects in body', async () => {
+    registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
+    const testCases = [
+      { ref: ref('test') },
+      ref('test'),
+      new FormData(),
+      new ArrayBuffer(),
+    ]
+    for (const value of testCases) {
+      // @ts-expect-error auto-key is not valid in type signature
+      const { data: original } = await useFetch('/api/complex-objects', { body: value }, 'autokey')
+      original.value = 'new value'
+      // @ts-expect-error auto-key is not valid in type signature
+      const { data } = await useFetch('/api/complex-objects', { body: value, immediate: false }, 'autokey')
+      expect(data.value).toEqual('new value')
+    }
+  })
+
   it('should timeout', async () => {
     const { status, error } = await useFetch(
       // @ts-expect-error should resolve to a string

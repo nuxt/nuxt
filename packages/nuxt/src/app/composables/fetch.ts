@@ -4,6 +4,7 @@ import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
+import { isPlainObject } from '@vue/shared'
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
@@ -268,7 +269,21 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
   }
   if (opts.body) {
     const value = toValue(opts.body)
-    segments.push(hash(value && typeof value === 'object' ? reactive(value) : value))
+    if (!value) {
+      segments.push(hash(value))
+    } else if (value instanceof ArrayBuffer) {
+      segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
+    } else if (value instanceof FormData) {
+      segments.push(hash(Object.fromEntries(value.entries())))
+    } else if (isPlainObject(value)) {
+      segments.push(hash(reactive(value)))
+    } else {
+      try {
+        segments.push(hash(value))
+      } catch {
+        console.warn('[useFetch] Failed to hash body', value)
+      }
+    }
   }
   return segments
 }
