@@ -4,10 +4,10 @@ import { performance } from 'node:perf_hooks'
 import { createError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'
 import { consola } from 'consola'
+import { showSSRDebugPrompt } from '../../../nuxt/src/core/runtime/nitro/utils/ssr-debug.js'
 import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
 // Import the shared SSR debug utility
-import { showSSRDebugPrompt } from '../../../nuxt/src/core/runtime/nitro/utils/ssr-debug.js'
 
 const runner = createRunner()
 
