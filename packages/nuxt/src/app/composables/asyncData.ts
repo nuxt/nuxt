@@ -392,10 +392,10 @@ export function useAsyncData<
   }
 
   const asyncReturn: _AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)> = {
-    data: writableComputedRef(() => nuxtApp._asyncData[key.value]!.data as Ref<ResT>),
-    pending: writableComputedRef(() => nuxtApp._asyncData[key.value]!.pending),
-    status: writableComputedRef(() => nuxtApp._asyncData[key.value]!.status),
-    error: writableComputedRef(() => nuxtApp._asyncData[key.value]!.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
+    data: writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>),
+    pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending as Ref<boolean>),
+    status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
+    error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
     refresh: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
     execute: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
     clear: () => clearNuxtDataByKey(nuxtApp, key.value),
@@ -411,10 +411,13 @@ export function useAsyncData<
 function writableComputedRef<T> (getter: () => Ref<T>) {
   return computed({
     get () {
-      return getter().value
+      return getter()?.value
     },
     set (value) {
-      getter().value = value
+      const ref = getter()
+      if (ref) {
+        ref.value = value
+      }
     },
   })
 }

@@ -3,6 +3,7 @@ import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, A
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
+import { isPlainObject } from '@vue/shared'
 
 // TODO: temporary module for backwards compatibility
 import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from 'nuxt/app/defaults'
@@ -270,7 +271,22 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     segments.push(unwrapped)
   }
   if (opts.body) {
-    segments.push(hash(toValue(opts.body)))
+    const value = toValue(opts.body)
+    if (!value) {
+      segments.push(hash(value))
+    } else if (value instanceof ArrayBuffer) {
+      segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
+    } else if (value instanceof FormData) {
+      segments.push(hash(Object.fromEntries(value.entries())))
+    } else if (isPlainObject(value)) {
+      segments.push(hash(reactive(value)))
+    } else {
+      try {
+        segments.push(hash(value))
+      } catch {
+        console.warn('[useFetch] Failed to hash body', value)
+      }
+    }
   }
   return segments
 }
