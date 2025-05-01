@@ -1,9 +1,10 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
-import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { getRequestHeaders, getRequestURL, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 
 import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
+import { showSSRDebugPrompt } from '../utils/ssr-debug'
 import type { NuxtPayload } from '#app/nuxt'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -36,6 +37,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // we will be rendering this error internally so we can pass along the error.data safely
   errorObject.data ||= error.data
   errorObject.statusMessage ||= error.statusMessage
+
+  // Show debug prompt with link to open page with SSR disabled in development
+  if (import.meta.dev) {
+    showSSRDebugPrompt(getRequestURL(event).href)
+  }
 
   delete defaultRes.headers['content-type'] // this would be set to application/json
   delete defaultRes.headers['content-security-policy'] // this would disable JS execution in the error page

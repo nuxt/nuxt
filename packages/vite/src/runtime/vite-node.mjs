@@ -6,6 +6,9 @@ import { ViteNodeRunner } from 'vite-node/client'
 import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
+// Import the shared SSR debug utility
+import { showSSRDebugPrompt } from '../../../nuxt/src/core/runtime/nitro/utils/ssr-debug.js'
+
 const runner = createRunner()
 
 /** @type {(ssrContext: import('#app').NuxtSSRContext) => Promise<any>} */
@@ -19,20 +22,28 @@ export default async (ssrContext) => {
   process.server = true
   import.meta.server = true
 
-  // Invalidate cache for files changed since last rendering
-  const invalidates = await viteNodeFetch('/invalidates')
-  const updates = runner.moduleCache.invalidateDepTree(invalidates)
+  try {
+    // Invalidate cache for files changed since last rendering
+    const invalidates = await viteNodeFetch('/invalidates')
+    const updates = runner.moduleCache.invalidateDepTree(invalidates)
 
-  // Execute SSR bundle on demand
-  const start = performance.now()
-  render = (updates.has(viteNodeOptions.entryPath) || !render) ? (await runner.executeFile(viteNodeOptions.entryPath)).default : render
-  if (updates.size) {
-    const time = Math.round((performance.now() - start) * 1000) / 1000
-    consola.success(`Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
+    // Execute SSR bundle on demand
+    const start = performance.now()
+    render = (updates.has(viteNodeOptions.entryPath) || !render) ? (await runner.executeFile(viteNodeOptions.entryPath)).default : render
+    if (updates.size) {
+      const time = Math.round((performance.now() - start) * 1000) / 1000
+      consola.success(`Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
+    }
+
+    const result = await render(ssrContext)
+    return result
+  } catch (err) {
+    // For better developer experience, suggest opening page with SSR disabled
+    if (import.meta.dev && ssrContext.url) {
+      showSSRDebugPrompt(ssrContext.url)
+    }
+    throw err
   }
-
-  const result = await render(ssrContext)
-  return result
 }
 
 function createRunner () {
