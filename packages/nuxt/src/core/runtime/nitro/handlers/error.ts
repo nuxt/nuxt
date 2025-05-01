@@ -1,6 +1,6 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
-import { getRequestHeaders, getRequestURL, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 
 import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
