@@ -7,7 +7,7 @@ import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
-  if (isJsonRequest(event)) {
+  if (event.handled || isJsonRequest(event)) {
     // let Nitro handle JSON errors
     return
   }

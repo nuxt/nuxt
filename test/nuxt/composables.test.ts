@@ -8,6 +8,7 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { hasProtocol } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
+import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
@@ -238,6 +239,27 @@ describe('useAsyncData', () => {
     `)
     expect(data.value).toEqual(cachedData.value)
     clearNuxtData(uniqueKey)
+  })
+
+  it('should be usable _after_ a useNuxtData call after navigation', async () => {
+    const getData = async () => {
+      const wrapper = await mountSuspended(({
+        async setup () {
+          useNuxtData(uniqueKey)
+          const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('foo'))
+          return () => h('div', [data.value])
+        },
+      }))
+      try {
+        return wrapper.html({ raw: true })
+      } finally {
+        wrapper.unmount()
+      }
+    }
+    useNuxtApp().payload.data[uniqueKey] = null
+    expect(await getData()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+    // simulate a second visit to the page
+    expect(await getData()).toMatchInlineSnapshot(`"<div>foo</div>"`)
   })
 
   it('should be refreshable', async () => {
@@ -712,6 +734,24 @@ describe('useFetch', () => {
     await flushPromises()
   })
 
+  it('should handle complex objects in body', async () => {
+    registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
+    const testCases = [
+      { ref: ref('test') },
+      ref('test'),
+      new FormData(),
+      new ArrayBuffer(),
+    ]
+    for (const value of testCases) {
+      // @ts-expect-error auto-key is not valid in type signature
+      const { data: original } = await useFetch('/api/complex-objects', { body: value }, 'autokey')
+      original.value = 'new value'
+      // @ts-expect-error auto-key is not valid in type signature
+      const { data } = await useFetch('/api/complex-objects', { body: value, immediate: false }, 'autokey')
+      expect(data.value).toEqual('new value')
+    }
+  })
+
   it('should timeout', async () => {
     const { status, error } = await useFetch(
       // @ts-expect-error should resolve to a string
@@ -1105,7 +1145,25 @@ describe('defineNuxtComponent', () => {
     }))
     expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
   })
-  it.todo('should support Options API asyncData')
+
+  it('should support Options API asyncData', async () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp.isHydrating = true
+    nuxtApp.payload.serverRendered = true
+    const ClientOnlyPage = await createClientPage(() => Promise.resolve(defineNuxtComponent({
+      asyncData: () => ({
+        users: ['alice', 'bob'],
+      }),
+      render () {
+        // @ts-expect-error this is not typed
+        return h('div', `Total users: ${this.users.value.length}`)
+      },
+    })))
+    const wrapper = await mountSuspended(ClientOnlyPage)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>Total users: 2</div>"`)
+    nuxtApp.isHydrating = false
+    nuxtApp.payload.serverRendered = false
+  })
   it.todo('should support Options API head')
 })
 
