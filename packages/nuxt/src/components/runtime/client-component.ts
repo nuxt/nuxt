@@ -1,8 +1,9 @@
-import { h, onMounted, ref } from 'vue'
+import { getCurrentInstance, h, onMounted, provide, ref } from 'vue'
 import type { AsyncComponentLoader, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
 import ServerPlaceholder from '#app/components/server-placeholder'
+import { clientOnlySymbol } from '#app/components/client-only'
 
 /* @__NO_SIDE_EFFECTS__ */
 export async function createClientPage (loader: AsyncComponentLoader) {
@@ -45,6 +46,11 @@ function pageToClientOnly<T extends ComponentOptions> (component: T) {
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
     const mounted$ = ref(nuxtApp.isHydrating === false)
+    provide(clientOnlySymbol, true)
+    const vm = getCurrentInstance()
+    if (vm) {
+      vm._nuxtClientOnly = true
+    }
     onMounted(() => {
       mounted$.value = true
     })
