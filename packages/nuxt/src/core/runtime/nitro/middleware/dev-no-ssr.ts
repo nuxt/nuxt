@@ -1,8 +1,8 @@
-import { defineEventHandler, getRequestHeader } from 'h3'
+import { defineEventHandler, getQuery } from 'h3'
 
 export default defineEventHandler((event) => {
   // Check for header or query parameter to disable SSR
-  if (getRequestHeader(event, 'x-nuxt-no-ssr')) {
+  if (getQuery(event)['nuxt-no-ssr']) {
     event.context.nuxt ||= {}
     event.context.nuxt.noSSR = true
   }
