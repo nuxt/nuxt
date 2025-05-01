@@ -267,7 +267,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     segments.push(unwrapped)
   }
   if (opts.body) {
-    segments.push(hash(toValue(opts.body)))
+    const value = toValue(opts.body)
+    segments.push(hash(value && typeof value === 'object' ? reactive(value) : value))
   }
   return segments
 }
