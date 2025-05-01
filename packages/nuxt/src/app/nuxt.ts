@@ -133,6 +133,8 @@ interface _NuxtApp {
     /** @internal */
     _off: () => void
     /** @internal */
+    _init: boolean
+    /** @internal */
     _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _hash?: Record<string, string | undefined>

@@ -240,6 +240,27 @@ describe('useAsyncData', () => {
     clearNuxtData(uniqueKey)
   })
 
+  it('should be usable _after_ a useNuxtData call after navigation', async () => {
+    const getData = async () => {
+      const wrapper = await mountSuspended(({
+        async setup () {
+          useNuxtData(uniqueKey)
+          const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('foo'))
+          return () => h('div', [data.value])
+        },
+      }))
+      try {
+        return wrapper.html({ raw: true })
+      } finally {
+        wrapper.unmount()
+      }
+    }
+    useNuxtApp().payload.data[uniqueKey] = null
+    expect(await getData()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+    // simulate a second visit to the page
+    expect(await getData()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+  })
+
   it('should be refreshable', async () => {
     await useAsyncData(uniqueKey, () => Promise.resolve('test'))
     clearNuxtData(uniqueKey)

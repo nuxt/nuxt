@@ -270,7 +270,7 @@ export function useAsyncData<
 
   // Create or use a shared asyncData entity
   const initialCachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-  if (!nuxtApp._asyncData[key.value]?._deps) {
+  if (!nuxtApp._asyncData[key.value]?._init) {
     nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
   }
   const asyncData = nuxtApp._asyncData[key.value]!
@@ -336,6 +336,7 @@ export function useAsyncData<
         // clean up memory when it no longer is needed
         if (data._deps === 0) {
           data?._off()
+          data._init = false
           if (purgeCachedData) {
             clearNuxtDataByKey(nuxtApp, key)
             data.execute = () => Promise.resolve()
@@ -358,7 +359,7 @@ export function useAsyncData<
       if (oldKey) {
         unregister(oldKey)
       }
-      if (!nuxtApp._asyncData[newKey]?._deps) {
+      if (!nuxtApp._asyncData[newKey]?._init) {
         nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
       }
       nuxtApp._asyncData[newKey]._deps++
@@ -514,6 +515,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
         // clean up memory when it no longer is needed
         if (data._deps === 0) {
           data?._off()
+          data._init = false
           if (purgeCachedData) {
             clearNuxtDataByKey(nuxtApp, key)
           }
@@ -600,7 +602,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
 
 const isDev = import.meta.dev /* and in test */
 
@@ -713,6 +715,7 @@ function createAsyncData<
     _execute: debounce((...args) => asyncData.execute(...args), 0, { leading: true }),
     _default: options.default!,
     _deps: 0,
+    _init: true,
     _hash: isDev ? createHash(_handler, options) : undefined,
     _off: nuxtApp.hook('app:data:refresh', async (keys) => {
       if (!keys || keys.includes(key)) {
