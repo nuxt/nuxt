@@ -23,6 +23,10 @@ export default defineComponent({
       nuxtApp._isNuxtPageUsed = true
       nuxtApp._isNuxtLayoutUsed = true
     }
+    const vm = getCurrentInstance()
+    if (vm) {
+      vm._nuxtClientOnly = true
+    }
     provide(clientOnlySymbol, true)
     return () => {
       if (mounted.value) { return slots.default?.() }
