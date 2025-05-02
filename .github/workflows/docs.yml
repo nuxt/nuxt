@@ -6,6 +6,9 @@ on:
       - "docs/**"
       - ".github/workflows/docs.yml"
       - "*.md"
+  pull_request:
+    paths:
+      - "docs/**"
     # autofix workflow will be triggered instead for PRs
     branches:
       - main
