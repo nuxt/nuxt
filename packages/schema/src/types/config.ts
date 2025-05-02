@@ -6,6 +6,7 @@ import type { SchemaDefinition } from 'untyped'
 import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
+import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import type { ConfigSchema } from './schema'
 import type { Nuxt } from './nuxt'
 import type { AppHeadMetaObject } from './head'
@@ -149,10 +150,20 @@ export interface NuxtAppConfig {
   head: Serializable<AppHeadMetaObject>
   layoutTransition: boolean | Serializable<TransitionProps>
   pageTransition: boolean | Serializable<TransitionProps>
-  viewTransition?: boolean | 'always'
+  viewTransition?: ViewTransitionOptions['enabled'] | ViewTransitionOptions
   keepalive: boolean | Serializable<KeepAliveProps>
 }
 
 export interface AppConfig {
   [key: string]: unknown
+}
+
+export interface ViewTransitionOptions {
+  enabled: boolean | 'always'
+  types?: [string] | ((to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => [string])
+}
+
+export interface ViewTransitionPageOptions extends ViewTransitionOptions {
+  toTypes?: [string] | ((to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => [string])
+  fromTypes?: [string] | ((to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => [string])
 }

@@ -226,7 +226,7 @@ export default defineResolvers({
     /**
      * Enable View Transition API integration with client-side router.
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
-     * @type {boolean | 'always'}
+     * @type {ViewTransitionOptions['enabled'] | ViewTransitionOptions}
      */
     viewTransition: false,
 
