@@ -8,7 +8,14 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: ['override'],
+  middleware: ['override', (to) => {
+    if (to.path === '/catchall/forbidden') {
+      throw createError({
+        statusCode: 500,
+        message: 'This middleware should not be run',
+      })
+    }
+  }],
   validate: to => to.path !== '/catchall/forbidden',
 })
 const route = useRoute('catchall-slug')
