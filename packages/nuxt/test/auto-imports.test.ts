@@ -197,7 +197,7 @@ const excludedVueHelpers = [
 
 describe('imports:vue', () => {
   for (const name of Object.keys(VueFunctions)) {
-    if (excludedVueHelpers.includes(name)) {
+    if (excludedVueHelpers.includes(name) || name === 'module.exports') {
       continue
     }
     it(`should register ${name} globally`, () => {

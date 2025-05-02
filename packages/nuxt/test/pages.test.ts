@@ -715,6 +715,42 @@ describe('pages:generateRoutesFromFiles', () => {
         },
       ],
     },
+    {
+      description:
+        'should ignore routes with segments starting with underscore',
+      files: [
+        { path: `${pagesDir}/index.vue` },
+        { path: `${pagesDir}/products.vue` },
+        { path: `${pagesDir}/profile/index.vue` },
+        { path: `${pagesDir}/_utils/helperFn.ts` },
+        { path: `${pagesDir}/users/_[id]/settings.vue` },
+        { path: `${pagesDir}/users/_(admins)/panel.vue` },
+        { path: `${pagesDir}/profile/_components/ProfileCard.vue` },
+      ],
+      output: [
+        {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          meta: undefined,
+          children: [],
+        },
+        {
+          name: 'products',
+          path: '/products',
+          file: `${pagesDir}/products.vue`,
+          meta: undefined,
+          children: [],
+        },
+        {
+          name: 'profile',
+          path: '/profile',
+          file: `${pagesDir}/profile/index.vue`,
+          meta: undefined,
+          children: [],
+        },
+      ],
+    },
   ]
 
   const normalizedResults: Record<string, any> = {}

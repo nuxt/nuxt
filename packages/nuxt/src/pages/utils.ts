@@ -102,6 +102,11 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
       .split('/')
 
+    // Ignore files and directories starting with an underscore
+    if (segments.some(segment => segment.startsWith('_'))) {
+      continue
+    }
+
     const route: NuxtPage = {
       name: '',
       path: '',

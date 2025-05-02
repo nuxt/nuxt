@@ -294,6 +294,23 @@
       "path": ""/"",
     },
   ],
+  "should ignore routes with segments starting with underscore": [
+    {
+      "component": "() => import("pages/index.vue")",
+      "name": ""index"",
+      "path": ""/"",
+    },
+    {
+      "component": "() => import("pages/products.vue")",
+      "name": ""products"",
+      "path": ""/products"",
+    },
+    {
+      "component": "() => import("pages/profile/index.vue")",
+      "name": ""profile"",
+      "path": ""/profile"",
+    },
+  ],
   "should merge route.meta with meta from file": [
     {
       "component": "() => import("pages/page-with-meta.vue")",

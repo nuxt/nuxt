@@ -1,6 +1,8 @@
+/* @vitest-environment happy-dom */
+
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, ref } from 'vue'
 
 describe('app/compat', () => {
   const Component = defineComponent({
