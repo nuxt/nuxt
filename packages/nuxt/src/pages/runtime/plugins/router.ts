@@ -87,7 +87,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       routes,
     })
 
-    handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    if (import.meta.hot) {
+      handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'
