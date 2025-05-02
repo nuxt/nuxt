@@ -30,9 +30,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
 
   router.beforeResolve(async (to, from) => {
-    const toViewTransitionOptions = to.meta.viewTransition as ViewTransitionPageOptions
-    const fromViewTransitionOptions = from.meta.viewTransition as ViewTransitionPageOptions
-    const viewTransitionMode = toViewTransitionOptions.enabled ?? defaultViewTransition.enabled
+    const toViewTransitionOptions = (to.meta.viewTransition || {}) as ViewTransitionPageOptions
+    const fromViewTransitionOptions = (from.meta.viewTransition || {}) as ViewTransitionPageOptions
+    const viewTransitionMode = toViewTransitionOptions?.enabled ?? defaultViewTransition.enabled
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
 
@@ -54,7 +54,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       resolveViewTransitionTypes(defaultViewTransition.types) ??
       []
     const viewTransitionFromTypes = resolveViewTransitionTypes(fromViewTransitionOptions.fromTypes) ?? []
-    const viewTransitionToTypes = resolveViewTransitionTypes(fromViewTransitionOptions.toTypes) ?? []
+    const viewTransitionToTypes = resolveViewTransitionTypes(toViewTransitionOptions.toTypes) ?? []
 
     const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
