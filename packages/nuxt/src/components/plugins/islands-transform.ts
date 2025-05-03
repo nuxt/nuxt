@@ -8,6 +8,7 @@ import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { resolvePath } from '@nuxt/kit'
 import defu from 'defu'
+import { hash } from 'ohash'
 import { isVue } from '../../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -182,59 +183,60 @@ function getPropsToString (bindings: Record<string, string>): string {
   }
 }
 
-export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOptions) => {
-  const { buildDir } = options
+type ChunkPluginOptions = {
+  getComponents: () => Component[]
+}
+
+export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
+  const ids = new Map<Component, string>()
+
+  const VIRTUAL_MODULE_ID = 'virtual:components-chunk'
+  const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID
+
   return {
-    name: 'nuxt:components-chunk',
-    vite: {
-      async config (config) {
-        const components = options.getComponents()
-
-        config.build = defu(config.build, {
-          rollupOptions: {
-            input: {},
-            output: {},
-          },
-        })
-
-        const rollupOptions = config.build.rollupOptions!
-
-        if (typeof rollupOptions.input === 'string') {
-          rollupOptions.input = { entry: rollupOptions.input }
-        } else if (typeof rollupOptions.input === 'object' && Array.isArray(rollupOptions.input)) {
-          rollupOptions.input = rollupOptions.input.reduce<{ [key: string]: string }>((acc, input) => { acc[input] = input; return acc }, {})
-        }
-
-        // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
-        rollupOptions.preserveEntrySignatures = 'allow-extension'
-        for (const component of components) {
-          if (component.mode === 'client' || component.mode === 'all') {
-            rollupOptions.input![component.pascalName] = await resolvePath(component.filePath)
-          }
-        }
-      },
-
-      async generateBundle (_opts, bundle) {
-        const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
-        const pathAssociation: Record<string, string> = {}
-        for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
-          if (chunkInfo.type !== 'chunk') { continue }
-
-          for (const component of components) {
-            if (chunkInfo.facadeModuleId && chunkInfo.exports.length > 0) {
-              const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
-              const isPath = await resolvePath(component.filePath) === pathname
-              if (isPath) {
-                // avoid importing the component chunk in all pages
-                chunkInfo.isEntry = false
-                pathAssociation[component.pascalName] = chunkPath
+    client: createUnplugin(() => {
+      return {
+        name: 'nuxt:components-chunk:client',
+        vite: {
+          buildStart () {
+            const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
+            for (const component of components) {
+              if (component.filePath) {
+                const id = this.emitFile({
+                  type: 'chunk',
+                  fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
+                  id: component.filePath,
+                })
+                ids.set(component, this.getFileName(id))
               }
             }
-          }
-        }
-
-        fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(pathAssociation, null, 2)}`)
-      },
-    },
+          },
+        },
+      }
+    }),
+    server: createUnplugin(() => {
+      return {
+        name: 'nuxt:components-chunk:server',
+        vite: {
+          resolveId (id) {
+            if (id === VIRTUAL_MODULE_ID) {
+              return RESOLVED_VIRTUAL_MODULE_ID
+            }
+          },
+          load (id) {
+            if (id === RESOLVED_VIRTUAL_MODULE_ID) {
+              return {
+                code: `export default {
+                ${Array.from(ids.entries()).map(([component, id]) => {
+                  return `${JSON.stringify(component.pascalName)}: ${JSON.stringify(id)}`
+                }).join(',\n')}
+              }`,
+                map: null,
+              }
+            }
+          },
+        },
+      }
+    }),
   }
-})
+}

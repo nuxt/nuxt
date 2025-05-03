@@ -243,27 +243,18 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      // TODO: refactor this
+      const chunk = ComponentsChunkPlugin({ getComponents })
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
         config.plugins ||= []
-
-        if (isClient && selectiveClient) {
-          writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          if (!nuxt.options.dev) {
-            config.plugins.push(ComponentsChunkPlugin.vite({
-              getComponents,
-              buildDir: nuxt.options.buildDir,
-            }))
-          } else {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
-              getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
-                if (c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) { return Object.assign(acc, { [c.pascalName]: `/@fs/${c.filePath}` }) }
-                const filePath = existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
-                return Object.assign(acc, { [c.pascalName]: `/@fs/${filePath}` })
-              }, {} as Record<string, string>),
-            )}`)
+        if (selectiveClient && !nuxt.options.dev) {
+          if (isClient) {
+            if (!nuxt.options.dev) {
+              config.plugins.push(chunk.client.vite())
+            }
           }
         }
+        // needed to add the virtual file into the server build
+        config.plugins.push(chunk.server.vite())
       })
 
       for (const key of ['rspack:config', 'webpack:config'] as const) {
