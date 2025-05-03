@@ -1,7 +1,7 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
-import { computed, reactive, toValue, watch } from 'vue'
+import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
@@ -140,13 +140,6 @@ export function useFetch<
   if (import.meta.dev) {
     // @ts-expect-error private property
     _asyncDataOptions._functionName ||= 'useFetch'
-  }
-
-  // ensure that updates to watched sources trigger an update
-  if (watchSources !== false && !immediate) {
-    watch([...(watchSources || []), _fetchOptions], () => {
-      _asyncDataOptions.immediate = true
-    }, { flush: 'sync', once: true })
   }
 
   let controller: AbortController

@@ -274,8 +274,8 @@ export function useAsyncData<
   if (!nuxtApp._asyncData[key.value]?._init) {
     nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
   }
-  const asyncData = nuxtApp._asyncData[key.value]!
 
+  let asyncData = nuxtApp._asyncData[key.value]!
   asyncData._deps++
 
   const initialFetch = () => nuxtApp._asyncData[key.value]!.execute({ cause: 'initial', dedupe: options.dedupe })
@@ -350,8 +350,13 @@ export function useAsyncData<
 
     // setup watchers/instance
     const hasScope = getCurrentScope()
+    let freeze = false
     if (options.watch) {
       const unsubExecute = watch(options.watch, () => {
+        if (freeze) {
+          freeze = false
+          return
+        }
         asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
       }, { flush: 'post' })
       if (hasScope) {
@@ -359,16 +364,22 @@ export function useAsyncData<
       }
     }
     const unsubKey = watch(key, (newKey, oldKey) => {
+      freeze = true
+
       if (oldKey) {
         unregister(oldKey)
       }
-      if (!nuxtApp._asyncData[newKey]?._init) {
-        nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
+
+      let nextAsyncData = nuxtApp._asyncData[newKey]
+
+      if (!nextAsyncData?._init) {
+        nuxtApp._asyncData[newKey] = nextAsyncData = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
       }
-      nuxtApp._asyncData[newKey]._deps++
-      if (options.immediate) {
-        nuxtApp._asyncData[newKey]!.execute({ cause: 'initial', dedupe: options.dedupe })
-      }
+
+      nextAsyncData._deps++
+      nextAsyncData.execute({ cause: 'initial', dedupe: options.dedupe })
+
+      asyncData = nextAsyncData
     }, { flush: 'sync' })
 
     if (hasScope) {
