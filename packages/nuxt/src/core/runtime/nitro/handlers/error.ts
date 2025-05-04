@@ -4,6 +4,7 @@ import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResp
 
 import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
+import { showSSRDebugPrompt } from '../utils/ssr-debug'
 import type { NuxtPayload } from '#app/nuxt'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -47,6 +48,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // Detect to avoid recursion in SSR rendering of errors
   const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error']
+
+  // Show debug prompt with link to open page with SSR disabled in development
+  if (import.meta.dev && !isRenderingError) {
+    showSSRDebugPrompt(event)
+  }
 
   // HTML response (via SSR)
   const res = isRenderingError
