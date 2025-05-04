@@ -23,6 +23,7 @@ export default defineVitestConfig({
             purgeCachedData: true,
             granularCachedData: true,
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+            alwaysRunFetchOnKeyChange: true,
           },
           imports: {
             polyfills: false,
