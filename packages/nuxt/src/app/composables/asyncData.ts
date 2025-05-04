@@ -359,6 +359,7 @@ export function useAsyncData<
       }
     }
     const unsubKey = watch(key, (newKey, oldKey) => {
+      const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== asyncDataDefaults.value
       if (oldKey) {
         unregister(oldKey)
       }
@@ -366,7 +367,9 @@ export function useAsyncData<
         nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
       }
       nuxtApp._asyncData[newKey]._deps++
-      nuxtApp._asyncData[newKey].execute({ cause: 'initial', dedupe: options.dedupe })
+      if (options.immediate || hasRun) {
+        nuxtApp._asyncData[newKey].execute({ cause: 'initial', dedupe: options.dedupe })
+      }
     }, { flush: 'sync' })
 
     if (hasScope) {

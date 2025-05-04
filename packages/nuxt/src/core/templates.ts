@@ -573,6 +573,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
       `export const pendingWhenIdle = ${!!ctx.nuxt.options.experimental.pendingWhenIdle}`,
+      `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
     ].join('\n\n')
   },
 }

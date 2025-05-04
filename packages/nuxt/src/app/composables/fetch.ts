@@ -1,7 +1,7 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
-import { computed, reactive, toValue } from 'vue'
+import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
@@ -10,7 +10,7 @@ import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom }
 import { useAsyncData } from './asyncData'
 
 // @ts-expect-error virtual file
-import { fetchDefaults } from '#build/nuxt.config.mjs'
+import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -140,6 +140,17 @@ export function useFetch<
   if (import.meta.dev) {
     // @ts-expect-error private property
     _asyncDataOptions._functionName ||= 'useFetch'
+  }
+
+  if (alwaysRunFetchOnKeyChange && !immediate) {
+    // ensure that updates to watched sources trigger an update
+    function setImmediate () {
+      _asyncDataOptions.immediate = true
+    }
+    watch(key, setImmediate, { flush: 'sync', once: true })
+    if (watchSources) {
+      watch([...watchSources, _fetchOptions], setImmediate, { flush: 'sync', once: true })
+    }
   }
 
   let controller: AbortController
