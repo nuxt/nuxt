@@ -2204,7 +2204,7 @@ export interface ConfigSchema {
      * Filters to hide build warnings.
      *
      */
-    warningIgnoreFilters: Array<(warn: WebpackError) => boolean>
+    warningIgnoreFilters: Array<(warn: WebpackError | Error) => boolean>
 
     /**
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
