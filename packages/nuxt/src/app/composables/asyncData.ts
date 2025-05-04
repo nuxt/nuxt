@@ -362,15 +362,11 @@ export function useAsyncData<
       if (oldKey) {
         unregister(oldKey)
       }
-
-      let nextAsyncData = nuxtApp._asyncData[newKey]
-
-      if (!nextAsyncData?._init) {
-        nuxtApp._asyncData[newKey] = nextAsyncData = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
+      if (!nuxtApp._asyncData[newKey]?._init) {
+        nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
       }
-
-      nextAsyncData._deps++
-      nextAsyncData.execute({ cause: 'initial', dedupe: options.dedupe })
+      nuxtApp._asyncData[newKey]._deps++
+      nuxtApp._asyncData[newKey].execute({ cause: 'initial', dedupe: options.dedupe })
     }, { flush: 'sync' })
 
     if (hasScope) {

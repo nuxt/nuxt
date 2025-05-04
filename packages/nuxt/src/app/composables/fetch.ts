@@ -110,7 +110,7 @@ export function useFetch<
     default: defaultFn,
     transform,
     pick,
-    watch,
+    watch: watchSources,
     immediate,
     getCachedData,
     deep,
@@ -134,7 +134,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
-    watch: watch === false ? [] : [...(watch || []), _fetchOptions],
+    watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
   }
 
   if (import.meta.dev) {
