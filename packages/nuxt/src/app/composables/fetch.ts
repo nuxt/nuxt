@@ -10,7 +10,7 @@ import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom }
 import { useAsyncData } from './asyncData'
 
 // @ts-expect-error virtual file
-import { fetchDefaults } from '#build/nuxt.config.mjs'
+import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -142,11 +142,15 @@ export function useFetch<
     _asyncDataOptions._functionName ||= 'useFetch'
   }
 
-  // ensure that updates to watched sources trigger an update
-  if (watchSources !== false && !immediate) {
-    watch([...(watchSources || []), _fetchOptions], () => {
+  if (alwaysRunFetchOnKeyChange && !immediate) {
+    // ensure that updates to watched sources trigger an update
+    function setImmediate () {
       _asyncDataOptions.immediate = true
-    }, { flush: 'sync', once: true })
+    }
+    watch(key, setImmediate, { flush: 'sync', once: true })
+    if (watchSources) {
+      watch([...watchSources, _fetchOptions], setImmediate, { flush: 'sync', once: true })
+    }
   }
 
   let controller: AbortController

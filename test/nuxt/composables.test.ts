@@ -6,7 +6,7 @@ import { destr } from 'destr'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
-import { hasProtocol } from 'ufo'
+import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
@@ -700,6 +700,24 @@ describe('useFetch', () => {
     const q = ref('')
     const { data } = await useFetch('/api/immediate-false', {
       query: { q },
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
+  it('should work with reactive request path and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch(() => withQuery('/api/immediate-false', { q: q.value }), {
       immediate: false,
     })
 
