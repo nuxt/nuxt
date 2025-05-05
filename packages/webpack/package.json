@@ -44,7 +44,7 @@
     "h3": "^1.15.3",
     "jiti": "^2.4.2",
     "magic-string": "^0.30.17",
-    "memfs": "^4.17.0",
+    "memfs": "^4.17.1",
     "mini-css-extract-plugin": "^2.9.2",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
