@@ -39,7 +39,7 @@ jobs:
                 owner,
                 repo,
                 issue_number,
-                issue_type: issueType
+                type: issueType
               });
 
               // Remove the original label
