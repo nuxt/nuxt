@@ -36,7 +36,7 @@ export const prefetchComponents = (components: string | string[]) => {
 
 // --- Internal ---
 
-function _loadAsyncComponent (component: Component) {
+export function _loadAsyncComponent (component: Component) {
   if ((component as any)?.__asyncLoader && !(component as any).__asyncResolved) {
     return (component as any).__asyncLoader()
   }

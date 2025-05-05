@@ -6,6 +6,7 @@ import { useRouter } from '#app/composables/router'
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { namedMiddleware } from '#build/middleware'
+import { _loadAsyncComponent } from '#app/composables/preload'
 
 export default defineNuxtPlugin({
   name: 'nuxt:prefetch',
@@ -36,8 +37,8 @@ export default defineNuxtPlugin({
         }
       }
 
-      if (layout && typeof layouts[layout] === 'function') {
-        layouts[layout]()
+      if (typeof layout === 'string' && layout in layouts) {
+        _loadAsyncComponent(layouts[layout])
       }
     })
   },
