@@ -246,10 +246,8 @@ export default defineNuxtModule<ComponentsOptions>({
       const chunk = ComponentsChunkPlugin({ getComponents, isDev: nuxt.options.dev })
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
         config.plugins ||= []
-        if (selectiveClient && !nuxt.options.dev) {
-          if (isClient) {
-               config.plugins.push(chunk.client.vite())
-          }
+        if (selectiveClient && isClient) {
+          config.plugins.push(chunk.client.vite())
         }
         // needed to add the virtual file into the server build
         config.plugins.push(chunk.server.vite())

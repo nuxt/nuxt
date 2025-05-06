@@ -204,6 +204,8 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
             for (const component of components) {
               if (component.filePath) {
                 if(!options.isDev) {
+                  ids.set(component, `/@fs/${component.filePath}`)
+                } else {
                   const id = this.emitFile({
                     type: 'chunk',
                     fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
@@ -211,8 +213,6 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
                     preserveSignature:  'strict'
                   })
                   ids.set(component, '/' + this.getFileName(id))
-                } else {
-                  ids.set(component, `/@fs/${component.filePath}`)
                 }
               }
             }
