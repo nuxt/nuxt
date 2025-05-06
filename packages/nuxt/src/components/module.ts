@@ -243,14 +243,12 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      const chunk = ComponentsChunkPlugin({ getComponents })
+      const chunk = ComponentsChunkPlugin({ getComponents, isDev: nuxt.options.dev })
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
         config.plugins ||= []
         if (selectiveClient && !nuxt.options.dev) {
           if (isClient) {
-            if (!nuxt.options.dev) {
-              config.plugins.push(chunk.client.vite())
-            }
+               config.plugins.push(chunk.client.vite())
           }
         }
         // needed to add the virtual file into the server build

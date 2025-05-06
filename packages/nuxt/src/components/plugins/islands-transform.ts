@@ -185,6 +185,7 @@ function getPropsToString (bindings: Record<string, string>): string {
 
 type ChunkPluginOptions = {
   getComponents: () => Component[]
+  isDev: boolean
 }
 
 export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
@@ -202,13 +203,17 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
             const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
             for (const component of components) {
               if (component.filePath) {
-                const id = this.emitFile({
-                  type: 'chunk',
-                  fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
-                  id: component.filePath,
-                  preserveSignature:  'strict'
-                })
-                ids.set(component, '/' + this.getFileName(id))
+                if(!options.isDev) {
+                  const id = this.emitFile({
+                    type: 'chunk',
+                    fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
+                    id: component.filePath,
+                    preserveSignature:  'strict'
+                  })
+                  ids.set(component, '/' + this.getFileName(id))
+                } else {
+                  ids.set(component, `/@fs/${component.filePath}`)
+                }
               }
             }
           },
