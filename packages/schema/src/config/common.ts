@@ -561,7 +561,7 @@ export default defineResolvers({
         ignore.add(`**/${ignorePrefix}*.*`)
       }
       if (Array.isArray(val)) {
-        for (const pattern in val) {
+        for (const pattern of val) {
           if (pattern) {
             ignore.add(pattern)
           }
