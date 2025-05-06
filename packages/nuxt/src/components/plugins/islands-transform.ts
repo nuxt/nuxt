@@ -203,7 +203,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
             const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
             for (const component of components) {
               if (component.filePath) {
-                if(!options.isDev) {
+                if(options.isDev) {
                   ids.set(component, `/@fs/${component.filePath}`)
                 } else {
                   const id = this.emitFile({
