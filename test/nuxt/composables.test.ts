@@ -701,7 +701,7 @@ describe('useFetch', () => {
     const q = ref('')
     const { data } = await useFetch('/api/rerun', {
       query: { q },
-      watch: false
+      watch: false,
     })
 
     expect(data.value).toStrictEqual({ count: 0 })
