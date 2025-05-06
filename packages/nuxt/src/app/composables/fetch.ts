@@ -281,7 +281,12 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     } else if (value instanceof ArrayBuffer) {
       segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
     } else if (value instanceof FormData) {
-      segments.push(hash(Object.fromEntries(value.entries())))
+      const obj: Record<string, string> = {}
+      for (const entry of value.entries()) {
+        const [key, val] = entry
+        obj[key] = val instanceof File ? val.name : val
+      }
+      segments.push(hash(obj))
     } else if (isPlainObject(value)) {
       segments.push(hash(reactive(value)))
     } else {

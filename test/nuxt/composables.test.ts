@@ -754,10 +754,12 @@ describe('useFetch', () => {
 
   it('should handle complex objects in body', async () => {
     registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
+    const formData = new FormData()
+    formData.append('file', new File([], 'test.txt'))
     const testCases = [
       { ref: ref('test') },
       ref('test'),
-      new FormData(),
+      formData,
       new ArrayBuffer(),
     ]
     for (const value of testCases) {
