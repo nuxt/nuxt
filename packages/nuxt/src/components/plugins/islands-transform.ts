@@ -206,7 +206,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
                   type: 'chunk',
                   fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
                   id: component.filePath,
-                  preserveSignature: 'exports-only'
+                  preserveSignature:  'strict'
                 })
                 ids.set(component, '/' + this.getFileName(id))
               }
