@@ -607,7 +607,7 @@ function createAsyncData<
         const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
         if (value) { return value as Promise<ResT> }
 
-        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(_handler))
+        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(nuxtApp)))
 
         nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
         return promise
