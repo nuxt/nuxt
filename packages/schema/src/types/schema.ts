@@ -1865,7 +1865,13 @@ export interface ConfigSchema {
    * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
    */
     options: import('esbuild').TransformOptions
-  }
+  },
+
+  oxc: {
+    transform: {
+      options: import ('oxc-transform').TransformOptions
+    }
+  },
 
   /**
    * Configuration that will be passed directly to Vite.

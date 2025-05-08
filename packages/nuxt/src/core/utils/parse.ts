@@ -1,14 +1,25 @@
 import { walk as _walk } from 'estree-walker'
 import type { Node, SyncHandler } from 'estree-walker'
 import type { ArrowFunctionExpression, CatchClause, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program, VariableDeclaration } from 'estree'
-import { type SameShape, type TransformOptions, type TransformResult, transform as esbuildTransform } from 'esbuild'
 import { tryUseNuxt } from '@nuxt/kit'
 import { parseSync } from 'oxc-parser'
+import { transform as oxcTransform, type TransformOptions, type TransformResult } from 'oxc-transform'
+import { minify } from 'oxc-minify'
 
 export type { Node }
 
-export async function transform<T extends TransformOptions> (input: string | Uint8Array, options?: SameShape<TransformOptions, T>): Promise<TransformResult<T>> {
-  return await esbuildTransform(input, { ...tryUseNuxt()?.options.esbuild.options, ...options })
+// TODO: Do we even need this?
+type SameShape<Out, In extends Out> = In & { [Key in Exclude<keyof In, keyof Out>]: never }
+
+export function transformAndMinify<T extends TransformOptions> (input: string, options?: SameShape<TransformOptions, T>): TransformResult {
+  // not async until https://github.com/oxc-project/oxc/issues/10900
+  const transformResult = oxcTransform('', input, { ...tryUseNuxt()?.options.oxc.transform.options, ...options })
+  const minifyResult = minify('', transformResult.code, { compress: { target: 'esnext' } })
+  
+  return {
+  ...transformResult,
+  ...minifyResult
+  }
 }
 
 export type WithLocations<T> = T & { start: number, end: number }

@@ -79,6 +79,7 @@
     "@vue/shared": "^3.5.13",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
+    "oxc-transform": "^0.68.1",
     "pathe": "^2.0.3",
     "std-env": "^3.9.0"
   },
