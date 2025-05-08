@@ -233,7 +233,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       route: '',
       handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
         // 'Skip' the transform middleware
-        if (req._skip_transform) { req.url = joinURL('/__skip_vite', req.url!) }
+        if (req._skip_transform) { req.url = joinURL('/__skip_vite', req.url!.replace(/\?.*/, '')) }
         next()
       },
     })
