@@ -148,14 +148,12 @@ export function useFetch<
       _asyncDataOptions.immediate = true
     }
     watch(key, setImmediate, { flush: 'sync', once: true })
-    if (watchSources) {
-      watch([...watchSources, _fetchOptions], setImmediate, { flush: 'sync', once: true })
-    }
+    watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
   let controller: AbortController
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
     controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
