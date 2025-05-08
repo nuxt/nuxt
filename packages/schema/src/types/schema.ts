@@ -1869,7 +1869,7 @@ export interface ConfigSchema {
 
   oxc: {
     transform: {
-      options: import ('oxc-transform').TransformOptions
+      options: import('oxc-transform').TransformOptions
     }
   },
 
