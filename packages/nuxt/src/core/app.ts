@@ -40,19 +40,16 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // Normalize templates
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl, nuxt.options.buildDir))
 
-  if (options.filter) {
-    app.templates = app.templates.filter(options.filter)
-  }
   // compile plugins first as they are needed within the nuxt.vfs
   // in order to annotate templated plugins
-  const postTemplateSet = new Set(postTemplates)
   const filteredTemplates: Record<'pre' | 'post', Array<ResolvedNuxtTemplate<any>>> = {
     pre: [],
     post: [],
   }
 
   for (const template of app.templates as Array<ResolvedNuxtTemplate<any>>) {
-    const key = template.filename && postTemplateSet.has(template.filename) ? 'post' : 'pre'
+    if (options.filter && !options.filter(template)) { continue }
+    const key = template.filename && postTemplates.includes(template.filename) ? 'post' : 'pre'
     filteredTemplates[key].push(template)
   }
 
