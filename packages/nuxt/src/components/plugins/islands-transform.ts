@@ -193,30 +193,43 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
 
   const VIRTUAL_MODULE_ID = 'virtual:components-chunk'
   const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID
-
+  const rawIds: string[] = []
   return {
     client: createUnplugin(() => {
       return {
         name: 'nuxt:components-chunk:client',
         vite: {
-          buildStart () {
+           buildStart () {
             const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
             for (const component of components) {
               if (component.filePath) {
                 if(options.isDev) {
                   ids.set(component, `/@fs/${component.filePath}`)
-                } else {
+                } else { 
                   const id = this.emitFile({
                     type: 'chunk',
                     fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
                     id: component.filePath,
-                    preserveSignature:  'strict'
+                    preserveSignature:  'allow-extension',
+                    
                   })
+                  
                   ids.set(component, '/' + this.getFileName(id))
+                  rawIds.push(this.getFileName(id))
                 }
               }
             }
           },
+          generateBundle (options, bundle) {
+            for(const chunk of Object.values(bundle)) {
+              if(chunk.type === 'chunk') {
+                const list = Array.from(ids.values()).map(id => id.replace(/^\//, ''))
+                if(list.includes(chunk.fileName)) {
+                  chunk.isEntry = false
+                }
+              }
+            }
+          }
         },
       }
     }),
