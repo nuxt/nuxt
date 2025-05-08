@@ -713,6 +713,7 @@ function createAsyncData<
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
         clearNuxtDataByKey(nuxtApp, key)
+        asyncData.execute = () => Promise.resolve()
       }
     },
   }
