@@ -3,7 +3,7 @@ import type { Node, SyncHandler } from 'estree-walker'
 import type { ArrowFunctionExpression, CatchClause, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program, VariableDeclaration } from 'estree'
 import { tryUseNuxt } from '@nuxt/kit'
 import { parseSync } from 'oxc-parser'
-import { transform as oxcTransform, type TransformOptions, type TransformResult } from 'oxc-transform'
+import { type TransformOptions, type TransformResult, transform as oxcTransform } from 'oxc-transform'
 import { minify } from 'oxc-minify'
 
 export type { Node }
@@ -15,10 +15,10 @@ export function transformAndMinify<T extends TransformOptions> (input: string, o
   // not async until https://github.com/oxc-project/oxc/issues/10900
   const transformResult = oxcTransform('', input, { ...tryUseNuxt()?.options.oxc.transform.options, ...options })
   const minifyResult = minify('', transformResult.code, { compress: { target: 'esnext' } })
-  
+
   return {
-  ...transformResult,
-  ...minifyResult
+    ...transformResult,
+    ...minifyResult,
   }
 }
 

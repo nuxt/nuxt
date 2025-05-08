@@ -15,7 +15,7 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
       filter: {
         code: { include: /onPrehydrate\(/ },
       },
-      async handler (code, id) {
+      handler (code, id) {
         const s = new MagicString(code)
         parseAndWalk(code, id, (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {

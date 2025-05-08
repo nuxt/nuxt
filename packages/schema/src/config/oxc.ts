@@ -1,11 +1,12 @@
-import { defineResolvers } from "../utils/definition";
+import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
   /**
    * Configure shared oxc options used within Nuxt and passed where necessary.
    */
   oxc: {
-    /** Options for `oxc-transform`
+    /**
+     * Options for `oxc-transform`
      * @see [Oxc transform docs](https://oxc.rs/docs/guide/usage/transformer.html)
      * @type {import('oxc-transform').TransformOptions}
      */
@@ -13,22 +14,22 @@ export default defineResolvers({
       options: {
         target: {
           $resolve: async (val, get) => {
-            if (typeof val === "string") {
-              return val;
+            if (typeof val === 'string') {
+              return val
             }
             // https://github.com/vitejs/vite-plugin-vue/issues/528
-            const useDecorators = await get("experimental").then(
-              (r) => r?.decorators === true
-            );
+            const useDecorators = await get('experimental').then(
+              r => r?.decorators === true,
+            )
             if (useDecorators) {
-              return "es2024";
+              return 'es2024'
             }
-            return "esnext";
+            return 'esnext'
           },
         },
-        jsxFactory: "h",
-        jsxFragment: "Fragment",
+        jsxFactory: 'h',
+        jsxFragment: 'Fragment',
       },
     },
   },
-});
+})
