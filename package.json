@@ -15,7 +15,7 @@
     "debug:prepare": "TIMINGS_DEBUG=true pnpm dev:prepare",
     "debug:build": "TIMINGS_DEBUG=true pnpm build",
     "debug:dev": "rm -rf **/node_modules/.cache/jiti && pnpm nuxi dev",
-    "lint": "pnpm lint:ox && pnpm lint:es",
+    "lint": "pnpm run \"/^lint:es|^lint:ox/\"",
     "lint:es": "eslint . --cache",
     "lint:ox": "oxlint",
     "lint:fix": "pnpm lint:fix:ox && pnpm lint:fix:es",
