@@ -8,7 +8,7 @@ const nitroApp = useNitroApp()
 
 async function renderIndex () {
   const text = await (nitroApp as NitroApp).localFetch('/', {}).then(r => r.text())
-  // eslint-disable-next-line
+  // oxlint-disable-next-line no-console
   console.log(text)
 }
 

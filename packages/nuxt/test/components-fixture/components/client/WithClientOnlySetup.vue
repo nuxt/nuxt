@@ -108,7 +108,7 @@ const { woooooo, What = isThis } = defineAsyncComponent(async () => {
 })
 
 if (import.meta.client) {
-  // eslint-disable-next-line no-console
+  // oxlint-disable-next-line no-console
   console.log(woooooo)
 }
 
@@ -137,7 +137,7 @@ const [Please, { Dont, Doo }, That] = defineAsyncComponent(async () => {
 })
 
 if (import.meta.client) {
-  // eslint-disable-next-line no-console
+  // oxlint-disable-next-line no-console
   console.log(DontRemoveThisSinceItIsUsedInSetup.props)
 }
 </script>

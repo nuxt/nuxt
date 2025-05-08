@@ -174,7 +174,7 @@ describe('middleware', () => {
     definePageMeta({
       validate: async () => {
         await new Promise(resolve => setTimeout(resolve, 1000))
-        // eslint-disable-next-line
+        // oxlint-disable-next-line
         if (0) {
           return createError({
             statusCode: 404,
@@ -629,7 +629,7 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+      // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
       nuxt: {}
       fromLayer: boolean
       fromNuxtConfig: boolean

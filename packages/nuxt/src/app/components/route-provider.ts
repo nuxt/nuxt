@@ -39,7 +39,7 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            const filename = (vnode?.type as any).__file
+            const filename = (vnode?.type as any)?.__file
             console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
           }
         })

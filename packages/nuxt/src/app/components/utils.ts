@@ -1,6 +1,6 @@
 import { Transition, createStaticVNode, h } from 'vue'
 import type { RendererNode, VNode } from 'vue'
-// eslint-disable-next-line
+// oxlint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 // @ts-expect-error virtual file
