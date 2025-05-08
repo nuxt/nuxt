@@ -23,7 +23,7 @@ export default {
 
     for (const item of [snippet, snippet2]) {
       const { code } = await transformPlugin.transform.handler(item, 'test.ts') ?? {}
-      expect(code).toContain(`onPrehydrate("(()=>{console.log(\\"hello world\\")})")`)
+      expect(code).toContain(`onPrehydrate("(()=>{console.log(\`hello world\`)})")`)
     }
   })
 
