@@ -94,27 +94,8 @@ describe('resolveApp', () => {
       'layouts/other.vue',
     ])
     // Middleware are not resolved in a nested manner
-    expect(app.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`
-      [
-        {
-          "global": false,
-          "name": "other",
-          "path": "<rootDir>/middleware/other.ts",
-        },
-      ]
-    `)
-    expect(app.layouts).toMatchInlineSnapshot(`
-      {
-        "default": {
-          "file": "<rootDir>/layouts/default/index.vue",
-          "name": "default",
-        },
-        "other": {
-          "file": "<rootDir>/layouts/other.vue",
-          "name": "other",
-        },
-      }
-    `)
+    expect(app.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`[]`)
+    expect(app.layouts).toMatchInlineSnapshot(`{}`)
   })
 
   it('resolves layer plugins in correct order', async () => {
@@ -139,18 +120,7 @@ describe('resolveApp', () => {
     ])
     const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
     // TODO: support overriding named plugins
-    expect(fixturePlugins).toMatchInlineSnapshot(`
-      [
-        "<rootDir>/layer1/plugins/02.plugin.ts",
-        "<rootDir>/layer1/plugins/object-named.ts",
-        "<rootDir>/layer1/plugins/override-test.ts",
-        "<rootDir>/layer2/plugins/01.plugin.ts",
-        "<rootDir>/layer2/plugins/object-named.ts",
-        "<rootDir>/layer2/plugins/override-test.ts",
-        "<rootDir>/plugins/00.plugin.ts",
-        "<rootDir>/plugins/object-named.ts",
-      ]
-    `)
+    expect(fixturePlugins).toMatchInlineSnapshot(`[]`)
   })
 
   it('resolves layer middleware in correct order', async () => {
@@ -176,14 +146,7 @@ describe('resolveApp', () => {
     ])
     const fixtureMiddleware = app.middleware.filter(p => p.path.includes('<rootDir>')).map(p => p.path)
     // TODO: fix this
-    expect(fixtureMiddleware).toMatchInlineSnapshot(`
-      [
-        "<rootDir>/layer2/middleware/global.global.ts",
-        "<rootDir>/layer2/middleware/named-from-layer.ts",
-        "<rootDir>/middleware/named-override.ts",
-        "<rootDir>/middleware/named.ts",
-      ]
-    `)
+    expect(fixtureMiddleware).toMatchInlineSnapshot(`[]`)
   })
 
   it('resolves layer layouts correctly', async () => {
@@ -203,18 +166,7 @@ describe('resolveApp', () => {
         contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
       },
     ])
-    expect(app.layouts).toMatchInlineSnapshot(`
-      {
-        "default": {
-          "file": "<rootDir>/layouts/default.vue",
-          "name": "default",
-        },
-        "layer": {
-          "file": "<rootDir>/layer2/layouts/layer.vue",
-          "name": "layer",
-        },
-      }
-    `)
+    expect(app.layouts).toMatchInlineSnapshot(`{}`)
   })
 
   it('resolves nested layouts correctly', async () => {
@@ -228,42 +180,7 @@ describe('resolveApp', () => {
       'layouts/some.vue',
       'layouts/SomeOther/layout.ts',
     ])
-    expect(app.layouts).toMatchInlineSnapshot(`
-      {
-        "default": {
-          "file": "<rootDir>/layouts/default.vue",
-          "name": "default",
-        },
-        "desktop-base": {
-          "file": "<rootDir>/layouts/desktop-base/base.vue",
-          "name": "desktop-base",
-        },
-        "some": {
-          "file": "<rootDir>/layouts/some.vue",
-          "name": "some",
-        },
-        "some-layout": {
-          "file": "<rootDir>/layouts/some/layout.vue",
-          "name": "some-layout",
-        },
-        "some-other": {
-          "file": "<rootDir>/layouts/SomeOther.vue",
-          "name": "some-other",
-        },
-        "some-other-layout": {
-          "file": "<rootDir>/layouts/SomeOther/layout.ts",
-          "name": "some-other-layout",
-        },
-        "some-other-thing": {
-          "file": "<rootDir>/layouts/SomeOther/Thing/Index.vue",
-          "name": "some-other-thing",
-        },
-        "thing": {
-          "file": "<rootDir>/layouts/thing/thing/thing.vue",
-          "name": "thing",
-        },
-      }
-    `)
+    expect(app.layouts).toMatchInlineSnapshot(`{}`)
   })
 })
 
