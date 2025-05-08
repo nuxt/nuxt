@@ -460,6 +460,9 @@ importers:
       on-change:
         specifier: ^5.0.1
         version: 5.0.1
+      oxc-minify:
+        specifier: ^0.68.1
+        version: 0.68.1
       oxc-parser:
         specifier: ^0.68.1
         version: 0.68.1
@@ -551,9 +554,6 @@ importers:
       '@vue/compiler-sfc':
         specifier: 3.5.13
         version: 3.5.13
-      oxc-minify:
-        specifier: ^0.68.1
-        version: 0.68.1
       unbuild:
         specifier: 3.5.0
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.14(@vue/compiler-core@3.5.13)(esbuild@0.25.4)(vue@3.5.13(typescript@5.8.3)))(vue-tsc@2.2.10(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
