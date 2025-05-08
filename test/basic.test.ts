@@ -732,7 +732,7 @@ describe('nuxt composables', () => {
      * <div data-prehydrate-id=":b3qlvSiBeH::df1mQEC9xH:"> onPrehydrate testing </div>
      * <script>(()=>{console.log(window)})()</script>
      * <script>document.querySelectorAll('[data-prehydrate-id*=":b3qlvSiBeH:"]').forEach(e=>{console.log(e.outerHTML)})</script>
-     * <script>document.querySelectorAll('[data-prehydrate-id*=":df1mQEC9xH:"]').forEach(e=>{console.log("other",e.outerHTML)})</script>
+     * <script>document.querySelectorAll('[data-prehydrate-id*=":df1mQEC9xH:"]').forEach(e=>{console.log(`other`,e.outerHTML)})</script>
      * ```
      */
     const { id1, id2 } = html.match(/<div[^>]* data-prehydrate-id=":(?<id1>[^:]+)::(?<id2>[^:]+):"> onPrehydrate testing <\/div>/)?.groups || {}
