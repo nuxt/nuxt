@@ -117,7 +117,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
       name: f.name,
       size: f.attrs?.size,
       data: hash(f.data),
-    }))
+    })).sort((a, b) => a.name.localeCompare(b.name))
 
     const isIgnored = createIsIgnored(nuxt)
     const sourceFiles = await readFilesRecursive(options.cwd(layer), {
@@ -151,6 +151,8 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
       data: normalizeFiles(rootFiles),
     })
   }
+
+  hashSources.sort((a, b) => a.name.localeCompare(b.name))
 
   const res = ((nuxt as any)[`_${options.id}BuildHash`] = {
     hash: hash(hashSources),
