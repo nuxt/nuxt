@@ -58,6 +58,7 @@
     "mini-css-extract-plugin": "2.9.2",
     "nitro": "npm:nitro-nightly@3.0.0-20250501-155422.e44b7c2d",
     "ofetch": "1.4.1",
+    "oxc-transform": "0.68.1",
     "pkg-types": "2.1.0",
     "postcss": "8.5.3",
     "rollup-plugin-visualizer": "5.14.0",
@@ -79,7 +80,6 @@
     "@vue/shared": "^3.5.13",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
-    "oxc-transform": "^0.68.1",
     "pathe": "^2.0.3",
     "std-env": "^3.9.0"
   },

@@ -27,6 +27,8 @@ import type { ProcessOptions } from 'postcss'
 import type { Options as Options3 } from 'webpack-dev-middleware'
 import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
+import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
+import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
 import type { RouterConfigSerializable } from './router'
 import type { NuxtHooks } from './hooks'
@@ -1864,12 +1866,12 @@ export interface ConfigSchema {
   /**
    * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
    */
-    options: import('esbuild').TransformOptions
+    options: EsbuildTransformOptions
   }
 
   oxc: {
     transform: {
-      options: import('oxc-transform').TransformOptions
+      options: OxcTransformOptions
     }
   }
 

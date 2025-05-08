@@ -717,9 +717,6 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
-      oxc-transform:
-        specifier: ^0.68.1
-        version: 0.68.1
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -793,6 +790,9 @@ importers:
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
+      oxc-transform:
+        specifier: 0.68.1
+        version: 0.68.1
       pkg-types:
         specifier: 2.1.0
         version: 2.1.0
