@@ -126,7 +126,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore Rolldown-Vite specific
     if (!vite.rolldownVersion) {
-      // Rolldown has no support for `output.manualChunks`
+      // @ts-expect-error Rolldown has no support for `output.manualChunks`
       delete serverConfig.build.rollupOptions.output.manualChunks
     } else {
       // If Rolldown is used, remove all chunk settings (mirror behavior for rollup for now)

@@ -209,6 +209,7 @@ export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         const isRolldownCompatEnabled = await import('vite').then(r => 'rolldownVersion' in r)
         if (!isRolldownCompatEnabled) {
           // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
+          // @ts-expect-error not present in rolldown-vite
           rollupOptions.preserveEntrySignatures = 'allow-extension'
         }
         for (const component of components) {
