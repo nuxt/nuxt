@@ -138,7 +138,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   const layers = nuxt.options._layers
   const layerConfigs = layers.map(l => l.config)
   const reversedConfigs = [...layerConfigs].reverse()
-  const extGlob = `{${nuxt.options.extensions.join(',')}}`
+  const extGlob = nuxt.options.extensions.join(',')
 
   // Resolve main (app.vue)
   const [main, welcome] = await Promise.all([
