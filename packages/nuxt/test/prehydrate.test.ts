@@ -35,6 +35,6 @@ onPrehydrate((attr) => {
     `
 
     const { code } = await transformPlugin.transform.handler(snippet, 'test.ts') ?? {}
-    expect(code?.trim()).toMatchInlineSnapshot(`"onPrehydrate("(o=>{console.log(\\"hello world\\")})", "mcDYwfgR1x")"`)
+    expect(code?.trim()).toMatchInlineSnapshot(`"onPrehydrate("(e=>{console.log(\`hello world\`)})", "LPWqofgLVF")"`)
   })
 })
