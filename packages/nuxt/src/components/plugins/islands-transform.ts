@@ -220,7 +220,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
               }
             }
           },
-          generateBundle (options, bundle) {
+          generateBundle (_, bundle) {
             for(const chunk of Object.values(bundle)) {
               if(chunk.type === 'chunk') {
                 const list = Array.from(ids.values()).map(id => id.replace(/^\//, ''))
@@ -236,24 +236,22 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
     server: createUnplugin(() => {
       return {
         name: 'nuxt:components-chunk:server',
-        vite: {
-          resolveId (id) {
-            if (id === VIRTUAL_MODULE_ID) {
-              return RESOLVED_VIRTUAL_MODULE_ID
+        resolveId (id) {
+          if (id === VIRTUAL_MODULE_ID) {
+            return RESOLVED_VIRTUAL_MODULE_ID
+          }
+        },
+        load (id) {
+          if (id === RESOLVED_VIRTUAL_MODULE_ID) {
+            return {
+              code: `export default {
+              ${Array.from(ids.entries()).map(([component, id]) => {
+                return `${JSON.stringify(component.pascalName)}: ${JSON.stringify(id)}`
+              }).join(',\n')}
+            }`,
+              map: null,
             }
-          },
-          load (id) {
-            if (id === RESOLVED_VIRTUAL_MODULE_ID) {
-              return {
-                code: `export default {
-                ${Array.from(ids.entries()).map(([component, id]) => {
-                  return `${JSON.stringify(component.pascalName)}: ${JSON.stringify(id)}`
-                }).join(',\n')}
-              }`,
-                map: null,
-              }
-            }
-          },
+          }
         },
       }
     }),
