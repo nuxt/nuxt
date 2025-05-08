@@ -1238,7 +1238,6 @@
     "no-const-assign": "error",
     "no-constant-binary-expression": "error",
     "no-constant-condition": "error",
-    "no-control-regex": "error",
     "no-debugger": "error",
     "no-delete-var": "error",
     "no-dupe-class-members": "error",
@@ -1262,7 +1261,6 @@
     "no-nonoctal-decimal-escape": "error",
     "no-obj-calls": "error",
     "no-prototype-builtins": "error",
-    "no-redeclare": "error",
     "no-regex-spaces": "error",
     "no-self-assign": "error",
     "no-setter-return": "error",
@@ -1332,7 +1330,7 @@
     "unicorn/prefer-number-properties": "error",
     "unicorn/prefer-string-starts-ends-with": "error",
     "unicorn/prefer-type-error": "error",
-    "unicorn/throw-new-error": "error"
+    "unicorn/throw-new-error": "error",
   },
   "overrides": [
     {
@@ -1352,7 +1350,6 @@
         "no-import-assign": "off",
         "no-new-native-nonconstructor": "off",
         "no-obj-calls": "off",
-        "no-redeclare": "off",
         "no-setter-return": "off",
         "no-this-before-super": "off",
         "no-unsafe-negation": "off",
@@ -1410,27 +1407,6 @@
     },
     {
       "files": [
-        "**/*.vue",
-        "**/*.ts",
-        "**/*.mts",
-        "**/*.js",
-        "**/*.cjs",
-        "**/*.mjs"
-      ],
-      "rules": {
-        "jsdoc/check-tag-names": [
-          "error",
-          {
-            "definedTags": [
-              "experimental",
-              "__NO_SIDE_EFFECTS__"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": [
         "packages/nuxt/src/app/**",
         "test/**",
         "**/runtime/**",
@@ -1445,46 +1421,6 @@
         "packages/nuxt/src/app/**",
         "packages/nuxt/src/(components,head,imports,pages)/runtime/**"
       ],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "allowTypeImports": true,
-                "group": [
-                  "[@a-z]*",
-                  "!@unhead",
-                  "!@vue",
-                  "!@vue/shared",
-                  "!vue/server-renderer",
-                  "!vue",
-                  "!vue-router",
-                  "!devalue",
-                  "!klona",
-                  "!defu",
-                  "!ufo",
-                  "!h3",
-                  "!destr",
-                  "!consola",
-                  "!hookable",
-                  "!unctx",
-                  "!cookie-es",
-                  "!perfect-debounce",
-                  "!radix3",
-                  "!ohash",
-                  "!pathe",
-                  "!uncrypto",
-                  "!errx",
-                  "!nuxt/app",
-                  "!#[a-z]*/**",
-                  "!.*/**"
-                ]
-              }
-            ]
-          }
-        ]
-      },
       "plugins": [
         "typescript"
       ]
