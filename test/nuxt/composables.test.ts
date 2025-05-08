@@ -6,7 +6,7 @@ import { destr } from 'destr'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
-import { hasProtocol } from 'ufo'
+import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
@@ -713,6 +713,24 @@ describe('useFetch', () => {
     expect(data.value).toEqual({ url: '/api/immediate-false' })
   })
 
+  it('should work with reactive request path and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch(() => withQuery('/api/immediate-false', { q: q.value }), {
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
   it('should be accessible immediately', async () => {
     registerEndpoint('/api/watchable-fetch', defineEventHandler(() => ({ url: '/api/watchable-fetch' })))
 
@@ -736,10 +754,12 @@ describe('useFetch', () => {
 
   it('should handle complex objects in body', async () => {
     registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
+    const formData = new FormData()
+    formData.append('file', new File([], 'test.txt'))
     const testCases = [
       { ref: ref('test') },
       ref('test'),
-      new FormData(),
+      formData,
       new ArrayBuffer(),
     ]
     for (const value of testCases) {

@@ -1586,6 +1586,15 @@ export interface ConfigSchema {
     granularCachedData: boolean
 
     /**
+     * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
+     *
+     * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
+     *
+     * @default false
+     */
+    alwaysRunFetchOnKeyChange: boolean
+
+    /**
      * Whether to parse `error.data` when rendering a server error page.
      *
      * @default true
@@ -2195,7 +2204,7 @@ export interface ConfigSchema {
      * Filters to hide build warnings.
      *
      */
-    warningIgnoreFilters: Array<(warn: WebpackError) => boolean>
+    warningIgnoreFilters: Array<(warn: WebpackError | Error) => boolean>
 
     /**
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)

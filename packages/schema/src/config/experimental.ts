@@ -608,6 +608,17 @@ export default defineResolvers({
     },
 
     /**
+     * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
+     *
+     * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
+     */
+    alwaysRunFetchOnKeyChange: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
+      },
+    },
+
+    /**
      * Whether to parse `error.data` when rendering a server error page.
      */
     parseErrorData: {

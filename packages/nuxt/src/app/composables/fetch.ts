@@ -10,7 +10,7 @@ import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom }
 import { useAsyncData } from './asyncData'
 
 // @ts-expect-error virtual file
-import { fetchDefaults } from '#build/nuxt.config.mjs'
+import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -142,11 +142,15 @@ export function useFetch<
     _asyncDataOptions._functionName ||= 'useFetch'
   }
 
-  // ensure that updates to watched sources trigger an update
-  if (watchSources !== false && !immediate) {
-    watch([...(watchSources || []), _fetchOptions], () => {
+  if (alwaysRunFetchOnKeyChange && !immediate) {
+    // ensure that updates to watched sources trigger an update
+    function setImmediate () {
       _asyncDataOptions.immediate = true
-    }, { flush: 'sync', once: true })
+    }
+    watch(key, setImmediate, { flush: 'sync', once: true })
+    if (watchSources) {
+      watch([...watchSources, _fetchOptions], setImmediate, { flush: 'sync', once: true })
+    }
   }
 
   let controller: AbortController
@@ -274,7 +278,12 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     } else if (value instanceof ArrayBuffer) {
       segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
     } else if (value instanceof FormData) {
-      segments.push(hash(Object.fromEntries(value.entries())))
+      const obj: Record<string, string> = {}
+      for (const entry of value.entries()) {
+        const [key, val] = entry
+        obj[key] = val instanceof File ? val.name : val
+      }
+      segments.push(hash(obj))
     } else if (isPlainObject(value)) {
       segments.push(hash(reactive(value)))
     } else {
