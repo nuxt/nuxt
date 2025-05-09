@@ -205,8 +205,12 @@ export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
           rollupOptions.input = rollupOptions.input.reduce<{ [key: string]: string }>((acc, input) => { acc[input] = input; return acc }, {})
         }
 
-        // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
-        rollupOptions.preserveEntrySignatures = 'allow-extension'
+        // Option does not exist (yet) in `rolldown` - https://github.com/rolldown/rolldown/issues/3500
+        const isRolldownCompatEnabled = await import('vite').then(r => 'rolldownVersion' in r)
+        if (!isRolldownCompatEnabled) {
+          // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
+          rollupOptions.preserveEntrySignatures = 'allow-extension'
+        }
         for (const component of components) {
           if (component.mode === 'client' || component.mode === 'all') {
             rollupOptions.input![component.pascalName] = await resolvePath(component.filePath)
