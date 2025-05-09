@@ -244,13 +244,12 @@ export default defineNuxtModule<ComponentsOptions>({
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
       const chunk = ComponentsChunkPlugin({ getComponents, isDev: nuxt.options.dev })
+      addBuildPlugin(chunk.server, { client: false })
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
         config.plugins ||= []
         if (selectiveClient && isClient) {
           config.plugins.push(chunk.client.vite())
         }
-        // needed to add the virtual file into the server build
-        config.plugins.push(chunk.server.vite())
       })
 
       for (const key of ['rspack:config', 'webpack:config'] as const) {
