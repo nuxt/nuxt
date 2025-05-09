@@ -253,19 +253,8 @@ export default defineNuxtModule<ComponentsOptions>({
           config.plugins.push(chunk.server.vite())
         }
       })
-
-      for (const key of ['rspack:config', 'webpack:config'] as const) {
-        nuxt.hook(key, (configs) => {
-          configs.forEach((config) => {
-            const mode = config.name === 'client' ? 'client' : 'server'
-            config.plugins ||= []
-
-            if (mode === 'server') {
-              config.plugins.push(chunk.server.webpack())
-            }
-          })
-        })
-      }
+      
+      addBuildPlugin(chunk.server, { client: false })
     }
   },
 })

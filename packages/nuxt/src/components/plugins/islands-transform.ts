@@ -191,8 +191,7 @@ type ChunkPluginOptions = {
 export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
   const ids = new Map<Component, string>()
 
-  const VIRTUAL_MODULE_ID = 'virtual:components-chunk'
-  const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID
+  const VIRTUAL_MODULE_ID = '#build/component-chunk'
   const rawIds: string[] = []
   return {
     client: createUnplugin(() => {
@@ -238,11 +237,12 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
         name: 'nuxt:components-chunk:server',
         resolveId (id) {
           if (id === VIRTUAL_MODULE_ID) {
-            return RESOLVED_VIRTUAL_MODULE_ID
+            return id
           }
         },
+
         load (id) {
-          if (id === RESOLVED_VIRTUAL_MODULE_ID) {
+          if (id === VIRTUAL_MODULE_ID) {
             return {
               code: `export default {
               ${Array.from(ids.entries()).map(([component, id]) => {
@@ -253,6 +253,10 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
             }
           }
         },
+        
+        loadInclude (id) {
+          return id === VIRTUAL_MODULE_ID
+        }
       }
     }),
   }
