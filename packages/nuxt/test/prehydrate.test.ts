@@ -23,7 +23,7 @@ export default {
 
     for (const item of [snippet, snippet2]) {
       const { code } = await transformPlugin.transform.handler(item, 'test.ts') ?? {}
-      expect(code).toContain(`onPrehydrate("(()=>{console.log(\\"hello world\\")})")`)
+      expect(code).toContain(`onPrehydrate("(()=>{console.log(\`hello world\`)})")`)
     }
   })
 
@@ -35,6 +35,6 @@ onPrehydrate((attr) => {
     `
 
     const { code } = await transformPlugin.transform.handler(snippet, 'test.ts') ?? {}
-    expect(code?.trim()).toMatchInlineSnapshot(`"onPrehydrate("(o=>{console.log(\\"hello world\\")})", "mcDYwfgR1x")"`)
+    expect(code?.trim()).toMatchInlineSnapshot(`"onPrehydrate("(e=>{console.log(\`hello world\`)})", "LPWqofgLVF")"`)
   })
 })
