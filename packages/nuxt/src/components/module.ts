@@ -249,8 +249,6 @@ export default defineNuxtModule<ComponentsOptions>({
         config.plugins ||= []
         if (selectiveClient && isClient) {
           config.plugins.push(chunk.client.vite())
-        } else if (isServer) {
-          config.plugins.push(chunk.server.vite())
         }
       })
       
