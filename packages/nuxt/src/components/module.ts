@@ -244,11 +244,13 @@ export default defineNuxtModule<ComponentsOptions>({
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
       const chunk = ComponentsChunkPlugin({ getComponents, isDev: nuxt.options.dev })
-      addBuildPlugin(chunk.server, { client: false })
-      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
+
+      nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
         config.plugins ||= []
         if (selectiveClient && isClient) {
           config.plugins.push(chunk.client.vite())
+        } else if (isServer) {
+          config.plugins.push(chunk.server.vite())
         }
       })
 
@@ -258,8 +260,8 @@ export default defineNuxtModule<ComponentsOptions>({
             const mode = config.name === 'client' ? 'client' : 'server'
             config.plugins ||= []
 
-            if (mode !== 'server') {
-              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+            if (mode === 'server') {
+              config.plugins.push(chunk.server.webpack())
             }
           })
         })
