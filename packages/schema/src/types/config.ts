@@ -12,7 +12,7 @@ import type { AppHeadMetaObject } from './head'
 
 export type { SchemaDefinition } from 'untyped'
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+// oxlint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
 export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
@@ -35,7 +35,7 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
 
 type RuntimeConfigNamespace = Record<string, unknown>
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
@@ -139,7 +139,7 @@ export interface AppConfigInput extends CustomAppConfig {
   server?: never
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+// oxlint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
 
 type ValueOf<T> = T[keyof T]

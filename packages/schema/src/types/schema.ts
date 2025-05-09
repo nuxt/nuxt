@@ -2166,7 +2166,7 @@ export interface ConfigSchema {
      *
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
      */
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
     optimizeCSS: false | BasePluginOptions & DefinedDefaultMinimizerAndOptions<{}>
 
     /**

@@ -47,7 +47,7 @@ export interface PageMeta {
 }
 
 declare module 'vue-router' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
   interface RouteMeta extends UnwrapRef<PageMeta> {}
 }
 

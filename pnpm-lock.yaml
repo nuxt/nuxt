@@ -133,6 +133,9 @@ importers:
       eslint-plugin-no-only-tests:
         specifier: 3.3.0
         version: 3.3.0
+      eslint-plugin-oxlint:
+        specifier: ^0.16.9
+        version: 0.16.9
       eslint-plugin-perfectionist:
         specifier: 4.12.3
         version: 4.12.3(eslint@9.26.0(jiti@2.4.2))(typescript@5.8.3)
@@ -184,6 +187,9 @@ importers:
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
+      oxlint:
+        specifier: ^0.16.9
+        version: 0.16.9
       pathe:
         specifier: 2.0.3
         version: 2.0.3
@@ -2162,6 +2168,46 @@ packages:
 
   '@oxc-project/types@0.68.1':
     resolution: {integrity: sha512-Q/H52+HXPPxuIHwQnVkEM8GebLnNcokkI4zQQdbxLIZdfxMGhAm9+gEqsMku3t95trN/1titHUmCM9NxbKaE2g==}
+
+  '@oxlint/darwin-arm64@0.16.9':
+    resolution: {integrity: sha512-s8gPacumFNuDQcl0dCRLI0+efbiQrOF984brGrW1i2buJtaMzjYiunaU5TSrbHgnb/omvpFnG4l9g+YHOK/s0A==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@oxlint/darwin-x64@0.16.9':
+    resolution: {integrity: sha512-QFue9yhfRU+fkbsOmDzCCwDafPR6fnaP/M+Rocp/MMDQ7qvjbB2sj0/xxp/CcvL7aLtFklMeXPR0hCfW3LyrSw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@oxlint/linux-arm64-gnu@0.16.9':
+    resolution: {integrity: sha512-qP/wdlgqLuiW9WDkAsyMN85wQ3nqAQynjRD+1II1QO0yI9N1ZHD6LF9P5fXAqY0eJwcf3emluQMoaeveewtiCg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxlint/linux-arm64-musl@0.16.9':
+    resolution: {integrity: sha512-486wn1MIqP4hkHTnuWedTb16X6Zs3ImmmMxqzfYlcemf9kODM6yNlxal6wGvkm7SGRPYrsB/P9S5wgpzmLzKrw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxlint/linux-x64-gnu@0.16.9':
+    resolution: {integrity: sha512-d20zqy4Mimz9CxjIEJdGd6jtyyhpSryff95gNJSTvh/EA4NqvjjlbjxuHt3clNjglRwJWE3kgmUCw9U9oWFcWA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxlint/linux-x64-musl@0.16.9':
+    resolution: {integrity: sha512-mZLshz99773RMa77YhtsgWbqE7JY4xnYSDecDy+ZkafRb0acqz1Ujiq2l4cE+HnJOGVOMaOpzG0UoQ3ZNkXNAA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxlint/win32-arm64@0.16.9':
+    resolution: {integrity: sha512-Zp9+0CfTb7ebgvRwDO2F6NVgRtRmxWMdBnrbMRdVbKY6CCT2vjLAIILwBf5AsNLdLQC7FbXAEivSKbRX0UPyJA==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@oxlint/win32-x64@0.16.9':
+    resolution: {integrity: sha512-6a507bALmDNFdvEbJzu9ybajryBHo+6nMWPNyu/mBguCqmconoBbQXftELd2VG/0ecxBmBcMKAQW6aONGUVc3w==}
+    cpu: [x64]
+    os: [win32]
 
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
@@ -4174,6 +4220,9 @@ packages:
     resolution: {integrity: sha512-brcKcxGnISN2CcVhXJ/kEQlNa0MEfGRtwKtWA16SkqXHKitaKIMrfemJKLKX1YqDU5C/5JY3PvZXd5jEW04e0Q==}
     engines: {node: '>=5.0.0'}
 
+  eslint-plugin-oxlint@0.16.9:
+    resolution: {integrity: sha512-v6VN4ata0ehULWxvf99RcHd4bevp+S/rnU8wl/gam/jyJrZPyG0L5zDtaA7xBRrT3HnYrgBX5CidQ7me9oulxQ==}
+
   eslint-plugin-perfectionist@4.12.3:
     resolution: {integrity: sha512-V0dmpq6fBbn0BYofHsiRuuY9wgkKMDkdruM0mIRBIJ8XZ8vEaTAZqFsywm40RuWNVnduWBt5HO1ZZ+flE2yqjg==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -5821,6 +5870,11 @@ packages:
   oxc-parser@0.68.1:
     resolution: {integrity: sha512-dHwz+xP9r1GTvqyywfws4j7EEP/OaeTpHEjTcvIjViB/R2IdUn52AnoUFNjpw8yRU52XVE76rOA4IEj7I0EjnA==}
     engines: {node: '>=14.0.0'}
+
+  oxlint@0.16.9:
+    resolution: {integrity: sha512-YMGu177AURJxdCq45/Yw6Q+uDh9ZfU++GuLYhUz+DfIGdHpAqVlBI9lCqm2HkLc6qO8ySYZ+8ljsWHLQA8F+EQ==}
+    engines: {node: '>=8.*'}
+    hasBin: true
 
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
@@ -8862,6 +8916,30 @@ snapshots:
 
   '@oxc-project/types@0.68.1': {}
 
+  '@oxlint/darwin-arm64@0.16.9':
+    optional: true
+
+  '@oxlint/darwin-x64@0.16.9':
+    optional: true
+
+  '@oxlint/linux-arm64-gnu@0.16.9':
+    optional: true
+
+  '@oxlint/linux-arm64-musl@0.16.9':
+    optional: true
+
+  '@oxlint/linux-x64-gnu@0.16.9':
+    optional: true
+
+  '@oxlint/linux-x64-musl@0.16.9':
+    optional: true
+
+  '@oxlint/win32-arm64@0.16.9':
+    optional: true
+
+  '@oxlint/win32-x64@0.16.9':
+    optional: true
+
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
 
@@ -11082,6 +11160,10 @@ snapshots:
 
   eslint-plugin-no-only-tests@3.3.0: {}
 
+  eslint-plugin-oxlint@0.16.9:
+    dependencies:
+      jsonc-parser: 3.3.1
+
   eslint-plugin-perfectionist@4.12.3(eslint@9.26.0(jiti@2.4.2))(typescript@5.8.3):
     dependencies:
       '@typescript-eslint/types': 8.31.1
@@ -13213,6 +13295,17 @@ snapshots:
       '@oxc-parser/binding-wasm32-wasi': 0.68.1
       '@oxc-parser/binding-win32-arm64-msvc': 0.68.1
       '@oxc-parser/binding-win32-x64-msvc': 0.68.1
+
+  oxlint@0.16.9:
+    optionalDependencies:
+      '@oxlint/darwin-arm64': 0.16.9
+      '@oxlint/darwin-x64': 0.16.9
+      '@oxlint/linux-arm64-gnu': 0.16.9
+      '@oxlint/linux-arm64-musl': 0.16.9
+      '@oxlint/linux-x64-gnu': 0.16.9
+      '@oxlint/linux-x64-musl': 0.16.9
+      '@oxlint/win32-arm64': 0.16.9
+      '@oxlint/win32-x64': 0.16.9
 
   p-limit@3.1.0:
     dependencies:

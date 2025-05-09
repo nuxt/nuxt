@@ -40,7 +40,7 @@ export const RenderPlugin = () => {
         // Infer template name
         const templateName = basename(dirname(fileName))
 
-        // eslint-disable-next-line no-console
+        // oxlint-disable-next-line no-console
         console.log('Processing', templateName)
 
         // Read source template

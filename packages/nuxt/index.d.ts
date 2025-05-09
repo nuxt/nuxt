@@ -1,4 +1,3 @@
-/* eslint-disable no-var */
 declare global {
   var __NUXT_VERSION__: string
   var __NUXT_ASYNC_CONTEXT__: boolean
