@@ -19,11 +19,6 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-interface ComponentChunkOptions {
-  getComponents: () => Component[]
-  buildDir: string
-}
-
 const SCRIPT_RE = /<script[^>]*>/gi
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
@@ -185,12 +180,11 @@ function getPropsToString (bindings: Record<string, string>): string {
 
 type ChunkPluginOptions = {
   getComponents: () => Component[]
-  isDev: boolean
 }
 
 export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
   const ids = new Map<string, string>()
-
+  const isDev = useNuxt().options.dev
   return {
     client: createUnplugin(() => {
       return {
@@ -200,7 +194,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
             const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
             for (const component of components) {
               if (component.filePath) {
-                if (options.isDev) {
+                if (isDev) {
                   ids.set(component.pascalName, `/@fs/${component.filePath}`)
                 } else {
                   const id = this.emitFile({
