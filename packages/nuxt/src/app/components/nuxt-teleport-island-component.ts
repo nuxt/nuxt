@@ -1,8 +1,8 @@
 import type { Component, InjectionKey } from 'vue'
 import { Teleport, defineComponent, h, inject, provide, useId } from 'vue'
 // @ts-expect-error virtual file
-import paths from '#build/component-chunk'
 import { useNuxtApp } from '../nuxt'
+import paths from '#build/component-chunk'
 // @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
 

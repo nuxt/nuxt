@@ -251,7 +251,7 @@ export default defineNuxtModule<ComponentsOptions>({
           config.plugins.push(chunk.client.vite())
         }
       })
-      
+
       addBuildPlugin(chunk.server, { client: false, prepend: true })
     }
   },

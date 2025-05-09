@@ -225,7 +225,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
                 }
               }
             }
-          }
+          },
         },
       }
     }),
@@ -239,7 +239,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
               return `${JSON.stringify(name)}: ${JSON.stringify('/' + id)}`
             }).join(',\n')}}`,
           )
-        }
+        },
       }
     }),
   }
