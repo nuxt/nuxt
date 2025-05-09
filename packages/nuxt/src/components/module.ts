@@ -1,4 +1,4 @@
-import { existsSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
