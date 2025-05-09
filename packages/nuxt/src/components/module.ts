@@ -252,7 +252,7 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       })
       
-      addBuildPlugin(chunk.server, { client: false })
+      addBuildPlugin(chunk.server, { client: false, prepend: true })
     }
   },
 })

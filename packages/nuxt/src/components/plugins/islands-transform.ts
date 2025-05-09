@@ -1,12 +1,12 @@
 import { pathToFileURL } from 'node:url'
-import fs from 'node:fs'
+import fs, { writeFile, writeFileSync } from 'node:fs'
 import { join } from 'pathe'
 import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
-import { resolvePath } from '@nuxt/kit'
+import { resolvePath, useNuxt } from '@nuxt/kit'
 import defu from 'defu'
 import { hash } from 'ohash'
 import { isVue } from '../../core/utils'
@@ -235,31 +235,13 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
     server: createUnplugin(() => {
       return {
         name: 'nuxt:components-chunk:server',
-
-        resolveId: {
-          order: 'pre',
-          handler(id) {
-            if (id === VIRTUAL_MODULE_ID) {
-              return id
-            }
-          }
-        },
-
-        load (id) {
-          if (id === VIRTUAL_MODULE_ID) {
-            return {
-              code: `export default {
-              ${Array.from(ids.entries()).map(([component, id]) => {
-                return `${JSON.stringify(component.pascalName)}: ${JSON.stringify(id)}`
-              }).join(',\n')}
-            }`,
-              map: null,
-            }
-          }
-        },
-        
-        loadInclude (id) {
-          return id === VIRTUAL_MODULE_ID
+          buildStart() {
+            writeFileSync(
+            join(useNuxt().options.buildDir, 'component-chunk.mjs'),
+            `export default {${Array.from(ids.entries()).map(([component, id]) => {
+              return `${JSON.stringify(component.pascalName)}: ${JSON.stringify(id)}`
+            }).join(',\n')}}`,
+          )
         }
       }
     }),
