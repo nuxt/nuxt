@@ -191,7 +191,7 @@ type ChunkPluginOptions = {
 export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
   const ids = new Map<Component, string>()
 
-  const VIRTUAL_MODULE_ID = 'virtual:components-chunk'
+  const VIRTUAL_MODULE_ID = '#virtual/components-chunk'
   const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID
   const rawIds: string[] = []
   return {
