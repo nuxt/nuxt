@@ -14,6 +14,10 @@ links:
 If your component is cached by `<KeepAlive>` and enters a deactivated state, the `asyncData` inside the component will still be refetched until the component is unmounted.
 ::
 
+::warning
+`refreshNuxtData` only works with Composition API. `asyncData` hook from the Options API does not work with `refreshNuxtData`.
+::
+
 ## Type
 
 ```ts
