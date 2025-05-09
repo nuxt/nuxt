@@ -236,14 +236,10 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
     server: createUnplugin(() => {
       return {
         name: 'nuxt:components-chunk:server',
-        enforce: 'pre',
-        resolveId: {
-          handler(id) {
-            if (id === VIRTUAL_MODULE_ID) {
-              return RESOLVED_VIRTUAL_MODULE_ID
-            }
-          },
-          order: 'pre',
+        resolveId (id) {
+          if (id === VIRTUAL_MODULE_ID) {
+            return RESOLVED_VIRTUAL_MODULE_ID
+          }
         },
         load (id) {
           if (id === RESOLVED_VIRTUAL_MODULE_ID) {
