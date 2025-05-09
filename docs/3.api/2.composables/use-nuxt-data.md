@@ -108,5 +108,5 @@ async function addTodo () {
 ## Type
 
 ```ts
-useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> }
+useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
 ```
