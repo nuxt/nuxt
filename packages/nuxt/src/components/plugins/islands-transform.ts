@@ -194,7 +194,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
             for (const component of components) {
               if (component.filePath) {
                 if (isDev) {
-                  ids.set(component.pascalName, `/@fs/${component.filePath}`)
+                  ids.set(component.pascalName, `@fs/${component.filePath}`)
                 } else {
                   const id = this.emitFile({
                     type: 'chunk',
