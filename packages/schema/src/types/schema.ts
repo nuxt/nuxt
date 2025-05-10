@@ -1733,7 +1733,7 @@ export interface ConfigSchema {
   /**
    * Configuration for Nitro.
    *
-   * @see [Nitro configuration docs](https://nitro.unjs.io/config/)
+   * @see [Nitro configuration docs](https://nitro.build/config/)
    */
   nitro: NitroConfig
 
@@ -1742,7 +1742,7 @@ export interface ConfigSchema {
    *
    * @experimental This is an experimental feature and API may change in the future.
    *
-   * @see [Nitro route rules documentation](https://nitro.unjs.io/config/#routerules)
+   * @see [Nitro route rules documentation](https://nitro.build/config/#routerules)
    */
   routeRules: NitroConfig['routeRules']
 
@@ -1768,7 +1768,7 @@ export interface ConfigSchema {
   /**
    * Nitro development-only server handlers.
    *
-   * @see [Nitro server routes documentation](https://nitro.unjs.io/guide/routing)
+   * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
    */
   devServerHandlers: NitroDevEventHandler[]
 

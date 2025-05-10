@@ -3,7 +3,7 @@ import { defineResolvers } from '../utils/definition'
 export default defineResolvers({
   /**
    * Configuration for Nitro.
-   * @see [Nitro configuration docs](https://nitro.unjs.io/config/)
+   * @see [Nitro configuration docs](https://nitro.build/config/)
    * @type {typeof import('nitro/types')['NitroConfig']}
    */
   nitro: {
@@ -38,7 +38,7 @@ export default defineResolvers({
   /**
    * Global route options applied to matching server routes.
    * @experimental This is an experimental feature and API may change in the future.
-   * @see [Nitro route rules documentation](https://nitro.unjs.io/config/#routerules)
+   * @see [Nitro route rules documentation](https://nitro.build/config/#routerules)
    * @type {typeof import('nitro/types')['NitroConfig']['routeRules']}
    */
   routeRules: {},
@@ -68,7 +68,7 @@ export default defineResolvers({
 
   /**
    * Nitro development-only server handlers.
-   * @see [Nitro server routes documentation](https://nitro.unjs.io/guide/routing)
+   * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
    * @type {typeof import('nitro/types')['NitroDevEventHandler'][]}
    */
   devServerHandlers: [],
