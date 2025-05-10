@@ -50,6 +50,7 @@ export default defineBuildConfig({
     'nitropack',
     'nuxt/app',
     'ofetch',
+    'oxc-transform',
     'pkg-types',
     'postcss',
     'pug',
