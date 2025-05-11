@@ -210,10 +210,10 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
             }
           },
           generateBundle (_, bundle) {
+            const idSet = new Set(ids.values())
             for (const chunk of Object.values(bundle)) {
               if (chunk.type === 'chunk') {
-                const list = Array.from(ids.values())
-                if (list.includes(chunk.fileName)) {
+                if (idSet.has(chunk.fileName)) {
                   chunk.isEntry = false
                 }
               }
