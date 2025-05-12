@@ -8,6 +8,7 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
+import { ofetch } from 'ofetch'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
@@ -801,6 +802,24 @@ describe('useFetch', () => {
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
     expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
+  })
+
+  it.fails('should not watch params with watch: false', async () => {
+    registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
+    const params = ref({ id: 1 })
+
+    vi.mock('ofetch', { spy: true })
+
+    useFetch('/api/complex-objects', {
+      params,
+      watch: false,
+      immediate: false,
+    })
+
+    expect(ofetch).toBeCalledTimes(0)
+    params.value.id = 2
+    await nextTick()
+    expect(ofetch).toBeCalledTimes(0)
   })
 })
 
