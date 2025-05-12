@@ -59,7 +59,7 @@
     "std-env": "^3.9.0",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.15",
-    "unplugin": "^2.3.2",
+    "unplugin": "^2.3.3",
     "vite": "^6.3.5",
     "vite-node": "^3.1.3",
     "vite-plugin-checker": "^0.9.3",
