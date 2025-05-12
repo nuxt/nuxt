@@ -96,7 +96,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
           },
           watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore Rolldown-Vite specific
+            ...(vite.rolldownVersion
+              ? {
+                  // TODO: Find equivalent for rolldown-vite here
+                }
+              : {
+                  chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+                }
+            ),
             exclude: nuxt.options.ignore,
           },
         },
