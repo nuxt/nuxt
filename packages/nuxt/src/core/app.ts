@@ -135,35 +135,32 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
-  const layers = nuxt.options._layers
-  const layerConfigs = layers.map(l => l.config)
-  const reversedConfigs = [...layerConfigs].reverse()
-  const extGlob = nuxt.options.extensions.join(',')
-
   // Resolve main (app.vue)
-  const [main, welcome] = await Promise.all([
-    findPath(
-      layers.flatMap(layer => [
-        join(layer.config.srcDir, 'App'),
-        join(layer.config.srcDir, 'app'),
-      ]),
-    ),
-    Promise.resolve(resolve(nuxt.options.appDir, 'components/welcome.vue')),
-  ])
-  app.mainComponent ||= main || welcome
+  app.mainComponent ||= await findPath(
+    nuxt.options._layers.flatMap(layer => [
+      join(layer.config.srcDir, 'App'),
+      join(layer.config.srcDir, 'app'),
+    ]),
+  )
+  app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
+
   // Resolve root component
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
   app.errorComponent ||= (await findPath(
-    layers.map(layer => join(layer.config.srcDir, 'error')),
+    nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
   )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
+  const extensionGlob = nuxt.options.extensions.join(',')
+
   // Resolve layouts/ from all config layers
+  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
+  const reversedConfigs = layerConfigs.slice().reverse()
   app.layouts = {}
   for (const config of layerConfigs) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.layouts || 'layouts'
-    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${extGlob}}`)
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       if (!name) {
@@ -180,9 +177,9 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
-      `${middlewareDir}/*{${extGlob}}`,
+      `${middlewareDir}/*{${extensionGlob}}`,
       ...nuxt.options.future.compatibilityVersion === 4
-        ? [`${middlewareDir}/*/index{${extGlob}}`]
+        ? [`${middlewareDir}/*/index{${extensionGlob}}`]
         : [],
     ])
     for (const file of middlewareFiles) {
@@ -204,8 +201,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${pluginDir}/*{${extGlob}}`,
-          `${pluginDir}/*/index{${extGlob}}`,
+          `${pluginDir}/*{${extensionGlob}}`,
+          `${pluginDir}/*/index{${extensionGlob}}`,
         ])
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
