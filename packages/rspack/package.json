@@ -61,7 +61,7 @@
     "tinyglobby": "^0.2.13",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.15",
-    "unplugin": "^2.3.2",
+    "unplugin": "^2.3.3",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.1",
     "vue-loader": "^17.4.2",
