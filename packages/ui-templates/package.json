@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@types/lodash-es": "4.17.12",
-    "@unocss/reset": "66.1.0",
+    "@unocss/reset": "66.1.1",
     "@vue/shared": "3.5.13",
     "beasties": "0.3.3",
     "html-validate": "9.5.3",
@@ -32,7 +32,7 @@
     "svgo": "3.3.2",
     "tinyexec": "1.0.1",
     "tinyglobby": "0.2.13",
-    "unocss": "66.1.0",
-    "vite": "6.3.4"
+    "unocss": "66.1.1",
+    "vite": "6.3.5"
   }
 }
