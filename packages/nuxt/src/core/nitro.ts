@@ -1,6 +1,8 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
+import { readFile, writeFile } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -9,7 +11,7 @@ import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 import { createIsIgnored, findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { dynamicEventHandler } from 'h3'
+import { defineEventHandler, dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
@@ -562,6 +564,29 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     lazy: true,
     handler: resolve(distDir, 'core/runtime/nitro/handlers/renderer'),
   })
+
+  // TODO: refactor into a module when this is more full-featured
+  // add Chrome devtools integration
+  if (nuxt.options.experimental.chromeDevtoolsProjectSettings) {
+    let projectConfiguration = await readFile(resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt/chrome-workspace.json'), 'utf-8')
+      .then(r => JSON.parse(r))
+      .catch(() => null)
+
+    if (!projectConfiguration) {
+      projectConfiguration = { uuid: randomUUID() }
+      await writeFile(resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt/chrome-workspace.json'), JSON.stringify(projectConfiguration), 'utf-8')
+    }
+
+    nitro.options.devHandlers.push({
+      route: '/.well-known/appspecific/com.chrome.devtools.json',
+      handler: defineEventHandler(() => ({
+        workspace: {
+          ...projectConfiguration,
+          root: nuxt.options.rootDir,
+        },
+      })),
+    })
+  }
 
   if (!nuxt.options.dev && nuxt.options.experimental.noVueServer) {
     nitro.hooks.hook('rollup:before', (nitro) => {
