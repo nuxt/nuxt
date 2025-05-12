@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
@@ -568,13 +568,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // TODO: refactor into a module when this is more full-featured
   // add Chrome devtools integration
   if (nuxt.options.experimental.chromeDevtoolsProjectSettings) {
-    let projectConfiguration = await readFile(resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt/chrome-workspace.json'), 'utf-8')
+    const cacheDir = resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt')
+    let projectConfiguration = await readFile(join(cacheDir, 'chrome-workspace.json'), 'utf-8')
       .then(r => JSON.parse(r))
       .catch(() => null)
 
     if (!projectConfiguration) {
       projectConfiguration = { uuid: randomUUID() }
-      await writeFile(resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt/chrome-workspace.json'), JSON.stringify(projectConfiguration), 'utf-8')
+      await mkdir(cacheDir, { recursive: true })
+      await writeFile(join(cacheDir, 'chrome-workspace.json'), JSON.stringify(projectConfiguration), 'utf-8')
     }
 
     nitro.options.devHandlers.push({
