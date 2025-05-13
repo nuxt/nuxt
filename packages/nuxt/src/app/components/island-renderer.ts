@@ -18,7 +18,7 @@ export default defineComponent({
   setup (props) {
     // reset head - we don't want to have any head tags from plugin or anywhere else.
     const head = injectHead()
-    head.headEntries().splice(0, head.headEntries().length)
+    head.entries.clear()
 
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
 
