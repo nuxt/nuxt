@@ -116,6 +116,9 @@ export interface AsyncDataExecuteOptions {
   dedupe?: DedupeOption
 
   cause?: AsyncDataRefreshCause
+
+  /** @internal */
+  cachedData?: any
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -259,15 +262,16 @@ export function useAsyncData<
   }
 
   // Create or use a shared asyncData entity
-  const initialCachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+  const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
   if (!nuxtApp._asyncData[key.value]?._init) {
-    nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialCachedData)
+    initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+    nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
   }
   const asyncData = nuxtApp._asyncData[key.value]!
 
   asyncData._deps++
 
-  const initialFetch = () => nuxtApp._asyncData[key.value]!.execute({ cause: 'initial', dedupe: options.dedupe })
+  const initialFetch = () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
 
   const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered
 
@@ -306,7 +310,7 @@ export function useAsyncData<
 
     const isWithinClientOnly = instance && (instance._nuxtClientOnly || inject(clientOnlySymbol, false))
 
-    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || initialCachedData != null)) {
+    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value != null)) {
       // 1. Hydration (server: true): no fetch
       if (pendingWhenIdle) {
         asyncData.pending.value = false
@@ -347,12 +351,14 @@ export function useAsyncData<
       if (oldKey) {
         unregister(oldKey)
       }
+      const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
       if (!nuxtApp._asyncData[newKey]?._init) {
-        nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, options.getCachedData!(newKey, nuxtApp, { cause: 'initial' }))
+        initialFetchOptions.cachedData = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+        nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialFetchOptions.cachedData)
       }
       nuxtApp._asyncData[newKey]._deps++
       if (options.immediate || hasRun) {
-        nuxtApp._asyncData[newKey].execute({ cause: 'initial', dedupe: options.dedupe })
+        nuxtApp._asyncData[newKey].execute(initialFetchOptions)
       }
     }, { flush: 'sync' })
 
@@ -623,9 +629,9 @@ function createAsyncData<
       }
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
-        const cachedData = opts.cause === 'initial' ? initialCachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
+        const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (cachedData != null) {
-          nuxtApp.payload.data[key] = asyncData.data.value = cachedData
+          nuxtApp.payload.data[key] = asyncData.data.value = cachedData as DataT
           asyncData.error.value = asyncDataDefaults.errorValue
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)

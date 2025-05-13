@@ -11,6 +11,7 @@ import { flushPromises } from '@vue/test-utils'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
+import type { NuxtApp } from '#app/nuxt'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
@@ -646,6 +647,41 @@ describe('useAsyncData', () => {
     expect(fetchData.value).toMatchInlineSnapshot('"new value"')
     fetchData.value = 'another value'
     expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
+  })
+
+  it('duplicate calls are not made after first call has finished', async () => {
+    const handler = vi.fn(() => Promise.resolve('hello'))
+    const getCachedData = vi.fn((key: string, nuxtApp: NuxtApp) => {
+      console.log(nuxtApp.payload.data[key] ? 'has data' : 'does not have data')
+      return nuxtApp.payload.data[key]
+    })
+
+    function testAsyncData () {
+      return useAsyncData(uniqueKey, handler, {
+        getCachedData,
+      })
+    }
+
+    const { status, data } = await testAsyncData()
+    expect(status.value).toBe('success')
+    expect(data.value).toBe('hello')
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
+
+    const { status: status2, data: data2 } = testAsyncData()
+    expect.soft(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
+    expect.soft(data.value).toBe('hello')
+    expect.soft(data2.value).toBe('hello')
+    expect.soft(status.value).toBe('success')
+    expect.soft(status2.value).toBe('success')
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect.soft(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
   })
 })
 
