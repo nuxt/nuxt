@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  merge_group:
   push:
     paths:
       - ".github/workflows/**"
