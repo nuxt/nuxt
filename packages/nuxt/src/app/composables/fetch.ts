@@ -61,12 +61,6 @@ export function useFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -206,12 +200,6 @@ export function useLazyFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
