@@ -298,7 +298,7 @@ export function useAsyncData<
         asyncData.pending.value = false
       }
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
-    } else if (instance && !isWithinClientOnly && ((nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || options.lazy) && options.immediate) {
+    } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || options.lazy) && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
       // 3. Initial load or navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
