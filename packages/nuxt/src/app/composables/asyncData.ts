@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 
 // TODO: temporary module for backwards compatibility
@@ -706,10 +706,14 @@ function createAsyncData<
       asyncData._init = false
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
-        clearNuxtDataByKey(nuxtApp, key)
-        asyncData.execute = () => Promise.resolve()
-        // TODO: remove when upgrading to v4
-        asyncData.data.value = asyncDataDefaults.value
+        nextTick(() => {
+          if (!asyncData._init) {
+            clearNuxtDataByKey(nuxtApp, key)
+            asyncData.execute = () => Promise.resolve()
+            // TODO: remove when upgrading to v4
+            asyncData.data.value = asyncDataDefaults.value
+          }
+        })
       }
     },
   }
