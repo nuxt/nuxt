@@ -190,7 +190,7 @@ export function useAsyncData<
   DefaultT = undefined,
 > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-  if (typeof args[0] !== 'string' && typeof args[0] !== 'object' && !(typeof args[0] === 'function' && typeof args[1] === 'function')) { args.unshift(autoKey) }
+  if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
   // eslint-disable-next-line prefer-const
   let [_key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
@@ -452,7 +452,7 @@ export function useLazyAsyncData<
   DefaultT = undefined,
 > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-  if (typeof args[0] !== 'string') { args.unshift(autoKey) }
+  if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
   const [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   if (import.meta.dev) {
@@ -462,6 +462,22 @@ export function useLazyAsyncData<
 
   // @ts-expect-error we pass an extra argument to prevent a key being injected
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
+}
+
+function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: () => any): boolean {
+  // string key
+  if (typeof keyOrFetcher === 'string') {
+    return false
+  }
+  // ref or computed key
+  if (typeof keyOrFetcher === 'object' && keyOrFetcher !== null) {
+    return false
+  }
+  // getter key only if it's followed by a getter function
+  if (typeof keyOrFetcher === 'function' && typeof fetcher === 'function') {
+    return false
+  }
+  return true
 }
 
 /** @since 3.1.0 */
