@@ -509,8 +509,6 @@ export default defineResolvers({
         '~~': rootDir,
         '@@': rootDir,
         '#shared': resolve(rootDir, sharedDir),
-        [basename(assetsDir)]: resolve(srcDir, assetsDir),
-        [basename(publicDir)]: resolve(srcDir, publicDir),
         '#build': buildDir,
         '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...typeof val === 'object' ? val : {},
