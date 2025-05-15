@@ -26,7 +26,7 @@
     "play:preview": "nuxi preview playground",
     "test": "pnpm test:fixtures && pnpm test:fixtures:dev && pnpm test:fixtures:webpack && pnpm test:unit && pnpm test:runtime && pnpm test:types && pnpm typecheck",
     "test:prepare": "jiti ./test/prepare.ts",
-    "test:fixtures": "pnpm test:prepare && vitest run --project e2e",
+    "test:fixtures": "pnpm test:prepare && vitest run --project fixtures",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:runtime": "vitest run --project nuxt",
