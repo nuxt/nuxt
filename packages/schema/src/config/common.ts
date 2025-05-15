@@ -502,7 +502,7 @@ export default defineResolvers({
    */
   alias: {
     $resolve: async (val, get) => {
-      const [srcDir, rootDir, assetsDir, publicDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir'), get('dir.shared')])
+      const [srcDir, rootDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('buildDir'), get('dir.shared')])
       return {
         '~': srcDir,
         '@': srcDir,
