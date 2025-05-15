@@ -5,7 +5,6 @@ import { isCI, isWindows } from 'std-env'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 
 export default defineConfig({
-  plugins: isCI ? [codspeedPlugin()] : [],
   test: {
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts', 'vitest.nuxt.config.ts'],
@@ -22,6 +21,7 @@ export default defineConfig({
         },
       },
       {
+        plugins: isCI ? [codspeedPlugin()] : [],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
