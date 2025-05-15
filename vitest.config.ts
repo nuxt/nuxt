@@ -7,7 +7,7 @@ import codspeedPlugin from '@codspeed/vitest-plugin'
 export default defineConfig({
   test: {
     coverage: {
-      exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts', 'vitest.nuxt.config.ts'],
+      exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },
     workspace: [
       {
