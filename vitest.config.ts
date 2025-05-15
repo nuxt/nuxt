@@ -5,6 +5,7 @@ import { isCI, isWindows } from 'std-env'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 
 export default defineConfig({
+  plugins: isCI ? [codspeedPlugin()] : [],
   test: {
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
@@ -18,10 +19,12 @@ export default defineConfig({
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
           exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
+          benchmark: {
+            include: ['test/*.bench.ts'],
+          },
         },
       },
       {
-        plugins: isCI ? [codspeedPlugin()] : [],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
@@ -33,6 +36,9 @@ export default defineConfig({
         },
         test: {
           name: 'unit',
+          benchmark: {
+            include: ['packages/**/*.bench.ts'],
+          },
           setupFiles: ['./test/setup-env.ts'],
           include: ['packages/**/*.test.ts'],
           testTimeout: isWindows ? 60000 : 10000,
