@@ -2,15 +2,26 @@ import { resolve } from 'pathe'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
 import { isCI, isWindows } from 'std-env'
+import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 
 export default defineConfig({
-  plugins: isCI ? [codspeedPlugin()] : [],
   test: {
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },
+    poolOptions: isCI ? { forks: { execArgv: getV8Flags() } } : undefined,
     workspace: [
+      {
+        plugins: isCI ? [codspeedPlugin()] : [],
+        test: {
+          name: 'benchmark',
+          pool: isCI ? 'forks' : undefined,
+          benchmark: {
+            include: ['**/*.bench.ts'],
+          },
+        },
+      },
       {
         test: {
           name: 'fixtures',
@@ -19,9 +30,7 @@ export default defineConfig({
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
           exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
-          benchmark: {
-            include: ['test/*.bench.ts'],
-          },
+          benchmark: { include: [] },
         },
       },
       {
@@ -36,9 +45,7 @@ export default defineConfig({
         },
         test: {
           name: 'unit',
-          benchmark: {
-            include: ['packages/**/*.bench.ts'],
-          },
+          benchmark: { include: [] },
           setupFiles: ['./test/setup-env.ts'],
           include: ['packages/**/*.test.ts'],
           testTimeout: isWindows ? 60000 : 10000,

@@ -49,6 +49,9 @@ importers:
       '@babel/helper-plugin-utils':
         specifier: 7.27.1
         version: 7.27.1
+      '@codspeed/core':
+        specifier: ^4.0.1
+        version: 4.0.1
       '@codspeed/vitest-plugin':
         specifier: 4.0.1
         version: 4.0.1(vite@6.3.5(@types/node@22.15.17)(jiti@2.4.2)(terser@5.39.0)(yaml@2.7.1))(vitest@3.1.3(@types/debug@4.1.12)(@types/node@22.15.17)(happy-dom@17.4.7)(jiti@2.4.2)(terser@5.39.0)(yaml@2.7.1))
@@ -1161,7 +1164,7 @@ importers:
         version: 1.6.1
       unplugin:
         specifier: latest
-        version: 2.3.3
+        version: 2.3.4
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.8.3)
@@ -7285,10 +7288,6 @@ packages:
 
   unplugin@2.3.2:
     resolution: {integrity: sha512-3n7YA46rROb3zSj8fFxtxC/PqoyvYQ0llwz9wtUPUutr9ig09C8gGo5CWCwHrUzlqC1LLR43kxp5vEIyH1ac1w==}
-    engines: {node: '>=18.12.0'}
-
-  unplugin@2.3.3:
-    resolution: {integrity: sha512-DN4DgiS13HFrAapoRmmoa9B35QzmQVRH2k58HelO28htXVNEEFZ8CGlZL0aRHXOXtz9McwY6lqaZjcc15uWMow==}
     engines: {node: '>=18.12.0'}
 
   unplugin@2.3.4:
@@ -14928,12 +14927,6 @@ snapshots:
       webpack-virtual-modules: 0.6.2
 
   unplugin@2.3.2:
-    dependencies:
-      acorn: 8.14.1
-      picomatch: 4.0.2
-      webpack-virtual-modules: 0.6.2
-
-  unplugin@2.3.3:
     dependencies:
       acorn: 8.14.1
       picomatch: 4.0.2
