@@ -3,13 +3,12 @@ import { resolve } from 'pathe'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
-import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { defineEnv } from 'unenv'
 
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
-import { webpack } from '#builder'
+import { TsCheckerPlugin, webpack } from '#builder'
 
 export async function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'
@@ -124,7 +123,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
     if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
-      ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+      ctx.config.plugins!.push(new TsCheckerPlugin({
         logger,
       }))
     }
