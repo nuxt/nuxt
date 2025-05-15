@@ -4,6 +4,7 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import { TsCheckerRspackPlugin } from 'ts-checker-rspack-plugin'
 import { defineEnv } from 'unenv'
 
 import type { WebpackConfigContext } from '../utils/config'
@@ -124,9 +125,17 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
     if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
-      ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
-        logger,
-      }))
+      if (ctx.nuxt.options.builder === '@nuxt/rspack-builder') {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        ctx.config.plugins!.push(new TsCheckerRspackPlugin({
+          logger,
+        }))
+      } else {
+        ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+          logger,
+        }))
+      }
     }
   }
 }

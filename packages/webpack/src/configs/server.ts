@@ -1,6 +1,7 @@
 import { isAbsolute, resolve } from 'pathe'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'
+import { TsCheckerRspackPlugin } from 'ts-checker-rspack-plugin'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
@@ -97,8 +98,16 @@ function serverPlugins (ctx: WebpackConfigContext) {
 
   // Add type-checking
   if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
-    ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
-      logger,
-    }))
+    if (ctx.nuxt.options.builder === '@nuxt/rspack-builder') {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      ctx.config.plugins!.push(new TsCheckerRspackPlugin({
+        logger,
+      }))
+    } else {
+      ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+        logger,
+      }))
+    }
   }
 }
