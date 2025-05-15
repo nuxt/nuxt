@@ -17,6 +17,7 @@ export default defineConfig({
         test: {
           name: 'benchmark',
           pool: isCI ? 'forks' : undefined,
+          include: [],
           benchmark: {
             include: ['**/*.bench.ts'],
           },
