@@ -1024,7 +1024,7 @@ describe('head tags', () => {
     // should render charset by default
     expect(indexHtml).toContain('<meta charset="utf-8">')
     // should render <Head> components
-    expect(indexHtml).toContain('<title>Basic fixture - Fixture</title>')
+    expect(indexHtml).toContain('<title>Basic fixture</title>')
   })
 
   it('SSR script setup should render tags', async () => {
@@ -2051,6 +2051,7 @@ describe('server components/islands', () => {
     const html = await $fetch<string>('/server-page')
     // test island head
     expect(html).toContain('<meta name="author" content="Nuxt">')
+    expect(html).toContain('plugin-style')
   })
 
   it('/server-page - client side navigation', async () => {
@@ -2280,7 +2281,6 @@ describe('component islands', () => {
         "head": {
           "link": [],
           "style": [],
-          "titleTemplate": "%s - Fixture",
         },
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
@@ -2303,7 +2303,6 @@ describe('component islands', () => {
         "head": {
           "link": [],
           "style": [],
-          "titleTemplate": "%s - Fixture",
         },
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
@@ -2367,7 +2366,6 @@ describe('component islands', () => {
         "head": {
           "link": [],
           "style": [],
-          "titleTemplate": "%s - Fixture",
         },
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
@@ -2399,7 +2397,6 @@ describe('component islands', () => {
           "head": {
             "link": [],
             "style": [],
-            "titleTemplate": "%s - Fixture",
           },
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
@@ -2448,7 +2445,6 @@ describe('component islands', () => {
               "innerHTML": "pre[data-v-xxxxx]{color:#00f}",
             },
           ],
-          "titleTemplate": "%s - Fixture",
         }
       `)
     } else if (isDev() && !isWebpack) {
@@ -2469,7 +2465,6 @@ describe('component islands', () => {
             },
           ],
           "style": [],
-          "titleTemplate": "%s - Fixture",
         }
       `)
     }
