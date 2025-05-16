@@ -31,7 +31,7 @@ export default defineComponent({
       if (mounted.value) {
         const vnodes = slots.default?.()
         if (vnodes && vnodes.length === 1) {
-          return h(vnodes[0]!, attrs)
+          return cloneVNode(vnodes[0]!, attrs)
         }
         return vnodes
       }
