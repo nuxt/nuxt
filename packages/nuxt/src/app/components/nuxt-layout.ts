@@ -56,7 +56,7 @@ export default defineComponent({
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
-      let layout = unref(props.name) ?? route!.meta.layout as string ?? 'default'
+      let layout = unref(props.name) ?? route?.meta.layout as string ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
           console.warn(`Invalid layout \`${layout}\` selected.`)
@@ -85,7 +85,7 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route!.meta.layoutTransition ?? defaultLayoutTransition
+      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
