@@ -1260,7 +1260,6 @@ describe('defineNuxtComponent', () => {
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div>0</div>"`)
 
     await refreshNuxtData()
-    await nextTick()
 
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div>1</div>"`)
   })
