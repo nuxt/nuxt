@@ -681,6 +681,19 @@ describe('useAsyncData', () => {
     expect.soft(handler).toHaveBeenCalledTimes(1)
     expect.soft(getCachedData).toHaveBeenCalledTimes(2)
   })
+
+  it.fails('should refetch deps change', async ()=>{
+    const dep = shallowRef(1)
+    const fn = vi.fn((dep)=> new Promise((res)=> res(toValue(dep))))
+    useAsyncData('page-info', async () => {
+      return await fn(dep.value)
+    })
+    expect(fn).toBeCalledTimes(1)
+    dep.value = 2
+    await vi.waitFor(()=>{
+      expect(fn).toBeCalledTimes(2)
+    })
+  })
 })
 
 describe('useFetch', () => {
