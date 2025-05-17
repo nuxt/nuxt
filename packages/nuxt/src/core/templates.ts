@@ -506,6 +506,17 @@ export const publicPathTemplate: NuxtTemplate = {
   },
 }
 
+export const globalPolyfillsTemplate: NuxtTemplate = {
+  filename: 'global-polyfills.mjs',
+  getContents () {
+    // Node.js compatibility
+    return `
+if (!("global" in globalThis)) {
+  globalThis.global = globalThis;
+}`
+  },
+}
+
 export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.mjs',
   getContents () {
