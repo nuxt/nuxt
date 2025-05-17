@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
-import { join, relative } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 
 import { build, loadNuxt } from 'nuxt'
 import { findWorkspaceDir } from 'pkg-types'
@@ -31,6 +31,7 @@ describe('builder:watch', async () => {
 
     nuxt.hook('restart', () => { restarts++ })
     nuxt.hook('builder:watch', (event, path) => {
+      path = resolve(tmpDir, path)
       if (event === 'add') {
         events.push(relative(tmpDir, path))
       }
