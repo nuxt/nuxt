@@ -671,16 +671,18 @@ export default defineNuxtPlugin({
     }
 
     // User provided patterns
-    const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
+    const layerRelativePaths = new Set(nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path)))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
         // Test (normalized) strings against absolute path and relative path to any layer `srcDir`
-        if (pattern === path || layerRelativePaths.includes(pattern)) { return nuxt.callHook('restart') }
+        if (pattern === path || layerRelativePaths.has(pattern)) { return nuxt.callHook('restart') }
         continue
       }
       // Test regular expressions against path to _any_ layer `srcDir`
-      if (layerRelativePaths.some(p => pattern.test(p))) {
-        return nuxt.callHook('restart')
+      for (const p of layerRelativePaths) {
+        if (pattern.test(p)) {
+          return nuxt.callHook('restart')
+        }
       }
     }
 

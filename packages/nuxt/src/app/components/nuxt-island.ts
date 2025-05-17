@@ -159,9 +159,10 @@ export default defineComponent({
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
-    const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
+
+    const currentSlots = new Set(Object.keys(slots))
+    const availableSlots = computed(() => new Set([...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1])))
     const html = computed(() => {
-      const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
       if (props.scopeId) {
@@ -178,7 +179,7 @@ export default defineComponent({
 
       if (payloads.slots) {
         return html.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
-          if (!currentSlots.includes(slotName)) {
+          if (!currentSlots.has(slotName)) {
             return full + (payloads.slots?.[slotName]?.fallback || '')
           }
           return full
@@ -305,7 +306,7 @@ export default defineComponent({
 
           if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : (mounted.value || instance.vnode?.el))) {
             for (const slot in slots) {
-              if (availableSlots.value.includes(slot)) {
+              if (availableSlots.value.has(slot)) {
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },

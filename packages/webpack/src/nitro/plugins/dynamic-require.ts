@@ -33,6 +33,7 @@ interface TemplateContext {
 }
 
 export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
+  const filesToIgnore = new Set(ignore)
   return {
     name: PLUGIN_NAME,
     transform (code: string, _id: string) {
@@ -63,7 +64,7 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
       try {
         const wpManifest = resolve(dir, './server.manifest.json')
         files = await importModule<{ files: Record<string, unknown> }>(wpManifest)
-          .then(r => Object.keys(r.files).filter(file => !ignore.includes(file)))
+          .then(r => Object.keys(r.files).filter(file => !filesToIgnore.has(file)))
       } catch {
         files = await glob('**/*.{cjs,mjs,js}', {
           cwd: dir,
