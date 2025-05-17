@@ -12,9 +12,8 @@ const STATIC_DIV = '<div></div>'
 export default defineComponent({
   name: 'ClientOnly',
   inheritAttrs: false,
-
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
-  setup (_, { slots, attrs }) {
+  setup (props, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
     // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
@@ -28,8 +27,14 @@ export default defineComponent({
       vm._nuxtClientOnly = true
     }
     provide(clientOnlySymbol, true)
-    return (props: any) => {
-      if (mounted.value) { return slots.default?.() }
+    return () => {
+      if (mounted.value) {
+        const vnodes = slots.default?.()
+        if (vnodes && vnodes.length === 1) {
+          return [cloneVNode(vnodes[0]!, attrs)]
+        }
+        return vnodes
+      }
       const slot = slots.fallback || slots.placeholder
       if (slot) { return slot() }
       const fallbackStr = props.fallback || props.placeholder || ''
