@@ -1240,6 +1240,30 @@ describe('defineNuxtComponent', () => {
     nuxtApp.isHydrating = false
     nuxtApp.payload.serverRendered = false
   })
+
+  it('should support Options API refreshNuxtData', async () => {
+    let count = 0
+    const component = defineNuxtComponent({
+      asyncData: () => ({
+        number: count++,
+      }),
+      setup () {
+        const vm = getCurrentInstance()
+        return () => {
+          // @ts-expect-error go directly to jail 😈
+          return h('div', vm!.render.number.value)
+        }
+      },
+    })
+
+    const wrapper = await mountSuspended(component)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>0</div>"`)
+
+    await refreshNuxtData()
+
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>1</div>"`)
+  })
+
   it.todo('should support Options API head')
 })
 
