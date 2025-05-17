@@ -16,7 +16,7 @@ describe('builder:watch', async () => {
     await rm(tmpDir, { recursive: true, force: true })
   })
   const watcherStrategies = ['chokidar', 'chokidar-granular', 'parcel'] as const
-  it.each(watcherStrategies)('should restart Nuxt when a file is added', async (watcher) => {
+  it.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', async (watcher) => {
     const nuxt = await loadNuxt({
       cwd: tmpDir,
       ready: true,
