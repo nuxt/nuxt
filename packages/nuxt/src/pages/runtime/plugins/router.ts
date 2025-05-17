@@ -1,4 +1,4 @@
-import { isReadonly, reactive, shallowReactive, shallowRef, toValue } from 'vue'
+import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
@@ -117,9 +117,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       // so we need to update the route manually
       if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
         syncCurrentRoute()
-      } else {
-        // assign toValue to avoid reactivity
-        Object.assign(toValue(_route), router.currentRoute.value) 
       }
     })
 
