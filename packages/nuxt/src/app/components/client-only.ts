@@ -122,7 +122,10 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
       if (typeof setupState === 'function') {
         return (...args: any[]) => {
           if (mounted$.value) {
-            return h(setupState(...args), ctx.attrs)
+            const res = setupState(...args)
+            return (res.children === null || typeof res.children === 'string')
+              ? cloneVNode(res, ctx.attrs)
+              : h(res, ctx.attrs)
           }
           return elToStaticVNode(instance?.vnode.el, STATIC_DIV)
         }
