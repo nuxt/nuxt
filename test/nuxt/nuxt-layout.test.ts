@@ -18,8 +18,11 @@ describe('NuxtLayout', () => {
   let setups: Record<string, number> = {}
   let el: VueWrapper
 
+  const addedLayouts = ['layout-1', 'layout-2']
+  const addedPages = ['no-layout', 'layout-1', 'layout-2', 'layout-2-deferred', 'deferred']
+
   beforeAll(async () => {
-    for (const layout of ['layout-1', 'layout-2']) {
+    for (const layout of addedLayouts) {
       layouts[layout] = defineComponent({
         setup (_, ctx) {
           const route = useRoute()
@@ -48,8 +51,9 @@ describe('NuxtLayout', () => {
         },
       })
     }
-    for (const page of ['no-layout', 'layout-1', 'layout-2', 'layout-2-deferred', 'deferred']) {
+    for (const page of addedPages) {
       router.addRoute({
+        name: page,
         path: `/${page}`,
         meta: {
           // @ts-expect-error dynamically-added layout is not typed
@@ -93,8 +97,12 @@ describe('NuxtLayout', () => {
   })
 
   afterAll(() => {
-    delete layouts.test
-    // router.removeRoute('layout-slug')
+    for (const layout of addedLayouts) {
+      delete layouts[layout]
+    }
+    for (const page of addedPages) {
+      router.removeRoute(page)
+    }
   })
 
   it('should have access to route when initially loading', async () => {
