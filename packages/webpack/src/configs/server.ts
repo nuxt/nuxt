@@ -52,13 +52,14 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = [
+  const external = new Set([
     '#internal/nitro',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
-  ]
+  ])
   if (!ctx.nuxt.options.dev) {
-    external.push('#internal/nuxt/paths', '#app-manifest')
+    external.add('#internal/nuxt/paths')
+    external.add('#app-manifest')
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }
@@ -66,7 +67,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     if (!request) {
       return cb(undefined, false)
     }
-    if (external.includes(request)) {
+    if (external.has(request)) {
       return cb(undefined, true)
     }
     if (

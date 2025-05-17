@@ -262,7 +262,7 @@ definePageMeta({ name: 'bar' })
       bar: true,
     })
     </script>
-    `, filePath, ['bar', 'foo'])
+    `, filePath, new Set(['bar', 'foo']))
 
     expect(meta).toMatchInlineSnapshot(`
       {
@@ -282,7 +282,7 @@ definePageMeta({ name: 'bar' })
       bar: true,
     })
     </script>
-    `, filePath, ['bar'])
+    `, filePath, new Set(['bar']))
 
     expect(meta).toMatchInlineSnapshot(`
       {

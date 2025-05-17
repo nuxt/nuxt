@@ -97,7 +97,7 @@ export async function buildServer (ctx: ViteBuildContext) {
           },
         },
         onwarn (warning, rollupWarn) {
-          if (warning.code && ['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
+          if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
             return
           }
           rollupWarn(warning)
