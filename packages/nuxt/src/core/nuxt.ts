@@ -98,10 +98,11 @@ export function createNuxt (options: NuxtOptions): Nuxt {
             return
           }
           let value = applyData?.args ?? newValue
+
           // Make a shallow copy of the value
-          if (Array.isArray(value)) {
+          if (Array.isArray(value) && !Object.is(value, previousValue)) {
             value = [...value]
-          } else if (typeof value === 'object') {
+          } else if (typeof value === 'object' && !Object.is(value, previousValue)) {
             value = { ...(value as any) }
           }
           nuxt._debug!.moduleMutationRecords!.push({

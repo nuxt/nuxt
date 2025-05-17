@@ -211,6 +211,8 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
+  const extraExtractionKeysSet = new Set(extraExtractionKeys)
+
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -262,11 +264,11 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         const { value, serializable } = isSerializable(script.code, propertyValue)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-          dynamicProperties.add(extraExtractionKeys.includes(key) ? 'meta' : key)
+          dynamicProperties.add(extraExtractionKeysSet.has(key) ? 'meta' : key)
           continue
         }
 
-        if (extraExtractionKeys.includes(key)) {
+        if (extraExtractionKeysSet.has(key)) {
           extractedMeta.meta ??= {}
           extractedMeta.meta[key] = value
         } else {
