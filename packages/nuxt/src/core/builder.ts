@@ -145,8 +145,16 @@ function createGranularWatcher () {
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
-    if ([...pathsToWatch].some(w => path.startsWith(w.replace(/[^/]$/, '$&/')))) { continue }
-    pathsToWatch.add(path)
+    let shouldAdd = true
+    for (const w of pathsToWatch) {
+      if (path.startsWith(w.replace(/[^/]$/, '$&/'))) {
+        shouldAdd = false
+        break
+      }
+    }
+    if (shouldAdd) {
+      pathsToWatch.add(path)
+    }
   }
   for (const dir of pathsToWatch) {
     pending++
