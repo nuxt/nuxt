@@ -25,8 +25,8 @@ describe('client pages', () => {
     `)
   })
 
-  it('createClient should retrieve attributes with useAttrs()', async () => {
-    const wrapper = await mountSuspended(createClientOnly(Client as ComponentOptions), {
+  it('createClient should retrieve attributes with useAttrs()', () => {
+    const wrapper = mount(createClientOnly(Client as ComponentOptions), {
       attrs: {
         id: 'client',
       },

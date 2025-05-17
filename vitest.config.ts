@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import { defineVitestProject } from '@nuxt/test-utils/config'
-import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
 import { isCI, isWindows } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
@@ -56,8 +56,21 @@ export default defineConfig({
       },
       await defineVitestProject({
         test: {
+          name: 'nuxt-universal',
+          dir: './test/nuxt/universal',
+          environment: 'nuxt',
+          environmentOptions: {
+            nuxt: {
+              overrides: { pages: false },
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        test: {
           name: 'nuxt',
           dir: './test/nuxt',
+          exclude: [...defaultExclude, '**/universal/**'],
           environment: 'nuxt',
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
