@@ -6,11 +6,12 @@ import { destr } from 'destr'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
-import { hasProtocol } from 'ufo'
+import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
+import type { NuxtApp } from '#app/nuxt'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
@@ -647,6 +648,41 @@ describe('useAsyncData', () => {
     fetchData.value = 'another value'
     expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
   })
+
+  it('duplicate calls are not made after first call has finished', async () => {
+    const handler = vi.fn(() => Promise.resolve('hello'))
+    const getCachedData = vi.fn((key: string, nuxtApp: NuxtApp) => {
+      console.log(nuxtApp.payload.data[key] ? 'has data' : 'does not have data')
+      return nuxtApp.payload.data[key]
+    })
+
+    function testAsyncData () {
+      return useAsyncData(uniqueKey, handler, {
+        getCachedData,
+      })
+    }
+
+    const { status, data } = await testAsyncData()
+    expect(status.value).toBe('success')
+    expect(data.value).toBe('hello')
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
+
+    const { status: status2, data: data2 } = testAsyncData()
+    expect.soft(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
+    expect.soft(data.value).toBe('hello')
+    expect.soft(data2.value).toBe('hello')
+    expect.soft(status.value).toBe('success')
+    expect.soft(status2.value).toBe('success')
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect.soft(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('useFetch', () => {
@@ -694,12 +730,50 @@ describe('useFetch', () => {
     expect(error.value).toBe(undefined)
   })
 
+  it('should not trigger rerunning fetch if `watch: false`', async () => {
+    let count = 0
+    registerEndpoint('/api/rerun', defineEventHandler(() => ({ count: count++ })))
+
+    const q = ref('')
+    const { data } = await useFetch('/api/rerun', {
+      query: { q },
+      watch: false,
+    })
+
+    expect(data.value).toStrictEqual({ count: 0 })
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toStrictEqual({ count: 0 })
+  })
+
   it('should work with reactive keys and immediate: false', async () => {
     registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
 
     const q = ref('')
     const { data } = await useFetch('/api/immediate-false', {
       query: { q },
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
+  it('should work with reactive request path and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch(() => withQuery('/api/immediate-false', { q: q.value }), {
       immediate: false,
     })
 
@@ -736,10 +810,12 @@ describe('useFetch', () => {
 
   it('should handle complex objects in body', async () => {
     registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
+    const formData = new FormData()
+    formData.append('file', new File([], 'test.txt'))
     const testCases = [
       { ref: ref('test') },
       ref('test'),
-      new FormData(),
+      formData,
       new ArrayBuffer(),
     ]
     for (const value of testCases) {

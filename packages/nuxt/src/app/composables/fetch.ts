@@ -10,7 +10,7 @@ import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom }
 import { useAsyncData } from './asyncData'
 
 // @ts-expect-error virtual file
-import { fetchDefaults } from '#build/nuxt.config.mjs'
+import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -61,12 +61,6 @@ export function useFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -142,16 +136,18 @@ export function useFetch<
     _asyncDataOptions._functionName ||= 'useFetch'
   }
 
-  // ensure that updates to watched sources trigger an update
-  if (watchSources !== false && !immediate) {
-    watch([...(watchSources || []), _fetchOptions], () => {
+  if (alwaysRunFetchOnKeyChange && !immediate) {
+    // ensure that updates to watched sources trigger an update
+    function setImmediate () {
       _asyncDataOptions.immediate = true
-    }, { flush: 'sync', once: true })
+    }
+    watch(key, setImmediate, { flush: 'sync', once: true })
+    watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
   let controller: AbortController
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
     controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
@@ -204,12 +200,6 @@ export function useLazyFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -274,7 +264,12 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     } else if (value instanceof ArrayBuffer) {
       segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
     } else if (value instanceof FormData) {
-      segments.push(hash(Object.fromEntries(value.entries())))
+      const obj: Record<string, string> = {}
+      for (const entry of value.entries()) {
+        const [key, val] = entry
+        obj[key] = val instanceof File ? val.name : val
+      }
+      segments.push(hash(obj))
     } else if (isPlainObject(value)) {
       segments.push(hash(reactive(value)))
     } else {

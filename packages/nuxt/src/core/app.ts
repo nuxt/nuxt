@@ -152,13 +152,15 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
   )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
+  const extensionGlob = nuxt.options.extensions.join(',')
+
   // Resolve layouts/ from all config layers
   const layerConfigs = nuxt.options._layers.map(layer => layer.config)
   const reversedConfigs = layerConfigs.slice().reverse()
   app.layouts = {}
   for (const config of layerConfigs) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.layouts || 'layouts'
-    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       if (!name) {
@@ -175,9 +177,9 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
-      `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`,
+      `${middlewareDir}/*{${extensionGlob}}`,
       ...nuxt.options.future.compatibilityVersion === 4
-        ? [`${middlewareDir}/*/index{${nuxt.options.extensions.join(',')}}`]
+        ? [`${middlewareDir}/*/index{${extensionGlob}}`]
         : [],
     ])
     for (const file of middlewareFiles) {
@@ -199,8 +201,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
-          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`,
+          `${pluginDir}/*{${extensionGlob}}`,
+          `${pluginDir}/*/index{${extensionGlob}}`,
         ])
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
@@ -277,11 +279,11 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
 
 export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
   const deps: Record<string, string[]> = Object.create(null)
-  const pluginNames = _plugins.map(plugin => plugin.name)
+  const pluginNameSet = new Set(_plugins.map(plugin => plugin.name))
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
-    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
-      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNameSet.has(name))) {
+      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNameSet.has(name)).join(', ')}\` but they are not registered.`)
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {

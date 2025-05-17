@@ -1586,6 +1586,15 @@ export interface ConfigSchema {
     granularCachedData: boolean
 
     /**
+     * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
+     *
+     * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
+     *
+     * @default false
+     */
+    alwaysRunFetchOnKeyChange: boolean
+
+    /**
      * Whether to parse `error.data` when rendering a server error page.
      *
      * @default true
@@ -1724,7 +1733,7 @@ export interface ConfigSchema {
   /**
    * Configuration for Nitro.
    *
-   * @see [Nitro configuration docs](https://nitro.unjs.io/config/)
+   * @see [Nitro configuration docs](https://nitro.build/config/)
    */
   nitro: NitroConfig
 
@@ -1733,7 +1742,7 @@ export interface ConfigSchema {
    *
    * @experimental This is an experimental feature and API may change in the future.
    *
-   * @see [Nitro route rules documentation](https://nitro.unjs.io/config/#routerules)
+   * @see [Nitro route rules documentation](https://nitro.build/config/#routerules)
    */
   routeRules: NitroConfig['routeRules']
 
@@ -1759,7 +1768,7 @@ export interface ConfigSchema {
   /**
    * Nitro development-only server handlers.
    *
-   * @see [Nitro server routes documentation](https://nitro.unjs.io/guide/routing)
+   * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
    */
   devServerHandlers: NitroDevEventHandler[]
 
@@ -2195,7 +2204,7 @@ export interface ConfigSchema {
      * Filters to hide build warnings.
      *
      */
-    warningIgnoreFilters: Array<(warn: WebpackError) => boolean>
+    warningIgnoreFilters: Array<(warn: WebpackError | Error) => boolean>
 
     /**
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)

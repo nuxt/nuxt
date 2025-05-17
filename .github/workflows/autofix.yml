@@ -29,11 +29,8 @@ jobs:
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Test (unit)
-        run: pnpm test:unit -u
-
-      - name: Test (runtime unit)
-        run: pnpm test:runtime -u
+      - name: Test (unit + runtime)
+        run: pnpm vitest run --project unit --project nuxt -u
 
       - name: Run build
         run: pnpm build
