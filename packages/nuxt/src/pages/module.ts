@@ -643,9 +643,10 @@ export default defineNuxtModule({
         filename: 'types/view-transitions.d.ts',
         getContents: () => {
           return [
+            'import type { ViewTransitionPageOptions } from \'../types/config\'',
             'declare module \'nuxt/app\' {',
             '  interface PageMeta {',
-            '    viewTransition?: boolean | \'always\'',
+            '    viewTransition?: ViewTransitionPageOptions[\'enabled\'] | ViewTransitionPageOptions',
             '  }',
             '}',
             'export {}',

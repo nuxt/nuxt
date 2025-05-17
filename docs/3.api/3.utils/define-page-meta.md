@@ -34,7 +34,7 @@ interface PageMeta {
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
-  viewTransition?: boolean | 'always'
+  viewTransition?: ViewTransitionPageOptions['enabled'] | ViewTransitionPageOptions
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
