@@ -51,8 +51,9 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
     const injectedRoute = inject(PageRouteSymbol)
-    const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute()
-    const route = isNotWithinNuxtPage ? useVueRouterRoute() as typeof injectedRoute : injectedRoute
+    const shouldUseEagerRoute = !injectedRoute /* this should never be true */
+      || injectedRoute === useRoute() /* this is only true if we are not within `<NuxtPage>` */
+    const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
       let layout = unref(props.name) ?? route!.meta.layout as string ?? 'default'
