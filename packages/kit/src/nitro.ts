@@ -1,19 +1,21 @@
-import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack'
+import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitro/types'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 import { useNuxt } from './context'
+import { toArray } from './utils'
 
+const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
 /**
  * normalize handler object
  *
  */
 function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
-  const [, method = undefined] = handler.handler.match(/\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/) || []
+  const [, method = undefined] = handler.handler.match(HANDLER_METHOD_RE) || []
   return {
-    method,
+    method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace' | undefined,
     ...handler,
-    handler: normalize(handler.handler)
+    handler: normalize(handler.handler),
   }
 }
 
@@ -38,7 +40,7 @@ export function addDevServerHandler (handler: NitroDevEventHandler) {
  */
 export function addServerPlugin (plugin: string) {
   const nuxt = useNuxt()
-  nuxt.options.nitro.plugins = nuxt.options.nitro.plugins || []
+  nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins.push(normalize(plugin))
 }
 
@@ -47,10 +49,8 @@ export function addServerPlugin (plugin: string) {
  */
 export function addPrerenderRoutes (routes: string | string[]) {
   const nuxt = useNuxt()
-  if (!Array.isArray(routes)) {
-    routes = [routes]
-  }
-  routes = routes.filter(Boolean)
+
+  routes = toArray(routes).filter(Boolean)
   if (!routes.length) {
     return
   }
@@ -89,12 +89,9 @@ export function useNitro (): Nitro {
 export function addServerImports (imports: Import[]) {
   const nuxt = useNuxt()
   nuxt.hook('nitro:config', (config) => {
-    config.imports = config.imports || {}
-    if (Array.isArray(config.imports.imports)) {
-      config.imports.imports.push(...imports)
-    } else {
-      config.imports.imports = [config.imports.imports, ...imports]
-    }
+    config.imports ||= {}
+    config.imports.imports ||= []
+    config.imports.imports.push(...imports)
   })
 }
 
@@ -103,10 +100,25 @@ export function addServerImports (imports: Import[]) {
  */
 export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
-  const _dirs = Array.isArray(dirs) ? dirs : [dirs]
+  const _dirs = toArray(dirs)
   nuxt.hook('nitro:config', (config) => {
-    config.imports = config.imports || {}
-    config.imports.dirs = config.imports.dirs || []
+    config.imports ||= {}
+    config.imports.dirs ||= []
     config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)
+  })
+}
+
+/**
+ * Add directories to be scanned by Nitro. It will check for subdirectories,
+ * which will be registered just like the `~/server` folder is.
+ */
+export function addServerScanDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
+  const nuxt = useNuxt()
+  nuxt.hook('nitro:config', (config) => {
+    config.scanDirs ||= []
+
+    for (const dir of toArray(dirs)) {
+      config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
+    }
   })
 }

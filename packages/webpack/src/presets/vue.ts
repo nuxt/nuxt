@@ -1,9 +1,10 @@
 import { resolve } from 'pathe'
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
-import webpack from 'webpack'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import VueSSRServerPlugin from '../plugins/vue/server'
 import type { WebpackConfigContext } from '../utils/config'
+
+import { webpack } from '#builder'
 
 export function vue (ctx: WebpackConfigContext) {
   // @ts-expect-error de-default vue-loader
@@ -12,17 +13,17 @@ export function vue (ctx: WebpackConfigContext) {
   ctx.config.module!.rules!.push({
     test: /\.vue$/i,
     loader: 'vue-loader',
-    options: ctx.userConfig.loaders.vue
+    options: ctx.userConfig.loaders.vue,
   })
 
   if (ctx.isClient) {
     ctx.config.plugins!.push(new VueSSRClientPlugin({
       filename: resolve(ctx.options.buildDir, 'dist/server', `${ctx.name}.manifest.json`),
-      nuxt: ctx.nuxt
+      nuxt: ctx.nuxt,
     }))
   } else {
     ctx.config.plugins!.push(new VueSSRServerPlugin({
-      filename: `${ctx.name}.manifest.json`
+      filename: `${ctx.name}.manifest.json`,
     }))
   }
 
@@ -30,7 +31,8 @@ export function vue (ctx: WebpackConfigContext) {
   // https://github.com/vuejs/vue-next/tree/master/packages/vue#bundler-build-feature-flags
   // TODO: Provide options to toggle
   ctx.config.plugins!.push(new webpack.DefinePlugin({
-    __VUE_OPTIONS_API__: 'true',
-    __VUE_PROD_DEVTOOLS__: 'false'
+    '__VUE_OPTIONS_API__': 'true',
+    '__VUE_PROD_DEVTOOLS__': 'false',
+    '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': ctx.nuxt.options.debug && ctx.nuxt.options.debug.hydration,
   }))
 }

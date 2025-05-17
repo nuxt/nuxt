@@ -7,6 +7,6 @@
 
 <script lang="ts" setup>
 defineProps<{
-  someProp: string;
+  someProp: string
 }>()
 </script>

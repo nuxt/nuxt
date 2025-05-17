@@ -3,7 +3,7 @@ const props = defineProps({
   bool: Boolean,
   number: Number,
   str: String,
-  obj: Object
+  obj: Object,
 })
 
 const hasRouter = useState('hasRouter', () => !!useRouter())

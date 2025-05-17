@@ -4,25 +4,41 @@ description: The init command initializes a fresh Nuxt project.
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/init.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/init.ts
     size: xs
 ---
 
+<!--init-cmd-->
 ```bash [Terminal]
-npx nuxi init|create [--verbose|-v] [--template,-t] [dir]
+npx nuxi init [DIR] [--cwd=<directory>] [-t, --template] [-f, --force] [--offline] [--preferOffline] [--no-install] [--gitInit] [--shell] [--packageManager]
 ```
+<!--/init-cmd-->
 
 The `init` command initializes a fresh Nuxt project using [unjs/giget](https://github.com/unjs/giget).
 
+## Arguments
+
+<!--init-args-->
+Argument | Description
+--- | ---
+`DIR=""` | Project directory
+<!--/init-args-->
+
 ## Options
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`--template, -t` | `v3` | Specify template name or git repository to use as a template. Format is `gh:org/name` to use a custom github template.
-`--force`      | `false` | Force clone to any existing directory.
-`--offline`   | `false` | Do not attempt to download from github and only use local cache.
-`--prefer-offline` | `false` | Try local cache first to download templates.
-`--shell` | `false` | Open shell in cloned directory (experimental).
+<!--init-opts-->
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` | `.` | Specify the working directory
+`-t, --template` |  | Template name
+`-f, --force` |  | Override existing directory
+`--offline` |  | Force offline mode
+`--preferOffline` |  | Prefer offline mode
+`--no-install` |  | Skip installing dependencies
+`--gitInit` |  | Initialize git repository
+`--shell` |  | Start shell after installation in project directory
+`--packageManager` |  | Package manager choice (npm, pnpm, yarn, bun)
+<!--/init-opts-->
 
 ## Environment variables
 

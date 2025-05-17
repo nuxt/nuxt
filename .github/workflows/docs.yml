@@ -1,14 +1,19 @@
-name: Docs
+name: docs
 
 on:
+  merge_group:
   push:
     paths:
       - "docs/**"
       - ".github/workflows/docs.yml"
       - "*.md"
+  pull_request:
+    paths:
+      - "docs/**"
     # autofix workflow will be triggered instead for PRs
     branches:
       - main
+      - 3.x
       - "!v[0-9]*"
 
 # Remove default permissions of GITHUB_TOKEN for security
@@ -20,15 +25,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - run: corepack enable
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build (stub)
+        run: pnpm dev:prepare
+
       - name: Lint (docs)
         run: pnpm lint:docs
+
+      - name: Build Nuxt
+        run: pnpm build
+
+      - name: Typecheck (docs)
+        run: pnpm typecheck:docs

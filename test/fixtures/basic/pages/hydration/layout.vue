@@ -1,12 +1,12 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'custom-async'
+  layout: 'custom-async',
 })
 
 if (import.meta.client && !useNuxtApp().isHydrating) {
   throw createError({
     fatal: true,
-    message: '`useNuxtApp().isHydrating` is false by the time we run page setup'
+    message: '`useNuxtApp().isHydrating` is false by the time we run page setup',
   })
 }
 </script>

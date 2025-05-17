@@ -9,7 +9,7 @@ links:
 ---
 
 ```vue [pages/index.vue]
-<script setup>
+<script setup lang="ts">
 const router = useRouter()
 </script>
 ```
@@ -46,7 +46,7 @@ router.hasRoute('home')
 router.resolve({ name: 'home' })
 ```
 
-::callout
+::note
 `router.addRoute()` adds route details into an array of routes and it is useful while building [Nuxt plugins](/docs/guide/directory-structure/plugins) while `router.push()` on the other hand, triggers a new navigation immediately and it is useful in pages, Vue components and composable.
 ::
 
@@ -68,7 +68,7 @@ router.push({ path: "/home" })
 router.replace({ hash: "#bio" })
 ```
 
-::read-more{icon="i-simple-icons-mdnwebdocs" color="gray" to="https://developer.mozilla.org/en-US/docs/Web/API/History" target="_blank"}
+::read-more{icon="i-simple-icons-mdnwebdocs" to="https://developer.mozilla.org/en-US/docs/Web/API/History" target="_blank"}
 Read more about the browser's History API.
 ::
 

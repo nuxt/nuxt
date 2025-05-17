@@ -1,4 +1,5 @@
 import { pathToFileURL } from 'node:url'
+import { extname } from 'pathe'
 import { parseQuery, parseURL } from 'ufo'
 
 export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 'style'> } = {}) {
@@ -34,10 +35,32 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
   return true
 }
 
-const JS_RE = /\.((c|m)?j|t)sx?$/
+const JS_RE = /\.(?:[cm]?j|t)sx?$/
 
 export function isJS (id: string) {
   // JavaScript files
   const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
   return JS_RE.test(pathname)
+}
+
+export function getLoader (id: string): 'vue' | 'ts' | 'tsx' | null {
+  const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  const ext = extname(pathname)
+  if (ext === '.vue') {
+    return 'vue'
+  }
+  if (!JS_RE.test(ext)) {
+    return null
+  }
+  return ext.endsWith('x') ? 'tsx' : 'ts'
+}
+
+export function matchWithStringOrRegex (value: string, matcher: string | RegExp) {
+  if (typeof matcher === 'string') {
+    return value === matcher
+  } else if (matcher instanceof RegExp) {
+    return matcher.test(value)
+  }
+
+  return false
 }

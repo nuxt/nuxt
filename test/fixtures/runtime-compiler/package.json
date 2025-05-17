@@ -6,5 +6,8 @@
   },
   "dependencies": {
     "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^20.11.1 || >=22.0.0"
   }
 }

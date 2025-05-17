@@ -3,8 +3,8 @@ export default defineNuxtComponent({
   name: 'ClientScript',
   props: {
     foo: {
-      type: String
-    }
+      type: String,
+    },
   },
   setup (_p, ctx) {
     const count = ref(0)
@@ -14,9 +14,9 @@ export default defineNuxtComponent({
 
     return {
       count,
-      add
+      add,
     }
-  }
+  },
 })
 </script>
 

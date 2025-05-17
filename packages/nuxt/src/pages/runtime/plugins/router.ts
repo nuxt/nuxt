@@ -1,27 +1,23 @@
 import { isReadonly, reactive, shallowReactive, shallowRef, toValue } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, Router, RouterScrollBehavior } from '#vue-router'
-import {
-  START_LOCATION,
-  createMemoryHistory,
-  createRouter,
-  createWebHashHistory,
-  createWebHistory
-} from '#vue-router'
-import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
+import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { isSamePath, withoutBase } from 'ufo'
 
+import type { Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
-import type { Plugin, RouteMiddleware } from '#app'
+import { toArray } from '../utils'
+
+import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { clearError, showError, useError } from '#app/composables/error'
+import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
-import _routes from '#build/routes'
-// @ts-expect-error virtual file
-import routerOptions from '#build/router.options'
+import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
+import _routes, { handleHotUpdate } from '#build/routes'
+import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
@@ -29,7 +25,7 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 function createCurrentLocation (
   base: string,
   location: Location,
-  renderedPath?: string
+  renderedPath?: string,
 ): string {
   const { pathname, search, hash } = location
   // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
@@ -44,7 +40,7 @@ function createCurrentLocation (
     return withoutBase(pathFromHash, '')
   }
   const displayedPath = withoutBase(pathname, base)
-  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
+  const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
 
@@ -53,22 +49,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   enforce: 'pre',
   async setup (nuxtApp) {
     let routerBase = useRuntimeConfig().app.baseURL
-    if (routerOptions.hashMode && !routerBase.includes('#')) {
+    if (hashMode && !routerBase.includes('#')) {
       // allow the user to provide a `#` in the middle: `/base/#/app`
       routerBase += '#'
     }
 
     const history = routerOptions.history?.(routerBase) ?? (import.meta.client
-      ? (routerOptions.hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
+      ? (hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
       : createMemoryHistory(routerBase)
     )
 
-    const routes = routerOptions.routes?.(_routes) ?? _routes
+    const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
-    const initialURL = import.meta.server
-      ? nuxtApp.ssrContext!.url
-      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
     const router = createRouter({
       ...routerOptions,
@@ -77,13 +70,29 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           startPosition = savedPosition
           return
         }
-        // reset scroll behavior to initial value
-        router.options.scrollBehavior = routerOptions.scrollBehavior
-        return routerOptions.scrollBehavior?.(to, START_LOCATION, startPosition || savedPosition)
+        if (routerOptions.scrollBehavior) {
+          // reset scroll behavior to initial value
+          router.options.scrollBehavior = routerOptions.scrollBehavior
+          if ('scrollRestoration' in window.history) {
+            const unsub = router.beforeEach(() => {
+              unsub()
+              window.history.scrollRestoration = 'manual'
+            })
+          }
+          return routerOptions.scrollBehavior(to, START_LOCATION, startPosition || savedPosition)
+        }
       },
       history,
-      routes
+      routes,
     })
+
+    if (import.meta.hot) {
+      handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
+
+    if (import.meta.client && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'auto'
+    }
     nuxtApp.vueApp.use(router)
 
     const previousRoute = shallowRef(router.currentRoute.value)
@@ -92,11 +101,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
-      get: () => previousRoute.value
+      get: () => previousRoute.value,
     })
 
+    const initialURL = import.meta.server
+      ? nuxtApp.ssrContext!.url
+      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+
     // Allows suspending the route object until page navigation completes
-    const _route = shallowRef(router.resolve(initialURL) as RouteLocation)
+    const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
@@ -110,33 +123,58 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     })
 
-    // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
-    const route = {} as RouteLocation
+    // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
+    const route = {} as RouteLocationNormalizedLoaded
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation]
+        get: () => _route.value[key as keyof RouteLocation],
+        enumerable: true,
       })
     }
 
     nuxtApp._route = shallowReactive(route)
 
-    nuxtApp._middleware = nuxtApp._middleware || {
+    nuxtApp._middleware ||= {
       global: [],
-      named: {}
+      named: {},
     }
 
     const error = useError()
+    if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
+      router.afterEach(async (to, _from, failure) => {
+        delete nuxtApp._processingMiddleware
+
+        if (import.meta.client && !nuxtApp.isHydrating && error.value) {
+          // Clear any existing errors
+          await nuxtApp.runWithContext(clearError)
+        }
+        if (failure) {
+          await nuxtApp.callHook('page:loading:end')
+        }
+        if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
+          return
+        }
+
+        if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+          await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
+        }
+      })
+    }
 
     try {
       if (import.meta.server) {
         await router.push(initialURL)
       }
-
       await router.isReady()
     } catch (error: any) {
       // We'll catch 404s here
       await nuxtApp.runWithContext(() => showError(error))
     }
+
+    const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
+      ? router.resolve(initialURL)
+      : router.currentRoute.value
+    syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
       // We're in an island context, and don't need to handle middleware or redirections
@@ -145,6 +183,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
+      await nuxtApp.callHook('page:loading:start')
       to.meta = reactive(to.meta)
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
         to.meta.layout = initialLayout as Exclude<PageMeta['layout'], Ref | false>
@@ -157,17 +196,27 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         for (const component of to.matched) {
           const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
           if (!componentMiddleware) { continue }
-          if (Array.isArray(componentMiddleware)) {
-            for (const entry of componentMiddleware) {
-              middlewareEntries.add(entry)
+          for (const entry of toArray(componentMiddleware)) {
+            middlewareEntries.add(entry)
+          }
+        }
+
+        if (isAppManifestEnabled) {
+          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
+
+          if (routeRules.appMiddleware) {
+            for (const key in routeRules.appMiddleware) {
+              if (routeRules.appMiddleware[key]) {
+                middlewareEntries.add(key)
+              } else {
+                middlewareEntries.delete(key)
+              }
             }
-          } else {
-            middlewareEntries.add(componentMiddleware)
           }
         }
 
         for (const entry of middlewareEntries) {
-          const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
+          const middleware: RouteMiddleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
           if (!middleware) {
             if (import.meta.dev) {
@@ -176,55 +225,67 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             throw new Error(`Unknown route middleware: '${entry}'.`)
           }
 
-          const result = await nuxtApp.runWithContext(() => middleware(to, from))
-          if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
-            if (result === false || result instanceof Error) {
-              const error = result || createError({
-                statusCode: 404,
-                statusMessage: `Page Not Found: ${initialURL}`
-              })
-              await nuxtApp.runWithContext(() => showError(error))
-              return false
+          try {
+            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
+              if (result === false || result instanceof Error) {
+                const error = result || createError({
+                  statusCode: 404,
+                  statusMessage: `Page Not Found: ${initialURL}`,
+                })
+                await nuxtApp.runWithContext(() => showError(error))
+                return false
+              }
             }
-          }
 
-          if (result === true) { continue }
-          if (result || result === false) {
-            return result
+            if (result === true) { continue }
+            if (result === false) {
+              return result
+            }
+            if (result) {
+              if (isNuxtError(result) && result.fatal) {
+                await nuxtApp.runWithContext(() => showError(result))
+              }
+              return result
+            }
+          } catch (err: any) {
+            const error = createError(err)
+            if (error.fatal) {
+              await nuxtApp.runWithContext(() => showError(error))
+            }
+            return error
           }
         }
       }
     })
 
-    router.onError(() => { delete nuxtApp._processingMiddleware })
-
-    router.afterEach(async (to, _from, failure) => {
+    router.onError(async () => {
       delete nuxtApp._processingMiddleware
+      await nuxtApp.callHook('page:loading:end')
+    })
 
-      if (import.meta.client && !nuxtApp.isHydrating && error.value) {
-        // Clear any existing errors
-        await nuxtApp.runWithContext(clearError)
-      }
-      if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
-        return
-      }
+    router.afterEach(async (to, _from) => {
       if (to.matched.length === 0) {
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`
+          statusMessage: `Page not found: ${to.fullPath}`,
+          data: {
+            path: to.fullPath,
+          },
         })))
-      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
-        await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
+        // #4920, #4982
+        if ('name' in resolvedInitialRoute) {
+          resolvedInitialRoute.name = undefined
+        }
         await router.replace({
-          ...router.resolve(initialURL),
-          name: undefined, // #4920, #4982
-          force: true
+          ...resolvedInitialRoute,
+          force: true,
         })
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
@@ -235,7 +296,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     return { provide: { router } }
-  }
+  },
 })
 
 export default plugin

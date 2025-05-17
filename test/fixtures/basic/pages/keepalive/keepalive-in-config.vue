@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useLifecyleLogs('keepalive-in-config')
+useLifecycleLogs('keepalive-in-config')
 </script>
 
 <template>

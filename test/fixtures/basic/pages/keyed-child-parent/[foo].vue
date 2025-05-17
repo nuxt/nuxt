@@ -14,6 +14,6 @@ if (import.meta.client) {
 const route = useRoute()
 
 definePageMeta({
-  key: r => 'keyed-' + r.params.foo
+  key: r => 'keyed-' + r.params.foo,
 })
 </script>

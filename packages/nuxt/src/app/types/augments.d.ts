@@ -1,22 +1,32 @@
-import type { NuxtApp, useNuxtApp } from '../nuxt'
-
-interface NuxtStaticBuildFlags {
-  browser: boolean
-  client: boolean
-  dev: boolean
-  server: boolean
-  test: boolean
-}
+import type { UseHeadInput } from '@unhead/vue/types'
+import type { NuxtApp, useNuxtApp } from '../nuxt.js'
 
 declare global {
   namespace NodeJS {
-    interface Process extends NuxtStaticBuildFlags {}
+    interface Process {
+      /** @deprecated Use `import.meta.browser` instead. This may be removed in Nuxt v5 or a future major version. */
+      browser: boolean
+      /** @deprecated Use `import.meta.client` instead. This may be removed in Nuxt v5 or a future major version. */
+      client: boolean
+      /** @deprecated Use `import.meta.dev` instead. This may be removed in Nuxt v5 or a future major version. */
+      dev: boolean
+      /** @deprecated Use `import.meta.server` instead. This may be removed in Nuxt v5 or a future major version. */
+      server: boolean
+      /** @deprecated Use `import.meta.test` instead. This may be removed in Nuxt v5 or a future major version. */
+      test: boolean
+    }
   }
 
-  interface ImportMeta extends NuxtStaticBuildFlags {}
+  interface ImportMeta extends NuxtStaticBuildFlags {
+    browser: boolean
+    client: boolean
+    dev: boolean
+    server: boolean
+    test: boolean
+  }
 
   interface Window {
-    __NUXT__?: Record<string, any>
+    __NUXT__?: Record<string, any> | Record<string, Record<string, any>>
     useNuxtApp?: typeof useNuxtApp
   }
 }
@@ -30,6 +40,15 @@ declare module 'vue' {
     $nuxt: NuxtApp
   }
   interface ComponentInternalInstance {
-    _nuxtOnBeforeMountCbs: Function[]
+    _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
+    _nuxtIdIndex?: Record<string, number>
+    _nuxtClientOnly?: boolean
+  }
+  interface ComponentCustomOptions {
+    /**
+     * Available exclusively for `defineNuxtComponent`.
+     * It will not be executed when using `defineComponent`.
+     */
+    head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }

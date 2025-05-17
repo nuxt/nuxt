@@ -1,1 +1,1 @@
-export const useOverrideableComposable = () => 'test from project'
+export const useOverridableComposable = () => 'test from project'

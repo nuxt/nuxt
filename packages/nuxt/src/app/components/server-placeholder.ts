@@ -4,5 +4,5 @@ export default defineComponent({
   name: 'ServerPlaceholder',
   render () {
     return createElementBlock('div')
-  }
+  },
 })

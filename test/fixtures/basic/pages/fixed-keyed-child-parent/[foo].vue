@@ -14,6 +14,6 @@ if (import.meta.client) {
 const route = useRoute()
 
 definePageMeta({
-  key: 'keyed'
+  key: 'keyed',
 })
 </script>

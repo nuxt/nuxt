@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/pages/#page-metadata"}
+:read-more{to="/docs/guide/directory-structure/pages#page-metadata"}
 
 ## Type
 
@@ -30,9 +30,11 @@ interface PageMeta {
   redirect?: RouteRecordRedirectOption
   name?: string
   path?: string
+  props?: RouteRecordRaw['props']
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
+  viewTransition?: boolean | 'always'
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
@@ -60,7 +62,13 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a path matcher, if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+
+  **`props`**
+  
+  - **Type**: [`RouteRecordRaw['props']`](https://router.vuejs.org/guide/essentials/passing-props)
+
+    Allows accessing the route `params` as props passed to the page component.
 
   **`alias`**
 
@@ -104,6 +112,14 @@ interface PageMeta {
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
 
+  **`viewTransition`**
+
+  - **Type**: `boolean | 'always'`
+
+    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
+    Enable/disable View Transitions for the current page.
+    If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
+
   **`redirect`**
 
   - **Type**: [`RouteRecordRedirectOption`](https://router.vuejs.org/guide/essentials/redirect-and-alias.html#redirect-and-alias)
@@ -120,7 +136,7 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [docs](/docs/guide/directory-structure/pages/#router-options)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-approuteroptions)) for more info.
 
   **`[key: string]`**
 
@@ -182,6 +198,24 @@ definePageMeta({
 })
 </script>
 ```
+
+### Using a Custom Regular Expression
+
+A custom regular expression is a good way to resolve conflicts between overlapping routes, for instance:
+
+The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug].vue` and `[categorySlug].vue` page routes.
+
+To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
+
+```vue [pages/[postId\\]-[postSlug\\].vue]
+<script setup lang="ts">
+definePageMeta({
+  path: '/:postId(\\d+)-:postSlug' 
+})
+</script>
+```
+
+For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
 
 ### Defining Layout
 

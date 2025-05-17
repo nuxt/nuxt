@@ -6,28 +6,30 @@
 import { defineAsyncComponent } from 'vue'
 
 const props = defineProps({
-  error: Object
+  error: Object,
 })
 
 // Deliberately prevent reactive update when error is cleared
 const _error = props.error
 
 // TODO: extract to a separate utility
-const stacktrace = (_error.stack || '')
-  .split('\n')
-  .splice(1)
-  .map((line) => {
-    const text = line
-      .replace('webpack:/', '')
-      .replace('.vue', '.js') // TODO: Support sourcemap
-      .trim()
-    return {
-      text,
-      internal: (line.includes('node_modules') && !line.includes('.cache')) ||
-        line.includes('internal') ||
-        line.includes('new Promise')
-    }
-  }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
+const stacktrace = _error.stack
+  ? _error.stack
+      .split('\n')
+      .splice(1)
+      .map((line) => {
+        const text = line
+          .replace('webpack:/', '')
+          .replace('.vue', '.js') // TODO: Support sourcemap
+          .trim()
+        return {
+          text,
+          internal: (line.includes('node_modules') && !line.includes('.cache')) ||
+          line.includes('internal') ||
+          line.includes('new Promise'),
+        }
+      }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
+  : ''
 
 // Error page props
 const statusCode = Number(_error.statusCode || 500)
@@ -38,10 +40,10 @@ const description = _error.message || _error.toString()
 const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
 
 // TODO: Investigate side-effect issue with imports
-const _Error404 = defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-404.vue').then(r => r.default || r))
+const _Error404 = defineAsyncComponent(() => import('./error-404.vue'))
 const _Error = import.meta.dev
-  ? defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-dev.vue').then(r => r.default || r))
-  : defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-500.vue').then(r => r.default || r))
+  ? defineAsyncComponent(() => import('./error-dev.vue'))
+  : defineAsyncComponent(() => import('./error-500.vue'))
 
 const ErrorTemplate = is404 ? _Error404 : _Error
 </script>

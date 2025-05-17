@@ -1,6 +1,6 @@
 <script setup>
 definePageMeta({
-  layout: computed(() => 'custom')
+  layout: computed(() => 'custom'),
 })
 </script>
 

@@ -8,13 +8,13 @@ links:
     size: xs
 ---
 
-::callout
+::note
 `reloadNuxtApp` will perform a hard reload of your app, re-requesting a page and its dependencies from the server.
 ::
 
 By default, it will also save the current `state` of your app (that is, any state you could access with `useState`).
 
-::read-more{to="/docs/guide/going-further/experimental-features#restorestate" icon="i-ph-star-duotone"}
+::read-more{to="/docs/guide/going-further/experimental-features#restorestate" icon="i-lucide-star"}
 You can enable experimental restoration of this state by enabling the `experimental.restoreState` option in your `nuxt.config` file.
 ::
 

@@ -1,85 +1,41 @@
 import { addBuildPlugin, addComponent } from 'nuxt/kit'
 import type { NuxtPage } from 'nuxt/schema'
+import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
 // (defined in nuxt/src/core/nitro.ts)
-declare module 'nitropack' {
+declare module 'nitro/types' {
   interface NitroRouteConfig {
     ssr?: boolean
   }
 }
 
 export default defineNuxtConfig({
-  app: {
-    pageTransition: true,
-    layoutTransition: true,
-    head: {
-      charset: 'utf-8',
-      link: [undefined],
-      meta: [
-        { name: 'viewport', content: 'width=1024, initial-scale=1' },
-        { charset: 'utf-8' },
-        { name: 'description', content: 'Nuxt Fixture' }
-      ]
-    },
-    keepalive: {
-      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage']
-    }
-  },
-  buildDir: process.env.NITRO_BUILD_DIR,
-  builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
-  build: {
-    transpile: [
-      (ctx) => {
-        if (typeof ctx.isDev !== 'boolean') { throw new TypeError('context not passed') }
-        return false
-      }
-    ]
-  },
-  theme: './extends/bar',
-  css: ['~/assets/global.css'],
+  appId: 'nuxt-app-basic',
   extends: [
-    './extends/node_modules/foo'
+    './extends/node_modules/foo',
   ],
-  nitro: {
-    esbuild: {
-      options: {
-        // in order to test bigint serialization
-        target: 'es2022'
-      }
-    },
-    routeRules: {
-      '/route-rules/spa': { ssr: false },
-      '/hydration/spa-redirection/**': { ssr: false },
-      '/no-scripts': { experimentalNoScripts: true }
-    },
-    output: { dir: process.env.NITRO_OUTPUT_DIR },
-    prerender: {
-      routes: [
-        '/random/a',
-        '/random/b',
-        '/random/c',
-        '/prefetch/server-components'
-      ]
-    }
-  },
-  optimization: {
-    keyedComposables: [
-      {
-        name: 'useCustomKeyedComposable',
-        source: '~/other-composables-folder/custom-keyed-composable',
-        argumentLength: 1
-      }
-    ]
-  },
-  runtimeConfig: {
-    public: {
-      needsFallback: undefined,
-      testConfig: 123
-    }
-  },
+  // this produces an order of `~` > `~/extends/bar` > `~/extends/node_modules/foo`
+  theme: './extends/bar',
   modules: [
+    function (_options, nuxt) {
+      // ensure setting `runtimeConfig` also sets `nitro.runtimeConfig`
+      nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+        public: {
+          testConfig: 123,
+        },
+      })
+    },
+    function (_options, nuxt) {
+      nuxt.hook('modules:done', () => {
+        // @ts-expect-error not valid nuxt option
+        if (!nuxt.options.__installed_layer) {
+          throw new Error('layer in layers/ directory was not auto-registered')
+        }
+      })
+    },
+    '~/custom-modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {
@@ -93,10 +49,18 @@ export default defineNuxtConfig({
           if (id === 'virtual.css') { return 'virtual.css' }
         },
         load (id) {
-          if (id === 'virtual.css') { return ':root { --virtual: red }' }
-        }
+          if (id.includes('virtual.css')) { return ':root { --virtual: red }' }
+        },
       }))
       addBuildPlugin(plugin)
+    },
+    function (_options, nuxt) {
+      nuxt.hook('pages:extend', (pages) => {
+        pages.push({
+          path: '/manual-redirect',
+          redirect: '/',
+        })
+      })
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
@@ -108,10 +72,10 @@ export default defineNuxtConfig({
         meta: {
           ...page.meta,
           layout: undefined,
-          _layout: page.meta?.layout
-        }
+          _layout: page.meta?.layout,
+        },
       })
-      nuxt.hook('pages:extend', (pages) => {
+      nuxt.hook('pages:resolved', (pages) => {
         const newPages = []
         for (const page of pages) {
           if (routesToDuplicate.includes(page.path)) {
@@ -122,14 +86,131 @@ export default defineNuxtConfig({
         internalParent!.children = newPages
       })
     },
+    function (_options, nuxt) {
+      // to check that page metadata is preserved
+      nuxt.hook('pages:resolved', (pages) => {
+        const customName = pages.find(page => page.name === 'some-custom-name')
+        if (!customName) { throw new Error('Page with custom name not found') }
+        if (customName.path !== '/some-custom-path') { throw new Error('Page path not extracted') }
+
+        customName.meta ||= {}
+        customName.meta.someProp = true
+      })
+    },
     // To test falsy module values
-    undefined
+    undefined,
   ],
+  app: {
+    pageTransition: true,
+    layoutTransition: true,
+    teleportId: 'nuxt-teleport',
+    teleportTag: 'span',
+    head: {
+      charset: 'utf-8',
+      link: [undefined],
+      meta: [
+        { name: 'viewport', content: 'width=1024, initial-scale=1' },
+        { charset: 'utf-8' },
+        { name: 'description', content: 'Nuxt Fixture' },
+      ],
+    },
+    keepalive: {
+      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
+    },
+  },
+  css: ['~/assets/global.css'],
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => {
+        return tag === 'custom-component'
+      },
+    },
+  },
+  appConfig: {
+    fromNuxtConfig: true,
+    nested: {
+      val: 1,
+    },
+  },
+  runtimeConfig: {
+    public: {
+      needsFallback: undefined,
+    },
+  },
+  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
+  build: {
+    transpile: [
+      (ctx) => {
+        if (typeof ctx.isDev !== 'boolean') { throw new TypeError('context not passed') }
+        return false
+      },
+    ],
+  },
+  optimization: {
+    keyedComposables: [
+      {
+        name: 'useCustomKeyedComposable',
+        source: '~/other-composables-folder/custom-keyed-composable',
+        argumentLength: 1,
+      },
+    ],
+  },
+  features: {
+    inlineStyles: id => !!id && !id.includes('assets.vue'),
+  },
+  experimental: {
+    decorators: true,
+    serverAppConfig: true,
+    typedPages: true,
+    clientFallback: true,
+    restoreState: true,
+    clientNodeCompat: true,
+    componentIslands: {
+      selectiveClient: 'deep',
+    },
+    asyncContext: process.env.TEST_CONTEXT === 'async',
+    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
+    headNext: true,
+    inlineRouteRules: true,
+  },
+  compatibilityDate: 'latest',
+  nitro: {
+    publicAssets: [
+      {
+        dir: '../custom-public',
+        baseURL: '/custom',
+      },
+    ],
+    esbuild: {
+      options: {
+        // in order to test bigint serialization
+        target: 'es2022',
+      },
+    },
+    routeRules: {
+      '/route-rules/spa': { ssr: false },
+      '/redirect/catchall': { ssr: false },
+      '/head-spa': { ssr: false },
+      '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      '/hydration/spa-redirection/**': { ssr: false },
+      '/no-scripts': { noScripts: true },
+      '/prerender/**': { prerender: true },
+    },
+    prerender: {
+      routes: [
+        '/random/a',
+        '/random/b',
+        '/random/c',
+        '/prefetch/server-components',
+      ],
+    },
+  },
   vite: {
     logLevel: 'silent',
     build: {
-      assetsInlineLimit: 100 // keep SVG as assets URL
-    }
+      assetsInlineLimit: 100, // keep SVG as assets URL
+    },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
@@ -137,7 +218,7 @@ export default defineNuxtConfig({
       // in order to test bigint serialization we need to set target to a more modern one
       for (const config of configs) {
         const esbuildRules = config.module!.rules!.filter(
-          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader'
+          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader',
         )
         for (const rule of esbuildRules) {
           if (typeof rule === 'object' && typeof rule.options === 'object') {
@@ -150,7 +231,7 @@ export default defineNuxtConfig({
       addComponent({
         name: 'CustomComponent',
         export: 'namedExport',
-        filePath: '~/other-components-folder/named-export'
+        filePath: '~/other-components-folder/named-export',
       })
     },
     'components:extend' (components) {
@@ -179,35 +260,8 @@ export default defineNuxtConfig({
             }
             next()
           })
-        }
+        },
       })
-    }
+    },
   },
-  vue: {
-    compilerOptions: {
-      isCustomElement: (tag) => {
-        return tag === 'custom-component'
-      }
-    }
-  },
-  experimental: {
-    typedPages: true,
-    polyfillVueUseHead: true,
-    respectNoSSRHeader: true,
-    clientFallback: true,
-    restoreState: true,
-    inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
-    componentIslands: true,
-    treeshakeClientOnly: true,
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    headNext: true,
-    inlineRouteRules: true
-  },
-  appConfig: {
-    fromNuxtConfig: true,
-    nested: {
-      val: 1
-    }
-  }
 })

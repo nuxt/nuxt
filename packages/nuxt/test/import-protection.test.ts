@@ -1,6 +1,8 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
-import { ImportProtectionPlugin, vueAppPatterns } from '../src/core/plugins/import-protection'
+import { ImpoundPlugin } from 'impound'
+import { createImportProtectionPatterns } from '../src/core/plugins/import-protection'
+import type { NuxtOptions } from '../schema'
 
 const testsToTriggerOn = [
   ['~/nuxt.config', 'app.vue', true],
@@ -21,32 +23,33 @@ const testsToTriggerOn = [
   ['/root/node_modules/@nuxt/kit', 'components/Component.vue', true],
   ['some-nuxt-module', 'components/Component.vue', true],
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
-  ['src/server/api/test.ts', 'components/Component.vue', true]
+  ['src/server/api/test.ts', 'components/Component.vue', true],
+  ['node_modules/nitropack/node_modules/crossws/dist/adapters/bun.mjs', 'node_modules/nitropack/dist/presets/bun/runtime/bun.mjs', false],
 ] as const
 
 describe('import protection', () => {
   it.each(testsToTriggerOn)('should protect %s', async (id, importer, isProtected) => {
-    const result = await transformWithImportProtection(id, importer)
+    const result = await transformWithImportProtection(id, importer, 'nuxt-app')
     if (!isProtected) {
       expect(result).toBeNull()
     } else {
       expect(result).toBeDefined()
-      expect(normalize(result)).contains('unenv/runtime/mock/proxy')
+      expect(normalize(result)).contains('mocked-exports')
     }
   })
 })
 
-const transformWithImportProtection = (id: string, importer: string) => {
-  const plugin = ImportProtectionPlugin.rollup({
-    rootDir: '/root',
-    patterns: vueAppPatterns({
+const transformWithImportProtection = (id: string, importer: string, context: 'nitro-app' | 'nuxt-app' | 'shared') => {
+  const plugin = ImpoundPlugin.rollup({
+    cwd: '/root',
+    patterns: createImportProtectionPatterns({
       options: {
         modules: ['some-nuxt-module'],
-        srcDir: 'src/',
-        dir: { server: 'server' }
-      }
-    } as any)
+        srcDir: '/root/src/',
+        serverDir: '/root/src/server',
+      } satisfies Partial<NuxtOptions> as NuxtOptions,
+    }, { context }),
   })
 
-  return (plugin as any).resolveId(id, importer)
+  return (plugin as any).resolveId.call({ error: () => {} }, id, importer)
 }

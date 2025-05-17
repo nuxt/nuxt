@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="!pending"
+    v-if="status === 'success'"
     v-text="'resolved:' + data.resolved"
   />
   <div
@@ -11,5 +11,5 @@
 
 <script setup>
 useNuxtData('call')
-const { data, pending } = await useAsyncData('call', () => Promise.resolve({ resolved: true }), { server: false })
+const { data, status } = await useAsyncData('call', () => Promise.resolve({ resolved: true }), { server: false })
 </script>

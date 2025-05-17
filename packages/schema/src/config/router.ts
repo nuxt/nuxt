@@ -1,13 +1,13 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   router: {
     /**
      * Additional router options passed to `vue-router`. On top of the options for `vue-router`,
      * Nuxt offers additional options to customize the router (see below).
      * @note Only JSON serializable options should be passed by Nuxt config.
      * For more control, you can use `app/router.options.ts` file.
-     * @see [documentation](https://router.vuejs.org/api/interfaces/routeroptions.html).
+     * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions.html).
      * @type {typeof import('../src/types/router').RouterConfigSerializable}
      */
     options: {
@@ -25,7 +25,7 @@ export default defineUntypedSchema({
        * @type {typeof import('../src/types/router').RouterConfigSerializable['scrollBehaviorType']}
        * @default 'auto'
        */
-      scrollBehaviorType: 'auto'
-    }
-  }
+      scrollBehaviorType: 'auto',
+    },
+  },
 })

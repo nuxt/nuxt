@@ -2,9 +2,9 @@
 definePageMeta({
   validate: () => true,
   middleware: [
-    function () {}
+    function () {},
   ],
-  name: 'some-custom-name'
+  name: 'some-custom-name',
 })
 </script>
 

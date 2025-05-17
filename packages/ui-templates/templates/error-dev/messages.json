@@ -1,0 +1,6 @@
+{
+  "statusCode": 500,
+  "statusMessage": "Server error",
+  "description": "An error occurred in the application and the page could not be served.",
+  "stack": ""
+}

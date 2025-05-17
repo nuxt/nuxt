@@ -3,19 +3,23 @@ import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
 import { consola } from 'consola'
-import { determineBumpType, getLatestCommits, loadWorkspace } from './_utils'
+import { determineBumpType, getContributors, getLatestCommits, getLatestReleasedTag, getLatestTag, getPreviousReleasedCommits, loadWorkspace } from './_utils'
+
+const handleSeparateBranch = true
 
 async function main () {
   const releaseBranch = await getCurrentGitBranch()
   const workspace = await loadWorkspace(process.cwd())
   const config = await loadChangelogConfig(process.cwd(), {})
 
-  const commits = await getLatestCommits().then(commits => commits.filter(
-    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking)
-  ))
-  const bumpType = await determineBumpType()
+  const prevMessages = new Set(handleSeparateBranch ? await getPreviousReleasedCommits().then(r => r.map(c => c.message)) : [])
 
-  const newVersion = inc(workspace.find('nuxt').data.version, bumpType || 'patch')
+  const commits = await getLatestCommits().then(commits => commits.filter(
+    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps') && !prevMessages.has(c.message),
+  ))
+  const bumpType = await determineBumpType() || 'patch'
+
+  const newVersion = inc(workspace.find('nuxt').data.version, bumpType)
   const changelog = await generateMarkDown(commits, config)
 
   // Create and push a branch with bumped versions if it has not already been created
@@ -36,11 +40,22 @@ async function main () {
 
   // Get the current PR for this release, if it exists
   const [currentPR] = await $fetch(`https://api.github.com/repos/nuxt/nuxt/pulls?head=nuxt:v${newVersion}`)
+  const contributors = await getContributors()
+
+  const latestTag = await getLatestTag()
+  const previousReleasedTag = handleSeparateBranch ? await getLatestReleasedTag() : latestTag
 
   const releaseNotes = [
     currentPR?.body.replace(/## 👉 Changelog[\s\S]*$/, '') || `> ${newVersion} is the next ${bumpType} release.\n>\n> **Timetable**: to be announced.`,
     '## 👉 Changelog',
-    changelog.replace(/^## v.*?\n/, '').replace(`...${releaseBranch}`, `...v${newVersion}`)
+    changelog
+      .replace(/^## v.*\n/, '')
+      .replace(`...${releaseBranch}`, `...v${newVersion}`)
+      .replace(/### ❤️ Contributors[\s\S]*$/, '')
+      .replace(/[\n\r]+/g, '\n')
+      .replace(latestTag, previousReleasedTag),
+    '### ❤️ Contributors',
+    contributors.map(c => `- ${c.name} (@${c.username})`).join('\n'),
   ].join('\n')
 
   // Create a PR with release notes if none exists
@@ -48,15 +63,15 @@ async function main () {
     return await $fetch('https://api.github.com/repos/nuxt/nuxt/pulls', {
       method: 'POST',
       headers: {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`
+        Authorization: `token ${process.env.GITHUB_TOKEN}`,
       },
       body: {
         title: `v${newVersion}`,
         head: `v${newVersion}`,
         base: releaseBranch,
         body: releaseNotes,
-        draft: true
-      }
+        draft: true,
+      },
     })
   }
 
@@ -64,11 +79,11 @@ async function main () {
   await $fetch(`https://api.github.com/repos/nuxt/nuxt/pulls/${currentPR.number}`, {
     method: 'PATCH',
     headers: {
-      Authorization: `token ${process.env.GITHUB_TOKEN}`
+      Authorization: `token ${process.env.GITHUB_TOKEN}`,
     },
     body: {
-      body: releaseNotes
-    }
+      body: releaseNotes,
+    },
   })
 }
 

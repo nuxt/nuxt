@@ -1,4 +1,11 @@
 packages:
-  - "packages/**"
-  - "playground"
-  - "test/fixtures/*"
+  - docs
+  - packages/**
+  - '!packages/nuxi'
+  - '!packages/test-utils'
+  - playground
+  - test/fixtures/*
+ignoredBuiltDependencies:
+  - esbuild
+  - unrs-resolver
+  - vue-demi

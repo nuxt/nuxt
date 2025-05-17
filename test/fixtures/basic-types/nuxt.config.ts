@@ -1,39 +1,25 @@
-import { addTypeTemplate } from 'nuxt/kit'
+import { addTypeTemplate, installModule } from 'nuxt/kit'
 
 export default defineNuxtConfig({
-  experimental: {
-    typedPages: true,
-    appManifest: true,
-    typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler'
-  },
-  buildDir: process.env.NITRO_BUILD_DIR,
-  builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
-  theme: './extends/bar',
   extends: [
-    './extends/node_modules/foo'
+    './extends/node_modules/foo',
   ],
-  runtimeConfig: {
-    baseURL: '',
-    baseAPIToken: '',
-    privateConfig: 'secret_key',
-    public: {
-      ids: [1, 2, 3],
-      needsFallback: undefined,
-      testConfig: 123
-    }
-  },
-  appConfig: {
-    fromNuxtConfig: true,
-    nested: {
-      val: 1
-    }
-  },
+  theme: './extends/bar',
   modules: [
     function () {
       addTypeTemplate({
         filename: 'test.d.ts',
-        getContents: () => 'declare type Fromage = "cheese"'
-      })
+        getContents: () => 'declare type Fromage = "cheese"',
+      }, { nuxt: true, nitro: true })
+      function _test () {
+        installModule('~/modules/example', {
+          typeTest (val) {
+            // @ts-expect-error module type defines val as boolean
+            const b: string = val
+            return !!b
+          },
+        })
+      }
     },
     './modules/test',
     [
@@ -43,18 +29,67 @@ export default defineNuxtConfig({
           // @ts-expect-error module type defines val as boolean
           const b: string = val
           return !!b
-        }
-      }
+        },
+      },
     ],
     function (_options, nuxt) {
       nuxt.hook('pages:extend', (pages) => {
         pages.push({
           name: 'internal-async-parent',
-          path: '/internal-async-parent'
+          path: '/internal-async-parent',
         })
       })
-    }
+    },
   ],
+  app: {
+    head: {
+      // @ts-expect-error Promises are not allowed
+      title: Promise.resolve('Nuxt Fixture'),
+      // @ts-expect-error Functions are not allowed
+      titleTemplate: title => 'test',
+      meta: [
+        {
+          // Allows unknown property
+          property: 'og:thing',
+          content: '1234567890',
+        },
+      ],
+    },
+    pageTransition: {
+      // @ts-expect-error Functions are not allowed
+      onBeforeEnter: el => console.log(el),
+    },
+  },
+  appConfig: {
+    fromNuxtConfig: true,
+    nested: {
+      val: 1,
+    },
+  },
+  runtimeConfig: {
+    baseURL: '',
+    baseAPIToken: '',
+    privateConfig: 'secret_key',
+    public: {
+      ids: [1, 2, 3],
+      needsFallback: undefined,
+      testConfig: 123,
+    },
+  },
+  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
+  routeRules: {
+    '/param': {
+      redirect: '/param/1',
+    },
+  },
+  future: {
+    typescriptBundlerResolution: process.env.MODULE_RESOLUTION !== 'node',
+  },
+  experimental: {
+    typedPages: true,
+    appManifest: true,
+  },
+  compatibilityDate: 'latest',
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {
@@ -64,15 +99,15 @@ export default defineNuxtConfig({
             value: {
               $default: 'default',
               $schema: {
-                tsType: 'string | false'
-              }
-            }
-          }
-        }
+                tsType: 'string | false',
+              },
+            },
+          },
+        },
       })
     },
     'prepare:types' ({ tsConfig }) {
       tsConfig.include = tsConfig.include!.filter(i => i !== '../../../../**/*')
-    }
-  }
+    },
+  },
 })

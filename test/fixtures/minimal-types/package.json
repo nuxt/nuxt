@@ -6,7 +6,9 @@
     "test:types": "nuxi prepare && npx vue-tsc --noEmit"
   },
   "dependencies": {
-    "nuxt": "workspace:*",
-    "vue": "latest"
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^20.11.1 || >=22.0.0"
   }
 }

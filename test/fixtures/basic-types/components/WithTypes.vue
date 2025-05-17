@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps({
-  aProp: Number
+  aProp: Number,
 })
 defineSlots<{
   fallback: { id: string }

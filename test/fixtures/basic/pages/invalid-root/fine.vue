@@ -7,6 +7,6 @@
 
 <script setup>
 definePageMeta({
-  pageTransition: false
+  pageTransition: false,
 })
 </script>

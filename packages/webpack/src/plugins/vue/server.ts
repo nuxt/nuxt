@@ -1,6 +1,6 @@
 import type { Compilation, Compiler } from 'webpack'
-import webpack from 'webpack'
 import { extractQueryPartJS, isJS, validate } from './util'
+import { webpack } from '#builder'
 
 interface VueSSRServerPluginOptions {
   filename: string
@@ -13,7 +13,7 @@ export default class VueSSRServerPlugin {
 
   constructor (options: Partial<VueSSRServerPluginOptions> = {}) {
     this.options = Object.assign({
-      filename: null
+      filename: null,
     }, options) as VueSSRServerPluginOptions
   }
 
@@ -22,11 +22,11 @@ export default class VueSSRServerPlugin {
     compiler.hooks.make.tap('VueSSRServerPlugin', (compilation: Compilation) => {
       compilation.hooks.processAssets.tapAsync({
         name: 'VueSSRServerPlugin',
-        stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL
+        stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
       }, (assets: any, cb: any) => {
         const stats = compilation.getStats().toJson()
         const [entryName] = Object.keys(stats.entrypoints!)
-        const entryInfo = stats.entrypoints![entryName]
+        const entryInfo = stats.entrypoints![entryName!]
 
         if (!entryInfo) {
           // #5553
@@ -38,21 +38,21 @@ export default class VueSSRServerPlugin {
         if (entryAssets.length > 1) {
           throw new Error(
             'Server-side bundle should have one single entry file. ' +
-            'Avoid using CommonsChunkPlugin in the server config.'
+            'Avoid using CommonsChunkPlugin in the server config.',
           )
         }
 
         const [entry] = entryAssets
         if (!entry || typeof entry.name !== 'string') {
           throw new Error(
-            `Entry "${entryName}" not found. Did you specify the correct entry option?`
+            `Entry "${entryName}" not found. Did you specify the correct entry option?`,
           )
         }
 
         const bundle = {
           entry: entry.name,
           files: {} as Record<string, string>,
-          maps: {} as Record<string, string>
+          maps: {} as Record<string, string>,
         }
 
         stats.assets!.forEach((asset: any) => {
@@ -75,14 +75,14 @@ export default class VueSSRServerPlugin {
 
         assets[this.options.filename] = {
           source: () => src,
-          size: () => src.length
+          size: () => src.length,
         }
 
         const mjsSrc = 'export default ' + src
         assets[this.options.filename.replace('.json', '.mjs')] = {
           source: () => mjsSrc,
           map: () => null,
-          size: () => mjsSrc.length
+          size: () => mjsSrc.length,
         }
 
         cb()

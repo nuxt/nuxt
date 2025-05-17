@@ -1,5 +1,5 @@
 <script>
 export default defineNuxtComponent({
-  template: '<div>hello, Helloworld.vue here ! </div>'
+  template: '<div>hello, Helloworld.vue here ! </div>',
 })
 </script>

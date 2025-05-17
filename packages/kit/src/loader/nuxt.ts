@@ -1,7 +1,10 @@
 import { pathToFileURL } from 'node:url'
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
-import type { Nuxt } from '@nuxt/schema'
-import { importModule, tryImportModule } from '../internal/esm'
+import type { Nuxt, NuxtConfig } from '@nuxt/schema'
+import { resolve } from 'pathe'
+import { resolveModulePath } from 'exsolve'
+import { interopDefault } from 'mlly'
+import { directoryToURL, importModule, tryImportModule } from '../internal/esm'
+import { runWithNuxtContext } from '../context'
 import type { LoadNuxtConfigOptions } from './config'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
@@ -10,76 +13,32 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
 
   /** Use lazy initialization of nuxt if set to false */
   ready?: boolean
-
-  /** @deprecated Use cwd option */
-  rootDir?: LoadNuxtConfigOptions['cwd']
-
-  /** @deprecated use overrides option */
-  config?: LoadNuxtConfigOptions['overrides']
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
-  opts.cwd = opts.cwd || opts.rootDir
-  opts.overrides = opts.overrides || opts.config || {}
+  opts.cwd = resolve(opts.cwd || (opts as any).rootDir /* backwards compat */ || '.')
+  opts.overrides ||= (opts as any).config as NuxtConfig /* backwards compat */ || {}
 
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt3', 'nuxt', 'nuxt-edge']
-    .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
-    .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
-  if (!nearestNuxtPkg) {
+  const resolvedPath = ['nuxt-nightly', 'nuxt']
+    .map(pkg => resolveModulePath(pkg, { try: true, from: [directoryToURL(opts.cwd!)] }))
+    .filter((p): p is NonNullable<typeof p> => !!p)
+    .sort((a, b) => b.length - a.length)[0]
+
+  if (!resolvedPath) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
-  const pkg = await readPackageJSON(nearestNuxtPkg)
-  const majorVersion = parseInt((pkg.version || '').split('.')[0])
-
-  const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
-
-  // Nuxt 3
-  if (majorVersion === 3) {
-    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
-    const nuxt = await loadNuxt(opts)
-    return nuxt
-  }
-
-  // Nuxt 2
-  const { loadNuxt } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
-  const nuxt = await loadNuxt({
-    rootDir: opts.cwd,
-    for: opts.dev ? 'dev' : 'build',
-    configOverrides: opts.overrides,
-    ready: opts.ready,
-    envConfig: opts.dotenv // TODO: Backward format conversion
-  })
-
-  // Mock new hookable methods
-  nuxt.removeHook ||= nuxt.clearHook.bind(nuxt)
-  nuxt.removeAllHooks ||= nuxt.clearHooks.bind(nuxt)
-  nuxt.hookOnce ||= (name: string, fn: (...args: any[]) => any, ...hookArgs: any[]) => {
-    const unsub = nuxt.hook(name, (...args: any[]) => {
-      unsub()
-      return fn(...args)
-    }, ...hookArgs)
-    return unsub
-  }
-  // https://github.com/nuxt/nuxt/tree/main/packages/kit/src/module/define.ts#L111-L113
-  nuxt.hooks ||= nuxt
-
-  return nuxt as Nuxt
+  const { loadNuxt } = await import(pathToFileURL(resolvedPath).href).then(r => interopDefault(r)) as typeof import('nuxt')
+  const nuxt = await loadNuxt(opts)
+  return nuxt
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
-  const rootDir = pathToFileURL(nuxt.options.rootDir).href
+  const rootURL = directoryToURL(nuxt.options.rootDir)
 
-  // Nuxt 3
-  if (nuxt.options._majorVersion === 3) {
-    const { build } = await tryImportModule('nuxt-nightly', rootDir) || await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
-    return build(nuxt)
-  }
-
-  // Nuxt 2
-  const { build } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
-  return build(nuxt)
+  const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { url: rootURL }) || await importModule<typeof import('nuxt')>('nuxt', { url: rootURL })
+  return runWithNuxtContext(nuxt, () => build(nuxt))
 }

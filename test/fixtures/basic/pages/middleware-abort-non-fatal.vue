@@ -9,7 +9,7 @@ definePageMeta({
   middleware: [
     (to) => {
       return abortNavigation(to.query.error ? new Error(to.query.error.toString()) : undefined)
-    }
-  ]
+    },
+  ],
 })
 </script>

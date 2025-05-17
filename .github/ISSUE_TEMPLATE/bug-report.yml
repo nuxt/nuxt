@@ -1,6 +1,6 @@
 name: "\U0001F41E Bug report"
 description: Create a report to help us improve Nuxt
-labels: ["pending triage", "3.x"]
+labels: ["pending triage"]
 body:
   - type: markdown
     attributes:
@@ -9,8 +9,8 @@ body:
         👉 https://nuxt.com/docs/community/reporting-bugs
 
         Please use a template below to create a minimal reproduction
-        👉 https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz
-        👉 https://codesandbox.io/s/github/nuxt/starter/v3-codesandbox
+        👉 https://stackblitz.com/github/nuxt/starter/tree/v3
+        👉 https://codesandbox.io/s/github/nuxt/starter/tree/v3
   - type: textarea
     id: bug-env
     attributes:
@@ -36,7 +36,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: additonal
+    id: additional
     attributes:
       label: Additional context
       description: If applicable, add any other context about the problem here

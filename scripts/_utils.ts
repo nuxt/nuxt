@@ -1,12 +1,14 @@
 import { promises as fsp } from 'node:fs'
+import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'
-import { globby } from 'globby'
-import { execaSync } from 'execa'
+import { compare } from 'semver'
+import { glob } from 'tinyglobby'
+import { exec } from 'tinyexec'
 import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
 
 export interface Dep {
-  name: string,
-  range: string,
+  name: string
+  range: string
   type: string
 }
 
@@ -25,7 +27,7 @@ export async function loadPackage (dir: string) {
         const dep: Dep = { name: e[0], range: e[1] as string, type }
         delete data[type][dep.name]
         const updated = reviver(dep) || dep
-        data[updated.type] = data[updated.type] || {}
+        data[updated.type] ||= {}
         data[updated.type][updated.name] = updated.range
       }
     }
@@ -35,13 +37,13 @@ export async function loadPackage (dir: string) {
     dir,
     data,
     save,
-    updateDeps
+    updateDeps,
   }
 }
 
 export async function loadWorkspace (dir: string) {
   const workspacePkg = await loadPackage(dir)
-  const pkgDirs = (await globby(['packages/*'], { onlyDirectories: true })).sort()
+  const pkgDirs = (await glob(['packages/*', 'docs'], { onlyDirectories: true })).sort()
 
   const packages: Package[] = []
 
@@ -93,7 +95,7 @@ export async function loadWorkspace (dir: string) {
     save,
     find,
     rename,
-    setVersion
+    setVersion,
   }
 }
 
@@ -101,14 +103,53 @@ export async function determineBumpType () {
   const config = await loadChangelogConfig(process.cwd())
   const commits = await getLatestCommits()
 
-  const bumpType = determineSemverChange(commits, config)
+  return determineSemverChange(commits, config)
+}
 
-  return bumpType === 'major' ? 'minor' : bumpType
+export async function getLatestTag () {
+  const { stdout: latestTag } = await exec('git', ['describe', '--tags', '--abbrev=0'])
+  return latestTag.trim()
+}
+
+export async function getLatestReleasedTag () {
+  const latestReleasedTag = await exec('git', ['tag', '-l']).then(r => r.stdout.trim().split('\n').filter(t => /v3\.\d+\.\d+/.test(t)).sort(compare)).then(r => r.pop()!.trim())
+  return latestReleasedTag
+}
+
+export async function getPreviousReleasedCommits () {
+  const config = await loadChangelogConfig(process.cwd())
+  const latestTag = await getLatestTag()
+  const latestReleasedTag = await getLatestReleasedTag()
+  const commits = parseCommits(await getGitDiff(latestTag, latestReleasedTag), config)
+  return commits
 }
 
 export async function getLatestCommits () {
   const config = await loadChangelogConfig(process.cwd())
-  const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
+  const latestTag = await getLatestTag()
 
   return parseCommits(await getGitDiff(latestTag), config)
+}
+
+export async function getContributors () {
+  const contributors = [] as Array<{ name: string, username: string }>
+  const emails = new Set<string>()
+  const latestTag = await getLatestTag()
+  const rawCommits = await getGitDiff(latestTag)
+  for (const commit of rawCommits) {
+    if (emails.has(commit.author.email) || commit.author.name === 'renovate[bot]') { continue }
+    const { author } = await $fetch<{ author: { login: string, email: string } }>(`https://api.github.com/repos/nuxt/nuxt/commits/${commit.shortHash}`, {
+      headers: {
+        'User-Agent': 'nuxt/nuxt',
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+      },
+    })
+    if (!author) { continue }
+    if (!contributors.some(c => c.username === author.login)) {
+      contributors.push({ name: commit.author.name, username: author.login })
+    }
+    emails.add(author.email)
+  }
+  return contributors
 }

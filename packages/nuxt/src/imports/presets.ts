@@ -7,94 +7,147 @@ const commonPresets: InlinePreset[] = [
     from: 'vue-demi',
     imports: [
       'isVue2',
-      'isVue3'
-    ]
-  })
+      'isVue3',
+    ],
+  }),
 ]
 
 const granularAppPresets: InlinePreset[] = [
   {
     from: '#app/components/nuxt-link',
-    imports: ['defineNuxtLink']
+    imports: ['defineNuxtLink'],
   },
   {
-    imports: ['useNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
-    from: '#app/nuxt'
-  },
-  {
-    imports: ['requestIdleCallback', 'cancelIdleCallback'],
-    from: '#app/compat/idle-callback'
+    imports: ['useNuxtApp', 'tryUseNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
+    from: '#app/nuxt',
   },
   {
     imports: ['useAppConfig', 'updateAppConfig'],
-    from: '#app/config'
+    from: '#app/config',
   },
   {
     imports: ['defineNuxtComponent'],
-    from: '#app/composables/component'
+    from: '#app/composables/component',
   },
   {
     imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
-    from: '#app/composables/asyncData'
+    from: '#app/composables/asyncData',
   },
   {
     imports: ['useHydration'],
-    from: '#app/composables/hydrate'
+    from: '#app/composables/hydrate',
+  },
+  {
+    imports: ['callOnce'],
+    from: '#app/composables/once',
   },
   {
     imports: ['useState', 'clearNuxtState'],
-    from: '#app/composables/state'
+    from: '#app/composables/state',
   },
   {
     imports: ['clearError', 'createError', 'isNuxtError', 'showError', 'useError'],
-    from: '#app/composables/error'
+    from: '#app/composables/error',
   },
   {
     imports: ['useFetch', 'useLazyFetch'],
-    from: '#app/composables/fetch'
+    from: '#app/composables/fetch',
   },
   {
-    imports: ['useCookie'],
-    from: '#app/composables/cookie'
+    imports: ['useCookie', 'refreshCookie'],
+    from: '#app/composables/cookie',
   },
   {
-    imports: ['prerenderRoutes', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
-    from: '#app/composables/ssr'
+    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useResponseHeader', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    from: '#app/composables/ssr',
   },
   {
     imports: ['onNuxtReady'],
-    from: '#app/composables/ready'
+    from: '#app/composables/ready',
   },
   {
     imports: ['preloadComponents', 'prefetchComponents', 'preloadRouteComponents'],
-    from: '#app/composables/preload'
+    from: '#app/composables/preload',
   },
   {
     imports: ['abortNavigation', 'addRouteMiddleware', 'defineNuxtRouteMiddleware', 'setPageLayout', 'navigateTo', 'useRoute', 'useRouter'],
-    from: '#app/composables/router'
+    from: '#app/composables/router',
   },
   {
     imports: ['isPrerendered', 'loadPayload', 'preloadPayload', 'definePayloadReducer', 'definePayloadReviver'],
-    from: '#app/composables/payload'
+    from: '#app/composables/payload',
+  },
+  {
+    imports: ['useLoadingIndicator'],
+    from: '#app/composables/loading-indicator',
   },
   {
     imports: ['getAppManifest', 'getRouteRules'],
-    from: '#app/composables/manifest'
+    from: '#app/composables/manifest',
   },
   {
     imports: ['reloadNuxtApp'],
-    from: '#app/composables/chunk'
+    from: '#app/composables/chunk',
   },
   {
     imports: ['useRequestURL'],
-    from: '#app/composables/url'
-  }
+    from: '#app/composables/url',
+  },
+  {
+    imports: ['usePreviewMode'],
+    from: '#app/composables/preview',
+  },
+  {
+    imports: ['useRouteAnnouncer'],
+    from: '#app/composables/route-announcer',
+  },
+  {
+    imports: ['useRuntimeHook'],
+    from: '#app/composables/runtime-hook',
+  },
+  {
+    imports: ['useHead', 'useHeadSafe', 'useServerHeadSafe', 'useServerHead', 'useSeoMeta', 'useServerSeoMeta', 'injectHead'],
+    from: '#app/composables/head',
+  },
 ]
+
+export const scriptsStubsPreset = {
+  imports: [
+    'useScriptTriggerConsent',
+    'useScriptEventPage',
+    'useScriptTriggerElement',
+    'useScript',
+    'useScriptGoogleAnalytics',
+    'useScriptPlausibleAnalytics',
+    'useScriptCrisp',
+    'useScriptClarity',
+    'useScriptCloudflareWebAnalytics',
+    'useScriptFathomAnalytics',
+    'useScriptMatomoAnalytics',
+    'useScriptGoogleTagManager',
+    'useScriptGoogleAdsense',
+    'useScriptSegment',
+    'useScriptMetaPixel',
+    'useScriptXPixel',
+    'useScriptIntercom',
+    'useScriptHotjar',
+    'useScriptStripe',
+    'useScriptLemonSqueezy',
+    'useScriptVimeoPlayer',
+    'useScriptYouTubePlayer',
+    'useScriptGoogleMaps',
+    'useScriptNpm',
+    'useScriptUmamiAnalytics',
+    'useScriptSnapchatPixel',
+  ],
+  priority: -1,
+  from: '#app/composables/script-stubs',
+} satisfies InlinePreset
 
 // This is a separate preset as we'll swap these out for import from `vue-router` itself in `pages` module
 const routerPreset = defineUnimportPreset({
   imports: ['onBeforeRouteLeave', 'onBeforeRouteUpdate'],
-  from: '#app/composables/router'
+  from: '#app/composables/router',
 })
 
 // vue
@@ -165,9 +218,6 @@ const vuePreset = defineUnimportPreset({
     'hasInjectionContext',
     'nextTick',
     'provide',
-    'defineModel',
-    'defineOptions',
-    'defineSlots',
     'mergeModels',
     'toValue',
     'useModel',
@@ -175,8 +225,12 @@ const vuePreset = defineUnimportPreset({
     'useCssModule',
     'useCssVars',
     'useSlots',
-    'useTransitionState'
-  ]
+    'useTransitionState',
+    'useId',
+    'useTemplateRef',
+    'useShadowRoot',
+    'useCssVars',
+  ],
 })
 
 const vueTypesPreset = defineUnimportPreset({
@@ -186,6 +240,8 @@ const vueTypesPreset = defineUnimportPreset({
     'Component',
     'ComponentPublicInstance',
     'ComputedRef',
+    'DirectiveBinding',
+    'ExtractDefaultPropTypes',
     'ExtractPropTypes',
     'ExtractPublicPropTypes',
     'InjectionKey',
@@ -193,14 +249,26 @@ const vueTypesPreset = defineUnimportPreset({
     'Ref',
     'MaybeRef',
     'MaybeRefOrGetter',
-    'VNode'
-  ]
+    'VNode',
+    'WritableComputedRef',
+  ],
 })
+
+export const appCompatPresets: InlinePreset[] = [
+  {
+    imports: ['requestIdleCallback', 'cancelIdleCallback'],
+    from: '#app/compat/idle-callback',
+  },
+  {
+    imports: ['setInterval'],
+    from: '#app/compat/interval',
+  },
+]
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
   ...granularAppPresets,
   routerPreset,
   vuePreset,
-  vueTypesPreset
+  vueTypesPreset,
 ]

@@ -1,13 +1,18 @@
 import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
-import { isIgnored, logger, useNuxt } from '@nuxt/kit'
+import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
-import { resolveComponentNameSegments } from '../core/utils'
+import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
+import { logger } from '../utils'
 
+const ISLAND_RE = /\.island(?:\.global)?$/
+const GLOBAL_RE = /\.global(?:\.island)?$/
+const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
+const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
@@ -26,25 +31,28 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   const scannedPaths: string[] = []
 
   for (const dir of dirs) {
+    if (dir.enabled === false) {
+      continue
+    }
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
-    const files = (await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
+    const files = (await glob(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
 
     // Check if the directory exists (globby will otherwise read it case insensitively on MacOS)
     if (files.length) {
-      const siblings = await readdir(dirname(dir.path)).catch(() => [] as string[])
-
+      const siblings = new Set(await readdir(dirname(dir.path)).catch(() => [] as string[]))
       const directory = basename(dir.path)
-      if (!siblings.includes(directory)) {
+      if (!siblings.has(directory)) {
         const directoryLowerCase = directory.toLowerCase()
-        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directoryLowerCase)
-        if (caseCorrected) {
-          const nuxt = useNuxt()
-          const original = relative(nuxt.options.srcDir, dir.path)
-          const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), caseCorrected))
-          logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
-          continue
+        for (const sibling of siblings) {
+          if (sibling.toLowerCase() === directoryLowerCase) {
+            const nuxt = useNuxt()
+            const original = relative(nuxt.options.srcDir, dir.path)
+            const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), sibling))
+            logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
+            break
+          }
         }
       }
     }
@@ -69,7 +77,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       const prefixParts = ([] as string[]).concat(
         dir.prefix ? splitByCase(dir.prefix) : [],
-        (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : []
+        (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : [],
       )
 
       /**
@@ -80,18 +88,22 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       let fileName = basename(filePath, extname(filePath))
 
-      const island = /\.(island)(\.global)?$/.test(fileName) || dir.island
-      const global = /\.(global)(\.island)?$/.test(fileName) || dir.global
-      const mode = island ? 'server' : (fileName.match(/(?<=\.)(client|server)(\.global|\.island)*$/)?.[1] || 'all') as 'client' | 'server' | 'all'
-      fileName = fileName.replace(/(\.(client|server))?(\.global|\.island)*$/, '')
+      const island = ISLAND_RE.test(fileName) || dir.island
+      const global = GLOBAL_RE.test(fileName) || dir.global
+      const mode = island ? 'server' : (fileName.match(COMPONENT_MODE_RE)?.[1] || 'all') as 'client' | 'server' | 'all'
+      fileName = fileName.replace(MODE_REPLACEMENT_RE, '')
 
       if (fileName.toLowerCase() === 'index') {
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
       }
 
       const suffix = (mode !== 'all' ? `-${mode}` : '')
-      const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
+      const componentNameSegments = resolveComponentNameSegments(fileName.replace(QUOTE_RE, ''), prefixParts)
       const pascalName = pascalCase(componentNameSegments)
+
+      if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
+        logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+      }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
         warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
@@ -118,7 +130,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         shortPath,
         export: 'default',
         // by default, give priority to scanned components
-        priority: dir.priority ?? 1
+        priority: dir.priority ?? 1,
+        // @ts-expect-error untyped property
+        _scanned: true,
       }
 
       if (typeof dir.extendComponent === 'function') {
@@ -131,7 +145,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
-      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      const validModes = new Set(['all', component.mode])
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && validModes.has(c.mode))
       // Ignore component if component is already defined (with same mode)
       if (existingComponent) {
         const existingPriority = existingComponent.priority ?? 0
@@ -160,6 +175,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
   logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
     `\n - ${filePath}` +
-    `\n - ${duplicatePath}`
+    `\n - ${duplicatePath}`,
   )
 }
+
+const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

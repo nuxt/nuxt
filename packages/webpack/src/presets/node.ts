@@ -19,17 +19,17 @@ export function node (ctx: WebpackConfigContext) {
       const: true,
       destructuring: true,
       dynamicImport: true,
-      forOf: true
+      forOf: true,
     },
     library: {
-      type: 'module'
-    }
+      type: 'module',
+    },
   }
 
   ctx.config.performance = {
     ...ctx.config.performance,
     hints: false,
-    maxEntrypointSize: Infinity,
-    maxAssetSize: Infinity
+    maxEntrypointSize: Number.POSITIVE_INFINITY,
+    maxAssetSize: Number.POSITIVE_INFINITY,
   }
 }

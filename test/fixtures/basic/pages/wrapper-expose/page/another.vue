@@ -18,6 +18,6 @@ function hello () {
 }
 
 defineExpose({
-  hello
+  hello,
 })
 </script>

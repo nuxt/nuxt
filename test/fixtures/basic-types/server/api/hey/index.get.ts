@@ -1,4 +1,4 @@
 export default defineEventHandler(() => ({
   foo: 'bar',
-  baz: 'qux'
+  baz: 'qux',
 }))

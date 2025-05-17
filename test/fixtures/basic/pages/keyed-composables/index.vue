@@ -34,7 +34,7 @@ const useLocalFetch = () => useFetch('/api/counter', {
       console.error('running client-side transform')
     }
     return data.count
-  }
+  },
 })
 const { data: useFetchTest1 } = await useLocalFetch()
 const { data: useFetchTest2 } = await useLocalFetch()

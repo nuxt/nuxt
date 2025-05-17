@@ -1,16 +1,25 @@
-import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
+import { defineResolvers } from '../utils/definition'
 import type { AppHeadMetaObject } from '../types/head'
+import type { NuxtAppConfig } from '../types/config'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Vue.js config
    */
   vue: {
+    /** @type {typeof import('@vue/compiler-sfc').AssetURLTagConfig} */
+    transformAssetUrls: {
+      video: ['src', 'poster'],
+      source: ['src'],
+      img: ['src'],
+      image: ['xlink:href', 'href'],
+      use: ['xlink:href', 'href'],
+    },
     /**
      * Options for the Vue compiler that will be passed at build time.
-     * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
+     * @see [Vue documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
     compilerOptions: {},
@@ -19,22 +28,32 @@ export default defineUntypedSchema({
      * Include Vue compiler in runtime bundle.
      */
     runtimeCompiler: {
-      $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') {
+          return val
+        }
+        // @ts-expect-error TODO: formally deprecate in v4
+        const legacyProperty = await get('experimental.runtimeVueCompiler') as unknown
+        if (typeof legacyProperty === 'boolean') {
+          return legacyProperty
+        }
+
+        return false
+      },
     },
 
     /**
-     * Vue Experimental: Enable reactive destructure for `defineProps`
-     * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
+     * Enable reactive destructure for `defineProps`
      * @type {boolean}
      */
-    propsDestructure: false,
+    propsDestructure: true,
 
     /**
-     * Vue Experimental: Enable macro `defineModel`
-     * @see [Vue RFC#503](https://github.com/vuejs/rfcs/discussions/503)
-     * @type {boolean}
+     * It is possible to pass configure the Vue app globally. Only serializable options
+     * may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
+     * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
      */
-    defineModel: false
+    config: {},
   },
 
   /**
@@ -44,23 +63,53 @@ export default defineUntypedSchema({
     /**
      * The base path of your Nuxt application.
      *
-     * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
+     * For example:
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     baseURL: '/prefix/'
+     *   }
+     * })
+     * ```
+     *
+     * This can also be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
      * @example
      * ```bash
      * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
      * ```
      */
     baseURL: {
-      $resolve: val => val || process.env.NUXT_APP_BASE_URL || '/'
+      $resolve: (val) => {
+        if (typeof val === 'string') {
+          return val
+        }
+        return process.env.NUXT_APP_BASE_URL || '/'
+      },
     },
 
     /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
     buildAssetsDir: {
-      $resolve: val => val || process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+      $resolve: (val) => {
+        if (typeof val === 'string') {
+          return val
+        }
+        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+      },
     },
 
     /**
      * An absolute URL to serve the public folder from (production-only).
+     *
+     * For example:
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     cdnURL: 'https://mycdn.org/'
+     *   }
+     * })
+     * ```
      *
      * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
      * @example
@@ -69,7 +118,12 @@ export default defineUntypedSchema({
      * ```
      */
     cdnURL: {
-      $resolve: async (val, get) => (await get('dev')) ? '' : (process.env.NUXT_APP_CDN_URL ?? val) || ''
+      $resolve: async (val, get) => {
+        if (await get('dev')) {
+          return ''
+        }
+        return process.env.NUXT_APP_CDN_URL || (typeof val === 'string' ? val : '')
+      },
     },
 
     /**
@@ -92,12 +146,12 @@ export default defineUntypedSchema({
      *     ],
      *     // please note that this is an area that is likely to change
      *     style: [
-     *       // <style type="text/css">:root { color: red }</style>
-     *       { children: ':root { color: red }', type: 'text/css' }
+     *       // <style>:root { color: red }</style>
+     *       { textContent: ':root { color: red }' }
      *     ],
      *     noscript: [
      *       // <noscript>JavaScript is required</noscript>
-     *       { children: 'JavaScript is required' }
+     *       { textContent: 'JavaScript is required' }
      *     ]
      *   }
      * }
@@ -105,20 +159,26 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['head']}
      */
     head: {
-      $resolve: async (val, get) => {
-        const resolved: Required<AppHeadMetaObject> = defu(val, await get('meta'), {
+      $resolve: async (_val, get) => {
+        // @ts-expect-error TODO: remove in Nuxt v4
+        const legacyMetaValues = await get('meta') as Record<string, unknown>
+        const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}
+
+        type NormalizedMetaObject = Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>
+
+        const resolved: NuxtAppConfig['head'] & NormalizedMetaObject = defu(val, legacyMetaValues, {
           meta: [],
           link: [],
           style: [],
           script: [],
-          noscript: []
-        })
+          noscript: [],
+        } satisfies NormalizedMetaObject)
 
         // provides default charset and viewport if not set
-        if (!resolved.meta.find(m => m.charset)?.charset) {
+        if (!resolved.meta.find(m => m?.charset)?.charset) {
           resolved.meta.unshift({ charset: resolved.charset || 'utf-8' })
         }
-        if (!resolved.meta.find(m => m.name === 'viewport')?.content) {
+        if (!resolved.meta.find(m => m?.name === 'viewport')?.content) {
           resolved.meta.unshift({ name: 'viewport', content: resolved.viewport || 'width=device-width, initial-scale=1' })
         }
 
@@ -129,7 +189,7 @@ export default defineUntypedSchema({
         resolved.noscript = resolved.noscript.filter(Boolean)
 
         return resolved
-      }
+      },
     },
 
     /**
@@ -137,7 +197,7 @@ export default defineUntypedSchema({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     * @see https://vuejs.org/api/built-in-components.html#transition
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
      * @type {typeof import('../src/types/config').NuxtAppConfig['layoutTransition']}
      */
     layoutTransition: false,
@@ -147,17 +207,37 @@ export default defineUntypedSchema({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     * @see https://vuejs.org/api/built-in-components.html#transition
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
      * @type {typeof import('../src/types/config').NuxtAppConfig['pageTransition']}
      */
     pageTransition: false,
+
+    /**
+     * Default values for view transitions.
+     *
+     * This only has an effect when **experimental** support for View Transitions is
+     * [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental).
+     *
+     * This can be overridden with `definePageMeta` on an individual page.
+     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental)
+     * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
+     */
+    viewTransition: {
+      $resolve: async (val, get) => {
+        if (val === 'always' || typeof val === 'boolean') {
+          return val
+        }
+
+        return await get('experimental').then(e => e.viewTransition) ?? false
+      },
+    },
 
     /**
      * Default values for KeepAlive configuration between pages.
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     * @see https://vuejs.org/api/built-in-components.html#keepalive
+     * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components.html#keepalive)
      * @type {typeof import('../src/types/config').NuxtAppConfig['keepalive']}
      */
     keepalive: false,
@@ -165,25 +245,87 @@ export default defineUntypedSchema({
     /**
      * Customize Nuxt root element id.
      * @type {string | false}
+     * @deprecated Prefer `rootAttrs.id` instead
      */
     rootId: {
-      $resolve: val => val === false ? false : val || '__nuxt'
+      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : '__nuxt'),
     },
 
     /**
      * Customize Nuxt root element tag.
      */
     rootTag: {
-      $resolve: val => val || 'div'
-    }
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
+    },
+
+    /**
+     * Customize Nuxt root element id.
+     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
+     */
+    rootAttrs: {
+      $resolve: async (val, get) => {
+        const rootId = await get('app.rootId')
+        return {
+          id: rootId === false ? undefined : (rootId || '__nuxt'),
+          ...typeof val === 'object' ? val : {},
+        }
+      },
+    },
+
+    /**
+     * Customize Nuxt Teleport element tag.
+     */
+    teleportTag: {
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
+    },
+
+    /**
+     * Customize Nuxt Teleport element id.
+     * @type {string | false}
+     * @deprecated Prefer `teleportAttrs.id` instead
+     */
+    teleportId: {
+      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : 'teleports'),
+    },
+
+    /**
+     * Customize Nuxt Teleport element attributes.
+     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
+     */
+    teleportAttrs: {
+      $resolve: async (val, get) => {
+        const teleportId = await get('app.teleportId')
+        return {
+          id: teleportId === false ? undefined : (teleportId || 'teleports'),
+          ...typeof val === 'object' ? val : {},
+        }
+      },
+    },
+
+    /**
+     * Customize Nuxt SpaLoader element tag.
+     */
+    spaLoaderTag: {
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
+    },
+
+    /**
+     * Customize Nuxt Nuxt SpaLoader element attributes.
+     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
+     */
+    spaLoaderAttrs: {
+      id: '__nuxt-loader',
+    },
   },
 
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page
    * rendered with `ssr: false`.
-   * - If it is unset, it will use `~/app/spa-loading-template.html` if it exists.
+   *
+   * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists.
    * - If it is false, no SPA loading indicator will be loaded.
-   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file or a default Nuxt image will be used.
+   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a
+   *   default Nuxt image will be used.
    *
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    * @example ~/app/spa-loading-template.html
@@ -211,7 +353,7 @@ export default defineUntypedSchema({
    *   animation: loader 400ms linear infinite;
    * }
    *
-   * \@-webkit-keyframes loader {
+   * @-webkit-keyframes loader {
    *   0% {
    *     -webkit-transform: translate(-50%, -50%) rotate(0deg);
    *   }
@@ -219,7 +361,7 @@ export default defineUntypedSchema({
    *     -webkit-transform: translate(-50%, -50%) rotate(360deg);
    *   }
    * }
-   * \@keyframes loader {
+   * @keyframes loader {
    *   0% {
    *     transform: translate(-50%, -50%) rotate(0deg);
    *   }
@@ -229,10 +371,18 @@ export default defineUntypedSchema({
    * }
    * </style>
    * ```
-   * @type {string | boolean}
+   * @type {string | boolean | undefined | null}
    */
   spaLoadingTemplate: {
-    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : val ?? null
+    $resolve: async (val, get) => {
+      if (typeof val === 'string') {
+        return resolve(await get('srcDir'), val)
+      }
+      if (typeof val === 'boolean') {
+        return val
+      }
+      return null
+    },
   },
 
   /**
@@ -246,7 +396,7 @@ export default defineUntypedSchema({
    * @note Plugins are also auto-registered from the `~/plugins` directory
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
-   * @see https://nuxt.com/docs/guide/directory-structure/plugins
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/guide/directory-structure/plugins)
    * @example
    * ```js
    * plugins: [
@@ -275,14 +425,76 @@ export default defineUntypedSchema({
    *   // Load a Node.js module directly (here it's a Sass file).
    *   'bulma',
    *   // CSS file in the project
-   *   '@/assets/css/main.css',
+   *   '~/assets/css/main.css',
    *   // SCSS file in the project
-   *   '@/assets/css/main.scss'
+   *   '~/assets/css/main.scss'
    * ]
    * ```
    * @type {string[]}
    */
   css: {
-    $resolve: val => (val ?? []).map((c: any) => c.src || c)
-  }
+    $resolve: (val) => {
+      if (!Array.isArray(val)) {
+        return []
+      }
+      const css: string[] = []
+      for (const item of val) {
+        if (typeof item === 'string') {
+          css.push(item)
+        } else if (item && 'src' in item) {
+          // TODO: remove in Nuxt v4
+          css.push(item.src)
+        }
+      }
+      return css
+    },
+  },
+
+  /**
+   * An object that allows us to configure the `unhead` nuxt module.
+   */
+  unhead: {
+    /***
+     * Enable the legacy compatibility mode for `unhead` module. This applies the following changes:
+     * - Disables Capo.js sorting
+     * - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body`
+     * - Adds the `PromisesPlugin`: supports promises as input
+     *
+     * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   legacy: true
+     * })
+     * ```
+     * @type {boolean}
+     */
+    legacy: false,
+    /**
+     * An object that will be passed to `renderSSRHead` to customize the output.
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   renderSSRHeadOptions: {
+     *    omitLineBreaks: true
+     *   }
+     * })
+     * ```
+     * @type {typeof import('@unhead/vue/types').RenderSSRHeadOptions}
+     */
+    renderSSRHeadOptions: {
+      $resolve: async (val, get) => {
+        const isV4 = (await get('future')).compatibilityVersion === 4
+
+        return {
+          ...typeof val === 'object' ? val : {},
+          omitLineBreaks: isV4,
+        }
+      },
+    },
+  },
 })

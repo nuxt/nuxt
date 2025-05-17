@@ -1,19 +1,47 @@
 import { isChangingPage } from '../components/utils'
 import { useRouter } from '../composables/router'
 import { defineNuxtPlugin } from '../nuxt'
+// @ts-expect-error virtual file
+import { appViewTransition as defaultViewTransition } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (!document.startViewTransition) { return }
+  if (!document.startViewTransition) {
+    return
+  }
 
+  let transition: undefined | ViewTransition
+  let hasUAVisualTransition = false
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)
 
+  const resetTransitionState = () => {
+    transition = undefined
+    hasUAVisualTransition = false
+    abortTransition = undefined
+    finishTransition = undefined
+  }
+
+  window.addEventListener('popstate', (event) => {
+    hasUAVisualTransition = event.hasUAVisualTransition
+    if (hasUAVisualTransition) { transition?.skipTransition() }
+  })
+
   const router = useRouter()
 
-  router.beforeResolve((to, from) => {
-    if (!isChangingPage(to, from)) {
+  router.beforeResolve(async (to, from) => {
+    const viewTransitionMode = to.meta.viewTransition ?? defaultViewTransition
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
+
+    if (
+      viewTransitionMode === false ||
+      prefersNoTransition ||
+      hasUAVisualTransition ||
+      !isChangingPage(to, from)
+    ) {
       return
     }
+
     const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
       abortTransition = reject
@@ -22,36 +50,25 @@ export default defineNuxtPlugin((nuxtApp) => {
     let changeRoute: () => void
     const ready = new Promise<void>(resolve => (changeRoute = resolve))
 
-    const transition = document.startViewTransition!(() => {
+    transition = document.startViewTransition!(() => {
       changeRoute()
       return promise
     })
 
-    transition.finished.then(() => {
-      abortTransition = undefined
-      finishTransition = undefined
-    })
+    transition.finished.then(resetTransitionState)
+
+    await nuxtApp.callHook('page:view-transition:start', transition)
 
     return ready
   })
 
   nuxtApp.hook('vue:error', () => {
     abortTransition?.()
-    abortTransition = undefined
+    resetTransitionState()
   })
 
   nuxtApp.hook('page:finish', () => {
     finishTransition?.()
-    finishTransition = undefined
+    resetTransitionState()
   })
 })
-
-declare global {
-  interface Document {
-    startViewTransition?: (callback: () => Promise<void> | void) => {
-      finished: Promise<void>
-      updateCallbackDone: Promise<void>
-      ready: Promise<void>
-    }
-  }
-}

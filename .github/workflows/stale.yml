@@ -1,0 +1,25 @@
+name: chore
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 1 * * *' # run every day
+
+permissions:
+  issues: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.repository == 'nuxt/nuxt'
+    steps:
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9.1.0
+        with:
+          days-before-stale: -1 # Issues and PR will never be flagged stale automatically.
+          stale-issue-label: 'needs reproduction' # Label that flags an issue as stale.
+          only-labels: 'needs reproduction' # Only process these issues
+          days-before-issue-close: 7
+          ignore-updates: true
+          remove-stale-when-updated: false
+          close-issue-message: This issue was closed because it was open for 7 days without a reproduction.
+          close-issue-label: closed-by-bot
+          operations-per-run: 300 #default 30

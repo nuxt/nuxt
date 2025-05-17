@@ -1,7 +1,7 @@
 import { defu } from 'defu'
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   webpack: {
     /**
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
@@ -17,8 +17,9 @@ export default defineUntypedSchema({
      */
     analyze: {
       $resolve: async (val, get) => {
-        return defu(val, await get('build.analyze'))
-      }
+        const value = typeof val === 'boolean' ? { enabled: val } : (val && typeof val === 'object' ? val : {})
+        return defu(value, await get('build.analyze') as { enabled?: boolean } | Record<string, unknown>)
+      },
     },
 
     /**
@@ -81,7 +82,7 @@ export default defineUntypedSchema({
      * Enables CSS source map support (defaults to `true` in development).
      */
     cssSourceMap: {
-      $resolve: async (val, get) => val ?? await get('dev')
+      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
     },
 
     /**
@@ -94,7 +95,7 @@ export default defineUntypedSchema({
     /**
      * Customize bundle filenames.
      *
-     * To understand a bit more about the use of manifests, take a look at [this webpack documentation](https://webpack.js.org/guides/code-splitting/).
+     * To understand a bit more about the use of manifests, take a look at [webpack documentation](https://webpack.js.org/guides/code-splitting/).
      * @note Be careful when using non-hashed based filenames in production
      * as most browsers will cache the asset and not detect the changes on first load.
      *
@@ -129,7 +130,7 @@ export default defineUntypedSchema({
       css: ({ isDev }: { isDev: boolean }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
       img: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
       font: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
-      video: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
+      video: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]',
     },
 
     /**
@@ -137,57 +138,62 @@ export default defineUntypedSchema({
      */
     loaders: {
       $resolve: async (val, get) => {
+        const loaders: Record<string, any> = val && typeof val === 'object' ? val : {}
         const styleLoaders = [
           'css', 'cssModules', 'less',
-          'sass', 'scss', 'stylus', 'vueStyle'
+          'sass', 'scss', 'stylus', 'vueStyle',
         ]
         for (const name of styleLoaders) {
-          const loader = val[name]
+          const loader = loaders[name]
           if (loader && loader.sourceMap === undefined) {
-            loader.sourceMap = Boolean(await get('build.cssSourceMap'))
+            loader.sourceMap = Boolean(
+              // @ts-expect-error TODO: remove legacay configuration
+              await get('build.cssSourceMap'),
+            )
           }
         }
-        return val
+        return loaders
       },
 
       /**
-       * See https://github.com/esbuild-kit/esbuild-loader
+       * @see [esbuild loader](https://github.com/esbuild-kit/esbuild-loader)
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
-      esbuild: {},
+      esbuild: {
+        $resolve: async (val, get) => {
+          return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
+        },
+      },
 
       /**
-       * See: https://github.com/webpack-contrib/file-loader#options
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
        * @default
        * ```ts
        * { esModule: false }
        * ```
        */
-      file: { esModule: false },
+      file: { esModule: false, limit: 1000 },
 
       /**
-       * See: https://github.com/webpack-contrib/file-loader#options
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
        * @default
        * ```ts
-       * { esModule: false, limit: 1000  }
+       * { esModule: false }
        * ```
        */
       fontUrl: { esModule: false, limit: 1000 },
 
       /**
-       * See: https://github.com/webpack-contrib/file-loader#options
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
+       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
        * @default
        * ```ts
-       * { esModule: false, limit: 1000  }
+       * { esModule: false }
        * ```
        */
       imgUrl: { esModule: false, limit: 1000 },
 
       /**
-       * See: https://pugjs.org/api/reference.html#options
+       * @see [`pug` options](https://pugjs.org/api/reference.html#options)
        * @type {typeof import('pug')['Options']}
        */
       pugPlain: {},
@@ -198,43 +204,54 @@ export default defineUntypedSchema({
        */
       vue: {
         transformAssetUrls: {
-          video: 'src',
-          source: 'src',
-          object: 'src',
-          embed: 'src'
+          $resolve: async (val, get) => (val ?? (await get('vue.transformAssetUrls'))),
         },
-        compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
-        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
-        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) }
-      },
-
-      css: {
-        importLoaders: 0,
-        url: {
-          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
+        compilerOptions: {
+          $resolve: async (val, get) => (val ?? (await get('vue.compilerOptions'))),
         },
-        esModule: false
-      },
-
-      cssModules: {
-        importLoaders: 0,
-        url: {
-          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
+        propsDestructure: {
+          $resolve: async (val, get) => Boolean(val ?? await get('vue.propsDestructure')),
         },
-        esModule: false,
-        modules: {
-          localIdentName: '[local]_[hash:base64:5]'
-        }
       },
 
       /**
-       * See: https://github.com/webpack-contrib/less-loader#options
+       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       */
+      css: {
+        importLoaders: 0,
+        /**
+         * @type {boolean | { filter: (url: string, resourcePath: string) => boolean }}
+         */
+        url: {
+          filter: (url: string, _resourcePath: string) => url[0] !== '/',
+        },
+        esModule: false,
+      },
+
+      /**
+       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       */
+      cssModules: {
+        importLoaders: 0,
+        /**
+         * @type {boolean | { filter: (url: string, resourcePath: string) => boolean }}
+         */
+        url: {
+          filter: (url: string, _resourcePath: string) => url[0] !== '/',
+        },
+        esModule: false,
+        modules: {
+          localIdentName: '[local]_[hash:base64:5]',
+        },
+      },
+
+      /**
+       * @see [`less-loader` Options](https://github.com/webpack-contrib/less-loader#options)
        */
       less: {},
 
       /**
-       * See: https://github.com/webpack-contrib/sass-loader#options
-       * @type {typeof import('sass-loader')['Options']}
+       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
        * @default
        * ```ts
        * {
@@ -246,22 +263,21 @@ export default defineUntypedSchema({
        */
       sass: {
         sassOptions: {
-          indentedSyntax: true
-        }
+          indentedSyntax: true,
+        },
       },
 
       /**
-       * See: https://github.com/webpack-contrib/sass-loader#options
-       * @type {typeof import('sass-loader')['Options']}
+       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
        */
       scss: {},
 
       /**
-       * See: https://github.com/webpack-contrib/stylus-loader#options
+       * @see [`stylus-loader` Options](https://github.com/webpack-contrib/stylus-loader#options)
        */
       stylus: {},
 
-      vueStyle: {}
+      vueStyle: {},
     },
 
     /**
@@ -290,10 +306,17 @@ export default defineUntypedSchema({
      *
      * Defaults to true when `extractCSS` is enabled.
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
-     * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
+     * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<{}>}
      */
     optimizeCSS: {
-      $resolve: async (val, get) => val ?? (await get('build.extractCSS') ? {} : false)
+      $resolve: async (val, get) => {
+        if (val === false || (val && typeof val === 'object')) {
+          return val
+        }
+        // @ts-expect-error TODO: remove legacy configuration
+        const extractCSS = await get('build.extractCSS')
+        return extractCSS ? {} : false
+      },
     },
 
     /**
@@ -303,30 +326,29 @@ export default defineUntypedSchema({
     optimization: {
       runtimeChunk: 'single',
       /** Set minimize to `false` to disable all minimizers. (It is disabled in development by default). */
-      minimize: { $resolve: async (val, get) => val ?? !(await get('dev')) },
+      minimize: {
+        $resolve: async (val, get) => typeof val === 'boolean' ? val : !(await get('dev')),
+      },
       /** You can set minimizer to a customized array of plugins. */
       minimizer: undefined,
       splitChunks: {
         chunks: 'all',
         automaticNameDelimiter: '/',
-        cacheGroups: {}
-      }
+        cacheGroups: {},
+      },
     },
 
     /**
      * Customize PostCSS Loader.
-     * Same options as https://github.com/webpack-contrib/postcss-loader#options
-     * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions, sourceMap?: boolean, implementation?: any }}
+     * same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
+     * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options } }, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {
       postcssOptions: {
-        config: {
-          $resolve: async (val, get) => val ?? (await get('postcss.config'))
-        },
         plugins: {
-          $resolve: async (val, get) => val ?? (await get('postcss.plugins'))
-        }
-      }
+          $resolve: async (val, get) => val && typeof val === 'object' ? val : (await get('postcss.plugins')),
+        },
+      },
     },
 
     /**
@@ -334,7 +356,7 @@ export default defineUntypedSchema({
      * @type {typeof import('webpack-dev-middleware').Options<typeof import('http').IncomingMessage, typeof import('http').ServerResponse>}
      */
     devMiddleware: {
-      stats: 'none'
+      stats: 'none',
     },
 
     /**
@@ -358,6 +380,6 @@ export default defineUntypedSchema({
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
      * @type {false | typeof import('webpack').Configuration['experiments']}
      */
-    experiments: {}
-  }
+    experiments: {},
+  },
 })

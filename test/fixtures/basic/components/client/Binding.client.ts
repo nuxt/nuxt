@@ -3,9 +3,9 @@ export default defineComponent({
   methods: {
     getMessage () {
       return 'Hello world'
-    }
+    },
   },
   render () {
     return h('div', {}, this.getMessage())
-  }
+  },
 })

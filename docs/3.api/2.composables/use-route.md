@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::callout
+::note
 Within the template of a Vue component, you can access the route using `$route`.
 ::
 
@@ -38,10 +38,15 @@ Apart from dynamic parameters and query parameters, `useRoute()` also provides t
 
 - `fullPath`: encoded URL associated with the current route that contains path, query and hash
 - `hash`: decoded hash section of the URL that starts with a #
+- `query`: access route query parameters
 - `matched`: array of normalized matched routes with current route location
 - `meta`: custom data attached to the record
 - `name`: unique name for the route record
 - `path`: encoded pathname section of the URL
 - `redirectedFrom`: route location that was attempted to access before ending up on the current route location
 
-:read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/RouteLocationNormalizedLoaded.html"}
+::note
+Browsers don't send [URL fragments](https://url.spec.whatwg.org/#concept-url-fragment) (for example `#foo`) when making requests. So using `route.fullPath` in your template can trigger hydration issues because this will include the fragment on client but not the server.
+::
+
+:read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/#RouteLocationNormalizedLoaded"}

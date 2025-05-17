@@ -1,20 +1,30 @@
 {
+  // https://www.totaltypescript.com/tsconfig-cheat-sheet
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
+    /* Base options: */
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "strict": true,
-    "noImplicitAny": true,
+    "target": "es2022",
     "allowJs": true,
-    "noEmit": true,
-    "noUnusedLocals": true,
     "resolveJsonModule": true,
-    "types": [
-      "node"
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    /* If NOT transpiling with TypeScript: */
+    "module": "preserve",
+    "noEmit": true,
+    /* If your code runs in the DOM: */
+    "lib": [
+      "es2022",
+      "webworker",
+      "dom",
+      "dom.iterable"
     ],
     "paths": {
       "#app": [
@@ -23,17 +33,8 @@
       "#app/*": [
         "./packages/nuxt/src/app/*"
       ],
-      "#internal/nitro": [
-        "./node_modules/nitropack/dist/runtime"
-      ],
-      "#internal/nitro/app": [
-        "./node_modules/nitropack/dist/runtime/app"
-      ],
-      "#internal/nitro/utils": [
-        "./node_modules/nitropack/dist/runtime/utils"
-      ],
-      "#vue-router": [
-        "./node_modules/vue-router"
+      "#unhead/composables": [
+        "./packages/nuxt/src/head/runtime/composables/v4"
       ]
     }
   },
@@ -44,7 +45,8 @@
     "**/examples/**",
     "**/docs/**",
     "**/playground/**",
+    "**/test/nuxt/**",
     "**/test/fixtures/**",
-    "test/nuxt/**"
+    "**/test/fixtures-temp/**"
   ]
 }

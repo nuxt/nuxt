@@ -19,10 +19,10 @@ await prefetchComponents('MyGlobalComponent')
 await prefetchComponents(['MyGlobalComponent1', 'MyGlobalComponent2'])
 ```
 
-::callout
+::note
 Current implementation behaves exactly the same as [`preloadComponents`](/docs/api/utils/preload-components) by preloading components instead of just prefetching we are working to improve this behavior.
 ::
 
-::callout
+::note
 On server, `prefetchComponents` will have no effect.
 ::
