@@ -283,7 +283,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
           continue
         }
         const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-        if (!extraExtractionKeys.includes(name as keyof NuxtPage)) {
+        if (!extraExtractionKeys.has(name as keyof NuxtPage)) {
           dynamicProperties.add('meta')
           break
         }

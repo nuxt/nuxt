@@ -70,6 +70,8 @@ export default defineConfig({
                   '/pre/**': { prerender: true },
                 },
                 experimental: {
+                  purgeCachedData: true,
+                  granularCachedData: true,
                   appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
                   alwaysRunFetchOnKeyChange: true,
                 },
