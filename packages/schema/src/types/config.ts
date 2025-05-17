@@ -50,7 +50,7 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
-  // Avoid DeepPartial for nitro config interface
+  // Avoid DeepPartial for nitro config interface (#31908)
   nitro?: NitroConfig
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
