@@ -30,6 +30,7 @@ dist
 .output
 .output-*
 .gen
+.test
 
 # Junit reports
 reports
