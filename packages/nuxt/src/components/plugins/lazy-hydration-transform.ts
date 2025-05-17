@@ -4,6 +4,7 @@ import { camelCase, pascalCase } from 'scule'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { parse, walk } from 'ultrahtml'
+import { ScopeTracker, parseAndWalk } from '../../core/utils/parse'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
 
@@ -13,6 +14,7 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
+const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
@@ -38,14 +40,25 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-
       return isVue(id)
     },
     transform: {
       filter: {
         code: { include: TEMPLATE_RE },
       },
-      async handler (code) {
+
+      async handler (code, id) {
+        const scopeTracker = new ScopeTracker({ keepExitedScopes: true })
+
+        for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
+          if (!script) { continue }
+          try {
+            parseAndWalk(script, id, {
+              scopeTracker,
+            })
+          } catch { /* ignore */ }
+        }
+
         // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
         const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
         if (!template || !LAZY_HYDRATION_PROPS_RE.test(template)) {
@@ -62,6 +75,11 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             if (!/^(?:Lazy|lazy-)/.test(node.name)) {
               return
             }
+
+            if (scopeTracker.getDeclaration(node.name)) {
+              return
+            }
+
             const pascalName = pascalCase(node.name.slice(4))
             if (!components.some(c => c.pascalName === pascalName)) {
               // not auto-imported
