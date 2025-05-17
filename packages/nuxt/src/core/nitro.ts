@@ -120,7 +120,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers: nuxt.options.serverHandlers,
     devHandlers: [],
-    baseURL: nuxt.options.nitro.baseURL ?? nuxt.options.app.baseURL,
+    baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
@@ -231,7 +231,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     rollupConfig: {
       output: {},
-      plugins: [] as any[],
+      plugins: [],
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
