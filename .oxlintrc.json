@@ -1,0 +1,329 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "import",
+    "jsdoc",
+    "unicorn"
+  ],
+  "categories": {
+    "correctness": "off"
+  },
+  "env": {
+    "es2021": true,
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "packages/schema/schema/**",
+    "packages/nuxt/src/app/components/welcome.vue",
+    "packages/nuxt/src/app/components/error-*.vue",
+    "packages/nuxt/src/core/runtime/nitro/templates/error-*",
+    "**/node_modules",
+    "**/jspm_packages",
+    "**/package-lock.json",
+    "packages/*/README.md",
+    "!packages/nuxi/README.md",
+    "packages/*/LICENSE",
+    "docs/LICENSE",
+    "*/**/yarn.lock",
+    ".yarn",
+    "**/*.log",
+    "**/.temp",
+    "**/.tmp",
+    "**/.cache",
+    "**/.lycheecache",
+    "**/dist",
+    "**/.nuxt",
+    "**/.nuxt-*",
+    "**/.vercel",
+    "**/.netlify",
+    "**/.output",
+    "**/.output-*",
+    "**/.gen",
+    "**/reports",
+    "**/coverage",
+    "**/*.lcov",
+    "**/.nyc_output",
+    "**/.vscode",
+    "**/*.iml",
+    "**/.idea",
+    "!.idea/nuxt.iml",
+    "!.idea/modules.xml",
+    "!.idea/inspectionProfiles/Project_Default.xml",
+    "**/.DS_Store",
+    "**/.AppleDouble",
+    "**/.LSOverride",
+    "**/.DocumentRevisions-V100",
+    "**/.fseventsd",
+    "**/.Spotlight-V100",
+    "**/.TemporaryItems",
+    "**/.Trashes",
+    "**/.VolumeIcon.icns",
+    "**/.com.apple.timemachine.donotpresent",
+    "**/.AppleDB",
+    "**/.AppleDesktop",
+    "**/Network Trash Folder",
+    "**/Temporary Items",
+    "**/.apdisk",
+    "**/.vercel_build_output",
+    "**/.build-*",
+    "**/.env",
+    "**/fixtures-temp",
+    "**/.pnpm-store",
+    "**/eslint-typegen.d.ts",
+    "**/.eslintcache",
+    "**/test-results/",
+    "**/playwright-report",
+    "**/temp",
+    "**/public"
+  ],
+  "globals": {
+    "$fetch": "readonly",
+    "NodeJS": "readonly",
+    "__dirname": "readonly",
+    "__filename": "readonly",
+    "Buffer": "readonly",
+    "clearImmediate": "readonly",
+    "process": "readonly",
+    "setImmediate": "readonly",
+    "computed": "readonly",
+    "defineEmits": "readonly",
+    "defineExpose": "readonly",
+    "defineProps": "readonly",
+    "onMounted": "readonly",
+    "onUnmounted": "readonly",
+    "reactive": "readonly",
+    "ref": "readonly",
+    "shallowReactive": "readonly",
+    "shallowRef": "readonly",
+    "toRef": "readonly",
+    "toRefs": "readonly",
+    "watch": "readonly",
+    "watchEffect": "readonly"
+  },
+  "rules": {
+    "for-direction": "error",
+    "no-async-promise-executor": "error",
+    "no-case-declarations": "error",
+    "no-class-assign": "error",
+    "no-compare-neg-zero": "error",
+    "no-cond-assign": "error",
+    "no-const-assign": "error",
+    "no-constant-binary-expression": "error",
+    "no-constant-condition": "error",
+    "no-debugger": "error",
+    "no-delete-var": "error",
+    "no-dupe-class-members": "error",
+    "no-dupe-else-if": "error",
+    "no-dupe-keys": "error",
+    "no-duplicate-case": "error",
+    "no-empty": "error",
+    "no-empty-character-class": "off",
+    "no-empty-pattern": "error",
+    "no-empty-static-block": "error",
+    "no-ex-assign": "error",
+    "no-extra-boolean-cast": "error",
+    "no-fallthrough": "error",
+    "no-func-assign": "error",
+    "no-global-assign": "error",
+    "no-import-assign": "error",
+    "no-invalid-regexp": "off",
+    "no-irregular-whitespace": "error",
+    "no-loss-of-precision": "error",
+    "no-new-native-nonconstructor": "error",
+    "no-nonoctal-decimal-escape": "error",
+    "no-obj-calls": "error",
+    "no-prototype-builtins": "error",
+    "no-regex-spaces": "error",
+    "no-self-assign": "error",
+    "no-setter-return": "error",
+    "no-shadow-restricted-names": "error",
+    "no-sparse-arrays": "error",
+    "no-this-before-super": "error",
+    "no-unexpected-multiline": "error",
+    "no-unsafe-finally": "error",
+    "no-unsafe-negation": "error",
+    "no-unsafe-optional-chaining": "error",
+    "no-unused-labels": "error",
+    "no-unused-private-class-members": "error",
+    "no-unused-vars": "error",
+    "no-useless-catch": "error",
+    "no-useless-escape": "error",
+    "no-with": "error",
+    "require-yield": "error",
+    "use-isnan": "error",
+    "valid-typeof": "error",
+    "curly": [
+      "error",
+      "all"
+    ],
+    "no-console": [
+      "warn",
+      {
+        "allow": [
+          "warn",
+          "error",
+          "debug"
+        ]
+      }
+    ],
+    "no-lonely-if": "error",
+    "no-useless-rename": "error",
+    "require-await": "error",
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true
+      }
+    ],
+    "import/first": "error",
+    "import/no-duplicates": "error",
+    "import/no-mutable-exports": "error",
+    "import/no-named-default": "error",
+    "import/no-self-import": "error",
+    "jsdoc/check-access": "warn",
+    "jsdoc/check-property-names": "warn",
+    "jsdoc/empty-tags": "warn",
+    "jsdoc/implements-on-classes": "warn",
+    "jsdoc/no-defaults": "warn",
+    "jsdoc/require-param-name": "warn",
+    "jsdoc/require-property": "warn",
+    "jsdoc/require-property-description": "warn",
+    "jsdoc/require-property-name": "warn",
+    "jsdoc/require-returns-description": "warn",
+    "unicorn/error-message": "error",
+    "unicorn/escape-case": "error",
+    "unicorn/no-instanceof-array": "error",
+    "unicorn/no-new-array": "off",
+    "unicorn/no-new-buffer": "error",
+    "unicorn/number-literal-case": "error",
+    "unicorn/prefer-dom-node-text-content": "off",
+    "unicorn/prefer-includes": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "error",
+    "unicorn/prefer-string-starts-ends-with": "error",
+    "unicorn/prefer-type-error": "error",
+    "unicorn/throw-new-error": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.mts",
+        "**/*.cts",
+        "**/*.vue"
+      ],
+      "rules": {
+        "no-class-assign": "off",
+        "no-const-assign": "off",
+        "no-dupe-class-members": "off",
+        "no-dupe-keys": "off",
+        "no-func-assign": "off",
+        "no-import-assign": "off",
+        "no-new-native-nonconstructor": "off",
+        "no-obj-calls": "off",
+        "no-setter-return": "off",
+        "no-this-before-super": "off",
+        "no-unsafe-negation": "off",
+        "no-var": "error",
+        "no-with": "off",
+        "prefer-rest-params": "error",
+        "prefer-spread": "error",
+        "@typescript-eslint/ban-ts-comment": [
+          "error",
+          {
+            "ts-expect-error": "allow-with-description",
+            "ts-ignore": true
+          }
+        ],
+        "no-array-constructor": "error",
+        "@typescript-eslint/no-duplicate-enum-values": "error",
+        "@typescript-eslint/no-empty-object-type": "error",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-extra-non-null-assertion": "error",
+        "@typescript-eslint/no-misused-new": "error",
+        "@typescript-eslint/no-namespace": "error",
+        "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
+        "@typescript-eslint/no-require-imports": "error",
+        "@typescript-eslint/no-this-alias": "error",
+        "@typescript-eslint/no-unnecessary-type-constraint": "error",
+        "@typescript-eslint/no-unsafe-declaration-merging": "error",
+        "@typescript-eslint/no-unsafe-function-type": "error",
+        "no-unused-expressions": "error",
+        "no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "destructuredArrayIgnorePattern": "^_",
+            "ignoreRestSiblings": true,
+            "varsIgnorePattern": ""
+          }
+        ],
+        "@typescript-eslint/no-wrapper-object-types": "error",
+        "@typescript-eslint/prefer-as-const": "error",
+        "@typescript-eslint/prefer-namespace-keyword": "error",
+        "@typescript-eslint/triple-slash-reference": "off",
+        "@typescript-eslint/no-dynamic-delete": "off",
+        "@typescript-eslint/no-extraneous-class": "error",
+        "@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "no-useless-constructor": "error",
+        "@typescript-eslint/prefer-literal-enum-member": "error",
+        "valid-typeof": "off",
+        "@typescript-eslint/no-import-type-side-effects": "error",
+        "@typescript-eslint/ban-types": "off"
+      },
+      "plugins": [
+        "typescript"
+      ]
+    },
+    {
+      "files": [
+        "packages/nuxt/src/app/**",
+        "test/**",
+        "**/runtime/**",
+        "**/*.test.ts"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/nuxt/src/app/**",
+        "packages/nuxt/src/(components,head,imports,pages)/runtime/**"
+      ],
+      "plugins": [
+        "typescript"
+      ]
+    },
+    {
+      "files": [
+        "**/fixtures/**",
+        "**/fixture/**",
+        "**/*-fixture/**"
+      ],
+      "rules": {
+        "@typescript-eslint/triple-slash-reference": "off",
+        "no-unused-vars": "off"
+      },
+      "plugins": [
+        "typescript"
+      ]
+    },
+    {
+      "files": [
+        "test/**",
+        "**/*.test.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-console": "off"
+      },
+      "plugins": [
+        "typescript"
+      ]
+    }
+  ]
+}

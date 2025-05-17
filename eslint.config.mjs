@@ -4,6 +4,7 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
 import perfectionist from 'eslint-plugin-perfectionist'
+import oxlint from 'eslint-plugin-oxlint'
 
 import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
 
@@ -243,7 +244,7 @@ export default createConfigForNuxt({
       },
     },
   )
-
+  .append(oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'))
   // Generate type definitions for the eslint config
   .onResolved((configs) => {
     return typegen(configs)

@@ -51,7 +51,7 @@ describe('config typings', () => {
   it('appConfig', () => {
     expectTypeOf(useAppConfig().foo).toEqualTypeOf<unknown>()
     expectTypeOf(useAppConfig()).toEqualTypeOf<{
-      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+      // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
       nuxt: {}
       [key: string]: unknown
     }>()
