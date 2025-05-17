@@ -148,7 +148,7 @@ const LayoutProvider = defineComponent({
 
     if (isNotWithinNuxtPage) {
       // this route updates immediately
-      const vueRouterRoute = useVueRouterRoute()
+      const vueRouterRoute = useVueRouterRoute() as ReturnType<typeof useRoute>
       const reactiveChildRoute = {} as RouteLocationNormalizedLoaded
       for (const _key in vueRouterRoute) {
         const key = _key as keyof RouteLocationNormalizedLoaded
