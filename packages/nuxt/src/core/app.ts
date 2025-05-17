@@ -281,11 +281,11 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
 
 export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
   const deps: Record<string, string[]> = Object.create(null)
-  const pluginNames = _plugins.map(plugin => plugin.name)
+  const pluginNameSet = new Set(_plugins.map(plugin => plugin.name))
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
-    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
-      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNameSet.has(name))) {
+      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNameSet.has(name)).join(', ')}\` but they are not registered.`)
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {
