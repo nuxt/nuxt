@@ -219,8 +219,9 @@ export async function buildClient (ctx: ViteBuildContext) {
   await ctx.nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
 
   // Prioritize `optimizeDeps.exclude`. If same dep is in `include` and `exclude`, remove it from `include`
+  const exclude = new Set(clientConfig.optimizeDeps!.exclude)
   clientConfig.optimizeDeps!.include = clientConfig.optimizeDeps!.include!
-    .filter(dep => !clientConfig.optimizeDeps!.exclude!.includes(dep))
+    .filter(dep => !exclude.has(dep))
 
   if (ctx.nuxt.options.dev) {
     // Dev

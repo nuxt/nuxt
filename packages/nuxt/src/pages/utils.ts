@@ -69,7 +69,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   }
 
   const augmentCtx = {
-    extraExtractionKeys: ['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys],
+    extraExtractionKeys: new Set(['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]),
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
   }
   if (shouldAugment === 'after-resolve') {
@@ -163,7 +163,7 @@ interface AugmentPagesContext {
   fullyResolvedPaths?: Set<string>
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
-  extraExtractionKeys?: string[]
+  extraExtractionKeys?: Set<string>
 }
 
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
@@ -210,7 +210,7 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
+export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set()): Partial<Record<keyof NuxtPage, any>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -230,7 +230,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
   const extractedMeta: Partial<Record<keyof NuxtPage, any>> = {}
 
-  const extractionKeys = new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraExtractionKeys as Array<keyof NuxtPage>])
+  const extractionKeys = new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraExtractionKeys as Set<keyof NuxtPage>])
 
   for (const script of scriptBlocks) {
     if (!PAGE_META_RE.test(script.code)) {
@@ -262,11 +262,11 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         const { value, serializable } = isSerializable(script.code, propertyValue)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-          dynamicProperties.add(extraExtractionKeys.includes(key) ? 'meta' : key)
+          dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
           continue
         }
 
-        if (extraExtractionKeys.includes(key)) {
+        if (extraExtractionKeys.has(key)) {
           extractedMeta.meta ??= {}
           extractedMeta.meta[key] = value
         } else {

@@ -141,12 +141,12 @@ function createGranularWatcher () {
   let pending = 0
 
   const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
-  const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir || layer.cwd).filter(d => d && !isIgnored(d))
+  const pathsToWatch = new Set(nuxt.options._layers.map(layer => layer.config.srcDir || layer.cwd).filter(d => d && !isIgnored(d)))
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
-    if (pathsToWatch.some(w => path.startsWith(w.replace(/[^/]$/, '$&/')))) { continue }
-    pathsToWatch.push(path)
+    if ([...pathsToWatch].some(w => path.startsWith(w.replace(/[^/]$/, '$&/')))) { continue }
+    pathsToWatch.add(path)
   }
   for (const dir of pathsToWatch) {
     pending++
@@ -165,7 +165,7 @@ function createGranularWatcher () {
         watchers[path]?.close()
         delete watchers[path]
       }
-      if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
+      if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.has(path) && !(path in watchers) && !isIgnored(path)) {
         const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
         pathWatcher.on('all', (event, p) => {
           if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {

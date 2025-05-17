@@ -89,6 +89,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
     // Add layer name for local layers
+    // TODO: possible optiimisation
     if (layer.cwd && cwd && localLayers.includes(relative(cwd, layer.cwd))) {
       layer.meta ||= {}
       layer.meta.name ||= basename(layer.cwd)
