@@ -60,6 +60,7 @@ export interface ResolvedNuxtTemplate<Options = TemplateDefaultOptions> extends 
   filename: string
   dst: string
   modified?: boolean
+  hash?: string
 }
 
 export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit<NuxtTemplate<Options>, 'write' | 'filename'> {
