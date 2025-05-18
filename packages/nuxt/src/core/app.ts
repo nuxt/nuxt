@@ -3,7 +3,7 @@ import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { findPath, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
-
+import { hash } from 'ohash'
 import type { PluginMeta } from 'nuxt/app'
 
 import { logger } from '../utils'
@@ -63,14 +63,18 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     const start = performance.now()
-    const oldContents = nuxt.vfs[fullPath]
     const contents = await compileTemplate(template, templateContext).catch((e) => {
       logger.error(`Could not compile template \`${template.filename}\`.`)
       logger.error(e)
       throw e
     })
 
-    template.modified = oldContents !== contents
+    const oldHash = template.hash as string | undefined
+
+    const newHash = hash(contents)
+    template.modified = oldHash !== newHash
+    template.hash = newHash
+
     if (template.modified) {
       nuxt.vfs[fullPath] = contents
 
