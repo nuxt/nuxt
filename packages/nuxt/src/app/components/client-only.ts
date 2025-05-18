@@ -1,4 +1,4 @@
-import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
@@ -14,7 +14,7 @@ export default defineComponent({
   inheritAttrs: false,
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
   setup (props, { slots, attrs }) {
-    const mounted = ref(false)
+    const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true })
     // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
     if (import.meta.dev) {
@@ -78,7 +78,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(nuxtApp.isHydrating === false)
+    const mounted$ = shallowRef(nuxtApp.isHydrating === false)
     const instance = getCurrentInstance()!
 
     if (nuxtApp.isHydrating) {
