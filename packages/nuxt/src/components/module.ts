@@ -10,8 +10,7 @@ import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTe
 import { scanComponents } from './scan'
 
 import { LoaderPlugin } from './plugins/loader'
-import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
-import { TransformPlugin } from './plugins/transform'
+ import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
@@ -224,35 +223,38 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     if (nuxt.options.experimental.componentIslands) {
-      const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
 
-      addVitePlugin({
-        name: 'nuxt-server-component-hmr',
-        handleHotUpdate (ctx) {
-          const components = getComponents()
-          const filePath = normalize(ctx.file)
-          const comp = components.find(c => c.filePath === filePath)
-          if (comp?.mode === 'server') {
-            ctx.server.ws.send({
-              event: `nuxt-server-component:${comp.pascalName}`,
-              type: 'custom',
-            })
-          }
-        },
-      }, { server: false })
+      // const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
+      // addVitePlugin({
+      //   name: 'nuxt-server-component-hmr',
+      //   handleHotUpdate (ctx) {
+      //     const components = getComponents()
+      //     const filePath = normalize(ctx.file)
+      //     const comp = components.find(c => c.filePath === filePath)
+      //     if (comp?.mode === 'server') {
+      //       ctx.server.ws.send({
+      //         event: `nuxt-server-component:${comp.pascalName}`,
+      //         type: 'custom',
+      //       })
+      //     }
+      //   },
+      // }, { server: false })
 
-      const chunk = ComponentsChunkPlugin({ getComponents })
+      // addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-        config.plugins ||= []
-        if (selectiveClient && isClient) {
-          config.plugins.push(chunk.client.vite())
-        }
-      })
+      // const chunk = ComponentsChunkPlugin({ getComponents })
 
-      addBuildPlugin(chunk.server, { client: false, prepend: true })
+      // nuxt.hook('vite:extendConfig', (config, { isClient, isSe }) => {
+      //   config.plugins ||= []
+      //   if (selectiveClient && isClient) {
+      //     config.plugins.push(chunk.client.vite())
+      //   }
+      // })
+
+      // addBuildPlugin(chunk.server, { client: false, prepend: true })
+
+      
     }
   },
 })

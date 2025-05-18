@@ -1,7 +1,6 @@
 import { resolve } from 'pathe'
 import * as vite from 'vite'
-import vuePlugin from '@vitejs/plugin-vue'
-import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
+ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
@@ -15,7 +14,7 @@ import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 import { createSourcemapPreserver } from './plugins/nitro-sourcemap'
 
-export async function buildServer (ctx: ViteBuildContext) {
+export async function buildServer (ctx: ViteBuildContext, vue:any) {
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const entry = ctx.nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(ctx.nuxt.options.appDir, 'entry-spa'))
   const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
@@ -135,7 +134,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
   serverConfig.plugins!.unshift(
-    vuePlugin(serverConfig.vue),
+    ...vue(serverConfig.vue),
     viteJsxPlugin(serverConfig.vueJsx),
   )
 

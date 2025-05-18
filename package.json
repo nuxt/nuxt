@@ -144,5 +144,8 @@
     "webpack": "5.99.7"
   },
   "packageManager": "pnpm@10.10.0",
-  "version": ""
+  "version": "",
+  "dependencies": {
+    "vue-server-components": "link:../vue-server-components"
+  }
 }

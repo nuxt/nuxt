@@ -9,3 +9,35 @@ ignoredBuiltDependencies:
   - esbuild
   - unrs-resolver
   - vue-demi
+overrides:
+  '@babel/core': 7.27.1
+  '@babel/helper-plugin-utils': 7.27.1
+  '@nuxt/cli': 3.25.0
+  '@nuxt/kit': workspace:*
+  '@nuxt/rspack-builder': workspace:*
+  '@nuxt/schema': workspace:*
+  '@nuxt/vite-builder': workspace:*
+  '@nuxt/webpack-builder': workspace:*
+  '@types/node': 22.15.11
+  '@unhead/vue': 2.0.8
+  '@vue/compiler-core': 3.5.13
+  '@vue/compiler-dom': 3.5.13
+  '@vue/shared': 3.5.13
+  c12: 3.0.3
+  compatx: 0.2.0
+  h3: 1.15.3
+  jiti: 2.4.2
+  magic-string: ^0.30.17
+  nitro: npm:nitro-nightly@3.0.0-20250501-155422.e44b7c2d
+  nuxt: workspace:*
+  postcss: 8.5.3
+  rollup: 4.40.1
+  send: '>=1.2.0'
+  typescript: 5.8.3
+  ufo: 1.6.1
+  unbuild: 3.5.0
+  unimport: 5.0.1
+  vite: 6.3.5
+  vue: 3.5.13
+  webpack: 5.99.7
+  vue-server-components: link:../vue-server-components

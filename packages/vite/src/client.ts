@@ -1,8 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { join, resolve } from 'pathe'
 import * as vite from 'vite'
-import vuePlugin from '@vitejs/plugin-vue'
-import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
+ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import type { BuildOptions, ServerOptions } from 'vite'
 import { logger, useNitro } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
@@ -21,7 +20,7 @@ import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
 import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
-export async function buildClient (ctx: ViteBuildContext) {
+export async function buildClient (ctx: ViteBuildContext, vue: any) {
   const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat
     ? {
         alias: defineEnv({
@@ -212,7 +211,7 @@ export async function buildClient (ctx: ViteBuildContext) {
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
   clientConfig.plugins!.unshift(
-    vuePlugin(clientConfig.vue),
+    ...vue(clientConfig.vue),
     viteJsxPlugin(clientConfig.vueJsx),
   )
 

@@ -128,7 +128,8 @@
     "vue": "^3.5.13",
     "vue-bundle-renderer": "^2.1.1",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vsc": "link:./../vue-server-components"
   },
   "devDependencies": {
     "@nuxt/scripts": "0.11.6",

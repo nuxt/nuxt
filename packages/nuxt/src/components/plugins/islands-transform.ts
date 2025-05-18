@@ -26,127 +26,15 @@ const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\n
 const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
 const KEY_RE = /:?key="[^"]"/g
 
-function wrapWithVForDiv (code: string, vfor: string): string {
+function wrapWithVForDiv(code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
-
-export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
-  const isVite = meta.framework === 'vite'
-  return {
-    name: 'nuxt:server-only-component-transform',
-    enforce: 'pre',
-    transformInclude (id) {
-      if (!isVue(id)) { return false }
-      if (isVite && options.selectiveClient === 'deep') { return true }
-      const components = options.getComponents()
-
-      const islands = components.filter(component =>
-        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
-      )
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return islands.some(c => c.filePath === pathname)
-    },
-    transform: {
-      filter: {
-        code: {
-          include: [HAS_SLOT_OR_CLIENT_RE],
-        },
-      },
-      async handler (code, id) {
-        const template = code.match(TEMPLATE_RE)
-        if (!template) { return }
-        const startingIndex = template.index || 0
-        const s = new MagicString(code)
-
-        if (!code.match(SCRIPT_RE)) {
-          s.prepend('<script setup>' + IMPORT_CODE + '</script>')
-        } else {
-          s.replace(SCRIPT_RE, (full) => {
-            return full + IMPORT_CODE
-          })
-        }
-
-        let hasNuxtClient = false
-
-        const ast = parse(template[0])
-        await walk(ast, (node) => {
-          if (node.type !== ELEMENT_NODE) {
-            return
-          }
-          if (node.name === 'slot') {
-            const { attributes, children, loc } = node
-
-            const slotName = attributes.name ?? 'default'
-
-            if (attributes.name) { delete attributes.name }
-            if (attributes['v-bind']) {
-              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
-            }
-            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-            const bindings = getPropsToString(attributes)
-            // add the wrapper
-            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
-
-            if (children.length) {
-              // pass slot fallback to NuxtTeleportSsrSlot fallback
-              const attrString = attributeToString(attributes)
-              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
-            } else {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
-            }
-
-            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
-            return
-          }
-
-          if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
-            return
-          }
-
-          hasNuxtClient = true
-
-          if (!isVite || !options.selectiveClient) {
-            return
-          }
-
-          const { loc, attributes } = node
-          const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
-          const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-
-          let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
-          if (wrapperAttributes) {
-            startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
-          }
-
-          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
-          s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
-          s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
-        })
-
-        if (hasNuxtClient) {
-          if (!options.selectiveClient) {
-            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
-          } else if (!isVite) {
-            console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
-          }
-        }
-
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: s.generateMap({ source: id, includeContent: true }),
-          }
-        }
-      },
-    },
-  }
-})
+ 
 
 /**
  * extract attributes from a node
  */
-function extractAttributes (attributes: Record<string, string>, names: string[]) {
+function extractAttributes(attributes: Record<string, string>, names: string[]) {
   const extracted: Record<string, string> = {}
   for (const name of names) {
     if (name in attributes) {
@@ -157,15 +45,15 @@ function extractAttributes (attributes: Record<string, string>, names: string[])
   return extracted
 }
 
-function attributeToString (attributes: Record<string, string>) {
+function attributeToString(attributes: Record<string, string>) {
   return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
 }
 
-function isBinding (attr: string): boolean {
+function isBinding(attr: string): boolean {
   return attr.startsWith(':')
 }
 
-function getPropsToString (bindings: Record<string, string>): string {
+function getPropsToString(bindings: Record<string, string>): string {
   const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
   if (Object.keys(bindings).length === 0) { return 'undefined' }
   const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
@@ -181,59 +69,246 @@ type ChunkPluginOptions = {
   getComponents: () => Component[]
 }
 
-export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
-  const ids = new Map<string, string>()
-  const isDev = useNuxt().options.dev
+ 
+
+
+
+import type { PluginOption } from "vite"
+import type { ExportDefaultDeclaration } from "acorn"
+import { normalize, relative } from "node:path"
+import { readFileSync } from "node:fs"
+import vue from "@vitejs/plugin-vue"
+import { defu } from "defu"
+import type { Options } from "@vitejs/plugin-vue"
+
+export type VSCOptions = {
+  include: string[]
+  rootDir?: string
+  vueClient?: Options
+  vueServerOptions?: Options
+  /**
+   * @default your dist dir
+   */
+  serverVscDir?: string
+  /**
+   * @default your asset dir
+   */
+  clientVscDir?: string
+}
+
+const VSC_PREFIX = 'virtual:vsc:'
+const VSC_PREFIX_RE = /^virtual:vsc:/
+const VIRTUAL_MODULE_ID = 'virtual:components-chunk'
+const RESOLVED_VIRTUAL_MODULE_ID = '\0' + VIRTUAL_MODULE_ID
+
+const MAP_VIRTUALMOD_ID = 'virtual:component-map'
+const RESOLVED_MAP_VIRTUALMOD_ID = '\0' + MAP_VIRTUALMOD_ID
+
+
+export function vueServerComponentsPlugin(options: Partial<VSCOptions> = {}): { client: (options: Options) => PluginOption, server: (options: Options) =>  PluginOption } {
+  const refs: { path: string, id: string }[] = []
+  let assetDir: string = ''
+  let isProduction = false
+  let rootDir = process.cwd()
+  const { serverVscDir = '', clientVscDir = '' } = options
+
+  const serverComprefs = new Map<string, string>()
   return {
-    client: createUnplugin(() => {
-      return {
-        name: 'nuxt:components-chunk:client',
-        vite: {
-          buildStart () {
-            const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
-            for (const component of components) {
-              if (component.filePath) {
-                if (isDev) {
-                  ids.set(component.pascalName, `@fs/${component.filePath}`)
-                } else {
+    client: (opts: Options) => [vue(opts),{
+        name: 'vite:vue-server-components-client',
+        configResolved(config) {
+          assetDir = config.build.assetsDir
+          isProduction = config.isProduction
+          rootDir = config.root
+        },
+        async buildStart() {
+          if (options?.include) {
+            for (const path of options.include) {
+              const resolved = await this.resolve(path)
+              if (resolved) {
+                if (isProduction) {
+
                   const id = this.emitFile({
                     type: 'chunk',
-                    fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
-                    id: component.filePath,
+                    fileName: join(clientVscDir || assetDir, hash(resolved) + '.mjs'),
+                    id: resolved.id,
                     preserveSignature: 'strict',
-
                   })
+                  refs.push({ path: resolved.id, id })
+                } else {
+                  refs.push({ path: resolved.id, id: resolved.id })
+                }
+              }
+            }
+          }
+        },
+        generateBundle(_, bundle) {
+          for (const chunk of Object.values(bundle)) {
+            if (chunk.type === 'chunk') {
+              const list = refs.map(ref => ref.id)
+              if (list.includes(chunk.fileName)) {
+                chunk.isEntry = false
+                console.log(chunk.fileName)
+              }
+            }
+          }
+        }
+      }],
 
-                  ids.set(component.pascalName, this.getFileName(id))
+    server: (opts ) => [
+      
+      getPatchedClientVue(opts), 
+      getPatchedServerVue(opts),
+      {
+        enforce: 'pre',
+        name: 'vite:vue-server-components-server',
+        resolveId: {
+          order: 'pre',
+          async handler(id, importer) {
+            if (id === VIRTUAL_MODULE_ID) {
+              return RESOLVED_VIRTUAL_MODULE_ID
+            }
+            if (importer) {
+              if (VSC_PREFIX_RE.test(importer)) {
+                if (VSC_PREFIX_RE.test(id)) {
+                  return id
+                }
+                if (id.endsWith('.vue')) {
+                  const resolved = (await this.resolve(id, importer.replace(VSC_PREFIX_RE, '')))
+                  if (resolved) {
+                    return VSC_PREFIX + resolved.id
+                  }
+                }
+                return this.resolve(id, importer.replace(VSC_PREFIX_RE, ''), { skipSelf: true })
+              }
+            }
+
+            if (VSC_PREFIX_RE.test(id)) {
+              return id
+            }
+          }
+        },
+        load: {
+          order: 'pre',
+          async handler(id) {
+            const [filename, rawQuery] = id.split(`?`, 2);
+
+            if (!rawQuery) {
+              if (VSC_PREFIX_RE.test(id)) {
+                const file = id.replace(VSC_PREFIX_RE, '')
+
+                return {
+                  code: readFileSync(file, 'utf-8'),
+                }
+              }
+              const nuxt = useNuxt()
+              const components = nuxt.apps.default?.components || []
+              if (filename?.endsWith('.vue') && !(filename.includes('islands') || filename.includes('.server.vue'))) {
+                const fileName = '_nuxt/' + hash(id) + '.mjs'
+                this.emitFile({
+                  type: 'chunk',
+                  fileName,
+                  id: VSC_PREFIX + id,
+                  preserveSignature: 'strict',
+                })
+                console.log(fileName, 'filename')
+                serverComprefs.set(id, fileName)
+              }
+            }
+          }
+        },
+
+        generateBundle(_, bundle) {
+          for (const chunk of Object.values(bundle)) {
+            if (chunk.type === 'chunk') {
+              const list = refs.map(ref => ref.id)
+              if (list.includes(chunk.fileName)) {
+                chunk.isEntry = false
+              }
+            }
+          }
+        },
+
+        transform: {
+          order: 'post',
+          handler(code, id) {
+            const ref = refs.find(ref => ref.path === id)
+            if (ref) {
+
+              const s = new MagicString(code)
+              const ast = this.parse(code)
+              const exportDefault = ast.body.find(node => {
+                return node.type === 'ExportDefaultDeclaration'
+              }) as ExportDefaultDeclaration & { start: number, end: number } | undefined
+              const ExportDefaultDeclaration = exportDefault?.declaration
+              if (ExportDefaultDeclaration) {
+                const { start, end } = ExportDefaultDeclaration
+                s.overwrite(start, end, `Object.assign(
+                                    { __chunk: "${join('/', isProduction ? normalize(this.getFileName(ref.id)) : relative(rootDir, normalize(ref.id))).replaceAll('\\', '/')}" },
+                                    { __vnodeVersion: ${JSON.stringify(serverComprefs.get(id)!)}} ,
+                                     ${code.slice(start, end)},
+                                )`)
+                return {
+                  code: s.toString(),
+                  map: s.generateMap({ hires: true }).toString(),
                 }
               }
             }
-          },
-          generateBundle (_, bundle) {
-            for (const chunk of Object.values(bundle)) {
-              if (chunk.type === 'chunk') {
-                const list = Array.from(ids.values())
-                if (list.includes(chunk.fileName)) {
-                  chunk.isEntry = false
-                }
-              }
-            }
-          },
-        },
+          }
+        }
       }
-    }),
-    server: createUnplugin(() => {
-      return {
-        name: 'nuxt:components-chunk:server',
-        buildStart () {
-          writeFileSync(
-            join(useNuxt().options.buildDir, 'component-chunk.mjs'),
-            `export default {${Array.from(ids.entries()).map(([name, id]) => {
-              return `${JSON.stringify(name)}: ${JSON.stringify('/' + id)}`
-            }).join(',\n')}}`,
-          )
-        },
-      }
-    }),
+    ],
   }
+}
+
+
+// fix a bug in plugin vue
+function getPatchedClientVue(options?: Options) {
+  const plugin = vue(defu({
+    exclude: [VSC_PREFIX_RE],
+  },options,))
+  console.log(options)
+  const oldTransform = plugin.transform;
+  plugin.transform = async function (code, id, _options) {
+    if (VSC_PREFIX_RE.test(id)) {
+      return
+    }
+    // @ts-expect-error ssrUtils is not a public API
+    return await oldTransform.apply(this, [code, id, _options]);
+  };
+  const oldLoad = plugin.load;
+  plugin.load = async function (id, _options) {
+    if (VSC_PREFIX_RE.test(id)) {
+      return
+    }
+    // @ts-expect-error ssrUtils is not a public API
+    return await oldLoad.apply(this, [id, _options]);
+  };
+  return plugin;
+}
+
+function getPatchedServerVue(options?: Options): PluginOption {
+  const plugin = vue(defu( {
+    include: [VSC_PREFIX_RE]
+  }, options))
+  // need to force non-ssr transform to always render vnode
+  const oldTransform = plugin.transform;
+  plugin.transform = async function (code, id, _options) {
+    if (!VSC_PREFIX_RE.test(id)) {
+       return
+    }
+    // @ts-expect-error blabla
+    return await oldTransform.apply(this, [code, id, { ssr: false }]);
+  };
+  const oldLoad = plugin.load;
+  plugin.load = async function (id, _options) {
+    if (!VSC_PREFIX_RE.test(id)) {
+       return
+    }
+    // @ts-expect-error blabla
+    return await oldLoad.apply(this, [id, { ssr: false }]);
+  };
+
+
+  return plugin;
 }

@@ -19,6 +19,7 @@ import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { VitePublicDirsPlugin } from './plugins/public-dirs'
 import { distDir } from './dirs'
+import { vueServerComponentsPlugin } from '../../nuxt/src/components/plugins/islands-transform'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -239,8 +240,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }
   })
 
-  await withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
-  await withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
+  const {client, server} = vueServerComponentsPlugin({
+    serverVscDir: '_nuxt',
+    clientVscDir: '_nuxt'
+  })
+
+  await withLogs(() => buildClient(ctx, client), 'Vite client built', ctx.nuxt.options.dev)
+  await withLogs(() => buildServer(ctx, server), 'Vite server built', ctx.nuxt.options.dev)
 }
 
 const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))

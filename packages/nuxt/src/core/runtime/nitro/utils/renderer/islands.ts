@@ -107,6 +107,7 @@ export interface NuxtIslandResponse {
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
+  ast: any
 }
 
 export interface NuxtIslandClientResponse {

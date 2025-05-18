@@ -12,12 +12,16 @@ import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import { renderAsServerComponent } from '#app/island'
+// @ts-ignore virtual
+import components from "#internal/components"
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 
 export default defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
 
+  console.log('???')
   setResponseHeaders(event, {
     'content-type': 'application/json;charset=utf-8',
     'x-powered-by': 'Nuxt',
@@ -43,6 +47,7 @@ export default defineEventHandler(async (event) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', error)
     throw error
   })
+  const ast = await renderAsServerComponent(islandComponents[islandContext.name])
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
@@ -93,6 +98,7 @@ export default defineEventHandler(async (event) => {
     html: getServerComponentHTML(renderResult.html),
     components: getClientIslandResponse(ssrContext),
     slots: getSlotIslandResponse(ssrContext),
+    ast
   }
 
   await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
