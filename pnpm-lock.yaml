@@ -50,7 +50,7 @@ importers:
         specifier: 7.27.1
         version: 7.27.1
       '@codspeed/core':
-        specifier: ^4.0.1
+        specifier: 4.0.1
         version: 4.0.1
       '@codspeed/vitest-plugin':
         specifier: 4.0.1
