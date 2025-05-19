@@ -1,5 +1,5 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
-import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, shallowReactive, shallowRef, unref, useTemplateRef } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { PageMeta } from '../../pages/runtime/composables'

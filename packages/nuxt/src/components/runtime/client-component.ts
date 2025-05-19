@@ -1,4 +1,4 @@
-import { getCurrentInstance, h, onMounted, provide, ref, shallowRef } from 'vue'
+import { getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
 import type { AsyncComponentLoader, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
