@@ -119,6 +119,29 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
+  test('HMR with AsyncData', async ({ page, goto }) => {
+    const pageContents = readFileSync(join(sourceDir, 'pages/async-data.vue'), 'utf8')
+    await goto('/async-data')
+
+    let counter = 0
+
+    page.on('console', (msg) => {
+      if (msg.text() === 'ASYNC_DATA') {
+        counter++
+        console.log('counter', counter)
+      }
+    })
+
+    await expect(page.getByTestId('contents')).toHaveText('1')
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect.soft(counter).toBe(0)
+    writeFileSync(join(fixtureDir, 'pages/async-data.vue'), pageContents.replace(`HMR_REPLACE`, `HMR_REPLACE_2 \n console.log("SETUP")`))
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect.soft(counter).toBe(2)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect.soft(counter).toBe(2)
+  })
+
   // Skip if using webpack since this test only works with Vite
   if (!isWebpack) {
     test('HMR for page meta', async ({ page, goto }) => {
