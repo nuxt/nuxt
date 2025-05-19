@@ -10,7 +10,7 @@ import type {
   VNode,
   VNodeProps,
 } from 'vue'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
+import { computed, defineComponent, getCurrentInstance, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
@@ -349,8 +349,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         required: false,
       },
     },
+    emits: {
+      'navigation-complete': (_payload: { to: RouteLocation, from: RouteLocation }) => true,
+    },
     useLink: useNuxtLink,
-    setup (props, { slots }) {
+    setup (props, { slots, emit }) {
       const router = useRouter()
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
@@ -363,6 +366,17 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
         if (import.meta.server) { return }
         return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
+      }
+
+      const instance = getCurrentInstance()
+      const hasNavigationCompleteListener = !!instance?.vnode.props?.onNavigationComplete
+      if (!isExternal.value && hasNavigationCompleteListener) {
+        onMounted(() => {
+          const unregister = router.afterEach((to, from) => {
+            emit('navigation-complete', { to, from })
+          })
+          onBeforeUnmount(unregister)
+        })
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
@@ -513,7 +527,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   }) as unknown as (new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp>) => InstanceType<DefineSetupFnComponent<
     NuxtLinkProps<CustomProp>,
     [],
-    SlotsType<NuxtLinkSlots<CustomProp>>
+    SlotsType<NuxtLinkSlots<CustomProp>>,
+    { 'navigation-complete': { to: RouteLocation, from: RouteLocation } }
   >>) & Record<string, any>
 }
 
