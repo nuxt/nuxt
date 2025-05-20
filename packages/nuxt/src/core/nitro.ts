@@ -21,15 +21,54 @@ import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { createImportProtectionPatterns } from './plugins/import-protection'
 
-const logLevelMapReverse = {
-  silent: 0,
-  info: 3,
-  verbose: 3,
-} satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
-
-const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
-const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
+  const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
+  const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
+
+  const RELATIVE_RE = /^([^.])/
+  function relativeWithDot (from: string, to: string) {
+    return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
+  }
+
+  const logLevelMapReverse = {
+    silent: 0,
+    info: 3,
+    verbose: 3,
+  } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
+
+  async function spaLoadingTemplatePath (nuxt: Nuxt) {
+    if (typeof nuxt.options.spaLoadingTemplate === 'string') {
+      return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
+    }
+
+    const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
+
+    return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
+  }
+
+  async function spaLoadingTemplate (nuxt: Nuxt) {
+    if (nuxt.options.spaLoadingTemplate === false) { return '' }
+
+    const spaLoadingTemplate = await spaLoadingTemplatePath(nuxt)
+
+    try {
+      if (existsSync(spaLoadingTemplate)) {
+        return readFileSync(spaLoadingTemplate, 'utf-8').trim()
+      }
+    } catch {
+      // fall through if we have issues reading the file
+    }
+
+    if (nuxt.options.spaLoadingTemplate === true) {
+      return defaultSpaLoadingTemplate()
+    }
+
+    if (nuxt.options.spaLoadingTemplate) {
+      logger.warn(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
+    }
+
+    return ''
+  }
   // Resolve config
   const excludePaths = nuxt.options._layers
     .flatMap(l => [
@@ -654,43 +693,4 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
     nuxt.hook('build:done', () => waitUntilCompile)
   }
-}
-
-const RELATIVE_RE = /^([^.])/
-function relativeWithDot (from: string, to: string) {
-  return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
-}
-
-async function spaLoadingTemplatePath (nuxt: Nuxt) {
-  if (typeof nuxt.options.spaLoadingTemplate === 'string') {
-    return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
-  }
-
-  const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
-
-  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
-}
-
-async function spaLoadingTemplate (nuxt: Nuxt) {
-  if (nuxt.options.spaLoadingTemplate === false) { return '' }
-
-  const spaLoadingTemplate = await spaLoadingTemplatePath(nuxt)
-
-  try {
-    if (existsSync(spaLoadingTemplate)) {
-      return readFileSync(spaLoadingTemplate, 'utf-8').trim()
-    }
-  } catch {
-    // fall through if we have issues reading the file
-  }
-
-  if (nuxt.options.spaLoadingTemplate === true) {
-    return defaultSpaLoadingTemplate()
-  }
-
-  if (nuxt.options.spaLoadingTemplate) {
-    logger.warn(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`)
-  }
-
-  return ''
 }
