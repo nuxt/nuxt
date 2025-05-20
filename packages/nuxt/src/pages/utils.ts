@@ -95,6 +95,7 @@ type GenerateRoutesFromFilesOptions = {
 
 const INDEX_PAGE_RE = /\/index$/
 export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
+  if (!files.length) { return [] }
   const routes: NuxtPage[] = []
 
   const sortedFiles = [...files].sort((a, b) => a.relativePath.length - b.relativePath.length)
@@ -135,7 +136,10 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
         continue
       }
 
-      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
+      const segmentName = tokens
+        .filter(token => token.type !== SegmentTokenType.group)
+        .map(token => token.value)
+        .join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
