@@ -54,7 +54,8 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   }
 
   // sort scanned files using en-US locale to make the result consistent across different system locales
-  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
+  const enUSComparator = new Intl.Collator('en-US').compare
+  scannedFiles.sort((a, b) => enUSComparator(a.relativePath, b.relativePath))
 
   const allRoutes = generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
