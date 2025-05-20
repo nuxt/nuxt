@@ -20,7 +20,7 @@ export const componentsPluginTemplate: NuxtPluginTemplate = {
         lazyGlobalComponents.add(component.pascalName)
       }
     }
-    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) { 
+    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) {
       return `
 import { defineNuxtPlugin } from '#app/nuxt'
 export default defineNuxtPlugin({
@@ -86,7 +86,6 @@ export const componentsIslandsTemplate: NuxtTemplate = {
         preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false,
       ].filter(Boolean).join(', ')
     }
-
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
