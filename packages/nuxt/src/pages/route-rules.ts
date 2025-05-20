@@ -11,15 +11,16 @@ const ROUTE_RULE_RE = /\bdefineRouteRules\(/
 const ruleCache: Record<string, NitroRouteConfig | null> = {}
 
 export function extractRouteRules (code: string, path: string): NitroRouteConfig | null {
+  if (!ROUTE_RULE_RE.test(code)) { return null }
+
   if (code in ruleCache) {
     return ruleCache[code] || null
   }
-  if (!ROUTE_RULE_RE.test(code)) { return null }
 
-  let rule: NitroRouteConfig | null = null
   const loader = getLoader(path)
   if (!loader) { return null }
 
+  let rule: NitroRouteConfig | null = null
   const contents = loader === 'vue' ? extractScriptContent(code) : [{ code, loader }]
   for (const script of contents) {
     if (rule) { break }
@@ -49,7 +50,7 @@ export function getMappedPages (pages: NuxtPage[], paths = {} as { [absolutePath
       const filename = normalize(page.file)
       paths[filename] = pathToNitroGlob(prefix + page.path)
     }
-    if (page.children) {
+    if (page.children?.length) {
       getMappedPages(page.children, paths, page.path + '/')
     }
   }
