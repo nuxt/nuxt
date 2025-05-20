@@ -16,16 +16,6 @@ import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
 
-const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
-const SLASH_SEPARATOR_RE = /[\\/]/
-function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
-  return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
-}
-
-const DEFAULT_COMPONENTS_DIRS_RE = /\/components(?:\/(?:global|islands))?$/
-const STARTER_DOT_RE = /^\./g
-
 export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
 export default defineNuxtModule<ComponentsOptions>({
