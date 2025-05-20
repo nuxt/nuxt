@@ -259,7 +259,7 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
       ? join(dirname(resolve(nuxt.options.srcDir, pattern)), '')
       : resolve(nuxt.options.srcDir, pattern)
     let shouldAdd = true
-    for (const w of pathsToWatch) {
+    for (const w of [...pathsToWatch]) {
       if (w.startsWith(path)) {
         pathsToWatch.delete(w)
       }
