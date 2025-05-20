@@ -8,22 +8,6 @@ type ImportMagicCommentsOptions = {
   preload?: boolean | number
 }
 
-const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
-  const { chunkName, prefetch, preload } = options
-  return [
-    `webpackChunkName: "${chunkName}"`,
-    prefetch === true || typeof prefetch === 'number' ? `webpackPrefetch: ${prefetch}` : false,
-    preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false,
-  ].filter(Boolean).join(', ')
-}
-
-const emptyComponentsPlugin = `
-import { defineNuxtPlugin } from '#app/nuxt'
-export default defineNuxtPlugin({
-  name: 'nuxt:global-components',
-})
-`
-
 export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
   getContents ({ app }) {
@@ -36,7 +20,14 @@ export const componentsPluginTemplate: NuxtPluginTemplate = {
         lazyGlobalComponents.add(component.pascalName)
       }
     }
-    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) { return emptyComponentsPlugin }
+    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) { 
+      return `
+import { defineNuxtPlugin } from '#app/nuxt'
+export default defineNuxtPlugin({
+  name: 'nuxt:global-components',
+})
+`
+    }
 
     const lazyComponents = [...lazyGlobalComponents]
     const syncComponents = [...syncGlobalComponents]
@@ -87,6 +78,16 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       return `"page_${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
     }) || []
 
+    const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
+      const { chunkName, prefetch, preload } = options
+      return [
+        `webpackChunkName: "${chunkName}"`,
+        prefetch === true || typeof prefetch === 'number' ? `webpackPrefetch: ${prefetch}` : false,
+        preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false,
+      ].filter(Boolean).join(', ')
+    }
+
+
     return [
       'import { defineAsyncComponent } from \'vue\'',
       'export const islandComponents = import.meta.client ? {} : {',
@@ -102,11 +103,11 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   },
 }
 
-const NON_VUE_RE = /\b\.(?!vue)\w+$/g
 export const componentsTypeTemplate = {
   filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
+    const NON_VUE_RE = /\b\.(?!vue)\w+$/g
     const componentTypes = app.components.filter(c => !c.island).map((c) => {
       const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(NON_VUE_RE, '')
