@@ -146,9 +146,6 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
-// Exclude bridge alias types to support Volar
-const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 export async function _generateTypes (nuxt: Nuxt) {
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
@@ -273,6 +270,9 @@ export async function _generateTypes (nuxt: Nuxt) {
   } satisfies TSConfig)
 
   const aliases: Record<string, string> = nuxt.options.alias
+  const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
+  // Exclude bridge alias types to support Volar
+  const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
   const basePath = tsConfig.compilerOptions!.baseUrl
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
