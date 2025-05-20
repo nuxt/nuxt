@@ -27,7 +27,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^3.0.3",
+    "c12": "^3.0.4",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
