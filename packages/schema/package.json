@@ -41,7 +41,7 @@
     "@types/webpack-hot-middleware": "2.25.9",
     "@unhead/vue": "2.0.9",
     "@vitejs/plugin-vue": "5.2.4",
-    "@vitejs/plugin-vue-jsx": "4.1.2",
+    "@vitejs/plugin-vue-jsx": "4.2.0",
     "@vue/compiler-core": "3.5.14",
     "@vue/compiler-sfc": "3.5.14",
     "@vue/language-core": "2.2.10",
@@ -72,7 +72,7 @@
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
     "vue-router": "4.5.1",
-    "webpack": "5.99.8",
+    "webpack": "5.99.9",
     "webpack-dev-middleware": "7.4.2"
   },
   "dependencies": {
