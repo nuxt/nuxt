@@ -44,7 +44,7 @@
     "h3": "^1.15.3",
     "jiti": "^2.4.2",
     "magic-string": "^0.30.17",
-    "memfs": "^4.17.1",
+    "memfs": "^4.17.2",
     "mini-css-extract-plugin": "^2.9.2",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
@@ -76,7 +76,7 @@
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
     "unbuild": "3.5.0",
-    "vue": "3.5.13"
+    "vue": "3.5.14"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
