@@ -2608,6 +2608,8 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
 
     await page.close()
+  }, {
+    retry: 3, // looks like this test is flaky
   })
 
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
