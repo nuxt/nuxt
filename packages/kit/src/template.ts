@@ -147,6 +147,10 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
 }
 
 export async function _generateTypes (nuxt: Nuxt) {
+  const RELATIVE_WITH_DOT_RE = /^([^.])/
+  function relativeWithDot (from: string, to: string) {
+    return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+  }
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
 
@@ -300,10 +304,6 @@ export async function _generateTypes (nuxt: Nuxt) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)
       }
-    }
-    const RELATIVE_WITH_DOT_RE = /^([^.])/
-    function relativeWithDot (from: string, to: string) {
-      return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
     }
 
     const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
