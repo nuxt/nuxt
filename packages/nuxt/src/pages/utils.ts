@@ -136,10 +136,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
         continue
       }
 
-      const segmentName = tokens
-        .filter(token => token.type !== SegmentTokenType.group)
-        .map(token => token.value)
-        .join('')
+      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
