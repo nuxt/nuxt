@@ -3,7 +3,7 @@ import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
-import { dirname, normalize, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 import { isDirectory, logger } from '../utils'
@@ -141,7 +141,7 @@ function createGranularWatcher () {
   let pending = 0
 
   const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
-  const pathsToWatch = resolveDirectoriesToWatch(nuxt)
+  const pathsToWatch = resolvePathsToWatch(nuxt)
   for (const dir of pathsToWatch) {
     pending++
     const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/] })
@@ -189,7 +189,7 @@ async function createParcelWatcher () {
   }
   try {
     const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', { url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)) })
-    const pathsToWatch = resolveDirectoriesToWatch(nuxt)
+    const pathsToWatch = resolvePathsToWatch(nuxt, { parentDirectories: true })
     for (const dir of pathsToWatch) {
       if (!await isDirectory(dir)) { continue }
       const watcher = subscribe(dir, (err, events) => {
@@ -245,7 +245,7 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   }
 }
 
-function resolveDirectoriesToWatch (nuxt: Nuxt) {
+function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
   for (const layer of nuxt.options._layers) {
     const dir = layer.config.srcDir || layer.cwd
@@ -255,7 +255,9 @@ function resolveDirectoriesToWatch (nuxt: Nuxt) {
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
-    const path = dirname(resolve(nuxt.options.srcDir, pattern)) + '/'
+    const path = opts?.parentDirectories
+      ? join(dirname(resolve(nuxt.options.srcDir, pattern)), '')
+      : resolve(nuxt.options.srcDir, pattern, '')
     let shouldAdd = true
     for (const w of pathsToWatch) {
       if (w.startsWith(path)) {
