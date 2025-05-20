@@ -41,7 +41,7 @@
     "@types/webpack-hot-middleware": "2.25.9",
     "@unhead/vue": "2.0.9",
     "@vitejs/plugin-vue": "5.2.4",
-    "@vitejs/plugin-vue-jsx": "4.1.2",
+    "@vitejs/plugin-vue-jsx": "4.2.0",
     "@vue/compiler-core": "3.5.14",
     "@vue/compiler-sfc": "3.5.14",
     "@vue/language-core": "2.2.10",
