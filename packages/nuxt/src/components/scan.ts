@@ -30,9 +30,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   const GLOBAL_RE = /\.global(?:\.island)?$/
   const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
   const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
-  
+
   const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/
-  
+
   function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
     logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
       `\n - ${filePath}` +
