@@ -70,11 +70,12 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           ? outputOptions.assetFileNames
           : outputOptions.assetFileNames({
               type: 'asset',
-              name: `${fileName}-styles.mjs`,
               names: [`${fileName}-styles.mjs`],
-              originalFileName: `${fileName}-styles.mjs`,
               originalFileNames: [`${fileName}-styles.mjs`],
               source: '',
+              // Have to pass deprecated options
+              name: undefined,
+              originalFileName: null,
             })
 
         const baseDir = dirname(base)

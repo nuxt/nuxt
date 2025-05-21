@@ -90,12 +90,19 @@ export async function buildServer (ctx: ViteBuildContext) {
           new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
         ],
         output: {
+          // The following options are not supported by Rolldown, so we apply them when using non-Rolldown-powered Vite only
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore Rolldown-Vite specific - https://github.com/rolldown/rolldown/issues/206
+          ...vite.rolldownVersion
+            ? {}
+            : {
+                generatedCode: {
+                  symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351
+                  constBindings: true,
+                },
+              },
           entryFileNames: '[name].mjs',
           format: 'module',
-          generatedCode: {
-            symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
-            constBindings: true,
-          },
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
@@ -116,7 +123,17 @@ export async function buildServer (ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
-    delete serverConfig.build.rollupOptions.output.manualChunks
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore Rolldown-Vite specific
+    if (!vite.rolldownVersion) {
+      // Rolldown has no support for `output.manualChunks`
+      delete serverConfig.build.rollupOptions.output.manualChunks
+    } else {
+      // If Rolldown is used, remove all chunk settings (mirror behavior for rollup for now)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore Rolldown-only option
+      delete serverConfig.build.rollupOptions.output.advancedChunks
+    }
   }
 
   // tell rollup's nitro build about the original sources of the generated vite server build
