@@ -199,7 +199,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     }
 
-    config.plugins!.push(replace(replaceOptions))
+    config.plugins!.push(replace(replaceOptions) as any)
   })
 
   if (!ctx.nuxt.options.dev) {

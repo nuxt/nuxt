@@ -74,8 +74,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
               originalFileNames: [`${fileName}-styles.mjs`],
               source: '',
               // Have to pass deprecated options
-              name: undefined,
-              originalFileName: null,
+              // name: undefined,
+              // originalFileName: null,
             })
 
         const baseDir = dirname(base)

@@ -34,6 +34,6 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
       title: 'Client bundle stats',
       gzipSize: true,
       brotliSize: true,
-    }),
+    }) as any,
   ]
 }

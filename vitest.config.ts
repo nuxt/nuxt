@@ -6,6 +6,16 @@ import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 
 export default defineConfig({
+  plugins: isCI ? [codspeedPlugin() as any] : [],
+  resolve: {
+    alias: {
+      '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
+      '#build/router.options': resolve('./test/mocks/router-options'),
+      '#internal/nuxt/paths': resolve('./test/mocks/paths'),
+      '#build/app.config.mjs': resolve('./test/mocks/app-config'),
+      '#app': resolve('./packages/nuxt/dist/app'),
+    },
+  },
   test: {
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],

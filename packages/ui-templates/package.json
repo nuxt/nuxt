@@ -31,6 +31,6 @@
     "tinyexec": "1.0.1",
     "tinyglobby": "0.2.13",
     "unocss": "66.1.1",
-    "vite": "6.3.5"
+    "vite": "npm:rolldown-vite@6.3.12"
   }
 }

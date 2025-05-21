@@ -174,7 +174,7 @@ async function transform (code: string, filename: string) {
         },
       },
       LazyHydrationTransformPlugin({ getComponents: () => components }).rollup(),
-      vuePlugin(),
+      vuePlugin() as any,
       vuePluginJsx(),
       LoaderPlugin({
         clientDelayedComponentRuntime: '/client-runtime.mjs',
