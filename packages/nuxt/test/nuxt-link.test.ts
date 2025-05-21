@@ -4,6 +4,7 @@ import { withQuery } from 'ufo'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'
+import { useLinkAllowlist } from '../src/app/composables/link-allowlist'
 
 // mocks `useRuntimeConfig()`
 vi.mock('../src/app/nuxt', () => ({
@@ -347,5 +348,42 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: '/to/', external: true }, removeSlashOptions).props.href).toBe('/to')
       })
     })
+  })
+})
+describe('useLinkAllowlist', () => {
+  it('should return the default allowlist', () => {
+    const { allowlist } = useLinkAllowlist({
+      allowlist: ['nuxt.com', 'nuxtjs.org'],
+    })
+    expect(allowlist).toEqual(['nuxt.com', 'nuxtjs.org'])
+  })
+  it('should check url from allowlist', () => {
+    const { checkUrlInAllowlist } = useLinkAllowlist({
+      allowlist: ['nuxt.com', '.nuxt.com'],
+    })
+    expect(checkUrlInAllowlist('https://nuxt.com')).toBe(true)
+    expect(checkUrlInAllowlist('https://nuxters.nuxt.com')).toBe(true)
+    expect(checkUrlInAllowlist('https://nuxtjs.org')).toBe(false)
+    expect(checkUrlInAllowlist('/test')).toBe(false)
+  })
+  it('should check url from allowlist with externalRelAttribute', () => {
+    const { getCustomRel } = useLinkAllowlist({
+      allowlist: ['nuxt.com', '.nuxt.com'],
+      externalRelAttribute: 'noopener',
+    })
+    expect(getCustomRel('https://nuxt.com')).toBe('noopener')
+    expect(getCustomRel('https://nuxters.nuxt.com')).toBe('noopener')
+    expect(getCustomRel('https://nuxtjs.org')).toBe(undefined)
+    expect(getCustomRel('/test')).toBe(undefined)
+  })
+  it('should check url from allowlist with externalRelAttribute and force', () => {
+    const { getCustomRel } = useLinkAllowlist({
+      allowlist: ['nuxt.com', '.nuxt.com'],
+      externalRelAttribute: 'noopener',
+    })
+    expect(getCustomRel('https://nuxt.com', { force: true })).toBe('noopener')
+    expect(getCustomRel('https://nuxters.nuxt.com', { force: true })).toBe('noopener')
+    expect(getCustomRel('https://nuxtjs.org', { force: true })).toBe('noopener')
+    expect(getCustomRel('/test', { force: true })).toBe('noopener')
   })
 })
