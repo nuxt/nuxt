@@ -662,7 +662,7 @@ export default defineNuxtPlugin({
 })`,
     })
   }
-
+  const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -863,8 +863,6 @@ export async function checkDependencyVersion (name: string, nuxtVersion: string)
     console.warn(`[nuxt] Expected \`${name}\` to be at least \`${nuxtVersion}\` but got \`${version}\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
   }
 }
-
-const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
 
 function deduplicateArray<T = unknown> (maybeArray: T): T {
   if (!Array.isArray(maybeArray)) { return maybeArray }
