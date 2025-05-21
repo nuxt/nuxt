@@ -107,7 +107,7 @@ export const pluginsDeclaration: NuxtTemplate = {
     const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
     const JS_RE = /\.[cm]jsx?$/
     const JS_CAPTURE_RE = /\.[cm](jsx?)$/
-    
+
     const typesDir = join(nuxt.options.buildDir, 'types')
     const tsImports: string[] = []
     const pluginNames: string[] = []
@@ -185,7 +185,7 @@ export const schemaTemplate: NuxtTemplate = {
 
     const IMPORT_NAME_RE = /\.\w+$/
     const GIT_RE = /^git\+/
-    
+
     const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
     for (const m of nuxt.options._installedModules) {
       // modules without sufficient metadata
@@ -595,7 +595,7 @@ export const buildTypeTemplate: NuxtTemplate = {
   getContents ({ app }) {
     const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
     const DECLARATION_RE = /\.d\.[cm]?ts$/
-    
+
     let declarations = ''
 
     for (const file of app.templates) {
