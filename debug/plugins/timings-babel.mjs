@@ -16,7 +16,7 @@ function captureStackTrace () {
   if (!Error.captureStackTrace) {
     return []
   }
-  // eslint-disable-next-line unicorn/error-message
+  // oxlint-disable-next-line unicorn/error-message
   const stack = new Error()
   Error.captureStackTrace(stack)
   const trace = []
@@ -81,9 +81,9 @@ function onExit () {
       callers: globalThis.___callers[name] && Object.entries(globalThis.___callers[name]).map(([name, count]) => `${name.trim()} (${count})`).join(', '),
     }))
 
-  // eslint-disable-next-line no-console
+  // oxlint-disable-next-line no-console
   console.log('Top 20 functions by total time:')
-  // eslint-disable-next-line no-console
+  // oxlint-disable-next-line no-console
   console.table(topFunctionsTotalTime)
 
   // worst by average time (excluding single calls)
@@ -100,9 +100,9 @@ function onExit () {
       callers: name && globalThis.___callers[name] && Object.entries(globalThis.___callers[name]).sort((a, b) => b[1] - a[1]).map(([name, count]) => `${name.trim()} (${count})`).join(', '),
     }))
 
-  // eslint-disable-next-line no-console
+  // oxlint-disable-next-line no-console
   console.log('Top 20 functions by average time:')
-  // eslint-disable-next-line no-console
+  // oxlint-disable-next-line no-console
   console.table(topFunctionsAverageTime)
 }
 

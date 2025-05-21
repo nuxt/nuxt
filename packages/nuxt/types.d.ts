@@ -20,7 +20,7 @@ declare module 'nitro/types' {
     buildAssetsDir: string
     cdnURL: string
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
@@ -46,7 +46,7 @@ declare module 'nitropack/types' {
     buildAssetsDir: string
     cdnURL: string
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  // oxlint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean

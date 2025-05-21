@@ -32,7 +32,7 @@ const viteTransform = async (source: string, id: string, selectiveClient = false
 }
 
 const webpackTransform = async (source: string, id: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (pluginWebpack.transform.handler! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }

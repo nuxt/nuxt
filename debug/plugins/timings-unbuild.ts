@@ -7,15 +7,15 @@ import tsBlankSpace from 'ts-blank-space'
 import { generateFinallyCode, generateInitCode, leading, trailing } from './timings-babel.mjs'
 
 declare global {
-// eslint-disable-next-line no-var
+  // oxlint-disable-next-line no-var
   var ___logged: boolean
-  // eslint-disable-next-line no-var
+  // oxlint-disable-next-line no-var
   var ___timings: Record<string, number>
-  // eslint-disable-next-line no-var
+  // oxlint-disable-next-line no-var
   var ___calls: Record<string, number>
-  // eslint-disable-next-line no-var
+  // oxlint-disable-next-line no-var
   var ___callers: Record<string, number>
-  // eslint-disable-next-line no-var
+  // oxlint-disable-next-line no-var
   var ____writeFileSync: typeof import('fs').writeFileSync
 }
 
@@ -48,7 +48,7 @@ export function AnnotateFunctionTimingsPlugin () {
           }
           return code
         } catch (e) {
-          // eslint-disable-next-line no-console
+          // oxlint-disable-next-line no-console
           console.log(e, code, id)
         }
       },
