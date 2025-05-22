@@ -20,27 +20,6 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 
-const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
-
-const runtimeDir = resolve(distDir, 'pages/runtime')
-
-async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
-  const context = {
-    files: [] as Array<{ path: string, optional?: boolean }>,
-  }
-
-  for (const layer of nuxt.options._layers) {
-    const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
-    if (path) { context.files.unshift({ path }) }
-  }
-
-  // Add default options at beginning
-  context.files.unshift({ path: builtInRouterOptions, optional: true })
-
-  await nuxt.callHook('pages:routerOptions', context)
-  return context.files
-}
-
 export default defineNuxtModule({
   meta: {
     name: 'nuxt:pages',
@@ -53,6 +32,27 @@ export default defineNuxtModule({
   async setup (_options, nuxt) {
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
+
+    const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+
+    const runtimeDir = resolve(distDir, 'pages/runtime')
+    
+    async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
+      const context = {
+        files: [] as Array<{ path: string, optional?: boolean }>,
+      }
+    
+      for (const layer of nuxt.options._layers) {
+        const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
+        if (path) { context.files.unshift({ path }) }
+      }
+    
+      // Add default options at beginning
+      context.files.unshift({ path: builtInRouterOptions, optional: true })
+    
+      await nuxt.callHook('pages:routerOptions', context)
+      return context.files
+    }
 
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
