@@ -36,20 +36,20 @@ export default defineNuxtModule({
     const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
     const runtimeDir = resolve(distDir, 'pages/runtime')
-    
+
     async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
       const context = {
         files: [] as Array<{ path: string, optional?: boolean }>,
       }
-    
+
       for (const layer of nuxt.options._layers) {
         const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
         if (path) { context.files.unshift({ path }) }
       }
-    
+
       // Add default options at beginning
       context.files.unshift({ path: builtInRouterOptions, optional: true })
-    
+
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
     }
