@@ -56,7 +56,7 @@ if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
 const error = useError()
 // render an empty <div> when plugins have thrown an error but we're not yet rendering the error page
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
-const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b|googlebot/i
+const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
 onErrorCaptured((err, target, info) => {
   nuxtApp.hooks.callHook('vue:error', err, target, info).catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
   if (import.meta.client && BOT_RE.test(navigator.userAgent)) {

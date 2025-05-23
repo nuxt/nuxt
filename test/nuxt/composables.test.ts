@@ -8,6 +8,7 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
+import { Transition } from 'vue'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
@@ -646,6 +647,39 @@ describe('useAsyncData', () => {
     expect(fetchData.value).toMatchInlineSnapshot('"new value"')
     fetchData.value = 'another value'
     expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
+  })
+
+  it('should work when used in a Transition', async () => {
+    const id = ref('foo')
+    const ComponentWithAsyncData = defineComponent({
+      props: { id: String },
+      async setup (props) {
+        const { data } = await useAsyncData(`quote:${props.id}`, () => Promise.resolve({ content: props.id }))
+        return () => h('div', data.value?.content)
+      },
+    })
+    const ComponentWithTransition = defineComponent({
+      setup: () => () => h(Transition, { name: 'test' }, {
+        default: () => h(ComponentWithAsyncData, { id: id.value, key: id.value }),
+      }),
+    })
+    async function setTo (newId: string) {
+      id.value = newId
+      for (let i = 0; i < 5; i++) {
+        await nextTick()
+        await flushPromises()
+      }
+    }
+
+    const wrapper = await mountSuspended(ComponentWithTransition, { global: { stubs: { transition: false } } })
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+
+    await setTo('bar')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">bar</div>"`)
+
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">foo</div>"`)
   })
 
   it('duplicate calls are not made after first call has finished', async () => {
