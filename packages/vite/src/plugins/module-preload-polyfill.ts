@@ -1,6 +1,6 @@
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
-import { resolveEntry } from '../utils/config'
+import { resolveClientEntry } from '../utils/config'
 
 const QUERY_RE = /\?.+$/
 
@@ -10,10 +10,11 @@ export function ModulePreloadPolyfillPlugin (): Plugin {
   let sourcemap: boolean
   return {
     name: 'nuxt:module-preload-polyfill',
+    applyToEnvironment: environment => environment.name === 'client',
     configResolved (config) {
       isDisabled = config.build.modulePreload === false || config.build.modulePreload.polyfill === false
       sourcemap = !!config.build.sourcemap
-      entry = resolveEntry(config)
+      entry = resolveClientEntry(config)
     },
     transform (code, id) {
       if (isDisabled || id.replace(QUERY_RE, '') !== entry) { return }

@@ -148,16 +148,16 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   }
 
   // Start development server
-  const viteServer = await vite.createServer(serverConfig)
-  ctx.ssrServer = viteServer
+  const ssrServer = await vite.createServer(serverConfig)
+  ctx.ssrServer = ssrServer
 
   // Close server on exit
-  nuxt.hook('close', () => viteServer.close())
+  nuxt.hook('close', () => ssrServer.close())
 
-  await nuxt.callHook('vite:serverCreated', viteServer, { isClient: false, isServer: true })
+  await nuxt.callHook('vite:serverCreated', ssrServer, { isClient: false, isServer: true })
 
   // Initialize plugins
-  await viteServer.pluginContainer.buildStart({})
+  await ssrServer.pluginContainer.buildStart({})
 
-  await initViteNodeServer(ctx)
+  await initViteNodeServer(nuxt, ssrServer)
 }
