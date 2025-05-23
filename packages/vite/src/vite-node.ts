@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
+import { type App, createApp, createError, defineEventHandler, toNodeListener } from 'h3'
 import { isAbsolute, join, normalize, resolve } from 'pathe'
 // import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
@@ -10,12 +10,11 @@ import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
 import { distDir } from './dirs'
 import { isCSS } from './utils'
-import type { ViteBuildContext } from './vite'
 import { resolveClientEntry, resolveServerEntry } from './utils/config'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 allows adding middleware after setup
-export function ViteNodePlugin (nuxt: Nuxt, getContext: () => ViteBuildContext): VitePlugin {
+export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
 
@@ -38,7 +37,26 @@ export function ViteNodePlugin (nuxt: Nuxt, getContext: () => ViteBuildContext):
     enforce: 'post',
     applyToEnvironment: environment => environment.name === 'client',
     configureServer (clientServer) {
-      clientServer.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(nuxt, () => getContext().ssrServer!, resolveClientEntry(clientServer.config), clientServer, invalidates)))
+      const app = createApp()
+
+      clientServer.middlewares.use('/__nuxt_vite_node__', toNodeListener(app))
+
+      app.use('/manifest', defineEventHandler(() => {
+        const manifest = getManifest(nuxt, clientServer, resolveClientEntry(clientServer.config))
+        return manifest
+      }))
+
+      app.use('/invalidates', defineEventHandler(() => {
+        const ids = Array.from(invalidates)
+        invalidates.clear()
+        return ids
+      }))
+
+      nuxt.hook('vite:serverCreated', (ssrServer, ctx) => {
+        if (ctx.isServer) {
+          registerSSRHandlers(app, ssrServer, clientServer)
+        }
+      })
 
       // invalidate changed virtual modules when templates are regenerated
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
@@ -103,40 +121,27 @@ function getManifest (nuxt: Nuxt, clientServer: ViteDevServer, clientEntry: stri
   return manifest
 }
 
-function createViteNodeApp (nuxt: Nuxt, getServer: () => ViteDevServer, clientEntry: string, clientServer: ViteDevServer, invalidates: Set<string> = new Set()) {
-  const app = createApp()
-
-  app.use('/manifest', defineEventHandler(() => {
-    const manifest = getManifest(nuxt, clientServer, clientEntry)
-    return manifest
-  }))
-
-  app.use('/invalidates', defineEventHandler(() => {
-    const ids = Array.from(invalidates)
-    invalidates.clear()
-    return ids
-  }))
-
+function registerSSRHandlers (app: App, ssrServer: ViteDevServer, clientServer: ViteDevServer) {
   const RESOLVE_RE = /^\/(?<id>[^?]+)(?:\?importer=(?<importer>.*))?$/
   app.use('/resolve', defineEventHandler(async (event) => {
     const { id, importer } = event.path.match(RESOLVE_RE)?.groups || {}
-    if (!id || !getServer()) {
+    if (!id || !ssrServer) {
       throw createError({ statusCode: 400 })
     }
-    return await getServer().pluginContainer.resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
+    return await ssrServer.pluginContainer.resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
   }))
 
   app.use('/module', defineEventHandler(async (event) => {
     const moduleId = decodeURI(event.path).substring(1)
-    if (moduleId === '/' || !getServer()) {
+    if (moduleId === '/' || !ssrServer) {
       throw createError({ statusCode: 400 })
     }
     // TODO: replace
-    if (isAbsolute(moduleId) && !isFileServingAllowed(getServer().config, moduleId)) {
+    if (isAbsolute(moduleId) && !isFileServingAllowed(ssrServer.config, moduleId)) {
       throw createError({ statusCode: 403 /* Restricted */ })
     }
 
-    const module = await getServer().environments.ssr.fetchModule(moduleId).catch(async (err) => {
+    const module = await ssrServer.environments.ssr.fetchModule(moduleId).catch(async (err) => {
       const errorData = {
         code: 'VITE_ERROR',
         id: moduleId,
@@ -151,8 +156,6 @@ function createViteNodeApp (nuxt: Nuxt, getServer: () => ViteDevServer, clientEn
     })
     return module
   }))
-
-  return app
 }
 
 export type ViteNodeServerOptions = {
