@@ -188,6 +188,8 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
 
   await mkdir(join(ctx.nuxt.options.buildDir, 'dist/server'), { recursive: true })
 
+  const island = resolve(distDir, 'runtime/island.mjs')
+
   await writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
@@ -195,5 +197,9 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
   await writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
+  )
+  await writeFile(
+    resolve(ctx.nuxt.options.buildDir, 'dist/server/components.islands.mjs'),
+    `export { default } from ${JSON.stringify(pathToFileURL(island).href)}`,
   )
 }

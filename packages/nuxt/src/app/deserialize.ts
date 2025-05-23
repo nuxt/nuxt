@@ -8,7 +8,7 @@ export function renderServerComponent(input?: VServerComponent): VNode | undefin
     if (input.type === VServerComponentType.Text) {
         return createTextVNode(input.text)
     }
-    if (input.type === VServerComponentType.Element) {
+    if (input.type === VServerComponentType.Element && input.tag) {
         return h(input.tag, input.props, Array.isArray(input.children) ? input.children.map(renderServerComponent) : renderServerComponent(input.children))
     }
     if(input.type === VServerComponentType.Component) {
@@ -17,7 +17,7 @@ export function renderServerComponent(input?: VServerComponent): VNode | undefin
                 data: input
             })
         })
-    }
+    } 
     if (input.type === VServerComponentType.Fragment) {
         return Array.isArray(input.children) ? h(Fragment, input.children.map(renderServerComponent)) : renderServerComponent(input.children)
     }

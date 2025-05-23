@@ -186,8 +186,10 @@ export default defineNuxtConfig({
       options: {
         // in order to test bigint serialization
         target: 'es2022',
-      },
+        minify: false,
+      }, 
     },
+  
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/redirect/catchall': { ssr: false },
@@ -210,6 +212,7 @@ export default defineNuxtConfig({
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
+      minify: false
     },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests

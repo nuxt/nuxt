@@ -79,7 +79,7 @@ export async function buildServer (ctx: ViteBuildContext, vue:any) {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
-        input: { server: entry },
+        input: { server: entry, ['components.islands']: resolve(ctx.nuxt.options.buildDir, 'components.islands.mjs') },
         external: [
           'nitro/runtime',
           '#internal/nuxt/paths',
@@ -133,7 +133,7 @@ export async function buildServer (ctx: ViteBuildContext, vue:any) {
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
-  serverConfig.plugins!.unshift(
+  serverConfig.plugins!.push(
     ...vue(serverConfig.vue),
     viteJsxPlugin(serverConfig.vueJsx),
   )

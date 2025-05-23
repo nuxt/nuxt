@@ -9,12 +9,12 @@ import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
-import { getSSRRenderer } from '../utils/renderer/build-files'
+import { getServerEntry, getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
-import { renderAsServerComponent } from '#app/island'
-// @ts-ignore virtual
-import components from "#internal/components"
+import { serializeApp, serializeComponent } from '#app/island'
+ 
+const islandComponents =  () => import('#build/dist/server/components.islands.mjs').then(r => import.meta.dev ? r.default() : r)
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 
@@ -47,8 +47,15 @@ export default defineEventHandler(async (event) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', error)
     throw error
   })
-  const ast = await renderAsServerComponent(islandComponents[islandContext.name])
 
+  const createSSRApp = await getServerEntry()
+
+  const components = ( (await islandComponents())).islandComponents
+  console.log('components', ( (await islandComponents())))
+  ssrContext.rootComponent = components[islandContext.name]
+  const app = await createSSRApp(ssrContext, renderer.rendererContext)
+  const ast = await app.runWithContext(() => serializeApp(app, ssrContext)) 
+ 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
@@ -69,7 +76,7 @@ export default defineEventHandler(async (event) => {
       // Add CSS links in <head> for CSS files
       // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file.replace('virtual:vsc:', '')), crossorigin: '' })
       }
     }
     if (link.length) {
@@ -84,15 +91,14 @@ export default defineEventHandler(async (event) => {
       if (Array.isArray(currentValue)) {
         currentValue.push(...value)
       }
-      islandHead[key as keyof SerializableHead] = value
+       islandHead[key as keyof SerializableHead] = value
     }
   }
 
   // TODO: remove for v4
   islandHead.link ||= []
   islandHead.style ||= []
-
-  const islandResponse: NuxtIslandResponse = {
+   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
     head: islandHead,
     html: getServerComponentHTML(renderResult.html),

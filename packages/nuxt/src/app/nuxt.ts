@@ -22,9 +22,9 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 
 // @ts-expect-error virtual file
-import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
+// import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-export function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id =  'nuxt-app') {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -82,6 +82,7 @@ export interface NuxtSSRContext extends SSRContext {
   }
   /** @internal */
   _preloadManifest?: boolean
+  rootComponent?: VNode
 }
 
 export interface NuxtPayload {
@@ -260,7 +261,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
-    _id: options.id || appId || 'nuxt-app',
+    _id: options.id ||   'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
     versions: {
@@ -327,7 +328,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   if (import.meta.client) {
-    const __NUXT__ = multiApp ? window.__NUXT__?.[nuxtApp._id] : window.__NUXT__
+    const __NUXT__ =  window.__NUXT__
     // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
     if (__NUXT__) {
       for (const key in __NUXT__) {
@@ -374,14 +375,7 @@ export function createNuxtApp (options: CreateOptions) {
 
   if (import.meta.client) {
     // Listen to chunk load errors
-    if (chunkErrorEvent) {
-      window.addEventListener(chunkErrorEvent, (event) => {
-        nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-        if (nuxtApp.isHydrating || event.payload.message.includes('Unable to preload CSS')) {
-          event.preventDefault()
-        }
-      })
-    }
+ 
     window.useNuxtApp ||= useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks

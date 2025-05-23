@@ -16,6 +16,7 @@ const hasRouter = useState('hasRouter', () => !!useRouter())
     Props:
     <!-- eslint-disable-next-line vue/no-v-html -->
     <pre v-html="JSON.stringify(props, null, 2)" />
+    <Counter load:client :multiplier="5" />
   </div>
 </template>
 

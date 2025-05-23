@@ -5,6 +5,9 @@ const props = defineProps<{
 }>()
 const count = ref(12)
 const doubled = computed(() => count.value * props.multiplier)
+
+await new Promise(resolve => setTimeout(resolve, 1000))
+console.log('doubled', doubled.value)
 </script>
 
 <template>

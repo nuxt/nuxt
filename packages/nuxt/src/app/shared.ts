@@ -2,7 +2,8 @@ export const enum VServerComponentType {
     Element,
     Component,
     Text,
-    Fragment
+    Fragment,
+    Suspense
 }
 
 export interface VServerComponentElement {
@@ -30,4 +31,9 @@ export interface VServerComponentText {
     text: string;
 }
 
-export type VServerComponent = VServerComponentElement | VServerComponentComponent | VServerComponentText | VServerComponentFragment    ;
+export interface VServerComponentSuspense {
+    type: VServerComponentType.Suspense
+    children?: VServerComponent[] | VServerComponent
+}
+
+export type VServerComponent = VServerComponentElement | VServerComponentComponent | VServerComponentText | VServerComponentFragment | VServerComponentSuspense   ;

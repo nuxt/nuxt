@@ -16,6 +16,7 @@ import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
+import { renderServerComponent } from '#app/deserialize'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
@@ -90,7 +91,7 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
-
+    const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)
     let activeHead: ActiveHeadEntry<SerializableHead>
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
@@ -104,6 +105,7 @@ export default defineComponent({
       if (result.slots) { toRevive.slots = result.slots }
       if (result.components) { toRevive.components = result.components }
       if (result.head) { toRevive.head = result.head }
+      if (result.ast) { toRevive.ast = result.ast }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
@@ -156,6 +158,7 @@ export default defineComponent({
       nuxtApp.payload.data[key] ||= {}
       // clear all data-island-uid to avoid conflicts when saving into payloads
       nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
+      
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
@@ -234,6 +237,9 @@ export default defineComponent({
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
+        if (res.ast) {
+          ast.value = res.ast
+        }
         key.value++
         error.value = null
         payloads.slots = res.slots || {}
@@ -286,8 +292,15 @@ export default defineComponent({
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)
-    }
-
+    } 
+    console.log(ast.value, renderServerComponent(
+      ast.value,
+    ))
+       return (_, _push) => {
+        return  renderServerComponent(
+          ast.value,
+        )
+      } 
     return (_ctx: any, _cache: any) => {
       if (!html.value || error.value) {
         return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]

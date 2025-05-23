@@ -1,4 +1,5 @@
 <template>
+  <div>
   <Suspense @resolve="onResolve">
     <div v-if="abortRender" />
     <ErrorComponent
@@ -14,7 +15,7 @@
       v-else-if="SingleRenderer"
     />
     <AppComponent v-else />
-  </Suspense>
+  </Suspense></div>
 </template>
 
 <script setup>
