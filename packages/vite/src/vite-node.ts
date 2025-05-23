@@ -1,11 +1,10 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
-import { ViteNodeServer } from 'vite-node/server'
 import { isAbsolute, join, normalize, resolve } from 'pathe'
 // import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
-import type { ModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { distDir } from './dirs'
@@ -15,6 +14,7 @@ import { isCSS } from './utils'
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 allows adding middleware after setup
 export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
+  const { nuxt } = ctx
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
 
@@ -39,7 +39,7 @@ export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
       server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
 
       // invalidate changed virtual modules when templates are regenerated
-      ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
+      nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
         for (const template of changedTemplates) {
           const mods = server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
 
@@ -66,6 +66,7 @@ export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
 // }
 
 function getManifest (ctx: ViteBuildContext) {
+  const { nuxt } = ctx
   const css = new Set<string>()
   for (const key of ctx.ssrServer!.moduleGraph.urlToModuleMap.keys()) {
     if (isCSS(key)) {
@@ -86,7 +87,7 @@ function getManifest (ctx: ViteBuildContext) {
       module: true,
       isEntry: true,
     },
-    ...ctx.nuxt.options.features.noScripts === 'all'
+    ...nuxt.options.features.noScripts === 'all'
       ? {}
       : {
           [ctx.entry]: {
@@ -103,19 +104,6 @@ function getManifest (ctx: ViteBuildContext) {
 
 function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = new Set()) {
   const app = createApp()
-
-  let _node: ViteNodeServer | undefined
-  function getNode (server: ViteDevServer) {
-    return _node ||= new ViteNodeServer(server, {
-      deps: {
-        inline: [/^#/, /\?/],
-      },
-      transformMode: {
-        ssr: [/.*/],
-        web: [],
-      },
-    })
-  }
 
   app.use('/manifest', defineEventHandler(() => {
     const manifest = getManifest(ctx)
@@ -134,7 +122,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     if (!id || !ctx.ssrServer) {
       throw createError({ statusCode: 400 })
     }
-    return await getNode(ctx.ssrServer).resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
+    return await ctx.ssrServer.pluginContainer.resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
   }))
 
   app.use('/module', defineEventHandler(async (event) => {
@@ -142,12 +130,12 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     if (moduleId === '/' || !ctx.ssrServer) {
       throw createError({ statusCode: 400 })
     }
+    // TODO: replace
     if (isAbsolute(moduleId) && !isFileServingAllowed(ctx.ssrServer.config, moduleId)) {
       throw createError({ statusCode: 403 /* Restricted */ })
     }
-    const node = getNode(ctx.ssrServer)
 
-    const module = await node.fetchModule(moduleId).catch(async (err) => {
+    const module = await ctx.ssrServer.environments.ssr.fetchModule(moduleId).catch(async (err) => {
       const errorData = {
         code: 'VITE_ERROR',
         id: moduleId,
@@ -156,7 +144,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
       }
 
       if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
-        errorData.frame = await node.transformModule(moduleId, 'web').then(({ code }) => `${err.message || ''}\n${code}`).catch(() => undefined)
+        errorData.frame = await ctx.clientServer?.transformRequest(moduleId).then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
       }
       throw createError({ data: errorData })
     })
@@ -174,10 +162,12 @@ export type ViteNodeServerOptions = {
 }
 
 export async function initViteNodeServer (ctx: ViteBuildContext) {
+  const { nuxt } = ctx
+
   // Serialize and pass vite-node runtime options
   const viteNodeServerOptions = {
-    baseURL: `${ctx.nuxt.options.devServer.url}__nuxt_vite_node__`,
-    root: ctx.nuxt.options.srcDir,
+    baseURL: `${nuxt.options.devServer.url}__nuxt_vite_node__`,
+    root: nuxt.options.srcDir,
     entryPath: ctx.entry,
     base: ctx.ssrServer!.config.base || '/_nuxt/',
   } satisfies ViteNodeServerOptions
@@ -186,14 +176,14 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
   const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
 
-  await mkdir(join(ctx.nuxt.options.buildDir, 'dist/server'), { recursive: true })
+  await mkdir(join(nuxt.options.buildDir, 'dist/server'), { recursive: true })
 
   await writeFile(
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
+    resolve(nuxt.options.buildDir, 'dist/server/server.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
   )
   await writeFile(
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
+    resolve(nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
   )
 }
