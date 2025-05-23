@@ -4,16 +4,16 @@ import { parseQuery, parseURL } from 'ufo'
 import type { Plugin } from 'vite'
 import { isCSS } from '../utils'
 
-interface RuntimePathsOptions {
-  sourcemap?: boolean
-}
-
 const VITE_ASSET_RE = /__VITE_ASSET__|__VITE_PUBLIC_ASSET__/
 
-export function RuntimePathsPlugin (options: RuntimePathsOptions): Plugin {
+export function RuntimePathsPlugin (): Plugin {
+  let sourcemap: boolean
   return {
     name: 'nuxt:runtime-paths-dep',
     enforce: 'post',
+    configResolved (config) {
+      sourcemap = !!config.build.sourcemap
+    },
     transform (code, id) {
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
 
@@ -32,7 +32,7 @@ export function RuntimePathsPlugin (options: RuntimePathsOptions): Plugin {
 
         return {
           code: s.toString(),
-          map: options.sourcemap
+          map: sourcemap
             ? s.generateMap({ hires: true })
             : undefined,
         }
