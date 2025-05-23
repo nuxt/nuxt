@@ -24,13 +24,8 @@ import { createViteLogger } from './utils/logger'
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const nodeCompat = nuxt.options.experimental.clientNodeCompat
     ? {
-        alias: defineEnv({
-          nodeCompat: true,
-          resolve: true,
-        }).env.alias,
-        define: {
-          global: 'globalThis',
-        },
+        alias: defineEnv({ nodeCompat: true, resolve: true }).env.alias,
+        define: { global: 'globalThis' },
       }
     : { alias: {}, define: {} }
 
@@ -39,15 +34,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     base: nuxt.options.dev
       ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
       : './',
-    experimental: {
-      renderBuiltUrl: (filename, { type, hostType }) => {
-        if (hostType !== 'js' || type === 'asset') {
-          // In CSS we only use relative paths until we craft a clever runtime CSS hack
-          return { relative: true }
-        }
-        return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
-      },
-    },
     css: {
       devSourcemap: !!nuxt.options.sourcemap.client,
     },

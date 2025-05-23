@@ -6,7 +6,7 @@ import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
-import { withoutLeadingSlash } from 'ufo'
+import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
@@ -57,6 +57,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
+  const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
+
   const isIgnored = createIsIgnored(nuxt)
   const ctx: ViteBuildContext = {
     nuxt,
@@ -64,6 +66,27 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config: vite.mergeConfig(
       {
         logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
+        experimental: {
+          renderBuiltUrl: (filename, { type, hostType, ssr }) => {
+            if (hostType !== 'js') {
+              // In CSS we only use relative paths until we craft a clever runtime CSS hack
+              return { relative: true }
+            }
+            if (!ssr) {
+              if (type === 'asset') {
+                return { relative: true }
+              }
+              return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
+            }
+            if (type === 'public') {
+              return { runtime: `${helper}__publicAssetsURL(${JSON.stringify(filename)})` }
+            }
+            if (type === 'asset') {
+              const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir)), '')
+              return { runtime: `${helper}__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
+            }
+          },
+        },
         resolve: {
           alias: {
             [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
