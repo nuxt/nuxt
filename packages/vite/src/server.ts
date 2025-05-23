@@ -3,7 +3,7 @@ import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath } from '@nuxt/kit'
-import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { joinURL, withTrailingSlash } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
 import type { Nitro } from 'nitropack/types'
@@ -16,31 +16,29 @@ import { transpile } from './utils/transpile'
 import { createSourcemapPreserver } from './plugins/nitro-sourcemap'
 
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
-  const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
   const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: nuxt.options.dev
       ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
       : undefined,
-    experimental: {
-      renderBuiltUrl: (filename, { type, hostType }) => {
-        if (hostType !== 'js') {
-          // In CSS we only use relative paths until we craft a clever runtime CSS hack
-          return { relative: true }
-        }
-        if (type === 'public') {
-          return { runtime: `${helper}__publicAssetsURL(${JSON.stringify(filename)})` }
-        }
-        if (type === 'asset') {
-          const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir)), '')
-          return { runtime: `${helper}__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
-        }
-      },
-    },
     css: {
       devSourcemap: !!nuxt.options.sourcemap.server,
     },
+    plugins: [
+      {
+        name: 'nuxt:nitro:vue-feature-flags',
+        applyToEnvironment: environment => environment.name === 'ssr' && environment.config.isProduction,
+        configResolved (config) {
+          for (const key in config.define) {
+            if (key.startsWith('__VUE')) {
+              // tree-shake vue feature flags for non-node targets
+              ((nuxt as any)._nitro as Nitro).options.replace[key] = config.define[key]
+            }
+          }
+        },
+      },
+    ],
     define: {
       'process.server': true,
       'process.client': false,
@@ -146,20 +144,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     vuePlugin(serverConfig.vue),
     viteJsxPlugin(serverConfig.vueJsx),
   )
-
-  if (!nuxt.options.dev) {
-    serverConfig.plugins!.push({
-      name: 'nuxt:nitro:vue-feature-flags',
-      configResolved (config) {
-        for (const key in config.define) {
-          if (key.startsWith('__VUE')) {
-            // tree-shake vue feature flags for non-node targets
-            ((nuxt as any)._nitro as Nitro).options.replace[key] = config.define[key]
-          }
-        }
-      },
-    })
-  }
 
   await nuxt.callHook('vite:configResolved', serverConfig, { isClient: false, isServer: true })
 

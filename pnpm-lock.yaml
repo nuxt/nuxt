@@ -976,9 +976,6 @@ importers:
       unenv:
         specifier: ^2.0.0-rc.17
         version: 2.0.0-rc.17
-      unplugin:
-        specifier: ^2.3.5
-        version: 2.3.5
       vite:
         specifier: 6.3.5
         version: 6.3.5(@types/node@22.15.32)(jiti@2.4.2)(terser@5.40.0)(yaml@2.8.0)
