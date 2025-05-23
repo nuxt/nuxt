@@ -11,6 +11,7 @@ export function RuntimePathsPlugin (): Plugin {
   return {
     name: 'nuxt:runtime-paths-dep',
     enforce: 'post',
+    applyToEnvironment: environment => environment.name === 'client',
     configResolved (config) {
       sourcemap = !!config.build.sourcemap
     },
