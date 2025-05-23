@@ -13,6 +13,7 @@ import { initViteNodeServer } from './vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
+import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
 
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
@@ -25,18 +26,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       devSourcemap: !!nuxt.options.sourcemap.server,
     },
     plugins: [
-      {
-        name: 'nuxt:nitro:vue-feature-flags',
-        applyToEnvironment: environment => environment.name === 'ssr' && environment.config.isProduction,
-        configResolved (config) {
-          for (const key in config.define) {
-            if (key.startsWith('__VUE')) {
-              // tree-shake vue feature flags for non-node targets
-              ((nuxt as any)._nitro as Nitro).options.replace[key] = config.define[key]
-            }
-          }
-        },
-      },
+      VueFeatureFlagsPlugin(nuxt),
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
     ],

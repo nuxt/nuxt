@@ -1,5 +1,5 @@
 import MagicString from 'magic-string'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 import type { Plugin } from 'vite'
 import { resolveEntry } from '../utils/config'
 
