@@ -1,6 +1,7 @@
 name: ci
 
 on:
+  merge_group:
   push:
     paths-ignore:
       - "docs/**"
@@ -64,6 +65,7 @@ jobs:
           path: packages/*/dist
 
   codeql:
+    if: github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -183,11 +185,8 @@ jobs:
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Test (unit)
-        run: pnpm test:unit
-
-      - name: Test (runtime unit)
-        run: pnpm test:runtime
+      - name: Test (unit + runtime test)
+        run: pnpm vitest run --project unit --project nuxt
 
   test-size:
     runs-on: ubuntu-latest

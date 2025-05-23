@@ -31,12 +31,13 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
 
   function getComponentsImports (): Import[] {
     const components = options.getComponents(options.mode)
+    const clientOrServerModes = new Set(['client', 'server'])
     return components.flatMap((c): Import[] => {
       const withMode = (mode: string | undefined) => mode
         ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}&nuxt_component_name=${c.pascalName}&nuxt_component_export=${c.export || 'default'}`
         : c.filePath
 
-      const mode = !c._raw && c.mode && ['client', 'server'].includes(c.mode) ? c.mode : undefined
+      const mode = !c._raw && c.mode && clientOrServerModes.has(c.mode) ? c.mode : undefined
 
       return [
         {

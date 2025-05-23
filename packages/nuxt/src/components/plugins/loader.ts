@@ -170,7 +170,8 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
   const id = pascalCase(name).replace(QUOTE_RE, '')
   // Prefer exact match
-  const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
+  const validModes = new Set(['all', mode, undefined])
+  const component = components.find(component => id === component.pascalName && validModes.has(component.mode))
   if (component) { return component }
 
   const otherModeComponent = components.find(component => id === component.pascalName)

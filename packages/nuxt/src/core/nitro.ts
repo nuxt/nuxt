@@ -333,13 +333,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       nitro.hooks.hook('rollup:before', async (nitro) => {
         const routeRules = {} as Record<string, any>
         const _routeRules = nitro.options.routeRules
+        const validManifestKeys = new Set(['prerender', 'redirect', 'appMiddleware'])
         for (const key in _routeRules) {
           if (key === '/__nuxt_error') { continue }
           let hasRules = false
           const filteredRules = {} as Record<string, any>
           for (const routeKey in _routeRules[key]) {
             const value = (_routeRules as any)[key][routeKey]
-            if (['prerender', 'redirect', 'appMiddleware'].includes(routeKey) && value) {
+            if (value && validManifestKeys.has(routeKey)) {
               if (routeKey === 'redirect') {
                 filteredRules[routeKey] = typeof value === 'string' ? value : value.to
               } else {

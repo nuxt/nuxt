@@ -1,5 +1,5 @@
 import type { Component, PropType, RendererNode, VNode } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, withMemo } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
@@ -80,8 +80,8 @@ export default defineComponent({
   emits: ['error'],
   async setup (props, { slots, expose, emit }) {
     let canTeleport = import.meta.server
-    const teleportKey = ref(0)
-    const key = ref(0)
+    const teleportKey = shallowRef(0)
+    const key = shallowRef(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
@@ -95,7 +95,7 @@ export default defineComponent({
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
-    const mounted = ref(false)
+    const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {
@@ -159,9 +159,10 @@ export default defineComponent({
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
-    const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
+
+    const currentSlots = new Set(Object.keys(slots))
+    const availableSlots = computed(() => new Set([...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1])))
     const html = computed(() => {
-      const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
       if (props.scopeId) {
@@ -178,7 +179,7 @@ export default defineComponent({
 
       if (payloads.slots) {
         return html.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
-          if (!currentSlots.includes(slotName)) {
+          if (!currentSlots.has(slotName)) {
             return full + (payloads.slots?.[slotName]?.fallback || '')
           }
           return full
@@ -305,7 +306,7 @@ export default defineComponent({
 
           if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : (mounted.value || instance.vnode?.el))) {
             for (const slot in slots) {
-              if (availableSlots.value.includes(slot)) {
+              if (availableSlots.value.has(slot)) {
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
