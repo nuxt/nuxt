@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import defu from 'defu'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 import { dirname, resolve } from 'pathe'
 
 import type { Plugin as RollupPlugin } from 'rollup'
@@ -37,18 +37,19 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
     },
   } satisfies RollupPlugin
 
-  if (nuxt.options.sourcemap.server && !nuxt.options.dev) {
-    nuxt.hook('nitro:build:before', (nitro) => {
-      nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
-        plugins: [nitroPlugin],
-      })
+  nuxt.hook('nitro:build:before', (nitro) => {
+    nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
+      plugins: [nitroPlugin],
     })
-  }
+  })
 
   return {
     name: 'nuxt:sourcemap-export',
-    apply (config, env) {
-      return !!config.build?.sourcemap && env.mode === 'production'
+    applyToEnvironment: (environment) => {
+      return environment.name === 'ssr' && environment.config.isProduction
+    },
+    apply (config) {
+      return !!config.build?.sourcemap
     },
     configResolved (config) {
       outputDir = config.build.outDir
