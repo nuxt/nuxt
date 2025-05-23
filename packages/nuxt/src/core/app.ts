@@ -21,12 +21,6 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
   } as unknown as NuxtApp) as NuxtApp
 }
 
-const postTemplates = new Set([
-  defaultTemplates.clientPluginTemplate.filename,
-  defaultTemplates.serverPluginTemplate.filename,
-  defaultTemplates.pluginsDeclaration.filename,
-])
-
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
   // Resolve app
   await resolveApp(nuxt, app)
@@ -47,6 +41,12 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     post: [],
   }
 
+  const postTemplates = new Set([
+    defaultTemplates.clientPluginTemplate.filename,
+    defaultTemplates.serverPluginTemplate.filename,
+    defaultTemplates.pluginsDeclaration.filename,
+  ])
+
   for (const template of app.templates as Array<ResolvedNuxtTemplate<any>>) {
     if (options.filter && !options.filter(template)) { continue }
     const key = template.filename && postTemplates.has(template.filename) ? 'post' : 'pre'
@@ -60,6 +60,24 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   const dirs = new Set<string>()
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
   const FORWARD_SLASH_RE = /\//g
+  /** @internal */
+  async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
+    delete ctx.utils
+
+    if (template.src) {
+      try {
+        return await fsp.readFile(template.src, 'utf-8')
+      } catch (err) {
+        logger.error(`[nuxt] Error reading template from \`${template.src}\``)
+        throw err
+      }
+    }
+    if (template.getContents) {
+      return template.getContents({ ...ctx, options: template.options! })
+    }
+
+    throw new Error('[nuxt] Invalid template. Templates must have either `src` or `getContents`: ' + JSON.stringify(template))
+  }
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     const start = performance.now()
@@ -113,25 +131,6 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
   }
-}
-
-/** @internal */
-async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
-  delete ctx.utils
-
-  if (template.src) {
-    try {
-      return await fsp.readFile(template.src, 'utf-8')
-    } catch (err) {
-      logger.error(`[nuxt] Error reading template from \`${template.src}\``)
-      throw err
-    }
-  }
-  if (template.getContents) {
-    return template.getContents({ ...ctx, options: template.options! })
-  }
-
-  throw new Error('[nuxt] Invalid template. Templates must have either `src` or `getContents`: ' + JSON.stringify(template))
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
@@ -216,6 +215,21 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
+  function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
+    return Promise.all(items.map(async (item) => {
+      if (!item[key]) { return item }
+      return {
+        ...item,
+        [key]: await resolvePath(item[key], {
+          alias: nuxt.options.alias,
+          extensions: nuxt.options.extensions,
+          fallbackToOriginal: true,
+          virtual: true,
+        }),
+      }
+    }))
+  }
+
   // Normalize and de-duplicate plugins and middleware
   app.middleware = uniqueBy(await resolvePaths(nuxt, [...app.middleware].reverse(), 'path'), 'name').reverse()
   app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
@@ -235,21 +249,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Normalize and de-duplicate plugins and middleware
   app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
-}
-
-function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
-  return Promise.all(items.map(async (item) => {
-    if (!item[key]) { return item }
-    return {
-      ...item,
-      [key]: await resolvePath(item[key], {
-        alias: nuxt.options.alias,
-        extensions: nuxt.options.extensions,
-        fallbackToOriginal: true,
-        virtual: true,
-      }),
-    }
-  }))
 }
 
 const IS_TSX = /\.[jt]sx$/

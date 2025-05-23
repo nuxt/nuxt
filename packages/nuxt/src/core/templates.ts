@@ -318,18 +318,6 @@ export const middlewareTemplate: NuxtTemplate = {
   },
 }
 
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
-}
-
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
   async getContents ({ nuxt }) {
@@ -338,6 +326,17 @@ export const nitroSchemaTemplate: NuxtTemplate = {
     await nuxt.callHook('nitro:prepare:types', { references, declarations })
 
     const sourceDir = join(nuxt.options.buildDir, 'types')
+    function renderAttr (key: string, value?: string) {
+      return value ? `${key}="${value}"` : ''
+    }
+
+    function renderAttrs (obj: Record<string, string>) {
+      const attrs: string[] = []
+      for (const key in obj) {
+        attrs.push(renderAttr(key, obj[key]))
+      }
+      return attrs.join(' ')
+    }
     const lines = [
       ...references.map((ref) => {
         if ('path' in ref && isAbsolute(ref.path)) {

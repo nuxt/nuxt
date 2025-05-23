@@ -24,7 +24,6 @@ import { createImportProtectionPatterns } from './plugins/import-protection'
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
   const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
-
   const RELATIVE_RE = /^([^.])/
   function relativeWithDot (from: string, to: string) {
     return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
