@@ -10,6 +10,8 @@ import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
+import type { Nitro } from 'nitro/types'
+import escapeStringRegexp from 'escape-string-regexp'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
@@ -31,6 +33,7 @@ export interface ViteBuildContext {
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
+  const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
 
   nuxt.options.modulesDir.push(distDir)
 
@@ -85,6 +88,131 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir)), '')
               return { runtime: `${helper}__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
             }
+          },
+        },
+        environments: {
+          client: {
+            optimizeDeps: {
+              entries: [entry],
+              include: [],
+              // We exclude Vue and Nuxt common dependencies from optimization
+              // as they already ship ESM.
+              //
+              // This will help to reduce the chance for users to encounter
+              // common chunk conflicts that causing browser reloads.
+              // We should also encourage module authors to add their deps to
+              // `exclude` if they ships bundled ESM.
+              //
+              // Also since `exclude` is inert, it's safe to always include
+              // all possible deps even if they are not used yet.
+              //
+              // @see https://github.com/antfu/nuxt-better-optimize-deps#how-it-works
+              exclude: [
+                // Vue
+                'vue',
+                '@vue/runtime-core',
+                '@vue/runtime-dom',
+                '@vue/reactivity',
+                '@vue/shared',
+                '@vue/devtools-api',
+                'vue-router',
+                'vue-demi',
+
+                // Nuxt
+                'nuxt',
+                'nuxt/app',
+
+                // Nuxt Deps
+                '@unhead/vue',
+                'consola',
+                'defu',
+                'devalue',
+                'h3',
+                'hookable',
+                'klona',
+                'ofetch',
+                'pathe',
+                'ufo',
+                'unctx',
+                'unenv',
+
+                // these will never be imported on the client
+                '#app-manifest',
+              ],
+            },
+            build: {
+              manifest: 'manifest.json',
+              outDir: resolve(nuxt.options.buildDir, 'dist/client'),
+              rollupOptions: {
+                input: { entry },
+              },
+            },
+            dev: {
+              warmup: [entry],
+            },
+          },
+
+          ssr: {
+            define: {
+              'process.server': true,
+              'process.client': false,
+              'process.browser': false,
+              'import.meta.server': true,
+              'import.meta.client': false,
+              'import.meta.browser': false,
+              'window': 'undefined',
+              'document': 'undefined',
+              'navigator': 'undefined',
+              'location': 'undefined',
+              'XMLHttpRequest': 'undefined',
+            },
+            optimizeDeps: {
+              noDiscovery: true,
+            },
+            resolve: {
+              conditions: ((nuxt as any)._nitro as Nitro)?.options.exportConditions,
+            },
+            build: {
+              // we'll display this in nitro build output
+              reportCompressedSize: false,
+              outDir: resolve(nuxt.options.buildDir, 'dist/server'),
+              ssr: true,
+              rollupOptions: {
+                input: { server: serverEntry },
+                external: [
+                  'nitro/runtime',
+                  // TODO: remove in v5
+                  '#internal/nitro',
+                  'nitropack/runtime',
+                  '#internal/nuxt/paths',
+                  '#internal/nuxt/app-config',
+                  '#app-manifest',
+                  '#shared',
+                  new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))),
+                ],
+                output: {
+                  entryFileNames: '[name].mjs',
+                  format: 'module',
+                  generatedCode: {
+                    symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
+                    constBindings: true,
+                    // temporary fix for https://github.com/rollup/rollup/issues/5975
+                    arrowFunctions: true,
+                  },
+                },
+                onwarn (warning, rollupWarn) {
+                  if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
+                    return
+                  }
+                  rollupWarn(warning)
+                },
+              },
+            },
+            dev: {
+              warmup: [serverEntry],
+              // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
+              preTransformRequests: false,
+            },
           },
         },
         resolve: {

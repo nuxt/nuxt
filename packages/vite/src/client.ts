@@ -21,7 +21,7 @@ import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
 import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
-export async function getClientConfig (nuxt: Nuxt, ctx: ViteBuildContext) {
+export async function getClientConfig (nuxt: Nuxt, config: ViteConfig) {
   const nodeCompat = nuxt.options.experimental.clientNodeCompat
     ? {
         alias: defineEnv({ nodeCompat: true, resolve: true }).env.alias,
@@ -29,7 +29,7 @@ export async function getClientConfig (nuxt: Nuxt, ctx: ViteBuildContext) {
       }
     : { alias: {}, define: {} }
 
-  const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
+  const clientConfig: ViteConfig = vite.mergeConfig(config, vite.mergeConfig({
     configFile: false,
     base: nuxt.options.dev
       ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
@@ -41,7 +41,7 @@ export async function getClientConfig (nuxt: Nuxt, ctx: ViteBuildContext) {
       include: [],
     },
     define: {
-      'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
+      'process.env.NODE_ENV': JSON.stringify(config.mode),
       'process.server': false,
       'process.client': true,
       'process.browser': true,
@@ -55,74 +55,11 @@ export async function getClientConfig (nuxt: Nuxt, ctx: ViteBuildContext) {
       'module.hot': false,
       ...nodeCompat.define,
     },
-    environments: {
-      client: {
-        optimizeDeps: {
-          entries: [ctx.entry],
-          include: [],
-          // We exclude Vue and Nuxt common dependencies from optimization
-          // as they already ship ESM.
-          //
-          // This will help to reduce the chance for users to encounter
-          // common chunk conflicts that causing browser reloads.
-          // We should also encourage module authors to add their deps to
-          // `exclude` if they ships bundled ESM.
-          //
-          // Also since `exclude` is inert, it's safe to always include
-          // all possible deps even if they are not used yet.
-          //
-          // @see https://github.com/antfu/nuxt-better-optimize-deps#how-it-works
-          exclude: [
-            // Vue
-            'vue',
-            '@vue/runtime-core',
-            '@vue/runtime-dom',
-            '@vue/reactivity',
-            '@vue/shared',
-            '@vue/devtools-api',
-            'vue-router',
-            'vue-demi',
-
-            // Nuxt
-            'nuxt',
-            'nuxt/app',
-
-            // Nuxt Deps
-            '@unhead/vue',
-            'consola',
-            'defu',
-            'devalue',
-            'h3',
-            'hookable',
-            'klona',
-            'ofetch',
-            'pathe',
-            'ufo',
-            'unctx',
-            'unenv',
-
-            // these will never be imported on the client
-            '#app-manifest',
-          ],
-        },
-        build: {
-          sourcemap: nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
-          manifest: 'manifest.json',
-          outDir: resolve(nuxt.options.buildDir, 'dist/client'),
-          rollupOptions: {
-            input: { entry: ctx.entry },
-          },
-        },
-        dev: {
-          warmup: [ctx.entry],
-        },
-      },
-    },
     resolve: {
       alias: {
         // user aliases
         ...nodeCompat.alias,
-        ...ctx.config.resolve?.alias,
+        ...config.resolve?.alias,
         'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
         // TODO: remove in v5
         '#internal/nitro': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
@@ -131,7 +68,7 @@ export async function getClientConfig (nuxt: Nuxt, ctx: ViteBuildContext) {
         '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
     },
-    cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
+    cacheDir: resolve(nuxt.options.rootDir, config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
     plugins: [
       DevStyleSSRPlugin({
         srcDir: nuxt.options.srcDir,
@@ -209,16 +146,18 @@ export async function getClientConfig (nuxt: Nuxt, ctx: ViteBuildContext) {
   const exclude = new Set([...clientConfig.optimizeDeps?.exclude || [], ...clientConfig.environments?.client?.optimizeDeps?.exclude || []])
   clientConfig.optimizeDeps!.include = clientConfig.optimizeDeps!.include!
     .filter(dep => !exclude.has(dep))
-  clientConfig.environments!.client!.optimizeDeps ||= {}
-  clientConfig.environments!.client!.optimizeDeps.include = clientConfig.environments!.client!.optimizeDeps.include!
-    .filter(dep => !exclude.has(dep))
+  if (clientConfig.environments?.client?.optimizeDeps) {
+    clientConfig.environments!.client!.optimizeDeps.include = clientConfig.environments!.client!.optimizeDeps.include!
+      .filter(dep => !exclude.has(dep))
+  }
 
   return clientConfig
 }
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
-  const clientConfig = await getClientConfig(nuxt, ctx)
+  const clientConfig = await getClientConfig(nuxt, ctx.config)
 
+  // Production build
   if (!nuxt.options.dev) {
     const start = Date.now()
     logger.restoreAll()

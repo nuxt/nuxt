@@ -134,14 +134,41 @@ export function addRspackPlugin (pluginOrGetter: RspackPluginInstance | RspackPl
 /**
  * Append Vite plugin to the config.
  */
-export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options?: ExtendViteConfigOptions) {
-  extendViteConfig((config) => {
+export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options: ExtendViteConfigOptions = {}) {
+  const nuxt = useNuxt()
+
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  const environmentMap: Record<string, 'client' | 'server'> = {
+    'client': 'client',
+    'ssr': 'server',
+  }
+
+  nuxt.hook('vite:extend', ({ config }) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+    const plugins = toArray(plugin)
+    if (options.server === false || options.client === false) {
+      for (const plugin of plugins) {
+        const originalApply = plugin.applyToEnvironment
+        plugin.applyToEnvironment = (environment) => {
+          const allowed = options[environmentMap[environment.name]!] !== false
+          if (!allowed) {
+            return false
+          }
+          return originalApply?.(environment) ?? true
+        }
+      }
+    }
 
     config.plugins ||= []
     config.plugins[method](...toArray(plugin))
-  }, options)
+  })
 }
 
 interface AddBuildPluginFactory {
