@@ -25,9 +25,6 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
       apply () {
         return !!options.dev && !!options.baseURL && options.baseURL !== '/'
       },
-      configResolved (config) {
-        sourcemap = !!config.build.sourcemap
-      },
       transform (code, id) {
         if (!isCSSRequest(id) || !CSS_URL_SINGLE_RE.test(code)) { return }
 
@@ -48,6 +45,9 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
     },
     {
       name: 'nuxt:vite-public-dir-resolution',
+      configResolved (config) {
+        sourcemap = !!config.build.sourcemap
+      },
       load: {
         order: 'pre',
         handler (id) {
