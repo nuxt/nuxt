@@ -100,7 +100,7 @@ function formatViteError (errorData, id) {
 
   const stack = [
     message,
-    `at ${loc}`,
+    loc && `at ${loc}`,
     errorData.stack,
   ].filter(Boolean).join('\n')
 

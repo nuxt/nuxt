@@ -15,7 +15,7 @@ import { transpile } from './utils/transpile'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
 import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
 
-export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
+export async function getServerConfig (nuxt: Nuxt, ctx: ViteBuildContext) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
   const serverConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
@@ -25,30 +25,76 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     css: {
       devSourcemap: !!nuxt.options.sourcemap.server,
     },
+    environments: {
+      ssr: {
+        define: {
+          'process.server': true,
+          'process.client': false,
+          'process.browser': false,
+          'import.meta.server': true,
+          'import.meta.client': false,
+          'import.meta.browser': false,
+          'window': 'undefined',
+          'document': 'undefined',
+          'navigator': 'undefined',
+          'location': 'undefined',
+          'XMLHttpRequest': 'undefined',
+        },
+        optimizeDeps: {
+          noDiscovery: true,
+        },
+        resolve: {
+          conditions: ((nuxt as any)._nitro as Nitro)?.options.exportConditions,
+        },
+        build: {
+          // we'll display this in nitro build output
+          reportCompressedSize: false,
+          sourcemap: nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? nuxt.options.sourcemap.server : false,
+          outDir: resolve(nuxt.options.buildDir, 'dist/server'),
+          ssr: true,
+          rollupOptions: {
+            input: { server: serverEntry },
+            external: [
+              'nitro/runtime',
+              // TODO: remove in v5
+              '#internal/nitro',
+              'nitropack/runtime',
+              '#internal/nuxt/paths',
+              '#internal/nuxt/app-config',
+              '#app-manifest',
+              '#shared',
+              new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))),
+            ],
+            output: {
+              entryFileNames: '[name].mjs',
+              format: 'module',
+              generatedCode: {
+                symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
+                constBindings: true,
+                // temporary fix for https://github.com/rollup/rollup/issues/5975
+                arrowFunctions: true,
+              },
+            },
+            onwarn (warning, rollupWarn) {
+              if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
+                return
+              }
+              rollupWarn(warning)
+            },
+          },
+        },
+        dev: {
+          warmup: [serverEntry],
+          // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
+          preTransformRequests: false,
+        },
+      },
+    },
     plugins: [
       VueFeatureFlagsPlugin(nuxt),
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
     ],
-    define: {
-      'process.server': true,
-      'process.client': false,
-      'process.browser': false,
-      'import.meta.server': true,
-      'import.meta.client': false,
-      'import.meta.browser': false,
-      'window': 'undefined',
-      'document': 'undefined',
-      'navigator': 'undefined',
-      'location': 'undefined',
-      'XMLHttpRequest': 'undefined',
-    },
-    optimizeDeps: {
-      noDiscovery: true,
-    },
-    resolve: {
-      conditions: ((nuxt as any)._nitro as Nitro)?.options.exportConditions,
-    },
     ssr: {
       external: [
         'nitro/runtime',
@@ -65,49 +111,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       ],
     },
     cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'server'),
-    build: {
-      // we'll display this in nitro build output
-      reportCompressedSize: false,
-      sourcemap: nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? nuxt.options.sourcemap.server : false,
-      outDir: resolve(nuxt.options.buildDir, 'dist/server'),
-      ssr: true,
-      rollupOptions: {
-        input: { server: serverEntry },
-        external: [
-          'nitro/runtime',
-          // TODO: remove in v5
-          '#internal/nitro',
-          'nitropack/runtime',
-          '#internal/nuxt/paths',
-          '#internal/nuxt/app-config',
-          '#app-manifest',
-          '#shared',
-          new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))),
-        ],
-        output: {
-          entryFileNames: '[name].mjs',
-          format: 'module',
-          generatedCode: {
-            symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
-            constBindings: true,
-            // temporary fix for https://github.com/rollup/rollup/issues/5975
-            arrowFunctions: true,
-          },
-        },
-        onwarn (warning, rollupWarn) {
-          if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
-            return
-          }
-          rollupWarn(warning)
-        },
-      },
-    },
     server: {
-      warmup: {
-        ssrFiles: [serverEntry],
-      },
-      // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
-      preTransformRequests: false,
       hmr: false,
     },
   } satisfies vite.InlineConfig, nuxt.options.vite.$server || {}))
@@ -127,12 +131,18 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   await nuxt.callHook('vite:configResolved', serverConfig, { isClient: false, isServer: true })
 
+  return serverConfig
+}
+
+export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
+  const serverConfig = await getServerConfig(nuxt, ctx)
+
   // Production build
   if (!nuxt.options.dev) {
     const start = Date.now()
-    logger.info('Building server...')
     logger.restoreAll()
-    await vite.build(serverConfig)
+    const builder = await vite.createBuilder(serverConfig)
+    await builder.build(builder.environments.ssr!)
     logger.wrapAll()
     // Write production client manifest
     await writeManifest(ctx)
