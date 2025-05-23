@@ -130,3 +130,8 @@ export function useScriptUmamiAnalytics (...args: unknown[]) {
 export function useScriptSnapchatPixel (...args: unknown[]) {
   renderStubMessage('useScriptSnapchatPixel')
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptRybbitAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptRybbitAnalytics')
+}
