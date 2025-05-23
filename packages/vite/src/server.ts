@@ -5,7 +5,6 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL, withTrailingSlash } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
-import defu from 'defu'
 import type { Nitro } from 'nitropack/types'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
@@ -13,7 +12,7 @@ import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
-import { createSourcemapPreserver } from './plugins/nitro-sourcemap'
+import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
 
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
@@ -38,6 +37,8 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
           }
         },
       },
+      // tell rollup's nitro build about the original sources of the generated vite server build
+      SourcemapPreserverPlugin(nuxt),
     ],
     define: {
       'process.server': true,
@@ -123,17 +124,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
     delete serverConfig.build.rollupOptions.output.manualChunks
-  }
-
-  // tell rollup's nitro build about the original sources of the generated vite server build
-  if (nuxt.options.sourcemap.server && !nuxt.options.dev) {
-    const { vitePlugin, nitroPlugin } = createSourcemapPreserver()
-    serverConfig.plugins!.push(vitePlugin)
-    nuxt.hook('nitro:build:before', (nitro) => {
-      nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
-        plugins: [nitroPlugin],
-      })
-    })
   }
 
   serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev })
