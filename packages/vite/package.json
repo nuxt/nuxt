@@ -26,15 +26,15 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "rollup": "4.40.2",
+    "rollup": "4.41.1",
     "unbuild": "3.5.0",
-    "vue": "3.5.13"
+    "vue": "3.5.14"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.2",
     "@vitejs/plugin-vue": "^5.2.4",
-    "@vitejs/plugin-vue-jsx": "^4.1.2",
+    "@vitejs/plugin-vue-jsx": "^4.2.0",
     "autoprefixer": "^10.4.21",
     "consola": "^3.4.2",
     "cssnano": "^7.0.7",
@@ -55,8 +55,8 @@
     "rollup-plugin-visualizer": "^5.14.0",
     "std-env": "^3.9.0",
     "ufo": "^1.6.1",
-    "unenv": "^2.0.0-rc.15",
-    "unplugin": "^2.3.3",
+    "unenv": "^2.0.0-rc.17",
+    "unplugin": "^2.3.4",
     "vite": "^6.3.5",
     "vite-node": "^3.1.4",
     "vite-plugin-checker": "^0.9.3",
