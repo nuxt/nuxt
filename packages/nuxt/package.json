@@ -80,7 +80,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.6",
     "@nuxt/vite-builder": "workspace:*",
-    "@unhead/vue": "^2.0.9",
+    "@unhead/vue": "^2.0.10",
     "@vue/shared": "^3.5.14",
     "c12": "^3.0.4",
     "chokidar": "^4.0.3",
@@ -112,7 +112,7 @@
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
     "on-change": "^5.0.1",
-    "oxc-parser": "^0.71.0",
+    "oxc-parser": "^0.72.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^2.1.0",
@@ -146,7 +146,7 @@
     "unbuild": "3.5.0",
     "vite": "6.3.5",
     "vitest": "3.1.4",
-    "vue-sfc-transformer": "0.1.15"
+    "vue-sfc-transformer": "0.1.16"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
