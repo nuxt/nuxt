@@ -203,7 +203,6 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 - `success`: Request completed successfully
 - `error`: Request failed
 
-
 ::note
 If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await `useFetch` on client-side, `data` will remain null within `<script setup>`.
 ::
