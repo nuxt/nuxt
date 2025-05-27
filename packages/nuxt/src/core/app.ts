@@ -229,7 +229,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  app.configs = [...new Set(app.configs)]
 
   // Extend app
   await nuxt.callHook('app:resolve', app)
