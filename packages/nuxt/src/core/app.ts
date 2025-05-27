@@ -224,7 +224,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.configs = []
   for (const config of layerConfigs) {
     const appConfigPath = await findPath(resolve(config.srcDir, 'app.config'))
-    if (appConfigPath) {
+    if (appConfigPath && !app.configs.includes(appConfigPath)) {
       app.configs.push(appConfigPath)
     }
   }
