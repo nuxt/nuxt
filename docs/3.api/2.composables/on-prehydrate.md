@@ -57,8 +57,8 @@ onPrehydrate((el) => {
   // <div data-v-inspector="app.vue:15:3" data-prehydrate-id=":b3qlvSiBeH:"> Hi there </div>
 })
 
-// Advanced: use a key to manage multiple root nodes
-const prehydrateId = onPrehydrate((el) => {}, 'my-unique-key')
+// Advanced: access/set `data-prehydrate-id` yourself
+const prehydrateId = onPrehydrate((el) => {})
 </script>
 
 <template>
