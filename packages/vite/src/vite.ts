@@ -92,6 +92,21 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
         environments: {
           client: {
+            define: {
+              'process.env.NODE_ENV': JSON.stringify(nuxt.options.dev ? 'development' : 'production'),
+              'process.server': false,
+              'process.client': true,
+              'process.browser': true,
+              'process.nitro': false,
+              'process.prerender': false,
+              'import.meta.server': false,
+              'import.meta.client': true,
+              'import.meta.browser': true,
+              'import.meta.nitro': false,
+              'import.meta.prerender': false,
+              'module.hot': false,
+              ...nuxt.options.experimental.clientNodeCompat ? { global: 'globalThis' } : {},
+            },
             optimizeDeps: {
               entries: [entry],
               include: [],
@@ -108,7 +123,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               //
               // @see https://github.com/antfu/nuxt-better-optimize-deps#how-it-works
               exclude: [
-                // Vue
+              // Vue
                 'vue',
                 '@vue/runtime-core',
                 '@vue/runtime-dom',
@@ -322,13 +337,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await nuxt.callHook('vite:extend', ctx)
 
-  nuxt.hook('vite:extendConfig', (config) => {
+  nuxt.hook('vite:extendConfig', (config, { isServer }) => {
     const replaceOptions: RollupReplaceOptions = Object.create(null)
     replaceOptions.preventAssignment = true
 
-    for (const key in config.define!) {
-      if (key.startsWith('import.meta.')) {
-        replaceOptions[key] = config.define![key]
+    for (const define of [config.define || {}, config.environments?.[isServer ? 'ssr' : 'client']?.define || {}]) {
+      for (const key in define) {
+        if (key.startsWith('import.meta.')) {
+          replaceOptions[key] = define[key]
+        }
       }
     }
 

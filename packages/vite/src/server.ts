@@ -27,6 +27,7 @@ export async function getServerConfig (nuxt: Nuxt, config: ViteConfig) {
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
     ],
+    define: {},
     ssr: {
       external: [
         'nitro/runtime',

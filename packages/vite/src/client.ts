@@ -40,21 +40,7 @@ export async function getClientConfig (nuxt: Nuxt, config: ViteConfig) {
     optimizeDeps: {
       include: [],
     },
-    define: {
-      'process.env.NODE_ENV': JSON.stringify(config.mode),
-      'process.server': false,
-      'process.client': true,
-      'process.browser': true,
-      'process.nitro': false,
-      'process.prerender': false,
-      'import.meta.server': false,
-      'import.meta.client': true,
-      'import.meta.browser': true,
-      'import.meta.nitro': false,
-      'import.meta.prerender': false,
-      'module.hot': false,
-      ...nodeCompat.define,
-    },
+    define: {},
     resolve: {
       alias: {
         // user aliases
