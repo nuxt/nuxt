@@ -232,9 +232,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Extend app
   await nuxt.callHook('app:resolve', app)
 
-  // Normalize and de-duplicate plugins and middleware
+  // Normalize and de-duplicate plugins, middleware and app configs
   app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
+  app.configs = [...new Set(app.configs)]
 }
 
 function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
