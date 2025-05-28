@@ -55,7 +55,7 @@
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^2.1.0",
     "postcss": "^8.5.3",
-    "rollup-plugin-visualizer": "^5.14.0",
+    "rollup-plugin-visualizer": "^6.0.1",
     "std-env": "^3.9.0",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.17",

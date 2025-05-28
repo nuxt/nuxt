@@ -518,7 +518,7 @@ importers:
         version: 5.0.1
       unplugin:
         specifier: ^2.3.4
-        version: 2.3.4
+        version: 2.3.5
       unplugin-vue-router:
         specifier: ^0.12.0
         version: 0.12.0(vue-router@4.5.1(vue@3.5.14(typescript@5.8.3)))(vue@3.5.14(typescript@5.8.3))
@@ -666,7 +666,7 @@ importers:
         version: 2.0.0-rc.17
       unplugin:
         specifier: ^2.3.4
-        version: 2.3.4
+        version: 2.3.5
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.99.8(esbuild@0.25.4)))(webpack@5.99.8(esbuild@0.25.4))
@@ -802,8 +802,8 @@ importers:
         specifier: 8.5.3
         version: 8.5.3
       rollup-plugin-visualizer:
-        specifier: 5.14.0
-        version: 5.14.0(rollup@4.41.0)
+        specifier: 6.0.1
+        version: 6.0.1(rollup@4.41.0)
       sass-loader:
         specifier: 16.0.5
         version: 16.0.5(@rspack/core@1.3.11)(webpack@5.99.8(esbuild@0.25.4))
@@ -973,8 +973,8 @@ importers:
         specifier: 8.5.3
         version: 8.5.3
       rollup-plugin-visualizer:
-        specifier: ^5.14.0
-        version: 5.14.0(rollup@4.41.0)
+        specifier: ^6.0.1
+        version: 6.0.1(rollup@4.41.0)
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
@@ -986,7 +986,7 @@ importers:
         version: 2.0.0-rc.17
       unplugin:
         specifier: ^2.3.4
-        version: 2.3.4
+        version: 2.3.5
       vite:
         specifier: 6.3.5
         version: 6.3.5(@types/node@22.15.20)(jiti@2.4.2)(terser@5.39.2)(yaml@2.8.0)
@@ -1104,7 +1104,7 @@ importers:
         version: 2.0.0-rc.17
       unplugin:
         specifier: ^2.3.4
-        version: 2.3.4
+        version: 2.3.5
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.99.8(esbuild@0.25.4)))(webpack@5.99.8(esbuild@0.25.4))
@@ -1184,7 +1184,7 @@ importers:
         version: 1.6.1
       unplugin:
         specifier: latest
-        version: 2.3.4
+        version: 2.3.5
       vue:
         specifier: 3.5.14
         version: 3.5.14(typescript@5.8.3)
@@ -7072,6 +7072,19 @@ packages:
       rollup:
         optional: true
 
+  rollup-plugin-visualizer@6.0.1:
+    resolution: {integrity: sha512-NjlGElvLXCSZSAi3gNRZbfX3qlQbQcJ9TW97c5JpqfVwMhttj9YwEdPwcvbKj91RnMX2PWAjonvSEv6UEYtnRQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+    peerDependencies:
+      rolldown: 1.x
+      rollup: 4.41.0
+    peerDependenciesMeta:
+      rolldown:
+        optional: true
+      rollup:
+        optional: true
+
   rollup@4.41.0:
     resolution: {integrity: sha512-HqMFpUbWlf/tvcxBFNKnJyzc7Lk+XO3FGc3pbNBLqEbOz0gPLRgcrlS3UF4MfUrVlstOaP/q0kM6GVvi+LrLRg==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
@@ -7805,6 +7818,10 @@ packages:
 
   unplugin@2.3.4:
     resolution: {integrity: sha512-m4PjxTurwpWfpMomp8AptjD5yj8qEZN5uQjjGM3TAs9MWWD2tXSSNNj6jGR2FoVGod4293ytyV6SwBbertfyJg==}
+    engines: {node: '>=18.12.0'}
+
+  unplugin@2.3.5:
+    resolution: {integrity: sha512-RyWSb5AHmGtjjNQ6gIlA67sHOsWpsbWpwDokLwTcejVdOjEkJZh7QKu14J00gDDVSh8kGH4KYC/TNBceXFZhtw==}
     engines: {node: '>=18.12.0'}
 
   unrs-resolver@1.7.2:
@@ -9275,7 +9292,7 @@ snapshots:
       sirv: 3.0.1
       std-env: 3.9.0
       ufo: 1.6.1
-      unplugin: 2.3.4
+      unplugin: 2.3.5
       unstorage: 1.16.0(db0@0.3.2)(ioredis@5.6.1)
       valibot: 1.1.0(typescript@5.8.3)
     transitivePeerDependencies:
@@ -9339,7 +9356,7 @@ snapshots:
       std-env: 3.9.0
       tinyexec: 1.0.1
       ufo: 1.6.1
-      unplugin: 2.3.4
+      unplugin: 2.3.5
       vite: 6.3.5(@types/node@22.15.20)(jiti@2.4.2)(terser@5.39.2)(yaml@2.8.0)
       vitest-environment-nuxt: 1.0.1(@playwright/test@1.52.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.14)(vue@3.5.14(typescript@5.8.3)))(@types/node@22.15.20)(@vue/test-utils@2.4.6)(happy-dom@17.4.7)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.52.0)(terser@5.39.2)(typescript@5.8.3)(vitest@3.1.4(@types/debug@4.1.12)(@types/node@22.15.20)(happy-dom@17.4.7)(jiti@2.4.2)(terser@5.39.2)(yaml@2.8.0))(yaml@2.8.0)
       vue: 3.5.14(typescript@5.8.3)
@@ -12904,7 +12921,7 @@ snapshots:
       exsolve: 1.0.5
       mocked-exports: 0.1.1
       pathe: 2.0.3
-      unplugin: 2.3.4
+      unplugin: 2.3.5
       unplugin-utils: 0.2.4
 
   imurmurhash@0.1.4: {}
@@ -13449,7 +13466,7 @@ snapshots:
       regexp-tree: 0.1.27
       type-level-regexp: 0.1.17
       ufo: 1.6.1
-      unplugin: 2.3.4
+      unplugin: 2.3.5
 
   magic-string-ast@0.7.1:
     dependencies:
@@ -15254,6 +15271,15 @@ snapshots:
     optionalDependencies:
       rollup: 4.41.0
 
+  rollup-plugin-visualizer@6.0.1(rollup@4.41.0):
+    dependencies:
+      open: 8.4.2
+      picomatch: 4.0.2
+      source-map: 0.7.4
+      yargs: 17.7.2
+    optionalDependencies:
+      rollup: 4.41.0
+
   rollup@4.41.0:
     dependencies:
       '@types/estree': 1.0.7
@@ -16079,7 +16105,7 @@ snapshots:
       mlly: 1.7.4
       pathe: 2.0.3
       scule: 1.3.0
-      unplugin: 2.3.4
+      unplugin: 2.3.5
       unplugin-utils: 0.2.4
       yaml: 2.8.0
     optionalDependencies:
@@ -16093,6 +16119,12 @@ snapshots:
       webpack-virtual-modules: 0.6.2
 
   unplugin@2.3.4:
+    dependencies:
+      acorn: 8.14.1
+      picomatch: 4.0.2
+      webpack-virtual-modules: 0.6.2
+
+  unplugin@2.3.5:
     dependencies:
       acorn: 8.14.1
       picomatch: 4.0.2
