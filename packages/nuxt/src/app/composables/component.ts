@@ -1,4 +1,4 @@
-import { getCurrentInstance, reactive, toRefs } from 'vue'
+import { computed, getCurrentInstance } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
@@ -32,7 +32,16 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
     throw createError(error.value)
   }
   if (data.value && typeof data.value === 'object') {
-    Object.assign(await res, toRefs(reactive(data.value)))
+    const _res = await res
+    for (const key in data.value) {
+      _res[key] = computed({
+        get: () => data.value?.[key],
+        set (v) {
+          data.value ||= {}
+          data.value[key] = v
+        },
+      })
+    }
   } else if (import.meta.dev) {
     console.warn('[nuxt] asyncData should return an object', data)
   }

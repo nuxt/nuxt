@@ -4,6 +4,7 @@ import { dirname, isAbsolute, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 
 const PREFIX = 'virtual:nuxt:'
+const PREFIX_RE = /^\/?virtual:nuxt:/
 
 interface VirtualFSPluginOptions {
   mode: 'client' | 'server'
@@ -29,7 +30,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
   function resolveId (id: string, importer?: string) {
     id = resolveAlias(id, alias)
 
-    if (id.startsWith(PREFIX)) {
+    if (PREFIX_RE.test(id)) {
       id = withoutPrefix(decodeURIComponent(id))
     }
 
@@ -69,7 +70,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
           if (res) {
             return res
           }
-          if (importer && importer.startsWith(PREFIX) && RELATIVE_ID_RE.test(id)) {
+          if (importer && PREFIX_RE.test(importer) && RELATIVE_ID_RE.test(id)) {
             return this.resolve?.(id, withoutPrefix(decodeURIComponent(importer)), { skipSelf: true })
           }
         },
@@ -77,7 +78,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
     },
 
     loadInclude (id) {
-      return id.startsWith(PREFIX) && withoutQuery(withoutPrefix(decodeURIComponent(id))) in nuxt.vfs
+      return PREFIX_RE.test(id) && withoutQuery(withoutPrefix(decodeURIComponent(id))) in nuxt.vfs
     },
 
     load (id) {
@@ -91,7 +92,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
 })
 
 function withoutPrefix (id: string) {
-  return id.startsWith(PREFIX) ? id.slice(PREFIX.length) : id
+  return id.replace(PREFIX_RE, '')
 }
 
 const QUERY_RE = /\?.*$/

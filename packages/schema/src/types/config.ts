@@ -3,7 +3,7 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
 import type { ConfigSchema } from './schema'
@@ -46,10 +46,12 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 }
 
 // User configuration in `nuxt.config` file
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite' | 'runtimeConfig' | 'webpack'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
+  // Avoid DeepPartial for nitro config interface (#31908)
+  nitro?: NitroConfig
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>

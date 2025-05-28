@@ -73,6 +73,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   const processedLayers = new Set<string>()
+  const localRelativePaths = new Set(localLayers)
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     layer.config ||= {}
@@ -89,7 +90,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
     // Add layer name for local layers
-    if (layer.cwd && cwd && localLayers.includes(relative(cwd, layer.cwd))) {
+    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
       layer.meta ||= {}
       layer.meta.name ||= basename(layer.cwd)
     }

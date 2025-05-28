@@ -41,18 +41,18 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
     // Check if the directory exists (globby will otherwise read it case insensitively on MacOS)
     if (files.length) {
-      const siblings = await readdir(dirname(dir.path)).catch(() => [] as string[])
-
+      const siblings = new Set(await readdir(dirname(dir.path)).catch(() => [] as string[]))
       const directory = basename(dir.path)
-      if (!siblings.includes(directory)) {
+      if (!siblings.has(directory)) {
         const directoryLowerCase = directory.toLowerCase()
-        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directoryLowerCase)
-        if (caseCorrected) {
-          const nuxt = useNuxt()
-          const original = relative(nuxt.options.srcDir, dir.path)
-          const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), caseCorrected))
-          logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
-          continue
+        for (const sibling of siblings) {
+          if (sibling.toLowerCase() === directoryLowerCase) {
+            const nuxt = useNuxt()
+            const original = relative(nuxt.options.srcDir, dir.path)
+            const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), sibling))
+            logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
+            break
+          }
         }
       }
     }
@@ -145,7 +145,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
-      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      const validModes = new Set(['all', component.mode])
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && validModes.has(c.mode))
       // Ignore component if component is already defined (with same mode)
       if (existingComponent) {
         const existingPriority = existingComponent.priority ?? 0

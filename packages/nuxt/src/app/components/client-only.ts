@@ -1,4 +1,4 @@
-import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
@@ -12,10 +12,9 @@ const STATIC_DIV = '<div></div>'
 export default defineComponent({
   name: 'ClientOnly',
   inheritAttrs: false,
-
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
   setup (props, { slots, attrs }) {
-    const mounted = ref(false)
+    const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true })
     // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
     if (import.meta.dev) {
@@ -29,7 +28,13 @@ export default defineComponent({
     }
     provide(clientOnlySymbol, true)
     return () => {
-      if (mounted.value) { return slots.default?.() }
+      if (mounted.value) {
+        const vnodes = slots.default?.()
+        if (vnodes && vnodes.length === 1) {
+          return [cloneVNode(vnodes[0]!, attrs)]
+        }
+        return vnodes
+      }
       const slot = slots.fallback || slots.placeholder
       if (slot) { return h(slot) }
       const fallbackStr = props.fallback || props.placeholder || ''
@@ -73,7 +78,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(nuxtApp.isHydrating === false)
+    const mounted$ = shallowRef(nuxtApp.isHydrating === false)
     const instance = getCurrentInstance()!
 
     if (nuxtApp.isHydrating) {
@@ -117,7 +122,10 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
       if (typeof setupState === 'function') {
         return (...args: any[]) => {
           if (mounted$.value) {
-            return h(setupState(...args), ctx.attrs)
+            const res = setupState(...args)
+            return (res.children === null || typeof res.children === 'string')
+              ? cloneVNode(res, ctx.attrs)
+              : h(res, ctx.attrs)
           }
           return elToStaticVNode(instance?.vnode.el, STATIC_DIV)
         }

@@ -1,4 +1,4 @@
-import { getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import { getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
 import type { AsyncComponentLoader, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
@@ -45,7 +45,7 @@ function pageToClientOnly<T extends ComponentOptions> (component: T) {
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(nuxtApp.isHydrating === false)
+    const mounted$ = shallowRef(nuxtApp.isHydrating === false)
     provide(clientOnlySymbol, true)
     const vm = getCurrentInstance()
     if (vm) {
