@@ -16,7 +16,7 @@ export async function getVueHash (nuxt: Nuxt) {
 
   const { hash } = await getHashes(nuxt, {
     id,
-    cwd: layer => layer.config?.srcDir,
+    cwd: layer => layer.cwd,
     patterns: layer => [
       join(relative(layer.cwd, layer.config.srcDir), '**'),
       `!${relative(layer.cwd, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
