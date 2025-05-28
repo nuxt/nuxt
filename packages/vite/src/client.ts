@@ -4,7 +4,7 @@ import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import type { BuildOptions, ServerOptions } from 'vite'
-import { logger, useNitro } from '@nuxt/kit'
+import { useNitro } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
@@ -110,20 +110,8 @@ export async function getClientConfig (nuxt: Nuxt, config: ViteConfig) {
   return clientConfig
 }
 
-export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
+export async function startClientDevServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const clientConfig = await getClientConfig(nuxt, ctx.config)
-
-  // Production build
-  if (!nuxt.options.dev) {
-    const start = Date.now()
-    logger.restoreAll()
-    const builder = await vite.createBuilder(clientConfig)
-    await builder.build(builder.environments.client!)
-    logger.wrapAll()
-    await nuxt.callHook('vite:compiled')
-    logger.success(`Client built in ${Date.now() - start}ms`)
-    return
-  }
 
   // Dev
   const viteServer = await vite.createServer(clientConfig)

@@ -251,12 +251,9 @@ export default defineNuxtModule<ComponentsOptions>({
 
       const chunk = ComponentsChunkPlugin({ getComponents })
 
-      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-        config.plugins ||= []
-        if (selectiveClient && isClient) {
-          config.plugins.push(chunk.client.vite())
-        }
-      })
+      if (selectiveClient) {
+        addVitePlugin(chunk.client.vite, { server: false })
+      }
 
       addBuildPlugin(chunk.server, { client: false, prepend: true })
     }
