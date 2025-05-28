@@ -60,7 +60,7 @@
     "ofetch": "1.4.1",
     "pkg-types": "2.1.0",
     "postcss": "8.5.3",
-    "rollup-plugin-visualizer": "5.14.0",
+    "rollup-plugin-visualizer": "6.0.1",
     "sass-loader": "16.0.5",
     "scule": "1.3.0",
     "unbuild": "3.5.0",
