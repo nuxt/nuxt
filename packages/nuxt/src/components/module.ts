@@ -249,13 +249,20 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      const chunk = ComponentsChunkPlugin({ getComponents })
+      const chunkIds = new Map<string, string>()
+
+      addTemplate({
+        filename: 'component-chunk.mjs',
+        getContents () {
+          return `export default {${Array.from(chunkIds.entries()).map(([name, id]) => {
+            return `${JSON.stringify(name)}: ${JSON.stringify('/' + id)}`
+          }).join(',\n')}}`
+        },
+      })
 
       if (selectiveClient) {
-        addVitePlugin(chunk.client.vite, { server: false })
+        addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, chunkIds, getComponents }), { server: false })
       }
-
-      addBuildPlugin(chunk.server, { client: false, prepend: true })
     }
   },
 })

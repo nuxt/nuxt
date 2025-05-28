@@ -1,12 +1,10 @@
 import { pathToFileURL } from 'node:url'
-import { writeFileSync } from 'node:fs'
-import { join } from 'pathe'
 import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
-import { useNuxt } from '@nuxt/kit'
+import type { Plugin } from 'vite'
 import { hash } from 'ohash'
 import { isVue } from '../../core/utils'
 
@@ -178,62 +176,43 @@ function getPropsToString (bindings: Record<string, string>): string {
 }
 
 type ChunkPluginOptions = {
+  dev: boolean
+  chunkIds: Map<string, string>
   getComponents: () => Component[]
 }
 
-export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
-  const ids = new Map<string, string>()
-  const isDev = useNuxt().options.dev
+export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin => {
   return {
-    client: createUnplugin(() => {
-      return {
-        name: 'nuxt:components-chunk:client',
-        vite: {
-          buildStart () {
-            const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
-            for (const component of components) {
-              if (component.filePath) {
-                if (isDev) {
-                  ids.set(component.pascalName, `@fs/${component.filePath}`)
-                } else {
-                  const id = this.emitFile({
-                    type: 'chunk',
-                    fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
-                    id: component.filePath,
-                    preserveSignature: 'strict',
+    name: 'nuxt:components-chunk:client',
+    buildStart () {
+      const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
+      for (const component of components) {
+        if (component.filePath) {
+          if (options.dev) {
+            options.chunkIds.set(component.pascalName, `@fs/${component.filePath}`)
+          } else {
+            const id = this.emitFile({
+              type: 'chunk',
+              fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
+              id: component.filePath,
+              preserveSignature: 'strict',
 
-                  })
+            })
 
-                  ids.set(component.pascalName, this.getFileName(id))
-                }
-              }
-            }
-          },
-          generateBundle (_, bundle) {
-            const idSet = new Set(ids.values())
-            for (const chunk of Object.values(bundle)) {
-              if (chunk.type === 'chunk') {
-                if (idSet.has(chunk.fileName)) {
-                  chunk.isEntry = false
-                }
-              }
-            }
-          },
-        },
+            options.chunkIds.set(component.pascalName, this.getFileName(id))
+          }
+        }
       }
-    }),
-    server: createUnplugin(() => {
-      return {
-        name: 'nuxt:components-chunk:server',
-        buildStart () {
-          writeFileSync(
-            join(useNuxt().options.buildDir, 'component-chunk.mjs'),
-            `export default {${Array.from(ids.entries()).map(([name, id]) => {
-              return `${JSON.stringify(name)}: ${JSON.stringify('/' + id)}`
-            }).join(',\n')}}`,
-          )
-        },
+    },
+    generateBundle (_, bundle) {
+      const idSet = new Set(options.chunkIds.values())
+      for (const chunk of Object.values(bundle)) {
+        if (chunk.type === 'chunk') {
+          if (idSet.has(chunk.fileName)) {
+            chunk.isEntry = false
+          }
+        }
       }
-    }),
+    },
   }
 }
