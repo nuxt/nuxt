@@ -6,7 +6,7 @@ import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
-import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
@@ -21,6 +21,15 @@ import { logLevelMap } from './utils/logger'
 import { SSRStylesPlugin } from './plugins/ssr-styles'
 import { PublicDirsPlugin } from './plugins/public-dirs'
 import { distDir } from './dirs'
+import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
+import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
+import { DevStyleSSRPlugin } from './plugins/dev-style-ssr'
+import { RuntimePathsPlugin } from './plugins/runtime-paths'
+import { ViteNodePlugin } from './vite-node'
+import { TypeCheckPlugin } from './plugins/type-check'
+import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
+import { AnalyzePlugin } from './plugins/analyze'
+import { transpile } from './utils/transpile'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -267,14 +276,45 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             exclude: nuxt.options.ignore,
           },
         },
+        ssr: {
+          external: [
+            'nitro/runtime',
+            // TODO: remove in v5
+            '#internal/nitro',
+            '#internal/nitro/utils',
+          ],
+          noExternal: [
+            ...transpile({ isServer: true, isDev: nuxt.options.dev }),
+            '/__vue-jsx',
+            '#app',
+            /^nuxt(\/|$)/,
+            /(nuxt|nuxt3|nuxt-nightly)\/(dist|src|app)/,
+          ],
+        },
         plugins: [
           // add resolver for files in public assets directories
           PublicDirsPlugin({
             dev: nuxt.options.dev,
             baseURL: nuxt.options.app.baseURL,
           }),
+          // server plugins
+          VueFeatureFlagsPlugin(nuxt),
+          SourcemapPreserverPlugin(nuxt), // tell rollup's nitro build about the original sources of the generated vite server build
+          // client plugins
+          DevStyleSSRPlugin({
+            srcDir: nuxt.options.srcDir,
+            buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
+          }),
+          RuntimePathsPlugin(),
+          ViteNodePlugin(nuxt),
+          // Type checking client panel
+          TypeCheckPlugin(nuxt),
+          ModulePreloadPolyfillPlugin(),
+          AnalyzePlugin(nuxt),
         ],
+        appType: 'custom',
         server: {
+          middlewareMode: true,
           watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
           fs: {
             allow: [...new Set(allowDirs)],

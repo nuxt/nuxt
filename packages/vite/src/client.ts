@@ -14,21 +14,9 @@ import { createError, defineEventHandler, handleCors, setHeader } from 'h3'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
 import type { ViteBuildContext } from './vite'
-import { DevStyleSSRPlugin } from './plugins/dev-style-ssr'
-import { RuntimePathsPlugin } from './plugins/runtime-paths'
-import { TypeCheckPlugin } from './plugins/type-check'
-import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
-import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function getClientConfig (nuxt: Nuxt, config: ViteConfig) {
-  const nodeCompat = nuxt.options.experimental.clientNodeCompat
-    ? {
-        alias: defineEnv({ nodeCompat: true, resolve: true }).env.alias,
-        define: { global: 'globalThis' },
-      }
-    : { alias: {}, define: {} }
-
   const clientConfig: ViteConfig = vite.mergeConfig(config, vite.mergeConfig({
     configFile: false,
     base: nuxt.options.dev
@@ -44,8 +32,9 @@ export async function getClientConfig (nuxt: Nuxt, config: ViteConfig) {
     resolve: {
       alias: {
         // user aliases
-        ...nodeCompat.alias,
-        ...config.resolve?.alias,
+        ...nuxt.options.experimental.clientNodeCompat ? defineEnv({ nodeCompat: true, resolve: true }).env.alias : {},
+        // TODO:?
+        // ...config.resolve?.alias,
         'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
         // TODO: remove in v5
         '#internal/nitro': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
@@ -54,22 +43,8 @@ export async function getClientConfig (nuxt: Nuxt, config: ViteConfig) {
         '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
     },
-    cacheDir: resolve(nuxt.options.rootDir, config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
-    plugins: [
-      DevStyleSSRPlugin({
-        srcDir: nuxt.options.srcDir,
-        buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
-      }),
-      RuntimePathsPlugin(),
-      ViteNodePlugin(nuxt),
-      // Type checking client panel
-      TypeCheckPlugin(nuxt),
-      ModulePreloadPolyfillPlugin(),
-    ],
-    appType: 'custom',
-    server: {
-      middlewareMode: true,
-    },
+    cacheDir: resolve(nuxt.options.rootDir, nuxt.options.vite.cacheDir ?? 'node_modules/.cache/vite', 'client'),
+    plugins: [],
   } satisfies vite.InlineConfig, nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
@@ -114,16 +89,11 @@ export async function getClientConfig (nuxt: Nuxt, config: ViteConfig) {
     clientConfig.server = defu(clientConfig.server, serverDefaults as ViteConfig['server'])
   }
 
-  // Add analyze plugin if needed
-  if (!nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)) {
-    clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.AnalyzePlugin(nuxt)))
-  }
-
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
   clientConfig.plugins!.unshift(
-    vuePlugin(clientConfig.vue),
-    viteJsxPlugin(clientConfig.vueJsx),
+    vuePlugin(nuxt.options.vite.vue),
+    viteJsxPlugin(nuxt.options.vite.vueJsx),
   )
 
   await nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })

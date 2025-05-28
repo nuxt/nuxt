@@ -9,9 +9,6 @@ import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
 import { writeManifest } from './manifest'
-import { transpile } from './utils/transpile'
-import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
-import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
 
 export async function getServerConfig (nuxt: Nuxt, config: ViteConfig) {
   const serverConfig: ViteConfig = vite.mergeConfig(config, vite.mergeConfig({
@@ -22,28 +19,7 @@ export async function getServerConfig (nuxt: Nuxt, config: ViteConfig) {
     css: {
       devSourcemap: !!nuxt.options.sourcemap.server,
     },
-    plugins: [
-      VueFeatureFlagsPlugin(nuxt),
-      // tell rollup's nitro build about the original sources of the generated vite server build
-      SourcemapPreserverPlugin(nuxt),
-    ],
-    define: {},
-    ssr: {
-      external: [
-        'nitro/runtime',
-        // TODO: remove in v5
-        '#internal/nitro',
-        '#internal/nitro/utils',
-      ],
-      noExternal: [
-        ...transpile({ isServer: true, isDev: nuxt.options.dev }),
-        '/__vue-jsx',
-        '#app',
-        /^nuxt(\/|$)/,
-        /(nuxt|nuxt3|nuxt-nightly)\/(dist|src|app)/,
-      ],
-    },
-    cacheDir: resolve(nuxt.options.rootDir, config.cacheDir ?? 'node_modules/.cache/vite', 'server'),
+    cacheDir: resolve(nuxt.options.rootDir, nuxt.options.vite.cacheDir ?? 'node_modules/.cache/vite', 'client'),
     server: {
       hmr: false,
     },
