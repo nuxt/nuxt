@@ -40,14 +40,13 @@ export default <RouterConfig> {
       position = { left: 0, top: 0 }
     }
 
-    const hookToWait = nuxtApp._runningTransition ? 'page:transition:finish' : 'page:loading:end'
     return new Promise((resolve) => {
       if (from === START_LOCATION) {
         resolve(_calculatePosition(to, 'instant', position))
         return
       }
 
-      nuxtApp.hooks.hookOnce(hookToWait, () => {
+      nuxtApp.hooks.hookOnce('page:transition:finish', () => {
         requestAnimationFrame(() => resolve(_calculatePosition(to, 'instant', position)))
       })
     })
