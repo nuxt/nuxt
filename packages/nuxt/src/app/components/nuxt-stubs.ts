@@ -4,7 +4,7 @@ function renderStubMessage (name: string) {
   throw createError({
     fatal: true,
     statusCode: 500,
-    statusMessage: `${name} is provided by @nuxt/image. Check your console to install it or run 'npx nuxi@latest module add @nuxt/image'`,
+    statusMessage: `${name} is provided by @nuxt/image. Check your console to install it or run 'npx nuxt module add @nuxt/image'`,
   })
 }
 

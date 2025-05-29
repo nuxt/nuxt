@@ -25,11 +25,9 @@ jobs:
           scopes: |
             docs
             kit
-            nuxi
             nuxt
             rspack
             schema
-            test-utils
             ui-templates
             vite
             webpack

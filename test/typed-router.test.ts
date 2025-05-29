@@ -8,7 +8,7 @@ const rootDir = fileURLToPath(new URL('./fixtures/basic-types', import.meta.url)
 
 describe('typed router integration', () => {
   it('does not duplicate params in RouteNamedMap when a child route overrides the path with an absolute path', async () => {
-    await x('nuxi', ['prepare', rootDir])
+    await x('nuxt', ['prepare', rootDir])
     const typedRouterDtsFile = resolve(rootDir, '.nuxt/types/typed-router.d.ts')
     const typedRouterDts = readFileSync(typedRouterDtsFile, 'utf8')
     expect(typedRouterDts).toContain(`'param-id-view-custom': RouteRecordInfo<'param-id-view-custom', '/param/:id()/view-custom', { id: ParamValue<true> }, { id: ParamValue<false> }>,`)

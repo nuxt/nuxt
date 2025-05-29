@@ -295,7 +295,7 @@ export interface NuxtHooks {
    */
   'prerender:routes': (ctx: { routes: Set<string> }) => HookResult
 
-  // Nuxi
+  // @nuxt/cli
   /**
    * Called when an error occurs at build time.
    * @param error Error object
@@ -303,7 +303,7 @@ export interface NuxtHooks {
    */
   'build:error': (error: Error) => HookResult
   /**
-   * Called before Nuxi writes `.nuxt/tsconfig.json` and `.nuxt/nuxt.d.ts`, allowing addition of custom references and declarations in `nuxt.d.ts`, or directly modifying the options in `tsconfig.json`
+   * Called before @nuxt/cli writes `.nuxt/tsconfig.json` and `.nuxt/nuxt.d.ts`, allowing addition of custom references and declarations in `nuxt.d.ts`, or directly modifying the options in `tsconfig.json`
    * @param options Objects containing `references`, `declarations`, `tsConfig`
    * @returns Promise
    */
