@@ -54,7 +54,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
         const component = normalComponent || modifierComponent
 
         if (component) {
-          // TODO: refactor to nuxi
+          // TODO: refactor to @nuxt/cli
           const internalInstall = ((component as any)._internal_install) as string
           if (internalInstall && nuxt?.options.test === false) {
             if (!nuxt.options.dev) {

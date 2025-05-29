@@ -1,5 +1,5 @@
 ---
-title: "nuxi typecheck"
+title: "nuxt typecheck"
 description: The typecheck command runs vue-tsc to check types throughout your app.
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--typecheck-cmd-->
 ```bash [Terminal]
-npx nuxi typecheck [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>]
+npx nuxt typecheck [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>]
 ```
 <!--/typecheck-cmd-->
 

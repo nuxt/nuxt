@@ -1,5 +1,5 @@
 ---
-title: "nuxi preview"
+title: "nuxt preview"
 description: The preview command starts a server to preview your application after the build command.
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--preview-cmd-->
 ```bash [Terminal]
-npx nuxi preview [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName] [--dotenv] [-p, --port]
+npx nuxt preview [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName] [--dotenv] [-p, --port]
 ```
 <!--/preview-cmd-->
 
