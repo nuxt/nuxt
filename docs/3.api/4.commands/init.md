@@ -1,5 +1,5 @@
 ---
-title: "nuxi init"
+title: "nuxt\ init"
 description: The init command initializes a fresh Nuxt project.
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--init-cmd-->
 ```bash [Terminal]
-npx nuxi init [DIR] [--cwd=<directory>] [-t, --template] [-f, --force] [--offline] [--preferOffline] [--no-install] [--gitInit] [--shell] [--packageManager]
+npx nuxt init [DIR] [--cwd=<directory>] [-t, --template] [-f, --force] [--offline] [--preferOffline] [--no-install] [--gitInit] [--shell] [--packageManager]
 ```
 <!--/init-cmd-->
 

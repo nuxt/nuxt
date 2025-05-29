@@ -526,7 +526,7 @@ async function initNuxt (nuxt: Nuxt) {
       export: name,
       priority: -1,
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-stubs'),
-      // @ts-expect-error TODO: refactor to nuxi
+      // @ts-expect-error TODO: refactor to @nuxt/cli
       _internal_install: '@nuxt/image',
     })
   }
