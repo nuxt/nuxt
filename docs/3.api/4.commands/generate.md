@@ -1,5 +1,5 @@
 ---
-title: "nuxt\ generate"
+title: "nuxt generate"
 description: Pre-renders every route of the application and stores the result in plain HTML files.
 links:
   - label: Source

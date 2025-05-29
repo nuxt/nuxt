@@ -1,5 +1,5 @@
 ---
-title: "nuxt\ build"
+title: "nuxt build"
 description: "Build your Nuxt application."
 links:
   - label: Source

@@ -1,5 +1,5 @@
 ---
-title: "nuxt\ info"
+title: "nuxt info"
 description: The info command logs information about the current or specified Nuxt project.
 links:
   - label: Source

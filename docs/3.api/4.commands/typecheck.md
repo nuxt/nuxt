@@ -1,5 +1,5 @@
 ---
-title: "nuxt\ typecheck"
+title: "nuxt typecheck"
 description: The typecheck command runs vue-tsc to check types throughout your app.
 links:
   - label: Source

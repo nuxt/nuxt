@@ -1,5 +1,5 @@
 ---
-title: "nuxt\ analyze"
+title: "nuxt analyze"
 description: "Analyze the production bundle or your Nuxt application."
 links:
   - label: Source

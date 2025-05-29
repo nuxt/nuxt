@@ -1,5 +1,5 @@
 ---
-title: "nuxt\ upgrade"
+title: "nuxt upgrade"
 description: The upgrade command upgrades Nuxt to the latest version.
 links:
   - label: Source

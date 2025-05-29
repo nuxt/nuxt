@@ -1,5 +1,5 @@
 ---
-title: "nuxt\ add"
+title: "nuxt add"
 description: "Scaffold an entity into your Nuxt application."
 links:
   - label: Source
