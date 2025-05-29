@@ -9,6 +9,7 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 import { Transition } from 'vue'
+import type { $Fetch } from 'nitro/types'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
@@ -25,8 +26,6 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-
-// @ts-expect-error virtual file
 import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
@@ -780,6 +779,26 @@ describe('useFetch', () => {
     await flushPromises()
 
     expect(data.value).toStrictEqual({ count: 0 })
+  })
+
+  it('should not trigger async data multiple times on query change', async () => {
+    let count = 0
+    registerEndpoint('/api/rerun', defineEventHandler(() => ({ count: count++ })))
+
+    const q = ref('')
+    const mockedFetch = vi.fn(url => $fetch(url)) as unknown as $Fetch
+    const { data } = await useFetch('/api/rerun', {
+      query: { q },
+      $fetch: mockedFetch,
+    })
+
+    expect(data.value).toStrictEqual({ count: 0 })
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+    expect(mockedFetch).toHaveBeenCalledTimes(1)
   })
 
   it('should work with reactive keys and immediate: false', async () => {

@@ -128,7 +128,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
-    watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
+    watch: watchSources === false ? [] : [...(watchSources || []), reactive({ ..._fetchOptions, query: undefined, params: undefined })],
   }
 
   if (import.meta.dev) {
