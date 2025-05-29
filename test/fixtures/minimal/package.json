@@ -2,7 +2,7 @@
   "private": true,
   "name": "fixture-minimal",
   "scripts": {
-    "build": "nuxi build"
+    "build": "nuxt build"
   },
   "dependencies": {
     "nuxt": "workspace:*"

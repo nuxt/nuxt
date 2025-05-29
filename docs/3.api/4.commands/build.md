@@ -1,5 +1,5 @@
 ---
-title: "nuxi build"
+title: "nuxt build"
 description: "Build your Nuxt application."
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--build-cmd-->
 ```bash [Terminal]
-npx nuxi build [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--prerender] [--preset] [--dotenv] [--envName]
+npx nuxt build [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--prerender] [--preset] [--dotenv] [--envName]
 ```
 <!--/build-cmd-->
 

@@ -1,5 +1,13 @@
 {
-  "name": "minimal-pages",
-  "version": "0.0.0",
-  "private": true
+  "private": true,
+  "name": "fixture-minimal-pages",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^20.11.1 || >=22.0.0"
+  }
 }

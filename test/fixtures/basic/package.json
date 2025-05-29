@@ -2,7 +2,7 @@
   "private": true,
   "name": "fixture-basic",
   "scripts": {
-    "build": "nuxi build"
+    "build": "nuxt build"
   },
   "dependencies": {
     "@nuxt/rspack-builder": "workspace:*",

@@ -2,9 +2,9 @@
   "name": "fixture-spa-loader",
   "private": true,
   "scripts": {
-    "dev": "nuxi dev",
-    "build": "nuxi build",
-    "start": "nuxi preview"
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "start": "nuxt preview"
   },
   "dependencies": {
     "nuxt": "workspace:*"

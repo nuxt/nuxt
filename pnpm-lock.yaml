@@ -1223,7 +1223,11 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/minimal-pages: {}
+  test/fixtures/minimal-pages:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/minimal-types:
     dependencies:
