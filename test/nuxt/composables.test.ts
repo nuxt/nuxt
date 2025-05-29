@@ -786,11 +786,13 @@ describe('useFetch', () => {
     registerEndpoint('/api/rerun', defineEventHandler(() => ({ count: count++ })))
 
     const q = ref('')
-    const mockedFetch = vi.fn(url => $fetch(url)) as unknown as $Fetch
+    const mockedFetch = vi.fn(url => $fetch(url))
     const { data } = await useFetch('/api/rerun', {
       query: { q },
-      $fetch: mockedFetch,
+      $fetch: mockedFetch as unknown as $Fetch,
     })
+
+    mockedFetch.mockClear()
 
     expect(data.value).toStrictEqual({ count: 0 })
     q.value = 'test'
