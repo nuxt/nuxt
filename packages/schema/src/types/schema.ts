@@ -29,6 +29,7 @@ import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
+import type { EnvironmentOptions } from 'vite'
 
 import type { RouterConfigSerializable } from './router'
 import type { NuxtHooks } from './hooks'
@@ -1667,7 +1668,7 @@ export interface ConfigSchema {
    * @see [Vite configuration docs](https://vite.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
-  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig }
+  vite: ViteConfig & { $client?: EnvironmentOptions, $server?: EnvironmentOptions }
 
   webpack: {
   /**

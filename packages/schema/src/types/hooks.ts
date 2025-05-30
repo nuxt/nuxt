@@ -1,7 +1,7 @@
 import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
-import type { ViteDevServer } from 'vite'
+import type { ResolvedConfig, ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
@@ -360,7 +360,7 @@ export interface NuxtHooks {
    * @param env Server or client
    * @returns Promise
    */
-  'vite:configResolved': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:configResolved': (viteInlineConfig: Readonly<ResolvedConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Called when the Vite server is created.
    * @param viteServer Vite development server

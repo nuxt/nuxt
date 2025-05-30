@@ -29,11 +29,7 @@ function normaliseURL (url: string, base: string) {
 }
 
 // TODO: use built-in warmup logic when we update to vite 5
-export async function warmupViteServer (
-  server: ViteDevServer,
-  entries: string[],
-  isServer: boolean,
-) {
+export async function warmupViteServer (server: ViteDevServer, entries: string[]) {
   const warmedUrls = new Set<string>()
 
   const warmup = async (url: string) => {
@@ -41,13 +37,19 @@ export async function warmupViteServer (
       url = normaliseURL(url, server.config.base)
 
       if (warmedUrls.has(url) || isBuiltin(url)) { return }
-      const m = await server.moduleGraph.getModuleByUrl(url, isServer)
+      const ms = await Promise.all([
+        server.environments.client.moduleGraph.getModuleByUrl(url),
+        server.environments.ssr.moduleGraph.getModuleByUrl(url),
+      ])
       // a module that is already compiled (and can't be warmed up anyway)
-      if (m?.transformResult?.code || m?.ssrTransformResult?.code) {
+      if (ms.every(m => m?.transformResult?.code)) {
         return
       }
       warmedUrls.add(url)
-      await server.transformRequest(url, { ssr: isServer })
+      await Promise.all([
+        server.environments.client.transformRequest(url),
+        server.environments.ssr.transformRequest(url),
+      ])
     } catch (e) {
       logger.debug('[nuxt] warmup for %s failed with: %s', url, e)
     }
@@ -56,8 +58,11 @@ export async function warmupViteServer (
     if (isCSSRequest(url)) { return }
 
     try {
-      const mod = await server.moduleGraph.getModuleByUrl(url, isServer)
-      const deps = mod?.ssrTransformResult?.deps /* server */ || (mod?.importedModules.size ? Array.from(mod?.importedModules /* client */).map(m => m.url) : [])
+      const mods = await Promise.all([
+        server.environments.client.moduleGraph.getModuleByUrl(url),
+        server.environments.ssr.moduleGraph.getModuleByUrl(url),
+      ])
+      const deps = mods.flatMap(mod => mod?.transformResult?.deps /* server */ || (mod?.importedModules.size ? Array.from(mod?.importedModules /* client */).map(m => m.url) : []))
       await Promise.all(deps.map(m => warmup(m)))
     } catch (e) {
       logger.debug('[warmup] tracking dependencies for %s failed with: %s', url, e)

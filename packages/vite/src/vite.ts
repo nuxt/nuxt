@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
-import * as vite from 'vite'
+import { createBuilder, createServer, mergeConfig as mergeViteConfig } from 'vite'
+import type { EnvironmentOptions, ViteDevServer } from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
@@ -7,14 +8,15 @@ import { sanitizeFilePath } from 'mlly'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 import escapeStringRegexp from 'escape-string-regexp'
+import vuePlugin from '@vitejs/plugin-vue'
+import vueJsxPlugin from '@vitejs/plugin-vue-jsx'
+import { defu } from 'defu'
 
-import { getClientConfig, startClientDevServer } from './client'
-import { getServerConfig, startServerDevServer } from './server'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
-import { logLevelMap } from './utils/logger'
+import { createViteLogger, logLevelMap } from './utils/logger'
 import { SSRStylesPlugin } from './plugins/ssr-styles'
 import { PublicDirsPlugin } from './plugins/public-dirs'
 import { distDir } from './dirs'
@@ -31,13 +33,15 @@ import { ReplacePlugin } from './plugins/replace'
 import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize'
 import { VitePluginCheckerPlugin } from './plugins/checker'
 import { ClientManifestPlugin } from './plugins/client-manifest'
+import { DevServerPlugin } from './plugins/dev-server'
+import { EnvironmentsPlugin } from './plugins/environments'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
   config: ViteConfig
   entry: string
-  clientServer?: vite.ViteDevServer
-  ssrServer?: vite.ViteDevServer
+  clientServer?: ViteDevServer
+  ssrServer?: ViteDevServer
 }
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
@@ -73,11 +77,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
 
   const isIgnored = createIsIgnored(nuxt)
-  const ctx: ViteBuildContext = {
-    nuxt,
-    entry,
-    config: vite.mergeConfig(
+  const config = mergeViteConfig(
       {
+        base: nuxt.options.dev
+          ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
+          : undefined, // TODO: do we need `./` for server?
+        css: {
+          devSourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+        },
         logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
         experimental: {
           renderBuiltUrl: (filename, { type, hostType, ssr }) => {
@@ -100,8 +107,20 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             }
           },
         },
+        builder: {
+          async buildApp (builder) {
+            // run serially to preserve the order of client, server builds
+            const environments = Object.values(builder.environments)
+            for (const environment of environments) {
+              logger.restoreAll()
+              await builder.build(environment)
+              logger.wrapAll()
+              await nuxt.callHook('vite:compiled')
+            }
+          },
+        },
         environments: {
-          client: {
+          client: mergeViteConfig({
             define: {
               'process.env.NODE_ENV': JSON.stringify(nuxt.options.dev ? 'development' : 'production'),
               'process.server': false,
@@ -175,9 +194,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             dev: {
               warmup: [entry],
             },
-          },
+          } satisfies EnvironmentOptions, nuxt.options.vite.$client || {}) as EnvironmentOptions,
 
-          ssr: {
+          ssr: defu({
             define: {
               'process.server': true,
               'process.client': false,
@@ -238,7 +257,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
               preTransformRequests: false,
             },
-          },
+          } satisfies EnvironmentOptions, nuxt.options.vite.$server || {}) as EnvironmentOptions,
         },
         resolve: {
           alias: {
@@ -293,10 +312,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           ],
         },
         plugins: [
+          // TODO: allow customising options after vite hooks
+          vuePlugin(nuxt.options.vite.vue),
+          vueJsxPlugin(nuxt.options.vite.vueJsx),
+          DevServerPlugin(nuxt),
           ClientManifestPlugin(nuxt),
           SSRStylesPlugin(nuxt),
           ReplacePlugin(),
           LayerDepOptimizePlugin(nuxt),
+          EnvironmentsPlugin(nuxt),
           // Add type-checking
           VitePluginCheckerPlugin(nuxt),
           // add resolver for files in public assets directories
@@ -329,19 +353,22 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       } satisfies ViteConfig,
       viteConfig,
-    ),
-  }
+  )
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
   if (!nuxt.options.dev) {
-    ctx.config.server!.watch = undefined
-    ctx.config.build!.watch = undefined
+    config.server!.watch = undefined
+    config.build!.watch = undefined
   }
+
+  const ctx = { nuxt, config, entry }
 
   await nuxt.callHook('vite:extend', ctx)
 
-  nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
+  config.customLogger = createViteLogger(config)
+
+  nuxt.hook('vite:serverCreated', (server: ViteDevServer) => {
     // Invalidate virtual modules when templates are re-generated
     nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
       await Promise.all(changedTemplates.map(async (template) => {
@@ -356,31 +383,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       // Don't delay nitro build for warmup
       useNitro().hooks.hookOnce('compiled', () => {
         const start = Date.now()
-        warmupViteServer(server, [ctx.entry], env.isServer)
-          .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
+        warmupViteServer(server, [entry, serverEntry])
+          .then(() => logger.info(`Vite dev server warmed up in ${Date.now() - start}ms`))
           .catch(logger.error)
       })
     }
   })
 
   if (!nuxt.options.dev) {
-    const [client, ssr] = await Promise.all([getClientConfig(nuxt, ctx.config), getServerConfig(nuxt, ctx.config)])
-    const environments = { client, ssr }
-    for (const env of ['client', 'ssr'] as const) {
-      logger.restoreAll()
-      const builder = await vite.createBuilder(environments[env])
-      await builder.build(builder.environments[env]!)
-      logger.wrapAll()
-      await nuxt.callHook('vite:compiled')
-    }
+    config.configFile = false
+    const builder = await createBuilder(config)
+    await builder.buildApp()
     return
   }
 
-  await withLogs(() => startClientDevServer(nuxt, ctx), 'Vite client built', nuxt.options.dev)
-  await withLogs(() => startServerDevServer(nuxt, ctx), 'Vite server built', nuxt.options.dev)
+  await withLogs(() => createServer(config), 'Vite dev server built')
 }
 
-async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
+async function withLogs (fn: () => Promise<any>, message: string, enabled = true) {
   if (!enabled) { return fn() }
 
   const start = performance.now()

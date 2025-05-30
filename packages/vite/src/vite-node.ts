@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { type App, createApp, createError, defineEventHandler, toNodeListener } from 'h3'
+import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
 import { isAbsolute, join, normalize, resolve } from 'pathe'
 // import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
@@ -35,12 +35,12 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
-    applyToEnvironment: environment => environment.name === 'client',
-    configureServer (clientServer) {
+    configureServer (viteServer) {
       const app = createApp()
-      const client = clientServer.environments.client
+      const client = viteServer.environments.client
+      const server = viteServer.environments.ssr
 
-      clientServer.middlewares.use('/__nuxt_vite_node__', toNodeListener(app))
+      viteServer.middlewares.use('/__nuxt_vite_node__', toNodeListener(app))
 
       app.use('/invalidates', defineEventHandler(() => {
         const ids = Array.from(invalidates)
@@ -48,11 +48,47 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
         return ids
       }))
 
-      nuxt.hook('vite:serverCreated', (ssrServer, ctx) => {
-        if (ctx.isServer) {
-          registerSSRHandlers(nuxt, app, ssrServer.environments.ssr, client)
+      app.use('/manifest', defineEventHandler(() => {
+        const manifest = getManifest(nuxt, resolveClientEntry(client.config), server)
+        return manifest
+      }))
+
+      const RESOLVE_RE = /^\/(?<id>[^?]+)(?:\?importer=(?<importer>.*))?$/
+      app.use('/resolve', defineEventHandler(async (event) => {
+        const { id, importer } = event.path.match(RESOLVE_RE)?.groups || {}
+        if (!id || !server) {
+          throw createError({ statusCode: 400 })
         }
-      })
+        const result = await server.pluginContainer.resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
+        return result
+      }))
+
+      app.use('/module', defineEventHandler(async (event) => {
+        const moduleId = decodeURI(event.path).substring(1)
+        if (moduleId === '/' || !server) {
+          throw createError({ statusCode: 400 })
+        }
+        // TODO: replace
+        if (isAbsolute(moduleId) && !isFileServingAllowed(server.config, moduleId)) {
+          throw createError({ statusCode: 403 /* Restricted */ })
+        }
+
+        const module = await server.fetchModule(moduleId).catch(async (err) => {
+          const errorData = {
+            code: 'VITE_ERROR',
+            id: moduleId,
+            stack: '',
+            reason: err.toString(),
+            ...err,
+          }
+
+          if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
+            errorData.frame = await client.transformRequest(moduleId).then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
+          }
+          throw createError({ data: errorData })
+        })
+        return module
+      }))
 
       // invalidate changed virtual modules when templates are regenerated
       nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
@@ -65,7 +101,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
         }
       })
 
-      clientServer.watcher.on('all', (event, file) => {
+      viteServer.watcher.on('all', (event, file) => {
         invalidates.add(file)
         markInvalidates(client.moduleGraph.getModulesByFile(normalize(file)))
       })
@@ -115,50 +151,6 @@ function getManifest (nuxt: Nuxt, clientEntry: string, server: DevEnvironment) {
   })
 
   return manifest
-}
-
-function registerSSRHandlers (nuxt: Nuxt, app: App, server: DevEnvironment, client: DevEnvironment) {
-  app.use('/manifest', defineEventHandler(() => {
-    const manifest = getManifest(nuxt, resolveClientEntry(client.config), server)
-    return manifest
-  }))
-
-  const RESOLVE_RE = /^\/(?<id>[^?]+)(?:\?importer=(?<importer>.*))?$/
-  app.use('/resolve', defineEventHandler(async (event) => {
-    const { id, importer } = event.path.match(RESOLVE_RE)?.groups || {}
-    if (!id || !server) {
-      throw createError({ statusCode: 400 })
-    }
-    const result = await server.pluginContainer.resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
-    return result
-  }))
-
-  app.use('/module', defineEventHandler(async (event) => {
-    const moduleId = decodeURI(event.path).substring(1)
-    if (moduleId === '/' || !server) {
-      throw createError({ statusCode: 400 })
-    }
-    // TODO: replace
-    if (isAbsolute(moduleId) && !isFileServingAllowed(server.config, moduleId)) {
-      throw createError({ statusCode: 403 /* Restricted */ })
-    }
-
-    const module = await server.fetchModule(moduleId).catch(async (err) => {
-      const errorData = {
-        code: 'VITE_ERROR',
-        id: moduleId,
-        stack: '',
-        reason: err.toString(),
-        ...err,
-      }
-
-      if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
-        errorData.frame = await client.transformRequest(moduleId).then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
-      }
-      throw createError({ data: errorData })
-    })
-    return module
-  }))
 }
 
 export type ViteNodeServerOptions = {

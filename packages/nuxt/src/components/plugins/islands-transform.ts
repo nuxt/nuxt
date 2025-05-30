@@ -196,7 +196,6 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin => {
               fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
               id: component.filePath,
               preserveSignature: 'strict',
-
             })
 
             options.chunkIds.set(component.pascalName, this.getFileName(id))

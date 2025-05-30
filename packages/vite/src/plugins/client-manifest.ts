@@ -18,7 +18,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:client-manifest',
     // needs to run after server build (or after client build if there is no server build)
-    applyToEnvironment: environment => environment.name === 'ssr' || !nuxt.options.ssr,
+    applyToEnvironment: environment => environment.name === 'ssr',
     configResolved (config) {
       clientEntry = resolveClientEntry(config)
       key = relative(config.root, clientEntry)

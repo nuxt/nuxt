@@ -1,4 +1,4 @@
-import { addBuildPlugin, addComponent } from 'nuxt/kit'
+import { addBuildPlugin, addComponent, addVitePlugin } from 'nuxt/kit'
 import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
@@ -17,6 +17,28 @@ export default defineNuxtConfig({
       nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
         public: {
           testConfig: 123,
+        },
+      })
+    },
+    function () {
+      addVitePlugin({
+        name: 'nuxt:server',
+        configureServer (server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/vite-plugin-without-path') {
+              res.end('vite-plugin without path')
+              return
+            }
+            next()
+          })
+
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/__nuxt-test') {
+              res.end('vite-plugin with __nuxt prefix')
+              return
+            }
+            next()
+          })
         },
       })
     },
@@ -237,28 +259,6 @@ export default defineNuxtConfig({
           comp.global = 'sync'
         }
       }
-    },
-    'vite:extendConfig' (config) {
-      config.plugins!.push({
-        name: 'nuxt:server',
-        configureServer (server) {
-          server.middlewares.use((req, res, next) => {
-            if (req.url === '/vite-plugin-without-path') {
-              res.end('vite-plugin without path')
-              return
-            }
-            next()
-          })
-
-          server.middlewares.use((req, res, next) => {
-            if (req.url === '/__nuxt-test') {
-              res.end('vite-plugin with __nuxt prefix')
-              return
-            }
-            next()
-          })
-        },
-      })
     },
   },
 })
