@@ -388,6 +388,15 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
+  if (nuxt.options.contentSecurityPolicy) {
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.runtimeConfig ||= {}
+      nitroConfig.runtimeConfig.contentSecurityPolicy = nuxt.options.contentSecurityPolicy
+    })
+
+    addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy'))
+  }
+
   // Transform initial composable call within `<script setup>` to preserve context
   if (nuxt.options.experimental.asyncContext) {
     addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
