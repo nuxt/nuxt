@@ -49,7 +49,7 @@ export default defineResolvers({
    * Each handler accepts the following options:
    *
    * - handler: The path to the file defining the handler.
-   * - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/unjs/rou3).
+   * - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3).
    * - method: The HTTP method of requests that should be handled.
    * - middleware: Specifies whether it is a middleware handler.
    * - lazy: Specifies whether to use lazy loading to import the handler.
