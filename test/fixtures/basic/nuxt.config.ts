@@ -5,7 +5,7 @@ import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
 // (defined in nuxt/src/core/nitro.ts)
-declare module 'nitro/types' {
+declare module 'nitropack' {
   interface NitroRouteConfig {
     ssr?: boolean
   }
@@ -160,7 +160,6 @@ export default defineNuxtConfig({
   },
   experimental: {
     decorators: true,
-    serverAppConfig: true,
     typedPages: true,
     clientFallback: true,
     restoreState: true,
@@ -210,6 +209,11 @@ export default defineNuxtConfig({
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
+    },
+  },
+  postcss: {
+    plugins: {
+      '~/postcss/plugin': {},
     },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
