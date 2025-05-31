@@ -7,11 +7,10 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { Node, Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
-import { parseAndWalk, withLocations } from '../core/utils/parse'
+import { type Node, type ObjectProperty, parseAndWalk } from 'oxc-walker'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 
@@ -257,10 +256,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
 
       for (const key of extractionKeys) {
-        const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+        const property = pageMetaArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        const propertyValue = withLocations(property.value)
+        const propertyValue = property.value
 
         const { value, serializable } = isSerializable(script.code, propertyValue)
         if (!serializable) {
@@ -630,7 +629,7 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
 }
 
 export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
-  const propertyValue = withLocations(node)
+  const propertyValue = node
 
   if (propertyValue.type === 'ObjectExpression') {
     const valueString = code.slice(propertyValue.start, propertyValue.end)
