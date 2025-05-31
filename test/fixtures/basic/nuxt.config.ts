@@ -4,13 +4,6 @@ import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
-// (defined in nuxt/src/core/nitro.ts)
-declare module 'nitropack' {
-  interface NitroRouteConfig {
-    ssr?: boolean
-  }
-}
-
 export default defineNuxtConfig({
   appId: 'nuxt-app-basic',
   extends: [
