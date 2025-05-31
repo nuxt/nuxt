@@ -195,5 +195,5 @@ export async function buildServer (ctx: ViteBuildContext) {
   // Initialize plugins
   await viteServer.pluginContainer.buildStart({})
 
-    await initViteNodeServer(ctx)
+  await initViteNodeServer(ctx)
 }
