@@ -101,7 +101,7 @@
     "mlly": "^1.7.4",
     "mocked-exports": "^0.1.1",
     "nanotar": "^0.2.0",
-    "nitro": "npm:nitro-nightly@3.0.0-20250527-175200.8c2a2d85",
+    "nitropack": "2.11.12",
     "nypm": "^0.6.0",
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
