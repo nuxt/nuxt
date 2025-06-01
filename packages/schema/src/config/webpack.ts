@@ -163,28 +163,16 @@ export default defineResolvers({
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       file: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       fontUrl: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       imgUrl: { esModule: false, limit: 1000 },
 
@@ -213,8 +201,6 @@ export default defineResolvers({
        */
       css: {
         importLoaders: 0,
-        /**
-         */
         url: {
           filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
@@ -226,8 +212,6 @@ export default defineResolvers({
        */
       cssModules: {
         importLoaders: 0,
-        /**
-         */
         url: {
           filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
@@ -244,14 +228,6 @@ export default defineResolvers({
 
       /**
        * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
-       * @default
-       * ```ts
-       * {
-       *   sassOptions: {
-       *     indentedSyntax: true
-       *   }
-       * }
-       * ```
        */
       sass: {
         sassOptions: {

@@ -14,13 +14,11 @@ export default defineResolvers({
        * You can enable hash history in SPA mode. In this mode, router uses a hash character (#) before
        * the actual URL that is internally passed. When enabled, the
        * **URL is never sent to the server** and **SSR is not supported**.
-       * @default false
        */
       hashMode: false,
 
       /**
        * Customize the scroll behavior for hash links.
-       * @default 'auto'
        */
       scrollBehaviorType: 'auto',
     },

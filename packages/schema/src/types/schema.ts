@@ -1839,11 +1839,6 @@ export interface ConfigSchema {
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       *
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       file: {
         esModule: boolean
@@ -1853,11 +1848,6 @@ export interface ConfigSchema {
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       *
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       fontUrl: {
         esModule: boolean
@@ -1867,11 +1857,6 @@ export interface ConfigSchema {
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       *
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       imgUrl: {
         esModule: boolean
@@ -1922,15 +1907,6 @@ export interface ConfigSchema {
 
       /**
        * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
-       *
-       * @default
-       * ```ts
-       * {
-       *   sassOptions: {
-       *     indentedSyntax: true
-       *   }
-       * }
-       * ```
        */
       sass: {
         sassOptions: {
