@@ -46,6 +46,10 @@ export default defineResolvers({
           // Nitro auto-imported/augmented dependencies
           'nitro/types',
           'nitro/runtime',
+          // TODO: remove in v5
+          'nitropack/types',
+          'nitropack/runtime',
+          'nitropack',
           'defu',
           'h3',
           'consola',

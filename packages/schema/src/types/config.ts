@@ -3,7 +3,7 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
 import type { ConfigSchema } from './schema'

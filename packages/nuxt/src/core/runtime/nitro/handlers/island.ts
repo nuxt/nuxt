@@ -1,5 +1,5 @@
-import { useNitroApp } from 'nitro/runtime'
-import type { RenderResponse } from 'nitro/types'
+import { useNitroApp } from 'nitropack/runtime'
+import type { RenderResponse } from 'nitropack/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'h3'
