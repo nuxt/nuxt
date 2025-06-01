@@ -1,4 +1,4 @@
-/// <reference types="nitro/types" />
+/// <reference types="nitropack/types" />
 /// <reference path="dist/app/types/augments.d.ts" />
 
 import type { DefineNuxtConfig } from 'nuxt/config'
@@ -15,7 +15,7 @@ declare global {
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
-declare module 'nitro/types' {
+declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string

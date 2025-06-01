@@ -10,7 +10,6 @@ export default defineResolvers({
      * Enable early access to future features or flags.
      *
      * It is currently not configurable but may be in future.
-     * @type {4}
      */
     compatibilityVersion: 4,
     /**
@@ -50,7 +49,6 @@ export default defineResolvers({
      *
      * You can also pass a function that receives the path of a Vue component
      * and returns a boolean indicating whether to inline the styles for that component.
-     * @type {boolean | ((id?: string) => boolean)}
      */
     inlineStyles: {
       async $resolve (_val, get) {
@@ -68,7 +66,7 @@ export default defineResolvers({
           return false
         }
         // Enabled by default for vite prod with ssr (for vue components)
-        return val ?? ((await get('future')).compatibilityVersion === 4 ? (id?: string) => !!id && id.includes('.vue') : true)
+        return val ?? ((id?: string) => !!id && id.includes('.vue'))
       },
     },
 
@@ -77,7 +75,6 @@ export default defineResolvers({
      * be handled in the `dev:ssr-logs` hook.
      *
      * If set to `silent`, the logs will not be printed to the browser console.
-     * @type {boolean | 'silent'}
      */
     devLogs: {
       async $resolve (val, get) {
@@ -94,7 +91,6 @@ export default defineResolvers({
      * You can also disable scripts more granularly within `routeRules`.
      *
      * If set to 'production' or `true`, JS will be disabled in production mode only.
-     * @type {'production' | 'all' | boolean}
      */
     noScripts: {
       async $resolve (val, get) {
@@ -151,7 +147,6 @@ export default defineResolvers({
      * You can disable automatic handling by setting this to `false`, or handle
      * chunk errors manually by setting it to `manual`.
      * @see [Nuxt PR #19038](https://github.com/nuxt/nuxt/pull/19038)
-     * @type {false | 'manual' | 'automatic' | 'automatic-immediate'}
      */
     emitRouteChunkError: {
       $resolve: (val) => {
@@ -196,7 +191,6 @@ export default defineResolvers({
      * Consider carefully before enabling this as it can cause unexpected behavior, and
      * consider providing explicit keys to `useState` as auto-generated keys may not match
      * across builds.
-     * @type {boolean}
      */
     restoreState: false,
 
@@ -210,7 +204,6 @@ export default defineResolvers({
 
     /**
      * When this option is enabled (by default) payload of pages that are prerendered are extracted
-     * @type {boolean | undefined}
      */
     payloadExtraction: true,
 
@@ -226,7 +219,6 @@ export default defineResolvers({
     /**
      * Enable View Transition API integration with client-side router.
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
-     * @type {boolean | 'always'}
      */
     viewTransition: false,
 
@@ -241,7 +233,6 @@ export default defineResolvers({
      *
      * By default it is set to 'auto', which means it will be enabled only when there are islands,
      * server components or server pages in your app.
-     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -270,7 +261,6 @@ export default defineResolvers({
      * Set the time interval (in ms) to check for new builds. Disabled when `experimental.appManifest` is `false`.
      *
      * Set to `false` to disable.
-     * @type {number | false}
      */
     checkOutdatedBuildInterval: 1000 * 60 * 60,
 
@@ -287,7 +277,6 @@ export default defineResolvers({
      * You can also set this to `chokidar` to watch all files in your source directory.
      * @see [chokidar](https://github.com/paulmillr/chokidar)
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
-     * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: {
       $resolve: async (val, get) => {
@@ -338,11 +327,10 @@ export default defineResolvers({
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
      * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
-     * @type {boolean | 'after-resolve'}
      */
     scanPageMeta: {
-      async $resolve (val, get) {
-        return typeof val === 'boolean' || val === 'after-resolve' ? val : ((await get('future')).compatibilityVersion === 4 ? 'after-resolve' : true)
+      $resolve (val) {
+        return typeof val === 'boolean' || val === 'after-resolve' ? val : 'after-resolve'
       },
     },
 
@@ -352,7 +340,6 @@ export default defineResolvers({
      * This allows modules to access additional metadata from the page metadata. It's recommended
      * to augment the NuxtPage types with your keys.
      *
-     * @type {string[]}
      */
     extraPageMetaExtractionKeys: [],
 
@@ -380,8 +367,8 @@ export default defineResolvers({
      * ```
      */
     sharedPrerenderData: {
-      async $resolve (val, get) {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      $resolve (val) {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -398,7 +385,6 @@ export default defineResolvers({
      * `app/` directory.
      */
     defaults: {
-      /** @type {typeof import('nuxt/app')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
         prefetch: true,
@@ -412,7 +398,6 @@ export default defineResolvers({
       useAsyncData: {
         deep: false,
       },
-      /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {},
     },
 
@@ -427,7 +412,6 @@ export default defineResolvers({
      *
      * globalThis.Buffer = globalThis.Buffer || Buffer
      * ```
-     * @type {boolean}
      */
     clientNodeCompat: false,
 
@@ -451,21 +435,20 @@ export default defineResolvers({
      * you would use to auto-import the component.
      */
     normalizeComponentNames: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
     /**
      * Keep showing the spa-loading-template until suspense:resolve
      * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)
-     * @type {'body' | 'within'}
      */
     spaLoadingTemplateLocation: {
-      $resolve: async (val, get) => {
+      $resolve: (val) => {
         const validOptions = new Set(['body', 'within'] as const)
         type SpaLoadingTemplateLocation = typeof validOptions extends Set<infer Option> ? Option : never
-        return typeof val === 'string' && validOptions.has(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : (((await get('future')).compatibilityVersion === 4) ? 'body' : 'within')
+        return typeof val === 'string' && validOptions.has(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : 'body'
       },
     },
 
@@ -602,8 +585,8 @@ export default defineResolvers({
      * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
      */
     granularCachedData: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -613,8 +596,8 @@ export default defineResolvers({
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
      */
     alwaysRunFetchOnKeyChange: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
 
@@ -622,8 +605,8 @@ export default defineResolvers({
      * Whether to parse `error.data` when rendering a server error page.
      */
     parseErrorData: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion === 4
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -636,8 +619,8 @@ export default defineResolvers({
      * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
      */
     pendingWhenIdle: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion !== 4
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
   },

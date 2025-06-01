@@ -1,5 +1,5 @@
 ---
-title: "nuxi info"
+title: "nuxt info"
 description: The info command logs information about the current or specified Nuxt project.
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--info-cmd-->
 ```bash [Terminal]
-npx nuxi info [ROOTDIR] [--cwd=<directory>]
+npx nuxt info [ROOTDIR] [--cwd=<directory>]
 ```
 <!--/info-cmd-->
 

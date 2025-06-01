@@ -1,7 +1,6 @@
 // @ts-expect-error untyped
 import '#nitro-internal-pollyfills'
-import type { NitroApp } from 'nitro/types'
-// @ts-expect-error untyped
+import type { NitroApp } from 'nitropack/types'
 import { useNitroApp } from 'nitropack/runtime'
 
 const nitroApp = useNitroApp()
