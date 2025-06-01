@@ -2266,7 +2266,7 @@ describe('component islands', () => {
     const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/RouteComponent.json?url=/foo')
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
-    if (isDev()) {
+    if (isDev() && result.head.link) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
 
@@ -2285,7 +2285,7 @@ describe('component islands', () => {
         count: 3,
       }),
     }))
-    if (isDev()) {
+    if (isDev() && result.head.link) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
@@ -2340,7 +2340,7 @@ describe('component islands', () => {
         count: 2,
       }),
     }))
-    if (isDev()) {
+    if (isDev() && result.head.link) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
     }
     result.props = {}
@@ -2362,7 +2362,7 @@ describe('component islands', () => {
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
-      if (isDev()) {
+      if (isDev() && result.head.link) {
         result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
 
         if (!result.head.link) {
@@ -2445,7 +2445,6 @@ describe('component islands', () => {
               "rel": "stylesheet",
             },
           ],
-          "style": [],
         }
       `)
     }
