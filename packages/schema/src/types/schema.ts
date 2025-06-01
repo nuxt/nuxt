@@ -778,12 +778,6 @@ export interface ConfigSchema {
      * The directory containing your static files, which will be directly accessible via the Nuxt server and copied across into your `dist` folder when your app is generated.
      */
     public: string
-
-    /**
-     *
-     * @deprecated use `dir.public` option instead
-     */
-    static: string
   }
 
   /**
