@@ -21,7 +21,6 @@ export async function getVueHash (nuxt: Nuxt) {
       join(relative(layer.cwd, layer.config.srcDir), '**'),
       `!${relative(layer.cwd, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
       `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.public || 'public'))}/**`,
-      `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.static || 'public'))}/**`,
       '!node_modules/**',
       '!nuxt.config.*',
     ],
