@@ -4,7 +4,6 @@ export default defineResolvers({
   /**
    * Configuration for Nitro.
    * @see [Nitro configuration docs](https://nitro.build/config/)
-   * @type {typeof import('nitropack/types')['NitroConfig']}
    */
   nitro: {
     runtimeConfig: {
@@ -39,7 +38,6 @@ export default defineResolvers({
    * Global route options applied to matching server routes.
    * @experimental This is an experimental feature and API may change in the future.
    * @see [Nitro route rules documentation](https://nitro.build/config/#routerules)
-   * @type {typeof import('nitropack/types')['NitroConfig']['routeRules']}
    */
   routeRules: {},
 
@@ -62,14 +60,12 @@ export default defineResolvers({
    *   { route: '/path/foo/**:name', handler: '~/server/foohandler.ts' }
    * ]
    * ```
-   * @type {typeof import('nitropack/types')['NitroEventHandler'][]}
    */
   serverHandlers: [],
 
   /**
    * Nitro development-only server handlers.
    * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
-   * @type {typeof import('nitropack/types')['NitroDevEventHandler'][]}
    */
   devServerHandlers: [],
 })
