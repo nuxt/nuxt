@@ -48,7 +48,7 @@ async function promptToInstall (name: string, installCommand: () => Promise<void
   }
 }
 
-// TODO: refactor to Nuxi
+// TODO: refactor to @nuxt/cli
 const installPrompts = new Set<string>()
 export function installNuxtModule (name: string, options?: EnsurePackageInstalledOptions) {
   if (installPrompts.has(name)) { return }

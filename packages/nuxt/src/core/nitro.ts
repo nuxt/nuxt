@@ -4,8 +4,8 @@ import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
-import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro'
-import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
+import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitropack'
+import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
 import { createIsIgnored, findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -51,8 +51,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   )
 
   const sharedDirs = new Set<string>()
-  const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
-  if (isNuxtV4 && (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false)) {
+  if (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false) {
     for (const layer of nuxt.options._layers) {
       // Layer disabled scanning for itself
       if (layer.config?.imports?.scan === false) {
@@ -129,6 +128,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     routeRules: {
       '/__nuxt_error': { cache: false },
     },
+    appConfig: nuxt.options.appConfig,
+    appConfigFiles: nuxt.options._layers.map(
+      layer => resolve(layer.config.srcDir, 'app.config'),
+    ),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -241,6 +244,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     nitroConfig.imports.imports.push({
       name: 'useAppConfig',
       from: resolve(distDir, 'core/runtime/nitro/utils/app-config'),
+      priority: -1,
     })
   }
 
@@ -294,18 +298,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       nuxt.hook('build:before', async () => {
         await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
         await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({}))
-      })
-    }
-
-    if (nuxt.options.future.compatibilityVersion !== 4) {
-      // TODO: remove in Nuxt v4
-      nuxt.hook('nitro:config', (config) => {
-        for (const value of Object.values(config.routeRules || {})) {
-          if ('experimentalNoScripts' in value) {
-            value.noScripts = value.experimentalNoScripts
-            delete value.experimentalNoScripts
-          }
-        }
       })
     }
 

@@ -19,7 +19,6 @@ export default defineResolvers({
   _requiredModules: {},
   /**
    * @private
-   * @type {{ dotenv?: boolean | import('c12').DotenvOptions }}
    */
   _loadOptions: undefined,
   /** @private */
@@ -30,7 +29,6 @@ export default defineResolvers({
   appDir: '',
   /**
    * @private
-   * @type {Array<{ meta: typeof import('../src/types/module').ModuleMeta; module: typeof import('../src/types/module').NuxtModule, timings?: Record<string, number | undefined>; entryPath?: string }>}
    */
   _installedModules: [],
   /** @private */

@@ -5,13 +5,13 @@ import {
   getRequestDependencies,
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
-import type { RenderResponse } from 'nitro/types'
+import type { RenderResponse } from 'nitropack/types'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitro/runtime'
+import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runtime'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
