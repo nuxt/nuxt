@@ -66,7 +66,7 @@ export default defineResolvers({
           return false
         }
         // Enabled by default for vite prod with ssr (for vue components)
-        return val ?? ((await get('future')).compatibilityVersion === 4 ? (id?: string) => !!id && id.includes('.vue') : true)
+        return val ?? ((id?: string) => !!id && id.includes('.vue'))
       },
     },
 
@@ -329,8 +329,8 @@ export default defineResolvers({
      * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
      */
     scanPageMeta: {
-      async $resolve (val, get) {
-        return typeof val === 'boolean' || val === 'after-resolve' ? val : ((await get('future')).compatibilityVersion === 4 ? 'after-resolve' : true)
+      $resolve (val) {
+        return typeof val === 'boolean' || val === 'after-resolve' ? val : 'after-resolve'
       },
     },
 
@@ -367,8 +367,8 @@ export default defineResolvers({
      * ```
      */
     sharedPrerenderData: {
-      async $resolve (val, get) {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      $resolve (val) {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -435,8 +435,8 @@ export default defineResolvers({
      * you would use to auto-import the component.
      */
     normalizeComponentNames: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -445,10 +445,10 @@ export default defineResolvers({
      * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)
      */
     spaLoadingTemplateLocation: {
-      $resolve: async (val, get) => {
+      $resolve: (val) => {
         const validOptions = new Set(['body', 'within'] as const)
         type SpaLoadingTemplateLocation = typeof validOptions extends Set<infer Option> ? Option : never
-        return typeof val === 'string' && validOptions.has(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : (((await get('future')).compatibilityVersion === 4) ? 'body' : 'within')
+        return typeof val === 'string' && validOptions.has(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : 'body'
       },
     },
 
@@ -585,8 +585,8 @@ export default defineResolvers({
      * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
      */
     granularCachedData: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion === 4)
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -596,8 +596,8 @@ export default defineResolvers({
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
      */
     alwaysRunFetchOnKeyChange: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
 
@@ -605,8 +605,8 @@ export default defineResolvers({
      * Whether to parse `error.data` when rendering a server error page.
      */
     parseErrorData: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion === 4
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -619,8 +619,8 @@ export default defineResolvers({
      * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
      */
     pendingWhenIdle: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion !== 4
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
   },

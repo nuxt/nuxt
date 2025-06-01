@@ -49,8 +49,8 @@
       "import": "./dist/app/nuxt.js"
     },
     "#unhead/composables": {
-      "types": "./dist/head/runtime/composables/v4.d.ts",
-      "import": "./dist/head/runtime/composables/v4.js"
+      "types": "./dist/head/runtime/composables.d.ts",
+      "import": "./dist/head/runtime/composables.js"
     }
   },
   "files": [

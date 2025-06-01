@@ -51,8 +51,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   )
 
   const sharedDirs = new Set<string>()
-  const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
-  if (isNuxtV4 && (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false)) {
+  if (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false) {
     for (const layer of nuxt.options._layers) {
       // Layer disabled scanning for itself
       if (layer.config?.imports?.scan === false) {
@@ -299,18 +298,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       nuxt.hook('build:before', async () => {
         await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
         await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({}))
-      })
-    }
-
-    if (nuxt.options.future.compatibilityVersion !== 4) {
-      // TODO: remove in Nuxt v4
-      nuxt.hook('nitro:config', (config) => {
-        for (const value of Object.values(config.routeRules || {})) {
-          if ('experimentalNoScripts' in value) {
-            value.noScripts = value.experimentalNoScripts
-            delete value.experimentalNoScripts
-          }
-        }
       })
     }
 

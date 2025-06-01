@@ -202,7 +202,6 @@ export async function _generateTypes (nuxt: Nuxt) {
     exclude.add(join(relative, 'dist/runtime/server'))
   }
 
-  const isV4 = nuxt.options.future?.compatibilityVersion === 4
   const nestedModulesDirs: string[] = []
   for (const dir of [...nuxt.options.modulesDir].sort()) {
     const withSlash = withTrailingSlash(dir)
@@ -217,7 +216,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       .then(r => r?.version && gte(r.version, '5.4.0'))
       .catch(() => undefined)
   }
-  hasTypescriptVersionWithModulePreserve ??= isV4
+  hasTypescriptVersionWithModulePreserve ??= true
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
@@ -235,7 +234,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       verbatimModuleSyntax: true,
       /* Strictness */
       strict: nuxt.options.typescript?.strict ?? true,
-      noUncheckedIndexedAccess: isV4,
+      noUncheckedIndexedAccess: true,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
       /* Decorator support */

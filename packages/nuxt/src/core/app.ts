@@ -178,9 +178,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
       `${middlewareDir}/*{${extensionGlob}}`,
-      ...nuxt.options.future.compatibilityVersion === 4
-        ? [`${middlewareDir}/*/index{${extensionGlob}}`]
-        : [],
+      `${middlewareDir}/*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
       const name = getNameFromPath(file)

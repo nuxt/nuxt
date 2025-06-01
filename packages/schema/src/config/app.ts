@@ -469,14 +469,10 @@ export default defineResolvers({
      * ```
      */
     renderSSRHeadOptions: {
-      $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
-
-        return {
-          ...typeof val === 'object' ? val : {},
-          omitLineBreaks: isV4,
-        }
-      },
+      $resolve: val => ({
+        omitLineBreaks: true,
+        ...typeof val === 'object' ? val : {},
+      }),
     },
   },
 })

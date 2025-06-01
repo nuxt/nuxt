@@ -112,14 +112,7 @@ export default defineResolvers({
         return resolve(await get('rootDir'), val)
       }
 
-      const [rootDir, isV4] = await Promise.all([
-        get('rootDir'),
-        get('future').then(r => r.compatibilityVersion === 4),
-      ])
-
-      if (!isV4) {
-        return rootDir
-      }
+      const rootDir = await get('rootDir')
 
       const srcDir = resolve(rootDir, 'app')
       if (!existsSync(srcDir)) {
@@ -160,12 +153,8 @@ export default defineResolvers({
    */
   serverDir: {
     $resolve: async (val, get) => {
-      if (val && typeof val === 'string') {
-        const rootDir = await get('rootDir')
-        return resolve(rootDir, val)
-      }
-      const isV4 = (await get('future')).compatibilityVersion === 4
-      return join(isV4 ? await get('rootDir') : await get('srcDir'), 'server')
+      const rootDir = await get('rootDir')
+      return resolve(rootDir, val && typeof val === 'string' ? val : 'server')
     },
   },
 
@@ -356,7 +345,7 @@ export default defineResolvers({
   dir: {
     app: {
       $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
+        const isV4 = true
         if (isV4) {
           const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
           return resolve(await get('srcDir'), val && typeof val === 'string' ? val : (srcDir === rootDir ? 'app' : '.'))
@@ -384,7 +373,7 @@ export default defineResolvers({
      */
     modules: {
       $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
+        const isV4 = true
         if (isV4) {
           return resolve(await get('rootDir'), val && typeof val === 'string' ? val : 'modules')
         }
@@ -417,7 +406,7 @@ export default defineResolvers({
      */
     public: {
       $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
+        const isV4 = true
         if (isV4) {
           return resolve(await get('rootDir'), val && typeof val === 'string' ? val : (await get('dir.static') || 'public'))
         }
