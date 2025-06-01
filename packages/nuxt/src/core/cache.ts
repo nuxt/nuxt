@@ -16,15 +16,17 @@ export async function getVueHash (nuxt: Nuxt) {
 
   const { hash } = await getHashes(nuxt, {
     id,
-    cwd: layer => layer.cwd,
-    patterns: layer => [
-      join(relative(layer.cwd, layer.config.srcDir), '**'),
-      `!${relative(layer.cwd, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
-      `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.public || 'public'))}/**`,
-      `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.static || 'public'))}/**`,
-      '!node_modules/**',
-      '!nuxt.config.*',
-    ],
+    cwd: layer => layer.config.srcDir || layer.cwd,
+    patterns: (layer) => {
+      const srcDir = layer.config.srcDir || layer.cwd
+      return [
+        '**',
+        `!${relative(srcDir, layer.config.serverDir || join(srcDir, 'server'))}/**`,
+        `!${relative(srcDir, resolve(layer.config.srcDir || srcDir, layer.config.dir?.public || 'public'))}/**`,
+        '!node_modules/**',
+        '!nuxt.config.*',
+      ]
+    },
     configOverrides: {
       buildId: undefined,
       serverDir: undefined,
