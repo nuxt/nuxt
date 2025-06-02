@@ -39,7 +39,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     extend: { extendKey: ['theme', '_extends', 'extends'] },
     dotenv: true,
     globalRc: true,
-    merger: merger as any, // TODO: fix type in c12, it should accept createDefu directly
+    // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
+    merger,
     ...opts,
   })
   delete globalSelf.defineNuxtConfig
