@@ -53,7 +53,7 @@
     "file-loader": "6.2.0",
     "h3": "1.15.3",
     "hookable": "5.5.3",
-    "ignore": "7.0.4",
+    "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.9.2",
     "nitropack": "2.11.12",
     "ofetch": "1.4.1",
