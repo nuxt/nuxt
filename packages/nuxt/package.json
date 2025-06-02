@@ -109,6 +109,7 @@
     "oxc-minify": "^0.72.2",
     "oxc-parser": "^0.72.2",
     "oxc-transform": "^0.72.2",
+    "oxc-walker": "^0.3.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^2.1.0",
