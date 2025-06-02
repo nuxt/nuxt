@@ -1,4 +1,4 @@
-import type { Literal, Property, SpreadElement } from 'estree'
+import type { Literal } from 'estree'
 import { defu } from 'defu'
 import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
@@ -7,7 +7,8 @@ import MagicString from 'magic-string'
 import { normalize } from 'pathe'
 import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
 
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { parseAndWalk } from 'oxc-walker'
+import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
 import { logger } from '../../utils'
 
 const internalOrderMap = {
@@ -83,11 +84,11 @@ const keys: Record<PluginMetaKey, string> = {
   enforce: 'enforce',
   dependsOn: 'dependsOn',
 }
-function isMetadataKey (key: string): key is PluginMetaKey {
-  return key in keys
+function isMetadataKey (key: string | IdentifierName): key is PluginMetaKey {
+  return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<Property | SpreadElement>) {
+function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
   const meta: PluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
@@ -183,9 +184,9 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
               const propertyKey = property.key.name
               if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
                 const nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
-                const nextIndex = withLocations(nextNode)?.start || (withLocations(arg).end - 1)
+                const nextIndex = nextNode?.start || (arg.end - 1)
 
-                s.remove(withLocations(property).start, nextIndex)
+                s.remove(property.start, nextIndex)
               }
             }
           }

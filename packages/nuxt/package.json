@@ -112,6 +112,7 @@
     "ohash": "^2.0.11",
     "on-change": "^5.0.1",
     "oxc-parser": "^0.77.3",
+    "oxc-walker": "^0.4.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^2.2.0",

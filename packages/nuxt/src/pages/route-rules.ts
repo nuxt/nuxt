@@ -3,8 +3,8 @@ import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack'
 import { normalize } from 'pathe'
 
+import { parseAndWalk } from 'oxc-walker'
 import { getLoader } from '../core/utils'
-import { parseAndWalk } from '../core/utils/parse'
 import { extractScriptContent, pathToNitroGlob } from './utils'
 
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/

@@ -7,10 +7,9 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { Node, Property } from 'estree'
-
 import { klona } from 'klona'
-import { parseAndWalk, withLocations } from '../core/utils/parse'
+import { parseAndWalk } from 'oxc-walker'
+import type { Node, ObjectProperty } from 'oxc-parser'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 import type { NuxtPage } from 'nuxt/schema'
@@ -262,12 +261,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
 
       for (const key of extractionKeys) {
-        const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+        const property = pageMetaArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        const propertyValue = withLocations(property.value)
-
-        const { value, serializable } = isSerializable(script.code, propertyValue)
+        const { value, serializable } = isSerializable(script.code, property.value)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
@@ -635,10 +632,8 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
 }
 
 export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
-  const propertyValue = withLocations(node)
-
-  if (propertyValue.type === 'ObjectExpression') {
-    const valueString = code.slice(propertyValue.start, propertyValue.end)
+  if (node.type === 'ObjectExpression') {
+    const valueString = code.slice(node.start, node.end)
     try {
       return {
         value: JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {})),
@@ -651,9 +646,9 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
-  if (propertyValue.type === 'ArrayExpression') {
+  if (node.type === 'ArrayExpression') {
     const values: string[] = []
-    for (const element of propertyValue.elements) {
+    for (const element of node.elements) {
       if (!element) {
         continue
       }
@@ -672,9 +667,9 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
-  if (propertyValue.type === 'Literal' && (typeof propertyValue.value === 'string' || typeof propertyValue.value === 'boolean' || typeof propertyValue.value === 'number' || propertyValue.value === null)) {
+  if (node.type === 'Literal' && (typeof node.value === 'string' || typeof node.value === 'boolean' || typeof node.value === 'number' || node.value === null)) {
     return {
-      value: propertyValue.value,
+      value: node.value,
       serializable: true,
     }
   }
