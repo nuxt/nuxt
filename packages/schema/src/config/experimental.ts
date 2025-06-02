@@ -653,6 +653,13 @@ export default defineResolvers({
     },
 
     /**
+     * Enable integration with Chrome DevTools Workspaces
+     * for Nuxt projects.
+     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM)
+     */
+    chromeDevtoolsProjectSettings: true,
+
+    /**
      * Record mutations to `nuxt.options` in module context, helping to debug configuration changes
      * made by modules during the Nuxt initialization phase.
      *
