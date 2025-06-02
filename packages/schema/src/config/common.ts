@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { basename, relative, resolve } from 'pathe'
+import { relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -461,15 +461,13 @@ export default defineResolvers({
    */
   alias: {
     $resolve: async (val, get) => {
-      const [srcDir, rootDir, assetsDir, publicDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir'), get('dir.shared')])
+      const [srcDir, rootDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('buildDir'), get('dir.shared')])
       return {
         '~': srcDir,
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
         '#shared': resolve(rootDir, sharedDir),
-        [basename(assetsDir)]: resolve(srcDir, assetsDir),
-        [basename(publicDir)]: resolve(srcDir, publicDir),
         '#build': buildDir,
         '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...typeof val === 'object' ? val : {},
