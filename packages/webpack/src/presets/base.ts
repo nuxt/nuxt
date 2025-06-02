@@ -1,4 +1,4 @@
-import { normalize, resolve } from 'pathe'
+import { basename, normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
@@ -123,6 +123,7 @@ function basePlugins (ctx: WebpackConfigContext) {
 function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
+    [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
     ...ctx.options.alias,
     ...ctx.alias,
   }

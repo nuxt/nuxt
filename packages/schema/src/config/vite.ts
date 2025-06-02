@@ -33,15 +33,6 @@ export default defineResolvers({
     },
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
-      alias: {
-        $resolve: async (val, get) => {
-          const [srcDir, assetsDir] = await Promise.all([get('srcDir'), get('dir.assets')])
-          return {
-            [basename(assetsDir)]: resolve(srcDir, assetsDir),
-            ...typeof val === 'object' ? val : {},
-          }
-        },
-      },
     },
     publicDir: {
       // @ts-expect-error this is missing from our `vite` types deliberately, so users do not configure it
