@@ -324,10 +324,7 @@ export function useAsyncData<
 
     // setup watchers/instance
     const hasScope = getCurrentScope()
-    const unsubExecute = watch([...(options.watch || []), key], (newValues, oldValues) => {
-      const newKey = toValue(newValues[newValues.length - 1])
-      const oldKey = toValue(oldValues[oldValues.length - 1])
-
+    const unsubExecute = watch([key, ...(options.watch || [])], ([newKey], [oldKey]) => {
       if ((newKey || oldKey) && newKey !== oldKey) {
         const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
         if (oldKey) {
@@ -346,8 +343,12 @@ export function useAsyncData<
         asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
       }
     }, { flush: 'sync' })
+
     if (hasScope) {
-      onScopeDispose(() => { unsubExecute(); unregister(key.value) })
+      onScopeDispose(() => {
+        unsubExecute()
+        unregister(key.value)
+      })
     }
   }
 
