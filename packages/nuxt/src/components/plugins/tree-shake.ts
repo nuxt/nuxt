@@ -5,7 +5,8 @@ import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
 
-import { type BindingPattern, type BindingProperty, type CallExpression, type Node, type ObjectExpression, type Program, type ReturnStatement, type VariableDeclaration, parseAndWalk, walk } from 'oxc-walker'
+import { parseAndWalk, walk } from 'oxc-walker'
+import type { BindingPattern, BindingProperty, CallExpression, Node, ObjectExpression, Program, ReturnStatement, VariableDeclaration } from 'oxc-parser'
 import { distDir } from '../../dirs'
 
 interface TreeShakeTemplatePluginOptions {

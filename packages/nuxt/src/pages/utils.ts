@@ -10,7 +10,8 @@ import { hash } from 'ohash'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
-import { type Node, type ObjectProperty, parseAndWalk } from 'oxc-walker'
+import { parseAndWalk } from 'oxc-walker'
+import type { Node, ObjectProperty } from 'oxc-parser'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 
