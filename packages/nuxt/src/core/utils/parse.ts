@@ -1,15 +1,13 @@
 import { tryUseNuxt } from '@nuxt/kit'
-import { type TransformOptions, type TransformResult } from 'oxc-transform'
+import type { TransformOptions, TransformResult } from 'oxc-transform'
 import { transform as oxcTransform } from 'oxc-transform'
 import { minify } from 'oxc-minify'
 
-// TODO: Do we even need this?
-type SameShape<Out, In extends Out> = In & { [Key in Exclude<keyof In, keyof Out>]: never }
-
-export function transformAndMinify<T extends TransformOptions> (input: string, options?: SameShape<TransformOptions, T>): TransformResult {
+export function transformAndMinify (input: string, options?: TransformOptions): TransformResult {
   // not async until https://github.com/oxc-project/oxc/issues/10900
-  const transformResult = oxcTransform('', input, { ...tryUseNuxt()?.options.oxc.transform.options, ...options })
-  const minifyResult = minify('', transformResult.code, { compress: { target: 'esnext' } })
+  const oxcOptions = tryUseNuxt()?.options.oxc
+  const transformResult = oxcTransform('', input, { ...oxcOptions?.transform.options, ...options })
+  const minifyResult = minify('', transformResult.code, { compress: { target: oxcOptions?.transform.options.target as 'esnext' || 'esnext' } })
 
   return {
     ...transformResult,
