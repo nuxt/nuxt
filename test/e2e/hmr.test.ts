@@ -174,7 +174,7 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       expect(filteredLogs).toStrictEqual([])
     })
 
-    test.fail('#32177', async ({ page, goto }) => {
+    test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
       await goto('/issues/32177')
 
       const pageContents = readFileSync(join(sourceDir, 'pages/issues/32177.vue'), 'utf8')
