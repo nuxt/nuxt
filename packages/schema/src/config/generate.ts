@@ -13,7 +13,6 @@ export default defineResolvers({
      * ```js
      * routes: ['/users/1', '/users/2', '/users/3']
      * ```
-     * @type {string | string[]}
      */
     routes: [],
 

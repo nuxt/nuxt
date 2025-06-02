@@ -6,6 +6,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 
 import { createClientOnly } from '../../packages/nuxt/src/app/components/client-only'
 import { createClientPage } from '../../packages/nuxt/dist/components/runtime/client-component'
+import { ClientOnly } from '#components'
 
 describe('client pages', () => {
   it('should render without a wrapper', async () => {
@@ -24,8 +25,8 @@ describe('client pages', () => {
     `)
   })
 
-  it('createClient should retrieve attributes with useAttrs()', async () => {
-    const wrapper = await mountSuspended(createClientOnly(Client as ComponentOptions), {
+  it('createClient should retrieve attributes with useAttrs()', () => {
+    const wrapper = mount(createClientOnly(Client as ComponentOptions), {
       attrs: {
         id: 'client',
       },
@@ -49,6 +50,32 @@ describe('client pages', () => {
     await flushPromises()
     expect(wrapper.find('#async').exists()).toBe(true)
     expect(wrapper.find('#fallback').exists()).toBe(false)
+  })
+})
+
+describe('client-only', () => {
+  it('should render its children', async () => {
+    const component = defineComponent({
+      setup () {
+        return () => h(ClientOnly, {}, {
+          default: () => h('div', {}, 'client-only'),
+        })
+      },
+    })
+    const wrapper = await mountSuspended(component)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>client-only</div>"`)
+  })
+
+  it('should support inherited attributes', async () => {
+    const component = defineComponent({
+      setup () {
+        return () => h(ClientOnly, { class: 'test', id: 'test' }, {
+          default: () => h('div', {}, 'client-only'),
+        })
+      },
+    })
+    const wrapper = await mountSuspended(component)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="test" id="test">client-only</div>"`)
   })
 })
 

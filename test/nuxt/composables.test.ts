@@ -8,6 +8,7 @@ import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { hasProtocol, withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
+import { Transition } from 'vue'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
@@ -24,9 +25,6 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-
-// @ts-expect-error virtual file
-import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -349,7 +347,7 @@ describe('useAsyncData', () => {
 
     await flushPromises()
 
-    expect(res.data.value).toBe(asyncDataDefaults.value)
+    expect(res.data.value).toBe(undefined)
     expect(res.status.value).toBe('idle')
     expect(res.pending.value).toBe(false)
 
@@ -360,7 +358,7 @@ describe('useAsyncData', () => {
       }, { lazy: true },
     )
 
-    expect(res2.data.value).toBe(asyncDataDefaults.value)
+    expect(res2.data.value).toBe(undefined)
     expect(res2.status.value).toBe('pending')
     expect(res2.pending.value).toBe(true)
 
@@ -374,7 +372,6 @@ describe('useAsyncData', () => {
   it('should be refreshable with force and cache', async () => {
     await useAsyncData(uniqueKey, () => Promise.resolve('test'), {
       getCachedData: (key, nuxtApp, ctx) => {
-        console.log(key, ctx.cause)
         return ctx.cause
       },
     })
@@ -530,11 +527,42 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
 
     await mountSuspended(component)
-    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
 
     route.value = '/about'
     await nextTick()
-    expect(promiseFn).toHaveBeenCalledTimes(3)
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should work correctly with nested components accessing the same asyncData', async () => {
+    const useCustomData = () => useAsyncData(uniqueKey, async () => {
+      await Promise.resolve()
+      return 'value'
+    })
+
+    const ChildComponent = defineComponent({
+      setup () {
+        const { data } = useCustomData()
+        return () => h('div', ['Child ' + data.value])
+      },
+    })
+
+    const ParentComponent = defineComponent({
+      async setup () {
+        const { data, pending } = await useCustomData()
+        return () => h('div', [
+          'Parent ' + data.value,
+          h('br'),
+          pending.value ? ' loading ... ' : h(ChildComponent),
+        ])
+      },
+    })
+
+    const wrapper = await mountSuspended(ParentComponent)
+    await nextTick()
+    await flushPromises()
+
+    expect(wrapper.html()).not.toContain('loading')
   })
 
   const key = ref()
@@ -566,7 +594,7 @@ describe('useAsyncData', () => {
     expect(useNuxtData(firstKey).data.value).toBeUndefined()
     expect(useNuxtData(secondKey).data.value).toBe(secondKey)
 
-    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(asyncDataDefaults.value)
+    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(undefined)
     expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
 
     comp.unmount()
@@ -599,7 +627,7 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
 
     const comp2 = await mountSuspended(component)
-    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
 
     comp1.unmount()
     await nextTick()
@@ -649,10 +677,42 @@ describe('useAsyncData', () => {
     expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
   })
 
+  it('should work when used in a Transition', async () => {
+    const id = ref('foo')
+    const ComponentWithAsyncData = defineComponent({
+      props: { id: String },
+      async setup (props) {
+        const { data } = await useAsyncData(`quote:${props.id}`, () => Promise.resolve({ content: props.id }))
+        return () => h('div', data.value?.content)
+      },
+    })
+    const ComponentWithTransition = defineComponent({
+      setup: () => () => h(Transition, { name: 'test' }, {
+        default: () => h(ComponentWithAsyncData, { id: id.value, key: id.value }),
+      }),
+    })
+    async function setTo (newId: string) {
+      id.value = newId
+      for (let i = 0; i < 5; i++) {
+        await nextTick()
+        await flushPromises()
+      }
+    }
+
+    const wrapper = await mountSuspended(ComponentWithTransition, { global: { stubs: { transition: false } } })
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+
+    await setTo('bar')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">bar</div>"`)
+
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">foo</div>"`)
+  })
+
   it('duplicate calls are not made after first call has finished', async () => {
     const handler = vi.fn(() => Promise.resolve('hello'))
     const getCachedData = vi.fn((key: string, nuxtApp: NuxtApp) => {
-      console.log(nuxtApp.payload.data[key] ? 'has data' : 'does not have data')
       return nuxtApp.payload.data[key]
     })
 
@@ -670,7 +730,7 @@ describe('useAsyncData', () => {
 
     const { status: status2, data: data2 } = testAsyncData()
     expect.soft(handler).toHaveBeenCalledTimes(1)
-    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
     expect.soft(data.value).toBe('hello')
     expect.soft(data2.value).toBe('hello')
     expect.soft(status.value).toBe('success')
@@ -681,7 +741,7 @@ describe('useAsyncData', () => {
     await flushPromises()
 
     expect.soft(handler).toHaveBeenCalledTimes(1)
-    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -975,37 +1035,43 @@ describe('url', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by hooks', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading } = useLoadingIndicator()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
     await nuxtApp.callHook('page:loading:start')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeTruthy()
 
     await nuxtApp.callHook('page:loading:end')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
-    vi.mocked(setTimeout).mockRestore()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
     await nuxtApp.callHook('page:loading:start')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeTruthy()
     start()
     expect(isLoading.value).toBeTruthy()
     finish()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { error, start, finish } = useLoadingIndicator()
     expect(error.value).toBeFalsy()
@@ -1016,23 +1082,26 @@ describe('loading state', () => {
     start()
     expect(error.value).toBeFalsy()
     finish()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect state from set opts: { force: true }', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish, set } = useLoadingIndicator()
     await nuxtApp.callHook('page:loading:start')
     start({ force: true })
     expect(isLoading.value).toBeTruthy()
     finish()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
     set(0, { force: true })
     expect(isLoading.value).toBeTruthy()
     set(100, { force: true })
     expect(isLoading.value).toBeFalsy()
+    vi.useRealTimers()
   })
 })
 
@@ -1240,6 +1309,30 @@ describe('defineNuxtComponent', () => {
     nuxtApp.isHydrating = false
     nuxtApp.payload.serverRendered = false
   })
+
+  it('should support Options API refreshNuxtData', async () => {
+    let count = 0
+    const component = defineNuxtComponent({
+      asyncData: () => ({
+        number: count++,
+      }),
+      setup () {
+        const vm = getCurrentInstance()
+        return () => {
+          // @ts-expect-error go directly to jail 😈
+          return h('div', vm!.render.number.value)
+        }
+      },
+    })
+
+    const wrapper = await mountSuspended(component)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>0</div>"`)
+
+    await refreshNuxtData()
+
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>1</div>"`)
+  })
+
   it.todo('should support Options API head')
 })
 

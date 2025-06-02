@@ -6,7 +6,7 @@ import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
@@ -63,6 +63,9 @@ export async function buildServer (ctx: ViteBuildContext) {
     ssr: {
       external: [
         'nitro/runtime',
+        // TODO: remove in v5
+        '#internal/nitro',
+        '#internal/nitro/utils',
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
@@ -83,6 +86,9 @@ export async function buildServer (ctx: ViteBuildContext) {
         input: { server: entry },
         external: [
           'nitro/runtime',
+          // TODO: remove in v5
+          '#internal/nitro',
+          'nitropack/runtime',
           '#internal/nuxt/paths',
           '#internal/nuxt/app-config',
           '#app-manifest',
@@ -98,7 +104,7 @@ export async function buildServer (ctx: ViteBuildContext) {
           },
         },
         onwarn (warning, rollupWarn) {
-          if (warning.code && ['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
+          if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
             return
           }
           rollupWarn(warning)

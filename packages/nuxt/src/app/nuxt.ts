@@ -7,7 +7,7 @@ import { getContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
-import type { RenderResponse } from 'nitro/types'
+import type { RenderResponse } from 'nitropack/types'
 import type { LogObject } from 'consola'
 import type { VueHeadClient } from '@unhead/vue/types'
 
@@ -418,20 +418,20 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 
 /** @since 3.0.0 */
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
-  const resolvedPlugins: string[] = []
+  const resolvedPlugins: Set<string> = new Set()
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.includes(name)) ?? []
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
       const promise = applyPlugin(nuxtApp, plugin).then(async () => {
         if (plugin._name) {
-          resolvedPlugins.push(plugin._name)
+          resolvedPlugins.add(plugin._name)
           await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
             if (dependsOn.has(plugin._name!)) {
               dependsOn.delete(plugin._name!)

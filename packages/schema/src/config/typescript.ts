@@ -20,13 +20,12 @@ export default defineResolvers({
      * builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
      *
      * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
-     * @type {'vite' | 'webpack' | 'rspack' | 'shared' | false | undefined | null}
      */
     builder: {
       $resolve: (val) => {
-        const validBuilderTypes = ['vite', 'webpack', 'rspack', 'shared'] as const
-        type ValidBuilderType = typeof validBuilderTypes[number]
-        if (typeof val === 'string' && validBuilderTypes.includes(val as ValidBuilderType)) {
+        const validBuilderTypes = new Set(['vite', 'webpack', 'rspack', 'shared'] as const)
+        type ValidBuilderType = typeof validBuilderTypes extends Set<infer Option> ? Option : never
+        if (typeof val === 'string' && validBuilderTypes.has(val as ValidBuilderType)) {
           return val as ValidBuilderType
         }
         if (val === false) {
@@ -46,6 +45,10 @@ export default defineResolvers({
           // Nitro auto-imported/augmented dependencies
           'nitro/types',
           'nitro/runtime',
+          // TODO: remove in v5
+          'nitropack/types',
+          'nitropack/runtime',
+          'nitropack',
           'defu',
           'h3',
           'consola',
@@ -77,13 +80,11 @@ export default defineResolvers({
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`.
      * Requires to install `typescript` and `vue-tsc` as dev dependencies.
      * @see [Nuxt TypeScript docs](https://nuxt.com/docs/guide/concepts/typescript)
-     * @type {boolean | 'build'}
      */
     typeCheck: false,
 
     /**
      * You can extend generated `.nuxt/tsconfig.json` using this option.
-     * @type {0 extends 1 & RawVueCompilerOptions ? typeof import('pkg-types')['TSConfig'] : typeof import('pkg-types')['TSConfig'] & { vueCompilerOptions?: typeof import('@vue/language-core')['RawVueCompilerOptions'] }}
      */
     tsConfig: {},
 

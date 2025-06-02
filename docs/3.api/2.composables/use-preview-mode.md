@@ -103,8 +103,8 @@ const { data } = await useFetch('/api/preview', {
 Now you can generate your site and serve it:
 
 ```bash [Terminal]
-npx nuxi generate
-npx nuxi preview
+npx nuxt generate
+npx nuxt preview
 ```
 
 Then you can see your preview page by adding the query param `preview` to the end of the page you want to see once:
@@ -114,5 +114,5 @@ Then you can see your preview page by adding the query param `preview` to the en
 ```
 
 ::note
-`usePreviewMode` should be tested locally with `nuxi generate` and then `nuxi preview` rather than `nuxi dev`. (The [preview command](/docs/api/commands/preview) is not related to preview mode.)
+`usePreviewMode` should be tested locally with `nuxt generate` and then `nuxt preview` rather than `nuxt dev`. (The [preview command](/docs/api/commands/preview) is not related to preview mode.)
 ::

@@ -1,5 +1,5 @@
 ---
-title: "nuxi generate"
+title: "nuxt generate"
 description: Pre-renders every route of the application and stores the result in plain HTML files.
 links:
   - label: Source
@@ -10,11 +10,11 @@ links:
 
 <!--generate-cmd-->
 ```bash [Terminal]
-npx nuxi generate [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--preset] [--dotenv] [--envName]
+npx nuxt generate [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--preset] [--dotenv] [--envName]
 ```
 <!--/generate-cmd-->
 
-The `generate` command pre-renders every route of your application and stores the result in plain HTML files that you can deploy on any static hosting services. The command triggers the `nuxi build` command with the `prerender` argument set to `true`
+The `generate` command pre-renders every route of your application and stores the result in plain HTML files that you can deploy on any static hosting services. The command triggers the `nuxt build` command with the `prerender` argument set to `true`
 
 ## Arguments
 
