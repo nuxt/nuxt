@@ -6,14 +6,11 @@ import { PageRouteSymbol } from './injections'
 export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
   name,
   props: {
-    vnode: {
-      type: Object as () => VNode,
-      required: true,
-    },
     route: {
       type: Object as () => RouteLocationNormalizedLoaded,
       required: true,
     },
+    vnode: Object as () => VNode,
     vnodeRef: Object as () => Ref<any>,
     renderKey: String,
     trackRootNodes: Boolean,
@@ -47,6 +44,9 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
     }
 
     return () => {
+      if (!props.vnode) {
+        return props.vnode
+      }
       if (import.meta.dev && import.meta.client) {
         vnode = h(props.vnode, { ref: props.vnodeRef })
         return vnode
