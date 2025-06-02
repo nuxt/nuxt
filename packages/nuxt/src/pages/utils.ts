@@ -260,9 +260,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         const property = pageMetaArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        const propertyValue = property.value
-
-        const { value, serializable } = isSerializable(script.code, propertyValue)
+        const { value, serializable } = isSerializable(script.code, property.value)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
@@ -630,10 +628,8 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
 }
 
 export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
-  const propertyValue = node
-
-  if (propertyValue.type === 'ObjectExpression') {
-    const valueString = code.slice(propertyValue.start, propertyValue.end)
+  if (node.type === 'ObjectExpression') {
+    const valueString = code.slice(node.start, node.end)
     try {
       return {
         value: JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {})),
@@ -646,9 +642,9 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
-  if (propertyValue.type === 'ArrayExpression') {
+  if (node.type === 'ArrayExpression') {
     const values: string[] = []
-    for (const element of propertyValue.elements) {
+    for (const element of node.elements) {
       if (!element) {
         continue
       }
@@ -667,9 +663,9 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
-  if (propertyValue.type === 'Literal' && (typeof propertyValue.value === 'string' || typeof propertyValue.value === 'boolean' || typeof propertyValue.value === 'number' || propertyValue.value === null)) {
+  if (node.type === 'Literal' && (typeof node.value === 'string' || typeof node.value === 'boolean' || typeof node.value === 'number' || node.value === null)) {
     return {
-      value: propertyValue.value,
+      value: node.value,
       serializable: true,
     }
   }

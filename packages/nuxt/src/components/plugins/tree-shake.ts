@@ -169,8 +169,8 @@ function removeImportDeclaration (ast: Program, importName: string, magicString:
     const specifierIndex = node.specifiers.findIndex(s => s.local.name === importName)
     if (specifierIndex > -1) {
       if (node.specifiers!.length > 1) {
-        const specifier = node.specifiers![specifierIndex]
-        magicString.remove(specifier!.start, specifier!.end + 1)
+        const specifier = node.specifiers![specifierIndex]!
+        magicString.remove(specifier.start, specifier.end + 1)
         node.specifiers!.splice(specifierIndex, 1)
       } else {
         magicString.remove(node.start, node.end)
