@@ -1,8 +1,25 @@
 import { defu } from 'defu'
+import { basename, resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
   webpack: {
+    resolve: {
+      alias: {
+        $resolve: async (val, get) => {
+          const [srcDir, assetsDir, publicDir] = await Promise.all([
+            get('srcDir'),
+            get('dir.assets'),
+            get('dir.public'),
+          ])
+          return {
+            [basename(assetsDir)]: resolve(srcDir, assetsDir),
+            [basename(publicDir)]: resolve(srcDir, publicDir),
+            ...typeof val === 'object' ? val : {},
+          }
+        },
+      },
+    },
     /**
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
      *

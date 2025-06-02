@@ -1,6 +1,6 @@
 import { consola } from 'consola'
 import defu from 'defu'
-import { resolve } from 'pathe'
+import { basename, resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { defineResolvers } from '../utils/definition'
 
@@ -34,6 +34,16 @@ export default defineResolvers({
     },
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+      alias: {
+        $resolve: async (val, get) => {
+          const [srcDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('dir.assets'), get('dir.public')])
+          return {
+            [basename(assetsDir)]: resolve(srcDir, assetsDir),
+            [basename(publicDir)]: resolve(srcDir, publicDir),
+            ...typeof val === 'object' ? val : {},
+          }
+        },
+      },
     },
     publicDir: {
       // @ts-expect-error this is missing from our `vite` types deliberately, so users do not configure it
