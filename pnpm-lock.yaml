@@ -466,6 +466,9 @@ importers:
       oxc-parser:
         specifier: ^0.72.2
         version: 0.72.2
+      oxc-walker:
+        specifier: ^0.3.0
+        version: 0.3.0(oxc-parser@0.72.2)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -6277,6 +6280,11 @@ packages:
 
   oxc-resolver@9.0.2:
     resolution: {integrity: sha512-w838ygc1p7rF+7+h5vR9A+Y9Fc4imy6C3xPthCMkdFUgFvUWkmABeNB8RBDQ6+afk44Q60/UMMQ+gfDUW99fBA==}
+
+  oxc-walker@0.3.0:
+    resolution: {integrity: sha512-mGGgl9dmYHUX7Z3bxXhibwarI0fJVj2E64FNIOZQWUDvEeIPyJTe5ElyJmp4nmDdfdnrlG0bhdR+bR9D6DM/dA==}
+    peerDependencies:
+      oxc-parser: '>=0.72.0'
 
   p-event@6.0.1:
     resolution: {integrity: sha512-Q6Bekk5wpzW5qIyUP4gdMEujObYstZl6DMMOSenwBvV0BlE5LkDwkjs5yHbZmdCEq2o4RJx4tE1vwxFVf2FG1w==}
@@ -14240,6 +14248,12 @@ snapshots:
       '@oxc-resolver/binding-wasm32-wasi': 9.0.2
       '@oxc-resolver/binding-win32-arm64-msvc': 9.0.2
       '@oxc-resolver/binding-win32-x64-msvc': 9.0.2
+
+  oxc-walker@0.3.0(oxc-parser@0.72.2):
+    dependencies:
+      estree-walker: 3.0.3
+      magic-regexp: 0.10.0
+      oxc-parser: 0.72.2
 
   p-event@6.0.1:
     dependencies:

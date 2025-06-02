@@ -2,7 +2,8 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
 
-import { parseAndWalk, transform, withLocations } from '../../core/utils/parse'
+import { parseAndWalk } from 'oxc-walker'
+import { transform } from '../../core/utils/parse'
 import { isJS, isVue } from '../utils'
 
 export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {
@@ -24,7 +25,7 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
             return
           }
           if (node.callee.name === 'onPrehydrate') {
-            const callback = withLocations(node.arguments[0])
+            const callback = node.arguments[0]
             if (!callback) { return }
             if (callback.type !== 'ArrowFunctionExpression' && callback.type !== 'FunctionExpression') { return }
 
