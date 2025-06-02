@@ -1,9 +1,9 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
-import type { Component } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
 
 import { SX_RE, isVue } from '../../core/utils'
+import type { Component } from 'nuxt/schema'
 
 interface NameDevPluginOptions {
   sourcemap: boolean

@@ -7,13 +7,13 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
 import type { Node, ObjectProperty } from 'oxc-parser'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 enum SegmentParserState {
   initial,
