@@ -26,17 +26,8 @@ export default defineResolvers({
      * Include Vue compiler in runtime bundle.
      */
     runtimeCompiler: {
-      $resolve: async (val, get) => {
-        if (typeof val === 'boolean') {
-          return val
-        }
-        // @ts-expect-error TODO: formally deprecate in v4
-        const legacyProperty = await get('experimental.runtimeVueCompiler') as unknown
-        if (typeof legacyProperty === 'boolean') {
-          return legacyProperty
-        }
-
-        return false
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
 
@@ -155,14 +146,12 @@ export default defineResolvers({
      * ```
      */
     head: {
-      $resolve: async (_val, get) => {
-        // @ts-expect-error TODO: remove in Nuxt v4
-        const legacyMetaValues = await get('meta') as Record<string, unknown>
+      $resolve: (_val) => {
         const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}
 
         type NormalizedMetaObject = Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>
 
-        const resolved: NuxtAppConfig['head'] & NormalizedMetaObject = defu(val, legacyMetaValues, {
+        const resolved: NuxtAppConfig['head'] & NormalizedMetaObject = defu(val, {
           meta: [],
           link: [],
           style: [],
@@ -425,9 +414,6 @@ export default defineResolvers({
       for (const item of val) {
         if (typeof item === 'string') {
           css.push(item)
-        } else if (item && 'src' in item) {
-          // TODO: remove in Nuxt v4
-          css.push(item.src)
         }
       }
       return css

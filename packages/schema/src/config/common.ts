@@ -398,19 +398,7 @@ export default defineResolvers({
      */
     public: {
       $resolve: async (val, get) => {
-        return resolve(await get('rootDir'), val && typeof val === 'string' ? val : (await get('dir.static') || 'public'))
-      },
-    },
-
-    // TODO: remove in v4
-    static: {
-      // @ts-expect-error schema has invalid types
-      $schema: { deprecated: 'use `dir.public` option instead' },
-      $resolve: async (val, get) => {
-        if (val && typeof val === 'string') {
-          return val
-        }
-        return await get('dir.public') || 'public'
+        return resolve(await get('rootDir'), val && typeof val === 'string' ? val : 'public')
       },
     },
   },

@@ -10,7 +10,7 @@ export default defineResolvers({
    * The builder to use for bundling the Vue part of your application.
    */
   builder: {
-    $resolve: async (val, get) => {
+    $resolve: (val) => {
       if (val && typeof val === 'object' && 'bundle' in val) {
         return val as { bundle: (nuxt: Nuxt) => Promise<void> }
       }
@@ -23,10 +23,6 @@ export default defineResolvers({
       if (typeof val === 'string' && val in map) {
         // TODO: improve normalisation inference
         return map[val as keyof typeof map] as Builder
-      }
-      // @ts-expect-error TODO: remove old, unsupported config in v4
-      if (await get('vite') === false) {
-        return map.webpack as Builder
       }
       return map.vite as Builder
     },
