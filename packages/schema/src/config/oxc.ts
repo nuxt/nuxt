@@ -8,7 +8,6 @@ export default defineResolvers({
     /**
      * Options for `oxc-transform`
      * @see [Oxc transform docs](https://oxc.rs/docs/guide/usage/transformer.html)
-     * @type {import('oxc-transform').TransformOptions}
      */
     transform: {
       options: {
