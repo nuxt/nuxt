@@ -16,7 +16,6 @@ export default defineResolvers({
      *   }
      * })
      * ```
-     * @type {boolean | { key: string; cert: string } | { pfx: string; passphrase: string }}
      */
     https: false,
 
@@ -25,7 +24,6 @@ export default defineResolvers({
 
     /**
      * Dev server listening host
-     * @type {string | undefined}
      */
     host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || undefined,
 
@@ -39,13 +37,11 @@ export default defineResolvers({
 
     /**
      * Template to show a loading screen
-     * @type {(data: { loading?: string }) => string}
      */
     loadingTemplate,
 
     /**
      * Set CORS options for the dev server
-     * @type {typeof import('h3').H3CorsOptions}
      */
     cors: {
       origin: [/^https?:\/\/(?:(?:[^:]+\.)?localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/],

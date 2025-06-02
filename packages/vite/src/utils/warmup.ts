@@ -1,4 +1,4 @@
-import { builtinModules } from 'node:module'
+import { isBuiltin } from 'node:module'
 import { logger } from '@nuxt/kit'
 import { join, normalize, relative } from 'pathe'
 import { withoutBase } from 'ufo'
@@ -26,12 +26,6 @@ function normaliseURL (url: string, base: string) {
   // strip query
   url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')
   return url
-}
-
-// TODO: remove when we drop support for node 18
-const builtins = new Set(builtinModules)
-function isBuiltin (id: string) {
-  return id.startsWith('node:') || builtins.has(id)
 }
 
 // TODO: use built-in warmup logic when we update to vite 5

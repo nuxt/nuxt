@@ -7,7 +7,6 @@ export default defineResolvers({
    * Any components in the directories configured here can be used throughout your
    * pages, layouts (and other components) without needing to explicitly import them.
    * @see [`components/` directory documentation](https://nuxt.com/docs/guide/directory-structure/components)
-   * @type {boolean | typeof import('../src/types/components').ComponentsOptions | typeof import('../src/types/components').ComponentsOptions['dirs']}
    */
   components: {
     $resolve: (val) => {
@@ -27,7 +26,6 @@ export default defineResolvers({
   /**
    * Configure how Nuxt auto-imports composables into your application.
    * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/composables)
-   * @type {typeof import('../src/types/imports').ImportsOptions}
    */
   imports: {
     global: false,
@@ -63,14 +61,12 @@ export default defineResolvers({
    *   pattern: ['**\/*\/*.vue', '!**\/*.spec.*'],
    * }
    * ```
-   * @type {boolean | { enabled?: boolean, pattern?: string | string[] }}
    */
   pages: undefined,
 
   /**
    * Manually disable nuxt telemetry.
    * @see [Nuxt Telemetry](https://github.com/nuxt/telemetry) for more information.
-   * @type {boolean | Record<string, any>}
    */
   telemetry: undefined,
 
@@ -79,7 +75,6 @@ export default defineResolvers({
    *
    * Breaking changes for devtools might not reflect on the version of Nuxt.
    * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
-   * @type { { enabled: boolean, [key: string]: any } }
    */
   devtools: {},
 })

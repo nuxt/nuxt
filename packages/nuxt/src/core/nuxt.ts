@@ -283,7 +283,13 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
-  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'client', alias: { 'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs') } }), { server: false })
+  addBuildPlugin(VirtualFSPlugin(nuxt, {
+    mode: 'client', alias: {
+      '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+      'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+      'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+    },
+  }), { server: false })
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
@@ -526,7 +532,7 @@ async function initNuxt (nuxt: Nuxt) {
       export: name,
       priority: -1,
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-stubs'),
-      // @ts-expect-error TODO: refactor to nuxi
+      // @ts-expect-error TODO: refactor to @nuxt/cli
       _internal_install: '@nuxt/image',
     })
   }

@@ -54,6 +54,9 @@ function serverStandalone (ctx: WebpackConfigContext) {
   ]
   const external = new Set([
     'nitro/runtime',
+    // TODO: remove in v5
+    '#internal/nitro',
+    'nitropack/runtime',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
   ])
