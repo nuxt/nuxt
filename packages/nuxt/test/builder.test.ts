@@ -2,9 +2,9 @@ import { writeFileSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
 
 import { join, relative, resolve } from 'pathe'
-import { build, loadNuxt } from 'nuxt'
 import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { build, loadNuxt } from 'nuxt'
 
 describe('builder:watch', async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')

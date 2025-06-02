@@ -4,7 +4,6 @@ import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, 
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
-import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
@@ -19,6 +18,7 @@ import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRout
 import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
+import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 

@@ -3,13 +3,13 @@ import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNu
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
-import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory, logger } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets } from './presets'
+import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {

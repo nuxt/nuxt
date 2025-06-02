@@ -1,8 +1,8 @@
 import { createUnplugin } from 'unplugin'
-import type { NuxtConfigLayer } from 'nuxt/schema'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
 import MagicString from 'magic-string'
+import type { NuxtConfigLayer } from 'nuxt/schema'
 
 interface LayerAliasingOptions {
   sourcemap?: boolean
