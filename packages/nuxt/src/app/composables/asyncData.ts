@@ -324,33 +324,29 @@ export function useAsyncData<
 
     // setup watchers/instance
     const hasScope = getCurrentScope()
-    if (options.watch) {
-      const unsubExecute = watch(options.watch, () => {
+    const unsubExecute = watch([key, ...(options.watch || [])], ([newKey], [oldKey]) => {
+      if ((newKey || oldKey) && newKey !== oldKey) {
+        const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
+        if (oldKey) {
+          unregister(oldKey)
+        }
+        const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
+        if (!nuxtApp._asyncData[newKey]?._init) {
+          initialFetchOptions.cachedData = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialFetchOptions.cachedData)
+        }
+        nuxtApp._asyncData[newKey]._deps++
+        if (options.immediate || hasRun) {
+          nuxtApp._asyncData[newKey].execute(initialFetchOptions)
+        }
+      } else {
         asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
-      }, { flush: 'post' })
-      if (hasScope) {
-        onScopeDispose(() => unsubExecute())
-      }
-    }
-    const unsubKey = watch(key, (newKey, oldKey) => {
-      const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
-      if (oldKey && oldKey !== newKey) {
-        unregister(oldKey)
-      }
-      const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
-      if (!nuxtApp._asyncData[newKey]?._init) {
-        initialFetchOptions.cachedData = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-        nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialFetchOptions.cachedData)
-      }
-      nuxtApp._asyncData[newKey]._deps++
-      if (options.immediate || hasRun) {
-        nuxtApp._asyncData[newKey].execute(initialFetchOptions)
       }
     }, { flush: 'sync' })
 
     if (hasScope) {
       onScopeDispose(() => {
-        unsubKey()
+        unsubExecute()
         unregister(key.value)
       })
     }
