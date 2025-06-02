@@ -571,7 +571,11 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
+      `export const asyncDataDefaults = ${JSON.stringify({
+        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
+        errorValue: undefined,
+        value: undefined,
+      })}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
