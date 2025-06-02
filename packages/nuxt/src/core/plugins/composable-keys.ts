@@ -59,13 +59,13 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
           preserveExitedScopes: true,
         })
         const parseResult = parseAndWalk(script, id, {
-          scope: scopeTracker,
+          scopeTracker,
         })
 
         scopeTracker.freeze()
 
         walk(parseResult.program, {
-          scope: scopeTracker,
+          scopeTracker,
           enter (node) {
             if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
             const name = node.callee.name

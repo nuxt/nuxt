@@ -214,7 +214,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       }
 
       const { program: ast } = parseAndWalk(code, id + (query.lang ? '.' + query.lang : '.ts'), {
-        scope: scopeTracker,
+        scopeTracker,
       })
 
       scopeTracker.freeze()
@@ -222,7 +222,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       let instances = 0
 
       walk(ast, {
-        scope: scopeTracker,
+        scopeTracker,
         enter: (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
           if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
@@ -257,7 +257,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const definePageMetaScope = scopeTracker.getCurrentScope()
 
           walk(meta, {
-            scope: scopeTracker,
+            scopeTracker,
             enter (node, parent) {
               if (
                 isBindingIdentifier(node, parent)
