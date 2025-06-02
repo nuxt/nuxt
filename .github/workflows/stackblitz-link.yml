@@ -12,6 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: huang-julien/reproduire-sur-stackblitz@9ceccbfbb0f2f9a9a8db2d1f0dd909cf5cfe67aa # v1.0.2
+      - uses: huang-julien/reproduire-sur-stackblitz@edd77eee0ffdae795c9dfd4e5b3b745740672439 # v1.0.3
         with:
           reproduction-heading: '### Reproduction'

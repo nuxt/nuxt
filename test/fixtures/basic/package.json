@@ -12,6 +12,7 @@
   "devDependencies": {
     "@vue/devtools-api": "latest",
     "defu": "latest",
+    "postcss": "^8.4.47",
     "ufo": "latest",
     "unplugin": "latest",
     "vue": "latest"

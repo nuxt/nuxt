@@ -1,4 +1,4 @@
-import type { RenderResponse } from 'nitro/types'
+import type { RenderResponse } from 'nitropack/types'
 import { getResponseStatus, getResponseStatusText } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'

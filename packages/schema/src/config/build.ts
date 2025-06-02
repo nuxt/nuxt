@@ -2,16 +2,15 @@ import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
 import { consola } from 'consola'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt } from '../types/nuxt'
 import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
   /**
    * The builder to use for bundling the Vue part of your application.
-   * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val, get) => {
+    $resolve: (val) => {
       if (val && typeof val === 'object' && 'bundle' in val) {
         return val as { bundle: (nuxt: Nuxt) => Promise<void> }
       }
@@ -24,10 +23,6 @@ export default defineResolvers({
       if (typeof val === 'string' && val in map) {
         // TODO: improve normalisation inference
         return map[val as keyof typeof map] as Builder
-      }
-      // @ts-expect-error TODO: remove old, unsupported config in v4
-      if (await get('vite') === false) {
-        return map.webpack as Builder
       }
       return map.vite as Builder
     },
@@ -44,7 +39,6 @@ export default defineResolvers({
    * - `false`: Does not generate any sourcemaps.
    * - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
    *
-   * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
     $resolve: async (val, get) => {
@@ -64,7 +58,6 @@ export default defineResolvers({
    *
    * Defaults to 'silent' when running in CI or when a TTY is not available.
    * This option is then used as 'silent' in Vite and 'none' in Webpack
-   * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
     $resolve: (val) => {
@@ -89,7 +82,6 @@ export default defineResolvers({
      * ```js
      * transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
-     * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
       $resolve: (val) => {
@@ -120,7 +112,6 @@ export default defineResolvers({
      *   }
      * ]
      * ```
-     * @type {typeof import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
 
@@ -134,7 +125,6 @@ export default defineResolvers({
      *   analyzerMode: 'static'
      * }
      * ```
-     * @type {boolean | { enabled?: boolean } & ((0 extends 1 & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options ? Record<string, unknown> : typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options) | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions)}
      */
     analyze: {
       $resolve: async (val, get) => {
@@ -161,7 +151,6 @@ export default defineResolvers({
      * and client. You will need to take steps to handle this additional key.
      *
      * The key will be unique based on the location of the function being invoked within the file.
-     * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
       $resolve: val => [
@@ -214,7 +203,6 @@ export default defineResolvers({
     /**
      * Options passed directly to the transformer from `unctx` that preserves async context
      * after `await`.
-     * @type {typeof import('unctx/transform').TransformerOptions}
      */
     asyncTransforms: {
       asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],

@@ -296,7 +296,7 @@ export function useAsyncData<
 
     const isWithinClientOnly = instance && (instance._nuxtClientOnly || inject(clientOnlySymbol, false))
 
-    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value !== asyncDataDefaults.value)) {
+    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value !== undefined)) {
       // 1. Hydration (server: true): no fetch
       if (pendingWhenIdle) {
         asyncData.pending.value = false
@@ -306,7 +306,7 @@ export function useAsyncData<
       // 2. Initial load (server: false): fetch on mounted
       // 3. Initial load or navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
-    } else if (options.immediate) {
+    } else if (options.immediate && asyncData.status.value !== 'success') {
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
       initialFetch()
     }
@@ -329,7 +329,7 @@ export function useAsyncData<
       const oldKey = toValue(oldValues[oldValues.length - 1])
 
       if ((newKey || oldKey) && newKey !== oldKey) {
-        const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== asyncDataDefaults.value
+        const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
         if (oldKey) {
           unregister(oldKey)
         }
@@ -481,7 +481,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
 
   // Initialize value when key is not already set
   if (!(key in nuxtApp.payload.data)) {
-    nuxtApp.payload.data[key] = asyncDataDefaults.value
+    nuxtApp.payload.data[key] = undefined
   }
 
   if (nuxtApp._asyncData[key]) {
@@ -543,16 +543,16 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
 
 function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   if (key in nuxtApp.payload.data) {
-    nuxtApp.payload.data[key] = asyncDataDefaults.value
+    nuxtApp.payload.data[key] = undefined
   }
 
   if (key in nuxtApp.payload._errors) {
-    nuxtApp.payload._errors[key] = asyncDataDefaults.errorValue
+    nuxtApp.payload._errors[key] = undefined
   }
 
   if (nuxtApp._asyncData[key]) {
     nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
-    nuxtApp._asyncData[key]!.error.value = asyncDataDefaults.errorValue
+    nuxtApp._asyncData[key]!.error.value = undefined
     if (pendingWhenIdle) {
       nuxtApp._asyncData[key]!.pending.value = false
     }
@@ -587,7 +587,7 @@ function createAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (nuxtApp: NuxtApp, key: string, _handler: (ctx?: NuxtApp) => Promise<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
-  nuxtApp.payload._errors[key] ??= asyncDataDefaults.errorValue
+  nuxtApp.payload._errors[key] ??= undefined
 
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
@@ -605,7 +605,7 @@ function createAsyncData<
       }
 
   const _ref = options.deep ? ref : shallowRef
-  const hasCachedData = initialCachedData !== asyncDataDefaults.value
+  const hasCachedData = initialCachedData !== undefined
   const unsubRefreshAsyncData = nuxtApp.hook('app:data:refresh', async (keys) => {
     if (!keys || keys.includes(key)) {
       await asyncData.execute({ cause: 'refresh:hook' })
@@ -627,9 +627,9 @@ function createAsyncData<
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
-        if (cachedData !== asyncDataDefaults.value) {
+        if (cachedData !== undefined) {
           nuxtApp.payload.data[key] = asyncData.data.value = cachedData as DataT
-          asyncData.error.value = asyncDataDefaults.errorValue
+          asyncData.error.value = undefined
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
         }
@@ -670,7 +670,7 @@ function createAsyncData<
           nuxtApp.payload.data[key] = result
 
           asyncData.data.value = result
-          asyncData.error.value = asyncDataDefaults.errorValue
+          asyncData.error.value = undefined
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
@@ -700,11 +700,13 @@ function createAsyncData<
     _hash: isDev ? createHash(_handler, options) : undefined,
     _off: () => {
       unsubRefreshAsyncData()
-      asyncData._init = false
+      if (nuxtApp._asyncData[key]?._init) {
+        nuxtApp._asyncData[key]._init = false
+      }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
         nextTick(() => {
-          if (!asyncData._init) {
+          if (!nuxtApp._asyncData[key]?._init) {
             clearNuxtDataByKey(nuxtApp, key)
             asyncData.execute = () => Promise.resolve()
           }
@@ -717,7 +719,7 @@ function createAsyncData<
 }
 
 // Used to get default values
-const getDefault = () => asyncDataDefaults.value
+const getDefault = () => undefined
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
   if (nuxtApp.isHydrating) {
     return nuxtApp.payload.data[key]
