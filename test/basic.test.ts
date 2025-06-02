@@ -2270,6 +2270,9 @@ describe('component islands', () => {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
 
+    result.head.link ||= []
+    result.head.style ||= []
+
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
@@ -2291,6 +2294,9 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
+
+    result.head.link ||= []
+    result.head.style ||= []
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
@@ -2349,6 +2355,9 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
     }
+
+    result.head.link ||= []
+    result.head.style ||= []
     result.props = {}
     result.components = {}
     result.slots = {}
@@ -2384,6 +2393,9 @@ describe('component islands', () => {
       result.html = result.html.replace(/data-island-component="([^"]*)"/g, 'data-island-component')
 
       const teleportsEntries = Object.entries(components || {})
+
+      result.head.link ||= []
+      result.head.style ||= []
 
       expect(result).toMatchInlineSnapshot(`
         {
@@ -2433,7 +2445,6 @@ describe('component islands', () => {
     if (!isDev() && !isWebpack) {
       expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
-          "link": [],
           "style": [
             {
               "innerHTML": "pre[data-v-xxxxx]{color:#00f}",
@@ -2458,7 +2469,6 @@ describe('component islands', () => {
               "rel": "stylesheet",
             },
           ],
-          "style": [],
         }
       `)
     }

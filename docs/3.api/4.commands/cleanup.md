@@ -1,5 +1,5 @@
 ---
-title: 'nuxi cleanup'
+title: 'nuxt cleanup'
 description: 'Remove common generated Nuxt files and caches.'
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--cleanup-cmd-->
 ```bash [Terminal]
-npx nuxi cleanup [ROOTDIR] [--cwd=<directory>]
+npx nuxt cleanup [ROOTDIR] [--cwd=<directory>]
 ```
 <!--/cleanup-cmd-->
 

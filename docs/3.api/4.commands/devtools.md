@@ -1,5 +1,5 @@
 ---
-title: "nuxi devtools"
+title: "nuxt devtools"
 description: The devtools command allows you to enable or disable Nuxt DevTools on a per-project basis.
 links:
   - label: Source
@@ -10,11 +10,11 @@ links:
 
 <!--devtools-cmd-->
 ```bash [Terminal]
-npx nuxi devtools <COMMAND> [ROOTDIR] [--cwd=<directory>]
+npx nuxt devtools <COMMAND> [ROOTDIR] [--cwd=<directory>]
 ```
 <!--/devtools-cmd-->
 
-Running `nuxi devtools enable` will install the Nuxt DevTools globally, and also enable it within the particular project you are using. It is saved as a preference in your user-level `.nuxtrc`. If you want to remove devtools support for a particular project, you can run `nuxi devtools disable`.
+Running `nuxt devtools enable` will install the Nuxt DevTools globally, and also enable it within the particular project you are using. It is saved as a preference in your user-level `.nuxtrc`. If you want to remove devtools support for a particular project, you can run `nuxt devtools disable`.
 
 ## Arguments
 

@@ -705,11 +705,13 @@ function createAsyncData<
     _hash: isDev ? createHash(_handler, options) : undefined,
     _off: () => {
       unsubRefreshAsyncData()
-      asyncData._init = false
+      if (nuxtApp._asyncData[key]?._init) {
+        nuxtApp._asyncData[key]._init = false
+      }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
         nextTick(() => {
-          if (!asyncData._init) {
+          if (!nuxtApp._asyncData[key]?._init) {
             clearNuxtDataByKey(nuxtApp, key)
             asyncData.execute = () => Promise.resolve()
           }

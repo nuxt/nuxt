@@ -1,5 +1,5 @@
 ---
-title: 'nuxi dev'
+title: 'nuxt dev'
 description: The dev command starts a development server with hot module replacement at http://localhost:3000
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--dev-cmd-->
 ```bash [Terminal]
-npx nuxi dev [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [--envName] [--no-clear] [--no-fork] [-p, --port] [-h, --host] [--clipboard] [-o, --open] [--https] [--publicURL] [--qr] [--public] [--tunnel] [--sslCert] [--sslKey]
+npx nuxt dev [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [--envName] [--no-clear] [--no-fork] [-p, --port] [-h, --host] [--clipboard] [-o, --open] [--https] [--publicURL] [--qr] [--public] [--tunnel] [--sslCert] [--sslKey]
 ```
 <!--/dev-cmd-->
 
@@ -50,7 +50,7 @@ Option | Default | Description
 
 The port and host can also be set via NUXT_PORT, PORT, NUXT_HOST or HOST environment variables.
 
-Additionally to the above options, `nuxi` can pass options through to `listhen`, e.g. `--no-qr` to turn off the dev server QR code. You can find the list of `listhen` options in the [unjs/listhen](https://github.com/unjs/listhen) docs.
+Additionally to the above options, `@nuxt/cli` can pass options through to `listhen`, e.g. `--no-qr` to turn off the dev server QR code. You can find the list of `listhen` options in the [unjs/listhen](https://github.com/unjs/listhen) docs.
 
 This command sets `process.env.NODE_ENV` to `development`.
 
