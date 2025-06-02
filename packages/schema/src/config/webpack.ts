@@ -7,14 +7,12 @@ export default defineResolvers({
     resolve: {
       alias: {
         $resolve: async (val, get) => {
-          const [srcDir, assetsDir, publicDir] = await Promise.all([
+          const [srcDir, assetsDir] = await Promise.all([
             get('srcDir'),
             get('dir.assets'),
-            get('dir.public'),
           ])
           return {
             [basename(assetsDir)]: resolve(srcDir, assetsDir),
-            [basename(publicDir)]: resolve(srcDir, publicDir),
             ...typeof val === 'object' ? val : {},
           }
         },

@@ -36,10 +36,9 @@ export default defineResolvers({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
       alias: {
         $resolve: async (val, get) => {
-          const [srcDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('dir.assets'), get('dir.public')])
+          const [srcDir, assetsDir] = await Promise.all([get('srcDir'), get('dir.assets')])
           return {
             [basename(assetsDir)]: resolve(srcDir, assetsDir),
-            [basename(publicDir)]: resolve(srcDir, publicDir),
             ...typeof val === 'object' ? val : {},
           }
         },
