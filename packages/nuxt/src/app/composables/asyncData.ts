@@ -306,7 +306,7 @@ export function useAsyncData<
       // 2. Initial load (server: false): fetch on mounted
       // 3. Initial load or navigation (lazy: true): fetch on mounted
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
-    } else if (options.immediate) {
+    } else if (options.immediate && asyncData.status.value !== 'success') {
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
       initialFetch()
     }
@@ -334,7 +334,7 @@ export function useAsyncData<
     }
     const unsubKey = watch(key, (newKey, oldKey) => {
       const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== asyncDataDefaults.value
-      if (oldKey) {
+      if (oldKey && oldKey !== newKey) {
         unregister(oldKey)
       }
       const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }

@@ -92,7 +92,7 @@
     "exsolve": "^1.0.5",
     "h3": "^1.15.3",
     "hookable": "^5.5.3",
-    "ignore": "^7.0.4",
+    "ignore": "^7.0.5",
     "impound": "^1.0.0",
     "jiti": "^2.4.2",
     "klona": "^2.0.6",
@@ -106,7 +106,7 @@
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
     "on-change": "^5.0.1",
-    "oxc-parser": "^0.72.1",
+    "oxc-parser": "^0.72.2",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^2.1.0",
@@ -131,7 +131,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@nuxt/scripts": "0.11.7",
+    "@nuxt/scripts": "0.11.8",
     "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.7",
     "@vitejs/plugin-vue": "5.2.4",
