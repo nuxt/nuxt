@@ -1,6 +1,6 @@
 import { consola } from 'consola'
 import defu from 'defu'
-import { basename, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { defineResolvers } from '../utils/definition'
 
