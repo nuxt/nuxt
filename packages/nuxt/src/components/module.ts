@@ -1,4 +1,4 @@
-import { existsSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
@@ -144,19 +144,25 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
-      const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
+      const sourceFiles = new Set<string>()
+      for (const c of getComponents()) {
+        if (c.global) {
+          sourceFiles.add(relative(nuxt.options.srcDir, c.filePath))
+        }
+      }
 
       for (const chunk of Object.values(manifest)) {
         if (chunk.isEntry) {
-          chunk.dynamicImports =
-            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
+          chunk.dynamicImports = chunk.dynamicImports?.filter(i => !sourceFiles.has(i))
         }
       }
     })
 
     // Restart dev server when component directories are added/removed
+    const restartEvents = new Set(['addDir', 'unlinkDir'])
+    // const restartPaths
     nuxt.hook('builder:watch', (event, relativePath) => {
-      if (!['addDir', 'unlinkDir'].includes(event)) {
+      if (!restartEvents.has(event)) {
         return
       }
 
@@ -243,41 +249,16 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      // TODO: refactor this
+      const chunk = ComponentsChunkPlugin({ getComponents })
+
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
         config.plugins ||= []
-
-        if (isClient && selectiveClient) {
-          writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          if (!nuxt.options.dev) {
-            config.plugins.push(ComponentsChunkPlugin.vite({
-              getComponents,
-              buildDir: nuxt.options.buildDir,
-            }))
-          } else {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
-              getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
-                if (c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) { return Object.assign(acc, { [c.pascalName]: `/@fs/${c.filePath}` }) }
-                const filePath = existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
-                return Object.assign(acc, { [c.pascalName]: `/@fs/${filePath}` })
-              }, {} as Record<string, string>),
-            )}`)
-          }
+        if (selectiveClient && isClient) {
+          config.plugins.push(chunk.client.vite())
         }
       })
 
-      for (const key of ['rspack:config', 'webpack:config'] as const) {
-        nuxt.hook(key, (configs) => {
-          configs.forEach((config) => {
-            const mode = config.name === 'client' ? 'client' : 'server'
-            config.plugins ||= []
-
-            if (mode !== 'server') {
-              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-            }
-          })
-        })
-      }
+      addBuildPlugin(chunk.server, { client: false, prepend: true })
     }
   },
 })

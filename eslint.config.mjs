@@ -226,6 +226,7 @@ export default createConfigForNuxt({
       },
     },
     // Sort rule keys in eslint config
+    // @ts-expect-error type issues in eslint
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',
@@ -245,6 +246,8 @@ export default createConfigForNuxt({
   )
 
   // Generate type definitions for the eslint config
+  // @ts-expect-error type issues in eslint
   .onResolved((configs) => {
+    // @ts-expect-error type issues in eslint
     return typegen(configs)
   })

@@ -4,20 +4,6 @@ import { stubOptions } from '../../debug/build-config'
 export default defineBuildConfig({
   declaration: true,
   entries: [
-    {
-      input: 'src/config/index',
-      outDir: 'schema',
-      name: 'config',
-      builder: 'untyped',
-      defaults: {
-        srcDir: '/<srcDir>/',
-        workspaceDir: '/<workspaceDir>/',
-        rootDir: '/<rootDir>/',
-        vite: {
-          base: '/',
-        },
-      },
-    },
     'src/index',
     'src/builder-env',
   ],

@@ -1,8 +1,8 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
-import type { NitroErrorHandler } from 'nitro/types'
+import type { NitroErrorHandler } from 'nitropack/types'
 import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 
-import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
+import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
 

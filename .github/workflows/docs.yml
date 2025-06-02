@@ -1,6 +1,7 @@
 name: docs
 
 on:
+  merge_group:
   push:
     paths:
       - "docs/**"

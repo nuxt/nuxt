@@ -283,7 +283,13 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
-  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'client', alias: { 'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs') } }), { server: false })
+  addBuildPlugin(VirtualFSPlugin(nuxt, {
+    mode: 'client', alias: {
+      '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+      'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+      'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+    },
+  }), { server: false })
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
@@ -526,7 +532,7 @@ async function initNuxt (nuxt: Nuxt) {
       export: name,
       priority: -1,
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-stubs'),
-      // @ts-expect-error TODO: refactor to nuxi
+      // @ts-expect-error TODO: refactor to @nuxt/cli
       _internal_install: '@nuxt/image',
     })
   }
@@ -671,16 +677,18 @@ export default defineNuxtPlugin({
     }
 
     // User provided patterns
-    const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
+    const layerRelativePaths = new Set(nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path)))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
         // Test (normalized) strings against absolute path and relative path to any layer `srcDir`
-        if (pattern === path || layerRelativePaths.includes(pattern)) { return nuxt.callHook('restart') }
+        if (pattern === path || layerRelativePaths.has(pattern)) { return nuxt.callHook('restart') }
         continue
       }
       // Test regular expressions against path to _any_ layer `srcDir`
-      if (layerRelativePaths.some(p => pattern.test(p))) {
-        return nuxt.callHook('restart')
+      for (const p of layerRelativePaths) {
+        if (pattern.test(p)) {
+          return nuxt.callHook('restart')
+        }
       }
     }
 

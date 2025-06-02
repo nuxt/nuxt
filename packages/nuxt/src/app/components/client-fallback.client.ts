@@ -1,4 +1,4 @@
-import { createElementBlock, defineComponent, onMounted, ref, useId } from 'vue'
+import { createElementBlock, defineComponent, onMounted, shallowRef, useId } from 'vue'
 import { useState } from '../composables/state'
 
 export default defineComponent({
@@ -26,7 +26,7 @@ export default defineComponent({
   },
   emits: ['ssr-error'],
   setup (props, ctx) {
-    const mounted = ref(false)
+    const mounted = shallowRef(false)
     const ssrFailed = useState(useId())
 
     if (ssrFailed.value) {

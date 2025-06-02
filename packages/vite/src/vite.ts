@@ -107,7 +107,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             sourcemap: !!nuxt.options.sourcemap.server,
             baseURL: nuxt.options.app.baseURL,
           }),
-          replace({ preventAssignment: true, ...globalThisReplacements }),
         ],
         server: {
           watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
@@ -242,8 +241,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
   await withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
 }
-
-const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))
 
 async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
   if (!enabled) { return fn() }

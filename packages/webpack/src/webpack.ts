@@ -50,8 +50,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
     const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
 
-    prerenderRollupPlugins.push(dynamicRequirePlugin)
-    rollupPlugins.push(dynamicRequirePlugin)
+    for (const plugins of [prerenderRollupPlugins, rollupPlugins]) {
+      const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
+      if (existingPlugin >= 0) {
+        plugins.splice(existingPlugin, 1)
+      }
+      plugins.push(dynamicRequirePlugin)
+    }
   }
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)

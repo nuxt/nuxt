@@ -1,5 +1,5 @@
 ---
-title: "nuxi analyze"
+title: "nuxt analyze"
 description: "Analyze the production bundle or your Nuxt application."
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--analyze-cmd-->
 ```bash [Terminal]
-npx nuxi analyze [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [--name=<name>] [--no-serve]
+npx nuxt analyze [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [--name=<name>] [--no-serve]
 ```
 <!--/analyze-cmd-->
 
