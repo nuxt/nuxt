@@ -131,7 +131,7 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@nuxt/scripts": "0.11.7",
+    "@nuxt/scripts": "0.11.8",
     "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.7",
     "@vitejs/plugin-vue": "5.2.4",
