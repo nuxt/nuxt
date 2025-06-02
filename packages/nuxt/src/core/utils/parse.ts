@@ -1,7 +1,16 @@
-import type { SameShape, TransformOptions, TransformResult } from 'esbuild'
-import { transform as esbuildTransform } from 'esbuild'
 import { tryUseNuxt } from '@nuxt/kit'
+import type { TransformOptions, TransformResult } from 'oxc-transform'
+import { transform as oxcTransform } from 'oxc-transform'
+import { minify } from 'oxc-minify'
 
-export async function transform<T extends TransformOptions> (input: string | Uint8Array, options?: SameShape<TransformOptions, T>): Promise<TransformResult<T>> {
-  return await esbuildTransform(input, { ...tryUseNuxt()?.options.esbuild.options, ...options })
+export function transformAndMinify (input: string, options?: TransformOptions): TransformResult {
+  // not async until https://github.com/oxc-project/oxc/issues/10900
+  const oxcOptions = tryUseNuxt()?.options.oxc
+  const transformResult = oxcTransform('', input, { ...oxcOptions?.transform.options, ...options })
+  const minifyResult = minify('', transformResult.code, { compress: { target: oxcOptions?.transform.options.target as 'esnext' || 'esnext' } })
+
+  return {
+    ...transformResult,
+    ...minifyResult,
+  }
 }
