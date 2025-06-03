@@ -55,6 +55,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  if (vite.rolldownVersion) {
+    if (viteConfig.esbuild) {
+      delete viteConfig.esbuild
+    }
+    if (viteConfig.optimizeDeps?.esbuildOptions) {
+      delete viteConfig.optimizeDeps.esbuildOptions
+    }
+  }
+
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
   const isIgnored = createIsIgnored(nuxt)
@@ -97,7 +106,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
           },
           watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore Rolldown-Vite specific
+            ...(vite.rolldownVersion
+              ? {
+                  // TODO: Find equivalent for rolldown-vite here
+                }
+              : {
+                  chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+                }
+            ),
             exclude: nuxt.options.ignore,
           },
         },

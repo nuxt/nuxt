@@ -32,6 +32,7 @@ export default defineBuildConfig({
     'ofetch',
   ],
   externals: [
+    'vite',
     'nuxt',
     'nuxt/schema',
     '@vue/shared',

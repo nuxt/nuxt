@@ -189,7 +189,8 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
       return {
         name: 'nuxt:components-chunk:client',
         vite: {
-          buildStart () {
+          async buildStart () {
+            const isRolldownCompatEnabled = await import('vite').then(r => 'rolldownVersion' in r)
             const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
             for (const component of components) {
               if (component.filePath) {
@@ -200,8 +201,9 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
                     type: 'chunk',
                     fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
                     id: component.filePath,
-                    preserveSignature: 'strict',
-
+                    ...(isRolldownCompatEnabled
+                      ? {} // TODO: Waiting for https://github.com/rolldown/rolldown/issues/3500
+                      : { preserveSignature: 'strict' }),
                   })
 
                   ids.set(component.pascalName, this.getFileName(id))
