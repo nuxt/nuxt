@@ -6,7 +6,7 @@ import { importModule } from '@nuxt/kit'
 
 const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.mjs`
-const DYNAMIC_REQUIRE_RE = /import\((?:.*\+\s*)?"\.\/" ?\+(.*)\).then/g
+const DYNAMIC_REQUIRE_RE = /import\([^)]*\+\s*(__webpack_require__[^+]*)\).then/g
 const BACKWARD_SLASH_RE = /\\/g
 
 interface Options {
