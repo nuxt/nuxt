@@ -12,7 +12,6 @@ import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
-import type { Nuxt, NuxtOptions } from 'nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 
 import { version as nuxtVersion } from '../../package.json'
@@ -20,6 +19,7 @@ import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { createImportProtectionPatterns } from './plugins/import-protection'
+import type { Nuxt, NuxtOptions } from 'nuxt/schema'
 
 const logLevelMapReverse = {
   silent: 0,

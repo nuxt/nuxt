@@ -7,11 +7,11 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtOptions, NuxtTemplate, NuxtTypeTemplate, TSReference } from 'nuxt/schema'
 import type { Nitro } from 'nitropack'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
+import type { NuxtOptions, NuxtTemplate, NuxtTypeTemplate, TSReference } from 'nuxt/schema'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',

@@ -1,11 +1,11 @@
 /// <reference types="nitropack" />
 /// <reference path="dist/app/types/augments.d.ts" />
 
-import type { DefineNuxtConfig } from 'nuxt/config'
-import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/app/types'
+import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
+import type { DefineNuxtConfig } from 'nuxt/config'
 
 export * from './dist/index'
 

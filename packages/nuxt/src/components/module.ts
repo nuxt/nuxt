@@ -1,7 +1,6 @@
 import { existsSync, statSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
@@ -15,6 +14,7 @@ import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
+import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
