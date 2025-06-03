@@ -1,5 +1,4 @@
 import pify from 'pify'
-import { resolve } from 'pathe'
 import { createError, defineEventHandler, fromNodeMiddleware, getRequestHeader, handleCors, setHeader } from 'h3'
 import type { H3CorsOptions } from 'h3'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
@@ -17,7 +16,6 @@ import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
 import { client, server } from './configs'
 import { applyPresets, createWebpackConfigContext } from './utils/config'
-import { dynamicRequire } from './nitro/plugins/dynamic-require'
 
 import { builder, webpack } from '#builder'
 
@@ -32,20 +30,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     return ctx.config
   }))
 
-  /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
+  /** Remove Nitro rollup plugin for handling dynamic imports from webpack chunks */
   if (!nuxt.options.dev) {
     const nitro = useNitro()
-    nitro.hooks.hook('rollup:before', (nitro, config) => {
-      const rollupCompatPlugin = dynamicRequire({
-        dir: resolve(nuxt.options.buildDir, 'dist/server'),
-      })
+    nitro.hooks.hook('rollup:before', (_nitro, config) => {
       const plugins = config.plugins as InputPluginOption[]
 
       const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
       if (existingPlugin >= 0) {
-        plugins.splice(existingPlugin, 1, rollupCompatPlugin)
-      } else {
-        plugins.push(rollupCompatPlugin)
+        plugins.splice(existingPlugin, 1)
       }
     })
   }
