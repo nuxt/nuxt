@@ -94,6 +94,8 @@ export async function buildServer (ctx: ViteBuildContext) {
           generatedCode: {
             symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
             constBindings: true,
+            // temporary fix for https://github.com/rollup/rollup/issues/5975
+            arrowFunctions: true,
           },
         },
         onwarn (warning, rollupWarn) {
