@@ -1,5 +1,8 @@
 import type { Compilation, Compiler, WebpackPluginInstance } from 'webpack'
 
+const DYNAMIC_IMPORT_RE = /import\([^)]*\+\s*__webpack_require__[^+]*\)\.then/
+const DYNAMIC_IMPORT_REPLACE_RE = /import\([^)]*\+\s*(__webpack_require__[^+]*)\)\.then/g
+
 /**
  * Webpack plugin that generates rollup-compatible dynamic imports.
  * This plugin uses webpack's native compilation hooks to override dynamic import generation
@@ -13,14 +16,34 @@ export class RollupCompatDynamicImportPlugin implements WebpackPluginInstance {
         stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_INLINE,
       }, (assets, callback) => {
         try {
+          const targetFiles = new Set<string>()
+
+          for (const chunk of compilation.chunks) {
+            // Include entry chunks and runtime chunks as they contain webpack runtime
+            if (chunk.canBeInitial() || chunk.hasRuntime()) {
+              for (const file of chunk.files || []) {
+                targetFiles.add(file)
+              }
+            }
+          }
+
           // Transform JavaScript files that contain dynamic imports
           for (const [filename, asset] of Object.entries(assets)) {
             if (!filename.endsWith('.js') && !filename.endsWith('.mjs') && !filename.endsWith('.cjs')) {
               continue
             }
 
+            // Skip non-target chunks to improve performance
+            if (!targetFiles.has(filename)) {
+              continue
+            }
+
             const source = asset.source()
             const originalCode = typeof source === 'string' ? source : source.toString()
+
+            if (!DYNAMIC_IMPORT_RE.test(originalCode)) {
+              continue
+            }
 
             // Transform dynamic imports in this file
             const transformedCode = this.transformDynamicImports(originalCode)
@@ -42,15 +65,11 @@ export class RollupCompatDynamicImportPlugin implements WebpackPluginInstance {
   }
 
   private transformDynamicImports (source: string): string {
-    // Pattern to match webpack's actual dynamic import patterns
-    // Matches: __webpack_require__.e(/* import() */ 33).then(__webpack_require__.bind(__webpack_require__, 33))
-    const WEBPACK_DYNAMIC_IMPORT_RE = /import\([^)]*\+\s*(__webpack_require__[^+]*)\).then/g
-
     let transformed = source
     let needsHelperImport = false
 
     // Transform webpack-style dynamic imports to rollup-compatible ones
-    transformed = transformed.replace(WEBPACK_DYNAMIC_IMPORT_RE, (match, filename) => {
+    transformed = transformed.replace(DYNAMIC_IMPORT_REPLACE_RE, (match, filename) => {
       needsHelperImport = true
       // Generate a rollup-compatible dynamic import using the module ID
       return `_rollupDynamicImport(${filename}).then`
@@ -68,14 +87,19 @@ export class RollupCompatDynamicImportPlugin implements WebpackPluginInstance {
   private generateDynamicImportHelper (compilation: Compilation) {
     const chunks: string[] = []
     for (const chunk of compilation.chunks) {
+      // Skip runtime chunks as they don't contain loadable modules
       if (chunk.hasRuntime()) {
-        continue // Skip runtime chunks
+        continue
       }
 
       const [filename] = Array.from(chunk.files || [])
-      if (filename) {
+      if (filename && (filename.endsWith('.js') || filename.endsWith('.mjs') || filename.endsWith('.cjs'))) {
         chunks.push(filename)
       }
+    }
+
+    if (chunks.length === 0) {
+      return
     }
 
     // Generate the helper that provides rollup-compatible dynamic imports
