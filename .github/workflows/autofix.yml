@@ -32,6 +32,9 @@ jobs:
       - name: Test (unit + runtime)
         run: pnpm vitest run --project unit --project nuxt -u
 
+      - name: Lint (code)
+        run: pnpm lint:fix
+
       - name: Run build
         run: pnpm build
 
@@ -48,8 +51,5 @@ jobs:
       - name: Update bundle size
         if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
-
-      - name: Lint (code)
-        run: pnpm lint:fix
 
       - uses: autofix-ci/action@551dded8c6cc8a1054039c8bc0b8b48c51dfc6ef
