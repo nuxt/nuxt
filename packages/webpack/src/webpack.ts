@@ -8,7 +8,8 @@ import type { Compiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
-import { logger, useNuxt } from '@nuxt/kit'
+import { logger, useNitro, useNuxt } from '@nuxt/kit'
+import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
@@ -28,6 +29,19 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     await applyPresets(ctx, preset)
     return ctx.config
   }))
+
+  /** Remove Nitro rollup plugin for handling dynamic imports from webpack chunks */
+  if (!nuxt.options.dev) {
+    const nitro = useNitro()
+    nitro.hooks.hook('rollup:before', (_nitro, config) => {
+      const plugins = config.plugins as InputPluginOption[]
+
+      const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
+      if (existingPlugin >= 0) {
+        plugins.splice(existingPlugin, 1)
+      }
+    })
+  }
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)
 

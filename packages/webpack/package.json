@@ -75,6 +75,7 @@
     "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
+    "rollup": "4.41.1",
     "unbuild": "3.5.0",
     "vue": "3.5.16"
   },
