@@ -53,9 +53,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     for (const plugins of [prerenderRollupPlugins, rollupPlugins]) {
       const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
       if (existingPlugin >= 0) {
-        plugins.splice(existingPlugin, 1)
+        plugins.splice(existingPlugin, 1, dynamicRequirePlugin)
+      } else {
+        plugins.push(dynamicRequirePlugin)
       }
-      plugins.push(dynamicRequirePlugin)
     }
   }
 
