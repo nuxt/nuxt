@@ -14,6 +14,7 @@ import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
+import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import'
 
 import { WebpackBarPlugin, builder, webpack } from '#builder'
 
@@ -117,6 +118,11 @@ function basePlugins (ctx: WebpackConfigContext) {
         },
       },
     }))
+  }
+
+  // Emit explicit dynamic import statements for rollup compatibility
+  if (ctx.isServer && !ctx.isDev) {
+    ctx.config.plugins.push(new RollupCompatDynamicImportPlugin())
   }
 }
 
