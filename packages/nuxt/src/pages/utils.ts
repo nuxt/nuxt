@@ -8,12 +8,12 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import type { Node, Property } from 'estree'
-import type { NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
 import { parseAndWalk, withLocations } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 enum SegmentParserState {
   initial,

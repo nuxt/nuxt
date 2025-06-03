@@ -2,8 +2,8 @@ import { createUnplugin } from 'unplugin'
 import type { Unimport } from 'unimport'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
-import type { ImportsOptions } from 'nuxt/schema'
 import { isJS, isVue } from '../core/utils'
+import type { ImportsOptions } from 'nuxt/schema'
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const IMPORTS_RE = /(['"])#imports\1/

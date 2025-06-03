@@ -3,8 +3,8 @@ import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
 import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { build, loadNuxt } from 'nuxt'
 import type { Nuxt } from '@nuxt/schema'
+import { build, loadNuxt } from 'nuxt'
 
 const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url))))
 
