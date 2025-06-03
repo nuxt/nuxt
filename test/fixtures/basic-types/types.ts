@@ -175,7 +175,7 @@ describe('middleware', () => {
     definePageMeta({
       validate: async () => {
         await new Promise(resolve => setTimeout(resolve, 1000))
-        // eslint-disable-next-line
+        // eslint-disable-next-line no-constant-condition
         if (0) {
           return createError({
             statusCode: 404,

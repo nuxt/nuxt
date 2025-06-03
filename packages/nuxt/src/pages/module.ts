@@ -200,7 +200,7 @@ export default defineNuxtModule({
             // way to add a route without a file, which must be possible
             const route = addedPagePaths.has(absolutePagePath)
               ? parent
-              : /^\//.test(page.path)
+              : page.path[0] === '/'
                 // @ts-expect-error TODO: either fix types upstream or figure out another
                 // way to add a route without a file, which must be possible
                 ? rootPage.insert(page.path, page.file)
