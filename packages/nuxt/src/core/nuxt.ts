@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
+import { readFile, rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, parse as patheParse, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
@@ -21,9 +21,12 @@ import { ImpoundPlugin } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
+import { camelCase } from 'scule'
 import { genImport } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 
+import { parseAndWalk } from 'oxc-walker'
+import type { CallExpression, IdentifierReference } from 'oxc-parser'
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
@@ -50,6 +53,7 @@ import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
+import { ComposableFactoriesPlugin, SUPPORTED_EXTENSIONS as SUPPORTED_COMPOSABLE_FACTORY_SOURCE_FILE_EXTENSIONS, getComposableFactoryNamedExport, isComposableFactoryDefaultExport } from './plugins/composable-factories'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
@@ -293,13 +297,6 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
-
-  // Add keys for useFetch, useAsyncData, etc.
-  addBuildPlugin(ComposableKeysPlugin({
-    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    rootDir: nuxt.options.rootDir,
-    composables: nuxt.options.optimization.keyedComposables,
-  }))
 
   // shared folder import protection
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
@@ -560,6 +557,101 @@ async function initNuxt (nuxt: Nuxt) {
   for (const [key, options] of modules) {
     await installModule(key, options)
   }
+
+  // TODO: maybe extract into a function?
+  // Scan files for factory functions that need auto-injected keys
+  const keyedComposableFactories: typeof nuxt.options.optimization.keyedComposables = []
+
+  // TODO: define somewhere else
+  const composableFactoryNames = new Set(['createUseFetch', 'createUseAsyncData'])
+  const COMPOSABLE_FACTORY_NAMES_RE = new RegExp(`\\b(${[...composableFactoryNames].map(f => escapeRE(f)).join('|')})\\s*\\(\\s*`)
+
+  function getKeyedComposableEntry (factoryName: string) {
+    const composableName = camelCase(factoryName.replace(/^create/, ''))
+    return nuxt.options.optimization.keyedComposables.find(c => c.name === composableName)
+  }
+
+  await Promise.all(nuxt.options._layers.map(async (layer) => {
+    // Layer disabled scanning for itself
+    if (layer.config?.imports?.scan === false) {
+      return
+    }
+
+    const files = await resolveFiles(resolve(layer.config.srcDir, 'composables'), SUPPORTED_COMPOSABLE_FACTORY_SOURCE_FILE_EXTENSIONS.map(ext => `**/*.${ext}`))
+    for (const file of files) {
+      // get the contents of the file
+      const contents = await readFile(file, 'utf8')
+      if (!COMPOSABLE_FACTORY_NAMES_RE.test(contents)) { return }
+
+      parseAndWalk(contents, file, {
+        enter (node) {
+          // TODO: (perf) walk only the root lexical scope and skip subtrees when https://github.com/oxc-project/oxc-walker/issues/106 is implemented
+
+          let keyedComposableEntry: ReturnType<typeof getKeyedComposableEntry>
+          let composableName: string
+          let factoryName: string
+
+          const namedExport = getComposableFactoryNamedExport(node, composableFactoryNames)
+
+          if (namedExport) {
+            // handle a named export of a composable factory
+            factoryName = ((namedExport.init as CallExpression).callee as IdentifierReference).name
+            keyedComposableEntry = getKeyedComposableEntry(factoryName)
+            composableName = (namedExport.id as IdentifierReference).name
+          } else if (isComposableFactoryDefaultExport(node, composableFactoryNames)) {
+            // handle default export of a composable factory
+            factoryName = ((node.declaration as CallExpression).callee as IdentifierReference).name
+            keyedComposableEntry = getKeyedComposableEntry(factoryName)
+
+            const parsedFilePath = patheParse(file)
+            composableName = camelCase(parsedFilePath.name)
+          } else {
+            // skip irrelevant nodes
+            return
+          }
+
+          if (!keyedComposableEntry) {
+            // if this happens, it is a Nuxt bug, since we currently don't allow users to create their own composable factories
+            logger.error(`No keyed composable entry found for \`${composableName}\` (from factory \`${factoryName}\` in file \`${file}\`). This is a Nuxt bug.`)
+            return
+          }
+
+          keyedComposableFactories.push({
+            name: composableName,
+            source: file,
+            argumentLength: keyedComposableEntry.argumentLength,
+          })
+        },
+      })
+    }
+  }))
+
+  nuxt.options.optimization.keyedComposables.push(...keyedComposableFactories)
+
+  // Replace composable factory compiler macros with actual factories
+  addBuildPlugin(ComposableFactoriesPlugin({
+    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    factories: [
+      {
+        macro: {
+          name: 'createUseFetch',
+          path: '#app/composables/fetch',
+        },
+        replacement: {
+          name: '_createUseFetch',
+          path: '#app/composables/fetch',
+        },
+      },
+    ],
+  }))
+
+  // Add keys for useFetch, useAsyncData, etc.
+  addBuildPlugin(ComposableKeysPlugin({
+    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    rootDir: nuxt.options.rootDir,
+    srcDir: nuxt.options.srcDir,
+    composables: nuxt.options.optimization.keyedComposables,
+  }))
 
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)

@@ -50,7 +50,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/error',
   },
   {
-    imports: ['useFetch', 'useLazyFetch'],
+    imports: ['useFetch', 'useLazyFetch', 'createUseFetch'],
     from: '#app/composables/fetch',
   },
   {

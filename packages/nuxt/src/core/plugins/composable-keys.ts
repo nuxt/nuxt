@@ -1,18 +1,20 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { isAbsolute, relative } from 'pathe'
+import { isAbsolute, relative, resolve } from 'pathe'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
+import { resolveAlias } from '@nuxt/kit'
 
 import { matchWithStringOrRegex } from '../utils/plugins'
 
 interface ComposableKeysOptions {
   sourcemap: boolean
   rootDir: string
+  srcDir: string
   composables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
 }
 
@@ -20,6 +22,17 @@ const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
 const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
+
+export function shouldTransformFile (id: string, extensions: RegExp | readonly string[]) {
+  const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  return !NUXT_LIB_RE.test(pathname)
+    && (
+      extensions instanceof RegExp
+        ? extensions.test(pathname)
+        : new RegExp(`\\.(${extensions.join('|')})$`).test(pathname)
+    )
+    && parseQuery(search).type !== 'style' && !parseQuery(search).macro
+}
 
 export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUnplugin(() => {
   const composableMeta: Record<string, any> = {}
@@ -37,10 +50,7 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
   return {
     name: 'nuxt:composable-keys',
     enforce: 'post',
-    transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return !NUXT_LIB_RE.test(pathname) && SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
-    },
+    transformInclude: id => shouldTransformFile(id, SUPPORTED_EXT_RE),
     transform: {
       filter: {
         code: { include: KEYED_FUNCTIONS_RE },
@@ -71,7 +81,8 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
             const name = node.callee.name
             if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
-            imports ||= detectImportNames(script, composableMeta)
+            // do not inject keys for imported functions unless their `src` path matches
+            imports ||= detectImportNames(script, composableMeta, id, options.srcDir)
             if (imports.has(name)) { return }
 
             const meta = composableMeta[name]
@@ -106,11 +117,11 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
             }
 
             // TODO: Optimize me (https://github.com/nuxt/framework/pull/8529)
-            const newCode = code.slice(codeIndex + (node as any).start, codeIndex + (node as any).end - 1).trim()
+            const newCode = code.slice(codeIndex + node.start, codeIndex + node.end - 1).trim()
             const endsWithComma = newCode[newCode.length - 1] === ','
 
             s.appendLeft(
-              codeIndex + (node as any).end - 1,
+              codeIndex + node.end - 1,
               (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + '\'',
             )
           },
@@ -130,11 +141,35 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
-export function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>) {
+export function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>, importerPath: string, srcDir: string) {
   const names = new Set<string>()
+
+  function normalizePathToRelative (path: string) {
+    let resolved = isAbsolute(path) ? path : undefined
+    const aliasResolved = resolveAlias(path)
+    if (isAbsolute(aliasResolved)) {
+      resolved = aliasResolved
+    } else {
+      resolved = resolve(srcDir, path)
+    }
+
+    const noExt = resolved.replace(/\.[^/.]+$/, '')
+    return relative(srcDir, noExt)
+  }
+
   function addName (name: string, specifier: string) {
     const source = composableMeta[name]?.source
-    if (source && matchWithStringOrRegex(specifier, source)) {
+
+    if (typeof source === 'string') {
+      try {
+        const importedFileRelativePath = normalizePathToRelative(specifier)
+        const sourceRelativePath = normalizePathToRelative(source)
+
+        if (importedFileRelativePath === sourceRelativePath) { return }
+      } catch (e) {
+        console.error('[nuxt] Could not resolve import specifier while detecting keyed composables.', e)
+      }
+    } else if (source && matchWithStringOrRegex(specifier, source)) {
       return
     }
     names.add(name)
