@@ -10,13 +10,20 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   let transition: undefined | ViewTransition
+  let hasUAVisualTransition = false
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)
 
+  const resetTransitionState = () => {
+    transition = undefined
+    hasUAVisualTransition = false
+    abortTransition = undefined
+    finishTransition = undefined
+  }
+
   window.addEventListener('popstate', (event) => {
-    if (event.hasUAVisualTransition && transition) {
-      transition.skipTransition()
-    }
+    hasUAVisualTransition = event.hasUAVisualTransition
+    if (hasUAVisualTransition) { transition?.skipTransition() }
   })
 
   const router = useRouter()
@@ -26,7 +33,12 @@ export default defineNuxtPlugin((nuxtApp) => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
 
-    if (viewTransitionMode === false || prefersNoTransition || !isChangingPage(to, from)) {
+    if (
+      viewTransitionMode === false ||
+      prefersNoTransition ||
+      hasUAVisualTransition ||
+      !isChangingPage(to, from)
+    ) {
       return
     }
 
@@ -43,10 +55,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       return promise
     })
 
-    transition.finished.then(() => {
-      abortTransition = undefined
-      finishTransition = undefined
-    })
+    transition.finished.then(resetTransitionState)
 
     await nuxtApp.callHook('page:view-transition:start', transition)
 
@@ -55,11 +64,11 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   nuxtApp.hook('vue:error', () => {
     abortTransition?.()
-    abortTransition = undefined
+    resetTransitionState()
   })
 
   nuxtApp.hook('page:finish', () => {
     finishTransition?.()
-    finishTransition = undefined
+    resetTransitionState()
   })
 })

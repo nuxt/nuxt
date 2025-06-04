@@ -22,7 +22,6 @@ export default defineResolvers({
     /**
      * A strategy for ordering PostCSS plugins.
      *
-     * @type {'cssnanoLast' | 'autoprefixerLast' | 'autoprefixerAndCssnanoLast' | string[] | ((names: string[]) => string[])}
      */
     order: {
       $resolve: (val) => {
@@ -45,7 +44,6 @@ export default defineResolvers({
      * Options for configuring PostCSS plugins.
      *
      * @see [PostCSS docs](https://postcss.org/)
-     * @type {Record<string, unknown> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options }}
      */
     plugins: {
       /**

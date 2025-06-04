@@ -220,8 +220,8 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
 }
 
 async function existsSensitive (path: string) {
-  const dirFiles = await fsp.readdir(dirname(path)).catch(() => null)
-  return dirFiles && dirFiles.includes(basename(path))
+  const dirFiles = new Set(await fsp.readdir(dirname(path)).catch(() => []))
+  return dirFiles.has(basename(path))
 }
 
 function existsInVFS (path: string, nuxt = tryUseNuxt()) {

@@ -139,6 +139,7 @@ export const scriptsStubsPreset = {
     'useScriptNpm',
     'useScriptUmamiAnalytics',
     'useScriptSnapchatPixel',
+    'useScriptRybbitAnalytics',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',

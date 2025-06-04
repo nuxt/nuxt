@@ -1,12 +1,12 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from '../../core/utils/parse'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]

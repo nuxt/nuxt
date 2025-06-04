@@ -120,6 +120,9 @@ export async function buildClient (ctx: ViteBuildContext) {
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
         'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        // TODO: remove in v5
+        '#internal/nitro': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        'nitropack/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
         // work around vite optimizer bug
         '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
@@ -219,8 +222,9 @@ export async function buildClient (ctx: ViteBuildContext) {
   await ctx.nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
 
   // Prioritize `optimizeDeps.exclude`. If same dep is in `include` and `exclude`, remove it from `include`
+  const exclude = new Set(clientConfig.optimizeDeps!.exclude)
   clientConfig.optimizeDeps!.include = clientConfig.optimizeDeps!.include!
-    .filter(dep => !clientConfig.optimizeDeps!.exclude!.includes(dep))
+    .filter(dep => !exclude.has(dep))
 
   if (ctx.nuxt.options.dev) {
     // Dev
@@ -233,7 +237,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       route: '',
       handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
         // 'Skip' the transform middleware
-        if (req._skip_transform) { req.url = joinURL('/__skip_vite', req.url!) }
+        if (req._skip_transform) { req.url = joinURL('/__skip_vite', req.url!.replace(/\?.*/, '')) }
         next()
       },
     })

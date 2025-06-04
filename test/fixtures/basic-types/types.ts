@@ -3,8 +3,8 @@ import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 import type { H3Event } from 'h3'
-import { getRouteRules as getNitroRouteRules } from 'nitro/runtime'
-import type { NitroRouteRules } from 'nitro/types'
+import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
+import type { NitroRouteRules } from 'nitropack/types'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
@@ -174,7 +174,7 @@ describe('middleware', () => {
     definePageMeta({
       validate: async () => {
         await new Promise(resolve => setTimeout(resolve, 1000))
-        // eslint-disable-next-line
+        // eslint-disable-next-line no-constant-condition
         if (0) {
           return createError({
             statusCode: 404,

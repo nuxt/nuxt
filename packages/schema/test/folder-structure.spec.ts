@@ -44,8 +44,8 @@ describe('nuxt folder structure', () => {
     `)
   })
 
-  it('should resolve directories when opting-in to v4 schema', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 } })
+  it('should resolve directories', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, {})
     expect(getDirs(result as unknown as NuxtOptions)).toMatchInlineSnapshot(`
       {
         "dir": {
@@ -62,7 +62,7 @@ describe('nuxt folder structure', () => {
   })
 
   it('should resolve directories when opting-in to v4 schema with a custom `srcDir` and `rootDir`', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 }, srcDir: 'customApp/', rootDir: '/test' })
+    const result = await applyDefaults(NuxtConfigSchema, { srcDir: 'customApp/', rootDir: '/test' })
     expect(getDirs(result as unknown as NuxtOptions)).toMatchInlineSnapshot(`
       {
         "dir": {
@@ -79,7 +79,7 @@ describe('nuxt folder structure', () => {
   })
 
   it('should not override value from user for serverDir', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 }, serverDir: '/myServer' })
+    const result = await applyDefaults(NuxtConfigSchema, { serverDir: '/myServer' })
     expect(getDirs(result as unknown as NuxtOptions)).toMatchInlineSnapshot(`
       {
         "dir": {

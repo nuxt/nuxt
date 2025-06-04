@@ -1,6 +1,7 @@
 name: ci
 
 on:
+  merge_group:
   push:
     paths:
       - "**/package.json"

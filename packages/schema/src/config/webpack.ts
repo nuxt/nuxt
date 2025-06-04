@@ -13,7 +13,6 @@ export default defineResolvers({
      *   analyzerMode: 'static'
      * }
      * ```
-     * @type {boolean | { enabled?: boolean } & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options}
      */
     analyze: {
       $resolve: async (val, get) => {
@@ -74,7 +73,6 @@ export default defineResolvers({
      *   }
      * }
      * ```
-     * @type {boolean | typeof import('mini-css-extract-plugin').PluginOptions}
      */
     extractCSS: true,
 
@@ -106,7 +104,6 @@ export default defineResolvers({
      *   chunk: ({ isDev }) => (isDev ? '[name].js' : '[id].[contenthash].js')
      * }
      * ```
-     * @type {
      *  Record<
      *    string,
      *    string |
@@ -157,7 +154,6 @@ export default defineResolvers({
 
       /**
        * @see [esbuild loader](https://github.com/esbuild-kit/esbuild-loader)
-       * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
       esbuild: {
         $resolve: async (val, get) => {
@@ -167,40 +163,26 @@ export default defineResolvers({
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       file: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       fontUrl: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @default
-       * ```ts
-       * { esModule: false }
-       * ```
        */
       imgUrl: { esModule: false, limit: 1000 },
 
       /**
        * @see [`pug` options](https://pugjs.org/api/reference.html#options)
-       * @type {typeof import('pug')['Options']}
        */
       pugPlain: {},
 
       /**
        * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
-       * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
        */
       vue: {
         transformAssetUrls: {
@@ -219,9 +201,6 @@ export default defineResolvers({
        */
       css: {
         importLoaders: 0,
-        /**
-         * @type {boolean | { filter: (url: string, resourcePath: string) => boolean }}
-         */
         url: {
           filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
@@ -233,9 +212,6 @@ export default defineResolvers({
        */
       cssModules: {
         importLoaders: 0,
-        /**
-         * @type {boolean | { filter: (url: string, resourcePath: string) => boolean }}
-         */
         url: {
           filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
@@ -252,14 +228,6 @@ export default defineResolvers({
 
       /**
        * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
-       * @default
-       * ```ts
-       * {
-       *   sassOptions: {
-       *     indentedSyntax: true
-       *   }
-       * }
-       * ```
        */
       sass: {
         sassOptions: {
@@ -306,7 +274,6 @@ export default defineResolvers({
      *
      * Defaults to true when `extractCSS` is enabled.
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
-     * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<{}>}
      */
     optimizeCSS: {
       $resolve: async (val, get) => {
@@ -321,7 +288,6 @@ export default defineResolvers({
 
     /**
      * Configure [webpack optimization](https://webpack.js.org/configuration/optimization/).
-     * @type {false | typeof import('webpack').Configuration['optimization']}
      */
     optimization: {
       runtimeChunk: 'single',
@@ -341,7 +307,6 @@ export default defineResolvers({
     /**
      * Customize PostCSS Loader.
      * same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
-     * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options } }, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {
       postcssOptions: {
@@ -353,7 +318,6 @@ export default defineResolvers({
 
     /**
      * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
-     * @type {typeof import('webpack-dev-middleware').Options<typeof import('http').IncomingMessage, typeof import('http').ServerResponse>}
      */
     devMiddleware: {
       stats: 'none',
@@ -361,7 +325,6 @@ export default defineResolvers({
 
     /**
      * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
-     * @type {typeof import('webpack-hot-middleware').MiddlewareOptions & { client?: typeof import('webpack-hot-middleware').ClientOptions }}
      */
     hotMiddleware: {},
 
@@ -372,13 +335,11 @@ export default defineResolvers({
 
     /**
      * Filters to hide build warnings.
-     * @type {Array<(warn: typeof import('webpack').WebpackError) => boolean>}
      */
     warningIgnoreFilters: [],
 
     /**
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
-     * @type {false | typeof import('webpack').Configuration['experiments']}
      */
     experiments: {},
   },

@@ -1,10 +1,10 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
-import type { NuxtPage } from 'nuxt/schema'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'

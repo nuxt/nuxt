@@ -1,5 +1,5 @@
-import { useNitroApp } from 'nitro/runtime'
-import type { RenderResponse } from 'nitro/types'
+import { useNitroApp } from 'nitropack/runtime'
+import type { RenderResponse } from 'nitropack/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'h3'
@@ -82,10 +82,6 @@ export default defineEventHandler(async (event) => {
       islandHead[key as keyof SerializableHead] = value
     }
   }
-
-  // TODO: remove for v4
-  islandHead.link ||= []
-  islandHead.style ||= []
 
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
