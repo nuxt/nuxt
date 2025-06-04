@@ -3,10 +3,10 @@ import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
 
 import { parse, walk } from 'ultrahtml'
-import { ScopeTracker, parseAndWalk } from '../../core/utils/parse'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
+import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -48,7 +48,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       },
 
       async handler (code, id) {
-        const scopeTracker = new ScopeTracker({ keepExitedScopes: true })
+        const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
 
         for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
           if (!script) { continue }

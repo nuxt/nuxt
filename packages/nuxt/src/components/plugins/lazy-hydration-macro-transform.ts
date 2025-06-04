@@ -4,8 +4,8 @@ import { relative } from 'pathe'
 import MagicString from 'magic-string'
 import { genDynamicImport, genImport } from 'knitwork'
 import { pascalCase, upperFirst } from 'scule'
-import { isJS, isVue } from '../../core/utils'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
+import { isJS, isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
