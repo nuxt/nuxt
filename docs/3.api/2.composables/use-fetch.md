@@ -159,7 +159,7 @@ If you use `useFetch` to call an (external) HTTPS URL with a self-signed certifi
   - `pending`: the request is in progress
   - `success`: the request has completed successfully
   - `error`: the request has failed
-- `clear`: a function that can be used to set `data` to the value of `options.default()` if you set it, or it will be `undefined`, set `error` to `undefined`, set `status` to `idle`, and mark any currently pending requests as cancelled.
+- `clear`: a function that can be used to set `data` to the value of `options.default()` if provided, or it will be `undefined`, set `error` to `undefined`, set `status` to `idle`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
