@@ -154,7 +154,7 @@ const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { imm
   - `pending`: the request is in progress
   - `success`: the request has completed successfully
   - `error`: the request has failed
-- `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
+- `clear`: a function that can be used to set `data` to the value of `options.default()` if you set it, or it will be `undefined`, set `error` to `undefined`, set `status` to `idle`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
