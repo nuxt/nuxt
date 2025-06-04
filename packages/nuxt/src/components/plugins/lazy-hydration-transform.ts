@@ -24,7 +24,7 @@ const hydrationStrategyMap = {
   hydrateNever: 'Never',
 }
 
-const LAZY_HYDRATION_PROPS_RE = /\b(?:hydrate-on-idle|HydrateOnIdle|hydrate-on-visible|HydrateOnVisible|hydrate-on-interaction|HydrateOnInteraction|hydrate-on-media-query|HydrateOnMediaQuery|hydrate-after|HydrateAfter|hydrate-when|HydrateWhen|hydrate-never|HydrateNever)\b/
+const LAZY_HYDRATION_PROPS_RE = /\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b/
 
 export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []

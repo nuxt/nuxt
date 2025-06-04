@@ -130,13 +130,13 @@ describe('components:loader', () => {
     ['hydrate-after', 'createLazyTimeComponent'],
     ['hydrate-when', 'createLazyIfComponent'],
     ['hydrate-never', 'createLazyNeverComponent'],
-    ['HydrateOnIdle', 'createLazyIdleComponent'],
-    ['HydrateOnVisible', 'createLazyVisibleComponent'],
-    ['HydrateOnInteraction', 'createLazyInteractionComponent'],
-    ['HydrateOnMediaQuery', 'createLazyMediaQueryComponent'],
-    ['HydrateAfter', 'createLazyTimeComponent'],
-    ['HydrateWhen', 'createLazyIfComponent'],
-    ['HydrateNever', 'createLazyNeverComponent'],
+    ['hydrateOnIdle', 'createLazyIdleComponent'],
+    ['hydrateOnVisible', 'createLazyVisibleComponent'],
+    ['hydrateOnInteraction', 'createLazyInteractionComponent'],
+    ['hydrateOnMediaQuery', 'createLazyMediaQueryComponent'],
+    ['hydrateAfter', 'createLazyTimeComponent'],
+    ['hydrateWhen', 'createLazyIfComponent'],
+    ['hydrateNever', 'createLazyNeverComponent'],
   ])('should correctly resolve lazy hydration components %s', async (prop, component) => {
     const sfc = `
     <template>
