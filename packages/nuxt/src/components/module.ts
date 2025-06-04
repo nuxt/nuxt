@@ -1,9 +1,9 @@
 import { existsSync, statSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { resolveModulePath } from 'exsolve'
+import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
 import { lazyHydrationMacroPreset } from '../imports/presets'
