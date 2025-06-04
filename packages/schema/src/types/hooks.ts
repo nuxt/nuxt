@@ -6,7 +6,7 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nitro, NitroConfig } from 'nitro/types'
+import type { Nitro, NitroConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
@@ -43,7 +43,6 @@ export type NuxtPage = {
    * `server` means pages are automatically rendered with server components, so there will be no JavaScript to render the page in your client bundle.
    *
    * `client` means that page will render on the client-side only.
-   * @default 'all'
    */
   mode?: 'client' | 'server' | 'all'
   /** @internal */

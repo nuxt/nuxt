@@ -9,7 +9,6 @@ export default defineResolvers({
    * Vue.js config
    */
   vue: {
-    /** @type {typeof import('@vue/compiler-sfc').AssetURLTagConfig} */
     transformAssetUrls: {
       video: ['src', 'poster'],
       source: ['src'],
@@ -20,7 +19,6 @@ export default defineResolvers({
     /**
      * Options for the Vue compiler that will be passed at build time.
      * @see [Vue documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
-     * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
     compilerOptions: {},
 
@@ -28,23 +26,13 @@ export default defineResolvers({
      * Include Vue compiler in runtime bundle.
      */
     runtimeCompiler: {
-      $resolve: async (val, get) => {
-        if (typeof val === 'boolean') {
-          return val
-        }
-        // @ts-expect-error TODO: formally deprecate in v4
-        const legacyProperty = await get('experimental.runtimeVueCompiler') as unknown
-        if (typeof legacyProperty === 'boolean') {
-          return legacyProperty
-        }
-
-        return false
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
 
     /**
      * Enable reactive destructure for `defineProps`
-     * @type {boolean}
      */
     propsDestructure: true,
 
@@ -156,17 +144,14 @@ export default defineResolvers({
      *   }
      * }
      * ```
-     * @type {typeof import('../src/types/config').NuxtAppConfig['head']}
      */
     head: {
-      $resolve: async (_val, get) => {
-        // @ts-expect-error TODO: remove in Nuxt v4
-        const legacyMetaValues = await get('meta') as Record<string, unknown>
+      $resolve: (_val) => {
         const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}
 
         type NormalizedMetaObject = Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>
 
-        const resolved: NuxtAppConfig['head'] & NormalizedMetaObject = defu(val, legacyMetaValues, {
+        const resolved: NuxtAppConfig['head'] & NormalizedMetaObject = defu(val, {
           meta: [],
           link: [],
           style: [],
@@ -198,7 +183,6 @@ export default defineResolvers({
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
      * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
-     * @type {typeof import('../src/types/config').NuxtAppConfig['layoutTransition']}
      */
     layoutTransition: false,
 
@@ -208,7 +192,6 @@ export default defineResolvers({
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
      * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
-     * @type {typeof import('../src/types/config').NuxtAppConfig['pageTransition']}
      */
     pageTransition: false,
 
@@ -220,7 +203,6 @@ export default defineResolvers({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * @see [Nuxt View Transition API docs](https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental)
-     * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
      */
     viewTransition: {
       $resolve: async (val, get) => {
@@ -238,13 +220,11 @@ export default defineResolvers({
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
      * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components.html#keepalive)
-     * @type {typeof import('../src/types/config').NuxtAppConfig['keepalive']}
      */
     keepalive: false,
 
     /**
      * Customize Nuxt root element id.
-     * @type {string | false}
      * @deprecated Prefer `rootAttrs.id` instead
      */
     rootId: {
@@ -260,7 +240,6 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt root element id.
-     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
      */
     rootAttrs: {
       $resolve: async (val, get) => {
@@ -281,7 +260,6 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt Teleport element id.
-     * @type {string | false}
      * @deprecated Prefer `teleportAttrs.id` instead
      */
     teleportId: {
@@ -290,7 +268,6 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt Teleport element attributes.
-     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
      */
     teleportAttrs: {
       $resolve: async (val, get) => {
@@ -311,7 +288,6 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt Nuxt SpaLoader element attributes.
-     * @type {typeof import('../src/types/head').SerializableHtmlAttributes}
      */
     spaLoaderAttrs: {
       id: '__nuxt-loader',
@@ -371,7 +347,6 @@ export default defineResolvers({
    * }
    * </style>
    * ```
-   * @type {string | boolean | undefined | null}
    */
   spaLoadingTemplate: {
     $resolve: async (val, get) => {
@@ -408,7 +383,6 @@ export default defineResolvers({
    *   { src: '~/plugins/server-only.js', mode: 'server' } // only on server side
    * ]
    * ```
-   * @type {(typeof import('../src/types/nuxt').NuxtPlugin | string)[]}
    */
   plugins: [],
 
@@ -430,7 +404,6 @@ export default defineResolvers({
    *   '~/assets/css/main.scss'
    * ]
    * ```
-   * @type {string[]}
    */
   css: {
     $resolve: (val) => {
@@ -441,9 +414,6 @@ export default defineResolvers({
       for (const item of val) {
         if (typeof item === 'string') {
           css.push(item)
-        } else if (item && 'src' in item) {
-          // TODO: remove in Nuxt v4
-          css.push(item.src)
         }
       }
       return css
@@ -469,7 +439,6 @@ export default defineResolvers({
      *   legacy: true
      * })
      * ```
-     * @type {boolean}
      */
     legacy: false,
     /**
@@ -484,17 +453,12 @@ export default defineResolvers({
      *   }
      * })
      * ```
-     * @type {typeof import('@unhead/vue/types').RenderSSRHeadOptions}
      */
     renderSSRHeadOptions: {
-      $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
-
-        return {
-          ...typeof val === 'object' ? val : {},
-          omitLineBreaks: isV4,
-        }
-      },
+      $resolve: val => ({
+        omitLineBreaks: true,
+        ...typeof val === 'object' ? val : {},
+      }),
     },
   },
 })

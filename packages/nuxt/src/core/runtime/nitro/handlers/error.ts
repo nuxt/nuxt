@@ -1,8 +1,8 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
-import type { NitroErrorHandler } from 'nitro/types'
+import type { NitroErrorHandler } from 'nitropack/types'
 import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 
-import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
+import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
 
@@ -52,12 +52,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const res = isRenderingError
     ? null
     : await useNitroApp().localFetch(
-      withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
-      {
-        headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
-        redirect: 'manual',
-      },
-    ).catch(() => null)
+        withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
+        {
+          headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
+          redirect: 'manual',
+        },
+      ).catch(() => null)
 
   if (event.handled) { return }
 

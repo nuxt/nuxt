@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { basename, join, relative, resolve } from 'pathe'
+import { relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -19,7 +19,6 @@ export default defineResolvers({
    * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
    * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
    * @see [`giget` documentation](https://github.com/unjs/giget)
-   * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: undefined,
 
@@ -31,7 +30,6 @@ export default defineResolvers({
    *
    * We plan to improve the tooling around this feature in the future.
    *
-   * @type {typeof import('compatx').CompatibilityDateSpec}
    */
   compatibilityDate: undefined,
 
@@ -41,7 +39,6 @@ export default defineResolvers({
    * Value should be a string pointing to source directory or config path relative to current config.
    *
    * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
-   * @type {string}
    */
   theme: undefined,
 
@@ -72,9 +69,9 @@ export default defineResolvers({
       return val && typeof val === 'string'
         ? resolve(rootDir, val)
         : await findWorkspaceDir(rootDir, {
-          gitConfig: 'closest',
-          try: true,
-        }).catch(() => rootDir)
+            gitConfig: 'closest',
+            try: true,
+          }).catch(() => rootDir)
     },
   },
 
@@ -115,14 +112,7 @@ export default defineResolvers({
         return resolve(await get('rootDir'), val)
       }
 
-      const [rootDir, isV4] = await Promise.all([
-        get('rootDir'),
-        get('future').then(r => r.compatibilityVersion === 4),
-      ])
-
-      if (!isV4) {
-        return rootDir
-      }
+      const rootDir = await get('rootDir')
 
       const srcDir = resolve(rootDir, 'app')
       if (!existsSync(srcDir)) {
@@ -163,12 +153,8 @@ export default defineResolvers({
    */
   serverDir: {
     $resolve: async (val, get) => {
-      if (val && typeof val === 'string') {
-        const rootDir = await get('rootDir')
-        return resolve(rootDir, val)
-      }
-      const isV4 = (await get('future')).compatibilityVersion === 4
-      return join(isV4 ? await get('rootDir') : await get('srcDir'), 'server')
+      const rootDir = await get('rootDir')
+      return resolve(rootDir, val && typeof val === 'string' ? val : 'server')
     },
   },
 
@@ -277,7 +263,6 @@ export default defineResolvers({
    *
    * You can also set this to an object to enable specific debug options.
    *
-   * @type {boolean | (typeof import('../src/types/debug').NuxtDebugOptions) | undefined}
    */
   debug: {
     $resolve: (val) => {
@@ -334,7 +319,6 @@ export default defineResolvers({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule<any> | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
     $resolve: (val) => {
@@ -361,12 +345,8 @@ export default defineResolvers({
   dir: {
     app: {
       $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
-        if (isV4) {
-          const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
-          return resolve(await get('srcDir'), val && typeof val === 'string' ? val : (srcDir === rootDir ? 'app' : '.'))
-        }
-        return val && typeof val === 'string' ? val : 'app'
+        const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
+        return resolve(await get('srcDir'), val && typeof val === 'string' ? val : (srcDir === rootDir ? 'app' : '.'))
       },
     },
     /**
@@ -389,11 +369,7 @@ export default defineResolvers({
      */
     modules: {
       $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
-        if (isV4) {
-          return resolve(await get('rootDir'), val && typeof val === 'string' ? val : 'modules')
-        }
-        return val && typeof val === 'string' ? val : 'modules'
+        return resolve(await get('rootDir'), val && typeof val === 'string' ? val : 'modules')
       },
     },
 
@@ -422,23 +398,7 @@ export default defineResolvers({
      */
     public: {
       $resolve: async (val, get) => {
-        const isV4 = (await get('future')).compatibilityVersion === 4
-        if (isV4) {
-          return resolve(await get('rootDir'), val && typeof val === 'string' ? val : (await get('dir.static') || 'public'))
-        }
-        return val && typeof val === 'string' ? val : (await get('dir.static') || 'public')
-      },
-    },
-
-    // TODO: remove in v4
-    static: {
-      // @ts-expect-error schema has invalid types
-      $schema: { deprecated: 'use `dir.public` option instead' },
-      $resolve: async (val, get) => {
-        if (val && typeof val === 'string') {
-          return val
-        }
-        return await get('dir.public') || 'public'
+        return resolve(await get('rootDir'), val && typeof val === 'string' ? val : 'public')
       },
     },
   },
@@ -498,19 +458,16 @@ export default defineResolvers({
    * }
    * </style>
    * ```
-   * @type {Record<string, string>}
    */
   alias: {
     $resolve: async (val, get) => {
-      const [srcDir, rootDir, assetsDir, publicDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir'), get('dir.shared')])
+      const [srcDir, rootDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('buildDir'), get('dir.shared')])
       return {
         '~': srcDir,
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
         '#shared': resolve(rootDir, sharedDir),
-        [basename(assetsDir)]: resolve(srcDir, assetsDir),
-        [basename(publicDir)]: resolve(srcDir, publicDir),
         '#build': buildDir,
         '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...typeof val === 'object' ? val : {},
@@ -527,7 +484,6 @@ export default defineResolvers({
    *   ignorecase: false
    * }
    * ```
-   * @type {typeof import('ignore').Options}
    */
   ignoreOptions: undefined,
 
@@ -577,7 +533,6 @@ export default defineResolvers({
    * It is an array of strings or regular expressions. Strings should be either absolute paths or
    * relative to the `srcDir` (and the `srcDir` of any layers). Regular expressions will be matched
    * against the path relative to the project `srcDir` (and the `srcDir` of any layers).
-   * @type {Array<string | RegExp>}
    */
   watch: {
     $resolve: (val) => {
@@ -604,7 +559,6 @@ export default defineResolvers({
     /**
      * Options to pass directly to `chokidar`.
      * @see [chokidar](https://github.com/paulmillr/chokidar#api)
-     * @type {typeof import('chokidar').ChokidarOptions}
      */
     chokidar: {
       ignoreInitial: true,
@@ -638,7 +592,6 @@ export default defineResolvers({
    *   }
    * }
    * ```
-   * @type {typeof import('../src/types/hooks').NuxtHooks}
    */
   hooks: undefined,
 
@@ -665,7 +618,6 @@ export default defineResolvers({
    *   }
    * }
    * ```
-   * @type {typeof import('../src/types/config').RuntimeConfig}
    */
   runtimeConfig: {
     $resolve: async (_val, get) => {
@@ -689,7 +641,6 @@ export default defineResolvers({
    *
    * For programmatic usage and type support, you can directly provide app config with this option.
    * It will be merged with `app.config` file as default value.
-   * @type {typeof import('../src/types/config').AppConfig}
    */
   appConfig: {
     nuxt: {},

@@ -2,9 +2,9 @@ import { writeFileSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
 
 import { join, relative, resolve } from 'pathe'
-import { build, loadNuxt } from 'nuxt'
 import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { build, loadNuxt } from 'nuxt'
 
 describe('builder:watch', async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')
@@ -16,7 +16,7 @@ describe('builder:watch', async () => {
     await rm(tmpDir, { recursive: true, force: true })
   })
   const watcherStrategies = ['chokidar', 'chokidar-granular', 'parcel'] as const
-  it.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', async (watcher) => {
+  it.sequential.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', async (watcher) => {
     const rootDir = join(tmpDir, 'project')
     const nuxt = await loadNuxt({
       cwd: rootDir,
