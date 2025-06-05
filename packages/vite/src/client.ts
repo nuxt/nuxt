@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { join, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
@@ -172,6 +172,20 @@ export async function buildClient (ctx: ViteBuildContext) {
     output: {
       chunkFileNames: ctx.nuxt.options.dev ? undefined : fileNames,
       entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : fileNames,
+      sourcemapPathTransform (relativeSourcePath, sourcemapPath) {
+        // client build is running in a temporary build directory, like `.nuxt/dist/client`
+        // so we need to transform the sourcemap path to be relative to the final build directory
+        // which is normally `.output/public`
+        if (relativeSourcePath.startsWith('..')) {
+          const absoluteSourcePath = resolve(dirname(sourcemapPath), relativeSourcePath)
+          const newRelativePath = relative(
+            join(ctx.config.root!, '.output/public', ctx.nuxt.options.app.buildAssetsDir),
+            absoluteSourcePath,
+          )
+          return newRelativePath
+        }
+        return relativeSourcePath
+      },
     } satisfies NonNullable<BuildOptions['rollupOptions']>['output'],
   }) as any
 
