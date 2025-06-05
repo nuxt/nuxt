@@ -7,7 +7,8 @@ import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
-
+import { renderServerComponent } from 'vue-bento/runtime/deserialize'
+import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
@@ -16,6 +17,13 @@ import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
+
+const viteFetch = import.meta.server ?
+  import.meta.dev
+    ? (src: string) => import('#build/dist/server/server.mjs').then(r => r.executeFile(src)).then(r => r.default || r) :
+    // todo path association between server and client chunks
+      (src: string) => import(/* @vite-ignore */src.replace('/_nuxt/', './')).then(r => r.default || r._ || r)
+  : (src: string) => import(/* @vite-ignore */join(  src)).then(r => r.default || r)
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
@@ -90,7 +98,7 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
-
+    const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)
     let activeHead: ActiveHeadEntry<SerializableHead>
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
@@ -104,6 +112,7 @@ export default defineComponent({
       if (result.slots) { toRevive.slots = result.slots }
       if (result.components) { toRevive.components = result.components }
       if (result.head) { toRevive.head = result.head }
+      if (result.ast) { toRevive.ast = result.ast }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
@@ -234,6 +243,9 @@ export default defineComponent({
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
+        if (res.ast) {
+          ast.value = res.ast
+        }
         key.value++
         error.value = null
         payloads.slots = res.slots || {}
@@ -288,6 +300,13 @@ export default defineComponent({
       await loadComponents(props.source, payloads.components)
     }
 
+    return (_) => {
+       
+      return renderServerComponent(
+        ast.value,
+        viteFetch,
+      )
+    }
     return (_ctx: any, _cache: any) => {
       if (!html.value || error.value) {
         return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]

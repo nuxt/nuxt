@@ -146,6 +146,6 @@
   "packageManager": "pnpm@10.10.0",
   "version": "",
   "dependencies": {
-    "vue-server-components": "link:../vue-server-components"
+    "vue-bento": "file:../vue-bento"
   }
 }

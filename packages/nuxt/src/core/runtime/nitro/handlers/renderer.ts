@@ -206,7 +206,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   const link: Link[] = []
-  for (const resource of Object.values(styles)) {
+  for (const resource of Object.values(styles).filter(r => !r.file.includes('virtual:vsc:'))) {
     // Do not add links to resources that are inlined (vite v5+)
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
       continue
@@ -225,10 +225,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     // 4. Resource Hints
     // TODO: add priorities based on Capo
     ssrContext.head.push({
-      link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
+      link: getPreloadLinks(ssrContext, renderer.rendererContext).filter(l => !l.href.includes('virtual:vsc:')) as Link[],
     }, headEntryOptions)
     ssrContext.head.push({
-      link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
+      link: getPrefetchLinks(ssrContext, renderer.rendererContext).filter(l => !l.href.includes('virtual:vsc:')) as Link[],
     }, headEntryOptions)
     // 5. Payloads
     ssrContext.head.push({

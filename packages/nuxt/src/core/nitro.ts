@@ -125,6 +125,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
+      // 'virtual:vue-bento-client-to-server-chunks': () => {
+  
+      //   console.log(nuxt.vfs['virtual:vue-bento-client-to-server-chunks']  )
+      //   console.log('?????')
+      //   return nuxt.vfs['virtual:vue-bento-client-to-server-chunks'] || ''
+      // },
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
@@ -641,6 +647,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         if (name === 'server') {
           const memfs = compiler.outputFileSystem as typeof import('node:fs')
           nitro.options.virtual['#build/dist/server/server.mjs'] = () => memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
+          nitro.options.virtual['#build/dist/server/components.islands.mjs'] = () => memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/components.islands.mjs'), 'utf-8')
         }
       })
       nuxt.hook(`${builder}:compiled`, () => { nuxt.server.reload() })

@@ -82,6 +82,7 @@ export interface NuxtSSRContext extends SSRContext {
   }
   /** @internal */
   _preloadManifest?: boolean
+  rootComponent?: VNode
 }
 
 export interface NuxtPayload {

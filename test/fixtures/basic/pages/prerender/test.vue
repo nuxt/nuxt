@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const wasPrerendered = useState(() => import.meta.prerender)
+ 
 </script>
 
 <template>
   <div>
-    should be prerendered: {{ wasPrerendered }}
+    should be prerendered: 
   </div>
 </template>

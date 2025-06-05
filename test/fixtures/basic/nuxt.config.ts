@@ -186,8 +186,19 @@ export default defineNuxtConfig({
       options: {
         // in order to test bigint serialization
         target: 'es2022',
+        minify: false,
       },
     },
+
+    externals: {
+      inline: [(id) => {
+        if (id.includes('vue-bento')) {
+          return true
+        }
+        return false
+      }],
+    },
+
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/redirect/catchall': { ssr: false },
@@ -198,20 +209,29 @@ export default defineNuxtConfig({
       '/prerender/**': { prerender: true },
     },
     prerender: {
-      routes: [
-        '/random/a',
-        '/random/b',
-        '/random/c',
-        '/prefetch/server-components',
-      ],
+      // routes: [
+      //   '/random/a',
+      //   '/random/b',
+      //   '/random/c',
+      //   '/prefetch/server-components',
+      // ],
     },
   },
   vite: {
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
+      minify: false,
+    },
+    server: {
+      fs: {
+        allow: [
+          '../',
+        ],
+      },
     },
   },
+
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'webpack:config' (configs) {

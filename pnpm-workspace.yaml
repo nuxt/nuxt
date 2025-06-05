@@ -40,4 +40,3 @@ overrides:
   vite: 6.3.5
   vue: 3.5.13
   webpack: 5.99.7
-  vue-server-components: link:../vue-server-components

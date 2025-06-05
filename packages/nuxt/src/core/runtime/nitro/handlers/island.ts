@@ -7,21 +7,20 @@ import { defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
+import { serializeApp } from 'vue-bento/runtime/serialize'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
-import { getSSRRenderer } from '../utils/renderer/build-files'
+import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
-import { renderAsServerComponent } from '#app/island'
-// @ts-ignore virtual
-import components from "#internal/components"
+
+const components = ((await getComponentsIslands())).islandComponents
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 
 export default defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
 
-  console.log('???')
   setResponseHeaders(event, {
     'content-type': 'application/json;charset=utf-8',
     'x-powered-by': 'Nuxt',
@@ -47,7 +46,12 @@ export default defineEventHandler(async (event) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', error)
     throw error
   })
-  const ast = await renderAsServerComponent(islandComponents[islandContext.name])
+
+  const createSSRApp = await getServerEntry()
+
+  ssrContext.rootComponent = components[islandContext.name]
+  const app = await createSSRApp(ssrContext, renderer.rendererContext)
+  const ast = await app.runWithContext(() => serializeApp(app, islandContext.props, ssrContext))
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
@@ -69,7 +73,7 @@ export default defineEventHandler(async (event) => {
       // Add CSS links in <head> for CSS files
       // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (resource.file.includes('scoped') && !resource.file.includes('pages/')) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file.replace('virtual:vsc:', '')), crossorigin: '' })
       }
     }
     if (link.length) {
@@ -91,14 +95,13 @@ export default defineEventHandler(async (event) => {
   // TODO: remove for v4
   islandHead.link ||= []
   islandHead.style ||= []
-
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
     head: islandHead,
     html: getServerComponentHTML(renderResult.html),
     components: getClientIslandResponse(ssrContext),
     slots: getSlotIslandResponse(ssrContext),
-    ast
+    ast,
   }
 
   await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })

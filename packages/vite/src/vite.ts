@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { dirname, join, normalize, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -11,6 +11,7 @@ import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 
+import { vueServerComponentsPlugin } from 'vue-bento/vite/chunk'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import { warmupViteServer } from './utils/warmup'
@@ -19,7 +20,6 @@ import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { VitePublicDirsPlugin } from './plugins/public-dirs'
 import { distDir } from './dirs'
-import { vueServerComponentsPlugin } from '../../nuxt/src/components/plugins/islands-transform'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -240,13 +240,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }
   })
 
-  const {client, server} = vueServerComponentsPlugin({
-    serverVscDir: '_nuxt',
-    clientVscDir: '_nuxt'
+  const { client, server, getClientToServerChunkContent } = vueServerComponentsPlugin({
+    serverVscDir: '_nuxt/',
+    clientVscDir: '_nuxt/',
+    clientAssetsPrefix: '_nuxt/',
+    includeClientChunks: ctx.nuxt.apps.default!.components.map(c => relative(ctx.nuxt.options.rootDir, c.filePath)),
   })
 
   await withLogs(() => buildClient(ctx, client), 'Vite client built', ctx.nuxt.options.dev)
   await withLogs(() => buildServer(ctx, server), 'Vite server built', ctx.nuxt.options.dev)
+  // ctx.nuxt.vfs['virtual:vue-bento-client-to-server-chunks'] = getClientToServerChunkContent()
+  // useNitro().vfs['virtual:vue-bento-client-to-server-chunks'] = getClientToServerChunkContent()
+
+  // useNitro().options.virtual!['virtual:vue-bento-client-to-server-chunks'] = getClientToServerChunkContent()
+  // // template is only exposed in nuxt context, expose in nitro context as well
+  // ctx.nuxt.hooks.hook('nitro:config', (config) => { 
+  //   console.log('set virtual')
+  //   config.virtual!['virtual:vue-bento-client-to-server-chunks'] = getClientToServerChunkContent()
+  // })
 }
 
 const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))

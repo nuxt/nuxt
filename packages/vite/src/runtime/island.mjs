@@ -8,15 +8,11 @@ import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
 const runner = createRunner()
 
-/** @type {(ssrContext: import('#app').NuxtSSRContext) => Promise<any>} */
+/** @type {() => Promise<any>} */
 let render
 
-export function executeFile(src) {
-  return runner.executeId(src)
-}
-
 /** @param ssrContext {import('#app').NuxtSSRContext} */
-export default async (ssrContext) => {
+export default async () => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   // eslint-disable-next-line nuxt/prefer-import-meta
@@ -29,18 +25,19 @@ export default async (ssrContext) => {
 
   // Execute SSR bundle on demand
   const start = performance.now()
-  render = (updates.has(viteNodeOptions.entryPath) || !render) ? (await runner.executeFile(viteNodeOptions.entryPath)).default : render
+
+  render = (updates.has('#build/components.islands.mjs') || !render) ? (await runner.executeId('#build/components.islands.mjs')) : render
   if (updates.size) {
     const time = Math.round((performance.now() - start) * 1000) / 1000
     consola.success(`Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
   }
 
-  const result = await render(ssrContext)
-  return result
+  return render
 }
 
 function createRunner () {
   return new ViteNodeRunner({
+    debug: true,
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
     async resolveId (id, importer) {

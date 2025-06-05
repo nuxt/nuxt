@@ -6,7 +6,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { bento, componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 
 import { LoaderPlugin } from './plugins/loader'
@@ -132,7 +132,7 @@ export default defineNuxtModule<ComponentsOptions>({
     addTemplate(componentNamesTemplate)
     // components.islands.mjs
     addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
-
+ 
     if (componentOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
     }

@@ -79,7 +79,7 @@ export async function buildServer (ctx: ViteBuildContext, vue:any) {
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
-        input: { server: entry },
+        input: {  'server': entry, 'components.islands': resolve(ctx.nuxt.options.buildDir, 'components.islands') },
         external: [
           'nitro/runtime',
           '#internal/nuxt/paths',

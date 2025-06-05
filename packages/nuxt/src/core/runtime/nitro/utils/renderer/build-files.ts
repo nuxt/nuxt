@@ -18,7 +18,9 @@ const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 
 // @ts-expect-error file will be produced after app build
-const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
+export const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
+// @ts-expect-error file will be produced after app build
+export const getComponentsIslands = () => import('#build/dist/server/components.islands.mjs').then(r => import.meta.dev ? r.default() : r)
 
 // @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
