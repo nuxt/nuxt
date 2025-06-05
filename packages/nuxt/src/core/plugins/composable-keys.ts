@@ -14,7 +14,6 @@ import { matchWithStringOrRegex } from '../utils/plugins'
 interface ComposableKeysOptions {
   sourcemap: boolean
   rootDir: string
-  srcDir: string
   composables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
 }
 
@@ -61,10 +60,9 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
         // https://github.com/unjs/unplugin/issues/90
         let imports: Set<string> | undefined
         let count = 0
-        const relativeID = isAbsolute(id) ? relative(options.rootDir, id) : id
-        const { pathname: relativePathname } = parseURL(relativeID)
+        const relativePathname = normalizePathToRelative(id, options.rootDir)
 
-        // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
+        // To handle variable hoisting, we need a pre-pass to collect variable and function declarations with scope info.
         const scopeTracker = new ScopeTracker({
           preserveExitedScopes: true,
         })
@@ -82,17 +80,19 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
             if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
             // do not inject keys for imported functions unless their `src` path matches
-            imports ||= detectImportNames(script, composableMeta, id, options.srcDir)
+            imports ||= detectImportNames(script, composableMeta, options.rootDir)
             if (imports.has(name)) { return }
 
             const meta = composableMeta[name]
 
             const declaration = scopeTracker.getDeclaration(name)
 
+            // skip key injection for locally defined functions
             if (declaration && declaration.type !== 'Import') {
               let skip = true
               if (meta.source) {
-                skip = !matchWithStringOrRegex(relativePathname, meta.source)
+                // if we're not processing the file defined in the `source` property of the keyed composable entry
+                skip = !matchWithStringOrRegex(relativePathname, normalizePathToRelative(meta.source, options.rootDir))
               }
 
               if (skip) { return }
@@ -122,7 +122,7 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
             s.appendLeft(
               codeIndex + node.end - 1,
-              (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + '\'',
+              (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativePathname}-${++count}`).slice(0, 10) + '\'',
             )
           },
         })
@@ -141,29 +141,29 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
-export function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>, importerPath: string, srcDir: string) {
-  const names = new Set<string>()
-
-  function normalizePathToRelative (path: string) {
-    let resolved = isAbsolute(path) ? path : undefined
-    const aliasResolved = resolveAlias(path)
-    if (isAbsolute(aliasResolved)) {
-      resolved = aliasResolved
-    } else {
-      resolved = resolve(srcDir, path)
-    }
-
-    const noExt = resolved.replace(/\.[^/.]+$/, '')
-    return relative(srcDir, noExt)
+function normalizePathToRelative (path: string, rootDir: string) {
+  let resolved = isAbsolute(path) ? path : undefined
+  const aliasResolved = resolveAlias(path)
+  if (isAbsolute(aliasResolved)) {
+    resolved = aliasResolved
+  } else {
+    resolved = resolve(rootDir, path)
   }
+
+  const noExt = resolved.replace(/\.[^/.]+$/, '')
+  return relative(rootDir, noExt)
+}
+
+export function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>, rootDir: string) {
+  const names = new Set<string>()
 
   function addName (name: string, specifier: string) {
     const source = composableMeta[name]?.source
 
     if (typeof source === 'string') {
       try {
-        const importedFileRelativePath = normalizePathToRelative(specifier)
-        const sourceRelativePath = normalizePathToRelative(source)
+        const importedFileRelativePath = normalizePathToRelative(specifier, rootDir)
+        const sourceRelativePath = normalizePathToRelative(source, rootDir)
 
         if (importedFileRelativePath === sourceRelativePath) { return }
       } catch (e) {
