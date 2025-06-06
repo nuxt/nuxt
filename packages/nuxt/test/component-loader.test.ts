@@ -154,6 +154,13 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     ['hydrate-after', 'createLazyTimeComponent'],
     ['hydrate-when', 'createLazyIfComponent'],
     ['hydrate-never', 'createLazyNeverComponent'],
+    ['hydrateOnIdle', 'createLazyIdleComponent'],
+    ['hydrateOnVisible', 'createLazyVisibleComponent'],
+    ['hydrateOnInteraction', 'createLazyInteractionComponent'],
+    ['hydrateOnMediaQuery', 'createLazyMediaQueryComponent'],
+    ['hydrateAfter', 'createLazyTimeComponent'],
+    ['hydrateWhen', 'createLazyIfComponent'],
+    ['hydrateNever', 'createLazyNeverComponent'],
   ])('should correctly resolve lazy hydration components %s', async (prop, component) => {
     const sfc = `
     <template>
