@@ -26,13 +26,17 @@ jobs:
             const labelsToAdd = []
 
             const pullRequest = {
+              baseLabel: '${{ github.event.pull_request.base.label }}',
               number: ${{ github.event.pull_request.number }},
               title: process.env.PULL_REQUEST_TITLE,
               labelsNames: ${{ toJson(github.event.pull_request.labels.*.name) }}
             }
 
             // Select label based on the name of the base branch
-            const baseBranchLabelName = '3.x'
+            const baseBranchLabelName = {
+              'nuxt:main': '4.x',
+              'nuxt:3.x': '3.x'
+            }[pullRequest.baseLabel]
 
             if (!pullRequest.labelsNames.includes(baseBranchLabelName)) {
               labelsToAdd.push(baseBranchLabelName)
