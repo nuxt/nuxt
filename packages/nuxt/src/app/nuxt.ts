@@ -224,7 +224,7 @@ export interface ResolvedPluginMeta {
 }
 
 export interface Plugin<Injections extends Record<string, unknown> = Record<string, unknown>> {
-  (nuxt: _NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
+  (nuxt: NuxtApp): Promise<void> | Promise<{ provide?: Injections }> | void | { provide?: Injections }
   [NuxtPluginIndicator]?: true
   meta?: ResolvedPluginMeta
 }
