@@ -61,7 +61,7 @@
     "unenv": "^2.0.0-rc.17",
     "unplugin": "^2.3.5",
     "vite": "^6.3.5",
-    "vite-node": "^3.2.0",
+    "vite-node": "^3.2.2",
     "vite-plugin-checker": "^0.9.3",
     "vue-bundle-renderer": "^2.1.1"
   },
