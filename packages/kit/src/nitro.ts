@@ -86,12 +86,13 @@ export function useNitro (): Nitro {
 /**
  * Add server imports to be auto-imported by Nitro
  */
-export function addServerImports (imports: Import[]) {
+export function addServerImports (imports: Import | Import[]) {
   const nuxt = useNuxt()
+  const _imports = toArray(imports)
   nuxt.hook('nitro:config', (config) => {
     config.imports ||= {}
     config.imports.imports ||= []
-    config.imports.imports.push(...imports)
+    config.imports.imports.push(..._imports)
   })
 }
 
