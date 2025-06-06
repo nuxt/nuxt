@@ -155,9 +155,6 @@ export default defineComponent({
                 routeProps.route.meta.pageTransition,
                 defaultPageTransition,
                 {
-                  onBeforeLeave () {
-                    nuxtApp._runningTransition = true
-                  },
                   onAfterLeave () {
                     delete nuxtApp._runningTransition
                     nuxtApp.callHook('page:transition:finish', routeProps.Component)
@@ -169,7 +166,10 @@ export default defineComponent({
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                   suspensible: true,
-                  onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
+                  onPending: () => {
+                    if (hasTransition) { nuxtApp._runningTransition = true }
+                    nuxtApp.callHook('page:start', routeProps.Component)
+                  },
                   onResolve: () => {
                     nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
