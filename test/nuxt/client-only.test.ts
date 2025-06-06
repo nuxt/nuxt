@@ -79,6 +79,22 @@ describe('client-only', () => {
   })
 })
 
+describe('createClientOnly', () => {
+  it('should not inherit attributes if disabled', async () => {
+    const NonInherited = createClientOnly({
+      inheritAttrs: false,
+      setup: () => () => h('div', 'foo'),
+    })
+    const component = defineComponent({
+      setup () {
+        return () => h(NonInherited, { class: 'test', id: 'test' })
+      },
+    })
+    const wrapper = await mountSuspended(component)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+  })
+})
+
 const Client = defineComponent({
   name: 'TestClient',
   setup () {
