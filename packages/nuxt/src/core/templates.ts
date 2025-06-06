@@ -110,14 +110,14 @@ declare module 'nuxt/app/defaults' {
       ? ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue === 'null'
         ? null
         : undefined
-      : undefined
+      : null
   }
   type DefaultAsyncDataValue = ${
     isV4
       ? ctx.nuxt.options.experimental.defaults.useAsyncData.value === 'null'
         ? null
         : undefined
-      : undefined
+      : null
   }
   type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
   type DedupeOption = ${isV4 ? '\'cancel\' | \'defer\'' : 'boolean | \'cancel\' | \'defer\''}
