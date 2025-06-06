@@ -105,21 +105,9 @@ export const appDefaults: NuxtTypeTemplate = {
     const isV4 = ctx.nuxt.options.future.compatibilityVersion === 4
     return `
 declare module 'nuxt/app/defaults' {
-  type DefaultAsyncDataErrorValue = ${
-    isV4
-      ? ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue === 'null'
-        ? null
-        : undefined
-      : null
-  }
-  type DefaultAsyncDataValue = ${
-    isV4
-      ? ctx.nuxt.options.experimental.defaults.useAsyncData.value === 'null'
-        ? null
-        : undefined
-      : null
-  }
-  type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
+  type DefaultAsyncDataErrorValue = ${isV4 ? ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue : null}
+  type DefaultAsyncDataValue = ${isV4 ? ctx.nuxt.options.experimental.defaults.useAsyncData.value : null}
+  type DefaultErrorValue = ${isV4 ? undefined : null}
   type DedupeOption = ${isV4 ? '\'cancel\' | \'defer\'' : 'boolean | \'cancel\' | \'defer\''}
 }`
   },
