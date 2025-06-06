@@ -4,7 +4,6 @@ import { rollup } from 'rollup'
 import vuePlugin from '@vitejs/plugin-vue'
 import vuePluginJsx from '@vitejs/plugin-vue-jsx'
 import type { AddComponentOptions } from '@nuxt/kit'
-
 import { LoaderPlugin } from '../src/components/plugins/loader'
 import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform'
 
@@ -54,6 +53,31 @@ describe('components:loader', () => {
 
       export { _sfc_main as default };"
     `)
+  })
+
+  it('should correctly resolve components with minifyWhitespace (esbuild) #32290', async () => {
+    const content = `import { createHotContext as __vite__createHotContext } from "/_nuxt/@vite/client";import.meta.hot = __vite__createHotContext("/app.vue");import { recordPosition as _tracerRecordPosition } from "vite-plugin-vue-tracer/dist/client/record.mjs"
+import{defineComponent as _defineComponent}from"vue";const _sfc_main=_defineComponent({__name:"app",setup(__props,{expose:__expose}){__expose();console.log("111");const __returned__={};Object.defineProperty(__returned__,"__isScriptSetup",{enumerable:false,value:true});return __returned__}});import{resolveComponent as _resolveComponent,createVNode as _createVNode,openBlock as _openBlock,createElementBlock as _createElementBlock}from"/_nuxt/node_modules/.pnpm/vue@3.5.16_typescript@5.8.3/node_modules/vue/dist/vue.runtime.esm-bundler.js?v=cbc061e8";function _sfc_render(_ctx,_cache,$props,$setup,$data,$options){const _component_NuxtRouteAnnouncer=_resolveComponent("MyComponent");const _component_NuxtWelcome=_resolveComponent("MyComponent");return _openBlock(),_tracer(2,2,_createElementBlock("div",null,[_tracer(3,4,_createVNode(_component_NuxtRouteAnnouncer)),_tracer(4,4,_createVNode(_component_NuxtWelcome))]))}_sfc_main.__hmrId="938b83b0";typeof __VUE_HMR_RUNTIME__!=="undefined"&&__VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId,_sfc_main);import.meta.hot.on("file-changed",({file})=>{__VUE_HMR_RUNTIME__.CHANGED_FILE=file});import.meta.hot.accept(mod=>{if(!mod)return;const{default:updated,_rerender_only}=mod;if(_rerender_only){__VUE_HMR_RUNTIME__.rerender(updated.__hmrId,updated.render)}else{__VUE_HMR_RUNTIME__.reload(updated.__hmrId,updated)}});import _export_sfc from"/_nuxt/@id/__x00__plugin-vue:export-helper";export default _export_sfc(_sfc_main,[["render",_sfc_render],["__file","/project/workspace/app.vue"]]);
+
+function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", line, column, vnode) }
+`
+    const code = await ((plugin.raw({}, { framework: 'vite' }) as { transform: (code: string, id: string) => { code: string } | null }).transform(
+      content,
+      '/app.vue',
+    ))
+    expect(code).toMatchInlineSnapshot(`
+      {
+        "code": "import { default as __nuxt_component_0 } from "/components/MyComponent.vue";
+      import { createHotContext as __vite__createHotContext } from "/_nuxt/@vite/client";import.meta.hot = __vite__createHotContext("/app.vue");import { recordPosition as _tracerRecordPosition } from "vite-plugin-vue-tracer/dist/client/record.mjs"
+      import{defineComponent as _defineComponent}from"vue";const _sfc_main=_defineComponent({__name:"app",setup(__props,{expose:__expose}){__expose();console.log("111");const __returned__={};Object.defineProperty(__returned__,"__isScriptSetup",{enumerable:false,value:true});return __returned__}});import{resolveComponent as _resolveComponent,createVNode as _createVNode,openBlock as _openBlock,createElementBlock as _createElementBlock}from"/_nuxt/node_modules/.pnpm/vue@3.5.16_typescript@5.8.3/node_modules/vue/dist/vue.runtime.esm-bundler.js?v=cbc061e8";function _sfc_render(_ctx,_cache,$props,$setup,$data,$options){const _component_NuxtRouteAnnouncer=__nuxt_component_0;const _component_NuxtWelcome=__nuxt_component_0;return _openBlock(),_tracer(2,2,_createElementBlock("div",null,[_tracer(3,4,_createVNode(_component_NuxtRouteAnnouncer)),_tracer(4,4,_createVNode(_component_NuxtWelcome))]))}_sfc_main.__hmrId="938b83b0";typeof __VUE_HMR_RUNTIME__!=="undefined"&&__VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId,_sfc_main);import.meta.hot.on("file-changed",({file})=>{__VUE_HMR_RUNTIME__.CHANGED_FILE=file});import.meta.hot.accept(mod=>{if(!mod)return;const{default:updated,_rerender_only}=mod;if(_rerender_only){__VUE_HMR_RUNTIME__.rerender(updated.__hmrId,updated.render)}else{__VUE_HMR_RUNTIME__.reload(updated.__hmrId,updated)}});import _export_sfc from"/_nuxt/@id/__x00__plugin-vue:export-helper";export default _export_sfc(_sfc_main,[["render",_sfc_render],["__file","/project/workspace/app.vue"]]);
+
+      function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", line, column, vnode) }
+      ",
+        "map": undefined,
+      }
+    `)
+
+    expect(code?.code).toContain('__nuxt_component_0')
   })
 
   it('should work in jsx', async () => {
@@ -140,23 +164,30 @@ describe('components:loader', () => {
     expect(result.join('\n')).toContain(component)
   })
 })
+const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
+  export: opts.export || 'default',
+  chunkName: 'components/' + kebabCase(opts.name),
+  global: opts.global ?? false,
+  kebabName: kebabCase(opts.name || ''),
+  pascalName: pascalCase(opts.name || ''),
+  prefetch: false,
+  preload: false,
+  mode: 'all' as const,
+  shortPath: opts.filePath,
+  priority: 0,
+  meta: {},
+  ...opts,
+}))
+
+const plugin = LoaderPlugin({
+  clientDelayedComponentRuntime: '/client-runtime.mjs',
+  serverComponentRuntime: '/server-runtime.mjs',
+  getComponents: () => components,
+  srcDir: '/',
+  mode: 'server',
+})
 
 async function transform (code: string, filename: string) {
-  const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
-    export: opts.export || 'default',
-    chunkName: 'components/' + kebabCase(opts.name),
-    global: opts.global ?? false,
-    kebabName: kebabCase(opts.name || ''),
-    pascalName: pascalCase(opts.name || ''),
-    prefetch: false,
-    preload: false,
-    mode: 'all' as const,
-    shortPath: opts.filePath,
-    priority: 0,
-    meta: {},
-    ...opts,
-  }))
-
   const bundle = await rollup({
     input: filename,
     plugins: [
@@ -176,13 +207,7 @@ async function transform (code: string, filename: string) {
       LazyHydrationTransformPlugin({ getComponents: () => components }).rollup(),
       vuePlugin(),
       vuePluginJsx(),
-      LoaderPlugin({
-        clientDelayedComponentRuntime: '/client-runtime.mjs',
-        serverComponentRuntime: '/server-runtime.mjs',
-        getComponents: () => components,
-        srcDir: '/',
-        mode: 'server',
-      }).rollup(),
+      plugin.rollup(),
     ],
   })
   const { output: [chunk] } = await bundle.generate({})
