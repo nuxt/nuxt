@@ -23,7 +23,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 ```ts
 defineNuxtPlugin<T extends Record<string, unknown>>(plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T>
 
-type Plugin<T> = (nuxt: NuxtApp) => Promise<void> | Promise<{ provide?: T }> | void | { provide?: T }
+type Plugin<T> = (nuxt: [NuxtApp](/docs/guide/going-further/internals#the-nuxtapp-interface)) => Promise<void> | Promise<{ provide?: T }> | void | { provide?: T }
 
 interface ObjectPlugin<T> {
   name?: string
@@ -32,7 +32,7 @@ interface ObjectPlugin<T> {
   order?: number
   parallel?: boolean
   setup?: Plugin<T>
-  hooks?: Partial<RuntimeNuxtHooks>
+  hooks?: Partial<[RuntimeNuxtHooks](/docs/api/advanced/hooks#app-hooks-runtime)>
   env?: {
     islands?: boolean
   }
