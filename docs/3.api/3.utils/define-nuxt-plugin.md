@@ -94,7 +94,6 @@ interface ObjectPlugin<T> {
   
     Environment configuration. Set this value to `false` if you don't want the plugin to run when rendering server-only or island components.
 
-
 ## Examples
 
 ### Basic Usage
