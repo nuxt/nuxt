@@ -109,8 +109,9 @@ const user = useCookie(
   }
 )
 
-if (user.value && user.value !== null) {
-  user.value.score++; // userInfo cookie not update with this change
+if (user.value) {
+  // the actual `userInfo` cookie will not be updated
+  user.value.score++
 }
 </script>
 
@@ -137,9 +138,9 @@ function add() {
 }
 
 function save() {
-  if (list.value && list.value !== null) {
+  if (list.value) {
+    // the actual `list` cookie will be updated
     list.value = [...list.value]
-    // list cookie update with this change
   }
 }
 </script>
