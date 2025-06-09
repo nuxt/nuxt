@@ -134,8 +134,5 @@ export default defineNuxtPlugin({
       console.log('App created!')
     }
   },
-  env: {
-    islands: true
-  }
 })
 ```
