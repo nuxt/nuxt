@@ -592,28 +592,26 @@ export interface ConfigSchema {
    * @example
    * ```js
    * export default {
-   *   srcDir: 'src/'
+   *   srcDir: 'app/'
    * }
    * ```
-   * This would work with the following folder structure:
+   * This expects the following folder structure:
    * ```bash
    * -| app/
-   * ---| node_modules/
-   * ---| nuxt.config.js
-   * ---| package.json
-   * ---| src/
-   * ------| assets/
-   * ------| components/
-   * ------| layouts/
-   * ------| middleware/
-   * ------| pages/
-   * ------| plugins/
-   * ------| public/
-   * ------| store/
-   * ------| server/
-   * ------| app.config.ts
-   * ------| app.vue
-   * ------| error.vue
+   * ---| assets/
+   * ---| components/
+   * ---| layouts/
+   * ---| middleware/
+   * ---| pages/
+   * ---| plugins/
+   * ---| app.config.ts
+   * ---| app.vue
+   * ---| error.vue
+   * -| server/
+   * -| public/
+   * -| modules/
+   * -| nuxt.config.js
+   * -| package.json
    * ```
    */
   srcDir: string
