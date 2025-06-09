@@ -92,7 +92,7 @@ interface ObjectPlugin<T> {
   **`env`**
   - **Type**: `{ islands?: boolean }`
   
-    Environment configuration. Set this value to `false` if you don't want the plugin to run when rendering server-only or island components.
+    Environment configuration. Set a value to `false` to prevent the plugin running in specified environment.
 
 ## Examples
 
