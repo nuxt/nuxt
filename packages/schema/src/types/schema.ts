@@ -300,11 +300,11 @@ export interface ConfigSchema {
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page rendered with `ssr: false`.
    *
-   * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists. - If it is false, no SPA loading indicator will be loaded. - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a
+   * - If it is unset, it will use `~/spa-loading-template.html` file in one of your layers, if it exists. - If it is false, no SPA loading indicator will be loaded. - If true, Nuxt will look for `~/spa-loading-template.html` file in one of your layers, or a
    *   default Nuxt image will be used.
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    *
-   * @example ~/app/spa-loading-template.html
+   * @example ~/spa-loading-template.html
    * ```html
    * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
    * <div class="loader"></div>
