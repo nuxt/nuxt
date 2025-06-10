@@ -131,7 +131,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       .join(', ')
 
     const windowObjectReference = open(toPath, target, features)
-    return Promise.resolve(windowObjectReference)
+    return Promise.resolve(windowObjectReference || undefined)
   }
 
   const isExternalHost = hasProtocol(toPath, { acceptRelative: true })
