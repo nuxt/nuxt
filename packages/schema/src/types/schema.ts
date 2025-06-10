@@ -39,7 +39,7 @@ import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
-import type { DevServerHandler, NitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
+import type { DevServerHandler, NitroConfig, PrerenderOptions, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -1935,6 +1935,15 @@ export interface ConfigSchema {
    * @see [Nitro route rules documentation](https://nitro.build/config#routerules)
    */
   routeRules: Record<string, RouteRuleConfig> | undefined
+
+  /**
+   * Prerender options applied by any `server.builder`.
+   *
+   * Builder-specific options can be set in `nitro.prerender`.
+   *
+   * @see [Prerendering documentation](https://nuxt.com/docs/getting-started/prerendering)
+   */
+  prerender: PrerenderOptions
 
   /**
    * Server handlers registered with the configured `server.builder`.
