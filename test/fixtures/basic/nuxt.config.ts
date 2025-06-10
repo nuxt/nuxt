@@ -28,9 +28,9 @@ export default defineNuxtConfig({
         }
       })
     },
-    '~/custom-modules/subpath',
+    '~~/custom-modules/subpath',
     './modules/test',
-    '~/modules/example',
+    '~~/modules/example',
     function (_, nuxt) {
       if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
@@ -206,7 +206,7 @@ export default defineNuxtConfig({
   },
   postcss: {
     plugins: {
-      '~/postcss/plugin': {},
+      '~~/postcss/plugin': {},
     },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
@@ -218,7 +218,7 @@ export default defineNuxtConfig({
           rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader',
         )
         for (const rule of esbuildRules) {
-          if (typeof rule === 'object' && typeof rule.options === 'object') {
+          if (typeof rule === 'object' && typeof rule?.options === 'object') {
             rule.options.target = 'es2022'
           }
         }
