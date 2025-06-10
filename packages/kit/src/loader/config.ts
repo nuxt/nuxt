@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
@@ -8,7 +7,7 @@ import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import defu, { createDefu } from 'defu'
 import { basename, join, relative } from 'pathe'
-import { resolveModulePath, resolveModuleURL } from 'exsolve'
+import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm'
 
