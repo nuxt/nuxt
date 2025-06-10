@@ -35,7 +35,6 @@ export async function getVueHash (nuxt: Nuxt) {
       runtimeConfig: undefined,
       logLevel: undefined,
       devServerHandlers: undefined,
-      generate: undefined,
       devtools: undefined,
     },
   })

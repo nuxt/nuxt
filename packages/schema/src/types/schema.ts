@@ -1474,28 +1474,6 @@ export interface ConfigSchema {
     pendingWhenIdle: boolean
   }
 
-  generate: {
-  /**
-   * The routes to generate.
-   *
-   * If you are using the crawler, this will be only the starting point for route generation. This is often necessary when using dynamic routes.
-   * It is preferred to use `nitro.prerender.routes`.
-   *
-   * @example
-   * ```js
-   * routes: ['/users/1', '/users/2', '/users/3']
-   * ```
-   */
-    routes: string | string[]
-
-    /**
-     * This option is no longer used. Instead, use `nitro.prerender.ignore`.
-     *
-     * @deprecated
-     */
-    exclude: Array<any>
-  }
-
   /**
    *
    * @private
@@ -1506,37 +1484,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _legacyGenerate: boolean
-
-  /**
-   *
-   * @private
-   */
-  _start: boolean
-
-  /**
-   *
-   * @private
-   */
-  _build: boolean
-
-  /**
-   *
-   * @private
-   */
-  _generate: boolean
-
-  /**
-   *
-   * @private
-   */
   _prepare: boolean
-
-  /**
-   *
-   * @private
-   */
-  _cli: boolean
 
   /**
    *

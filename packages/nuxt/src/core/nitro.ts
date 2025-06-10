@@ -170,7 +170,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ignoreUnprefixedPublicAssets: true,
       failOnError: true,
       concurrency: cpus().length * 4 || 4,
-      routes: ([] as string[]).concat(nuxt.options.generate.routes),
+      routes: ([] as string[])
+        // @ts-expect-error TODO: remove in nuxt v5
+        .concat(nuxt.options.generate.routes),
     },
     sourceMap: nuxt.options.sourcemap.server,
     externals: {
