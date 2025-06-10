@@ -5,7 +5,7 @@ import type { RenderSSRHeadOptions } from '@unhead/vue/types'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { SourceOptions } from 'c12'
+import type { DotenvOptions, SourceOptions } from 'c12'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
@@ -1496,7 +1496,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | import('c12').DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions }
 
   /**
    *
