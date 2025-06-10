@@ -32,6 +32,14 @@ export default defineResolvers({
         }
       },
     },
+    prerender: {
+      $resolve: async (val, get) => {
+        return {
+          ...await get('prerender'),
+          ...(val && typeof val === 'object' ? val : {}),
+        }
+      },
+    },
   },
 
   /**
@@ -40,6 +48,8 @@ export default defineResolvers({
    * @see [Nitro route rules documentation](https://nitro.build/config/#routerules)
    */
   routeRules: {},
+
+  prerender: {},
 
   /**
    * Nitro server handlers.
