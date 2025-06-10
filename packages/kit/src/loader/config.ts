@@ -8,7 +8,7 @@ import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import defu, { createDefu } from 'defu'
 import { basename, join, relative } from 'pathe'
-import { resolveModuleURL } from 'exsolve'
+import { resolveModulePath, resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm'
 
@@ -123,10 +123,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
 async function loadNuxtSchema (cwd: string) {
   const url = directoryToURL(cwd)
-  const urls = [url]
+  const urls: Array<URL | string> = [url]
   const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
   if (nuxtPath) {
-    urls.unshift(pathToFileURL(nuxtPath))
+    urls.unshift(nuxtPath)
   }
   const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
   return await import(schemaPath).then(r => r.NuxtConfigSchema)
