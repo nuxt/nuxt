@@ -41,58 +41,22 @@ interface ObjectPlugin<T> {
 
 ## Parameters
 
-### `plugin`
+**plugin**: A plugin can be defined in two ways:
+1. **Function Plugin**: A function that receives the [`NuxtApp`](/docs/guide/going-further/internals#the-nuxtapp-interface) instance and can return a promise with an potential object with a [`provide`](/docs/guide/directory-structure/plugins#providing-helpers) property if you want to provide a helper on [`NuxtApp`](/docs/guide/going-further/internals#the-nuxtapp-interface) instance.
+2. **Object Plugin**: An object that can include various properties to configure the plugin's behavior, such as `name`, `enforce`, `dependsOn`, `order`, `parallel`, `setup`, `hooks`, and `env`.
 
-- **Type**: `Plugin<T>` | `ObjectPlugin<T>`
+| Property           | Type                                                                 | Required | Description                                                                                                     |
+| ------------------ | -------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `name` | `string` | `false` | Optional name for the plugin, useful for debugging and dependency management. |
+| `enforce` | `'pre'` \| `'default'` \| `'post'` | `false` | Controls when the plugin runs relative to other plugins. |
+| `dependsOn` | `string[]` | `false` | Array of plugin names this plugin depends on. Ensures proper execution order. |
+| `order` | `number` | `false` | This allows more granular control over plugin order and should only be used by advanced users. **It overrides the value of `enforce` and is used to sort plugins.** |
+| `parallel` | `boolean` | `false` | Whether to execute the plugin in parallel with other parallel plugins. |
+| `setup` | `Plugin<T>`{lang="ts"}  | `false` | The main plugin function, equivalent to a function plugin. |
+| `hooks` | `Partial<RuntimeNuxtHooks>`{lang="ts"}  | `false` | Nuxt app runtime hooks to register directly. |
+| `env` | `{ islands?: boolean }`{lang="ts"}  | `false` | Set this value to `false` if you don't want the plugin to run when rendering server-only or island components. |
 
-  A plugin definition that can be either a function or an object with configuration.
-
-  **Function Plugin**
-  - **Type**: `(nuxtApp: NuxtApp) => Promise<void> | Promise<{ provide?: T }> | void | { provide?: T }`
-  
-    A simple function that receives the Nuxt app instance and can optionally return providers.
-
-  **Object Plugin Properties**
-
-  **`name`**
-  - **Type**: `string`
-  
-    Optional name for the plugin, useful for debugging and dependency management.
-
-  **`enforce`**
-  - **Type**: `'pre'` | `'default'` | `'post'`
-  
-    Controls when the plugin runs relative to other plugins.
-
-  **`dependsOn`**
-  - **Type**: `string[]`
-  
-    Array of plugin names this plugin depends on. Ensures proper execution order.
-
-  **`order`**
-  - **Type**: `number`
-  
-    This allows more granular control over plugin order and should only be used by advanced users. **It overrides the value of `enforce` and is used to sort plugins.**
-
-  **`parallel`**
-  - **Type**: `boolean`
-  
-    Whether to execute the plugin in parallel with other parallel plugins.
-
-  **`setup`**
-  - **Type**: `Plugin<T>`
-  
-    The main plugin function, equivalent to a function plugin.
-
-  **`hooks`**
-  - **Type**: `Partial<RuntimeNuxtHooks>`
-  
-    Nuxt app runtime hooks to register directly.
-
-  **`env`**
-  - **Type**: `{ islands?: boolean }`
-  
-    Environment configuration. Set a value to `false` to prevent the plugin running in specified environment.
+:video-accordion{title="Watch a video from Alexander Lichter about the Object Syntax for Nuxt plugins" videoId="2aXZyXB1QGQ"}
 
 ## Examples
 
