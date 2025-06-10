@@ -812,6 +812,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Ensure we share key config between Nuxt and Nitro
   createPortalProperties(options.nitro.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(options.nitro.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  createPortalProperties(options.nitro.prerender, options, ['nitro.prerender', 'prerender'])
 
   // prevent replacement of options.nitro
   const nitroOptions = options.nitro

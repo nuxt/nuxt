@@ -1544,6 +1544,8 @@ export interface ConfigSchema {
    */
   routeRules: NitroConfig['routeRules']
 
+  prerender: NitroConfig['prerender']
+
   /**
    * Nitro server handlers.
    *
