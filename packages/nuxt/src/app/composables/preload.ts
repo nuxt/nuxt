@@ -36,7 +36,7 @@ export const prefetchComponents = (components: string | string[]) => {
 
 // --- Internal ---
 
-function _loadAsyncComponent (component: Component) {
+export function _loadAsyncComponent (component: Component) {
   if ((component as any)?.__asyncLoader && !(component as any).__asyncResolved) {
     return (component as any).__asyncLoader()
   }
@@ -49,10 +49,10 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
   const { path, matched } = router.resolve(to)
 
   if (!matched.length) { return }
-  if (!router._routePreloaded) { router._routePreloaded = new Set() }
+  router._routePreloaded ||= new Set()
   if (router._routePreloaded.has(path)) { return }
 
-  const promises = router._preloadPromises = router._preloadPromises || []
+  const promises = router._preloadPromises ||= []
 
   if (promises.length > 4) {
     // Defer adding new preload requests until the existing ones have resolved

@@ -6,10 +6,10 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nitro, NitroConfig } from 'nitro/types'
+import type { Nitro, NitroConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
-import type { VueCompilerOptions } from '@vue/language-core'
+import type { RawVueCompilerOptions } from '@vue/language-core'
 import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Component, ComponentsOptions } from './components'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
@@ -21,9 +21,9 @@ export type TSReference = { types: string } | { path: string }
 
 export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 
-// If the user does not have `@vue/language-core` installed, VueCompilerOptions will be typed as `any`,
-// thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if VueCompilerOptions is available.
-export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: Omit<VueCompilerOptions, 'plugins'> & { plugins?: string[] } }
+// If the user does not have `@vue/language-core` installed, RawVueCompilerOptions will be typed as `any`,
+// thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if RawVueCompilerOptions is available.
+export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
 export type NuxtPage = {
   name?: string
@@ -34,6 +34,7 @@ export type NuxtPage = {
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
+  middleware?: string[] | string
   /**
    * Set the render mode.
    *
@@ -42,7 +43,6 @@ export type NuxtPage = {
    * `server` means pages are automatically rendered with server components, so there will be no JavaScript to render the page in your client bundle.
    *
    * `client` means that page will render on the client-side only.
-   * @default 'all'
    */
   mode?: 'client' | 'server' | 'all'
   /** @internal */
@@ -258,6 +258,12 @@ export interface NuxtHooks {
 
   // Nitropack
   /**
+   * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
+   * @param options Objects containing `references`, `declarations`
+   * @returns Promise
+   */
+  'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
+  /**
    * Called before initializing Nitro, allowing customization of Nitro's configuration.
    * @param nitroConfig The nitro config to be extended
    * @returns Promise
@@ -288,7 +294,7 @@ export interface NuxtHooks {
    */
   'prerender:routes': (ctx: { routes: Set<string> }) => HookResult
 
-  // Nuxi
+  // @nuxt/cli
   /**
    * Called when an error occurs at build time.
    * @param error Error object
@@ -296,7 +302,7 @@ export interface NuxtHooks {
    */
   'build:error': (error: Error) => HookResult
   /**
-   * Called before Nuxi writes `.nuxt/tsconfig.json` and `.nuxt/nuxt.d.ts`, allowing addition of custom references and declarations in `nuxt.d.ts`, or directly modifying the options in `tsconfig.json`
+   * Called before @nuxt/cli writes `.nuxt/tsconfig.json` and `.nuxt/nuxt.d.ts`, allowing addition of custom references and declarations in `nuxt.d.ts`, or directly modifying the options in `tsconfig.json`
    * @param options Objects containing `references`, `declarations`, `tsConfig`
    * @returns Promise
    */

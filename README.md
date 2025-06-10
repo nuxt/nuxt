@@ -6,8 +6,9 @@
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Downloads"></a>
   <a href="https://github.com/nuxt/nuxt/tree/main/LICENSE"><img src="https://img.shields.io/github/license/nuxt/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="License"></a>
-  <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Nuxt%20Docs-18181B?logo=nuxt.js" alt="Website"></a>
+  <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Nuxt%20Docs-18181B?logo=nuxt" alt="Website"></a>
   <a href="https://chat.nuxt.dev"><img src="https://img.shields.io/badge/Nuxt%20Discord-18181B?logo=discord" alt="Discord"></a>
+  <a href="https://securityscorecards.dev/"><img src="https://api.securityscorecards.dev/projects/github.com/nuxt/nuxt/badge" alt="Nuxt openssf scorecard score"></a>
 </p>
 
 Nuxt is a free and open-source framework with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.
@@ -32,7 +33,6 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - 🧩 [Modules](#modules)
 - ❤️  [Contribute](#contribute)
 - 🏠 [Local Development](#local-development)
-- ⛰️ [Nuxt 2](#nuxt-2)
 - 🛟 [Professional Support](#professional-support)
 - 🔗 [Follow Us](#follow-us)
 - ⚖️ [License](#license)
@@ -44,7 +44,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 Use the following command to create a new starter project. This will create a starter project with all the necessary files and dependencies:
 
 ```bash
-npx nuxi@latest init <my-project>
+npm create nuxt <my-project>
 ```
 
 > [!TIP]

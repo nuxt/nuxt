@@ -1,6 +1,8 @@
 <script setup lang="ts">
 if (import.meta.client) {
-  await new Promise(resolve => setTimeout(resolve, 50))
+  await new Promise<void>((resolve) => {
+    document.addEventListener('finishHydration', () => resolve())
+  })
 }
 </script>
 
@@ -9,7 +11,3 @@ if (import.meta.client) {
     app content
   </div>
 </template>
-
-<style scoped>
-
-</style>

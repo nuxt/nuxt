@@ -6,7 +6,7 @@
     </div>
     <button
       id="execute-btn"
-      @click="execute"
+      @click="() => execute()"
     >
       execute
     </button>

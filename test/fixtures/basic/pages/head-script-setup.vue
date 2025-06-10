@@ -1,4 +1,9 @@
 <script lang="ts" setup>
+import { TemplateParamsPlugin } from '@unhead/vue/plugins'
+// Unhead v2 requires an opt-in to template params
+const head = injectHead()
+head.use(TemplateParamsPlugin)
+
 const description = ref('head script setup description for %site.name')
 const siteName = ref()
 // server meta

@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { Plugin } from 'vite'
 import { DevOnlyPlugin } from '../src/core/plugins/dev-only'
 import { normalizeLineEndings } from './utils'
 
-const pluginVite = DevOnlyPlugin({}).raw({}, { framework: 'vite' }) as Plugin
+const pluginVite = DevOnlyPlugin({}).raw({}, { framework: 'vite' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
 const viteTransform = async (source: string, id: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (pluginVite.transform! as Function)(source, id)
+  const result = await (pluginVite.transform.handler as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 

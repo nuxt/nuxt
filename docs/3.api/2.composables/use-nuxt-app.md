@@ -138,9 +138,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own reducer/reviver for types that are not supported by Nuxt.
 
-  ::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=8w6ffRBs8a4" target="_blank"}
-  Watch a video from Alexander Lichter about serializing payloads, especially with regards to classes.
-  ::
+  :video-accordion{title="Watch a video from Alexander Lichter about serializing payloads, especially with regards to classes" videoId="8w6ffRBs8a4"}
 
   In the example below, we define a reducer (or a serializer) and a reviver (or deserializer) for the [Luxon](https://moment.github.io/luxon/#/) DateTime class, using a payload plugin.
 
@@ -256,7 +254,7 @@ Nuxt internally uses [unjs/unctx](https://github.com/unjs/unctx) to support comp
 
 Nuxt composables have the same design as the Vue Composition API and therefore need a similar solution to magically do this transform. Check out [unjs/unctx#2](https://github.com/unjs/unctx/issues/2) (proposal), [unjs/unctx#4](https://github.com/unjs/unctx/pull/4) (transform implementation), and [nuxt/framework#3884](https://github.com/nuxt/framework/pull/3884) (Integration to Nuxt).
 
-Vue currently only supports async context restoration for `<script setup>` for async/await usage. In Nuxt 3, the transform support for `defineNuxtPlugin()` and `defineNuxtRouteMiddleware()` was added, which means when you use them Nuxt automatically transforms them with context restoration.
+Vue currently only supports async context restoration for `<script setup>` for async/await usage. In Nuxt, the transform support for `defineNuxtPlugin()` and `defineNuxtRouteMiddleware()` was added, which means when you use them Nuxt automatically transforms them with context restoration.
 
 #### Remaining Issues
 

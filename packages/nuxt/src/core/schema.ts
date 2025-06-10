@@ -5,7 +5,7 @@ import { resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createIsIgnored, createResolver, defineNuxtModule, importModule, tryResolveModule } from '@nuxt/kit'
+import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, importModule } from '@nuxt/kit'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
@@ -54,9 +54,10 @@ export default defineNuxtModule({
       })
 
       if (nuxt.options.experimental.watcher === 'parcel') {
-        const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
-        if (watcherPath) {
-          const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
+        try {
+          const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', {
+            url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)),
+          })
           for (const layer of nuxt.options._layers) {
             const subscription = await subscribe(layer.config.rootDir, onChange, {
               ignore: ['!nuxt.schema.*'],
@@ -64,8 +65,9 @@ export default defineNuxtModule({
             nuxt.hook('close', () => subscription.unsubscribe())
           }
           return
+        } catch {
+          logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
         }
-        logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
       }
 
       const isIgnored = createIsIgnored(nuxt)

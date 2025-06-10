@@ -1,5 +1,5 @@
 ---
-title: "nuxi upgrade"
+title: "nuxt upgrade"
 description: The upgrade command upgrades Nuxt to the latest version.
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--upgrade-cmd-->
 ```bash [Terminal]
-npx nuxi upgrade [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [-f, --force] [-ch, --channel=<stable|nightly>]
+npx nuxt upgrade [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dedupe] [-f, --force] [-ch, --channel=<stable|nightly>]
 ```
 <!--/upgrade-cmd-->
 
@@ -31,6 +31,7 @@ Option | Default | Description
 --- | --- | ---
 `--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--dedupe` |  | Will deduplicate dependencies but not recreate the lockfile
 `-f, --force` |  | Force upgrade to recreate lockfile and node_modules
 `-ch, --channel=<stable\|nightly>` | `stable` | Specify a channel to install from (default: stable)
 <!--/upgrade-opts-->

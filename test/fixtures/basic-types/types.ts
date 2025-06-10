@@ -3,8 +3,8 @@ import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 import type { H3Event } from 'h3'
-import { getRouteRules as getNitroRouteRules } from 'nitro/runtime'
-import type { NitroRouteRules } from 'nitro/types'
+import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
+import type { NitroRouteRules } from 'nitropack/types'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
@@ -12,7 +12,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
+import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
@@ -77,8 +77,8 @@ describe('API routes', () => {
     expectTypeOf(useLazyAsyncData('lazy-api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useLazyAsyncData<TestResponse>('lazy-api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyAsyncData('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useLazyAsyncData<any, string>('lazy-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
   })
 
   it('works with useFetch', () => {
@@ -174,7 +174,7 @@ describe('middleware', () => {
     definePageMeta({
       validate: async () => {
         await new Promise(resolve => setTimeout(resolve, 1000))
-        // eslint-disable-next-line
+        // eslint-disable-next-line no-constant-condition
         if (0) {
           return createError({
             statusCode: 404,
@@ -206,6 +206,7 @@ describe('typed router integration', () => {
   it('correctly reads custom names typed in `definePageMeta`', () => {
     const router = useRouter()
     router.push({ name: 'some-custom-name' })
+    router.push({ name: 'param-id-view-custom', params: { id: 4 } })
   })
 
   it('allows typing useRoute', () => {
@@ -224,6 +225,9 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     navigateTo({ name: 'param-id', params: { bob: 23 } })
     navigateTo({ name: 'param-id', params: { id: 4 } })
+    // @ts-expect-error this is an invalid param
+    navigateTo({ name: 'param-id-view-custom', params: { bob: 23 } })
+    navigateTo({ name: 'param-id-view-custom', params: { id: 4 } })
   })
 
   it('allows typing middleware', () => {
@@ -254,11 +258,14 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     h(NuxtLink, { to: { name: 'param-id', params: { bob: 23 } } })
     h(NuxtLink, { to: { name: 'param-id', params: { id: 4 } } })
+
+    // doesn't throw an error when accessing properties of component
+    const _props = NuxtLink.props
   })
 })
 
 describe('layouts', () => {
-  it('recognizes named layouts', () => {
+  it('definePageMeta recognizes named layouts', () => {
     definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
     definePageMeta({ layout: 'override' })
@@ -266,11 +273,14 @@ describe('layouts', () => {
     definePageMeta({ layout: 'invalid-layout' })
   })
 
-  it('allows typing layouts', () => {
+  it('NuxtLayout recognizes named layouts', () => {
     h(NuxtLayout, { name: 'custom' })
-
     // @ts-expect-error Invalid layout
     h(NuxtLayout, { name: 'invalid-layout' })
+
+    h(NuxtLayout, { fallback: 'custom' })
+    // @ts-expect-error Invalid layout
+    h(NuxtLayout, { fallback: 'invalid-layout' })
   })
 })
 
@@ -342,14 +352,14 @@ describe('runtimeConfig', () => {
     expectTypeOf(runtimeConfig.public.testConfig).toEqualTypeOf<number>()
     expectTypeOf(runtimeConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<string>()
-    expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<number[]>()
+    expectTypeOf(runtimeConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
     expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<unknown>()
 
     const injectedConfig = useNuxtApp().$config
     expectTypeOf(injectedConfig.public.testConfig).toEqualTypeOf<number>()
     expectTypeOf(injectedConfig.public.needsFallback).toEqualTypeOf<string>()
     expectTypeOf(injectedConfig.privateConfig).toEqualTypeOf<string>()
-    expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<number[]>()
+    expectTypeOf(injectedConfig.public.ids).toEqualTypeOf<(1 | 2 | 3)[]>()
     expectTypeOf(injectedConfig.unknown).toEqualTypeOf<unknown>()
   })
   it('provides hints on overriding these values', () => {
@@ -366,7 +376,7 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
     expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
     expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
-    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
+    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<(1 | 2 | 3)[], 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
   })
 
@@ -443,6 +453,14 @@ describe('components', () => {
     h(WithTypes, { aProp: '40' })
 
     // TODO: assert typed slots, exposed, generics, etc.
+  })
+  it('includes types for lazy hydration', () => {
+    h(LazyWithTypes)
+    h(LazyWithTypes, { hydrateAfter: 300 })
+    h(LazyWithTypes, { hydrateOnIdle: true })
+
+    // @ts-expect-error wrong prop type for this hydration strategy
+    h(LazyWithTypes, { hydrateAfter: '' })
   })
   it('include fallback slot in server components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
@@ -526,6 +544,16 @@ describe('composables', () => {
   it('provides proper type support when using overloads', () => {
     expectTypeOf(useState('test')).toEqualTypeOf(useState())
     expectTypeOf(useState('test', () => ({ foo: Math.random() }))).toEqualTypeOf(useState(() => ({ foo: Math.random() })))
+
+    expectTypeOf(useAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() })))
+      .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() })))
+    expectTypeOf(useAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+
+    expectTypeOf(useLazyAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() })))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() })))
+    expectTypeOf(useLazyAsyncData(computed(() => 'test'), () => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
+      .toEqualTypeOf(useLazyAsyncData(() => Promise.resolve({ foo: Math.random() }), { transform: data => data.foo }))
 
     expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: Math.random() })))
       .toEqualTypeOf(useAsyncData(() => Promise.resolve({ foo: Math.random() })))

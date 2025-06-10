@@ -1,6 +1,6 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   generate: {
     /**
      * The routes to generate.
@@ -13,7 +13,6 @@ export default defineUntypedSchema({
      * ```js
      * routes: ['/users/1', '/users/2', '/users/3']
      * ```
-     * @type {string | string[]}
      */
     routes: [],
 

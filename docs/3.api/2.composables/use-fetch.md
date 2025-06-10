@@ -66,6 +66,22 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 })
 ```
 
+### Reactive Keys and Shared State
+
+You can use a computed ref or a plain ref as the URL, allowing for dynamic data fetching that automatically updates when the URL changes:
+
+```vue [pages/[id\\].vue]
+<script setup lang="ts">
+const route = useRoute()
+const id = computed(() => route.params.id)
+
+// When the route changes and id updates, the data will be automatically refetched
+const { data: post } = await useFetch(() => `/api/posts/${id.value}`)
+</script>
+```
+
+When using `useFetch` with the same URL and options in multiple components, they will share the same `data`, `error` and `status` refs. This ensures consistency across components.
+
 ::warning
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
 ::
@@ -74,9 +90,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 If you encounter the `data` variable destructured from a `useFetch` returns a string and not a JSON parsed object then make sure your component doesn't include an import statement like `import { useFetch } from '@vueuse/core`.
 ::
 
-::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
-Watch the video from Alexander Lichter to avoid using `useFetch` the wrong way!
-::
+:video-accordion{title="Watch the video from Alexander Lichter to avoid using useFetch the wrong way" videoId="njsGVmcWviY"}
 
 :link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
 
@@ -111,14 +125,14 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   - `transform`: a function that can be used to alter `handler` function result after resolving
   - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
     ```ts
-    const getDefaultCachedData = (key) => nuxtApp.isHydrating 
+    const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating 
       ? nuxtApp.payload.data[key] 
       : nuxtApp.static.data[key]
     ```
     Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`. (You can [see an example here](/docs/getting-started/data-fetching#watch) of using `watch`.)
-  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object for performance.
+  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
@@ -131,9 +145,7 @@ If you provide a function or ref as the `url` parameter, or if you provide funct
 If you use `useFetch` to call an (external) HTTPS URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
 
-::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
-Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
-::
+:video-accordion{title="Watch a video from Alexander Lichter about client-side caching with getCachedData" videoId="aQPR0xn-MMk"}
 
 ## Return Values
 
@@ -174,13 +186,18 @@ type UseFetchOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
+  getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
   default?: () => DataT
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
   watch?: WatchSource[] | false
+}
+
+type AsyncDataRequestContext = {
+  /** The reason for this data request */
+  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'watch'
 }
 
 type AsyncData<DataT, ErrorT> = {

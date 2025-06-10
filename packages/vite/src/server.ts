@@ -2,11 +2,11 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
+import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
@@ -63,6 +63,9 @@ export async function buildServer (ctx: ViteBuildContext) {
     ssr: {
       external: [
         'nitro/runtime',
+        // TODO: remove in v5
+        '#internal/nitro',
+        '#internal/nitro/utils',
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
@@ -83,6 +86,9 @@ export async function buildServer (ctx: ViteBuildContext) {
         input: { server: entry },
         external: [
           'nitro/runtime',
+          // TODO: remove in v5
+          '#internal/nitro',
+          'nitropack/runtime',
           '#internal/nuxt/paths',
           '#internal/nuxt/app-config',
           '#app-manifest',
@@ -95,10 +101,12 @@ export async function buildServer (ctx: ViteBuildContext) {
           generatedCode: {
             symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
             constBindings: true,
+            // temporary fix for https://github.com/rollup/rollup/issues/5975
+            arrowFunctions: true,
           },
         },
         onwarn (warning, rollupWarn) {
-          if (warning.code && ['UNUSED_EXTERNAL_IMPORT'].includes(warning.code)) {
+          if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
             return
           }
           rollupWarn(warning)
@@ -115,20 +123,8 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
-  if (!ctx.nuxt.options.dev) {
-    const { runtimeDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
-      paths: ctx.nuxt.options.modulesDir,
-    }) || {}
-    if (Array.isArray(serverConfig.ssr!.external)) {
-      serverConfig.ssr!.external.push(
-        // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'rou3', 'unstorage', 'hookable',
-        // ensure we only have one version of vue if nitro is going to inline anyway
-        ...((ctx.nuxt as any)._nitro as Nitro).options.inlineDynamicImports ? ['vue', '@vue/server-renderer', '@unhead/vue'] : [],
-        // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...runtimeDependencies,
-      )
-    }
+  if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
+    delete serverConfig.build.rollupOptions.output.manualChunks
   }
 
   // tell rollup's nitro build about the original sources of the generated vite server build
@@ -142,7 +138,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     })
   }
 
-  serverConfig.customLogger = createViteLogger(serverConfig)
+  serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !ctx.nuxt.options.dev })
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 

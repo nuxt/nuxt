@@ -3,11 +3,11 @@ import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'
-import * as Parser from 'acorn'
+import { createLogger } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
-import { fixtureDir, normalizeLineEndings } from './utils'
+import { componentsFixtureDir, normalizeLineEndings } from './utils'
 
 // mock due to differences of results between windows and linux
 vi.spyOn(path, 'relative').mockImplementation((from: string, to: string) => {
@@ -25,7 +25,7 @@ function vuePlugin (options: Options) {
   }
 }
 
-const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
+const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(componentsFixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
 const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
   sourcemap: false,
@@ -56,14 +56,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
 
 const treeshake = async (source: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (treeshakeTemplatePlugin.transform! as Function).call({
-    parse: (code: string, opts: any = {}) => Parser.parse(code, {
-      sourceType: 'module',
-      ecmaVersion: 'latest',
-      locations: true,
-      ...opts,
-    }),
-  }, source)
+  const result = await (treeshakeTemplatePlugin.transform! as Function)(source, 'test.ts')
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -74,6 +67,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
   })
   // @ts-expect-error Types are not correct as they are too generic
   plugin.configResolved!({
+    logger: createLogger(),
     isProduction: options.isProduction,
     command: 'build',
     root: process.cwd(),

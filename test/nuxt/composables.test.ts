@@ -1,14 +1,18 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
-import { hasProtocol } from 'ufo'
+import { hasProtocol, withQuery } from 'ufo'
+import { flushPromises } from '@vue/test-utils'
+import { Transition } from 'vue'
+import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import * as composables from '#app/composables'
 
+import type { NuxtApp } from '#app/nuxt'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
@@ -76,6 +80,7 @@ describe('composables', () => {
       'getAppManifest',
       'useHydration',
       'getRouteRules',
+      'injectHead',
       'onNuxtReady',
       'callOnce',
       'setResponseStatus',
@@ -114,10 +119,13 @@ describe('composables', () => {
       'useId',
       'useFetch',
       'useHead',
+      'useHeadSafe',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
+      'useServerHead',
+      'useServerHeadSafe',
       'useServerSeoMeta',
       'usePreviewMode',
     ]
@@ -126,17 +134,38 @@ describe('composables', () => {
 })
 
 describe('useAsyncData', () => {
+  let uniqueKey: string
+  let counter = 0
+
+  beforeEach(() => {
+    uniqueKey = `key-${++counter}`
+  })
+
+  function mountWithAsyncData (...args: any[]) {
+    return new Promise<ReturnType<typeof useAsyncData> & ReturnType<typeof mountSuspended<unknown>>>((resolve) => {
+      let res: ReturnType<typeof useAsyncData & ReturnType<typeof mountSuspended>>
+      const component = defineComponent({
+        setup () {
+          res = useAsyncData(...args as [any])
+          return () => h('div', [res.data.value as any])
+        },
+      })
+
+      mountSuspended(component).then(c => resolve(Object.assign(c, res)))
+    })
+  }
+
   it('should work at basic level', async () => {
     const res = useAsyncData(() => Promise.resolve('test'))
-    expect(Object.keys(res)).toMatchInlineSnapshot(`
+    expect(Object.keys(res).sort()).toMatchInlineSnapshot(`
       [
-        "data",
-        "pending",
-        "error",
-        "status",
-        "execute",
-        "refresh",
         "clear",
+        "data",
+        "error",
+        "execute",
+        "pending",
+        "refresh",
+        "status",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
@@ -154,24 +183,30 @@ describe('useAsyncData', () => {
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
     expect(nonimmediate.data.value).toBe(undefined)
     expect(nonimmediate.status.value).toBe('idle')
-    expect(nonimmediate.pending.value).toBe(true)
+    expect(nonimmediate.pending.value).toBe(false)
   })
 
   it('should capture errors', async () => {
-    const { data, error, status, pending } = await useAsyncData('error-test', () => Promise.reject(new Error('test')), { default: () => 'default' })
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
     expect(error.value).toMatchInlineSnapshot('[Error: test]')
     expect(status.value).toBe('error')
     expect(pending.value).toBe(false)
-    expect(useNuxtApp().payload._errors['error-test']).toMatchInlineSnapshot('[Error: test]')
+    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[Error: test]')
 
-    // TODO: fix the below
-    // const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData('error-test', () => ({}), { immediate: false })
+    const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData(uniqueKey, () => ({} as any), { immediate: false })
 
-    // expect(syncedData.value).toEqual(null)
-    // expect(syncedError.value).toEqual(error.value)
-    // expect(syncedStatus.value).toEqual('idle')
-    // expect(syncedPending.value).toEqual(true)
+    expect(syncedData.value).toBe(data.value)
+    expect(syncedError.value).toBe(error.value)
+    expect(syncedStatus.value).toBe(status.value)
+    expect(syncedPending.value).toBe(false)
+
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
+      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
+    ))
+    warn.mockClear()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -183,35 +218,97 @@ describe('useAsyncData', () => {
   })
 
   it('should be accessible with useNuxtData', async () => {
-    await useAsyncData('key', () => Promise.resolve('test'))
-    const data = useNuxtData('key')
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+    const data = useNuxtData(uniqueKey)
     expect(data.data.value).toMatchInlineSnapshot('"test"')
-    clearNuxtData('key')
+    clearNuxtData(uniqueKey)
     expect(data.data.value).toBeUndefined()
-    expect(useNuxtData('key').data.value).toBeUndefined()
+    expect(useNuxtData(uniqueKey).data.value).toBeUndefined()
   })
 
   it('should be usable _after_ a useNuxtData call', async () => {
-    useNuxtApp().payload.data.call = null
-    const { data: cachedData } = useNuxtData('call')
+    useNuxtApp().payload.data[uniqueKey] = null
+    const { data: cachedData } = useNuxtData(uniqueKey)
     expect(cachedData.value).toMatchInlineSnapshot('null')
-    const { data } = await useAsyncData('call', () => Promise.resolve({ resolved: true }), { server: false })
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve({ resolved: true }), { server: false })
     expect(cachedData.value).toMatchInlineSnapshot(`
       {
         "resolved": true,
       }
     `)
     expect(data.value).toEqual(cachedData.value)
-    clearNuxtData('call')
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should be usable _after_ a useNuxtData call after navigation', async () => {
+    const getData = async () => {
+      const wrapper = await mountSuspended(({
+        async setup () {
+          useNuxtData(uniqueKey)
+          const { data } = await useAsyncData(uniqueKey, () => Promise.resolve('foo'))
+          return () => h('div', [data.value])
+        },
+      }))
+      try {
+        return wrapper.html({ raw: true })
+      } finally {
+        wrapper.unmount()
+      }
+    }
+    useNuxtApp().payload.data[uniqueKey] = null
+    expect(await getData()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+    // simulate a second visit to the page
+    expect(await getData()).toMatchInlineSnapshot(`"<div>foo</div>"`)
   })
 
   it('should be refreshable', async () => {
-    await useAsyncData('key', () => Promise.resolve('test'))
-    clearNuxtData('key')
-    const data = useNuxtData('key')
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+    clearNuxtData(uniqueKey)
+    const data = useNuxtData(uniqueKey)
     expect(data.data.value).toBeUndefined()
-    await refreshNuxtData('key')
+    await refreshNuxtData(uniqueKey)
     expect(data.data.value).toMatchInlineSnapshot('"test"')
+  })
+
+  it('should allow overriding requests', async () => {
+    let count = 0
+    let timeout = 0
+    // pretending we're hydrating a server rendered app
+    const nuxtApp = useNuxtApp()
+    nuxtApp.payload.data[uniqueKey] = 1
+
+    const fetcher = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(++count), timeout)))
+    const { data, refresh } = await useAsyncData(uniqueKey, fetcher, {
+      getCachedData (key, nuxtApp, context) {
+        // force bypass cache after first load (equivalent to previous `_initial: false`)
+        if (context.cause === 'initial') {
+          return nuxtApp.payload.data[key]
+        }
+      },
+    })
+
+    expect(fetcher).not.toHaveBeenCalled()
+    expect.soft(count).toBe(0)
+    expect.soft(data.value).toBe(1)
+
+    timeout = 100
+    const p = refresh({ dedupe: 'cancel' })
+
+    expect(fetcher).toHaveBeenCalled()
+
+    expect.soft(count).toBe(0)
+    expect.soft(data.value).toBe(1)
+
+    timeout = 0
+    await refresh()
+
+    expect.soft(count).toBe(1)
+    expect.soft(data.value).toBe(1)
+
+    await p
+
+    expect.soft(count).toBe(2)
+    expect.soft(data.value).toBe(1)
   })
 
   it('should be clearable', async () => {
@@ -224,6 +321,64 @@ describe('useAsyncData', () => {
     expect(error.value).toBe(undefined)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
+  })
+
+  it('should have correct status for previously fetched requests', async () => {
+    const route = useRoute()
+
+    const res = await mountWithAsyncData(route.fullPath,
+      async () => {
+        await new Promise(resolve => setTimeout(resolve, 1))
+        return 'test'
+      }, { lazy: true },
+    )
+
+    expect(res.data.value).toBe(undefined)
+    expect(res.status.value).toBe('pending')
+    expect(res.pending.value).toBe(true)
+
+    await new Promise(resolve => setTimeout(resolve, 1))
+
+    expect(res.data.value).toBe('test')
+    expect(res.status.value).toBe('success')
+    expect(res.pending.value).toBe(false)
+
+    res.unmount()
+
+    await flushPromises()
+
+    expect(res.data.value).toBe(undefined)
+    expect(res.status.value).toBe('idle')
+    expect(res.pending.value).toBe(false)
+
+    const res2 = await mountWithAsyncData(route.fullPath,
+      async () => {
+        await new Promise(resolve => setTimeout(resolve, 1))
+        return 'test'
+      }, { lazy: true },
+    )
+
+    expect(res2.data.value).toBe(undefined)
+    expect(res2.status.value).toBe('pending')
+    expect(res2.pending.value).toBe(true)
+
+    await new Promise(resolve => setTimeout(resolve, 1))
+
+    expect(res2.data.value).toBe('test')
+    expect(res2.status.value).toBe('success')
+    expect(res2.pending.value).toBe(false)
+  })
+
+  it('should be refreshable with force and cache', async () => {
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'), {
+      getCachedData: (key, nuxtApp, ctx) => {
+        return ctx.cause
+      },
+    })
+    await refreshNuxtData(uniqueKey)
+    await nextTick()
+    const data = useNuxtData(uniqueKey)
+    expect(data.data.value).toMatchInlineSnapshot('"refresh:hook"')
   })
 
   it('allows custom access to a cache', async () => {
@@ -244,6 +399,37 @@ describe('useAsyncData', () => {
       }
     `)
     expect(getCachedData).toHaveBeenCalledTimes(1)
+  })
+
+  it('will use cache on refresh by default', async () => {
+    const { data, refresh } = await useAsyncData(() => Promise.resolve('other value'), { getCachedData: () => 'cached' })
+    expect(data.value).toBe('cached')
+    await refresh()
+    expect(data.value).toBe('cached')
+  })
+
+  it('getCachedData should receive triggeredBy on initial fetch', async () => {
+    const { data } = await useAsyncData(() => Promise.resolve(''), { getCachedData: (key, nuxtApp, ctx) => ctx.cause })
+    expect(data.value).toBe('initial')
+  })
+
+  it('getCachedData should receive triggeredBy on manual refresh', async () => {
+    const { data, refresh } = await useAsyncData(() => Promise.resolve(''), {
+      getCachedData: (key, nuxtApp, ctx) => ctx.cause,
+    })
+    await refresh()
+    expect(data.value).toBe('refresh:manual')
+  })
+
+  it('getCachedData should receive triggeredBy on watch', async () => {
+    const number = ref(0)
+    const { data } = await useAsyncData(() => Promise.resolve(''), {
+      getCachedData: (key, nuxtApp, ctx) => ctx.cause,
+      watch: [number],
+    })
+    number.value = 1
+    await flushPromises()
+    expect(data.value).toBe('watch')
   })
 
   it('should use default while pending', async () => {
@@ -273,20 +459,202 @@ describe('useAsyncData', () => {
 
   it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    useAsyncData('dedupedKey', promiseFn)
-    useAsyncData('dedupedKey', promiseFn)
-    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey1', promiseFn)
+    useAsyncData('dedupedKey1', promiseFn)
+    useAsyncData('dedupedKey1', promiseFn)
 
     expect(promiseFn).toHaveBeenCalledTimes(3)
   })
 
   it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
-    useAsyncData('dedupedKey', promiseFn)
-    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey2', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey2', promiseFn)
+    useAsyncData('dedupedKey2', promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should warn if incompatible options are used', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
+    expect(warn).not.toHaveBeenCalled()
+    await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
+      /\[nuxt\] \[useAsyncData\] Incompatible options detected for "dedupedKey3" \(used at .*:\d+:\d+\):\n- mismatching `deep` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
+    ))
+
+    let count = 0
+    for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+      warn.mockClear()
+      count++
+
+      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
+      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
+      expect(warn).not.toHaveBeenCalled()
+      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'))
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringMatching(
+          new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different \`${opt}\` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+        ))
+    }
+
+    warn.mockClear()
+    count++
+
+    await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'))
+    expect(warn).not.toHaveBeenCalled()
+    await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('bob'))
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
+      new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+    ))
+
+    warn.mockReset()
+  })
+
+  it('should only refresh asyncdata once when watched dependency is updated', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const route = ref('/')
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [route] })
+        return () => h('div', [data.value])
+      },
+    })
+
+    await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    route.value = '/about'
+    await nextTick()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should work correctly with nested components accessing the same asyncData', async () => {
+    const useCustomData = () => useAsyncData(uniqueKey, async () => {
+      await Promise.resolve()
+      return 'value'
+    })
+
+    const ChildComponent = defineComponent({
+      setup () {
+        const { data } = useCustomData()
+        return () => h('div', ['Child ' + data.value])
+      },
+    })
+
+    const ParentComponent = defineComponent({
+      async setup () {
+        const { data, pending } = await useCustomData()
+        return () => h('div', [
+          'Parent ' + data.value,
+          h('br'),
+          pending.value ? ' loading ... ' : h(ChildComponent),
+        ])
+      },
+    })
+
+    const wrapper = await mountSuspended(ParentComponent)
+    await nextTick()
+    await flushPromises()
+
+    expect(wrapper.html()).not.toContain('loading')
+  })
+
+  const key = ref()
+  const cases = [
+    { name: 'ref', getter: key },
+    { name: 'getter', getter: () => key.value },
+  ]
+
+  it.each(cases)('should work with keys computed from $name', async ({ name, getter }) => {
+    const firstKey = `${name}-firstKey`
+    const secondKey = `${name}-secondKey`
+    key.value = firstKey
+
+    const promiseFn = vi.fn(() => Promise.resolve(key.value))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(getter, promiseFn)
+        return () => h('div', [data.value])
+      },
+    })
+
+    const comp = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    key.value = secondKey
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    expect(useNuxtData(firstKey).data.value).toBeUndefined()
+    expect(useNuxtData(secondKey).data.value).toBe(secondKey)
+
+    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(undefined)
+    expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
+
+    comp.unmount()
+  })
+
+  it('should clear memory when last component using asyncData is unmounted', async () => {
+    const key = 'several'
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(key, promiseFn)
+        return () => h('div', [data.value])
+      },
+    })
+    const getData = async () => {
+      const component = await mountSuspended(defineComponent({
+        setup () {
+          const { data } = useNuxtData(key)
+          return () => data.value === undefined ? 'undefined' : data.value
+        },
+      }))
+      try {
+        return component.html({ raw: true })
+      } finally {
+        component.unmount()
+      }
+    }
+
+    const comp1 = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    const comp2 = await mountSuspended(component)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    comp1.unmount()
+    await nextTick()
+    expect(await getData()).toMatchInlineSnapshot('"test"')
+
+    comp2.unmount()
+    await nextTick()
+    expect(await getData()).toBe('undefined')
+  })
+
+  it('should remain reactive after being reinitialised', async () => {
+    const promiseFn = vi.fn((value: string) => Promise.resolve(value))
+    const component = (value: string) => defineComponent({
+      setup () {
+        const { data } = useAsyncData('fixed', () => promiseFn(value))
+        return () => h('div', [data.value])
+      },
+    })
+
+    const comp1 = await mountSuspended(component('first'))
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    comp1.unmount()
+
+    const comp2 = await mountSuspended(component('second'))
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenLastCalledWith('second')
+    expect(comp2.html()).toMatchInlineSnapshot(`"<div>second</div>"`)
   })
 
   it('should be synced with useNuxtData', async () => {
@@ -307,6 +675,73 @@ describe('useAsyncData', () => {
     expect(fetchData.value).toMatchInlineSnapshot('"new value"')
     fetchData.value = 'another value'
     expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
+  })
+
+  it('should work when used in a Transition', async () => {
+    const id = ref('foo')
+    const ComponentWithAsyncData = defineComponent({
+      props: { id: String },
+      async setup (props) {
+        const { data } = await useAsyncData(`quote:${props.id}`, () => Promise.resolve({ content: props.id }))
+        return () => h('div', data.value?.content)
+      },
+    })
+    const ComponentWithTransition = defineComponent({
+      setup: () => () => h(Transition, { name: 'test' }, {
+        default: () => h(ComponentWithAsyncData, { id: id.value, key: id.value }),
+      }),
+    })
+    async function setTo (newId: string) {
+      id.value = newId
+      for (let i = 0; i < 5; i++) {
+        await nextTick()
+        await flushPromises()
+      }
+    }
+
+    const wrapper = await mountSuspended(ComponentWithTransition, { global: { stubs: { transition: false } } })
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+
+    await setTo('bar')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">bar</div>"`)
+
+    await setTo('foo')
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="">foo</div>"`)
+  })
+
+  it('duplicate calls are not made after first call has finished', async () => {
+    const handler = vi.fn(() => Promise.resolve('hello'))
+    const getCachedData = vi.fn((key: string, nuxtApp: NuxtApp) => {
+      return nuxtApp.payload.data[key]
+    })
+
+    function testAsyncData () {
+      return useAsyncData(uniqueKey, handler, {
+        getCachedData,
+      })
+    }
+
+    const { status, data } = await testAsyncData()
+    expect(status.value).toBe('success')
+    expect(data.value).toBe('hello')
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
+
+    const { status: status2, data: data2 } = testAsyncData()
+    expect.soft(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
+    expect.soft(data.value).toBe('hello')
+    expect.soft(data2.value).toBe('hello')
+    expect.soft(status.value).toBe('success')
+    expect.soft(status2.value).toBe('success')
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect.soft(handler).toHaveBeenCalledTimes(1)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -336,6 +771,123 @@ describe('useFetch', () => {
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
 
+  it('should work with reactive keys', async () => {
+    registerEndpoint('/api/initial', defineEventHandler(() => ({ url: '/api/initial' })))
+    registerEndpoint('/api/updated', defineEventHandler(() => ({ url: '/api/updated' })))
+
+    const key = ref('/api/initial')
+
+    const { data, error } = await useFetch(key)
+    expect(data.value).toEqual({ url: '/api/initial' })
+
+    key.value = '/api/updated'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/updated' })
+    expect(error.value).toBe(undefined)
+  })
+
+  it('should not trigger rerunning fetch if `watch: false`', async () => {
+    let count = 0
+    registerEndpoint('/api/rerun', defineEventHandler(() => ({ count: count++ })))
+
+    const q = ref('')
+    const { data } = await useFetch('/api/rerun', {
+      query: { q },
+      watch: false,
+    })
+
+    expect(data.value).toStrictEqual({ count: 0 })
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toStrictEqual({ count: 0 })
+  })
+
+  it('should work with reactive keys and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch('/api/immediate-false', {
+      query: { q },
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
+  it('should work with reactive request path and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch(() => withQuery('/api/immediate-false', { q: q.value }), {
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
+  it('should be accessible immediately', async () => {
+    registerEndpoint('/api/watchable-fetch', defineEventHandler(() => ({ url: '/api/watchable-fetch' })))
+
+    const searchTerm = ref('')
+
+    const { data } = await useFetch('/api/watchable-fetch', {
+      params: { q: searchTerm },
+    })
+
+    for (const value of [undefined, 'pre', 'post', 'sync'] as const) {
+      watchEffect(() => {
+        expect(() => data.value).not.toThrow()
+      }, { flush: value })
+    }
+
+    searchTerm.value = 'new'
+
+    await nextTick()
+    await flushPromises()
+  })
+
+  it('should handle complex objects in body', async () => {
+    registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
+    const formData = new FormData()
+    formData.append('file', new File([], 'test.txt'))
+    const testCases = [
+      { ref: ref('test') },
+      ref('test'),
+      formData,
+      new ArrayBuffer(),
+    ]
+    for (const value of testCases) {
+      // @ts-expect-error auto-key is not valid in type signature
+      const { data: original } = await useFetch('/api/complex-objects', { body: value }, 'autokey')
+      original.value = 'new value'
+      // @ts-expect-error auto-key is not valid in type signature
+      const { data } = await useFetch('/api/complex-objects', { body: value, immediate: false }, 'autokey')
+      expect(data.value).toEqual('new value')
+    }
+  })
+
   it('should timeout', async () => {
     const { status, error } = await useFetch(
       // @ts-expect-error should resolve to a string
@@ -344,7 +896,7 @@ describe('useFetch', () => {
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
+    expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 })
 
@@ -483,37 +1035,43 @@ describe('url', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by hooks', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading } = useLoadingIndicator()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
     await nuxtApp.callHook('page:loading:start')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeTruthy()
 
     await nuxtApp.callHook('page:loading:end')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
-    vi.mocked(setTimeout).mockRestore()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
     await nuxtApp.callHook('page:loading:start')
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeTruthy()
     start()
     expect(isLoading.value).toBeTruthy()
     finish()
+    vi.advanceTimersToNextTimer()
     expect(isLoading.value).toBeFalsy()
+    vi.useRealTimers()
   })
 })
 
 describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
     const { error, start, finish } = useLoadingIndicator()
     expect(error.value).toBeFalsy()
@@ -524,6 +1082,26 @@ describe('loading state', () => {
     start()
     expect(error.value).toBeFalsy()
     finish()
+    vi.useRealTimers()
+  })
+})
+
+describe('loading state', () => {
+  it('expect state from set opts: { force: true }', async () => {
+    vi.useFakeTimers()
+    const nuxtApp = useNuxtApp()
+    const { isLoading, start, finish, set } = useLoadingIndicator()
+    await nuxtApp.callHook('page:loading:start')
+    start({ force: true })
+    expect(isLoading.value).toBeTruthy()
+    finish()
+    vi.advanceTimersToNextTimer()
+    expect(isLoading.value).toBeFalsy()
+    set(0, { force: true })
+    expect(isLoading.value).toBeTruthy()
+    set(100, { force: true })
+    expect(isLoading.value).toBeFalsy()
+    vi.useRealTimers()
   })
 })
 
@@ -534,14 +1112,15 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "id": "override",
+        "id": "test",
         "matcher": {
           "dynamic": {},
           "static": {
-            "/": null,
-            "/pre": null,
             "/pre/test": {
-              "redirect": true,
+              "redirect": "/",
+            },
+            "/specific-prerendered": {
+              "prerender": true,
             },
           },
           "wildcard": {
@@ -550,9 +1129,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
             },
           },
         },
-        "prerendered": [
-          "/specific-prerendered",
-        ],
+        "prerendered": [],
       }
     `)
   })
@@ -563,10 +1140,10 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
         "prerender": true,
       }
     `)
-    expect(await getRouteRules('/pre/test')).toMatchInlineSnapshot(`
+    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
-        "redirect": true,
+        "redirect": "/",
       }
     `)
   })
@@ -661,14 +1238,13 @@ describe('routing utilities: `encodeURL`', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
-  it('should show provide a mock route', () => {
+  it('should provide a route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
-      href: '/',
-      matched: [],
+      matched: expect.arrayContaining([]),
       meta: {},
-      name: undefined,
+      name: 'catchall',
       params: {},
       path: '/',
       query: {},
@@ -714,7 +1290,49 @@ describe('defineNuxtComponent', () => {
     }))
     expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
   })
-  it.todo('should support Options API asyncData')
+
+  it('should support Options API asyncData', async () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp.isHydrating = true
+    nuxtApp.payload.serverRendered = true
+    const ClientOnlyPage = await createClientPage(() => Promise.resolve(defineNuxtComponent({
+      asyncData: () => ({
+        users: ['alice', 'bob'],
+      }),
+      render () {
+        // @ts-expect-error this is not typed
+        return h('div', `Total users: ${this.users.value.length}`)
+      },
+    })))
+    const wrapper = await mountSuspended(ClientOnlyPage)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>Total users: 2</div>"`)
+    nuxtApp.isHydrating = false
+    nuxtApp.payload.serverRendered = false
+  })
+
+  it('should support Options API refreshNuxtData', async () => {
+    let count = 0
+    const component = defineNuxtComponent({
+      asyncData: () => ({
+        number: count++,
+      }),
+      setup () {
+        const vm = getCurrentInstance()
+        return () => {
+          // @ts-expect-error go directly to jail 😈
+          return h('div', vm!.render.number.value)
+        }
+      },
+    })
+
+    const wrapper = await mountSuspended(component)
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>0</div>"`)
+
+    await refreshNuxtData()
+
+    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>1</div>"`)
+  })
+
   it.todo('should support Options API head')
 })
 
@@ -774,6 +1392,17 @@ describe('useCookie', () => {
       user.value.score++
       expect(computedVal.value).toBe(-1)
     }
+  })
+
+  it('should set cookie value when called on client', () => {
+    useCookie('cookie-watch-false', { default: () => 'foo', watch: false })
+    expect(document.cookie).toContain('cookie-watch-false=foo')
+
+    useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
+    expect(document.cookie).toContain('cookie-watch-true=foo')
+
+    useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
+    expect(document.cookie).toContain('cookie-readonly=foo')
   })
 })
 

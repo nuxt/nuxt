@@ -1,8 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
-import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
+import { findPath, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
 
 import type { PluginMeta } from 'nuxt/app'
 
@@ -10,6 +9,7 @@ import { logger } from '../utils'
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
+import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -21,11 +21,11 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
   } as unknown as NuxtApp) as NuxtApp
 }
 
-const postTemplates = [
+const postTemplates = new Set([
   defaultTemplates.clientPluginTemplate.filename,
   defaultTemplates.serverPluginTemplate.filename,
   defaultTemplates.pluginsDeclaration.filename,
-]
+])
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
   // Resolve app
@@ -49,7 +49,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   for (const template of app.templates as Array<ResolvedNuxtTemplate<any>>) {
     if (options.filter && !options.filter(template)) { continue }
-    const key = template.filename && postTemplates.includes(template.filename) ? 'post' : 'pre'
+    const key = template.filename && postTemplates.has(template.filename) ? 'post' : 'pre'
     filteredTemplates[key].push(template)
   }
 
@@ -88,7 +88,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const perf = performance.now() - start
     const setupTime = Math.round((perf * 100)) / 100
 
-    if (nuxt.options.debug || setupTime > 500) {
+    if ((nuxt.options.debug && nuxt.options.debug.templates) || setupTime > 500) {
       logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
     }
 
@@ -136,37 +136,31 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
-  if (!app.mainComponent) {
-    app.mainComponent = await findPath(
-      nuxt.options._layers.flatMap(layer => [
-        join(layer.config.srcDir, 'App'),
-        join(layer.config.srcDir, 'app'),
-      ]),
-    )
-  }
-  if (!app.mainComponent) {
-    app.mainComponent = resolve(nuxt.options.appDir, 'components/welcome.vue')
-  }
+  app.mainComponent ||= await findPath(
+    nuxt.options._layers.flatMap(layer => [
+      join(layer.config.srcDir, 'App'),
+      join(layer.config.srcDir, 'app'),
+    ]),
+  )
+  app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
   // Resolve root component
-  if (!app.rootComponent) {
-    app.rootComponent = await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
-  }
+  app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
-  if (!app.errorComponent) {
-    app.errorComponent = (await findPath(
-      nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
-    )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
-  }
+  app.errorComponent ||= (await findPath(
+    nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
+  )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
+
+  const extensionGlob = nuxt.options.extensions.join(',')
 
   // Resolve layouts/ from all config layers
   const layerConfigs = nuxt.options._layers.map(layer => layer.config)
   const reversedConfigs = layerConfigs.slice().reverse()
   app.layouts = {}
   for (const config of layerConfigs) {
-    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
-    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.layouts || 'layouts'
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       if (!name) {
@@ -174,19 +168,17 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         logger.warn(`No layout name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
-      app.layouts[name] = app.layouts[name] || { name, file }
+      app.layouts[name] ||= { name, file }
     }
   }
 
   // Resolve middleware/ from all config layers, layers first
   app.middleware = []
   for (const config of reversedConfigs) {
-    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
+    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
-      `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`,
-      ...nuxt.options.future.compatibilityVersion === 4
-        ? [`${middlewareDir}/*/index{${nuxt.options.extensions.join(',')}}`]
-        : [],
+      `${middlewareDir}/*{${extensionGlob}}`,
+      `${middlewareDir}/*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
@@ -202,14 +194,14 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve plugins, first extended layers and then base
   app.plugins = []
   for (const config of reversedConfigs) {
-    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
+    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
-          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`,
-        ])
+            `${pluginDir}/*{${extensionGlob}}`,
+            `${pluginDir}/*/index{${extensionGlob}}`,
+          ])
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
@@ -223,8 +215,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  app.middleware = uniqueBy(await resolvePaths(nuxt, [...app.middleware].reverse(), 'path'), 'name').reverse()
+  app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
 
   // Resolve app.config
   app.configs = []
@@ -238,17 +230,23 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Extend app
   await nuxt.callHook('app:resolve', app)
 
-  // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  // Normalize and de-duplicate plugins, middleware and app configs
+  app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
+  app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
+  app.configs = [...new Set(app.configs)]
 }
 
-function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
+function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
   return Promise.all(items.map(async (item) => {
     if (!item[key]) { return item }
     return {
       ...item,
-      [key]: await resolvePath(resolveAlias(item[key])),
+      [key]: await resolvePath(item[key], {
+        alias: nuxt.options.alias,
+        extensions: nuxt.options.extensions,
+        fallbackToOriginal: true,
+        virtual: true,
+      }),
     }
   }))
 }
@@ -280,11 +278,11 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
 
 export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
   const deps: Record<string, string[]> = Object.create(null)
-  const pluginNames = _plugins.map(plugin => plugin.name)
+  const pluginNames = new Set(_plugins.map(plugin => plugin.name))
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
-    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
-      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.has(name))) {
+      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`)
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {

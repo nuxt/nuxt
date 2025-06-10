@@ -1,18 +1,37 @@
-import { Fragment, Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
-import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
+import { Fragment, Suspense, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
 
 import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
-import { RouteProvider } from '#app/components/route-provider'
+import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _wrapIf } from '#app/components/utils'
+import { _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+
+export interface NuxtPageProps extends RouterViewProps {
+  /**
+   * Define global transitions for all pages rendered with the `NuxtPage` component.
+   */
+  transition?: boolean | TransitionProps
+
+  /**
+   * Control state preservation of pages rendered with the `NuxtPage` component.
+   */
+  keepalive?: boolean | KeepAliveProps
+
+  /**
+   * Control when the `NuxtPage` component is re-rendered.
+   */
+  pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
+}
+
+const _routeProviders = import.meta.dev ? new Map<string, ReturnType<typeof defineRouteProvider> | undefined>() : new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -54,7 +73,7 @@ export default defineComponent({
       useRouter().beforeEach(removeErrorHook)
     }
 
-    if (props.pageKey) {
+    if (import.meta.client && props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {
         if (next !== prev) {
           nuxtApp.callHook('page:loading:start')
@@ -65,92 +84,155 @@ export default defineComponent({
     if (import.meta.dev) {
       nuxtApp._isNuxtPageUsed = true
     }
+
     let pageLoadingEndHookAlreadyCalled = false
+    if (import.meta.client) {
+      const unsub = useRouter().beforeResolve(() => {
+        pageLoadingEndHookAlreadyCalled = false
+      })
+      onBeforeUnmount(() => {
+        unsub()
+      })
+    }
+
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
-        default: (routeProps: RouterViewSlotProps) => {
-          const isRenderingNewRouteInOldFork = import.meta.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
-          const hasSameChildren = import.meta.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
-
-          if (!routeProps.Component) {
-            // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
-            // we'll render the old vnode until the new route finishes resolving
-            if (import.meta.client && vnode && !hasSameChildren) {
-              return vnode
+        default: import.meta.server
+          ? (routeProps: RouterViewSlotProps) => {
+              return h(Suspense, { suspensible: true }, {
+                default () {
+                  return h(RouteProvider, {
+                    vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
+                    route: routeProps.route,
+                    vnodeRef: pageRef,
+                  })
+                },
+              })
             }
-            done()
-            return
-          }
+          : (routeProps: RouterViewSlotProps) => {
+              const isRenderingNewRouteInOldFork = haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
+              const hasSameChildren = forkRoute && forkRoute.matched.length === routeProps.route.matched.length
 
-          // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-          if (import.meta.client && vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
-            return vnode
-          }
-
-          if (import.meta.client && isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
-            // if leaving a route with an existing child route, render the old vnode
-            if (hasSameChildren) {
-              return vnode
-            }
-            // If _leaving_ null child route, return null vnode
-            return null
-          }
-
-          const key = generateRouteKey(routeProps, props.pageKey)
-          if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
-            nuxtApp.callHook('page:loading:end')
-            pageLoadingEndHookAlreadyCalled = true
-          }
-          previousPageKey = key
-
-          const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
-          const transitionProps = hasTransition && _mergeTransitionProps([
-            props.transition,
-            routeProps.route.meta.pageTransition,
-            defaultPageTransition,
-            { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } },
-          ].filter(Boolean))
-
-          const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-          vnode = _wrapIf(Transition, hasTransition && transitionProps,
-            wrapInKeepAlive(keepaliveConfig, h(Suspense, {
-              suspensible: true,
-              onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-              onResolve: () => {
-                nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
-                  if (!pageLoadingEndHookAlreadyCalled) {
-                    return nuxtApp.callHook('page:loading:end')
-                  }
-                  pageLoadingEndHookAlreadyCalled = false
-                }).finally(done))
-              },
-            }, {
-              default: () => {
-                const providerVNode = h(RouteProvider, {
-                  key: key || undefined,
-                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
-                  route: routeProps.route,
-                  renderKey: key || undefined,
-                  trackRootNodes: hasTransition,
-                  vnodeRef: pageRef,
-                })
-                if (import.meta.client && keepaliveConfig) {
-                  (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
+              if (!routeProps.Component) {
+              // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
+              // we'll render the old vnode until the new route finishes resolving
+                if (vnode && !hasSameChildren) {
+                  return vnode
                 }
-                return providerVNode
-              },
-            }),
-            )).default()
+                done()
+                return
+              }
 
-          return vnode
-        },
+              // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
+              if (vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+                return vnode
+              }
+
+              if (isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
+              // if leaving a route with an existing child route, render the old vnode
+                if (hasSameChildren) {
+                  return vnode
+                }
+                // If _leaving_ null child route, return null vnode
+                return null
+              }
+
+              const key = generateRouteKey(routeProps, props.pageKey)
+
+              const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
+              if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
+                nextTick(() => {
+                  pageLoadingEndHookAlreadyCalled = true
+                  nuxtApp.callHook('page:loading:end')
+                })
+              }
+
+              previousPageKey = key
+
+              const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
+              const transitionProps = hasTransition && _mergeTransitionProps([
+                props.transition,
+                routeProps.route.meta.pageTransition,
+                defaultPageTransition,
+                {
+                  onBeforeLeave () {
+                    nuxtApp._runningTransition = true
+                  },
+                  onAfterLeave () {
+                    delete nuxtApp._runningTransition
+                    nuxtApp.callHook('page:transition:finish', routeProps.Component)
+                  },
+                },
+              ])
+
+              const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
+              vnode = _wrapInTransition(hasTransition && transitionProps,
+                wrapInKeepAlive(keepaliveConfig, h(Suspense, {
+                  suspensible: true,
+                  onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
+                  onResolve: () => {
+                    nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
+                      if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
+                        pageLoadingEndHookAlreadyCalled = true
+                        return nuxtApp.callHook('page:loading:end')
+                      }
+                    }).finally(done))
+                  },
+                }, {
+                  default: () => {
+                    const routeProviderProps = {
+                      key: key || undefined,
+                      vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
+                      route: routeProps.route,
+                      renderKey: key || undefined,
+                      trackRootNodes: hasTransition,
+                      vnodeRef: pageRef,
+                    }
+
+                    if (!keepaliveConfig) {
+                      return h(RouteProvider, routeProviderProps)
+                    }
+
+                    const routerComponentType = routeProps.Component.type as any
+                    const routeProviderKey = import.meta.dev ? routerComponentType.name || routerComponentType.__name : routerComponentType
+                    let PageRouteProvider = _routeProviders.get(routeProviderKey)
+
+                    if (!PageRouteProvider) {
+                      PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
+                      _routeProviders.set(routeProviderKey, PageRouteProvider)
+                    }
+
+                    return h(PageRouteProvider, routeProviderProps)
+                  },
+                }),
+                )).default()
+
+              return vnode
+            },
       })
     }
   },
-})
+}) as unknown as {
+  new(): {
+    $props: AllowedComponentProps &
+      ComponentCustomProps &
+      VNodeProps &
+      NuxtPageProps
+
+    $slots: {
+      default?: (routeProps: RouterViewSlotProps) => VNode[]
+    }
+
+    // expose
+    /**
+     * Reference to the page component instance
+     */
+    pageRef: Element | ComponentPublicInstance | null
+  }
+}
 
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = routeProps.map(prop => ({
+  const _props: TransitionProps[] = routeProps.filter(Boolean).map(prop => ({
     ...prop,
     onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
   }))
@@ -175,4 +257,9 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
   return index < newRoute.matched.length - 1
+}
+
+function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
+  const slotContent = slot(data)
+  return slotContent.length === 1 ? h(slotContent[0]!) : h(Fragment, undefined, slotContent)
 }

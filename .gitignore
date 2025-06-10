@@ -6,6 +6,7 @@ package-lock.json
 packages/*/README.md
 !packages/nuxi/README.md
 packages/*/LICENSE
+docs/LICENSE
 */**/yarn.lock
 /.yarn
 
@@ -29,6 +30,7 @@ dist
 .output
 .output-*
 .gen
+.test
 
 # Junit reports
 reports
@@ -78,3 +80,9 @@ fixtures-temp
 .pnpm-store
 eslint-typegen.d.ts
 .eslintcache
+test-results/
+playwright-report
+
+temp
+
+packages/ui-templates/node-compile-cache/

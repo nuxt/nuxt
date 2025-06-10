@@ -1,9 +1,10 @@
-import { beforeEach } from 'node:test'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, popScopeId, pushScopeId } from 'vue'
+import { serve } from 'srvx'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { getPort } from 'get-port-please'
+
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
-import { createSimpleRemoteIslandProvider } from '../fixtures/remote-provider'
 import NuxtIsland from '../../packages/nuxt/src/app/components/nuxt-island'
 
 vi.mock('#build/nuxt.config.mjs', async (original) => {
@@ -31,12 +32,12 @@ function expectNoConsoleIssue () {
   expect(consoleWarn).not.toHaveBeenCalled()
 }
 
-beforeEach(() => {
-  consoleError.mockClear()
-  consoleWarn.mockClear()
-})
-
 describe('runtime server component', () => {
+  beforeEach(() => {
+    consoleError.mockClear()
+    consoleWarn.mockClear()
+  })
+
   it('expect no data-v- attributes #23051', () => {
     // @ts-expect-error mock
     vi.mocked(h).mockImplementation(() => null)
@@ -67,12 +68,24 @@ describe('runtime server component', () => {
   })
 
   it('expect remote island to be rendered', async () => {
-    const server = createSimpleRemoteIslandProvider()
+    const port = await getPort({ host: 'localhost', public: false, random: true })
+    const server = serve({
+      port,
+      fetch () {
+        return new Response(JSON.stringify({
+          html: '<div>hello world from another server</div>',
+          state: {},
+          head: { link: [], style: [] },
+        }), { headers: { 'Content-Type': 'application/json' } })
+      },
+    })
+
+    await server.ready()
 
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
         name: 'Test',
-        source: 'http://localhost:3001',
+        source: `http://localhost:${port}`,
       },
     })
 

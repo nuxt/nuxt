@@ -1,4 +1,4 @@
-import type { UseHeadInput } from '@unhead/vue'
+import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt.js'
 
 declare global {
@@ -42,6 +42,7 @@ declare module 'vue' {
   interface ComponentInternalInstance {
     _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
     _nuxtIdIndex?: Record<string, number>
+    _nuxtClientOnly?: boolean
   }
   interface ComponentCustomOptions {
     /**

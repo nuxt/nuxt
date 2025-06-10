@@ -3,10 +3,10 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
-import type { ConfigSchema } from '../../schema/config'
+import type { ConfigSchema } from './schema'
 import type { Nuxt } from './nuxt'
 import type { AppHeadMetaObject } from './head'
 
@@ -46,10 +46,12 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 }
 
 // User configuration in `nuxt.config` file
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite' | 'runtimeConfig' | 'webpack'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
+  // Avoid DeepPartial for nitro config interface (#31908)
+  nitro?: NitroConfig
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
@@ -76,9 +78,10 @@ export interface NuxtBuilder {
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
-export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'builder' | 'postcss' | 'webpack'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'debug' | 'builder' | 'postcss' | 'webpack'> {
   vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
+  debug: Required<Exclude<ConfigSchema['debug'], true>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rspack-builder' | NuxtBuilder
   postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
@@ -139,7 +142,7 @@ export interface AppConfigInput extends CustomAppConfig {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
+export type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
 
 type ValueOf<T> = T[keyof T]
 type Filter<T extends Record<string, any>, V> = Pick<T, ValueOf<{ [K in keyof T]: NonNullable<T[K]> extends V ? K : never }>>

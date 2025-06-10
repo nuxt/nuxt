@@ -37,6 +37,8 @@ interface Route {
 }
 
 function getRouteFromPath (fullPath: string | Partial<Route>) {
+  const route = fullPath && typeof fullPath === 'object' ? fullPath : {}
+
   if (typeof fullPath === 'object') {
     fullPath = stringifyParsedURL({
       pathname: fullPath.path || '',
@@ -52,11 +54,11 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     query: parseQuery(url.search),
     hash: url.hash,
     // stub properties for compat with vue-router
-    params: {},
+    params: route.params || {},
     name: undefined,
-    matched: [],
+    matched: route.matched || [],
     redirectedFrom: undefined,
-    meta: {},
+    meta: route.meta || {},
     href: fullPath,
   }
 }
@@ -230,7 +232,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     nuxtApp._route = route
 
     // Handle middleware
-    nuxtApp._middleware = nuxtApp._middleware || {
+    nuxtApp._middleware ||= {
       global: [],
       named: {},
     }

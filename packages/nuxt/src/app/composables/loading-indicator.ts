@@ -1,6 +1,6 @@
-import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
+import { computed, getCurrentScope, onScopeDispose, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
@@ -24,8 +24,8 @@ export type LoadingIndicator = {
   progress: Ref<number>
   isLoading: Ref<boolean>
   error: Ref<boolean>
-  start: () => void
-  set: (value: number) => void
+  start: (opts?: { force?: boolean }) => void
+  set: (value: number, opts?: { force?: boolean }) => void
   finish: (opts?: { force?: boolean, error?: boolean }) => void
   clear: () => void
 }
@@ -39,9 +39,9 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400 } = opts
   const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
-  const progress = ref(0)
-  const isLoading = ref(false)
-  const error = ref(false)
+  const progress = shallowRef(0)
+  const isLoading = shallowRef(false)
+  const error = shallowRef(false)
   let done = false
   let rafId: number
 
@@ -49,23 +49,25 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   let hideTimeout: number | NodeJS.Timeout
   let resetTimeout: number | NodeJS.Timeout
 
-  const start = () => {
+  const start = (opts: { force?: boolean } = {}) => {
+    _clearTimeouts()
     error.value = false
-    set(0)
+    set(0, opts)
   }
 
-  function set (at = 0) {
+  function set (at = 0, opts: { force?: boolean } = {}) {
     if (nuxtApp.isHydrating) {
       return
     }
-    if (at >= 100) { return finish() }
+    if (at >= 100) { return finish({ force: opts.force }) }
     clear()
     progress.value = at < 0 ? 0 : at
-    if (throttle && import.meta.client) {
+    const throttleTime = opts.force ? 0 : throttle
+    if (throttleTime && import.meta.client) {
       throttleTimeout = setTimeout(() => {
         isLoading.value = true
         _startProgress()
-      }, throttle)
+      }, throttleTime)
     } else {
       isLoading.value = true
       _startProgress()
@@ -169,9 +171,9 @@ export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}): 
   const nuxtApp = useNuxtApp()
 
   // Initialise global loading indicator if it doesn't exist already
-  const indicator = nuxtApp._loadingIndicator = nuxtApp._loadingIndicator || createLoadingIndicator(opts)
+  const indicator = nuxtApp._loadingIndicator ||= createLoadingIndicator(opts)
   if (import.meta.client && getCurrentScope()) {
-    nuxtApp._loadingIndicatorDeps = nuxtApp._loadingIndicatorDeps || 0
+    nuxtApp._loadingIndicatorDeps ||= 0
     nuxtApp._loadingIndicatorDeps++
     onScopeDispose(() => {
       nuxtApp._loadingIndicatorDeps!--

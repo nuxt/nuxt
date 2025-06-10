@@ -34,4 +34,8 @@ exclude = [
   # single-quotes are required for regexp
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
+  # excluded URLs from test suite
+  "http://auth.com",
+  "http://example2.com/",
+  "~images/main-bg.jpg",
 ]

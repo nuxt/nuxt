@@ -1,17 +1,17 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { join, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtTemplate } from 'nuxt/schema'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
+import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -68,7 +68,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -88,7 +88,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -185,9 +185,18 @@ export const schemaTemplate: NuxtTemplate = {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
-    const modules = nuxt.options._installedModules
-      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith('nuxt:') && m.meta.name !== 'nuxt-config-schema')
-      .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
+    const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
+    for (const m of nuxt.options._installedModules) {
+      // modules without sufficient metadata
+      if (!m.meta || !m.meta.configKey || !m.meta.name) {
+        continue
+      }
+      // core nuxt modules
+      if (m.meta.name.startsWith('nuxt:') || m.meta.name === 'nuxt-config-schema') {
+        continue
+      }
+      modules.push([genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m])
+    }
 
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
@@ -210,7 +219,7 @@ export const schemaTemplate: NuxtTemplate = {
         } else if (mod.meta?.repository) {
           if (typeof mod.meta.repository === 'string') {
             link = mod.meta.repository
-          } else if (typeof mod.meta.repository.url === 'string') {
+          } else if (typeof mod.meta.repository === 'object' && 'url' in mod.meta.repository && typeof mod.meta.repository.url === 'string') {
             link = mod.meta.repository.url
           }
           if (link) {
@@ -308,10 +317,38 @@ export const middlewareTemplate: NuxtTemplate = {
   },
 }
 
+function renderAttr (key: string, value?: string) {
+  return value ? `${key}="${value}"` : ''
+}
+
+function renderAttrs (obj: Record<string, string>) {
+  const attrs: string[] = []
+  for (const key in obj) {
+    attrs.push(renderAttr(key, obj[key]))
+  }
+  return attrs.join(' ')
+}
+
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
-  getContents () {
+  async getContents ({ nuxt }) {
+    const references = [] as TSReference[]
+    const declarations = [] as string[]
+    await nuxt.callHook('nitro:prepare:types', { references, declarations })
+
+    const sourceDir = join(nuxt.options.buildDir, 'types')
+    const lines = [
+      ...references.map((ref) => {
+        if ('path' in ref && isAbsolute(ref.path)) {
+          ref.path = relative(sourceDir, ref.path)
+        }
+        return `/// <reference ${renderAttrs(ref)} />`
+      }),
+      ...declarations,
+    ]
+
     return /* typescript */`
+${lines.join('\n')}
 /// <reference path="./schema.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
@@ -319,7 +356,7 @@ import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
-declare module 'nitro/types' {
+declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -327,10 +364,14 @@ declare module 'nitro/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }
@@ -348,10 +389,14 @@ declare module 'nitropack/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }
@@ -428,12 +473,12 @@ import { defuFn } from 'defu'
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 /** client **/
-import { updateAppConfig } from '#app/config'
+import { _replaceAppConfig } from '#app/config'
 
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    updateAppConfig(newModule.default)
+    _replaceAppConfig(newModule.default)
   })
 }
 /** client-end **/
@@ -450,7 +495,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
         ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
@@ -466,12 +511,23 @@ export const publicPathTemplate: NuxtTemplate = {
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
 
-      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
+      // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts
       'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',
       '}',
     ].filter(Boolean).join('\n')
+  },
+}
+
+export const globalPolyfillsTemplate: NuxtTemplate = {
+  filename: 'global-polyfills.mjs',
+  getContents () {
+    // Node.js compatibility
+    return `
+if (!("global" in globalThis)) {
+  globalThis.global = globalThis;
+}`
   },
 }
 
@@ -515,7 +571,11 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
+      `export const asyncDataDefaults = ${JSON.stringify({
+        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
+        errorValue: undefined,
+        value: undefined,
+      })}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
@@ -525,6 +585,10 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!((ctx.nuxt as any)._nitro as Nitro).options.prerender.crawlLinks}`,
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
+      `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
+      `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
+      `export const pendingWhenIdle = ${!!ctx.nuxt.options.experimental.pendingWhenIdle}`,
+      `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
     ].join('\n\n')
   },
 }

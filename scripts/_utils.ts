@@ -27,7 +27,7 @@ export async function loadPackage (dir: string) {
         const dep: Dep = { name: e[0], range: e[1] as string, type }
         delete data[type][dep.name]
         const updated = reviver(dep) || dep
-        data[updated.type] = data[updated.type] || {}
+        data[updated.type] ||= {}
         data[updated.type][updated.name] = updated.range
       }
     }
@@ -43,7 +43,7 @@ export async function loadPackage (dir: string) {
 
 export async function loadWorkspace (dir: string) {
   const workspacePkg = await loadPackage(dir)
-  const pkgDirs = (await glob(['packages/*'], { onlyDirectories: true })).sort()
+  const pkgDirs = (await glob(['packages/*', 'docs'], { onlyDirectories: true })).sort()
 
   const packages: Package[] = []
 
@@ -145,6 +145,7 @@ export async function getContributors () {
         'Authorization': `token ${process.env.GITHUB_TOKEN}`,
       },
     })
+    if (!author) { continue }
     if (!contributors.some(c => c.username === author.login)) {
       contributors.push({ name: commit.author.name, username: author.login })
     }

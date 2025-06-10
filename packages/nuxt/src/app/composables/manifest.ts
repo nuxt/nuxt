@@ -2,7 +2,7 @@ import type { MatcherExport, RouteMatcher } from 'radix3'
 import { createMatcherFromExport, createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
 import type { H3Event } from 'h3'
-import type { NitroRouteRules } from 'nitro/types'
+import type { NitroRouteRules } from 'nitropack/types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -28,7 +28,7 @@ function fetchManifest () {
   }
   if (import.meta.server) {
     // @ts-expect-error virtual file
-    manifest = import('#app-manifest')
+    manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest')
   } else {
     manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',

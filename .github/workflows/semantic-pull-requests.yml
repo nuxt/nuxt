@@ -23,12 +23,11 @@ jobs:
         uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017 # v5.5.3
         with:
           scopes: |
+            docs
             kit
-            nuxi
             nuxt
             rspack
             schema
-            test-utils
             ui-templates
             vite
             webpack

@@ -10,7 +10,7 @@ interface RuntimePathsOptions {
 
 const VITE_ASSET_RE = /__VITE_ASSET__|__VITE_PUBLIC_ASSET__/
 
-export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
+export function RuntimePathsPlugin (options: RuntimePathsOptions): Plugin {
   return {
     name: 'nuxt:runtime-paths-dep',
     enforce: 'post',

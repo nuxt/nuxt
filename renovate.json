@@ -15,6 +15,13 @@
   ],
   "packageRules": [
     {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "/webpack/",
+        "/-loader/"
+      ]
+    },
+    {
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
@@ -28,18 +35,9 @@
         "3.x"
       ],
       "ignoreDeps": [
-        "nitro",
-        "h3",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
-      ]
-    },
-    {
-      "groupName": "webpack",
-      "matchPackageNames": [
-        "webpack",
-        "memfs"
       ]
     }
   ]

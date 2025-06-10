@@ -1,16 +1,14 @@
-import { defineUntypedSchema } from 'untyped'
-import type { RuntimeConfig } from '../types/config'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Configuration for Nitro.
-   * @see [Nitro configuration docs](https://nitro.unjs.io/config/)
-   * @type {typeof import('nitro/types')['NitroConfig']}
+   * @see [Nitro configuration docs](https://nitro.build/config/)
    */
   nitro: {
     runtimeConfig: {
-      $resolve: async (val: Record<string, any> | undefined, get) => {
-        const runtimeConfig = await get('runtimeConfig') as RuntimeConfig
+      $resolve: async (val, get) => {
+        const runtimeConfig = await get('runtimeConfig')
         return {
           ...runtimeConfig,
           app: {
@@ -27,18 +25,19 @@ export default defineUntypedSchema({
       },
     },
     routeRules: {
-      $resolve: async (val: Record<string, any> | undefined, get) => ({
-        ...await get('routeRules') as Record<string, any>,
-        ...val,
-      }),
+      $resolve: async (val, get) => {
+        return {
+          ...await get('routeRules'),
+          ...(val && typeof val === 'object' ? val : {}),
+        }
+      },
     },
   },
 
   /**
    * Global route options applied to matching server routes.
    * @experimental This is an experimental feature and API may change in the future.
-   * @see [Nitro route rules documentation](https://nitro.unjs.io/config/#routerules)
-   * @type {typeof import('nitro/types')['NitroConfig']['routeRules']}
+   * @see [Nitro route rules documentation](https://nitro.build/config/#routerules)
    */
   routeRules: {},
 
@@ -61,14 +60,12 @@ export default defineUntypedSchema({
    *   { route: '/path/foo/**:name', handler: '~/server/foohandler.ts' }
    * ]
    * ```
-   * @type {typeof import('nitro/types')['NitroEventHandler'][]}
    */
   serverHandlers: [],
 
   /**
    * Nitro development-only server handlers.
-   * @see [Nitro server routes documentation](https://nitro.unjs.io/guide/routing)
-   * @type {typeof import('nitro/types')['NitroDevEventHandler'][]}
+   * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
    */
   devServerHandlers: [],
 })

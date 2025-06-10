@@ -4,6 +4,8 @@ import type { App } from 'vue'
 // This file must be imported first as we set globalThis.$fetch via this import
 // @ts-expect-error virtual file
 import '#build/fetch.mjs'
+// @ts-expect-error virtual file
+import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions } from './nuxt'
@@ -32,7 +34,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (error) {
       await nuxt.hooks.callHook('app:error', error)
-      nuxt.payload.error = nuxt.payload.error || createError(error as any)
+      nuxt.payload.error ||= createError(error as any)
     }
     if (ssrContext?._renderResponse) { throw new Error('skipping render') }
 
@@ -47,7 +49,7 @@ if (import.meta.client) {
     import.meta.webpackHot.accept()
   }
 
-  // eslint-disable-next-line
+  // eslint-disable-next-line prefer-const
   let vueAppPromise: Promise<App<Element>>
 
   entry = async function initApp () {
@@ -63,7 +65,7 @@ if (import.meta.client) {
 
     async function handleVueError (error: any) {
       await nuxt.callHook('app:error', error)
-      nuxt.payload.error = nuxt.payload.error || createError(error as any)
+      nuxt.payload.error ||= createError(error as any)
     }
 
     vueApp.config.errorHandler = handleVueError

@@ -4,20 +4,6 @@ import { stubOptions } from '../../debug/build-config'
 export default defineBuildConfig({
   declaration: true,
   entries: [
-    {
-      input: 'src/config/index',
-      outDir: 'schema',
-      name: 'config',
-      builder: 'untyped',
-      defaults: {
-        srcDir: '/<srcDir>/',
-        workspaceDir: '/<workspaceDir>/',
-        rootDir: '/<rootDir>/',
-        vite: {
-          base: '/',
-        },
-      },
-    },
     'src/index',
     'src/builder-env',
   ],
@@ -28,7 +14,7 @@ export default defineBuildConfig({
   },
   externals: [
     // Type imports
-    '@unhead/schema',
+    '@unhead/vue',
     '@vitejs/plugin-vue',
     'chokidar',
     '@vitejs/plugin-vue-jsx',
@@ -39,6 +25,7 @@ export default defineBuildConfig({
     'consola',
     'css-minimizer-webpack-plugin',
     'cssnano',
+    'esbuild',
     'esbuild-loader',
     'file-loader',
     'h3',
@@ -49,6 +36,7 @@ export default defineBuildConfig({
     'nitropack',
     'nuxt/app',
     'ofetch',
+    'oxc-transform',
     'pkg-types',
     'postcss',
     'pug',

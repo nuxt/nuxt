@@ -648,23 +648,8 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
-pre {
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    Liberation Mono,
-    Courier New,
-    monospace;
-  font-feature-settings: normal;
-  font-size: 1em;
-  font-variation-settings: normal;
-}
 h1,
-p,
-pre {
+p {
   margin: 0;
 }
 *,
@@ -1243,8 +1228,8 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-ring-shadow: var(--un-ring-inset) 0 0 0
     calc(var(--un-ring-width) + var(--un-ring-offset-width))
     var(--un-ring-color);
-  box-shadow: var(--un-ring-offset-shadow), var(--un-ring-shadow),
-    var(--un-shadow);
+  box-shadow:
+    var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);
 }
 .transition-all {
   transition-duration: 0.15s;

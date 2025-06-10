@@ -5,6 +5,8 @@ import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
 import perfectionist from 'eslint-plugin-perfectionist'
 
+import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
+
 export default createConfigForNuxt({
   features: {
     stylistic: {
@@ -21,7 +23,7 @@ export default createConfigForNuxt({
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
-        'packages/nuxt/src/core/runtime/nitro/error-*',
+        'packages/nuxt/src/core/runtime/nitro/templates/error-*',
       ],
     },
     {
@@ -48,6 +50,7 @@ export default createConfigForNuxt({
     rules: {
       'curly': ['error', 'all'], // Including if blocks with a single statement
       'dot-notation': 'error',
+      'logical-assignment-operators': ['error', 'always', { enforceForIfStatements: true }],
       'no-console': ['warn', { allow: ['warn', 'error', 'debug'] }],
       'no-lonely-if': 'error', // No single if in an "else" block
       'no-useless-rename': 'error',
@@ -187,23 +190,8 @@ export default createConfigForNuxt({
                   'vue/server-renderer',
                   'vue',
                   'vue-router',
-                  // other deps
-                  'devalue',
-                  'klona',
-                  // unjs ecosystem
-                  'defu',
-                  'ufo',
-                  'h3',
-                  'destr',
-                  'consola',
-                  'hookable',
-                  'unctx',
-                  'cookie-es',
-                  'perfect-debounce',
-                  'radix3',
-                  'ohash',
-                  'pathe',
-                  'uncrypto',
+                  ...runtimeDependencies,
+                  'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
                 ].map(r => `!${r}`),
@@ -216,7 +204,7 @@ export default createConfigForNuxt({
       },
     },
     {
-      files: ['**/fixtures/**', '**/fixture/**'],
+      files: ['**/fixtures/**', '**/fixture/**', '**/*-fixture/**'],
       name: 'local/disables/fixtures',
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
@@ -238,6 +226,7 @@ export default createConfigForNuxt({
       },
     },
     // Sort rule keys in eslint config
+    // @ts-expect-error type issues in eslint
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',
@@ -257,6 +246,8 @@ export default createConfigForNuxt({
   )
 
   // Generate type definitions for the eslint config
+  // @ts-expect-error type issues in eslint
   .onResolved((configs) => {
+    // @ts-expect-error type issues in eslint
     return typegen(configs)
   })

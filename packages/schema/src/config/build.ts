@@ -1,25 +1,30 @@
-import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
 import { consola } from 'consola'
+import type { Nuxt } from '../types/nuxt'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * The builder to use for bundling the Vue part of your application.
-   * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val: 'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
-      if (typeof val === 'object') {
-        return val
+    $resolve: (val) => {
+      if (val && typeof val === 'object' && 'bundle' in val) {
+        return val as { bundle: (nuxt: Nuxt) => Promise<void> }
       }
-      const map: Record<string, string> = {
+      const map = {
         rspack: '@nuxt/rspack-builder',
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
-      return map[val] || val || (await get('vite') === false ? map.webpack : map.vite)
+      type Builder = 'vite' | 'webpack' | 'rspack'
+      if (typeof val === 'string' && val in map) {
+        // TODO: improve normalisation inference
+        return map[val as keyof typeof map] as Builder
+      }
+      return map.vite as Builder
     },
   },
 
@@ -34,17 +39,17 @@ export default defineUntypedSchema({
    * - `false`: Does not generate any sourcemaps.
    * - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
    *
-   * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
-    $resolve: async (val: boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' } | undefined, get) => {
+    $resolve: async (val, get) => {
       if (typeof val === 'boolean') {
         return { server: val, client: val }
       }
-      return defu(val, {
+      return {
         server: true,
         client: await get('dev'),
-      })
+        ...typeof val === 'object' ? val : {},
+      }
     },
   },
 
@@ -53,14 +58,13 @@ export default defineUntypedSchema({
    *
    * Defaults to 'silent' when running in CI or when a TTY is not available.
    * This option is then used as 'silent' in Vite and 'none' in Webpack
-   * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
-    $resolve: (val: string | undefined) => {
-      if (val && !['silent', 'info', 'verbose'].includes(val)) {
+    $resolve: (val) => {
+      if (val && typeof val === 'string' && !['silent', 'info', 'verbose'].includes(val)) {
         consola.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
-      return val ?? (isTest ? 'silent' : 'info')
+      return val && typeof val === 'string' ? val as 'silent' | 'info' | 'verbose' : (isTest ? 'silent' : 'info')
     },
   },
 
@@ -78,10 +82,22 @@ export default defineUntypedSchema({
      * ```js
      * transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
-     * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
-      $resolve: (val: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)> | undefined) => (val || []).filter(Boolean),
+      $resolve: (val) => {
+        const transpile: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)> = []
+        if (Array.isArray(val)) {
+          for (const pattern of val) {
+            if (!pattern) {
+              continue
+            }
+            if (typeof pattern === 'string' || typeof pattern === 'function' || pattern instanceof RegExp) {
+              transpile.push(pattern)
+            }
+          }
+        }
+        return transpile
+      },
     },
 
     /**
@@ -96,7 +112,6 @@ export default defineUntypedSchema({
      *   }
      * ]
      * ```
-     * @type {typeof import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
 
@@ -110,16 +125,16 @@ export default defineUntypedSchema({
      *   analyzerMode: 'static'
      * }
      * ```
-     * @type {boolean | { enabled?: boolean } & ((0 extends 1 & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options ? {} : typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options) | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions)}
      */
     analyze: {
-      $resolve: async (val: boolean | { enabled?: boolean } | Record<string, unknown>, get) => {
-        const [rootDir, analyzeDir] = await Promise.all([get('rootDir'), get('analyzeDir')]) as [string, string]
-        return defu(typeof val === 'boolean' ? { enabled: val } : val, {
+      $resolve: async (val, get) => {
+        const [rootDir, analyzeDir] = await Promise.all([get('rootDir'), get('analyzeDir')])
+        return {
           template: 'treemap',
           projectRoot: rootDir,
           filename: join(analyzeDir, '{name}.html'),
-        })
+          ...typeof val === 'boolean' ? { enabled: val } : typeof val === 'object' ? val : {},
+        }
       },
     },
   },
@@ -136,10 +151,9 @@ export default defineUntypedSchema({
      * and client. You will need to take steps to handle this additional key.
      *
      * The key will be unique based on the location of the function being invoked within the file.
-     * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
-      $resolve: (val: Array<{ name: string, argumentLength: string }> | undefined) => [
+      $resolve: val => [
         { name: 'callOnce', argumentLength: 3 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
@@ -147,7 +161,7 @@ export default defineUntypedSchema({
         { name: 'useAsyncData', argumentLength: 3 },
         { name: 'useLazyAsyncData', argumentLength: 3 },
         { name: 'useLazyFetch', argumentLength: 3 },
-        ...val || [],
+        ...Array.isArray(val) ? val : [],
       ].filter(Boolean),
     },
 
@@ -164,7 +178,7 @@ export default defineUntypedSchema({
        */
       composables: {
         server: {
-          $resolve: async (val, get) => defu(val || {},
+          $resolve: async (val, get) => defu(typeof val === 'object' ? val as Record<string, string[]> || {} : {},
             await get('dev')
               ? {}
               : {
@@ -174,7 +188,7 @@ export default defineUntypedSchema({
           ),
         },
         client: {
-          $resolve: async (val, get) => defu(val || {},
+          $resolve: async (val, get) => defu(typeof val === 'object' ? val as Record<string, string[]> || {} : {},
             await get('dev')
               ? {}
               : {
@@ -189,7 +203,6 @@ export default defineUntypedSchema({
     /**
      * Options passed directly to the transformer from `unctx` that preserves async context
      * after `await`.
-     * @type {typeof import('unctx/transform').TransformerOptions}
      */
     asyncTransforms: {
       asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],

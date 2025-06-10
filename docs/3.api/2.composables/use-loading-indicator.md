@@ -40,7 +40,11 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 
 ### `start()`
 
-Set `isLoading` to true and start to increase the `progress` value.
+Set `isLoading` to true and start to increase the `progress` value. `start` accepts a `{ force: true }` option to skip the interval and show the loading state immediately.
+
+### `set()`
+
+Set the `progress` value to a specific value. `set` accepts a `{ force: true }` option to skip the interval and show the loading state immediately.
 
 ### `finish()`
 
@@ -60,5 +64,14 @@ Used by `finish()`. Clear all timers and intervals used by the composable.
     // This is how progress is calculated by default
     estimatedProgress: (duration, elapsed) => (2 / Math.PI * 100) * Math.atan(elapsed / duration * 100 / 50)
   })
+</script>
+```
+
+```vue
+<script setup lang="ts">
+  const { start, set } = useLoadingIndicator()
+  // same as set(0, { force: true })
+  // set the progress to 0, and show loading immediately
+  start({ force: true })
 </script>
 ```

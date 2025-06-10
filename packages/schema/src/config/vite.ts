@@ -1,33 +1,33 @@
 import { consola } from 'consola'
+import defu from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Configuration that will be passed directly to Vite.
    *
    * @see [Vite configuration docs](https://vite.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
-   * @type {typeof import('../src/types/config').ViteConfig & { $client?: typeof import('../src/types/config').ViteConfig, $server?: typeof import('../src/types/config').ViteConfig }}
    */
   vite: {
     root: {
-      $resolve: async (val, get) => val ?? (await get('srcDir')),
+      $resolve: async (val, get) => typeof val === 'string' ? val : (await get('srcDir')),
     },
     mode: {
-      $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production'),
+      $resolve: async (val, get) => typeof val === 'string' ? val : (await get('dev') ? 'development' : 'production'),
     },
     define: {
-      $resolve: async (val: Record<string, any> | undefined, get) => {
-        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')]) as [boolean, boolean]
+      $resolve: async (_val, get) => {
+        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')])
         return {
-          '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': isDebug,
+          '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(isDebug && (isDebug === true || isDebug.hydration)),
           'process.dev': isDev,
           'import.meta.dev': isDev,
           'process.test': isTest,
           'import.meta.test': isTest,
-          ...val,
+          ..._val && typeof _val === 'object' ? _val : {},
         }
       },
     },
@@ -35,6 +35,7 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     },
     publicDir: {
+      // @ts-expect-error this is missing from our `vite` types deliberately, so users do not configure it
       $resolve: (val) => {
         if (val) {
           consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
@@ -44,81 +45,88 @@ export default defineUntypedSchema({
     },
     vue: {
       isProduction: {
-        $resolve: async (val, get) => val ?? !(await get('dev')),
+        $resolve: async (val, get) => typeof val === 'boolean' ? val : !(await get('dev')),
       },
       template: {
         compilerOptions: {
-          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions,
+          $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions,
         },
         transformAssetUrls: {
-          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).transformAssetUrls,
+          $resolve: async (val, get) => val ?? (await get('vue')).transformAssetUrls,
         },
       },
       script: {
         hoistStatic: {
-          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions?.hoistStatic,
+          $resolve: async (val, get) => typeof val === 'boolean' ? val : (await get('vue')).compilerOptions?.hoistStatic,
         },
       },
       features: {
         propsDestructure: {
           $resolve: async (val, get) => {
-            if (val !== undefined && val !== null) {
+            if (typeof val === 'boolean') {
               return val
             }
-            const vueOptions = await get('vue') as Record<string, any> || {}
-            return Boolean(vueOptions.script?.propsDestructure ?? vueOptions.propsDestructure)
+            const vueOptions = await get('vue') || {}
+            return Boolean(
+              // @ts-expect-error TODO: remove in future: supporting a legacy schema
+              vueOptions.script?.propsDestructure
+              ?? vueOptions.propsDestructure,
+            )
           },
         },
       },
     },
     vueJsx: {
-      $resolve: async (val: Record<string, any>, get) => {
+      $resolve: async (val, get) => {
         return {
-          isCustomElement: (await get('vue') as Record<string, any>).compilerOptions?.isCustomElement,
-          ...val,
+          // TODO: investigate type divergence between types for @vue/compiler-core and @vue/babel-plugin-jsx
+          isCustomElement: (await get('vue')).compilerOptions?.isCustomElement as undefined | ((tag: string) => boolean),
+          ...typeof val === 'object' ? val : {},
         }
       },
     },
     optimizeDeps: {
+      esbuildOptions: {
+        $resolve: async (val, get) => defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options')),
+      },
       exclude: {
-        $resolve: async (val: string[] | undefined, get) => [
-          ...val || [],
-          ...(await get('build.transpile') as Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)>).filter(i => typeof i === 'string'),
+        $resolve: async (val, get) => [
+          ...Array.isArray(val) ? val : [],
+          ...(await get('build.transpile')).filter(i => typeof i === 'string'),
           'vue-demi',
         ],
       },
     },
     esbuild: {
-      jsxFactory: 'h',
-      jsxFragment: 'Fragment',
-      tsconfigRaw: '{}',
+      $resolve: async (val, get) => {
+        return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
+      },
     },
     clearScreen: true,
     build: {
       assetsDir: {
-        $resolve: async (val, get) => val ?? (await get('app') as Record<string, string>).buildAssetsDir?.replace(/^\/+/, ''),
+        $resolve: async (val, get) => typeof val === 'string' ? val : (await get('app')).buildAssetsDir?.replace(/^\/+/, ''),
       },
       emptyOutDir: false,
     },
     server: {
       fs: {
         allow: {
-          $resolve: async (val: string[] | undefined, get) => {
-            const [buildDir, srcDir, rootDir, workspaceDir, modulesDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir'), get('modulesDir')]) as [string, string, string, string, string]
+          $resolve: async (val, get) => {
+            const [buildDir, srcDir, rootDir, workspaceDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir')])
             return [...new Set([
               buildDir,
               srcDir,
               rootDir,
               workspaceDir,
-              ...(modulesDir),
-              ...val ?? [],
+              ...Array.isArray(val) ? val : [],
             ])]
           },
         },
       },
     },
     cacheDir: {
-      $resolve: async (val, get) => val ?? resolve(await get('rootDir') as string, 'node_modules/.cache/vite'),
+      $resolve: async (val, get) => typeof val === 'string' ? val : resolve(await get('rootDir'), 'node_modules/.cache/vite'),
     },
   },
 })

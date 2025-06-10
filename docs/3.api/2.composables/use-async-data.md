@@ -53,8 +53,25 @@ const { data: posts } = await useAsyncData(
 </script>
 ```
 
+### Reactive Keys
+
+You can use a computed ref, plain ref or a getter function as the key, allowing for dynamic data fetching that automatically updates when the key changes:
+
+```vue [pages/[id\\].vue]
+<script setup lang="ts">
+const route = useRoute()
+const userId = computed(() => `user-${route.params.id}`)
+
+// When the route changes and userId updates, the data will be automatically refetched
+const { data: user } = useAsyncData(
+  userId,
+  () => fetchUserById(route.params.id)
+)
+</script>
+```
+
 ::warning
-[`useAsyncData`](/docs/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/api/composables/use-async-data) .
+[`useAsyncData`](/docs/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/api/composables/use-async-data).
 ::
 
 :read-more{to="/docs/getting-started/data-fetching#useasyncdata"}
@@ -74,14 +91,14 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `transform`: a function that can be used to alter `handler` function result after resolving
   - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
     ```ts
-    const getDefaultCachedData = (key) => nuxtApp.isHydrating 
+    const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating 
       ? nuxtApp.payload.data[key] 
       : nuxtApp.static.data[key]
     ```
     Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
-  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object for performance.
+  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
@@ -94,9 +111,36 @@ Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the rout
 You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `useAsyncData`.
 ::
 
-::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
-Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
-::
+:video-accordion{title="Watch a video from Alexander Lichter about client-side caching with getCachedData" videoId="aQPR0xn-MMk"}
+
+### Shared State and Option Consistency
+
+When using the same key for multiple `useAsyncData` calls, they will share the same `data`, `error` and `status` refs. This ensures consistency across components but requires option consistency.
+
+The following options **must be consistent** across all calls with the same key:
+- `handler` function
+- `deep` option
+- `transform` function
+- `pick` array
+- `getCachedData` function
+- `default` value
+
+The following options **can differ** without triggering warnings:
+- `server`
+- `lazy`
+- `immediate`
+- `dedupe`
+- `watch`
+
+```ts
+// ❌ This will trigger a development warning
+const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { deep: false })
+const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { deep: true })
+
+// ✅ This is allowed
+const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: true })
+const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: false })
+```
 
 ## Return Values
 
@@ -126,7 +170,7 @@ function useAsyncData<DataT, DataE>(
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
 function useAsyncData<DataT, DataE>(
-  key: string,
+  key: string | Ref<string> | ComputedRef<string>,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): Promise<AsyncData<DataT, DataE>>
@@ -140,8 +184,13 @@ type AsyncDataOptions<DataT> = {
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
-  watch?: WatchSource[]
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
+  watch?: WatchSource[] | false
+  getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
+}
+
+type AsyncDataRequestContext = {
+  /** The reason for this data request */
+  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'watch'
 }
 
 type AsyncData<DataT, ErrorT> = {

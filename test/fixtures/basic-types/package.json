@@ -2,20 +2,20 @@
   "private": true,
   "name": "fixture-basic-types",
   "scripts": {
-    "build": "nuxi build",
-    "test:types": "nuxi prepare && npx vue-tsc --noEmit"
+    "build": "nuxt build",
+    "test:types": "nuxt prepare && npx vue-tsc --noEmit"
   },
   "dependencies": {
     "nuxt": "workspace:*"
   },
   "devDependencies": {
     "ofetch": "latest",
-    "unplugin-vue-router": "^0.10.7",
-    "vitest": "1.6.0",
+    "unplugin-vue-router": "latest",
+    "vitest": "latest",
     "vue": "latest",
     "vue-router": "latest"
   },
   "engines": {
-    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
+    "node": "^20.11.1 || >=22.0.0"
   }
 }

@@ -1,7 +1,9 @@
 import { resolve } from 'pathe'
-import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
+import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
+import { UnheadImportsPlugin } from './plugins/unhead-imports'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
@@ -10,7 +12,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     name: 'nuxt:meta',
     configKey: 'unhead',
   },
-  async setup (options, nuxt) {
+  setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
 
     // Transpile @unhead/vue
@@ -37,31 +39,34 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       ]
     }
 
-    addImportsSources({
-      from: '@unhead/vue',
-      // hard-coded for now we so don't support auto-imports on the deprecated composables
-      imports: [
-        'injectHead',
-        'useHead',
-        'useSeoMeta',
-        'useHeadSafe',
-        'useServerHead',
-        'useServerSeoMeta',
-        'useServerHeadSafe',
-      ],
-    })
+    nuxt.options.alias['#unhead/composables'] = resolve(runtimeDir, 'composables')
+    addBuildPlugin(UnheadImportsPlugin({
+      sourcemap: !!nuxt.options.sourcemap.server,
+      rootDir: nuxt.options.rootDir,
+    }))
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
-    const unheadVue = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
+    const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+    const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
 
     addTemplate({
-      filename: 'unhead-plugins.mjs',
+      filename: 'unhead-options.mjs',
       getContents () {
-        if (!nuxt.options.experimental.headNext) {
-          return 'export default []'
+        // disableDefaults is enabled to avoid server component issues
+        if (!options.legacy) {
+          return `
+export default {
+  disableDefaults: true,
+}`
         }
-        return `import { CapoPlugin } from ${JSON.stringify(unheadVue)};
-export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
+        // v1 unhead legacy options
+        const disableCapoSorting = !nuxt.options.experimental.headNext
+        return `import { DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
+export default {
+  disableDefaults: true,
+  disableCapoSorting: ${Boolean(disableCapoSorting)},
+  plugins: [DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
+}`
       },
     })
 
@@ -76,8 +81,8 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
 
     // template is only exposed in nuxt context, expose in nitro context as well
     nuxt.hooks.hook('nitro:config', (config) => {
-      config.virtual!['#internal/unhead-plugins.mjs'] = () => nuxt.vfs['#build/unhead-plugins.mjs']
-      config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs']
+      config.virtual!['#internal/unhead-options.mjs'] = () => nuxt.vfs['#build/unhead-options.mjs'] || ''
+      config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs'] || ''
     })
 
     // Add library-specific plugin

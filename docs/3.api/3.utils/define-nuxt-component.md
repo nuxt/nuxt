@@ -13,7 +13,7 @@ links:
 ::
 
 ::note
-Using `<script setup lang="ts">` is the recommended way of declaring Vue components in Nuxt 3.
+Using `<script setup lang="ts">` is the recommended way of declaring Vue components in Nuxt.
 ::
 
 :read-more{to=/docs/getting-started/data-fetching}
