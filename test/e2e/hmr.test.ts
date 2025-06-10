@@ -99,7 +99,7 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
     // Navigate to the page with the island components
     await goto('/server-component')
 
-    const componentPath = join(fixtureDir, 'components/islands/HmrComponent.vue')
+    const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
     const componentContents = readFileSync(componentPath, 'utf8')
 
     // Test initial state of the component
