@@ -6,4 +6,4 @@ RUN apt-get update && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/{apt,dpkg,cache,log}
 
-RUN corepack enable && npx playwright install
+RUN npm i -g corepack && corepack enable && npx playwright install
