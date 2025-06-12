@@ -46,6 +46,10 @@ export interface PageMeta {
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
 }
 
+export interface CustomPageMeta {
+  [key: string]: unknown
+}
+
 declare module 'vue-router' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface RouteMeta extends UnwrapRef<PageMeta> {}

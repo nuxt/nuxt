@@ -10,7 +10,7 @@ import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
 import type { H3CorsOptions } from 'h3'
-import type { NuxtLinkOptions } from 'nuxt/app'
+import type { CustomPageMeta, NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
 import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
@@ -244,6 +244,13 @@ export interface ConfigSchema {
      * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components.html#keepalive)
      */
     keepalive: NuxtAppConfig['keepalive']
+
+    /**
+     * Default values for custom page metadata.
+     *
+     * They can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
+     */
+    customPageMeta: CustomPageMeta
 
     /**
      * Customize Nuxt root element id.
