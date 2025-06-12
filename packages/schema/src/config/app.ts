@@ -93,6 +93,7 @@ export default defineResolvers({
       },
     },
     keepalive: false,
+    customPageMeta: {},
     rootId: {
       $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : '__nuxt'),
     },

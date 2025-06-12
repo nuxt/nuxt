@@ -12,7 +12,7 @@ import { useRouter } from '#app/composables/router'
 import { _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
-import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+import { appCustomPageMeta, appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 export interface NuxtPageProps extends RouterViewProps {
   /**
@@ -101,9 +101,11 @@ export default defineComponent({
           ? (routeProps: RouterViewSlotProps) => {
               return h(Suspense, { suspensible: true }, {
                 default () {
+                  const mergedMeta = { ...appCustomPageMeta, ...routeProps.route.meta }
+
                   return h(RouteProvider, {
                     vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
-                    route: routeProps.route,
+                    route: { ...routeProps.route, meta: mergedMeta },
                     vnodeRef: pageRef,
                   })
                 },
@@ -180,10 +182,12 @@ export default defineComponent({
                   },
                 }, {
                   default: () => {
+                    const mergedMeta = { ...appCustomPageMeta, ...routeProps.route.meta }
+
                     const routeProviderProps = {
                       key: key || undefined,
                       vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
-                      route: routeProps.route,
+                      route: { ...routeProps.route, meta: mergedMeta },
                       renderKey: key || undefined,
                       trackRootNodes: hasTransition,
                       vnodeRef: pageRef,
