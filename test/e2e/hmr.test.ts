@@ -174,15 +174,15 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       expect(filteredLogs).toStrictEqual([])
     })
 
-    test.fail('should support renaming files to same import name', async ({ page, goto }) => {
+    test('should support renaming files to same import name', async ({ page, goto }) => {
       await goto('/rename-component')
 
       await expect(page.getByTestId('example')).toHaveText('test.vue')
 
-      renameSync(join(fixtureDir, 'components/example/test.vue'), join(fixtureDir, 'components/example/example-test.vue'))
+      renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
 
       writeFileSync(
-        join(fixtureDir, 'components/example/example-test.vue'),
+        join(fixtureDir, 'app/components/example/example-test.vue'),
         `<template><div data-testid="example">example-test.vue</div></template>`,
       )
 
