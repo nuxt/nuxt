@@ -239,7 +239,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     rollupConfig: {
       output: {
         generatedCode: {
-          symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
+          symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351
         },
       },
       plugins: [],
