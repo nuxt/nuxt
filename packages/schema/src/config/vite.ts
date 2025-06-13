@@ -5,12 +5,6 @@ import { isTest } from 'std-env'
 import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
-  /**
-   * Configuration that will be passed directly to Vite.
-   *
-   * @see [Vite configuration docs](https://vite.dev/config) for more information.
-   * Please note that not all vite options are supported in Nuxt.
-   */
   vite: {
     root: {
       $resolve: async (val, get) => typeof val === 'string' ? val : (await get('srcDir')),

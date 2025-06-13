@@ -52,12 +52,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const res = isRenderingError
     ? null
     : await useNitroApp().localFetch(
-      withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
-      {
-        headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
-        redirect: 'manual',
-      },
-    ).catch(() => null)
+        withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
+        {
+          headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
+          redirect: 'manual',
+        },
+      ).catch(() => null)
 
   if (event.handled) { return }
 

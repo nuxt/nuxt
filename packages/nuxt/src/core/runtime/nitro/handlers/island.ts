@@ -83,10 +83,6 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // TODO: remove for v4
-  islandHead.link ||= []
-  islandHead.style ||= []
-
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
     head: islandHead,

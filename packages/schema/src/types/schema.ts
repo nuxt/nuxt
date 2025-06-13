@@ -5,7 +5,7 @@ import type { RenderSSRHeadOptions } from '@unhead/vue/types'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { SourceOptions } from 'c12'
+import type { DotenvOptions, SourceOptions } from 'c12'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
@@ -27,6 +27,8 @@ import type { ProcessOptions } from 'postcss'
 import type { Options as Options3 } from 'webpack-dev-middleware'
 import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
+import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
+import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
 import type { RouterConfigSerializable } from './router'
 import type { NuxtHooks } from './hooks'
@@ -298,11 +300,11 @@ export interface ConfigSchema {
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page rendered with `ssr: false`.
    *
-   * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists. - If it is false, no SPA loading indicator will be loaded. - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a
+   * - If it is unset, it will use `~/spa-loading-template.html` file in one of your layers, if it exists. - If it is false, no SPA loading indicator will be loaded. - If true, Nuxt will look for `~/spa-loading-template.html` file in one of your layers, or a
    *   default Nuxt image will be used.
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    *
-   * @example ~/app/spa-loading-template.html
+   * @example ~/spa-loading-template.html
    * ```html
    * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
    * <div class="loader"></div>
@@ -590,28 +592,26 @@ export interface ConfigSchema {
    * @example
    * ```js
    * export default {
-   *   srcDir: 'src/'
+   *   srcDir: 'app/'
    * }
    * ```
-   * This would work with the following folder structure:
+   * This expects the following folder structure:
    * ```bash
    * -| app/
-   * ---| node_modules/
-   * ---| nuxt.config.js
-   * ---| package.json
-   * ---| src/
-   * ------| assets/
-   * ------| components/
-   * ------| layouts/
-   * ------| middleware/
-   * ------| pages/
-   * ------| plugins/
-   * ------| public/
-   * ------| store/
-   * ------| server/
-   * ------| app.config.ts
-   * ------| app.vue
-   * ------| error.vue
+   * ---| assets/
+   * ---| components/
+   * ---| layouts/
+   * ---| middleware/
+   * ---| pages/
+   * ---| plugins/
+   * ---| app.config.ts
+   * ---| app.vue
+   * ---| error.vue
+   * -| server/
+   * -| public/
+   * -| modules/
+   * -| nuxt.config.js
+   * -| package.json
    * ```
    */
   srcDir: string
@@ -778,12 +778,6 @@ export interface ConfigSchema {
      * The directory containing your static files, which will be directly accessible via the Nuxt server and copied across into your `dist` folder when your app is generated.
      */
     public: string
-
-    /**
-     *
-     * @deprecated use `dir.public` option instead
-     */
-    static: string
   }
 
   /**
@@ -1354,6 +1348,15 @@ export interface ConfigSchema {
     browserDevtoolsTiming: boolean
 
     /**
+     * Enable integration with Chrome DevTools Workspaces
+     * for Nuxt projects.
+     *
+     * @default true
+     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM)
+     */
+    chromeDevtoolsProjectSettings: boolean
+
+    /**
      * Record mutations to `nuxt.options` in module context, helping to debug configuration changes made by modules during the Nuxt initialization phase.
      *
      * When enabled, Nuxt will track which modules modify configuration options, making it easier to trace unexpected configuration changes.
@@ -1471,57 +1474,11 @@ export interface ConfigSchema {
     pendingWhenIdle: boolean
   }
 
-  generate: {
-  /**
-   * The routes to generate.
-   *
-   * If you are using the crawler, this will be only the starting point for route generation. This is often necessary when using dynamic routes.
-   * It is preferred to use `nitro.prerender.routes`.
-   *
-   * @example
-   * ```js
-   * routes: ['/users/1', '/users/2', '/users/3']
-   * ```
-   */
-    routes: string | string[]
-
-    /**
-     * This option is no longer used. Instead, use `nitro.prerender.ignore`.
-     *
-     * @deprecated
-     */
-    exclude: Array<any>
-  }
-
   /**
    *
    * @private
    */
   _majorVersion: number
-
-  /**
-   *
-   * @private
-   */
-  _legacyGenerate: boolean
-
-  /**
-   *
-   * @private
-   */
-  _start: boolean
-
-  /**
-   *
-   * @private
-   */
-  _build: boolean
-
-  /**
-   *
-   * @private
-   */
-  _generate: boolean
 
   /**
    *
@@ -1533,19 +1490,13 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _cli: boolean
-
-  /**
-   *
-   * @private
-   */
   _requiredModules: Record<string, boolean>
 
   /**
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | import('c12').DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions }
 
   /**
    *
@@ -1701,7 +1652,13 @@ export interface ConfigSchema {
   /**
    * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
    */
-    options: import('esbuild').TransformOptions
+    options: EsbuildTransformOptions
+  }
+
+  oxc: {
+    transform: {
+      options: OxcTransformOptions
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-import { normalize, resolve } from 'pathe'
+import { basename, normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
@@ -14,6 +14,7 @@ import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
+import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import'
 
 import { WebpackBarPlugin, builder, webpack } from '#builder'
 
@@ -118,11 +119,17 @@ function basePlugins (ctx: WebpackConfigContext) {
       },
     }))
   }
+
+  // Emit explicit dynamic import statements for rollup compatibility
+  if (ctx.isServer && !ctx.isDev) {
+    ctx.config.plugins.push(new RollupCompatDynamicImportPlugin())
+  }
 }
 
 function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
+    [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
     ...ctx.options.alias,
     ...ctx.alias,
   }

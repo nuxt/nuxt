@@ -18,8 +18,6 @@ describe('loadNuxtConfig', () => {
         "#shared": "<rootDir>/shared",
         "@": "<rootDir>",
         "@@": "<rootDir>",
-        "assets": "<rootDir>/assets",
-        "public": "<rootDir>/public",
         "~": "<rootDir>",
         "~~": "<rootDir>",
       }

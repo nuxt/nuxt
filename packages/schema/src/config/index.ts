@@ -4,6 +4,7 @@ import build from './build'
 import common from './common'
 import dev from './dev'
 import esbuild from './esbuild'
+import oxc from './oxc'
 import experimental from './experimental'
 import generate from './generate'
 import internal from './internal'
@@ -28,6 +29,7 @@ export default {
   ...router,
   ...typescript,
   ...esbuild,
+  ...oxc,
   ...vite,
   ...webpack,
 }
