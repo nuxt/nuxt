@@ -324,7 +324,7 @@ export function useAsyncData<
 
     // setup watchers/instance
     const hasScope = getCurrentScope()
-    const unsubExecute = watch([key, ...toArray((options.watch || []))], ([newKey], [oldKey]) => {
+    const unsubExecute = watch([key, ...toArray(options.watch || [])], ([newKey], [oldKey]) => {
       if ((newKey || oldKey) && newKey !== oldKey) {
         const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
         if (oldKey) {
