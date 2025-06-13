@@ -40,7 +40,7 @@ export default defineConfig({
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },
     poolOptions: isCI ? { forks: { execArgv: getV8Flags() } } : undefined,
-    workspace: [
+    projects: [
       {
         plugins: isCI ? [codspeedPlugin()] : [],
         test: {
