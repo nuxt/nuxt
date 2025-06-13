@@ -60,8 +60,8 @@ describe('loadNuxt', () => {
 
     expect(nuxt.options.css).toMatchInlineSnapshot(`
       [
-        "auto.css",
         "custom.css",
+        "auto.css",
         "final-project.css",
         "duplicate.css",
         "override.css",
@@ -106,6 +106,36 @@ describe('loadNuxt', () => {
     await nuxt.callHook('test')
 
     expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('ensures layer modules remain in order', async () => {
+    const layerFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))))
+    const nuxt = await loadNuxt({ cwd: layerFixtureDir })
+    await nuxt.close()
+
+    const modules = nuxt.options._installedModules.map(item => item.meta.name ?? item.module.name)
+
+    expect(modules).toMatchInlineSnapshot(`
+      [
+        "customLayerInlineModule",
+        "customLayerModule",
+        "customLayerAutoModule",
+        "autoLayerInlineModule",
+        "autoLayerModule",
+        "autoLayerAutoModule",
+        "projectModule",
+        "projectInlineModule",
+        "css",
+        "projectAutoModule",
+        "@nuxt/devtools",
+        "nuxt:pages",
+        "nuxt:meta",
+        "nuxt:components",
+        "nuxt:imports",
+        "nuxt:nuxt-config-schema",
+        "@nuxt/telemetry",
+      ]
+    `)
   })
 })
 

@@ -2,8 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { isSamePath, withoutBase } from 'ufo'
 
 import type { Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
@@ -12,7 +11,7 @@ import { toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { clearError, isNuxtError, showError, useError } from '#app/composables/error'
+import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
@@ -41,7 +40,7 @@ function createCurrentLocation (
     return withoutBase(pathFromHash, '')
   }
   const displayedPath = withoutBase(pathname, base)
-  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
+  const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
 
@@ -87,7 +86,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       routes,
     })
 
-    handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    if (import.meta.hot) {
+      handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'

@@ -3,8 +3,8 @@ import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
 import { join, normalize, resolve } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { loadNuxt, writeTypes } from '@nuxt/kit'
 import type { Nuxt } from 'nuxt/schema'
+import { loadNuxt, writeTypes } from '@nuxt/kit'
 
 describe('writeTypes', () => {
   const relativeDir = join('../../..', 'test/fixtures/basic-types')

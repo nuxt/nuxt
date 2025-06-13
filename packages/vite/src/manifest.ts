@@ -19,12 +19,16 @@ export async function writeManifest (ctx: ViteBuildContext) {
       module: true,
       resourceType: 'script',
     },
-    [ctx.entry]: {
-      isEntry: true,
-      file: ctx.entry,
-      module: true,
-      resourceType: 'script',
-    },
+    ...ctx.nuxt.options.features.noScripts === 'all'
+      ? {}
+      : {
+          [ctx.entry]: {
+            isEntry: true,
+            file: ctx.entry,
+            module: true,
+            resourceType: 'script',
+          },
+        },
   }
 
   // Write client manifest for use in vue-bundle-renderer

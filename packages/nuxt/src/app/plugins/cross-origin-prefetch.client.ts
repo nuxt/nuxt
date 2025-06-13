@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
 import { useHead } from '../composables/head'
 
-const SUPPORTED_PROTOCOLS = ['http:', 'https:']
+const SUPPORTED_PROTOCOLS = new Set(['http:', 'https:'])
 
 export default defineNuxtPlugin({
   name: 'nuxt:cross-origin-prefetch',
@@ -27,11 +27,12 @@ export default defineNuxtPlugin({
       script: [generateRules()],
     })
     nuxtApp.hook('link:prefetch', (url) => {
-      if (SUPPORTED_PROTOCOLS.some(p => url.startsWith(p)) && SUPPORTED_PROTOCOLS.includes(new URL(url).protocol)) {
-        externalURLs.value.add(url)
-        head?.patch({
-          script: [generateRules()],
-        })
+      for (const protocol of SUPPORTED_PROTOCOLS) {
+        if (url.startsWith(protocol) && SUPPORTED_PROTOCOLS.has(new URL(url).protocol)) {
+          externalURLs.value.add(url)
+          head?.patch({ script: [generateRules()] })
+          return
+        }
       }
     })
   },

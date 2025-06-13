@@ -56,7 +56,7 @@ describe('template', () => {
     const contents = readFileSync(`${distDir}/${file}.vue`, 'utf-8')
 
     const scopedStyle = contents.match(/<style scoped>([\s\S]*)<\/style>/)
-    const globalStyle = contents.match(/style: \[[\s\S]*children: `([\s\S]*)`/)
+    const globalStyle = contents.match(/style: \[[\s\S]*innerHTML: `([\s\S]*)`/)
 
     expect(await formatCss(scopedStyle?.[1] || '')).toMatchSnapshot()
     expect(await formatCss(globalStyle?.[1] || '')).toMatchSnapshot()

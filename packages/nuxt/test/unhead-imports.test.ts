@@ -7,7 +7,7 @@ describe('UnheadImportsPlugin', () => {
   // Helper function to transform code
   function transform (code: string, id = 'app.vue') {
     const plugin = UnheadImportsPlugin({ rootDir: import.meta.dirname, sourcemap: false }).raw({}, {} as any) as any
-    return plugin.transformInclude(id) ? Promise.resolve(plugin.transform(code, id)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
+    return plugin.transformInclude(id) ? Promise.resolve(plugin.transform.handler(code, id)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
   }
 
   describe('transformInclude', () => {

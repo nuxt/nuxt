@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -29,11 +29,11 @@ jobs:
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Test (unit)
-        run: pnpm test:unit -u
+      - name: Test (unit + runtime)
+        run: pnpm vitest run --project unit --project nuxt -u
 
-      - name: Test (runtime unit)
-        run: pnpm test:runtime -u
+      - name: Lint (code)
+        run: pnpm lint:fix
 
       - name: Run build
         run: pnpm build
@@ -51,8 +51,5 @@ jobs:
       - name: Update bundle size
         if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
-
-      - name: Lint (code)
-        run: pnpm lint:fix
 
       - uses: autofix-ci/action@551dded8c6cc8a1054039c8bc0b8b48c51dfc6ef

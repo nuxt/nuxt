@@ -27,7 +27,7 @@ export default defineNuxtConfig({
   experimental: {
     externalVue: !testWithInlineVue,
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
   nitro: {
     output: { dir: fileURLToPath(new URL(testWithInlineVue ? './.output-inline' : './.output', import.meta.url)) },
   },

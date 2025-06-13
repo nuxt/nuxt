@@ -11,10 +11,16 @@
   ],
   "ignoreDeps": [
     "node",
-    "npm",
-    "oxc-parser"
+    "npm"
   ],
   "packageRules": [
+    {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "/webpack/",
+        "/-loader/"
+      ]
+    },
     {
       "groupName": "vitest",
       "matchPackageNames": [
@@ -32,13 +38,6 @@
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
-      ]
-    },
-    {
-      "groupName": "webpack",
-      "matchPackageNames": [
-        "webpack",
-        "memfs"
       ]
     }
   ]

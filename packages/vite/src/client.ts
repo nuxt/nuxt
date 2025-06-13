@@ -120,12 +120,12 @@ export async function buildClient (ctx: ViteBuildContext) {
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
         'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        // TODO: remove in v5
+        '#internal/nitro': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        'nitropack/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
         // work around vite optimizer bug
         '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
-      dedupe: [
-        'vue',
-      ],
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
     build: {
@@ -222,8 +222,9 @@ export async function buildClient (ctx: ViteBuildContext) {
   await ctx.nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
 
   // Prioritize `optimizeDeps.exclude`. If same dep is in `include` and `exclude`, remove it from `include`
+  const exclude = new Set(clientConfig.optimizeDeps!.exclude)
   clientConfig.optimizeDeps!.include = clientConfig.optimizeDeps!.include!
-    .filter(dep => !clientConfig.optimizeDeps!.exclude!.includes(dep))
+    .filter(dep => !exclude.has(dep))
 
   if (ctx.nuxt.options.dev) {
     // Dev
@@ -236,7 +237,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       route: '',
       handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
         // 'Skip' the transform middleware
-        if (req._skip_transform) { req.url = joinURL('/__skip_vite', req.url!) }
+        if (req._skip_transform) { req.url = joinURL('/__skip_vite', req.url!.replace(/\?.*/, '')) }
         next()
       },
     })
@@ -245,6 +246,19 @@ export async function buildClient (ctx: ViteBuildContext) {
     for (const folder of useNitro().options.publicAssets) {
       if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
         staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
+      }
+    }
+
+    const devHandlerRegexes: RegExp[] = []
+    for (const handler of ctx.nuxt.options.devServerHandlers) {
+      if (handler.route && handler.route !== '/' && handler.route.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
+        devHandlerRegexes.push(new RegExp(
+          `^${handler.route
+            .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // escape regex syntax characters
+            .replace(/:[^/]+/g, '[^/]+') // dynamic segments (:param)
+            .replace(/\*\*/g, '.*') // double wildcard (**) to match any path
+            .replace(/\*/g, '[^/]*')}$`, // single wildcard (*) to match any segment
+        ))
       }
     }
 
@@ -276,8 +290,8 @@ export async function buildClient (ctx: ViteBuildContext) {
         })
       })
 
-      // if vite has not handled the request, we want to send a 404 for paths which are not in any static base
-      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL))) {
+      // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
+      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
         throw createError({
           statusCode: 404,
         })

@@ -1,7 +1,9 @@
 export default defineNuxtConfig({
   extends: ['./custom'],
   modules: [
-    function (_options, nuxt) {
+    import.meta.dirname + '/module',
+    function projectInlineModule () {},
+    function css (_options, nuxt) {
       nuxt.options.css.push('new-css-added-by-module.css')
     },
   ],

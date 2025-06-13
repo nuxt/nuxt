@@ -12,6 +12,14 @@ export default defineComponent({
       type: Number,
       default: 2000,
     },
+    hideDelay: {
+      type: Number,
+      default: 500,
+    },
+    resetDelay: {
+      type: Number,
+      default: 400,
+    },
     height: {
       type: Number,
       default: 3,
@@ -33,6 +41,8 @@ export default defineComponent({
     const { progress, isLoading, error, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle,
+      hideDelay: props.hideDelay,
+      resetDelay: props.resetDelay,
       estimatedProgress: props.estimatedProgress,
     })
 

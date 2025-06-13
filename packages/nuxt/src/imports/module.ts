@@ -3,13 +3,13 @@ import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNu
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
-import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory, logger } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets } from './presets'
+import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
@@ -65,8 +65,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     await nuxt.callHook('imports:context', ctx)
 
-    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
-
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
     if (options.scan) {
@@ -75,13 +73,13 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         if (layer.config?.imports?.scan === false) {
           continue
         }
-        composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
-        composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
 
-        if (isNuxtV4) {
-          composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
-          composablesDirs.push(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
-        }
+        composablesDirs.push(
+          resolve(layer.config.srcDir, 'composables'),
+          resolve(layer.config.srcDir, 'utils'),
+          resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'),
+          resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'),
+        )
 
         for (const dir of (layer.config.imports?.dirs ?? [])) {
           if (!dir) {
@@ -124,6 +122,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     const isIgnored = createIsIgnored(nuxt)
+    const defaultImportSources = new Set(defaultPresets.flatMap(i => i.from))
+    const defaultImports = new Set(presets.flatMap(p => defaultImportSources.has(p.from) ? p.imports : []))
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -142,6 +142,16 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
+        for (const i of imports) {
+          if (!defaultImportSources.has(i.from)) {
+            const value = i.as || i.name
+            if (defaultImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
+              const relativePath = isAbsolute(i.from) ? `~/${relative(nuxt.options.srcDir, i.from)}` : i.from
+              logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
+            }
+          }
+        }
+
         return imports
       })
 

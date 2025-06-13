@@ -43,7 +43,7 @@ export async function loadPackage (dir: string) {
 
 export async function loadWorkspace (dir: string) {
   const workspacePkg = await loadPackage(dir)
-  const pkgDirs = (await glob(['packages/*'], { onlyDirectories: true })).sort()
+  const pkgDirs = (await glob(['packages/*', 'docs'], { onlyDirectories: true })).sort()
 
   const packages: Package[] = []
 

@@ -20,6 +20,8 @@ This is particularly useful for optimizing performance by reusing already-fetche
 
 To use `useNuxtData`, ensure that the data-fetching composable (`useFetch`, `useAsyncData`, etc.) has been called with an explicitly provided key.
 
+:video-accordion{title="Watch a video from LearnVue about useNuxtData" videoId="e-_u6swXRWk"}
+
 ## Params
 
 - `key`: The unique key that identifies the cached data. This key should match the one used during the original data fetch.
@@ -106,5 +108,5 @@ async function addTodo () {
 ## Type
 
 ```ts
-useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> }
+useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
 ```

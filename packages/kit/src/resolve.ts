@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { directoryToURL } from './internal/esm'
@@ -220,8 +220,8 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
 }
 
 async function existsSensitive (path: string) {
-  const dirFiles = await fsp.readdir(dirname(path)).catch(() => null)
-  return dirFiles && dirFiles.includes(basename(path))
+  const dirFiles = new Set(await fsp.readdir(dirname(path)).catch(() => []))
+  return dirFiles.has(basename(path))
 }
 
 function existsInVFS (path: string, nuxt = tryUseNuxt()) {
@@ -237,7 +237,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
   const files: string[] = []
-  for (const file of await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
+  for (const file of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
     const p = resolve(path, file)
     if (!isIgnored(p)) {
       files.push(p)

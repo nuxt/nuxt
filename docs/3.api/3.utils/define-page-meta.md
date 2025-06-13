@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/pages/#page-metadata"}
+:read-more{to="/docs/guide/directory-structure/pages#page-metadata"}
 
 ## Type
 
@@ -136,7 +136,7 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-approuteroptions)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-approuteroptions)) for more info.
 
   **`[key: string]`**
 

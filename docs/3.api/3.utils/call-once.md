@@ -86,7 +86,7 @@ type CallOnceOptions = {
 ## Parameters
 
 - `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `callOnce` will be generated for you.
-- `fn`: The function to run once. This function can also return a `Promise` and a value.
+- `fn`: The function to run once. It can be asynchronous.
 - `options`: Setup the mode, either to re-execute on navigation (`navigation`) or just once for the lifetime of the app (`render`). Defaults to `render`.
   - `render`: Executes once during initial render (either SSR or CSR) - Default mode
   - `navigation`: Executes once during initial render and once per subsequent client-side navigation

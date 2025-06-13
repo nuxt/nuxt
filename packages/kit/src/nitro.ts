@@ -1,4 +1,4 @@
-import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitro/types'
+import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 import { useNuxt } from './context'
@@ -13,7 +13,7 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
   const [, method = undefined] = handler.handler.match(HANDLER_METHOD_RE) || []
   return {
-    method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace' | undefined,
+    method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace',
     ...handler,
     handler: normalize(handler.handler),
   }
@@ -86,12 +86,13 @@ export function useNitro (): Nitro {
 /**
  * Add server imports to be auto-imported by Nitro
  */
-export function addServerImports (imports: Import[]) {
+export function addServerImports (imports: Import | Import[]) {
   const nuxt = useNuxt()
+  const _imports = toArray(imports)
   nuxt.hook('nitro:config', (config) => {
     config.imports ||= {}
     config.imports.imports ||= []
-    config.imports.imports.push(...imports)
+    config.imports.imports.push(..._imports)
   })
 }
 

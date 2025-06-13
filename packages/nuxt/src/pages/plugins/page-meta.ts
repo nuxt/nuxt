@@ -10,18 +10,19 @@ import {
   ScopeTracker,
   type ScopeTrackerNode,
   getUndeclaredIdentifiersInFunction,
-  isNotReferencePosition,
+  isBindingIdentifier,
   parseAndWalk,
   walk,
-  withLocations,
-} from '../../core/utils/parse'
+} from 'oxc-walker'
 import { logger } from '../../utils'
+import { isSerializable } from '../utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
   isPage?: (file: string) => boolean
   routesPath?: string
+  extractedKeys?: string[]
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
@@ -174,7 +175,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       }
 
       const scopeTracker = new ScopeTracker({
-        keepExitedScopes: true,
+        preserveExitedScopes: true,
       })
 
       function processDeclaration (scopeTrackerNode: ScopeTrackerNode | null) {
@@ -190,7 +191,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                   throw new Error('await in definePageMeta')
                 }
                 if (
-                  isNotReferencePosition(node, parent)
+                  isBindingIdentifier(node, parent)
                   || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
                 ) { return }
 
@@ -212,11 +213,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const ast = parseAndWalk(code, id + (query.lang ? '.' + query.lang : '.ts'), {
+      const { program: ast } = parseAndWalk(code, id + (query.lang ? '.' + query.lang : '.ts'), {
         scopeTracker,
       })
 
       scopeTracker.freeze()
+
+      let instances = 0
 
       walk(ast, {
         scopeTracker,
@@ -224,9 +227,32 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
           if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
 
-          const meta = withLocations(node.arguments[0])
+          instances++
+          const meta = node.arguments[0]
 
           if (!meta) { return }
+          const metaCode = code!.slice(meta.start, meta.end)
+          const m = new MagicString(metaCode)
+
+          if (meta.type === 'ObjectExpression') {
+            for (let i = 0; i < meta.properties.length; i++) {
+              const prop = meta.properties[i]!
+              if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
+                const { serializable } = isSerializable(metaCode, prop.value)
+                if (!serializable) {
+                  continue
+                }
+                const nextProperty = meta.properties[i + 1]
+                if (nextProperty) {
+                  m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
+                } else if (code[prop.end] === ',') {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
+                } else {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                }
+              }
+            }
+          }
 
           const definePageMetaScope = scopeTracker.getCurrentScope()
 
@@ -234,7 +260,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             scopeTracker,
             enter (node, parent) {
               if (
-                isNotReferencePosition(node, parent)
+                isBindingIdentifier(node, parent)
                 || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
               ) { return }
 
@@ -270,12 +296,16 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const extracted = [
             importStatements,
             declarations,
-            `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+            `const __nuxt_page_meta = ${m.toString() || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
           ].join('\n')
 
           s.overwrite(0, code.length, extracted.trim())
         },
       })
+
+      if (instances > 1) {
+        throw new Error('Multiple `definePageMeta` calls are not supported. File: ' + id.replace(/\?.+$/, ''))
+      }
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
         s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)

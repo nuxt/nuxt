@@ -6,5 +6,5 @@ export default defineNuxtConfig({
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     inlineRouteRules: true,
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
 })

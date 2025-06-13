@@ -29,11 +29,11 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
   test.describe.configure({ mode: 'serial' })
 
   // Load the fixture file
-  const indexVue = readFileSync(join(sourceDir, 'pages/index.vue'), 'utf8')
+  const indexVue = readFileSync(join(sourceDir, 'app/pages/index.vue'), 'utf8')
 
   test('basic HMR functionality', async ({ page, goto }) => {
     // Navigate to the page
-    writeFileSync(join(fixtureDir, 'pages/index.vue'), indexVue)
+    writeFileSync(join(fixtureDir, 'app/pages/index.vue'), indexVue)
     await goto('/')
 
     // Check initial state
@@ -50,7 +50,7 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       .replace('<h1>Home page</h1>', '<h1>Home page - but not as you knew it</h1>')
     newContents += '<style scoped>\nh1 { color: red }\n</style>'
 
-    writeFileSync(join(fixtureDir, 'pages/index.vue'), newContents)
+    writeFileSync(join(fixtureDir, 'app/pages/index.vue'), newContents)
 
     // Wait for the title to be updated via HMR
     await expect(page).toHaveTitle('HMR fixture HMR')
@@ -68,12 +68,12 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
   test('detecting new routes', async ({ fetch }) => {
     // Try accessing a non-existent route
-    await rm(join(fixtureDir, 'pages/some-404.vue'), { force: true })
+    await rm(join(fixtureDir, 'app/pages/some-404.vue'), { force: true })
     const res = await fetch('/some-404')
     expect(res.status).toBe(404)
 
     // Create a new page file
-    writeFileSync(join(fixtureDir, 'pages/some-404.vue'), indexVue)
+    writeFileSync(join(fixtureDir, 'app/pages/some-404.vue'), indexVue)
 
     // Wait for the new route to be available
     await expect(() => fetch('/some-404').then(r => r.status).catch(() => false)).toBeWithPolling(200)
@@ -81,15 +81,15 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
   test('hot reloading route rules', async ({ fetch }) => {
     // Check the initial header
-    const file = readFileSync(join(sourceDir, 'pages/route-rules.vue'), 'utf8')
-    writeFileSync(join(fixtureDir, 'pages/route-rules.vue'), file)
+    const file = readFileSync(join(sourceDir, 'app/pages/route-rules.vue'), 'utf8')
+    writeFileSync(join(fixtureDir, 'app/pages/route-rules.vue'), file)
 
     await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('added in routeRules')
 
     await new Promise(resolve => setTimeout(resolve, 100))
 
     // Modify the route rules
-    writeFileSync(join(fixtureDir, 'pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
+    writeFileSync(join(fixtureDir, 'app/pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
 
     // Wait for the route rule to be hot reloaded
     await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev')
@@ -99,7 +99,7 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
     // Navigate to the page with the island components
     await goto('/server-component')
 
-    const componentPath = join(fixtureDir, 'components/islands/HmrComponent.vue')
+    const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
     const componentContents = readFileSync(componentPath, 'utf8')
 
     // Test initial state of the component
@@ -122,8 +122,8 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
   // Skip if using webpack since this test only works with Vite
   if (!isWebpack) {
     test('HMR for page meta', async ({ page, goto }) => {
-      const pageContents = readFileSync(join(sourceDir, 'pages/page-meta.vue'), 'utf8')
-      writeFileSync(join(fixtureDir, 'pages/page-meta.vue'), pageContents)
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/page-meta.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/page-meta.vue'), pageContents)
 
       await goto('/page-meta')
 
@@ -131,7 +131,7 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
 
       // Update the meta
-      writeFileSync(join(fixtureDir, 'pages/page-meta.vue'), pageContents.replace(`some: 'stuff'`, `some: 'other stuff'`))
+      writeFileSync(join(fixtureDir, 'app/pages/page-meta.vue'), pageContents.replace(`some: 'stuff'`, `some: 'other stuff'`))
 
       // Check if meta updates
       await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'other stuff' }, null, 2))
@@ -145,7 +145,7 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
       // Create a new route that doesn't exist yet
       writeFileSync(
-        join(fixtureDir, 'pages/routes/non-existent.vue'),
+        join(fixtureDir, 'app/pages/routes/non-existent.vue'),
         `<template><div data-testid="contents">A new route!</div></template>`,
       )
 

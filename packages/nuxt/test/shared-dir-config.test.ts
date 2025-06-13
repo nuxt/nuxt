@@ -7,22 +7,18 @@ import { loadNuxt } from '../src'
 const fixtureDir = normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url)))
 
 describe('loadNuxt', () => {
-  it('does not add shared directories to nitro auto-imports in v3', async () => {
-    const importDirs = await getNitroImportDirs({ future: { compatibilityVersion: 3 as any } })
-    expect(normalizePaths(importDirs)).toMatchInlineSnapshot(`[]`)
-  })
   it('adds shared directories for layers to nitro auto-imports in v4', async () => {
-    const importDirs = await getNitroImportDirs({ future: { compatibilityVersion: 4 } })
+    const importDirs = await getNitroImportDirs()
     expect(normalizePaths(importDirs)).toMatchInlineSnapshot(`
       [
         "<rootDir>/shared/utils",
         "<rootDir>/shared/types",
         "<rootDir>/extends/bar/shared/utils",
         "<rootDir>/extends/bar/shared/types",
-        "<rootDir>/extends/node_modules/foo/shared/utils",
-        "<rootDir>/extends/node_modules/foo/shared/types",
         "<rootDir>/layers/bar/shared/utils",
         "<rootDir>/layers/bar/shared/types",
+        "<rootDir>/extends/node_modules/foo/shared/utils",
+        "<rootDir>/extends/node_modules/foo/shared/types",
       ]
     `)
   })

@@ -16,41 +16,47 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
     transformInclude (id) {
       return isVue(id, { type: ['template', 'script'] })
     },
-    transform (code) {
-      if (!INJECTION_SINGLE_RE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol') || code.includes('this._.provides[__nuxt_route_symbol')) { return }
+    transform: {
+      filter: {
+        code: { include: INJECTION_SINGLE_RE },
+      },
+      handler (code) {
+        if (code.includes('_ctx._.provides[__nuxt_route_symbol') || code.includes('this._.provides[__nuxt_route_symbol')) { return }
 
-      let replaced = false
-      const s = new MagicString(code)
-      const strippedCode = stripLiteral(code)
+        let replaced = false
+        const s = new MagicString(code)
+        const strippedCode = stripLiteral(code)
 
-      // Local helper function for regex-based replacements using `strippedCode`
-      const replaceMatches = (regExp: RegExp, replacement: string) => {
-        for (const match of strippedCode.matchAll(regExp)) {
-          const start = match.index!
-          const end = start + match[0].length
-          s.overwrite(start, end, replacement)
-          replaced ||= true
+        // Local helper function for regex-based replacements using `strippedCode`
+        const replaceMatches = (regExp: RegExp, replacement: string) => {
+          for (const match of strippedCode.matchAll(regExp)) {
+            const start = match.index!
+            const end = start + match[0].length
+            s.overwrite(start, end, replacement)
+            replaced ||= true
+          }
         }
-      }
 
-      // handles `$route` in template
-      replaceMatches(INJECTION_RE_TEMPLATE, '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)')
+        // handles `$route` in template
+        replaceMatches(INJECTION_RE_TEMPLATE, '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)')
 
-      // handles `this.$route` in script
-      replaceMatches(INJECTION_RE_SCRIPT, '(this._.provides[__nuxt_route_symbol] || this.$route)')
+        // handles `this.$route` in script
+        replaceMatches(INJECTION_RE_SCRIPT, '(this._.provides[__nuxt_route_symbol] || this.$route)')
 
-      if (replaced) {
-        s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
-      }
-
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server
-            ? s.generateMap({ hires: true })
-            : undefined,
+        if (replaced) {
+          s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
         }
-      }
+
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server
+              ? s.generateMap({ hires: true })
+              : undefined,
+          }
+        }
+      },
     },
+
   }
 })
