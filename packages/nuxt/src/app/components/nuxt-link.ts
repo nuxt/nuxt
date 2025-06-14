@@ -513,7 +513,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           onClick: (event) => {
             event.preventDefault()
 
-            navigateTo(href.value)
+            return props.replace
+              ? router.replace(href.value)
+              : router.push(href.value)
           },
         }, slots.default?.())
       }
