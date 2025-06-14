@@ -505,8 +505,17 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           } satisfies NuxtLinkDefaultSlotProps<true>)
         }
 
-        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
-        return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
+        return h('a', {
+          ref: el,
+          href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+          rel,
+          target,
+          onClick: (event) => {
+            event.preventDefault()
+
+            navigateTo(href.value)
+          },
+        }, slots.default?.())
       }
     },
     // }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
