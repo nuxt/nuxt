@@ -234,7 +234,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '__VUE_PROD_DEVTOOLS__': false,
     },
     rollupConfig: {
-      output: {},
+      output: {
+        generatedCode: {
+          symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351
+        },
+      },
       plugins: [],
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
