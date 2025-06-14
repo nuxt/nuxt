@@ -1,23 +1,32 @@
-import { defineNuxtPlugin } from '../nuxt'
+import type { RouteLocationNormalized } from 'vue-router'
+import { joinURL } from 'ufo'
+import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { reloadNuxtApp } from '../composables/chunk'
 import { addRouteMiddleware } from '../composables/router'
-
-const reloadNuxtApp_ = (path: string) => { reloadNuxtApp({ persistState: true, path }) }
 
 // See https://github.com/nuxt/nuxt/issues/23612 for more context
 export default defineNuxtPlugin({
   name: 'nuxt:chunk-reload-immediate',
   setup (nuxtApp) {
     // Remember `to.path` when navigating to a new path: A `chunkError` may occur during navigation, we then want to then reload at `to.path`
-    let currentlyNavigationTo: null | string = null
+    let currentlyNavigationTo: RouteLocationNormalized | null = null
+
     addRouteMiddleware((to) => {
-      currentlyNavigationTo = to.path
+      currentlyNavigationTo = to
     })
 
+    const config = useRuntimeConfig()
+
+    function reloadAppAtPath (to: RouteLocationNormalized) {
+      const isHash = 'href' in to && (to.href as string)[0] === '#'
+      const path = isHash ? config.app.baseURL + (to as any).href : joinURL(config.app.baseURL, to.fullPath)
+      reloadNuxtApp({ path, persistState: true })
+    }
+
     // Reload when a `chunkError` is thrown
-    nuxtApp.hook('app:chunkError', () => reloadNuxtApp_(currentlyNavigationTo ?? nuxtApp._route.path))
+    nuxtApp.hook('app:chunkError', () => reloadAppAtPath(currentlyNavigationTo ?? nuxtApp._route))
 
     // Reload when the app manifest updates
-    nuxtApp.hook('app:manifest:update', () => reloadNuxtApp_(nuxtApp._route.path))
+    nuxtApp.hook('app:manifest:update', () => reloadAppAtPath(nuxtApp._route))
   },
 })
