@@ -291,6 +291,9 @@ importers:
       pkg-types:
         specifier: ^2.1.0
         version: 2.1.0
+      rc9:
+        specifier: ^2.1.2
+        version: 2.1.2
       scule:
         specifier: ^1.3.0
         version: 1.3.0

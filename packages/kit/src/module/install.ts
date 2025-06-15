@@ -8,6 +8,8 @@ import { parseNodeModulePath } from 'mlly'
 import { resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
 import { resolvePackageJSON } from 'pkg-types'
+import { read as readRc, update as updateRc } from 'rc9'
+import semver from 'semver'
 import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias } from '../resolve'
@@ -27,6 +29,24 @@ export async function installModule<
     if (!NODE_MODULES_RE.test(srcDir)) {
       localLayerModuleDirs.push(resolve(srcDir, l.config?.dir?.modules || 'modules').replace(/\/?$/, '/'))
     }
+  }
+
+  const meta = await nuxtModule?.getMeta?.()
+
+  if (meta?.name && meta?.version) {
+    const rc = readRc({ dir: nuxt.options.rootDir, name: '.nuxtrc' })
+    const previousVersion = rc?.setups?.[meta.name]
+
+    if (!previousVersion) {
+      await nuxtModule?.onInstall?.(nuxt)
+    } else if (semver.gt(meta.version, previousVersion)) {
+      await nuxtModule?.onUpgrade?.(inlineOptions, nuxt, previousVersion)
+    }
+
+    updateRc(
+      { setups: { [meta.name]: meta?.version } },
+      { dir: nuxt.options.rootDir, name: '.nuxtrc' },
+    )
   }
 
   // Call module
