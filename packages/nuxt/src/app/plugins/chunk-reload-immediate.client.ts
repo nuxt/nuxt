@@ -18,8 +18,8 @@ export default defineNuxtPlugin({
     const config = useRuntimeConfig()
 
     function reloadAppAtPath (to: RouteLocationNormalized) {
-      const isHash = 'href' in to && (to.href as string)[0] === '#'
-      const path = isHash ? config.app.baseURL + (to as any).href : joinURL(config.app.baseURL, to.fullPath)
+      const path = joinURL(config.app.baseURL, to.fullPath)
+
       reloadNuxtApp({ path, persistState: true })
     }
 
