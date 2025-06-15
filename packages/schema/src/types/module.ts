@@ -105,7 +105,7 @@ export interface NuxtModule<
       : TOptions
   >
   getMeta?: () => Promise<ModuleMeta>
-  onInstall?: (nuxt?: Nuxt) => Awaitable<void>
+  onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (
     options: TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>

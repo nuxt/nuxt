@@ -13,6 +13,7 @@ import semver from 'semver'
 import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias } from '../resolve'
+import { logger } from '../logger'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
@@ -37,16 +38,21 @@ export async function installModule<
     const rc = readRc({ dir: nuxt.options.rootDir, name: '.nuxtrc' })
     const previousVersion = rc?.setups?.[meta.name]
 
-    if (!previousVersion) {
-      await nuxtModule?.onInstall?.(nuxt)
-    } else if (semver.gt(meta.version, previousVersion)) {
-      await nuxtModule?.onUpgrade?.(inlineOptions, nuxt, previousVersion)
+    try {
+      if (!previousVersion) {
+        await nuxtModule?.onInstall?.(nuxt)
+      } else if (semver.gt(meta.version, previousVersion)) {
+        await nuxtModule?.onUpgrade?.(inlineOptions, nuxt, previousVersion)
+      }
+      updateRc(
+        { setups: { [meta.name]: meta?.version } },
+        { dir: nuxt.options.rootDir, name: '.nuxtrc' },
+      )
+    } catch (e) {
+      logger.error(
+        `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module ${meta.name}: ${e}`,
+      )
     }
-
-    updateRc(
-      { setups: { [meta.name]: meta?.version } },
-      { dir: nuxt.options.rootDir, name: '.nuxtrc' },
-    )
   }
 
   // Call module
