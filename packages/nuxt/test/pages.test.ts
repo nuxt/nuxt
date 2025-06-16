@@ -263,7 +263,7 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct catch-all route',
-      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }],
+      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }, { path: `${pagesDir}/[...slug]/[id].vue` }],
       output: [
         {
           name: 'index',
@@ -275,26 +275,13 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'slug',
           path: '/:slug(.*)*',
           file: `${pagesDir}/[...slug].vue`,
-          children: [],
-        },
-      ],
-    },
-    {
-      description: 'should generate correct routes for nested pages with catch-all',
-      files: [{ path: `${pagesDir}/[...id].vue` }, { path: `${pagesDir}/[...id]/[slug].vue` }],
-      output: [
-        {
-          name: 'id',
-          path: '/:id(.*)*',
-          file: `${pagesDir}/[...id].vue`,
           children: [
             {
-              name: 'id-slug',
-              path: ':slug()',
-              file: `${pagesDir}/[...id]/[slug].vue`,
+              name: 'slug-id',
+              path: ':id()',
+              file: `${pagesDir}/[...slug]/[id].vue`,
               children: [],
-            },
-          ],
+            }],
         },
       ],
     },

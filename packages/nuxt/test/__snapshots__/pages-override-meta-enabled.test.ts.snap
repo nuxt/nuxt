@@ -104,6 +104,13 @@
       "path": ""/"",
     },
     {
+      "children": [
+        {
+          "component": "() => import("pages/[...slug]/[foo].vue")",
+          "name": ""slug-foo"",
+          "path": "":foo()"",
+        },
+      ],
       "component": "() => import("pages/[...slug].vue")",
       "name": ""slug"",
       "path": ""/:slug(.*)*"",
@@ -245,20 +252,6 @@
       "component": "() => import("pages/page1.vue")",
       "name": "mockMeta?.name",
       "path": ""/page1"",
-    },
-  ],
-  "should generate correct routes for nested pages with catch-all": [
-    {
-      "children": [
-        {
-          "component": "() => import("pages/[...id]/[slug].vue")",
-          "name": ""id-slug"",
-          "path": "":slug()"",
-        },
-      ],
-      "component": "() => import("pages/[...id].vue")",
-      "name": ""id"",
-      "path": ""/:id(.*)*"",
     },
   ],
   "should generate correct routes for parent/child": [
