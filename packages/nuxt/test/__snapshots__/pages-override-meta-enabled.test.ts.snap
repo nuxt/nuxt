@@ -106,9 +106,9 @@
     {
       "children": [
         {
-          "component": "() => import("pages/[...slug]/[foo].vue")",
-          "name": ""slug-foo"",
-          "path": "":foo()"",
+          "component": "() => import("pages/[...slug]/[id].vue")",
+          "name": ""slug-id"",
+          "path": "":id()"",
         },
       ],
       "component": "() => import("pages/[...slug].vue")",

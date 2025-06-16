@@ -157,10 +157,10 @@
       "children": [
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("pages/[...slug]/[foo].vue")",
+          "component": "() => import("pages/[...slug]/[id].vue")",
           "meta": "mockMeta || {}",
-          "name": "mockMeta?.name ?? "slug-foo"",
-          "path": "mockMeta?.path ?? ":foo()"",
+          "name": "mockMeta?.name ?? "slug-id"",
+          "path": "mockMeta?.path ?? ":id()"",
           "props": "mockMeta?.props ?? false",
           "redirect": "mockMeta?.redirect",
         },
