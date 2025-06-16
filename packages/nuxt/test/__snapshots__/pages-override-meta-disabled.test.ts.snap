@@ -396,6 +396,28 @@
       "redirect": "mockMeta?.redirect",
     },
   ],
+  "should generate correct routes for nested pages with catch-all": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "children": [
+        {
+          "alias": "mockMeta?.alias || []",
+          "component": "() => import("pages/[...id]/[slug].vue")",
+          "meta": "mockMeta || {}",
+          "name": "mockMeta?.name ?? "id-slug"",
+          "path": "mockMeta?.path ?? ":slug()"",
+          "props": "mockMeta?.props ?? false",
+          "redirect": "mockMeta?.redirect",
+        },
+      ],
+      "component": "() => import("pages/[...id].vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "id"",
+      "path": "mockMeta?.path ?? "/:id(.*)*"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "should generate correct routes for parent/child": [
     {
       "alias": "mockMeta?.alias || []",

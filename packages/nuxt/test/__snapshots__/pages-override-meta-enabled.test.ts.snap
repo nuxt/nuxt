@@ -247,6 +247,20 @@
       "path": ""/page1"",
     },
   ],
+  "should generate correct routes for nested pages with catch-all": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/[...id]/[slug].vue")",
+          "name": ""id-slug"",
+          "path": "":slug()"",
+        },
+      ],
+      "component": "() => import("pages/[...id].vue")",
+      "name": ""id"",
+      "path": ""/:id(.*)*"",
+    },
+  ],
   "should generate correct routes for parent/child": [
     {
       "children": [

@@ -280,6 +280,25 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
     },
     {
+      description: 'should generate correct routes for nested pages with catch-all',
+      files: [{ path: `${pagesDir}/[...id].vue` }, { path: `${pagesDir}/[...id]/[slug].vue` }],
+      output: [
+        {
+          name: 'id',
+          path: '/:id(.*)*',
+          file: `${pagesDir}/[...id].vue`,
+          children: [
+            {
+              name: 'id-slug',
+              path: ':slug()',
+              file: `${pagesDir}/[...id]/[slug].vue`,
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
       description: 'should throw unfinished param error for dynamic route',
       files: [{ path: `${pagesDir}/[slug.vue` }],
       error: 'Unfinished param "slug"',
