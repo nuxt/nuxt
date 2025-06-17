@@ -249,7 +249,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      const chunk = ComponentsChunkPlugin({ getComponents })
+      const chunk = ComponentsChunkPlugin({ getComponents, buildAssetsDir: nuxt.options.app.buildAssetsDir })
 
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
         config.plugins ||= []

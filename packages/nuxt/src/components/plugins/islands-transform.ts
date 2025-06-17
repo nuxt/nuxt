@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url'
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { hash } from 'ohash'
 import { join } from 'pathe'
 import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
@@ -7,7 +8,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { useNuxt } from '@nuxt/kit'
-import { hash } from 'ohash'
+import { kebabCase } from 'scule'
 import { isVue } from '../../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -179,11 +180,15 @@ function getPropsToString (bindings: Record<string, string>): string {
 
 type ChunkPluginOptions = {
   getComponents: () => Component[]
+  buildAssetsDir: string
 }
 
 export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
   const ids = new Map<string, string>()
   const isDev = useNuxt().options.dev
+
+  const normalizedBuildAssetsDir = options.buildAssetsDir.startsWith('/') ? options.buildAssetsDir.slice(1) : options.buildAssetsDir + '/'
+  const finalBuildAssetsDir = normalizedBuildAssetsDir.endsWith('/') ? normalizedBuildAssetsDir : normalizedBuildAssetsDir + '/'
   return {
     client: createUnplugin(() => {
       return {
@@ -196,9 +201,10 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
                 if (isDev) {
                   ids.set(component.pascalName, `@fs/${component.filePath}`)
                 } else {
+                  const componentsContent = readFileSync(component.filePath, 'utf-8')
                   const id = this.emitFile({
                     type: 'chunk',
-                    fileName: '_nuxt/' + hash(component.filePath) + '.mjs',
+                    fileName: join(finalBuildAssetsDir, `${kebabCase(component.pascalName)}.${hash(componentsContent)}.mjs`),
                     id: component.filePath,
                     preserveSignature: 'strict',
 
