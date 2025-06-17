@@ -105,6 +105,13 @@
       "path": ""/"",
     },
     {
+      "children": [
+        {
+          "component": "() => import("pages/[...slug]/[id].vue")",
+          "name": ""slug-id"",
+          "path": "":id()"",
+        },
+      ],
       "component": "() => import("pages/[...slug].vue")",
       "name": ""slug"",
       "path": ""/:slug(.*)*"",
