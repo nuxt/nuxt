@@ -1,11 +1,11 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { parse, walk } from 'ultrahtml'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -23,7 +23,9 @@ const hydrationStrategyMap = {
   hydrateWhen: 'If',
   hydrateNever: 'Never',
 }
-const LAZY_HYDRATION_PROPS_RE = /\bhydrate-?on-?idle|hydrate-?on-?visible|hydrate-?on-?interaction|hydrate-?on-?media-?query|hydrate-?after|hydrate-?when|hydrate-?never\b/
+
+const LAZY_HYDRATION_PROPS_RE = /\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b/
+
 export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []

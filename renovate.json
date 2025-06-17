@@ -15,6 +15,13 @@
   ],
   "packageRules": [
     {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "/webpack/",
+        "/-loader/"
+      ]
+    },
+    {
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",

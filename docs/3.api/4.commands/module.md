@@ -1,5 +1,5 @@
 ---
-title: "nuxi module"
+title: "nuxt module"
 description: "Search and add modules to your Nuxt application with the command line."
 links:
   - label: Source
@@ -8,13 +8,13 @@ links:
     size: xs
 ---
 
-Nuxi provides a few utilities to work with [Nuxt modules](/modules) seamlessly.
+Nuxt provides a few utilities to work with [Nuxt modules](/modules) seamlessly.
 
-## nuxi module add
+## nuxt module add
 
 <!--module-add-cmd-->
 ```bash [Terminal]
-npx nuxi module add <MODULENAME> [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--skipInstall] [--skipConfig] [--dev]
+npx nuxt module add <MODULENAME> [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--skipInstall] [--skipConfig] [--dev]
 ```
 <!--/module-add-cmd-->
 
@@ -47,14 +47,14 @@ When running the command, it will:
 Installing the [`Pinia`](/modules/pinia) module
 
 ```bash [Terminal]
-npx nuxi module add pinia
+npx nuxt module add pinia
 ```
 
-## nuxi module search
+## nuxt module search
 
 <!--module-search-cmd-->
 ```bash [Terminal]
-npx nuxi module search <QUERY> [--cwd=<directory>] [--nuxtVersion=<2|3>]
+npx nuxt module search <QUERY> [--cwd=<directory>] [--nuxtVersion=<2|3>]
 ```
 <!--/module-search-cmd-->
 
@@ -80,5 +80,5 @@ The command searches for Nuxt modules matching your query that are compatible wi
 **Example:**
 
 ```bash [Terminal]
-npx nuxi module search pinia
+npx nuxt module search pinia
 ```

@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { dirname, join, normalize, resolve } from 'pathe'
+import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -66,6 +66,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
         resolve: {
           alias: {
+            [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
             'web-streams-polyfill/ponyfill/es2018': mockEmpty,
@@ -107,7 +108,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             sourcemap: !!nuxt.options.sourcemap.server,
             baseURL: nuxt.options.app.baseURL,
           }),
-          replace({ preventAssignment: true, ...globalThisReplacements }),
         ],
         server: {
           watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
@@ -190,7 +190,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const clientCSSMap = {}
 
     nuxt.hook('vite:extendConfig', (config, { isServer }) => {
-      config.plugins!.push(ssrStylesPlugin({
+      config.plugins!.unshift(ssrStylesPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         clientCSSMap,
         chunksWithInlinedCSS,
@@ -242,8 +242,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
   await withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
 }
-
-const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))
 
 async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
   if (!enabled) { return fn() }

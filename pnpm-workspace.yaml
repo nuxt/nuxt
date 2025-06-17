@@ -6,5 +6,6 @@ packages:
   - playground
   - test/fixtures/*
 ignoredBuiltDependencies:
-  - vue-demi
   - esbuild
+  - unrs-resolver
+  - vue-demi

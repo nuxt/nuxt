@@ -30,6 +30,7 @@ dist
 .output
 .output-*
 .gen
+.test
 
 # Junit reports
 reports
@@ -83,3 +84,5 @@ test-results/
 playwright-report
 
 temp
+
+packages/ui-templates/node-compile-cache/

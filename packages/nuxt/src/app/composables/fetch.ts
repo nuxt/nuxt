@@ -1,15 +1,16 @@
 import type { FetchError, FetchOptions } from 'ofetch'
-import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
+import { isPlainObject } from '@vue/shared'
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
 // @ts-expect-error virtual file
-import { fetchDefaults } from '#build/nuxt.config.mjs'
+import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -60,12 +61,6 @@ export function useFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -141,16 +136,18 @@ export function useFetch<
     _asyncDataOptions._functionName ||= 'useFetch'
   }
 
-  // ensure that updates to watched sources trigger an update
-  if (watchSources !== false && !immediate) {
-    watch([...(watchSources || []), _fetchOptions], () => {
+  if (alwaysRunFetchOnKeyChange && !immediate) {
+    // ensure that updates to watched sources trigger an update
+    function setImmediate () {
       _asyncDataOptions.immediate = true
-    }, { flush: 'sync', once: true })
+    }
+    watch(key, setImmediate, { flush: 'sync', once: true })
+    watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
   let controller: AbortController
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
     controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
@@ -203,12 +200,6 @@ export function useLazyFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -267,7 +258,27 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     segments.push(unwrapped)
   }
   if (opts.body) {
-    segments.push(hash(toValue(opts.body)))
+    const value = toValue(opts.body)
+    if (!value) {
+      segments.push(hash(value))
+    } else if (value instanceof ArrayBuffer) {
+      segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
+    } else if (value instanceof FormData) {
+      const obj: Record<string, string> = {}
+      for (const entry of value.entries()) {
+        const [key, val] = entry
+        obj[key] = val instanceof File ? val.name : val
+      }
+      segments.push(hash(obj))
+    } else if (isPlainObject(value)) {
+      segments.push(hash(reactive(value)))
+    } else {
+      try {
+        segments.push(hash(value))
+      } catch {
+        console.warn('[useFetch] Failed to hash body', value)
+      }
+    }
   }
   return segments
 }

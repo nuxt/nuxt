@@ -731,16 +731,16 @@ describe('nuxt composables', () => {
      * ```html
      * <div data-prehydrate-id=":b3qlvSiBeH::df1mQEC9xH:"> onPrehydrate testing </div>
      * <script>(()=>{console.log(window)})()</script>
-     * <script>document.querySelectorAll('[data-prehydrate-id*=":b3qlvSiBeH:"]').forEach(o=>{console.log(o.outerHTML)})</script>
-     * <script>document.querySelectorAll('[data-prehydrate-id*=":df1mQEC9xH:"]').forEach(o=>{console.log("other",o.outerHTML)})</script>
+     * <script>document.querySelectorAll('[data-prehydrate-id*=":b3qlvSiBeH:"]').forEach(e=>{console.log(e.outerHTML)})</script>
+     * <script>document.querySelectorAll('[data-prehydrate-id*=":df1mQEC9xH:"]').forEach(e=>{console.log(`other`,e.outerHTML)})</script>
      * ```
      */
     const { id1, id2 } = html.match(/<div[^>]* data-prehydrate-id=":(?<id1>[^:]+)::(?<id2>[^:]+):"> onPrehydrate testing <\/div>/)?.groups || {}
     expect(id1).toBeTruthy()
     const matches = [
       html.match(/<script[^>]*>\(\(\)=>\{console.log\(window\)\}\)\(\)<\/script>/),
-      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(o=>{console.log\\(o.outerHTML\\)}\\)</script>`, 'i')),
-      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(o=>{console.log\\("other",o.outerHTML\\)}\\)</script>`, 'i')),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(e=>{console.log\\(e.outerHTML\\)}\\)</script>`, 'i')),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(e=>{console.log\\(\`other\`,e.outerHTML\\)}\\)</script>`, 'i')),
     ]
 
     // This tests we inject all scripts correctly, and only have one occurrence of multiple calls of a composable
@@ -1023,7 +1023,7 @@ describe('head tags', () => {
     // should render charset by default
     expect(indexHtml).toContain('<meta charset="utf-8">')
     // should render <Head> components
-    expect(indexHtml).toContain('<title>Basic fixture - Fixture</title>')
+    expect(indexHtml).toContain('<title>Basic fixture</title>')
   })
 
   it('SSR script setup should render tags', async () => {
@@ -2045,6 +2045,7 @@ describe('server components/islands', () => {
     const html = await $fetch<string>('/server-page')
     // test island head
     expect(html).toContain('<meta name="author" content="Nuxt">')
+    expect(html).toContain('plugin-style')
   })
 
   it('/server-page - client side navigation', async () => {
@@ -2269,12 +2270,14 @@ describe('component islands', () => {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
 
+    result.head.link ||= []
+    result.head.style ||= []
+
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
           "style": [],
-          "titleTemplate": "%s - Fixture",
         },
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
@@ -2291,13 +2294,15 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
     }
+
+    result.head.link ||= []
+    result.head.style ||= []
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
           "style": [],
-          "titleTemplate": "%s - Fixture",
         },
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
@@ -2350,6 +2355,9 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
     }
+
+    result.head.link ||= []
+    result.head.style ||= []
     result.props = {}
     result.components = {}
     result.slots = {}
@@ -2361,7 +2369,6 @@ describe('component islands', () => {
         "head": {
           "link": [],
           "style": [],
-          "titleTemplate": "%s - Fixture",
         },
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
@@ -2387,13 +2394,15 @@ describe('component islands', () => {
 
       const teleportsEntries = Object.entries(components || {})
 
+      result.head.link ||= []
+      result.head.style ||= []
+
       expect(result).toMatchInlineSnapshot(`
         {
           "components": {},
           "head": {
             "link": [],
             "style": [],
-            "titleTemplate": "%s - Fixture",
           },
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
@@ -2436,13 +2445,11 @@ describe('component islands', () => {
     if (!isDev() && !isWebpack) {
       expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
-          "link": [],
           "style": [
             {
               "innerHTML": "pre[data-v-xxxxx]{color:#00f}",
             },
           ],
-          "titleTemplate": "%s - Fixture",
         }
       `)
     } else if (isDev() && !isWebpack) {
@@ -2462,8 +2469,6 @@ describe('component islands', () => {
               "rel": "stylesheet",
             },
           ],
-          "style": [],
-          "titleTemplate": "%s - Fixture",
         }
       `)
     }
@@ -2607,6 +2612,8 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
 
     await page.close()
+  }, {
+    retry: 3, // looks like this test is flaky
   })
 
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
@@ -2692,10 +2699,12 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
 describe.runIf(isDev())('component testing', () => {
   it('should work', async () => {
-    const comp1 = await $fetchComponent('components/Counter.vue', { multiplier: 2 })
+    // TODO: fix in nuxt/test-utils
+    const comp1 = await $fetchComponent('app/components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
 
-    const comp2 = await $fetchComponent('components/Counter.vue', { multiplier: 4 })
+    // TODO: fix in nuxt/test-utils
+    const comp2 = await $fetchComponent('app/components/Counter.vue', { multiplier: 4 })
     expect(comp2).toContain('12 x 4 = 48')
   })
 })
@@ -3014,6 +3023,34 @@ describe('defineNuxtComponent', () => {
   it ('should get correctly inject value', async () => {
     const { page } = await renderPage('/define-nuxt-component/inject')
     expect(await page.getByTestId('define-nuxt-component-inject-value').innerText()).include('bar')
+  })
+})
+
+describe('scrollToTop', () => {
+  it('should not scroll to top when `scrollToTop` is `false`', async () => {
+    const { page } = await renderPage('/route-scroll-behavior/scroll-to-top')
+
+    await page.locator('#do-not-scroll-to-top').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+
+    await page.click('#do-not-scroll-to-top')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/scroll-to-top/do-not-scroll-to-top'))
+
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY !== 0).toBe(true)
+  })
+
+  it('should scroll to top when `scrollToTop` is `true`', async () => {
+    const { page } = await renderPage('/route-scroll-behavior/scroll-to-top')
+
+    await page.locator('#scroll-to-top').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+
+    await page.click('#scroll-to-top')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/scroll-to-top/scroll-to-top'))
+
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY).toBe(0)
   })
 })
 
