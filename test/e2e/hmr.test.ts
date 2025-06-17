@@ -140,41 +140,6 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       expect(page).toHaveNoErrorsOrWarnings()
     })
 
-    // todo if this is not skipped, the next tests always fail.
-    test.skip('HMR for routes', async ({ page, goto }) => {
-      await goto('/routes')
-
-      // Create a new route that doesn't exist yet
-      writeFileSync(
-        join(fixtureDir, 'app/pages/routes/non-existent.vue'),
-        `<template><div data-testid="contents">A new route!</div></template>`,
-      )
-
-      // Track console logs
-      const consoleLogs: Array<{ type: string, text: string }> = []
-      page.on('console', (msg) => {
-        consoleLogs.push({
-          type: msg.type(),
-          text: msg.text(),
-        })
-      })
-
-      // Wait for HMR to process the new route
-      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
-
-      // Navigate to the new route
-      await page.locator('a[href="/routes/non-existent"]').click()
-
-      // Verify the new route content is rendered
-      await expect(page.getByTestId('contents')).toHaveText('A new route!')
-
-      // Filter expected warnings about route not existing before the update
-      const filteredLogs = consoleLogs.filter(log => (log.type === 'warning' || log.type === 'error') && !log.text.includes('No match found for location with path "/routes/non-existent"'))
-
-      // Verify no unexpected errors
-      expect(filteredLogs).toStrictEqual([])
-    })
-
     test.fail('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
       await goto('/state-component')
 
@@ -231,6 +196,40 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
 
       await expect.soft(button).toHaveText('1')
+    })
+
+    test('HMR for routes', async ({ page, goto }) => {
+      await goto('/routes')
+
+      // Create a new route that doesn't exist yet
+      writeFileSync(
+        join(fixtureDir, 'app/pages/routes/non-existent.vue'),
+        `<template><div data-testid="contents">A new route!</div></template>`,
+      )
+
+      // Track console logs
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Wait for HMR to process the new route
+      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+
+      // Navigate to the new route
+      await page.locator('a[href="/routes/non-existent"]').click()
+
+      // Verify the new route content is rendered
+      await expect(page.getByTestId('contents')).toHaveText('A new route!')
+
+      // Filter expected warnings about route not existing before the update
+      const filteredLogs = consoleLogs.filter(log => (log.type === 'warning' || log.type === 'error') && !log.text.includes('No match found for location with path "/routes/non-existent"'))
+
+      // Verify no unexpected errors
+      expect(filteredLogs).toStrictEqual([])
     })
   }
 }
