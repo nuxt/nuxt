@@ -5,8 +5,6 @@ import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
 import { UnheadImportsPlugin } from './plugins/unhead-imports'
 
-const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
-
 export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
     name: 'nuxt:meta',
@@ -15,6 +13,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
   setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
 
+    const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
     // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
 

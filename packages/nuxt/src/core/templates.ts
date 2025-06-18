@@ -99,14 +99,14 @@ export const serverPluginTemplate: NuxtTemplate = {
   },
 }
 
-const TS_RE = /\.[cm]?tsx?$/
-const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
-const JS_RE = /\.[cm]jsx?$/
-const JS_CAPTURE_RE = /\.[cm](jsx?)$/
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async ({ nuxt, app }) => {
     const EXTENSION_RE = new RegExp(`(?<=\\w)(${nuxt.options.extensions.map(e => escapeRE(e)).join('|')})$`, 'g')
+    const TS_RE = /\.[cm]?tsx?$/
+    const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
+    const JS_RE = /\.[cm]jsx?$/
+    const JS_CAPTURE_RE = /\.[cm](jsx?)$/
 
     const typesDir = join(nuxt.options.buildDir, 'types')
     const tsImports: string[] = []
@@ -177,13 +177,14 @@ export { }
   },
 }
 
-const IMPORT_NAME_RE = /\.\w+$/
-const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
+
+    const IMPORT_NAME_RE = /\.\w+$/
+    const GIT_RE = /^git\+/
 
     const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
     for (const m of nuxt.options._installedModules) {
@@ -317,18 +318,6 @@ export const middlewareTemplate: NuxtTemplate = {
   },
 }
 
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
-}
-
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
   async getContents ({ nuxt }) {
@@ -337,6 +326,17 @@ export const nitroSchemaTemplate: NuxtTemplate = {
     await nuxt.callHook('nitro:prepare:types', { references, declarations })
 
     const sourceDir = join(nuxt.options.buildDir, 'types')
+    function renderAttr (key: string, value?: string) {
+      return value ? `${key}="${value}"` : ''
+    }
+
+    function renderAttrs (obj: Record<string, string>) {
+      const attrs: string[] = []
+      for (const key in obj) {
+        attrs.push(renderAttr(key, obj[key]))
+      }
+      return attrs.join(' ')
+    }
     const lines = [
       ...references.map((ref) => {
         if ('path' in ref && isAbsolute(ref.path)) {
@@ -594,11 +594,12 @@ export const nuxtConfigTemplate: NuxtTemplate = {
   },
 }
 
-const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
-const DECLARATION_RE = /\.d\.[cm]?ts$/
 export const buildTypeTemplate: NuxtTemplate = {
   filename: 'types/build.d.ts',
   getContents ({ app }) {
+    const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
+    const DECLARATION_RE = /\.d\.[cm]?ts$/
+
     let declarations = ''
 
     for (const file of app.templates) {
