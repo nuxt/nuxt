@@ -561,7 +561,8 @@ async function initNuxt (nuxt: Nuxt) {
   for (const [key, options] of modules) {
     await installModule(key, options, nuxt, { defer: false })
   }
-  for (const [key, [firstOptions, ...options]] of nuxt._modulesToDefer) {
+  for (const [key, _options] of nuxt._modulesToDefer) {
+    const [firstOptions, ...options] = _options.reverse()
     await installModule(key, defu(firstOptions, ...options), nuxt, { defer: false })
   }
   delete nuxt._modulesToDefer
