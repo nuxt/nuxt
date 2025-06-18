@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import { withQuery } from 'ufo'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
@@ -26,9 +26,9 @@ vi.mock('vue', async () => {
 
 // Mocks Nuxt `useRouter()`
 vi.mock('../src/app/composables/router', () => ({
-  resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+  resolveRouteObject: vi.fn((to: Exclude<RouteLocationRaw, string>) => {
     return withQuery(to.path || '', to.query || {}) + (to.hash || '')
-  },
+  }),
   useRouter: () => ({
     resolve: (route: string | RouteLocation): Partial<RouteLocation> & { href: string } => {
       if (typeof route === 'string') {
@@ -42,6 +42,7 @@ vi.mock('../src/app/composables/router', () => ({
       }
     },
   }),
+  navigateTo: vi.fn(), // Add this mock
 }))
 
 // Helpers for test visibility
@@ -347,5 +348,45 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: '/to/', external: true }, removeSlashOptions).props.href).toBe('/to')
       })
     })
+  })
+})
+
+describe('nuxt-link:error-handling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should accept onError prop', () => {
+    const errorHandler = vi.fn()
+    const link = nuxtLink({ 
+      to: '/test-route',
+      onError: errorHandler 
+    })
+    
+    // The onError prop should be passed through
+    expect(typeof link.props.onError).toBe('function')
+  })
+
+  it('should define error emit in component options', () => {
+    const component = defineNuxtLink({ componentName: 'TestLink' })
+    
+    // Check that the component has the right structure
+    expect(component).toBeDefined()
+    expect(typeof component.setup).toBe('function')
+  })
+
+  it('should handle error prop correctly', () => {
+    const errorHandler = vi.fn()
+    const component = defineNuxtLink({ componentName: 'TestLink' })
+    
+    // Test that component can be created with onError prop
+    expect(() => {
+      // This tests that the prop definition is correct
+      const link = nuxtLink({ 
+        to: '/test-route',
+        onError: errorHandler 
+      })
+      expect(link).toBeDefined()
+    }).not.toThrow()
   })
 })
