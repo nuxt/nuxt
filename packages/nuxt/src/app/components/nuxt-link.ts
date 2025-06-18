@@ -10,13 +10,13 @@ import type {
   VNode,
   VNodeProps,
 } from 'vue'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
-import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { computed, defineComponent, h, resolveComponent, type PropType, type VNodeProps, type AllowedComponentProps } from 'vue'
+import type { RouteLocation, RouteLocationRaw, RouterLinkProps } from 'vue-router'
+import { useLink } from 'vue-router' // Remove 'type' import
+import { hasProtocol, parseQuery, withQuery } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
-import { onNuxtReady } from '../composables/ready'
-import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
-import { type NuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { navigateTo, useRouter } from '../composables/router'
+import { useNuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
@@ -141,7 +141,7 @@ export function defineNuxtLink (options: NuxtLinkOptions = {}) {
   return defineComponent({
     name: componentName,
     props: {
-      // Routing
+      // Convert the interface to proper Vue props
       to: {
         type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
@@ -152,86 +152,68 @@ export function defineNuxtLink (options: NuxtLinkOptions = {}) {
         default: undefined,
         required: false,
       },
-
-      // Attributes
       target: {
-        type: String as PropType<NuxtLinkProps['target']>,
+        type: String,
         default: undefined,
         required: false,
       },
       rel: {
-        type: String as PropType<NuxtLinkProps['rel']>,
+        type: String,
         default: undefined,
         required: false,
       },
       noRel: {
-        type: Boolean as PropType<NuxtLinkProps['noRel']>,
+        type: Boolean,
         default: undefined,
         required: false,
       },
-
-      // Prefetching
       prefetch: {
-        type: Boolean as PropType<NuxtLinkProps['prefetch']>,
-        default: undefined,
-        required: false,
-      },
-      prefetchOn: {
-        type: [String, Object] as PropType<NuxtLinkProps['prefetchOn']>,
+        type: Boolean,
         default: undefined,
         required: false,
       },
       noPrefetch: {
-        type: Boolean as PropType<NuxtLinkProps['noPrefetch']>,
+        type: Boolean,
         default: undefined,
         required: false,
       },
-
-      // Styling
       activeClass: {
-        type: String as PropType<NuxtLinkProps['activeClass']>,
+        type: String,
         default: undefined,
         required: false,
       },
       exactActiveClass: {
-        type: String as PropType<NuxtLinkProps['exactActiveClass']>,
+        type: String,
         default: undefined,
         required: false,
       },
       prefetchedClass: {
-        type: String as PropType<NuxtLinkProps['prefetchedClass']>,
+        type: String,
         default: undefined,
         required: false,
       },
-
-      // Vue Router's `<RouterLink>` additional props
       replace: {
-        type: Boolean as PropType<NuxtLinkProps['replace']>,
+        type: Boolean,
         default: undefined,
         required: false,
       },
       ariaCurrentValue: {
-        type: String as PropType<NuxtLinkProps['ariaCurrentValue']>,
+        type: String,
         default: undefined,
         required: false,
       },
-
-      // Edge cases handling
       external: {
-        type: Boolean as PropType<NuxtLinkProps['external']>,
+        type: Boolean,
         default: undefined,
         required: false,
       },
-
-      // Slot API
       custom: {
-        type: Boolean as PropType<NuxtLinkProps['custom']>,
+        type: Boolean,
         default: undefined,
         required: false,
       },
-      // Behavior
       trailingSlash: {
-        type: String as PropType<NuxtLinkProps['trailingSlash']>,
+        type: String as PropType<'append' | 'remove'>,
         default: undefined,
         required: false,
       },
@@ -240,14 +222,14 @@ export function defineNuxtLink (options: NuxtLinkOptions = {}) {
         default: undefined,
         required: false,
       },
-    } as unknown as NuxtLinkProps,
+    },
     
     emits: {
       error: (error: NuxtLinkNavigationError) => true
     },
 
-    setup (props, { slots, emit }) {
-      // Pass options to useNuxtLink
+    setup (props: NuxtLinkProps, { slots, emit }: { slots: any, emit: any }) {
+      const router = useRouter()
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, prefetch } = useNuxtLink(props, options)
 
       // Enhanced navigate function with error handling
@@ -273,7 +255,7 @@ export function defineNuxtLink (options: NuxtLinkOptions = {}) {
       }
 
       // Prefetch logic
-      const shouldPrefetch = (on?: NuxtLinkOptions['prefetchOn']) => {
+      const shouldPrefetch = (on: 'interaction' | 'visibility') => {
         return props.prefetch !== false && 
                !props.noPrefetch && 
                typeof to.value === 'string' && 
@@ -521,7 +503,7 @@ function useNuxtLink (props: NuxtLinkProps, options: NuxtLinkOptions = {}) {
     hasTarget,
     isAbsoluteUrl,
     isExternal,
-    href,
+    href: href as ComputedRef<string>,
     isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
     isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
     route: link?.route ?? computed(() => router.resolve(to.value)),
@@ -560,8 +542,16 @@ function useNuxtLink (props: NuxtLinkProps, options: NuxtLinkOptions = {}) {
       }
     },
     prefetch,
-  } satisfies ReturnType<typeof useLink> & {
-    isAbsoluteUrl: Ref<boolean>
+  } satisfies {
+    to: ComputedRef<RouteLocationRaw>
+    hasTarget: ComputedRef<boolean>
+    isAbsoluteUrl: ComputedRef<boolean>
+    isExternal: ComputedRef<boolean>
+    href: ComputedRef<string>
+    isActive: ComputedRef<boolean>
+    isExactActive: ComputedRef<boolean>
+    route: ComputedRef<RouteLocation>
+    navigate: (e?: MouseEvent) => Promise<void>
     prefetch: () => Promise<void>
   }
 }
