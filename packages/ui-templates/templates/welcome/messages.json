@@ -1,3 +1,4 @@
 {
-  "title": "Welcome to Nuxt!"
+  "title": "Welcome to Nuxt!",
+  "version": "4.0.0-rc.2"
 }
