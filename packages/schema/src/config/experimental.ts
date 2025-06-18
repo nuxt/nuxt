@@ -151,6 +151,7 @@ export default defineResolvers({
         prefetchOn: {
           visibility: true,
         },
+        allowlist: [],
       },
       useAsyncData: {
         deep: false,
