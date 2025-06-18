@@ -26,9 +26,9 @@ vi.mock('vue', async () => {
 
 // Mocks Nuxt `useRouter()`
 vi.mock('../src/app/composables/router', () => ({
-  resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+  resolveRouteObject: vi.fn((to: Exclude<RouteLocationRaw, string>) => {
     return withQuery(to.path || '', to.query || {}) + (to.hash || '')
-  },
+  }),
   useRouter: () => ({
     resolve: (route: string | RouteLocation): Partial<RouteLocation> & { href: string } => {
       if (typeof route === 'string') {
@@ -42,6 +42,7 @@ vi.mock('../src/app/composables/router', () => ({
       }
     },
   }),
+  navigateTo: vi.fn(), // Add this mock
 }))
 
 // Helpers for test visibility
@@ -347,5 +348,37 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: '/to/', external: true }, removeSlashOptions).props.href).toBe('/to')
       })
     })
+  })
+})
+
+describe('nuxt-link:error-handling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should accept onError prop', () => {
+    const errorHandler = vi.fn()
+    const link = nuxtLink({ 
+      to: '/test-route',
+      onError: errorHandler 
+    })
+    
+    expect(link.props.onError).toBe(errorHandler)
+  })
+
+  it('should pass error handler to component emits', () => {
+    const component = defineNuxtLink({ componentName: 'TestLink' })
+    
+    // Check that the component has error emit defined
+    expect(component.emits).toHaveProperty('error')
+    expect(typeof component.emits.error).toBe('function')
+  })
+
+  it('should have onError prop in component props', () => {
+    const component = defineNuxtLink({ componentName: 'TestLink' })
+    
+    // Check that onError prop is defined
+    expect(component.props).toHaveProperty('onError')
+    expect(component.props.onError.type).toBe(Function)
   })
 })
