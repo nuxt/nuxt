@@ -61,7 +61,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"194k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1399k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1502k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -78,6 +78,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
+        "consola",
         "devalue",
         "entities",
         "estree-walker",
@@ -98,7 +99,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"547k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"78.5k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"182k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -106,6 +107,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
+        "consola",
         "devalue",
         "hookable",
         "unhead",
@@ -120,7 +122,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"289k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1410k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1513k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -137,6 +139,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
+        "consola",
         "devalue",
         "entities",
         "estree-walker",
