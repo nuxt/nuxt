@@ -109,6 +109,11 @@ describe('modules', () => {
     const result = await $fetch<string>('/auto-registered-module')
     expect(result).toEqual('handler added by auto-registered module')
   })
+  it('should allow modules to register other modules', async () => {
+    const ctx = useTestContext()
+    const template = ctx.nuxt!.vfs['#build/custom-module-logs.mjs']
+    expect(template).toMatchInlineSnapshot(`"export default ["Hello from a parent module!","Hello from a child module manually installed: {\\"foo\\":\\"bing\\",\\"baz\\":\\"qux\\"}","hello from a grandchild module!"]"`)
+  })
 })
 
 describe('pages', () => {
