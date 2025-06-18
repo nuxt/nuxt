@@ -41,207 +41,6 @@ export interface UseFetchOptions<
   watch?: MultiWatchSources | false
 }
 
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-fetch}
- * @since 3.0.0
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
-export function useFetch<
-  ResT = void,
-  ErrorT = FetchError,
-  ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
-  DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
-> (
-  request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-export function useFetch<
-  ResT = void,
-  ErrorT = FetchError,
-  ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
-  DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DataT,
-> (
-  request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-export function useFetch<
-  ResT = void,
-  ErrorT = FetchError,
-  ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
-  DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
-> (
-  request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-  arg2?: string,
-) {
-  const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
-
-  const _request = computed(() => toValue(request))
-
-  const key = computed(() => toValue(opts.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])))
-
-  if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-    throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
-  }
-
-  const {
-    server,
-    lazy,
-    default: defaultFn,
-    transform,
-    pick,
-    watch: watchSources,
-    immediate,
-    getCachedData,
-    deep,
-    dedupe,
-    ...fetchOptions
-  } = opts
-
-  const _fetchOptions = reactive<typeof fetchOptions>({
-    ...fetchDefaults,
-    ...fetchOptions,
-    cache: typeof opts.cache === 'boolean' ? undefined : opts.cache,
-  })
-
-  const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
-    server,
-    lazy,
-    default: defaultFn,
-    transform,
-    pick,
-    immediate,
-    getCachedData,
-    deep,
-    dedupe,
-    watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
-  }
-
-  if (import.meta.dev) {
-    // @ts-expect-error private property
-    _asyncDataOptions._functionName ||= 'useFetch'
-  }
-
-  if (alwaysRunFetchOnKeyChange && !immediate) {
-    // ensure that updates to watched sources trigger an update
-    function setImmediate () {
-      _asyncDataOptions.immediate = true
-    }
-    watch(key, setImmediate, { flush: 'sync', once: true })
-    watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
-  }
-
-  let controller: AbortController
-
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
-    controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
-    controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
-
-    /**
-     * Workaround for `timeout` not working due to custom abort controller
-     * TODO: remove this when upstream issue is resolved
-     * @see https://github.com/unjs/ofetch/issues/326
-     * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
-     */
-    const timeoutLength = toValue(opts.timeout)
-    let timeoutId: NodeJS.Timeout
-    if (timeoutLength) {
-      timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
-      controller.signal.onabort = () => clearTimeout(timeoutId)
-    }
-
-    let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
-
-    // Use fetch with request context and headers for server direct API calls
-    if (import.meta.server && !opts.$fetch) {
-      const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
-      if (isLocalFetch) {
-        _$fetch = useRequestFetch()
-      }
-    }
-
-    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
-  }, _asyncDataOptions)
-
-  return asyncData
-}
-
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
- * @since 3.0.0
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
-export function useLazyFetch<
-  ResT = void,
-  ErrorT = FetchError,
-  ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
-  DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
-> (
-  request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-export function useLazyFetch<
-  ResT = void,
-  ErrorT = FetchError,
-  ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
-  DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DataT,
-> (
-  request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-export function useLazyFetch<
-  ResT = void,
-  ErrorT = FetchError,
-  ReqT extends NitroFetchRequest = NitroFetchRequest,
-  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
-  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
-  DataT = _ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
-> (
-  request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
-  arg2?: string,
-) {
-  const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
-
-  if (import.meta.dev) {
-    // @ts-expect-error private property
-    opts._functionName ||= 'useLazyFetch'
-  }
-
-  return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
-    ...opts,
-    lazy: true,
-  },
-  // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
-  autoKey)
-}
-
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
@@ -282,3 +81,212 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
   }
   return segments
 }
+
+interface CreateUseFetchOptions<
+  ResT = void,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+  DataT = _ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+> {
+  defaults: Partial<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>>
+}
+
+/**
+ * Create a custom useFetch composable with the given default options.
+ * @since 4.0.0
+ * @param options The options for the useFetch composable
+ */
+export function createUseFetch<
+  CResT = void,
+  CReqT extends NitroFetchRequest = NitroFetchRequest,
+  CMethod extends AvailableRouterMethod<CReqT> = CResT extends void ? 'get' extends AvailableRouterMethod<CReqT> ? 'get' : AvailableRouterMethod<CReqT> : AvailableRouterMethod<CReqT>,
+  C_ResT = CResT extends void ? FetchResult<CReqT, CMethod> : CResT,
+  CDataT = C_ResT,
+  CPickKeys extends KeysOf<CDataT> = KeysOf<CDataT>,
+  CDefaultT = undefined,
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+> (options:
+    Partial<CreateUseFetchOptions<CResT, CReqT, CMethod, C_ResT, CDataT, CPickKeys, CDefaultT>>
+    | (() => Partial<CreateUseFetchOptions<CResT, CReqT, CMethod, C_ResT, CDataT, CPickKeys, CDefaultT>>) = {},
+): ReturnType<typeof _createUseFetch<CResT, CReqT, CMethod, C_ResT, CDataT, CPickKeys, CDefaultT>> {
+  if (!import.meta.dev) { return undefined as any }
+  throw new Error(
+    '[nuxt] [createUseFetch] `createUseFetch` is a compiler macro that is only usable inside ' +
+    // TODO: add link to docs about this factory function
+    'the `composables` directory as an exported function. For more information, see `https://nuxt.com/TODO`.',
+  )
+}
+
+/**
+ * Internal function to create useFetch, which replaces the public `createUseFetch` compiler macro.
+ */
+export function _createUseFetch<
+  CResT = void,
+  CReqT extends NitroFetchRequest = NitroFetchRequest,
+  CMethod extends AvailableRouterMethod<CReqT> = CResT extends void ? 'get' extends AvailableRouterMethod<CReqT> ? 'get' : AvailableRouterMethod<CReqT> : AvailableRouterMethod<CReqT>,
+  C_ResT = CResT extends void ? FetchResult<CReqT, CMethod> : CResT,
+  CDataT = C_ResT,
+  CPickKeys extends KeysOf<CDataT> = KeysOf<CDataT>,
+  CDefaultT = undefined,
+> (options:
+    Partial<CreateUseFetchOptions<CResT, CReqT, CMethod, C_ResT, CDataT, CPickKeys, CDefaultT>>
+    | (() => Partial<CreateUseFetchOptions<CResT, CReqT, CMethod, C_ResT, CDataT, CPickKeys, CDefaultT>>) = {},
+) {
+  const factoryOptions = typeof options === 'function' ? options : () => options
+  /**
+   * Fetch data from an API endpoint with an SSR-friendly composable.
+   * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+   * @since 3.0.0
+   * @param request The URL to fetch
+   * @param opts extends $fetch options and useAsyncData options
+   */
+  function useFetch<
+    ResT = void,
+    ErrorT = FetchError,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  > (
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  function useFetch<
+    ResT = void,
+    ErrorT = FetchError,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = DataT,
+  > (
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  function useFetch<
+    ResT = void,
+    ErrorT = FetchError,
+    ReqT extends NitroFetchRequest = NitroFetchRequest,
+    Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+    _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+    DataT = _ResT,
+    PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+    DefaultT = undefined,
+  > (
+    request: Ref<ReqT> | ReqT | (() => ReqT),
+    arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+    arg2?: string,
+  ) {
+    const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+
+    const _request = computed(() => toValue(request))
+
+    const key = computed(() => toValue(opts.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])))
+
+    if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
+      throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
+    }
+
+    const {
+      server,
+      lazy,
+      default: defaultFn,
+      transform,
+      pick,
+      watch: watchSources,
+      immediate,
+      getCachedData,
+      deep,
+      dedupe,
+      ...fetchOptions
+    } = {
+      ...factoryOptions().defaults as Partial<typeof opts>,
+      ...opts,
+    }
+
+    const _fetchOptions = reactive<typeof fetchOptions>({
+      ...fetchDefaults,
+      ...fetchOptions,
+      cache: typeof opts.cache === 'boolean' ? undefined : opts.cache,
+    })
+
+    const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
+      server,
+      lazy,
+      default: defaultFn,
+      transform,
+      pick,
+      immediate,
+      getCachedData,
+      deep,
+      dedupe,
+      watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
+    }
+
+    if (import.meta.dev) {
+    // @ts-expect-error private property
+      _asyncDataOptions._functionName ||= 'useFetch'
+    }
+
+    if (alwaysRunFetchOnKeyChange && !immediate) {
+    // ensure that updates to watched sources trigger an update
+      function setImmediate () {
+        _asyncDataOptions.immediate = true
+      }
+      watch(key, setImmediate, { flush: 'sync', once: true })
+      watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
+    }
+
+    let controller: AbortController
+
+    const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
+      controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
+      controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
+
+      /**
+       * Workaround for `timeout` not working due to custom abort controller
+       * TODO: remove this when upstream issue is resolved
+       * @see https://github.com/unjs/ofetch/issues/326
+       * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
+       */
+      const timeoutLength = toValue(opts.timeout)
+      let timeoutId: NodeJS.Timeout
+      if (timeoutLength) {
+        timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
+        controller.signal.onabort = () => clearTimeout(timeoutId)
+      }
+
+      let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
+
+      // Use fetch with request context and headers for server direct API calls
+      if (import.meta.server && !opts.$fetch) {
+        const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
+        if (isLocalFetch) {
+          _$fetch = useRequestFetch()
+        }
+      }
+
+      return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
+    }, _asyncDataOptions)
+
+    return asyncData
+  }
+
+  return useFetch
+}
+
+export const useFetch = _createUseFetch()
+
+export const useLazyFetch = _createUseFetch({
+  defaults: {
+    lazy: true,
+    // @ts-expect-error private property
+    _functionName: 'useLazyFetch',
+  },
+})
