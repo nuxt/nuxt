@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import { withQuery } from 'ufo'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
@@ -380,5 +380,6 @@ describe('nuxt-link:error-handling', () => {
     // Check that onError prop is defined
     expect(component.props).toHaveProperty('onError')
     expect(component.props.onError.type).toBe(Function)
+    expect(component.props.onError.required).toBe(false)
   })
 })

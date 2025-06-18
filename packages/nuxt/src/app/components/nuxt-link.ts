@@ -135,7 +135,7 @@ type NuxtLinkSlots<CustomProp extends boolean = false> = {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function defineNuxtLink (options: NuxtLinkOptions) {
+export function defineNuxtLink (options: NuxtLinkOptions = {}) {
   const componentName = options.componentName || 'NuxtLink'
 
   return defineComponent({
@@ -247,8 +247,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     },
 
     setup (props, { slots, emit }) {
-      const router = useRouter()
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, prefetch } = useNuxtLink(props)
+      // Pass options to useNuxtLink
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, prefetch } = useNuxtLink(props, options)
 
       // Enhanced navigate function with error handling
       const navigateWithErrorHandling = async (e?: MouseEvent) => {
@@ -446,7 +446,7 @@ export interface NuxtLinkNavigationError extends Error {
 }
 
 // Add onError to NuxtLinkProps interface
-function useNuxtLink (props: NuxtLinkProps) {
+function useNuxtLink (props: NuxtLinkProps, options: NuxtLinkOptions = {}) {
   const router = useRouter()
   
   checkPropConflicts(props, 'to', 'href')
@@ -581,4 +581,8 @@ function resolveTrailingSlashBehavior (path: string, trailingSlash?: 'append' | 
     return path
   }
   return applyTrailingSlashBehavior(path, trailingSlash)
+}
+
+function isHashLinkWithoutHashMode (to: RouteLocationRaw): boolean {
+  return (typeof to === 'string' && to.startsWith('#')) && !hashMode
 }
