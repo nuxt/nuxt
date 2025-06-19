@@ -134,13 +134,14 @@ export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     const generatedSocketPath = generateSocketPath()
 
     viteNodeServerOptions = {
+      // TODO: remove in future
+      baseURL: ctx.nuxt.options.devServer.url,
       socketPath: generatedSocketPath,
       root: ctx.nuxt.options.srcDir,
       entryPath: ctx.entry,
       base: ctx.config.base || '/_nuxt/',
     }
 
-    // Set the environment variable for the client-side (vite-node-shared.mjs)
     process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
     return viteNodeServerOptions
@@ -468,6 +469,7 @@ function sendError (socket: net.Socket, id: string, error: any) {
 }
 
 export type ViteNodeServerOptions = {
+  baseURL: string
   socketPath: string
   root: string
   entryPath: string
