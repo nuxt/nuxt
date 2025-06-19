@@ -3,7 +3,6 @@ import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
 import { lazyHydrationMacroPreset } from '../imports/presets'
@@ -17,6 +16,7 @@ import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform'
+import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }

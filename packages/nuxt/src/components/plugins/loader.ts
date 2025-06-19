@@ -5,10 +5,10 @@ import { pascalCase } from 'scule'
 import { relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 import { installNuxtModule } from '../../core/features'
 import { logger } from '../../utils'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]

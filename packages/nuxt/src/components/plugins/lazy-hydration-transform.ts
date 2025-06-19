@@ -3,10 +3,10 @@ import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
 
 import { parse, walk } from 'ultrahtml'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]
