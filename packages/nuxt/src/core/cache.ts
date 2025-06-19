@@ -35,7 +35,6 @@ export async function getVueHash (nuxt: Nuxt) {
       runtimeConfig: undefined,
       logLevel: undefined,
       devServerHandlers: undefined,
-      generate: undefined,
       devtools: undefined,
     },
   })
@@ -144,6 +143,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
         'yarn.lock',
         'pnpm-lock.yaml',
         'tsconfig.json',
+        'bun.lock',
         'bun.lockb',
       ],
     })
