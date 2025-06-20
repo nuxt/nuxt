@@ -127,6 +127,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.build!.watch = undefined
   }
 
+  // FIX: esbuild.drop is a production-only optimization and should not
+  // be applied in development mode as it breaks essential debugging tools.
+  if (nuxt.options.dev) {
+    if (ctx.config.esbuild && 'drop' in ctx.config.esbuild) {
+      ctx.config.esbuild.drop = undefined
+    }
+  }
+
   // TODO: this may no longer be needed with most recent vite version
   if (nuxt.options.dev) {
     // Identify which layers will need to have an extra resolve step.
