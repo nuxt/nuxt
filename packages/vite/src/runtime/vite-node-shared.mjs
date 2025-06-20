@@ -54,7 +54,7 @@ function connectSocket () {
     const attemptConnection = (attempt = 0) => {
       const socket = net.createConnection(viteNodeOptions.socketPath)
 
-      const INITIAL_BUFFER_SIZE = 64 * 1024 // 32KB
+      const INITIAL_BUFFER_SIZE = 64 * 1024 // 64KB
       const MAX_BUFFER_SIZE = 1024 * 1024 * 1024 // 1GB
 
       let buffer = Buffer.alloc(INITIAL_BUFFER_SIZE)
