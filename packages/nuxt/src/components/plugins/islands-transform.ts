@@ -201,7 +201,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => {
                 if (isDev) {
                   ids.set(component.pascalName, `@fs/${component.filePath}`)
                 } else {
-                  const componentsContent = readFileSync(component.filePath, 'utf-8')
+                  const componentsContent = readFileSync((await this.resolve(component.filePath))!.id, 'utf-8')
                   const id = this.emitFile({
                     type: 'chunk',
                     fileName: join(finalBuildAssetsDir, `${kebabCase(component.pascalName)}.${hash(componentsContent)}.mjs`),
