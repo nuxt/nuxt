@@ -454,6 +454,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
   }
 
+  // esbuild.drop is a production-only optimization.
+  // We explicitly disable it for development mode to preserve console logs
+  // for server-side debugging.
+  if (nuxt.options.dev) {
+    if (nitroConfig.esbuild?.options) {
+      nitroConfig.esbuild.options.drop = undefined
+    }
+  }
+
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
 
