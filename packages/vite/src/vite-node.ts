@@ -91,6 +91,7 @@ function getManifest (ctx: ViteBuildContext): Manifest {
 function generateSocketPath () {
   const uniqueSuffix = `${process.pid}-${Date.now()}`
   const socketName = `nuxt-vite-node-${uniqueSuffix}`
+
   // Windows: pipe
   if (process.platform === 'win32') {
     return join(String.raw`\\.\pipe`, socketName)
@@ -99,7 +100,18 @@ function generateSocketPath () {
   if (process.platform === 'linux') {
     const nodeMajor = Number.parseInt(process.versions.node.split('.')[0]!, 10)
     if (nodeMajor >= 20) {
-      return `\0${socketName}.sock`
+      // We avoid abstract sockets in Docker due to performance issues
+      let isDocker = false
+
+      try {
+        isDocker = fs.existsSync('/.dockerenv') || (fs.existsSync('/proc/1/cgroup') && fs.readFileSync('/proc/1/cgroup', 'utf8').includes('docker'))
+      } catch {
+        // Ignore errors checking Docker status
+      }
+
+      if (!isDocker) {
+        return `\0${socketName}.sock`
+      }
     }
   }
   // Unix socket
