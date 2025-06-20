@@ -13,6 +13,7 @@ import { getQuery } from 'ufo'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { FetchResult, ViteNodeResolveId } from 'vite-node'
+import { provider } from 'std-env'
 
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
@@ -99,7 +100,7 @@ function generateSocketPath () {
   // Linux: abstract namespace
   if (process.platform === 'linux') {
     const nodeMajor = Number.parseInt(process.versions.node.split('.')[0]!, 10)
-    if (nodeMajor >= 20) {
+    if (nodeMajor >= 20 && provider !== 'stackblitz') {
       // We avoid abstract sockets in Docker due to performance issues
       let isDocker = false
 
