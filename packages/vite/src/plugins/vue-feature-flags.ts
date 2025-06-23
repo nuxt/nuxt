@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 import type { Nuxt } from '@nuxt/schema'
 import type { Plugin } from 'vite'
 
