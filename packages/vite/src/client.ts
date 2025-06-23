@@ -128,7 +128,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
         buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
       }),
       RuntimePathsPlugin(),
-      ViteNodePlugin(nuxt, () => ctx),
+      ViteNodePlugin(nuxt),
       // Type checking client panel
       TypeCheckPlugin(nuxt),
       ModulePreloadPolyfillPlugin(),
