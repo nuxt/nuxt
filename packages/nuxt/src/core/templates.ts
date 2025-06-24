@@ -7,11 +7,11 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
+import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -356,7 +356,7 @@ import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
-declare module 'nitro/types' {
+declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -495,18 +495,19 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
-        ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
-        : 'const appConfig = useRuntimeConfig().app',
+        ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
+        : 'const getAppConfig = () => useRuntimeConfig().app',
 
-      'export const baseURL = () => appConfig.baseURL',
-      'export const buildAssetsDir = () => appConfig.buildAssetsDir',
+      'export const baseURL = () => getAppConfig().baseURL',
+      'export const buildAssetsDir = () => getAppConfig().buildAssetsDir',
 
       'export const buildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
 
       'export const publicAssetsURL = (...path) => {',
+      '  const appConfig = getAppConfig()',
       '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
@@ -571,7 +572,11 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
+      `export const asyncDataDefaults = ${JSON.stringify({
+        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
+        errorValue: undefined,
+        value: undefined,
+      })}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,

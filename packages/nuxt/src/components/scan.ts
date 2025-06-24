@@ -4,10 +4,10 @@ import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
-import type { Component, ComponentsDir } from 'nuxt/schema'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
 import { logger } from '../utils'
+import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
 const GLOBAL_RE = /\.global(?:\.island)?$/

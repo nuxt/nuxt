@@ -1,11 +1,11 @@
-/// <reference types="nitro/types" />
+/// <reference types="nitropack/types" />
 /// <reference path="dist/app/types/augments.d.ts" />
 
-import type { DefineNuxtConfig } from 'nuxt/config'
-import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/app/types.js'
+import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
+import type { DefineNuxtConfig } from 'nuxt/config'
 
 export * from './dist/index.js'
 
@@ -15,7 +15,7 @@ declare global {
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
-declare module 'nitro/types' {
+declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
