@@ -388,7 +388,7 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  if (nuxt.options.contentSecurityPolicy) {
+  if (!nuxt.options._modules.includes('nuxt-security') && nuxt.options.contentSecurityPolicy) {
     nuxt.hook('nitro:config', (nitroConfig) => {
       nitroConfig.runtimeConfig ||= {}
       nitroConfig.runtimeConfig.contentSecurityPolicy = nuxt.options.contentSecurityPolicy

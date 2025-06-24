@@ -12,7 +12,7 @@ export default defineNuxtConfig({
       'script-src-attr': ['\'none\''],
       'style-src': ['\'self\'', 'https:', '\'unsafe-inline\''],
       'script-src': ['\'self\'', 'https:', '\'unsafe-inline\'', '\'strict-dynamic\'', '\'nonce-{{nonce}}\''],
-      'upgrade-insecure-requests': true,
+      'upgrade-insecure-requests': false,
     },
   },
 })
