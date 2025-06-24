@@ -201,6 +201,7 @@ const vuePreset = defineUnimportPreset({
     'watchEffect',
     'watchPostEffect',
     'watchSyncEffect',
+    'onWatcherCleanup',
     'isShallow',
 
     // effect

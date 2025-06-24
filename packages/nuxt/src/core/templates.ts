@@ -498,15 +498,16 @@ export const publicPathTemplate: NuxtTemplate = {
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
-        ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
-        : 'const appConfig = useRuntimeConfig().app',
+        ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
+        : 'const getAppConfig = () => useRuntimeConfig().app',
 
-      'export const baseURL = () => appConfig.baseURL',
-      'export const buildAssetsDir = () => appConfig.buildAssetsDir',
+      'export const baseURL = () => getAppConfig().baseURL',
+      'export const buildAssetsDir = () => getAppConfig().buildAssetsDir',
 
       'export const buildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
 
       'export const publicAssetsURL = (...path) => {',
+      '  const appConfig = getAppConfig()',
       '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
