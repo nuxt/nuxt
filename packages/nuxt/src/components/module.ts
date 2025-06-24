@@ -249,7 +249,14 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      addBuildPlugin(ComponentsChunkPlugin({ dev: nuxt.options.dev, selectiveClient: !!selectiveClient, getComponents }))
+      if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
+        addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
+      } else {
+        addTemplate({
+          filename: 'component-chunk.mjs',
+          getContents: () => `export default {}`,
+        })
+      }
     }
   },
 })

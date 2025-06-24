@@ -5,6 +5,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
+import type { Plugin } from 'vite'
 import { isVue } from '../../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -176,93 +177,77 @@ function getPropsToString (bindings: Record<string, string>): string {
 
 type ChunkPluginOptions = {
   dev: boolean
-  selectiveClient: boolean
   getComponents: () => Component[]
 }
 
-const COMPONENT_CHUNK_ID = `#build/component-chunk.mjs`
+const COMPONENT_CHUNK_ID = `#build/component-chunk`
 const COMPONENT_CHUNK_RESOLVED_ID = '\0nuxt-component-chunk'
 
-export const ComponentsChunkPlugin = (options: ChunkPluginOptions) => createUnplugin((_, meta) => {
-  if (meta.framework !== 'vite' || !options.selectiveClient) {
-    return {
-      name: 'nuxt:components-chunk',
-      load (id) {
-        if (id === COMPONENT_CHUNK_ID) {
-          return `export default {}`
-        }
-      },
-    }
-  }
-
+export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => {
   const chunkIds = new Map<string, string>()
   const paths = new Map<string, string>()
   return [
     {
       name: 'nuxt:components-chunk:client',
-      vite: {
-        apply: config => !options.dev && !config.ssr,
-        buildStart () {
-          for (const c of options.getComponents()) {
-            if (!c.filePath || c.mode === 'server') {
-              continue
-            }
-            chunkIds.set(c.pascalName, this.emitFile({
-              type: 'chunk',
-              name: `${c.pascalName}-chunk.mjs`,
-              id: c.filePath,
-              preserveSignature: 'strict',
-            }))
+      apply: config => !options.dev && !config.ssr,
+      buildStart () {
+        for (const c of options.getComponents()) {
+          if (!c.filePath || c.mode === 'server') {
+            continue
           }
-        },
-        generateBundle (_, bundle) {
-          const ids = new Set<string>()
-          for (const [name, id] of chunkIds.entries()) {
-            const filename = this.getFileName(id)
-            ids.add(filename)
-            paths.set(name, filename)
-          }
-          for (const chunk of Object.values(bundle)) {
-            if (chunk.type === 'chunk') {
-              if (ids.has(chunk.fileName)) {
-                chunk.isEntry = false
-              }
+          chunkIds.set(c.pascalName, this.emitFile({
+            type: 'chunk',
+            name: `${c.pascalName}-chunk.mjs`,
+            id: c.filePath,
+            preserveSignature: 'strict',
+          }))
+        }
+      },
+      generateBundle (_, bundle) {
+        const ids = new Set<string>()
+        for (const [name, id] of chunkIds.entries()) {
+          const filename = this.getFileName(id)
+          ids.add(filename)
+          paths.set(name, filename)
+        }
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type === 'chunk') {
+            if (ids.has(chunk.fileName)) {
+              chunk.isEntry = false
             }
           }
-        },
+        }
       },
     },
     {
       name: 'nuxt:components-chunk:server',
-      vite: {
-        resolveId: {
-          order: 'pre',
-          handler (id) {
-            if (id === COMPONENT_CHUNK_ID) {
-              return COMPONENT_CHUNK_RESOLVED_ID
-            }
-          },
-        },
-        load (id) {
-          if (id === COMPONENT_CHUNK_RESOLVED_ID) {
-            if (options.dev) {
-              const filePaths: Record<string, string> = {}
-              for (const c of options.getComponents()) {
-                if (!c.filePath || c.mode === 'server') {
-                  continue
-                }
-                filePaths[c.pascalName] = `@fs/${c.filePath}`
-              }
-              return `export default ${genObjectFromRawEntries(Object.entries(filePaths).map(([name, path]) => [name, genString(path)]))}`
-            }
-
-            return `export default ${
-              genObjectFromRawEntries(Array.from(paths.entries())
-                .map(([name, id]) => [name, genString('/' + id)]))
-            }`
+      resolveId: {
+        order: 'pre',
+        handler (id) {
+          if (id === COMPONENT_CHUNK_ID) {
+            return COMPONENT_CHUNK_RESOLVED_ID
           }
         },
       },
+      load (id) {
+        if (id === COMPONENT_CHUNK_RESOLVED_ID) {
+          if (options.dev) {
+            const filePaths: Record<string, string> = {}
+            for (const c of options.getComponents()) {
+              if (!c.filePath || c.mode === 'server') {
+                continue
+              }
+              filePaths[c.pascalName] = `@fs/${c.filePath}`
+            }
+            return `export default ${genObjectFromRawEntries(Object.entries(filePaths).map(([name, path]) => [name, genString(path)]))}`
+          }
+
+          return `export default ${
+            genObjectFromRawEntries(Array.from(paths.entries())
+              .map(([name, id]) => [name, genString('/' + id)]))
+          }`
+        }
+      },
     },
   ]
-})
+}
