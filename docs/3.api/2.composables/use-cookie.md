@@ -168,8 +168,9 @@ const user = useCookie(
   }
 )
 
-if (user.value && user.value !== null) {
-  user.value.score++; // userInfo cookie not update with this change
+if (user.value) {
+  // the actual `userInfo` cookie will not be updated
+  user.value.score++
 }
 </script>
 
@@ -196,9 +197,9 @@ function add() {
 }
 
 function save() {
-  if (list.value && list.value !== null) {
+  if (list.value) {
+    // the actual `list` cookie will be updated
     list.value = [...list.value]
-    // list cookie update with this change
   }
 }
 </script>
@@ -215,7 +216,7 @@ function save() {
 
 ## Cookies in API Routes
 
-You can use `getCookie` and `setCookie` from [`h3`](https://github.com/unjs/h3) package to set cookies in server API routes.
+You can use `getCookie` and `setCookie` from [`h3`](https://github.com/h3js/h3) package to set cookies in server API routes.
 
 ```ts [server/api/counter.ts]
 export default defineEventHandler(event => {

@@ -95,7 +95,7 @@ Some useful methods:
 
 Nuxt exposes the following properties through `ssrContext`:
 - `url` (string) -  Current request url.
-- `event` ([unjs/h3](https://github.com/unjs/h3) request event) - Access the request & response of the current route.
+- `event` ([h3js/h3](https://github.com/h3js/h3) request event) - Access the request & response of the current route.
 - `payload` (object) - NuxtApp payload object.
 
 ### `payload`

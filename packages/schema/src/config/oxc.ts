@@ -1,14 +1,7 @@
 import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
-  /**
-   * Configure shared oxc options used within Nuxt and passed where necessary.
-   */
   oxc: {
-    /**
-     * Options for `oxc-transform`
-     * @see [Oxc transform docs](https://oxc.rs/docs/guide/usage/transformer.html)
-     */
     transform: {
       options: {
         target: {
