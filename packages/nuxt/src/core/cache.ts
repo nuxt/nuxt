@@ -143,6 +143,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
         'yarn.lock',
         'pnpm-lock.yaml',
         'tsconfig.json',
+        'bun.lock',
         'bun.lockb',
       ],
     })
