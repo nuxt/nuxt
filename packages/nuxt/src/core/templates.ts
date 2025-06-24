@@ -180,8 +180,46 @@ export { }
 const IMPORT_NAME_RE = /\.\w+$/
 const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
-  filename: 'types/schema.d.ts',
+  filename: 'types/runtime-config.d.ts',
   getContents: async ({ nuxt }) => {
+    const privateRuntimeConfig = Object.create(null)
+    for (const key in nuxt.options.runtimeConfig) {
+      if (key !== 'public') {
+        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
+      }
+    }
+
+    return [
+      'import { RuntimeConfig } from \'nuxt/schema\'',
+      'declare module \'nuxt/schema\' {',
+      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
+        {
+          interfaceName: 'RuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
+      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
+        {
+          interfaceName: 'PublicRuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
+      '}',
+      `declare module 'vue' {
+        interface ComponentCustomProperties {
+          $config: RuntimeConfig
+        }
+      }`,
+    ].join('\n')
+  },
+}
+export const schemaNodeTemplate: NuxtTemplate = {
+  filename: 'types/modules.d.ts',
+  getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
@@ -196,13 +234,6 @@ export const schemaTemplate: NuxtTemplate = {
         continue
       }
       modules.push([genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m])
-    }
-
-    const privateRuntimeConfig = Object.create(null)
-    for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public') {
-        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
-      }
     }
 
     const moduleOptionsInterface = (options: { addJSDocTags: boolean, unresolved: boolean }) => [
@@ -244,7 +275,7 @@ export const schemaTemplate: NuxtTemplate = {
     ].filter(Boolean)
 
     return [
-      'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
+      'import { NuxtModule } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
       '  interface NuxtOptions {',
       ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
@@ -262,28 +293,7 @@ export const schemaTemplate: NuxtTemplate = {
       '  interface NuxtConfig {',
       ...moduleOptionsInterface({ addJSDocTags: true, unresolved: true }),
       '  }',
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-        {
-          interfaceName: 'RuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-        {
-          interfaceName: 'PublicRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
       '}',
-      `declare module 'vue' {
-        interface ComponentCustomProperties {
-          $config: RuntimeConfig
-        }
-      }`,
     ].join('\n')
   },
 }

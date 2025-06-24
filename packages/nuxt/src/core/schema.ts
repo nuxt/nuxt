@@ -32,6 +32,7 @@ export default defineNuxtModule({
     // Register module types
     nuxt.hook('prepare:types', async (ctx) => {
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
+      ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
       if (nuxt.options._prepare) {
         await writeSchema(schema)
       }
@@ -165,10 +166,10 @@ declare module 'nuxt/schema' {
   interface CustomAppConfig extends _CustomAppConfig {}
 }
 `
-      const typesPath = resolve(
-        nuxt.options.buildDir,
-        'schema/nuxt.schema.d.ts',
-      )
+      const typesPath = resolve(nuxt.options.buildDir, 'schema/nuxt.schema.d.ts')
+      await Promise.all([
+        writeFile(typesPath, types, 'utf8')
+      ])
       await writeFile(typesPath, types, 'utf8')
       await nuxt.hooks.callHook('schema:written')
     }

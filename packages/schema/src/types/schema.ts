@@ -1692,6 +1692,11 @@ export interface ConfigSchema {
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
     /**
+     * You can extend generated `.nuxt/tsconfig.node.json` using this option.
+     */
+    nodeTsConfig: TSConfig
+
+    /**
      * Generate a `*.vue` shim.
      *
      * We recommend instead letting the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar) generate accurate types for your components.

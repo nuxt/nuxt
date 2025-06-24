@@ -258,8 +258,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-  // Set nitro rootDir to srcDir to prevent including full project in tsconfig.server.json
-  nitroConfig.rootDir = nitroConfig.srcDir
   nitroConfig.ignore ||= []
   nitroConfig.ignore.push(
     ...resolveIgnorePatterns(nitroConfig.srcDir),
@@ -600,6 +598,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       nitro.options.renderer = undefined
     })
   }
+
+  // ensure Nitro types only apply to server directory and not the whole root directory
+  nitro.hooks.hook('types:extend', (types) => {
+    types.tsConfig ||= {}
+    const rootDirGlob = relativeWithDot(nuxt.options.buildDir, join(nuxt.options.rootDir, '**/*'))
+    types.tsConfig.include = types.tsConfig.include?.filter(i => i !== rootDirGlob)
+  })
 
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
