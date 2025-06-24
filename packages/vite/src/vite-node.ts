@@ -41,11 +41,6 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
 
       clientServer.middlewares.use('/__nuxt_vite_node__', toNodeListener(app))
 
-      app.use('/manifest', defineEventHandler(() => {
-        const manifest = getManifest(nuxt, clientServer, resolveClientEntry(clientServer.config))
-        return manifest
-      }))
-
       app.use('/invalidates', defineEventHandler(() => {
         const ids = Array.from(invalidates)
         invalidates.clear()
@@ -55,6 +50,11 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
       nuxt.hook('vite:serverCreated', (ssrServer, ctx) => {
         if (ctx.isServer) {
           registerSSRHandlers(app, ssrServer, clientServer)
+
+          app.use('/manifest', defineEventHandler(() => {
+            const manifest = getManifest(nuxt, ssrServer, resolveClientEntry(clientServer.config))
+            return manifest
+          }))
         }
       })
 
@@ -85,13 +85,13 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
 //   })
 // }
 
-function getManifest (nuxt: Nuxt, clientServer: ViteDevServer, clientEntry: string) {
+function getManifest (nuxt: Nuxt, ssrServer: ViteDevServer, clientEntry: string) {
   const css = new Set<string>()
-  for (const key of clientServer.moduleGraph.urlToModuleMap.keys()) {
+  for (const key of ssrServer.moduleGraph.urlToModuleMap.keys()) {
     if (isCSS(key)) {
       const query = getQuery(key)
       if ('raw' in query) { continue }
-      const importers = clientServer.moduleGraph.urlToModuleMap.get(key)?.importers
+      const importers = ssrServer.moduleGraph.urlToModuleMap.get(key)?.importers
       if (importers && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) {
         continue
       }
