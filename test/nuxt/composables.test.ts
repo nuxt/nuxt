@@ -137,6 +137,10 @@ describe('useAsyncData', () => {
   let uniqueKey: string
   let counter = 0
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   beforeEach(() => {
     uniqueKey = `key-${++counter}`
   })
@@ -742,6 +746,30 @@ describe('useAsyncData', () => {
 
     expect.soft(handler).toHaveBeenCalledTimes(1)
     expect.soft(getCachedData).toHaveBeenCalledTimes(1)
+  })
+
+  it('should handle `immediate: false` and parallel `execute()` calls', async () => {
+    vi.useFakeTimers()
+
+    const query = reactive({ q: '' })
+
+    const { data, status, execute } = await useAsyncData(async () => {
+      return await new Promise(res => setTimeout(() => res(query), 100))
+    }, {
+      immediate: false,
+      watch: [query],
+    })
+
+    expect(status.value).toBe('idle')
+    query.q = 'test'
+    expect(status.value).toBe('pending')
+    await vi.waitFor(() => expect(status.value).toBe('success'))
+    expect.soft(data.value).toEqual({ q: 'test' })
+    query.q = 'test2'
+    await vi.advanceTimersByTimeAsync(10)
+    await execute()
+    await vi.waitFor(() => expect(status.value).toBe('success'))
+    expect(data.value).toEqual({ q: 'test2' })
   })
 })
 
