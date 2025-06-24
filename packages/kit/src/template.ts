@@ -180,18 +180,22 @@ const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 export async function _generateTypes (nuxt: Nuxt) {
   const include = new Set<string>(['./nuxt.d.ts'])
   const nodeInclude = new Set<string>(['./nuxt.node.d.ts'])
+  const legacyInclude = new Set<string>(['./nuxt.d.ts'])
 
   const exclude = new Set<string>()
   const nodeExclude = new Set<string>()
+  const legacyExclude = new Set<string>()
 
   if (nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.srcDir) {
     include.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
+    legacyInclude.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
   }
 
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
     exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
     nodeExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    legacyExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
   }
 
   // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
@@ -199,6 +203,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   for (const dir of ['dist', '.data']) {
     exclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))
     nodeExclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))
+    legacyExclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))
   }
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
@@ -209,6 +214,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       const paths = resolveLayerPaths(nuxt.options.buildDir, layer.cwd, layer.config.srcDir)
       for (const path of paths.nuxt) {
         include.add(path)
+        legacyInclude.add(path)
         if (path !== rootGlob) {
           nodeExclude.add(path)
         }
@@ -216,9 +222,11 @@ export async function _generateTypes (nuxt: Nuxt) {
       for (const path of paths.nitro) {
         exclude.add(path)
         nodeExclude.add(path)
+        legacyExclude.add(path)
       }
       for (const path of paths.node) {
         nodeInclude.add(path)
+        legacyInclude.add(path)
         exclude.add(path)
       }
     }
@@ -237,12 +245,16 @@ export async function _generateTypes (nuxt: Nuxt) {
     const relative = relativeWithDot(nuxt.options.buildDir, path)
     include.add(join(relative, 'runtime'))
     include.add(join(relative, 'dist/runtime'))
+    legacyInclude.add(join(relative, 'runtime'))
+    legacyInclude.add(join(relative, 'dist/runtime'))
 
     nodeExclude.add(join(relative, 'runtime'))
     nodeExclude.add(join(relative, 'dist/runtime'))
 
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
+    legacyExclude.add(join(relative, 'runtime/server'))
+    legacyExclude.add(join(relative, 'dist/runtime/server'))
   }
 
   const nestedModulesDirs: string[] = []
@@ -455,25 +467,34 @@ export async function _generateTypes (nuxt: Nuxt) {
     '',
   ].join('\n')
 
+  // Legacy tsConfig for backward compatibility
+  const legacyTsConfig: TSConfig = defu({}, tsConfig, {
+    include: [...legacyInclude],
+    exclude: [...legacyExclude],
+  })
+
   return {
     declaration,
     nodeTsConfig,
     nodeDeclaration,
     tsConfig,
+    legacyTsConfig,
   }
 }
 
 export async function writeTypes (nuxt: Nuxt) {
-  const { tsConfig, nodeTsConfig, nodeDeclaration, declaration } = await _generateTypes(nuxt)
+  const { tsConfig, nodeTsConfig, nodeDeclaration, declaration, legacyTsConfig } = await _generateTypes(nuxt)
 
-  const tsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.json')
+  const appTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.app.json')
+  const legacyTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.json')
   const nodeTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.node.json')
   const declarationPath = resolve(nuxt.options.buildDir, 'nuxt.d.ts')
   const nodeDeclarationPath = resolve(nuxt.options.buildDir, 'nuxt.node.d.ts')
 
   await fsp.mkdir(nuxt.options.buildDir, { recursive: true })
   await Promise.all([
-    fsp.writeFile(tsConfigPath, JSON.stringify(tsConfig, null, 2)),
+    fsp.writeFile(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
+    fsp.writeFile(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
     fsp.writeFile(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
     fsp.writeFile(declarationPath, declaration),
     fsp.writeFile(nodeDeclarationPath, nodeDeclaration),
