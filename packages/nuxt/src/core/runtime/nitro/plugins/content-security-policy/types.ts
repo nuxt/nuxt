@@ -1,8 +1,3 @@
-import { createDefu } from 'defu'
-import { setResponseHeader } from 'h3'
-import type { NitroApp } from 'nitro/types'
-import { useRuntimeConfig } from 'nitro/runtime'
-
 // according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy#values
 export type CSPSourceValue =
   | '\'self\''
@@ -76,70 +71,3 @@ export type ContentSecurityPolicyConfig = {
     exportToPresets: boolean // true
   }
 }
-
-const defaultCSPConfig: ContentSecurityPolicyConfig = {
-  value: {
-    'base-uri': ['\'none\''],
-    'font-src': ['\'self\'', 'https:', 'data:'],
-    'form-action': ['\'self\''],
-    'frame-ancestors': ['\'self\''],
-    'img-src': ['\'self\'', 'data:'],
-    'object-src': ['\'none\''],
-    'script-src-attr': ['\'none\''],
-    'style-src': ['\'self\'', 'https:', '\'unsafe-inline\''],
-    'script-src': ['\'self\'', 'https:', '\'unsafe-inline\'', '\'strict-dynamic\'', '\'nonce-{{nonce}}\''],
-    'upgrade-insecure-requests': true,
-  },
-  nonce: true,
-  sri: true,
-  ssg: {
-    meta: true,
-    hashScripts: true,
-    hashStyles: false,
-    exportToPresets: true,
-  },
-}
-
-/**
- * This plugin sets the Content Security Policy header for the response.
- */
-export default (nitroApp: NitroApp) => {
-  nitroApp.hooks.hook('render:response', (_, { event }) => {
-    const config = useRuntimeConfig(event)
-    const cspConfigFromUser = config.contentSecurityPolicy || {}
-    const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...cspConfigFromUser }, { ...defaultCSPConfig })
-
-    const headerValue = headerStringFromObject(contentSecurityPolicyConfig.value)
-    setResponseHeader(event, 'content-security-policy', headerValue)
-  })
-}
-
-export function headerStringFromObject (optionValue: ContentSecurityPolicyValue | false) {
-  // False value translates into empty header
-  if (optionValue === false) {
-    return ''
-  }
-  // Stringify the options passed as a JS object
-  return Object.entries(optionValue)
-    .filter(([, value]) => value !== false)
-    .map(([directive, sources]) => {
-      if (directive === 'upgrade-insecure-requests') {
-        return 'upgrade-insecure-requests;'
-      } else {
-        const stringifiedSources = (typeof sources === 'string')
-          ? sources
-          : (sources as string[])
-              .map(source => source.trim())
-              .join(' ')
-        return `${directive} ${stringifiedSources};`
-      }
-    })
-    .join(' ')
-}
-
-export const defuReplaceArray = createDefu((obj, key, value) => {
-  if (Array.isArray(obj[key]) || Array.isArray(value)) {
-    obj[key] = value
-    return true
-  }
-})
