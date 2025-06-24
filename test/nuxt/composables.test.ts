@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, getQuery } from 'h3'
 import { destr } from 'destr'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -746,6 +746,10 @@ describe('useAsyncData', () => {
 })
 
 describe('useFetch', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('should match with/without computed values', async () => {
     const nuxtApp = useNuxtApp()
     const getPayloadEntries = () => Object.keys(nuxtApp.payload.data).length
@@ -897,6 +901,32 @@ describe('useFetch', () => {
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
     expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
+  })
+
+  it('should handle `immediate: false` and parallel `execute()` calls', async () => {
+    vi.useFakeTimers()
+    registerEndpoint(
+      '/api/wait-100',
+      defineEventHandler(async event => await (new Promise(res => setTimeout(() => res(getQuery(event)), 100)))),
+    )
+
+    const query = reactive({ q: '' })
+
+    const { data, status, execute } = await useFetch('/api/wait-100', {
+      query,
+      immediate: false,
+    })
+
+    expect(status.value).toBe('idle')
+    query.q = 'test'
+    expect(status.value).toBe('pending')
+    await vi.waitFor(() => expect(status.value).toBe('success'))
+    expect(data.value).toEqual({ q: 'test' })
+    query.q = 'test2'
+    await vi.advanceTimersByTimeAsync(10)
+    await execute()
+    await vi.waitFor(() => expect(status.value).toBe('success'))
+    expect(data.value).toEqual({ q: 'test2' })
   })
 })
 
