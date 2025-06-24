@@ -1,8 +1,8 @@
-import type { UseScriptInput } from '@unhead/vue'
+import type { UseScriptInput } from '@unhead/vue/scripts'
 import { createError } from './error'
 
 function renderStubMessage (name: string) {
-  const message = `\`${name}\` is provided by @nuxt/scripts. Check your console to install it or run 'npx nuxi@latest module add @nuxt/scripts' to install it.`
+  const message = `\`${name}\` is provided by @nuxt/scripts. Check your console to install it or run 'npx nuxt module add @nuxt/scripts' to install it.`
   if (import.meta.client) {
     throw createError({
       fatal: true,
@@ -119,4 +119,19 @@ export function useScriptGoogleAdsense (...args: unknown[]) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptYouTubePlayer (...args: unknown[]) {
   renderStubMessage('useScriptYouTubePlayer')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptUmamiAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptUmamiAnalytics')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptSnapchatPixel (...args: unknown[]) {
+  renderStubMessage('useScriptSnapchatPixel')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptRybbitAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptRybbitAnalytics')
 }

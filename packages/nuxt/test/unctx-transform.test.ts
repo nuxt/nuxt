@@ -63,5 +63,5 @@ function transform (code: string, id = 'app.vue') {
     },
   }
   const plugin = UnctxTransformPlugin({ sourcemap: false, transformerOptions }).raw({}, {} as any) as any
-  return plugin.transformInclude(id) ? Promise.resolve(plugin.transform(code)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
+  return plugin.transformInclude(id) ? Promise.resolve(plugin.transform.handler(code)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
 }

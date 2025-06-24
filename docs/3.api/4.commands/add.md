@@ -1,23 +1,37 @@
 ---
-title: "nuxi add"
+title: "nuxt add"
 description: "Scaffold an entity into your Nuxt application."
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/add.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/add.ts
     size: xs
 ---
 
+<!--add-cmd-->
 ```bash [Terminal]
-npx nuxi add [--cwd] [--force] <TEMPLATE> <NAME>
+npx nuxt add <TEMPLATE> <NAME> [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--force]
 ```
+<!--/add-cmd-->
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`TEMPLATE` | - | Specify a template of the file to be generated.
-`NAME` | - | Specify a name of the file that will be created.
-`--cwd` | `.` | The directory of the target application.
-`--force` | `false` | Force override file if it already exists.
+### Arguments
+
+<!--add-args-->
+Argument | Description
+--- | ---
+`TEMPLATE` | Specify which template to generate (options: <api\|plugin\|component\|composable\|middleware\|layout\|page\|layer>)
+`NAME` | Specify name of the generated file
+<!--/add-args-->
+
+### Options
+
+<!--add-opts-->
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` | `.` | Specify the working directory
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--force` | `false` | Force override file if it already exists
+<!--/add-opts-->
 
 **Modifiers:**
 
@@ -25,67 +39,74 @@ Some templates support additional modifier flags to add a suffix (like `.client`
 
 ```bash [Terminal]
 # Generates `/plugins/sockets.client.ts`
-npx nuxi add plugin sockets --client
+npx nuxt add plugin sockets --client
 ```
 
-## `nuxi add component`
+## `nuxt add component`
 
 * Modifier flags: `--mode client|server` or `--client` or `--server`
 
 ```bash [Terminal]
 # Generates `components/TheHeader.vue`
-npx nuxi add component TheHeader
+npx nuxt add component TheHeader
 ```
 
-## `nuxi add composable`
+## `nuxt add composable`
 
 ```bash [Terminal]
 # Generates `composables/foo.ts`
-npx nuxi add composable foo
+npx nuxt add composable foo
 ```
 
-## `nuxi add layout`
+## `nuxt add layout`
 
 ```bash [Terminal]
 # Generates `layouts/custom.vue`
-npx nuxi add layout custom
+npx nuxt add layout custom
 ```
 
-## `nuxi add plugin`
+## `nuxt add plugin`
 
 * Modifier flags: `--mode client|server` or `--client`or `--server`
 
 ```bash [Terminal]
 # Generates `plugins/analytics.ts`
-npx nuxi add plugin analytics
+npx nuxt add plugin analytics
 ```
 
-## `nuxi add page`
+## `nuxt add page`
 
 ```bash [Terminal]
 # Generates `pages/about.vue`
-npx nuxi add page about
+npx nuxt add page about
 ```
 
 ```bash [Terminal]
 # Generates `pages/category/[id].vue`
-npx nuxi add page "category/[id]"
+npx nuxt add page "category/[id]"
 ```
 
-## `nuxi add middleware`
+## `nuxt add middleware`
 
 * Modifier flags: `--global`
 
 ```bash [Terminal]
 # Generates `middleware/auth.ts`
-npx nuxi add middleware auth
+npx nuxt add middleware auth
 ```
 
-## `nuxi add api`
+## `nuxt add api`
 
 * Modifier flags: `--method` (can accept `connect`, `delete`, `get`, `head`, `options`, `patch`, `post`, `put` or `trace`) or alternatively you can directly use `--get`, `--post`, etc.
 
 ```bash [Terminal]
 # Generates `server/api/hello.ts`
-npx nuxi add api hello
+npx nuxt add api hello
+```
+
+## `nuxt add layer`
+
+```bash [Terminal]
+# Generates `layers/subscribe/nuxt.config.ts`
+npx nuxt add layer subscribe
 ```

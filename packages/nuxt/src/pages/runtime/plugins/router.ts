@@ -2,23 +2,22 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { isSamePath, withoutBase } from 'ufo'
 
+import type { Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
-import type { Plugin, RouteMiddleware } from '#app'
+
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { clearError, showError, useError } from '#app/composables/error'
+import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
-import _routes from '#build/routes'
-import routerOptions from '#build/router.options'
+import _routes, { handleHotUpdate } from '#build/routes'
+import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
@@ -41,7 +40,7 @@ function createCurrentLocation (
     return withoutBase(pathFromHash, '')
   }
   const displayedPath = withoutBase(pathname, base)
-  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
+  const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
 
@@ -50,13 +49,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   enforce: 'pre',
   async setup (nuxtApp) {
     let routerBase = useRuntimeConfig().app.baseURL
-    if (routerOptions.hashMode && !routerBase.includes('#')) {
+    if (hashMode && !routerBase.includes('#')) {
       // allow the user to provide a `#` in the middle: `/base/#/app`
       routerBase += '#'
     }
 
     const history = routerOptions.history?.(routerBase) ?? (import.meta.client
-      ? (routerOptions.hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
+      ? (hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
       : createMemoryHistory(routerBase)
     )
 
@@ -86,6 +85,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       history,
       routes,
     })
+
+    if (import.meta.hot) {
+      handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'
@@ -128,7 +131,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp._route = shallowReactive(route)
 
-    nuxtApp._middleware = nuxtApp._middleware || {
+    nuxtApp._middleware ||= {
       global: [],
       named: {},
     }
@@ -196,7 +199,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
 
         if (isAppManifestEnabled) {
-          const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
+          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
 
           if (routeRules.appMiddleware) {
             for (const key in routeRules.appMiddleware) {
@@ -210,7 +213,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
 
         for (const entry of middlewareEntries) {
-          const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
+          const middleware: RouteMiddleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
           if (!middleware) {
             if (import.meta.dev) {
@@ -219,21 +222,35 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             throw new Error(`Unknown route middleware: '${entry}'.`)
           }
 
-          const result = await nuxtApp.runWithContext(() => middleware(to, from))
-          if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
-            if (result === false || result instanceof Error) {
-              const error = result || createError({
-                statusCode: 404,
-                statusMessage: `Page Not Found: ${initialURL}`,
-              })
-              await nuxtApp.runWithContext(() => showError(error))
-              return false
+          try {
+            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
+              if (result === false || result instanceof Error) {
+                const error = result || createError({
+                  statusCode: 404,
+                  statusMessage: `Page Not Found: ${initialURL}`,
+                })
+                await nuxtApp.runWithContext(() => showError(error))
+                return false
+              }
             }
-          }
 
-          if (result === true) { continue }
-          if (result || result === false) {
-            return result
+            if (result === true) { continue }
+            if (result === false) {
+              return result
+            }
+            if (result) {
+              if (isNuxtError(result) && result.fatal) {
+                await nuxtApp.runWithContext(() => showError(result))
+              }
+              return result
+            }
+          } catch (err: any) {
+            const error = createError(err)
+            if (error.fatal) {
+              await nuxtApp.runWithContext(() => showError(error))
+            }
+            return error
           }
         }
       }

@@ -1,7 +1,8 @@
 import { addDependency } from 'nypm'
 import { resolvePackageJSON } from 'pkg-types'
-import { logger, useNuxt } from '@nuxt/kit'
+import { useNuxt } from '@nuxt/kit'
 import { isCI, provider } from 'std-env'
+import { logger } from '../utils'
 
 const isStackblitz = provider === 'stackblitz'
 
@@ -12,8 +13,10 @@ interface EnsurePackageInstalledOptions {
 }
 
 async function promptToInstall (name: string, installCommand: () => Promise<void>, options: EnsurePackageInstalledOptions) {
-  if (await resolvePackageJSON(name, { url: options.searchPaths }).catch(() => null)) {
-    return true
+  for (const parent of options.searchPaths || []) {
+    if (await resolvePackageJSON(name, { parent }).catch(() => null)) {
+      return true
+    }
   }
 
   logger.info(`Package ${name} is missing`)
@@ -45,14 +48,14 @@ async function promptToInstall (name: string, installCommand: () => Promise<void
   }
 }
 
-// TODO: refactor to Nuxi
+// TODO: refactor to @nuxt/cli
 const installPrompts = new Set<string>()
 export function installNuxtModule (name: string, options?: EnsurePackageInstalledOptions) {
   if (installPrompts.has(name)) { return }
   installPrompts.add(name)
   const nuxt = useNuxt()
   return promptToInstall(name, async () => {
-    const { runCommand } = await import('nuxi')
+    const { runCommand } = await import('@nuxt/cli')
     await runCommand('module', ['add', name, '--cwd', nuxt.options.rootDir])
   }, { rootDir: nuxt.options.rootDir, searchPaths: nuxt.options.modulesDir, ...options })
 }

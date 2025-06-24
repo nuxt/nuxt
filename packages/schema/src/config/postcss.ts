@@ -1,4 +1,4 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
 const ensureItemIsLast = (item: string) => (arr: string[]) => {
   const index = arr.indexOf(item)
@@ -17,41 +17,27 @@ const orderPresets = {
   },
 }
 
-export default defineUntypedSchema({
+export default defineResolvers({
   postcss: {
-    /**
-     * A strategy for ordering PostCSS plugins.
-     *
-     * @type {'cssnanoLast' | 'autoprefixerLast' | 'autoprefixerAndCssnanoLast' | string[] | ((names: string[]) => string[])}
-     */
     order: {
-      $resolve: (val: string | string[] | ((plugins: string[]) => string[])): string[] | ((plugins: string[]) => string[]) => {
+      $resolve: (val) => {
         if (typeof val === 'string') {
           if (!(val in orderPresets)) {
             throw new Error(`[nuxt] Unknown PostCSS order preset: ${val}`)
           }
           return orderPresets[val as keyof typeof orderPresets]
         }
-        return val ?? orderPresets.autoprefixerAndCssnanoLast
+        if (typeof val === 'function') {
+          return val as (names: string[]) => string[]
+        }
+        if (Array.isArray(val)) {
+          return val
+        }
+        return orderPresets.autoprefixerAndCssnanoLast
       },
     },
-    /**
-     * Options for configuring PostCSS plugins.
-     *
-     * @see [PostCSS docs](https://postcss.org/)
-     * @type {Record<string, unknown> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options }}
-     */
     plugins: {
-      /**
-       * Plugin to parse CSS and add vendor prefixes to CSS rules.
-       *
-       * @see [`autoprefixer`](https://github.com/postcss/autoprefixer)
-       */
       autoprefixer: {},
-
-      /**
-       * @see [`cssnano` configuration options](https://cssnano.github.io/cssnano/docs/config-file/#configuration-options)
-       */
       cssnano: {
         $resolve: async (val, get) => {
           if (val || val === false) {

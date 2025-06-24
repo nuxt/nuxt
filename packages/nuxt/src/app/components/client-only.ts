@@ -1,19 +1,20 @@
-import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
-import { getFragmentHTML } from './utils'
 import ServerPlaceholder from './server-placeholder'
+import { elToStaticVNode } from './utils'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
+
+const STATIC_DIV = '<div></div>'
 
 export default defineComponent({
   name: 'ClientOnly',
   inheritAttrs: false,
-
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
-  setup (_, { slots, attrs }) {
-    const mounted = ref(false)
+  setup (props, { slots, attrs }) {
+    const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true })
     // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
     if (import.meta.dev) {
@@ -21,11 +22,21 @@ export default defineComponent({
       nuxtApp._isNuxtPageUsed = true
       nuxtApp._isNuxtLayoutUsed = true
     }
+    const vm = getCurrentInstance()
+    if (vm) {
+      vm._nuxtClientOnly = true
+    }
     provide(clientOnlySymbol, true)
-    return (props: any) => {
-      if (mounted.value) { return slots.default?.() }
+    return () => {
+      if (mounted.value) {
+        const vnodes = slots.default?.()
+        if (vnodes && vnodes.length === 1) {
+          return [cloneVNode(vnodes[0]!, attrs)]
+        }
+        return vnodes
+      }
       const slot = slots.fallback || slots.placeholder
-      if (slot) { return slot() }
+      if (slot) { return h(slot) }
       const fallbackStr = props.fallback || props.placeholder || ''
       const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
       return createElementBlock(fallbackTag, attrs, fallbackStr)
@@ -54,22 +65,20 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
         return (res.children === null || typeof res.children === 'string')
           ? cloneVNode(res)
           : h(res)
-      } else {
-        const fragment = getFragmentHTML(ctx._.vnode.el ?? null) ?? ['<div></div>']
-        return createStaticVNode(fragment.join(''), fragment.length)
       }
+      return elToStaticVNode(ctx._.vnode.el, STATIC_DIV)
     }
-  } else if (clone.template) {
+  } else {
     // handle runtime-compiler template
-    clone.template = `
+    clone.template &&= `
       <template v-if="mounted$">${component.template}</template>
-      <template v-else><div></div></template>
+      <template v-else>${STATIC_DIV}</template>
     `
   }
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(nuxtApp.isHydrating === false)
+    const mounted$ = shallowRef(nuxtApp.isHydrating === false)
     const instance = getCurrentInstance()!
 
     if (nuxtApp.isHydrating) {
@@ -95,7 +104,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
     if (isPromise(setupState)) {
       return Promise.resolve(setupState).then((setupState) => {
         if (typeof setupState !== 'function') {
-          setupState = setupState || {}
+          setupState ||= {}
           setupState.mounted$ = mounted$
           return setupState
         }
@@ -105,20 +114,22 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
             return (res.children === null || typeof res.children === 'string')
               ? cloneVNode(res)
               : h(res)
-          } else {
-            const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
-            return createStaticVNode(fragment.join(''), fragment.length)
           }
+          return elToStaticVNode(instance?.vnode.el, STATIC_DIV)
         }
       })
     } else {
       if (typeof setupState === 'function') {
         return (...args: any[]) => {
           if (mounted$.value) {
-            return h(setupState(...args), ctx.attrs)
+            const res = setupState(...args)
+            const attrs = clone.inheritAttrs !== false ? ctx.attrs : undefined
+
+            return (res.children === null || typeof res.children === 'string')
+              ? cloneVNode(res, attrs)
+              : h(res, attrs)
           }
-          const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
-          return createStaticVNode(fragment.join(''), fragment.length)
+          return elToStaticVNode(instance?.vnode.el, STATIC_DIV)
         }
       }
       return Object.assign(setupState, { mounted$ })

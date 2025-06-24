@@ -4,6 +4,8 @@ import type { App } from 'vue'
 // This file must be imported first as we set globalThis.$fetch via this import
 // @ts-expect-error virtual file
 import '#build/fetch.mjs'
+// @ts-expect-error virtual file
+import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions } from './nuxt'
@@ -17,7 +19,7 @@ import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { appId, multiApp, vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
@@ -32,7 +34,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (error) {
       await nuxt.hooks.callHook('app:error', error)
-      nuxt.payload.error = nuxt.payload.error || createError(error as any)
+      nuxt.payload.error ||= createError(error as any)
     }
     if (ssrContext?._renderResponse) { throw new Error('skipping render') }
 
@@ -47,7 +49,7 @@ if (import.meta.client) {
     import.meta.webpackHot.accept()
   }
 
-  // eslint-disable-next-line
+  // eslint-disable-next-line prefer-const
   let vueAppPromise: Promise<App<Element>>
 
   entry = async function initApp () {
@@ -63,7 +65,7 @@ if (import.meta.client) {
 
     async function handleVueError (error: any) {
       await nuxt.callHook('app:error', error)
-      nuxt.payload.error = nuxt.payload.error || createError(error as any)
+      nuxt.payload.error ||= createError(error as any)
     }
 
     vueApp.config.errorHandler = handleVueError
@@ -71,6 +73,13 @@ if (import.meta.client) {
     nuxt.hook('app:suspense:resolve', () => {
       if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
     })
+
+    if (spaLoadingTemplateOutside && !isSSR && appSpaLoaderAttrs.id) {
+      // Remove spa loader if present
+      nuxt.hook('app:suspense:resolve', () => {
+        document.getElementById(appSpaLoaderAttrs.id)?.remove()
+      })
+    }
 
     try {
       await applyPlugins(nuxt, plugins)

@@ -1,48 +1,42 @@
 import { runInNewContext } from 'node:vm'
-import type { Node } from 'estree-walker'
-import type { CallExpression } from 'estree'
-import { walk } from 'estree-walker'
-import { transform } from 'esbuild'
-import { parse } from 'acorn'
 import type { NuxtPage } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitro/types'
+import type { NitroRouteConfig } from 'nitropack/types'
 import { normalize } from 'pathe'
+
+import { parseAndWalk } from 'oxc-walker'
+import { getLoader } from '../core/utils'
 import { extractScriptContent, pathToNitroGlob } from './utils'
 
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/
 const ruleCache: Record<string, NitroRouteConfig | null> = {}
 
-export async function extractRouteRules (code: string): Promise<NitroRouteConfig | null> {
+export function extractRouteRules (code: string, path: string): NitroRouteConfig | null {
+  if (!ROUTE_RULE_RE.test(code)) { return null }
+
   if (code in ruleCache) {
     return ruleCache[code] || null
   }
-  if (!ROUTE_RULE_RE.test(code)) { return null }
+
+  const loader = getLoader(path)
+  if (!loader) { return null }
 
   let rule: NitroRouteConfig | null = null
-  const contents = extractScriptContent(code)
+  const contents = loader === 'vue' ? extractScriptContent(code) : [{ code, loader }]
   for (const script of contents) {
     if (rule) { break }
 
     code = script?.code || code
 
-    const js = await transform(code, { loader: script?.loader || 'ts' })
-    walk(parse(js.code, {
-      sourceType: 'module',
-      ecmaVersion: 'latest',
-    }) as Node, {
-      enter (_node) {
-        if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-        const node = _node as CallExpression & { start: number, end: number }
-        const name = 'name' in node.callee && node.callee.name
-        if (name === 'defineRouteRules') {
-          const rulesString = js.code.slice(node.start, node.end)
-          try {
-            rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
-          } catch {
-            throw new Error('[nuxt] Error parsing route rules. They should be JSON-serializable.')
-          }
+    parseAndWalk(code, 'file.' + (script?.loader || 'ts'), (node) => {
+      if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+      if (node.callee.name === 'defineRouteRules') {
+        const rulesString = code.slice(node.start, node.end)
+        try {
+          rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
+        } catch {
+          throw new Error('[nuxt] Error parsing route rules. They should be JSON-serializable.')
         }
-      },
+      }
     })
   }
 
@@ -56,7 +50,7 @@ export function getMappedPages (pages: NuxtPage[], paths = {} as { [absolutePath
       const filename = normalize(page.file)
       paths[filename] = pathToNitroGlob(prefix + page.path)
     }
-    if (page.children) {
+    if (page.children?.length) {
       getMappedPages(page.children, paths, page.path + '/')
     }
   }

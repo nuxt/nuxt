@@ -21,6 +21,12 @@ export interface ModuleMeta {
    */
   compatibility?: NuxtCompatibility
 
+  /**
+   * Fully resolved path used internally by Nuxt. Do not depend on this value.
+   * @internal
+   */
+  rawPath?: string
+
   [key: string]: unknown
 }
 
@@ -64,7 +70,7 @@ export interface ModuleDefinition<
   TWith extends boolean,
 > {
   meta?: ModuleMeta
-  defaults?: TOptionsDefaults | ((nuxt: Nuxt) => TOptionsDefaults)
+  defaults?: TOptionsDefaults | ((nuxt: Nuxt) => Awaitable<TOptionsDefaults>)
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
   setup?: (

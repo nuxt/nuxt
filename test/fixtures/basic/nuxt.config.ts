@@ -4,13 +4,6 @@ import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
-// (defined in nuxt/src/core/nitro.ts)
-declare module 'nitro/types' {
-  interface NitroRouteConfig {
-    ssr?: boolean
-  }
-}
-
 export default defineNuxtConfig({
   appId: 'nuxt-app-basic',
   extends: [
@@ -35,9 +28,9 @@ export default defineNuxtConfig({
         }
       })
     },
-    '~/modules/subpath',
+    '~~/custom-modules/subpath',
     './modules/test',
-    '~/modules/example',
+    '~~/modules/example',
     function (_, nuxt) {
       if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
 
@@ -159,7 +152,7 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
-    serverAppConfig: true,
+    decorators: true,
     typedPages: true,
     clientFallback: true,
     restoreState: true,
@@ -173,7 +166,7 @@ export default defineNuxtConfig({
     headNext: true,
     inlineRouteRules: true,
   },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
   nitro: {
     publicAssets: [
       {
@@ -193,7 +186,7 @@ export default defineNuxtConfig({
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
-      '/no-scripts': { experimentalNoScripts: true },
+      '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
     },
     prerender: {
@@ -211,6 +204,11 @@ export default defineNuxtConfig({
       assetsInlineLimit: 100, // keep SVG as assets URL
     },
   },
+  postcss: {
+    plugins: {
+      '~~/postcss/plugin': {},
+    },
+  },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'webpack:config' (configs) {
@@ -220,7 +218,7 @@ export default defineNuxtConfig({
           rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader',
         )
         for (const rule of esbuildRules) {
-          if (typeof rule === 'object' && typeof rule.options === 'object') {
+          if (typeof rule === 'object' && typeof rule?.options === 'object') {
             rule.options.target = 'es2022'
           }
         }

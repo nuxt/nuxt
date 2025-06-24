@@ -1,0 +1,5 @@
+{
+  "ignoreRules": [
+    "cjs-resolves-to-esm"
+  ]
+}

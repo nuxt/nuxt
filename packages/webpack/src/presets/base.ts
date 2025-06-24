@@ -1,7 +1,6 @@
-import { normalize, resolve } from 'pathe'
+import { basename, normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
-import WebpackBar from 'webpackbar'
 import type { Configuration } from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
@@ -10,12 +9,14 @@ import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
 import { isTest } from 'std-env'
+import { defu } from 'defu'
 import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
+import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import'
 
-import { builder, webpack } from '#builder'
+import { WebpackBarPlugin, builder, webpack } from '#builder'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -28,7 +29,7 @@ export async function base (ctx: WebpackConfigContext) {
 }
 
 function baseConfig (ctx: WebpackConfigContext) {
-  ctx.config = {
+  ctx.config = defu({}, {
     name: ctx.name,
     entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
     module: { rules: [] },
@@ -46,11 +47,11 @@ function baseConfig (ctx: WebpackConfigContext) {
     output: getOutput(ctx),
     stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
     ...ctx.config,
-  }
+  } satisfies Configuration)
 }
 
 function basePlugins (ctx: WebpackConfigContext) {
-  ctx.config.plugins = ctx.config.plugins || []
+  ctx.config.plugins ||= []
 
   // Add timefix-plugin before other plugins
   if (ctx.options.dev) {
@@ -88,7 +89,7 @@ function basePlugins (ctx: WebpackConfigContext) {
       server: 'orange',
       modern: 'blue',
     }
-    ctx.config.plugins.push(new WebpackBar({
+    ctx.config.plugins.push(new WebpackBarPlugin({
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
@@ -101,33 +102,42 @@ function basePlugins (ctx: WebpackConfigContext) {
               ctx.nuxt.callHook(`${builder}:change`, shortPath)
             }
           },
-          done: ({ state }) => {
-            if (state.hasErrors) {
+          done: (_, { stats }) => {
+            if (stats.hasErrors()) {
               ctx.nuxt.callHook(`${builder}:error`)
             } else {
-              logger.success(`${state.name} ${state.message}`)
+              logger.success(`Finished building ${stats.compilation.name ?? 'Nuxt app'}`)
             }
           },
           allDone: () => {
             ctx.nuxt.callHook(`${builder}:done`)
           },
-          progress ({ statesArray }) {
-            ctx.nuxt.callHook(`${builder}:progress`, statesArray)
+          progress: ({ webpackbar }) => {
+            ctx.nuxt.callHook(`${builder}:progress`, webpackbar.statesArray)
           },
         },
       },
     }))
+  }
+
+  // Emit explicit dynamic import statements for rollup compatibility
+  if (ctx.isServer && !ctx.isDev) {
+    ctx.config.plugins.push(new RollupCompatDynamicImportPlugin())
   }
 }
 
 function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
+    [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
     ...ctx.options.alias,
     ...ctx.alias,
   }
   if (ctx.isClient) {
     ctx.alias['nitro/runtime'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+    // TODO: remove in v5
+    ctx.alias['#internal/nitro'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+    ctx.alias['nitropack/runtime'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
   }
 }
 

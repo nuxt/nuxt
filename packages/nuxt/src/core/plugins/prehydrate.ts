@@ -1,68 +1,57 @@
-import { transform } from 'esbuild'
-import { parse } from 'acorn'
-import { walk } from 'estree-walker'
-import type { Node } from 'estree-walker'
-import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
-import type { SimpleCallExpression } from 'estree'
 import MagicString from 'magic-string'
-
 import { hash } from 'ohash'
+
+import { parseAndWalk } from 'oxc-walker'
+import { transformAndMinify } from '../../core/utils/parse'
 import { isJS, isVue } from '../utils'
 
-export function prehydrateTransformPlugin (nuxt: Nuxt) {
+export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {
   return createUnplugin(() => ({
     name: 'nuxt:prehydrate-transform',
     transformInclude (id) {
       return isJS(id) || isVue(id, { type: ['script'] })
     },
-    async transform (code, id) {
-      if (!code.includes('onPrehydrate(')) { return }
+    transform: {
+      filter: {
+        code: { include: /onPrehydrate\(/ },
+      },
+      handler (code, id) {
+        const s = new MagicString(code)
+        parseAndWalk(code, id, (node) => {
+          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
+            return
+          }
+          if (node.callee.name === 'onPrehydrate') {
+            const callback = node.arguments[0]
+            if (!callback) { return }
+            if (callback.type !== 'ArrowFunctionExpression' && callback.type !== 'FunctionExpression') { return }
 
-      const s = new MagicString(code)
-      const promises: Array<Promise<any>> = []
+            const needsAttr = callback.params.length > 0
 
-      walk(parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        ranges: true,
-      }) as Node, {
-        enter (_node) {
-          if (_node.type !== 'CallExpression' || _node.callee.type !== 'Identifier') { return }
-          const node = _node as SimpleCallExpression & { start: number, end: number }
-          const name = 'name' in node.callee && node.callee.name
-          if (name === 'onPrehydrate') {
-            if (!node.arguments[0]) { return }
-            if (node.arguments[0].type !== 'ArrowFunctionExpression' && node.arguments[0].type !== 'FunctionExpression') { return }
-
-            const needsAttr = node.arguments[0].params.length > 0
-            const { start, end } = node.arguments[0] as Node & { start: number, end: number }
-
-            const p = transform(`forEach(${code.slice(start, end)})`, { loader: 'ts', minify: true })
-            promises.push(p.then(({ code: result }) => {
-              const cleaned = result.slice('forEach'.length).replace(/;\s+$/, '')
+            try {
+              const { code: result } = transformAndMinify(`forEach(${code.slice(callback.start, callback.end)})`, { lang: 'ts' })
+              const cleaned = result.slice('forEach'.length).replace(/;$/, '')
               const args = [JSON.stringify(cleaned)]
               if (needsAttr) {
-                args.push(JSON.stringify(hash(result)))
+                args.push(JSON.stringify(hash(result).slice(0, 10)))
               }
-              s.overwrite(start, end, args.join(', '))
-            }))
+              s.overwrite(callback.start, callback.end, args.join(', '))
+            } catch (e) {
+              console.error(`[nuxt] Could not transform onPrehydrate in \`${id}\`:`, e)
+            }
           }
-        },
-      })
+        })
 
-      await Promise.all(promises).catch((e) => {
-        console.error(`[nuxt] Could not transform onPrehydrate in \`${id}\`:`, e)
-      })
-
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
-            ? s.generateMap({ hires: true })
-            : undefined,
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
+          }
         }
-      }
+      },
     },
   }))
 }

@@ -9,15 +9,24 @@
     "main",
     "3.x"
   ],
+  "ignoreDeps": [
+    "node",
+    "npm"
+  ],
   "packageRules": [
+    {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "/webpack/",
+        "/-loader/"
+      ]
+    },
     {
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
-        "vitest"
-      ],
-      "matchPackagePatterns": [
-        "^@vitest/"
+        "vitest",
+        "/^@vitest//"
       ]
     },
     {
@@ -26,8 +35,6 @@
         "3.x"
       ],
       "ignoreDeps": [
-        "nitro",
-        "h3",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"

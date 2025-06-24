@@ -33,6 +33,6 @@ export function vue (ctx: WebpackConfigContext) {
   ctx.config.plugins!.push(new webpack.DefinePlugin({
     '__VUE_OPTIONS_API__': 'true',
     '__VUE_PROD_DEVTOOLS__': 'false',
-    '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': ctx.nuxt.options.debug,
+    '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': ctx.nuxt.options.debug && ctx.nuxt.options.debug.hydration,
   }))
 }

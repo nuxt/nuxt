@@ -15,20 +15,20 @@ const _error = props.error
 // TODO: extract to a separate utility
 const stacktrace = _error.stack
   ? _error.stack
-    .split('\n')
-    .splice(1)
-    .map((line) => {
-      const text = line
-        .replace('webpack:/', '')
-        .replace('.vue', '.js') // TODO: Support sourcemap
-        .trim()
-      return {
-        text,
-        internal: (line.includes('node_modules') && !line.includes('.cache')) ||
+      .split('\n')
+      .splice(1)
+      .map((line) => {
+        const text = line
+          .replace('webpack:/', '')
+          .replace('.vue', '.js') // TODO: Support sourcemap
+          .trim()
+        return {
+          text,
+          internal: (line.includes('node_modules') && !line.includes('.cache')) ||
           line.includes('internal') ||
           line.includes('new Promise'),
-      }
-    }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
+        }
+      }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
   : ''
 
 // Error page props

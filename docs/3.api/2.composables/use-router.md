@@ -68,7 +68,7 @@ router.push({ path: "/home" })
 router.replace({ hash: "#bio" })
 ```
 
-::read-more{icon="i-simple-icons-mdnwebdocs" color="gray" to="https://developer.mozilla.org/en-US/docs/Web/API/History" target="_blank"}
+::read-more{icon="i-simple-icons-mdnwebdocs" to="https://developer.mozilla.org/en-US/docs/Web/API/History" target="_blank"}
 Read more about the browser's History API.
 ::
 

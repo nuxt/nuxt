@@ -86,7 +86,10 @@ const excludedVueHelpers = [
   // Already globally registered
   'defineEmits',
   'defineExpose',
+  'defineModel',
+  'defineOptions',
   'defineProps',
+  'defineSlots',
   'withDefaults',
   'stop',
   //
@@ -203,8 +206,8 @@ describe('imports:vue', () => {
   }
 })
 
-describe('imports:nuxt/scripts', () => {
-  const scripts = scriptRegistry().map(s => s.import?.name).filter(Boolean)
+describe('imports:nuxt/scripts', async () => {
+  const scripts = await scriptRegistry().then(r => r.map(s => s.import?.name).filter(Boolean))
   const globalScripts = new Set([
     'useScript',
     'useScriptEventPage',

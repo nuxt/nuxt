@@ -1,0 +1,56 @@
+name: chore
+
+on:
+  issues:
+    types:
+      - labeled
+
+permissions:
+  issues: write
+
+jobs:
+  convert-label-to-issue-type:
+    name: Convert labels to issue types
+    runs-on: ubuntu-latest
+    if: github.repository == 'nuxt/nuxt'
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.issue.number;
+            const label = context.payload.label.name;
+
+            const issueTypes = {
+              'bug': 'Bug',
+              'enhancement': 'Enhancement'
+            };
+
+            const issueType = issueTypes[label];
+
+            if (!issueType) {
+              console.log(`Label '${label}' is not a target for conversion. Skipping.`);
+              return;
+            }
+
+            try {
+              // Set the issue type using the REST API
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number,
+                type: issueType
+              });
+
+              // Remove the original label
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number,
+                name: label
+              });
+
+              console.log(`Converted '${label}' label to '${issueType}' issue type for issue #${issue_number}`);
+            } catch (error) {
+              console.error(`Error converting label to issue type: ${error}`);
+            }

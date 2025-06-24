@@ -1,0 +1,15 @@
+{
+  "name": "fixture-spa-loader",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "start": "nuxt preview"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^20.11.1 || >=22.0.0"
+  }
+}

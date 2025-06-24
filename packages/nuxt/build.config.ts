@@ -1,5 +1,6 @@
 import type { BuildEntry } from 'unbuild'
 import { defineBuildConfig } from 'unbuild'
+import { addRollupTimingsPlugin, stubOptions } from '../../debug/build-config'
 
 export default defineBuildConfig({
   declaration: true,
@@ -16,13 +17,17 @@ export default defineBuildConfig({
       'pages',
     ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm', ext: 'js' } as BuildEntry)),
   ],
+  stubOptions,
   hooks: {
     'mkdist:entry:options' (_ctx, _entry, mkdistOptions) {
       mkdistOptions.addRelativeDeclarationExtensions = true
     },
+    'rollup:options' (ctx, options) {
+      addRollupTimingsPlugin(options)
+    },
   },
   dependencies: [
-    'nuxi',
+    '@nuxt/cli',
     'vue-router',
     'ofetch',
   ],

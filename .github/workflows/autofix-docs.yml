@@ -1,4 +1,4 @@
-name: autofix.ci  # needed to securely identify the workflow
+name: autofix.ci # needed to securely identify the workflow
 
 on:
   pull_request:
@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -33,4 +33,4 @@ jobs:
       - name: Lint (docs)
         run: pnpm lint:docs:fix
 
-      - uses: autofix-ci/action@ff86a557419858bb967097bfc916833f5647fa8c
+      - uses: autofix-ci/action@551dded8c6cc8a1054039c8bc0b8b48c51dfc6ef

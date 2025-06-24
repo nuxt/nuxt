@@ -14,6 +14,11 @@ const builderMap = {
   '@nuxt/webpack-builder': 'webpack',
 }
 
+export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()) {
+  const nuxtVersion = getNuxtVersion(nuxt)
+  return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
+}
+
 /**
  * Check version constraints and return incompatibility issues as an array
  */
@@ -23,7 +28,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
   // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    if (!satisfies(normalizeSemanticVersion(nuxtVersion), constraints.nuxt, { includePrerelease: true })) {
+    if (!checkNuxtVersion(constraints.nuxt, nuxt)) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``,
@@ -42,12 +47,17 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
           message: `Not compatible with \`${nuxt.options.builder}\`.`,
         })
       } else {
-        const builderVersion = await readPackageJSON(nuxt.options.builder, { url: nuxt.options.modulesDir }).then(r => r.version).catch(() => undefined)
-        if (builderVersion && !satisfies(normalizeSemanticVersion(builderVersion), constraint, { includePrerelease: true })) {
-          issues.push({
-            name: 'builder',
-            message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`,
-          })
+        for (const parent of [nuxt.options.rootDir, nuxt.options.workspaceDir, import.meta.url]) {
+          const builderVersion = await readPackageJSON(nuxt.options.builder, { parent }).then(r => r.version).catch(() => undefined)
+          if (builderVersion) {
+            if (!satisfies(normalizeSemanticVersion(builderVersion), constraint, { includePrerelease: true })) {
+              issues.push({
+                name: 'builder',
+                message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`,
+              })
+            }
+            break
+          }
         }
       }
     }

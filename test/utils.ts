@@ -8,7 +8,7 @@ import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
 
 export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
-export async function renderPage (path = '/') {
+export async function renderPage (path = '/', opts?: { retries?: number }) {
   const ctx = useTestContext()
   if (!ctx.options.browser) {
     throw new Error('`renderPage` require `options.browser` to be set')
@@ -38,7 +38,7 @@ export async function renderPage (path = '/') {
   })
 
   if (path) {
-    await gotoPath(page, path)
+    await gotoPath(page, path, opts?.retries)
   }
 
   return {
@@ -57,18 +57,30 @@ export async function expectNoClientErrors (path: string) {
 
   const { page, pageErrors, consoleLogs } = (await renderPage(path))!
 
-  const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
-  const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
-
   expect(pageErrors).toEqual([])
-  expect(consoleLogErrors).toEqual([])
-  expect(consoleLogWarnings).toEqual([])
+  expectNoErrorsOrWarnings(consoleLogs)
 
   await page.close()
 }
 
-export async function gotoPath (page: Page, path: string) {
-  await page.goto(url(path))
+export function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, text: string }>) {
+  const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
+  const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
+
+  expect(consoleLogErrors).toEqual([])
+  expect(consoleLogWarnings).toEqual([])
+}
+
+export async function gotoPath (page: Page, path: string, retries = 0) {
+  for (let retry = 0; retry <= retries; retry++) {
+    try {
+      await page.goto(url(path), { timeout: 3000 })
+    } catch (error) {
+      if (retry === retries) {
+        throw error
+      }
+    }
+  }
   await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
 }
 

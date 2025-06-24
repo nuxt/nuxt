@@ -1,20 +1,20 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { dirname, join, normalize, resolve } from 'pathe'
+import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, isIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
+import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
-import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { VitePublicDirsPlugin } from './plugins/public-dirs'
@@ -37,6 +37,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   let allowDirs = [
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
+    ...nuxt.options.modulesDir,
     ...nuxt.options._layers.map(l => l.config.rootDir),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
@@ -54,6 +55,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
+  const isIgnored = createIsIgnored(nuxt)
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -62,12 +66,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
         resolve: {
           alias: {
+            [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
-            'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
+            'web-streams-polyfill/ponyfill/es2018': mockEmpty,
             // Cannot destructure property 'AbortController' of ..
-            'abort-controller': 'unenv/runtime/mock/empty',
+            'abort-controller': mockEmpty,
           },
+          dedupe: [
+            'vue',
+          ],
         },
         css: await resolveCSSOptions(nuxt),
         define: {
@@ -85,10 +93,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
                 ? undefined
-                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.name!))}.[hash].[ext]`)),
+                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
           watch: {
+            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
             exclude: nuxt.options.ignore,
           },
         },
@@ -99,15 +108,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             sourcemap: !!nuxt.options.sourcemap.server,
             baseURL: nuxt.options.app.baseURL,
           }),
-          composableKeysPlugin.vite({
-            sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-            rootDir: nuxt.options.rootDir,
-            composables: nuxt.options.optimization.keyedComposables,
-          }),
-          replace({ preventAssignment: true, ...globalThisReplacements }),
         ],
         server: {
-          watch: { ignored: isIgnored },
+          watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
           fs: {
             allow: [...new Set(allowDirs)],
           },
@@ -187,7 +190,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const clientCSSMap = {}
 
     nuxt.hook('vite:extendConfig', (config, { isServer }) => {
-      config.plugins!.push(ssrStylesPlugin({
+      config.plugins!.unshift(ssrStylesPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         clientCSSMap,
         chunksWithInlinedCSS,
@@ -216,12 +219,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
-    ctx.nuxt.hook('app:templatesGenerated', () => {
-      for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-        if (id.startsWith('virtual:') || id.startsWith('\0virtual:')) {
+    ctx.nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+      await Promise.all(changedTemplates.map(async (template) => {
+        for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
           server.moduleGraph.invalidateModule(mod)
+          await server.reloadModule(mod)
         }
-      }
+      }))
     })
 
     if (nuxt.options.vite.warmupEntry !== false) {
@@ -238,8 +242,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
   await withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
 }
-
-const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))
 
 async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
   if (!enabled) { return fn() }

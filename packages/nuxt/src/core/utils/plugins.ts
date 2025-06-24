@@ -54,3 +54,13 @@ export function getLoader (id: string): 'vue' | 'ts' | 'tsx' | null {
   }
   return ext.endsWith('x') ? 'tsx' : 'ts'
 }
+
+export function matchWithStringOrRegex (value: string, matcher: string | RegExp) {
+  if (typeof matcher === 'string') {
+    return value === matcher
+  } else if (matcher instanceof RegExp) {
+    return matcher.test(value)
+  }
+
+  return false
+}

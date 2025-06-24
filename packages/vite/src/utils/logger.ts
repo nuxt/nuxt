@@ -1,9 +1,10 @@
 import type * as vite from 'vite'
+import { createLogger } from 'vite'
 import { logger } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
-import clear from 'clear'
 import type { NuxtOptions } from '@nuxt/schema'
+import { relative } from 'pathe'
 import { useResolveFromPublicAssets } from '../plugins/public-dirs'
 
 let duplicateCount = 0
@@ -24,9 +25,17 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
 }
 
 const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
-export function createViteLogger (config: vite.InlineConfig): vite.Logger {
+export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean } = {}): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
+  const _logger = createLogger()
+  const relativeOutDir = relative(config.root!, config.build!.outDir || '')
+  const clear = () => {
+    _logger.clearScreen(
+      // @ts-expect-error silent is a log level but not a valid option for clearScreens
+      'silent',
+    )
+  }
   const clearScreen = canClearScreen ? clear : () => {}
 
   const { resolveFromPublicAssets } = useResolveFromPublicAssets()
@@ -41,6 +50,7 @@ export function createViteLogger (config: vite.InlineConfig): vite.Logger {
         const id = msg.trim().match(RUNTIME_RESOLVE_REF_RE)?.[1]
         if (id && resolveFromPublicAssets(id)) { return }
       }
+      if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
     }
 
     const sameAsLast = lastType === type && lastMsg === msg

@@ -1,11 +1,11 @@
-/// <reference types="nitro/types" />
+/// <reference types="nitropack/types" />
 /// <reference path="dist/app/types/augments.d.ts" />
 
-import type { DefineNuxtConfig } from 'nuxt/config'
-import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/app/types'
+import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
+import type { DefineNuxtConfig } from 'nuxt/config'
 
 export * from './dist/index'
 
@@ -15,7 +15,7 @@ declare global {
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
-declare module 'nitro/types' {
+declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -24,10 +24,14 @@ declare module 'nitro/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }
@@ -46,10 +50,14 @@ declare module 'nitropack/types' {
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
   }
   interface NitroRouteRules {
     ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
   }

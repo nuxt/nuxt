@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { klona } from 'klona'
-import type { AppConfig } from 'nuxt/schema'
 import { useNuxtApp } from './nuxt'
+import type { AppConfig } from 'nuxt/schema'
 // @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
@@ -35,10 +35,11 @@ function deepDelete (obj: any, newObj: any) {
 
 function deepAssign (obj: any, newObj: any) {
   for (const key in newObj) {
+    if (key === '__proto__' || key === 'constructor') { continue }
     const val = newObj[key]
     if (isPojoOrArray(val)) {
       const defaultVal = Array.isArray(val) ? [] : {}
-      obj[key] = obj[key] || defaultVal
+      obj[key] ||= defaultVal
       deepAssign(obj[key], val)
     } else {
       obj[key] = val
@@ -48,10 +49,15 @@ function deepAssign (obj: any, newObj: any) {
 
 export function useAppConfig (): AppConfig {
   const nuxtApp = useNuxtApp()
-  if (!nuxtApp._appConfig) {
-    nuxtApp._appConfig = (import.meta.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
-  }
+  nuxtApp._appConfig ||= (import.meta.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
   return nuxtApp._appConfig
+}
+
+export function _replaceAppConfig (newConfig: AppConfig) {
+  const appConfig = useAppConfig()
+
+  deepAssign(appConfig, newConfig)
+  deepDelete(appConfig, newConfig)
 }
 
 /**
@@ -66,26 +72,20 @@ export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
 
 // HMR Support
 if (import.meta.dev) {
-  const applyHMR = (newConfig: AppConfig) => {
-    const appConfig = useAppConfig()
-    if (newConfig && appConfig) {
-      deepAssign(appConfig, newConfig)
-      deepDelete(appConfig, newConfig)
-    }
-  }
-
   // Vite
   if (import.meta.hot) {
     import.meta.hot.accept((newModule) => {
       const newConfig = newModule?._getAppConfig()
-      applyHMR(newConfig)
+      if (newConfig) {
+        _replaceAppConfig(newConfig)
+      }
     })
   }
 
   // webpack
   if (import.meta.webpackHot) {
     import.meta.webpackHot.accept('#build/app.config.mjs', () => {
-      applyHMR(__appConfig)
+      _replaceAppConfig(__appConfig)
     })
   }
 }

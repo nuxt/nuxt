@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { Plugin } from 'vite'
 import type { Component } from '@nuxt/schema'
-import type { UnpluginOptions } from 'unplugin'
 import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform'
 import { normalizeLineEndings } from './utils'
 
@@ -21,22 +19,21 @@ const getComponents = () => [{
 const pluginWebpack = IslandsTransformPlugin({
   getComponents,
   selectiveClient: true,
-}).raw({}, { framework: 'webpack', webpack: { compiler: {} as any } })
+}).raw({}, { framework: 'webpack', webpack: { compiler: {} as any } }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
 const viteTransform = async (source: string, id: string, selectiveClient = false) => {
   const vitePlugin = IslandsTransformPlugin({
     getComponents,
     selectiveClient,
-  }).raw({}, { framework: 'vite' }) as Plugin
+  }).raw({}, { framework: 'vite' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (vitePlugin.transform! as Function)(source, id)
-  return typeof result === 'string' ? result : result?.code
+  const result = await vitePlugin.transform.handler(source, id)
+  return typeof result === 'string' ? result : result!.code
 }
 
 const webpackTransform = async (source: string, id: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await ((pluginWebpack as UnpluginOptions).transform! as Function)(source, id)
+  const result = await (pluginWebpack.transform.handler! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -57,8 +54,8 @@ describe('islandTransform - server and island components', () => {
       <script setup lang="ts">
       const someData = 'some data'
 
-      </script>`
-      , 'hello.server.vue')
+      </script>`,
+      'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -130,8 +127,8 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
       <script setup lang="ts">
       const someData = 'some data'
 
-      </script>`
-      , 'hello.server.vue')
+      </script>`,
+      'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -182,8 +179,8 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
 
     const message = "Hello World";
     </script>
-    `
-      , 'hello.server.vue')
+    `,
+      'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -271,7 +268,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -305,7 +302,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-eo0XycWCUV" :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -376,7 +373,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -402,9 +399,9 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
-                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-D9uaHyzL7X" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else-if="true" to="HelloWorld-o4RZMtArnE" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else to="HelloWorld-m1IbXHdd8O" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-if="false" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else-if="true" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
                 "

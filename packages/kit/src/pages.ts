@@ -1,5 +1,5 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitro/types'
+import type { NitroRouteConfig } from 'nitropack/types'
 import { defu } from 'defu'
 import { useNuxt } from './context'
 import { logger } from './logger'
@@ -20,9 +20,7 @@ export interface ExtendRouteRulesOptions {
 export function extendRouteRules (route: string, rule: NitroRouteConfig, options: ExtendRouteRulesOptions = {}) {
   const nuxt = useNuxt()
   for (const opts of [nuxt.options, nuxt.options.nitro]) {
-    if (!opts.routeRules) {
-      opts.routeRules = {}
-    }
+    opts.routeRules ||= {}
     opts.routeRules[route] = options.override
       ? defu(rule, opts.routeRules[route])
       : defu(opts.routeRules[route], rule)

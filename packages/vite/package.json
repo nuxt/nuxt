@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.12.2",
+  "version": "4.0.0-alpha.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -21,56 +21,52 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild",
+    "test:attw": "attw --pack"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@types/clear": "0.1.4",
-    "@types/estree": "1.0.6",
-    "rollup": "4.24.2",
-    "unbuild": "3.0.0-rc.11",
-    "vue": "3.5.12"
+    "rollup": "4.44.0",
+    "unbuild": "3.5.0",
+    "vue": "3.5.17"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "@rollup/plugin-replace": "^6.0.1",
-    "@vitejs/plugin-vue": "^5.1.4",
-    "@vitejs/plugin-vue-jsx": "^4.0.1",
-    "autoprefixer": "^10.4.20",
-    "clear": "^0.1.0",
-    "consola": "^3.2.3",
-    "cssnano": "^7.0.6",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue-jsx": "^4.2.0",
+    "autoprefixer": "^10.4.21",
+    "consola": "^3.4.2",
+    "cssnano": "^7.0.7",
     "defu": "^6.1.4",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.5",
     "escape-string-regexp": "^5.0.0",
-    "estree-walker": "^3.0.3",
-    "externality": "^1.0.2",
+    "exsolve": "^1.0.7",
     "get-port-please": "^3.1.2",
-    "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
-    "jiti": "^2.3.3",
-    "knitwork": "^1.1.0",
-    "magic-string": "^0.30.12",
-    "mlly": "^1.7.2",
-    "ohash": "^1.1.4",
-    "pathe": "^1.1.2",
-    "perfect-debounce": "^1.0.0",
-    "pkg-types": "^1.2.1",
-    "postcss": "^8.4.47",
-    "rollup-plugin-visualizer": "^5.12.0",
-    "std-env": "^3.7.0",
-    "strip-literal": "^2.1.0",
-    "ufo": "^1.5.4",
-    "unenv": "^1.10.0",
-    "unplugin": "^1.14.1",
-    "vite": "^5.4.10",
-    "vite-node": "^2.1.4",
-    "vite-plugin-checker": "^0.8.0",
+    "h3": "^1.15.3",
+    "jiti": "^2.4.2",
+    "knitwork": "^1.2.0",
+    "magic-string": "^0.30.17",
+    "mlly": "^1.7.4",
+    "mocked-exports": "^0.1.1",
+    "nitropack": "2.11.12",
+    "pathe": "^2.0.3",
+    "pkg-types": "^2.1.0",
+    "postcss": "^8.5.6",
+    "rollup-plugin-visualizer": "^6.0.3",
+    "std-env": "^3.9.0",
+    "ufo": "^1.6.1",
+    "unenv": "^2.0.0-rc.17",
+    "unplugin": "^2.3.5",
+    "vite": "^6.3.5",
+    "vite-node": "^3.2.4",
+    "vite-plugin-checker": "^0.9.3",
     "vue-bundle-renderer": "^2.1.1"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
   },
   "engines": {
-    "node": "^14.18.0 || >=16.10.0"
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }

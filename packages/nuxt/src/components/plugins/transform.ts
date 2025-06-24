@@ -1,5 +1,4 @@
 import { isIgnored } from '@nuxt/kit'
-import type { Nuxt } from 'nuxt/schema'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
@@ -8,6 +7,7 @@ import { parseQuery } from 'vue-router'
 import { normalize } from 'pathe'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module'
+import type { Nuxt } from 'nuxt/schema'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 
@@ -31,12 +31,13 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
 
   function getComponentsImports (): Import[] {
     const components = options.getComponents(options.mode)
+    const clientOrServerModes = new Set(['client', 'server'])
     return components.flatMap((c): Import[] => {
       const withMode = (mode: string | undefined) => mode
         ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}&nuxt_component_name=${c.pascalName}&nuxt_component_export=${c.export || 'default'}`
         : c.filePath
 
-      const mode = !c._raw && c.mode && ['client', 'server'].includes(c.mode) ? c.mode : undefined
+      const mode = !c._raw && c.mode && clientOrServerModes.has(c.mode) ? c.mode : undefined
 
       return [
         {
@@ -58,7 +59,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     enforce: 'post',
     transformInclude (id) {
       id = normalize(id)
-      return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id)
+      return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
     },
     async transform (code, id) {
       // Virtual component wrapper

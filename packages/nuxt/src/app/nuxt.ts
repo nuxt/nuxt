@@ -6,25 +6,25 @@ import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
-import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
-import type { RenderResponse } from 'nitro/types'
+import type { RenderResponse } from 'nitropack/types'
 import type { LogObject } from 'consola'
-import type { MergeHead, VueHeadClient } from '@unhead/vue'
+import type { VueHeadClient } from '@unhead/vue/types'
+
+import type { NuxtAppLiterals } from 'nuxt/app'
 
 import type { NuxtIslandContext } from '../app/types'
 import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
-import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
+import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-import type { NuxtAppLiterals } from '#app'
-
-function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id = appId || 'nuxt-app') {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -45,11 +45,10 @@ export interface RuntimeNuxtHooks {
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'app:manifest:update': (meta?: NuxtAppManifestMeta) => HookResult
-  'dev:ssr-logs': (logs: LogObject[]) => void | Promise<void>
+  'dev:ssr-logs': (logs: LogObject[]) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
-  'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
   'page:view-transition:start': (transition: ViewTransition) => HookResult
   'page:loading:start': () => HookResult
@@ -67,7 +66,7 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: Partial<NuxtPayload>
-  head: VueHeadClient<MergeHead>
+  head: VueHeadClient
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
@@ -81,6 +80,8 @@ export interface NuxtSSRContext extends SSRContext {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
+  /** @internal */
+  _preloadManifest?: boolean
 }
 
 export interface NuxtPayload {
@@ -114,11 +115,6 @@ interface _NuxtApp {
    * The id of the Nuxt application.
    * @internal */
   _id: string
-  /**
-   * The next id that can be used for generating unique ids via `useId`.
-   * @internal
-   */
-  _genId?: number
   /** @internal */
   _scope: EffectScope
   /** @internal */
@@ -126,14 +122,22 @@ interface _NuxtApp {
   /** @internal */
   _asyncData: Record<string, {
     data: Ref<unknown>
-    /**
-     * @deprecated This may be removed in a future major version.
-     */
     pending: Ref<boolean>
     error: Ref<Error | undefined>
     status: Ref<AsyncDataRequestStatus>
+    execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _default: () => unknown
+    /** @internal */
+    _deps: number
+    /** @internal */
+    _off: () => void
+    /** @internal */
+    _init: boolean
+    /** @internal */
+    _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+    /** @internal */
+    _hash?: Record<string, string | undefined>
   } | undefined>
 
   /** @internal */
@@ -154,8 +158,6 @@ interface _NuxtApp {
 
   /** @internal */
   _observer?: { observe: (element: Element, callback: () => void) => () => void }
-  /** @internal */
-  _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any> | null>
 
   /** @internal */
   _appConfig: AppConfig
@@ -375,12 +377,12 @@ export function createNuxtApp (options: CreateOptions) {
     if (chunkErrorEvent) {
       window.addEventListener(chunkErrorEvent, (event) => {
         nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-        if (nuxtApp.isHydrating || event.payload.message.includes('Unable to preload CSS')) {
+        if (event.payload.message.includes('Unable to preload CSS')) {
           event.preventDefault()
         }
       })
     }
-    window.useNuxtApp = window.useNuxtApp || useNuxtApp
+    window.useNuxtApp ||= useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
@@ -416,20 +418,20 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 
 /** @since 3.0.0 */
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
-  const resolvedPlugins: string[] = []
+  const resolvedPlugins: Set<string> = new Set()
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.includes(name)) ?? []
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
       const promise = applyPlugin(nuxtApp, plugin).then(async () => {
         if (plugin._name) {
-          resolvedPlugins.push(plugin._name)
+          resolvedPlugins.add(plugin._name)
           await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
             if (dependsOn.has(plugin._name!)) {
               dependsOn.delete(plugin._name!)
@@ -520,7 +522,7 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(id).tryUse()
+  nuxtAppInstance ||= getNuxtAppCtx(id).tryUse()
 
   return nuxtAppInstance || null
 }

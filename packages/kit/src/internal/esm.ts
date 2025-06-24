@@ -1,10 +1,17 @@
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { interopDefault, resolvePath, resolvePathSync } from 'mlly'
+import { interopDefault } from 'mlly'
+import { resolveModulePath } from 'exsolve'
 import { createJiti } from 'jiti'
 import { captureStackTrace } from 'errx'
 
 export interface ResolveModuleOptions {
+  /** @deprecated use `url` with URLs pointing at a file - never a directory */
   paths?: string | string[]
+  url?: URL | URL[]
+}
+
+export function directoryToURL (dir: string): URL {
+  return pathToFileURL(dir + '/')
 }
 
 /**
@@ -13,16 +20,22 @@ export interface ResolveModuleOptions {
  *
  * @internal
  */
-export async function tryResolveModule (id: string, url: string | string[] = import.meta.url) {
-  try {
-    return await resolvePath(id, { url })
-  } catch {
-    // intentionally empty as this is a `try-` function
-  }
+export async function tryResolveModule (id: string, url: URL | URL[]): Promise<string | undefined>
+/** @deprecated pass URLs pointing at files */
+export function tryResolveModule (id: string, url: string | string[]): Promise<string | undefined>
+export function tryResolveModule (id: string, url: string | string[] | URL | URL[] = import.meta.url) {
+  return Promise.resolve(resolveModulePath(id, {
+    from: url,
+    suffixes: ['', 'index'],
+    try: true,
+  }))
 }
 
 export function resolveModule (id: string, options?: ResolveModuleOptions) {
-  return resolvePathSync(id, { url: options?.paths ?? [import.meta.url] })
+  return resolveModulePath(id, {
+    from: options?.url ?? options?.paths ?? [import.meta.url],
+    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+  })
 }
 
 export interface ImportModuleOptions extends ResolveModuleOptions {
@@ -31,8 +44,8 @@ export interface ImportModuleOptions extends ResolveModuleOptions {
 }
 
 export async function importModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
-  const resolvedPath = await resolveModule(id, opts)
-  return import(pathToFileURL(resolvedPath).href).then(r => opts?.interopDefault !== false ? interopDefault(r) : r) as Promise<T>
+  const resolvedPath = resolveModule(id, opts)
+  return await import(pathToFileURL(resolvedPath).href).then(r => opts?.interopDefault !== false ? interopDefault(r) : r) as Promise<T>
 }
 
 export function tryImportModule<T = unknown> (id: string, opts?: ImportModuleOptions) {

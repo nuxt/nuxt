@@ -7,29 +7,30 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/ui-templates"
   },
-  "license": "CC-BY-ND-4.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "vite build",
     "dev": "vite",
     "optimize-assets": "npx svgo public/assets/**/*.svg",
     "postinstall": "pnpm build",
-    "prerender": "pnpm build && jiti ./lib/prerender",
-    "test": "pnpm lint && pnpm build"
+    "prerender": "pnpm build && jiti ./lib/prerender"
   },
   "devDependencies": {
-    "@unocss/reset": "0.63.6",
-    "critters": "0.0.25",
-    "html-validate": "8.24.2",
-    "htmlnano": "2.1.1",
-    "jiti": "2.3.3",
-    "knitwork": "1.1.0",
-    "pathe": "1.1.2",
-    "prettier": "3.3.3",
+    "@unocss/reset": "66.2.3",
+    "@vue/shared": "3.5.17",
+    "beasties": "0.3.4",
+    "html-validate": "9.7.0",
+    "htmlnano": "2.1.2",
+    "jiti": "2.4.2",
+    "knitwork": "1.2.0",
+    "pathe": "2.0.3",
+    "prettier": "3.6.0",
     "scule": "1.3.0",
-    "tinyexec": "0.3.1",
-    "tinyglobby": "0.2.10",
-    "unocss": "0.63.6",
-    "vite": "5.4.10"
+    "svgo": "4.0.0",
+    "tinyexec": "1.0.1",
+    "tinyglobby": "0.2.14",
+    "unocss": "66.2.3",
+    "vite": "6.3.5"
   }
 }

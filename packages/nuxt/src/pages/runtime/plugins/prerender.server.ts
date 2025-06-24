@@ -5,9 +5,8 @@ import defu from 'defu'
 
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { prerenderRoutes } from '#app/composables/ssr'
-// @ts-expect-error virtual file
 import _routes from '#build/routes'
-import routerOptions from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
 import { crawlLinks } from '#build/nuxt.config.mjs'
 
@@ -16,7 +15,7 @@ let routes: string[]
 let _routeRulesMatcher: undefined | ReturnType<typeof toRouteMatcher> = undefined
 
 export default defineNuxtPlugin(async () => {
-  if (!import.meta.server || !import.meta.prerender || routerOptions.hashMode) {
+  if (!import.meta.server || !import.meta.prerender || hashMode) {
     return
   }
   if (routes && !routes.length) { return }
@@ -39,7 +38,7 @@ function shouldPrerender (path: string) {
   return !_routeRulesMatcher || defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(path).reverse()).prerender
 }
 
-function processRoutes (routes: RouteRecordRaw[], currentPath = '/', routesToPrerender = new Set<string>()) {
+function processRoutes (routes: readonly RouteRecordRaw[], currentPath = '/', routesToPrerender = new Set<string>()) {
   for (const route of routes) {
     // Add root of optional dynamic paths and catchalls
     if (OPTIONAL_PARAM_RE.test(route.path) && !route.children?.length && shouldPrerender(currentPath)) {

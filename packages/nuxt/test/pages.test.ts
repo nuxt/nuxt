@@ -1,7 +1,10 @@
+import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
-import type { NuxtPage } from 'nuxt/schema'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
+import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
@@ -22,6 +25,7 @@ describe('pages:generateRoutesFromFiles', () => {
     description: string
     files?: Array<{ path: string, template?: string, meta?: Record<string, any> }>
     output?: NuxtPage[]
+    it?: TestAPI
     normalized?: Record<string, any>[]
     error?: string
   }> = [
@@ -182,18 +186,6 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
       output: [
         {
-          name: 'index',
-          path: '/',
-          file: `${pagesDir}/index.vue`,
-          children: [],
-        },
-        {
-          children: [],
-          name: 'slug',
-          file: `${pagesDir}/[slug].vue`,
-          path: '/:slug()',
-        },
-        {
           children: [
             {
 
@@ -207,10 +199,46 @@ describe('pages:generateRoutesFromFiles', () => {
           path: '/:foo?',
         },
         {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          children: [],
+        },
+        {
+          children: [],
+          name: 'slug',
+          file: `${pagesDir}/[slug].vue`,
+          path: '/:slug()',
+        },
+        {
+          children: [],
+          name: 'bar',
+          file: `${pagesDir}/[bar]/index.vue`,
+          path: '/:bar()',
+        },
+        {
+          name: 'opt-slug',
+          path: '/opt/:slug?',
+          file: `${pagesDir}/opt/[[slug]].vue`,
+          children: [],
+        },
+        {
+          name: 'nonopt-slug',
+          path: '/nonopt/:slug()',
+          file: `${pagesDir}/nonopt/[slug].vue`,
+          children: [],
+        },
+        {
           children: [],
           path: '/optional/:opt?',
           name: 'optional-opt',
           file: `${pagesDir}/optional/[[opt]].vue`,
+        },
+        {
+          name: 'sub-route-slug',
+          path: '/:sub?/route-:slug()',
+          file: `${pagesDir}/[[sub]]/route-[slug].vue`,
+          children: [],
         },
         {
           children: [],
@@ -231,47 +259,29 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'optional-prefix-opt-postfix',
           file: `${pagesDir}/optional/prefix-[[opt]]-postfix.vue`,
         },
-        {
-          children: [],
-          name: 'bar',
-          file: `${pagesDir}/[bar]/index.vue`,
-          path: '/:bar()',
-        },
-        {
-          name: 'nonopt-slug',
-          path: '/nonopt/:slug()',
-          file: `${pagesDir}/nonopt/[slug].vue`,
-          children: [],
-        },
-        {
-          name: 'opt-slug',
-          path: '/opt/:slug?',
-          file: `${pagesDir}/opt/[[slug]].vue`,
-          children: [],
-        },
-        {
-          name: 'sub-route-slug',
-          path: '/:sub?/route-:slug()',
-          file: `${pagesDir}/[[sub]]/route-[slug].vue`,
-          children: [],
-        },
       ],
     },
     {
       description: 'should generate correct catch-all route',
-      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }],
+      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }, { path: `${pagesDir}/[...slug]/[id].vue` }],
       output: [
-        {
-          name: 'slug',
-          path: '/:slug(.*)*',
-          file: `${pagesDir}/[...slug].vue`,
-          children: [],
-        },
         {
           name: 'index',
           path: '/',
           file: `${pagesDir}/index.vue`,
           children: [],
+        },
+        {
+          name: 'slug',
+          path: '/:slug(.*)*',
+          file: `${pagesDir}/[...slug].vue`,
+          children: [
+            {
+              name: 'slug-id',
+              path: ':id()',
+              file: `${pagesDir}/[...slug]/[id].vue`,
+              children: [],
+            }],
         },
       ],
     },
@@ -375,16 +385,16 @@ describe('pages:generateRoutesFromFiles', () => {
       output: [
         {
           name: 'foo',
+          path: '/:foo()',
+          file: `${pagesDir}/[foo].vue`,
+          children: [],
+        },
+        {
+          name: 'foo',
           path: '/:foo?',
           file: `${pagesDir}/[[foo]].vue`,
           children: [
           ],
-        },
-        {
-          name: 'foo',
-          path: '/:foo()',
-          file: `${pagesDir}/[foo].vue`,
-          children: [],
         },
       ],
     },
@@ -470,6 +480,34 @@ describe('pages:generateRoutesFromFiles', () => {
           file: `${pagesDir}/index/index.vue`,
           name: 'index',
           path: '/',
+        },
+      ],
+    },
+    {
+      description: 'should generate correct routes for nested pages',
+      files: [
+        { path: `${pagesDir}/page1/index.vue` },
+        { path: `${pagesDir}/page1/[id].vue` },
+        { path: `${pagesDir}/page1.vue` },
+      ],
+      output: [
+        {
+          children: [
+            {
+              children: [],
+              file: `${pagesDir}/page1/[id].vue`,
+              name: 'page1-id',
+              path: ':id()',
+            },
+            {
+              children: [],
+              file: `${pagesDir}/page1/index.vue`,
+              name: 'page1',
+              path: '',
+            },
+          ],
+          file: `${pagesDir}/page1.vue`,
+          path: '/page1',
         },
       ],
     },
@@ -575,6 +613,33 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
     },
     {
+      description: 'should use more performant regexp when catchall is used in middle of path',
+      files: [
+        {
+          path: `${pagesDir}/[...id]/suffix.vue`,
+        },
+        {
+          path: `${pagesDir}/[...id]/index.vue`,
+        },
+      ],
+      output: [
+        {
+          name: 'id',
+          meta: undefined,
+          path: '/:id(.*)*',
+          file: `${pagesDir}/[...id]/index.vue`,
+          children: [],
+        },
+        {
+          name: 'id-suffix',
+          meta: undefined,
+          path: '/:id([^/]*)*/suffix',
+          file: `${pagesDir}/[...id]/suffix.vue`,
+          children: [],
+        },
+      ],
+    },
+    {
       description: 'should merge route.meta with meta from file',
       files: [
         {
@@ -662,7 +727,8 @@ describe('pages:generateRoutesFromFiles', () => {
   const normalizedOverrideMetaResults: Record<string, any> = {}
 
   for (const test of tests) {
-    it(test.description, async () => {
+    const _it = test.it || it
+    _it(test.description, async () => {
       let result
       if (test.files) {
         const vfs = Object.fromEntries(
@@ -690,7 +756,7 @@ describe('pages:generateRoutesFromFiles', () => {
       }
 
       if (result) {
-        expect(result).toEqual(test.output)
+        expect.soft(result).toEqual(test.output)
 
         normalizedResults[test.description] = normalizeRoutes(result, new Set(), {
           clientComponentRuntime: '<client-component-runtime>',
@@ -739,12 +805,24 @@ describe('pages:generateRouteKey', () => {
         },
       ],
     },
-  }) as any
+  } as unknown as RouterViewSlotProps)
 
-  const tests = [
+  const tests: Array<{
+    description: string
+    route: RouterViewSlotProps
+    override?: string | ((route: RouteLocationNormalizedLoaded) => string)
+    output?: string | false
+    it?: TestAPI
+  }> = [
     { description: 'should handle overrides', override: 'key', route: getRouteProps(), output: 'key' },
-    { description: 'should handle overrides', override: (route: any) => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
-    { description: 'should handle overrides', override: false as any, route: getRouteProps(), output: false },
+    { description: 'should handle overrides', override: route => route.meta.key as string, route: getRouteProps(), output: 'route-meta-key' },
+    {
+      description: 'should handle overrides',
+      // @ts-expect-error testing behaviour with invalid prop
+      override: false,
+      route: getRouteProps(),
+      output: false,
+    },
     {
       description: 'should key dynamic routes without keys',
       route: getRouteProps({
@@ -812,7 +890,8 @@ describe('pages:generateRouteKey', () => {
   ]
 
   for (const test of tests) {
-    it(test.description, () => {
+    const _it = test.it || it
+    _it(test.description, () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
@@ -832,5 +911,43 @@ const pathToNitroGlobTests = {
 describe('pages:pathToNitroGlob', () => {
   it.each(Object.entries(pathToNitroGlobTests))('should convert %s to %s', (path, expected) => {
     expect(pathToNitroGlob(path)).to.equal(expected)
+  })
+})
+
+describe('page:extends', () => {
+  const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+  it('should preserve distinct metadata for multiple routes referencing the same file', async () => {
+    const files: NuxtPage[] = [
+      { path: 'home', file: `pages/index.vue` },
+      { path: 'home1', file: `pages/index.vue`, meta: { test: true } },
+      { path: 'home2', file: `pages/index.vue`, meta: { snap: true } },
+    ]
+    const vfs = Object.fromEntries(
+      files.map(file => [file.file, `
+            <script setup lang="ts">
+            definePageMeta({
+              hello: 'world'
+            })
+            </script>
+          `]),
+    ) as Record<string, string>
+    await augmentPages(files, vfs)
+    expect(files).toEqual([
+      {
+        path: 'home',
+        file: `pages/index.vue`,
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
+      },
+      {
+        path: 'home1',
+        file: `pages/index.vue`,
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: true },
+      },
+      {
+        path: 'home2',
+        file: `pages/index.vue`,
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), snap: true },
+      },
+    ])
   })
 })

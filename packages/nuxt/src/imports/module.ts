@@ -1,19 +1,19 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
-import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
-import { isDirectory } from '../utils'
+import { isDirectory, logger } from '../utils'
 import { TransformPlugin } from './transform'
-import { defaultPresets } from './presets'
+import { appCompatPresets, defaultPresets } from './presets'
+import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
-    name: 'imports',
+    name: 'nuxt:imports',
     configKey: 'imports',
   },
   defaults: nuxt => ({
@@ -30,10 +30,15 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       exclude: undefined,
     },
     virtualImports: ['#imports'],
+    polyfills: true,
   }),
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
+
+    if (options.polyfills) {
+      presets.push(...appCompatPresets)
+    }
 
     // Allow modules extending sources
     await nuxt.callHook('imports:sources', presets)
@@ -41,13 +46,19 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Filter disabled sources
     // options.sources = options.sources.filter(source => source.disabled !== true)
 
+    const { addons: inlineAddons, ...rest } = options
+
+    const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
+
     // Create a context to share state between module internals
     const ctx = createUnimport({
       injectAtEnd: true,
-      ...options,
+      ...rest,
       addons: {
+        addons,
         vueTemplate: options.autoImport,
-        ...options.addons,
+        vueDirectives: options.autoImport === false ? undefined : true,
+        ...addonsOptions,
       },
       presets,
     })
@@ -62,8 +73,14 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         if (layer.config?.imports?.scan === false) {
           continue
         }
-        composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
-        composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
+
+        composablesDirs.push(
+          resolve(layer.config.srcDir, 'composables'),
+          resolve(layer.config.srcDir, 'utils'),
+          resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'),
+          resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'),
+        )
+
         for (const dir of (layer.config.imports?.dirs ?? [])) {
           if (!dir) {
             continue
@@ -99,14 +116,14 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
+    const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {
-      return [
-        '/types/imports.d.ts',
-        '/imports.d.ts',
-        '/imports.mjs',
-      ].some(i => template.filename.endsWith(i))
+      return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
 
+    const isIgnored = createIsIgnored(nuxt)
+    const defaultImportSources = new Set(defaultPresets.flatMap(i => i.from))
+    const defaultImports = new Set(presets.flatMap(p => defaultImportSources.has(p.from) ? p.imports : []))
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -118,13 +135,23 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             fileFilter: file => !isIgnored(file),
           })
           for (const i of scannedImports) {
-            i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+            i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
           }
           imports.push(...scannedImports)
         }
 
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
+        for (const i of imports) {
+          if (!defaultImportSources.has(i.from)) {
+            const value = i.as || i.name
+            if (defaultImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
+              const relativePath = isAbsolute(i.from) ? `~/${relative(nuxt.options.srcDir, i.from)}` : i.from
+              logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
+            }
+          }
+        }
+
         return imports
       })
 
@@ -164,6 +191,8 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   const SUPPORTED_EXTENSION_RE = new RegExp(`\\.(${nuxt.options.extensions.map(i => i.replace('.', '')).join('|')})$`)
 
+  const importPaths = nuxt.options.modulesDir.map(dir => directoryToURL(dir))
+
   async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.from)))
     // skip relative import paths for node_modules that are explicitly installed
@@ -173,7 +202,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
       }
       let path = resolveAlias(from)
       if (!isAbsolute(path)) {
-        path = await tryResolveModule(from, nuxt.options.modulesDir).then(async (r) => {
+        path = await tryResolveModule(from, importPaths).then(async (r) => {
           if (!r) { return r }
 
           const { dir, name } = parseNodeModulePath(r)

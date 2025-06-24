@@ -1,18 +1,20 @@
-import { existsSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
+import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
+import { logger } from '../utils'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 
-import { ClientFallbackAutoIdPlugin } from './plugins/client-fallback-auto-id'
 import { LoaderPlugin } from './plugins/loader'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
 import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
+import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
+import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -28,7 +30,7 @@ export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
 export default defineNuxtModule<ComponentsOptions>({
   meta: {
-    name: 'components',
+    name: 'nuxt:components',
     configKey: 'components',
   },
   defaults: {
@@ -142,19 +144,25 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
-      const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
+      const sourceFiles = new Set<string>()
+      for (const c of getComponents()) {
+        if (c.global) {
+          sourceFiles.add(relative(nuxt.options.srcDir, c.filePath))
+        }
+      }
 
       for (const chunk of Object.values(manifest)) {
         if (chunk.isEntry) {
-          chunk.dynamicImports =
-            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
+          chunk.dynamicImports = chunk.dynamicImports?.filter(i => !sourceFiles.has(i))
         }
       }
     })
 
     // Restart dev server when component directories are added/removed
+    const restartEvents = new Set(['addDir', 'unlinkDir'])
+    // const restartPaths
     nuxt.hook('builder:watch', (event, relativePath) => {
-      if (!['addDir', 'unlinkDir'].includes(event)) {
+      if (!restartEvents.has(event)) {
         return
       }
 
@@ -175,7 +183,7 @@ export default defineNuxtModule<ComponentsOptions>({
       for (const component of newComponents) {
         if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
           // attempt to resolve component path
-          component.filePath = await resolvePath(component.filePath, { fallbackToOriginal: true })
+          component.filePath = resolveModulePath(resolveAlias(component.filePath), { try: true, extensions: nuxt.options.extensions }) ?? component.filePath
         }
         if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
           newComponents.push({
@@ -198,40 +206,28 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
-    // Watch for changes
-    nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (!['add', 'unlink'].includes(event)) {
-        return
-      }
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (componentDirs.some(dir => path.startsWith(dir.path + '/'))) {
-        await updateTemplates({
-          filter: template => [
-            'components.plugin.mjs',
-            'components.d.ts',
-            'components.server.mjs',
-            'components.client.mjs',
-          ].includes(template.filename),
-        })
-      }
-    })
-
     addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
 
-    if (nuxt.options.experimental.clientFallback) {
-      addBuildPlugin(ClientFallbackAutoIdPlugin({ sourcemap: !!nuxt.options.sourcemap.client, rootDir: nuxt.options.rootDir }), { server: false })
-      addBuildPlugin(ClientFallbackAutoIdPlugin({ sourcemap: !!nuxt.options.sourcemap.server, rootDir: nuxt.options.rootDir }), { client: false })
-    }
+    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
 
     const sharedLoaderOptions = {
       getComponents,
+      clientDelayedComponentRuntime,
       serverComponentRuntime,
+      srcDir: nuxt.options.srcDir,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
+
+    if (nuxt.options.experimental.lazyHydration) {
+      addBuildPlugin(LazyHydrationTransformPlugin({
+        ...sharedLoaderOptions,
+        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+      }), { prepend: true })
+    }
 
     if (nuxt.options.experimental.componentIslands) {
       const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
@@ -253,41 +249,16 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      // TODO: refactor this
-      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-        config.plugins = config.plugins || []
+      const chunk = ComponentsChunkPlugin({ getComponents })
 
-        if (isClient && selectiveClient) {
-          writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          if (!nuxt.options.dev) {
-            config.plugins.push(ComponentsChunkPlugin.vite({
-              getComponents,
-              buildDir: nuxt.options.buildDir,
-            }))
-          } else {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
-              getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
-                if (c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) { return Object.assign(acc, { [c.pascalName]: `/@fs/${c.filePath}` }) }
-                const filePath = existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
-                return Object.assign(acc, { [c.pascalName]: `/@fs/${filePath}` })
-              }, {} as Record<string, string>),
-            )}`)
-          }
+      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
+        config.plugins ||= []
+        if (selectiveClient && isClient) {
+          config.plugins.push(chunk.client.vite())
         }
       })
 
-      for (const key of ['rspack:config', 'webpack:config'] as const) {
-        nuxt.hook(key, (configs) => {
-          configs.forEach((config) => {
-            const mode = config.name === 'client' ? 'client' : 'server'
-            config.plugins = config.plugins || []
-
-            if (mode !== 'server') {
-              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-            }
-          })
-        })
-      }
+      addBuildPlugin(chunk.server, { client: false, prepend: true })
     }
   },
 })

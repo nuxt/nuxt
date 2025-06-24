@@ -1,11 +1,10 @@
-import { isAbsolute } from 'pathe'
-import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import { isAbsolute, resolve } from 'pathe'
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
-import { webpack } from '#builder'
+import { TsCheckerPlugin, webpack } from '#builder'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 
@@ -53,9 +52,18 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = ['nitro/runtime']
+  const external = new Set([
+    'nitro/runtime',
+    // TODO: remove in v5
+    '#internal/nitro',
+    'nitropack/runtime',
+    '#shared',
+    resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
+  ])
   if (!ctx.nuxt.options.dev) {
-    external.push('#internal/nuxt/paths', '#internal/nuxt/app-config')
+    external.add('#internal/nuxt/paths')
+    external.add('#internal/nuxt/app-config')
+    external.add('#app-manifest')
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }
@@ -63,7 +71,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     if (!request) {
       return cb(undefined, false)
     }
-    if (external.includes(request)) {
+    if (external.has(request)) {
       return cb(undefined, true)
     }
     if (
@@ -81,7 +89,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {
-  ctx.config.plugins = ctx.config.plugins || []
+  ctx.config.plugins ||= []
 
   // Server polyfills
   if (ctx.userConfig.serverURLPolyfill) {
@@ -93,7 +101,7 @@ function serverPlugins (ctx: WebpackConfigContext) {
 
   // Add type-checking
   if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
-    ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+    ctx.config.plugins!.push(new TsCheckerPlugin({
       logger,
     }))
   }

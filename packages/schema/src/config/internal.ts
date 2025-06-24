@@ -1,33 +1,18 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
-  /** @private */
+export default defineResolvers({
   _majorVersion: 4,
-  /** @private */
   _legacyGenerate: false,
-  /** @private */
   _start: false,
-  /** @private */
   _build: false,
-  /** @private */
   _generate: false,
-  /** @private */
   _prepare: false,
-  /** @private */
   _cli: false,
-  /** @private */
   _requiredModules: {},
-  /** @private */
+  _loadOptions: undefined,
   _nuxtConfigFile: undefined,
-  /** @private */
   _nuxtConfigFiles: [],
-  /** @private */
   appDir: '',
-  /**
-   * @private
-   * @type {Array<{ meta: ModuleMeta; timings?: Record<string, number | undefined>; entryPath?: string }>}
-   */
   _installedModules: [],
-  /** @private */
   _modules: [],
 })

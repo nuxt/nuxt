@@ -1,10 +1,9 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
-import { copyFile } from 'node:fs/promises'
+import { copyFile, mkdir } from 'node:fs/promises'
 import { basename, dirname, join } from 'pathe'
 import type { Plugin } from 'vite'
-// @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
-import Critters from 'critters'
+import Beasties from 'beasties'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlnano from 'htmlnano'
 import { glob } from 'tinyglobby'
@@ -25,7 +24,7 @@ export const RenderPlugin = () => {
     },
     enforce: 'post',
     async writeBundle () {
-      const critters = new Critters({ path: outputDir })
+      const critters = new Beasties({ path: outputDir })
       const htmlFiles = await glob(['templates/**/*.html'], {
         cwd: outputDir,
         absolute: true,
@@ -102,16 +101,19 @@ export const RenderPlugin = () => {
         // Serialize into a js function
         const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
+        let hasExpression = false
         let templateString = chunks.shift()
         for (const [_, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
           if (expression) {
-            templateString += ` + (${expression.trim()}) + ${chunks.shift()}`
+            hasExpression = true
+            templateString += ` + escapeHtml(${expression.trim()}) + ${chunks.shift()}`
           }
         }
         if (chunks.length > 0) {
           templateString += ' + ' + chunks.join(' + ')
         }
         const functionalCode = [
+          hasExpression ? 'import { escapeHtml } from \'@vue/shared\'\n' : '',
           hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
           hasMessages ? `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}` : '',
           `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}) => {`,
@@ -161,8 +163,8 @@ export const RenderPlugin = () => {
           `const props = defineProps(${props})`,
           title && 'useHead(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
-            ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))],
-            ['style', [{ children: `\`${globalStyles}\`` }]],
+            ['script', inlineScripts.map(s => ({ innerHTML: `\`${s.replace(/[`$]/g, '\\$&')}\`` }))],
+            ['style', [{ innerHTML: `\`${globalStyles.replace(/[`$]/g, '\\$&')}\`` }]],
           ]) + ')',
           '</script>',
           '<template>',
@@ -201,8 +203,9 @@ export const RenderPlugin = () => {
       for (const file of ['error-404.vue', 'error-500.vue', 'error-dev.vue', 'welcome.vue']) {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
+      await mkdir(join(nuxtRoot, 'src/core/runtime/nitro/templates'), { recursive: true })
       for (const file of ['error-500.ts', 'error-dev.ts']) {
-        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro', file))
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro/templates', file))
       }
     },
   }
