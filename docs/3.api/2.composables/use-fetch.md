@@ -2,10 +2,10 @@
 title: 'useFetch'
 description: 'Fetch data from an API endpoint with an SSR-friendly composable.'
 links:
- - label: Source
- icon: i-simple-icons-github
- to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/fetch.ts
- size: xs
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/fetch.ts
+    size: xs
 ---
 
 This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/dollarfetch).
@@ -20,7 +20,7 @@ It automatically generates a key based on URL and fetch options, provides type h
 ```vue [pages/modules.vue]
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
- pick: ['title']
+  pick: ['title']
 })
 </script>
 ```
@@ -38,7 +38,7 @@ Using the `query` option, you can add search parameters to your query. This opti
 ```ts
 const param1 = ref('value1')
 const { data, status, error, refresh } = await useFetch('/api/modules', {
- query: { param1, param2: 'value2' }
+  query: { param1, param2: 'value2' }
 })
 ```
 
@@ -48,21 +48,21 @@ You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interce
 
 ```ts
 const { data, status, error, refresh, clear } = await useFetch('/api/auth/login', {
- onRequest({ request, options }) {
- // Set the request headers
- // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
- options.headers.set('Authorization', '...')
- },
- onRequestError({ request, options, error }) {
- // Handle the request errors
- },
- onResponse({ request, response, options }) {
- // Process the response data
- localStorage.setItem('token', response._data.token)
- },
- onResponseError({ request, response, options }) {
- // Handle the response errors
- }
+  onRequest({ request, options }) {
+    // Set the request headers
+    // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
+    options.headers.set('Authorization', '...')
+  },
+  onRequestError({ request, options, error }) {
+    // Handle the request errors
+  },
+  onResponse({ request, response, options }) {
+    // Process the response data
+    localStorage.setItem('token', response._data.token)
+  },
+  onResponseError({ request, response, options }) {
+    // Handle the response errors
+  }
 })
 ```
 
@@ -98,46 +98,46 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 ```ts [Signature]
 function useFetch<DataT, ErrorT>(
- url: string | Request | Ref<string | Request> | (() => string | Request),
- options?: UseFetchOptions<DataT>
+  url: string | Request | Ref<string | Request> | (() => string | Request),
+  options?: UseFetchOptions<DataT>
 ): Promise<AsyncData<DataT, ErrorT>>
 
 type UseFetchOptions<DataT> = {
- key?: string
- method?: string
- query?: SearchParams
- params?: SearchParams
- body?: RequestInit['body'] | Record<string, any>
- headers?: Record<string, string> | [key: string, value: string][] | Headers
- baseURL?: string
- server?: boolean
- lazy?: boolean
- immediate?: boolean
- getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
- deep?: boolean
- dedupe?: 'cancel' | 'defer'
- default?: () => DataT
- transform?: (input: DataT) => DataT | Promise<DataT>
- pick?: string[]
- watch?: WatchSource[] | false
+  key?: string
+  method?: string
+  query?: SearchParams
+  params?: SearchParams
+  body?: RequestInit['body'] | Record<string, any>
+  headers?: Record<string, string> | [key: string, value: string][] | Headers
+  baseURL?: string
+  server?: boolean
+  lazy?: boolean
+  immediate?: boolean
+  getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
+  deep?: boolean
+  dedupe?: 'cancel' | 'defer'
+  default?: () => DataT
+  transform?: (input: DataT) => DataT | Promise<DataT>
+  pick?: string[]
+  watch?: WatchSource[] | false
 }
 
 type AsyncDataRequestContext = {
- /** The reason for this data request */
- cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'watch'
+  /** The reason for this data request */
+  cause: 'initial' | 'refresh:manual' | 'refresh:hook' | 'watch'
 }
 
 type AsyncData<DataT, ErrorT> = {
- data: Ref<DataT | null>
- refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
- execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
- clear: () => void
- error: Ref<ErrorT | null>
- status: Ref<AsyncDataRequestStatus>
+  data: Ref<DataT | null>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  clear: () => void
+  error: Ref<ErrorT | null>
+  status: Ref<AsyncDataRequestStatus>
 }
 
 interface AsyncDataExecuteOptions {
- dedupe?: 'cancel' | 'defer'
+  dedupe?: 'cancel' | 'defer'
 }
 
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
