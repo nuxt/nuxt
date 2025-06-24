@@ -57,7 +57,7 @@
     "std-env": "^3.9.0",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.17",
-    "vite": "^6.3.5",
+    "vite": "^7.0.0",
     "vite-node": "^3.2.4",
     "vite-plugin-checker": "^0.9.3",
     "vue-bundle-renderer": "^2.1.1"
