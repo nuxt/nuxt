@@ -5,7 +5,7 @@ import type { RenderSSRHeadOptions } from '@unhead/vue/types'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { SourceOptions } from 'c12'
+import type { DotenvOptions, SourceOptions } from 'c12'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
@@ -1474,57 +1474,11 @@ export interface ConfigSchema {
     pendingWhenIdle: boolean
   }
 
-  generate: {
-  /**
-   * The routes to generate.
-   *
-   * If you are using the crawler, this will be only the starting point for route generation. This is often necessary when using dynamic routes.
-   * It is preferred to use `nitro.prerender.routes`.
-   *
-   * @example
-   * ```js
-   * routes: ['/users/1', '/users/2', '/users/3']
-   * ```
-   */
-    routes: string | string[]
-
-    /**
-     * This option is no longer used. Instead, use `nitro.prerender.ignore`.
-     *
-     * @deprecated
-     */
-    exclude: Array<any>
-  }
-
   /**
    *
    * @private
    */
   _majorVersion: number
-
-  /**
-   *
-   * @private
-   */
-  _legacyGenerate: boolean
-
-  /**
-   *
-   * @private
-   */
-  _start: boolean
-
-  /**
-   *
-   * @private
-   */
-  _build: boolean
-
-  /**
-   *
-   * @private
-   */
-  _generate: boolean
 
   /**
    *
@@ -1536,19 +1490,13 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _cli: boolean
-
-  /**
-   *
-   * @private
-   */
   _requiredModules: Record<string, boolean>
 
   /**
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | import('c12').DotenvOptions }
+  _loadOptions: { dotenv?: boolean | DotenvOptions }
 
   /**
    *

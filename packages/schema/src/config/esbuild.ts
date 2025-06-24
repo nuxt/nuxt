@@ -4,9 +4,6 @@ import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
   esbuild: {
-    /**
-     * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
-     */
     options: {
       target: {
         $resolve: async (val, get) => {
