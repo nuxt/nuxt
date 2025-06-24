@@ -10,7 +10,7 @@ links:
 
 `defineNuxtPlugin` is a helper function for creating Nuxt plugins with enhanced functionality and type safety. This utility normalizes different plugin formats into a consistent structure that works seamlessly within Nuxt's plugin system.
 
-```ts [plugins/hello.ts]
+```ts twoslash [plugins/hello.ts]
 export default defineNuxtPlugin((nuxtApp) => {
   // Doing something with nuxtApp
 })
@@ -64,7 +64,7 @@ interface ObjectPlugin<T> {
 
 The example below demonstrates a simple plugin that adds global functionality:
 
-```ts [plugins/hello.ts]
+```ts twoslash [plugins/hello.ts]
 export default defineNuxtPlugin((nuxtApp) => {
   // Add a global method
   return {
@@ -79,7 +79,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 The example below shows the object syntax with advanced configuration:
 
-```ts [plugins/advanced.ts]
+```ts twoslash [plugins/advanced.ts]
 export default defineNuxtPlugin({
   name: 'my-plugin',
   enforce: 'pre',
