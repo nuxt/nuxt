@@ -4,12 +4,12 @@ import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
-import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 import { isDirectory, logger } from '../utils'
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'
+import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)

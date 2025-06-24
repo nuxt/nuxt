@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
@@ -39,7 +38,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     extend: { extendKey: ['theme', '_extends', 'extends'] },
     dotenv: true,
     globalRc: true,
-    merger: merger as any, // TODO: fix type in c12, it should accept createDefu directly
+    // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
+    merger,
     ...opts,
   })
   delete globalSelf.defineNuxtConfig
@@ -122,10 +122,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
 async function loadNuxtSchema (cwd: string) {
   const url = directoryToURL(cwd)
-  const urls = [url]
+  const urls: Array<URL | string> = [url]
   const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
   if (nuxtPath) {
-    urls.unshift(pathToFileURL(nuxtPath))
+    urls.unshift(nuxtPath)
   }
   const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
   return await import(schemaPath).then(r => r.NuxtConfigSchema)

@@ -26,9 +26,6 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 
-// @ts-expect-error virtual file
-import { asyncDataDefaults } from '#build/nuxt.config.mjs'
-
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries()),
@@ -350,7 +347,7 @@ describe('useAsyncData', () => {
 
     await flushPromises()
 
-    expect(res.data.value).toBe(asyncDataDefaults.value)
+    expect(res.data.value).toBe(undefined)
     expect(res.status.value).toBe('idle')
     expect(res.pending.value).toBe(false)
 
@@ -361,7 +358,7 @@ describe('useAsyncData', () => {
       }, { lazy: true },
     )
 
-    expect(res2.data.value).toBe(asyncDataDefaults.value)
+    expect(res2.data.value).toBe(undefined)
     expect(res2.status.value).toBe('pending')
     expect(res2.pending.value).toBe(true)
 
@@ -530,11 +527,42 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
 
     await mountSuspended(component)
-    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
 
     route.value = '/about'
     await nextTick()
-    expect(promiseFn).toHaveBeenCalledTimes(3)
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should work correctly with nested components accessing the same asyncData', async () => {
+    const useCustomData = () => useAsyncData(uniqueKey, async () => {
+      await Promise.resolve()
+      return 'value'
+    })
+
+    const ChildComponent = defineComponent({
+      setup () {
+        const { data } = useCustomData()
+        return () => h('div', ['Child ' + data.value])
+      },
+    })
+
+    const ParentComponent = defineComponent({
+      async setup () {
+        const { data, pending } = await useCustomData()
+        return () => h('div', [
+          'Parent ' + data.value,
+          h('br'),
+          pending.value ? ' loading ... ' : h(ChildComponent),
+        ])
+      },
+    })
+
+    const wrapper = await mountSuspended(ParentComponent)
+    await nextTick()
+    await flushPromises()
+
+    expect(wrapper.html()).not.toContain('loading')
   })
 
   const key = ref()
@@ -566,7 +594,7 @@ describe('useAsyncData', () => {
     expect(useNuxtData(firstKey).data.value).toBeUndefined()
     expect(useNuxtData(secondKey).data.value).toBe(secondKey)
 
-    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(asyncDataDefaults.value)
+    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(undefined)
     expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
 
     comp.unmount()
@@ -599,7 +627,7 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
 
     const comp2 = await mountSuspended(component)
-    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
 
     comp1.unmount()
     await nextTick()
@@ -702,7 +730,7 @@ describe('useAsyncData', () => {
 
     const { status: status2, data: data2 } = testAsyncData()
     expect.soft(handler).toHaveBeenCalledTimes(1)
-    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
     expect.soft(data.value).toBe('hello')
     expect.soft(data2.value).toBe('hello')
     expect.soft(status.value).toBe('success')
@@ -713,7 +741,7 @@ describe('useAsyncData', () => {
     await flushPromises()
 
     expect.soft(handler).toHaveBeenCalledTimes(1)
-    expect.soft(getCachedData).toHaveBeenCalledTimes(2)
+    expect.soft(getCachedData).toHaveBeenCalledTimes(1)
   })
 })
 

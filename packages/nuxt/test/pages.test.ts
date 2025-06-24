@@ -1,10 +1,10 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
-import type { NuxtPage } from 'nuxt/schema'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
@@ -263,7 +263,7 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct catch-all route',
-      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }],
+      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }, { path: `${pagesDir}/[...slug]/[id].vue` }],
       output: [
         {
           name: 'index',
@@ -275,7 +275,13 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'slug',
           path: '/:slug(.*)*',
           file: `${pagesDir}/[...slug].vue`,
-          children: [],
+          children: [
+            {
+              name: 'slug-id',
+              path: ':id()',
+              file: `${pagesDir}/[...slug]/[id].vue`,
+              children: [],
+            }],
         },
       ],
     },

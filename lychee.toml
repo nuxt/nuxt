@@ -37,4 +37,5 @@ exclude = [
   # excluded URLs from test suite
   "http://auth.com",
   "http://example2.com/",
+  "~images/main-bg.jpg",
 ]

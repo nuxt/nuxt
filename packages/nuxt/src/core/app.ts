@@ -2,7 +2,6 @@ import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { findPath, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
-import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import type { PluginMeta } from 'nuxt/app'
 
@@ -10,6 +9,7 @@ import { logger } from '../utils'
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
+import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -178,9 +178,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
       `${middlewareDir}/*{${extensionGlob}}`,
-      ...nuxt.options.future.compatibilityVersion === 4
-        ? [`${middlewareDir}/*/index{${extensionGlob}}`]
-        : [],
+      `${middlewareDir}/*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
@@ -201,9 +199,9 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${pluginDir}/*{${extensionGlob}}`,
-          `${pluginDir}/*/index{${extensionGlob}}`,
-        ])
+            `${pluginDir}/*{${extensionGlob}}`,
+            `${pluginDir}/*/index{${extensionGlob}}`,
+          ])
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
@@ -232,9 +230,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Extend app
   await nuxt.callHook('app:resolve', app)
 
-  // Normalize and de-duplicate plugins and middleware
+  // Normalize and de-duplicate plugins, middleware and app configs
   app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
   app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
+  app.configs = [...new Set(app.configs)]
 }
 
 function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {

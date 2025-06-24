@@ -1,7 +1,7 @@
 import type { Plugin } from 'vite'
 import { tryImportModule } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
 
 import { runtimeDependencies as runtimeNuxtDependencies } from '../../meta.mjs'
@@ -14,7 +14,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
     enforce: 'pre',
     async configResolved () {
       if (!nuxt.options.dev) {
-        const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
+        const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitropack/runtime/meta')>('nitropack/runtime/meta', {
           url: new URL(import.meta.url),
         }) || {}
 
