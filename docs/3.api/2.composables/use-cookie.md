@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-# Usage
+## Usage
 
 Within your pages, components, and plugins, you can use `useCookie` to read and write cookies in an SSR-friendly way.
 
@@ -24,7 +24,7 @@ const cookie = useCookie(name, options)
 The returned ref will automatically serialize and deserialize cookie values to JSON.
 ::
 
-# Type
+## Type
 
 ```ts [Signature]
 import type { Ref } from 'vue'
@@ -46,7 +46,7 @@ export function useCookie<T = string | null | undefined>(
 ): CookieRef<T>
 ```
 
-# Parameters
+## Parameters
 
 `name`: The name of the cookie.
 
@@ -70,13 +70,13 @@ Most of the options will be directly passed to the [cookie](https://github.com/j
 | `path` | `string` | `'/'` | Sets the [`Path` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.4). By default, the path is considered the ["default path"](https://tools.ietf.org/html/rfc6265#section-5.1.4). |
 | `sameSite` | `boolean \| string` | `undefined` | Sets the [`SameSite` `Set-Cookie` attribute](https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.2.7). <br/>- `true` will set the `SameSite` attribute to `Strict` for strict same-site enforcement.<br/>- `false` will not set the `SameSite` attribute.<br/>- `'lax'` will set the `SameSite` attribute to `Lax` for lax same-site enforcement.<br/>- `'none'` will set the `SameSite` attribute to `None` for an explicit cross-site cookie.<br/>- `'strict'` will set the `SameSite` attribute to `Strict` for strict same-site enforcement. |
 
-# Return Values
+## Return Values
 
 Returns a Vue `Ref<T>` representing the cookie value. Updating the ref will update the cookie (unless `readonly` is set). The ref is SSR-friendly and will work on both client and server.
 
-# Examples
+## Examples
 
-## Basic Usage
+### Basic Usage
 
 The example below creates a cookie called `counter`. If the cookie doesn't exist, it is initially set to a random value. Whenever we update the `counter` variable, the cookie will be updated accordingly.
 
@@ -97,7 +97,7 @@ counter.value = counter.value || Math.round(Math.random() * 1000)
 </template>
 ```
 
-## Readonly Cookies
+### Readonly Cookies
 
 ```vue
 <script setup lang="ts">
@@ -109,7 +109,7 @@ const user = useCookie(
   }
 )
 
-if (user.value && user.value !== null) {
+if (user.value) {
   // the actual `userInfo` cookie will not be updated
   user.value.score++
 }
@@ -120,7 +120,7 @@ if (user.value && user.value !== null) {
 </template>
 ```
 
-## Writable Cookies
+### Writable Cookies
 
 ```vue
 <script setup lang="ts">
@@ -155,7 +155,7 @@ function save() {
 </template>
 ```
 
-## Cookies in API Routes
+### Cookies in API Routes
 
 You can use `getCookie` and `setCookie` from [`h3`](https://github.com/h3js/h3) package to set cookies in server API routes.
 
