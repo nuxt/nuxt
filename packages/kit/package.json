@@ -32,7 +32,7 @@
     "defu": "^6.1.4",
     "destr": "^2.0.5",
     "errx": "^0.1.0",
-    "exsolve": "^1.0.5",
+    "exsolve": "^1.0.7",
     "ignore": "^7.0.5",
     "jiti": "^2.4.2",
     "klona": "^2.0.6",
@@ -57,7 +57,7 @@
     "nitropack": "2.11.12",
     "unbuild": "3.5.0",
     "vite": "6.3.5",
-    "vitest": "3.2.3",
+    "vitest": "3.2.4",
     "webpack": "5.99.9"
   },
   "engines": {
