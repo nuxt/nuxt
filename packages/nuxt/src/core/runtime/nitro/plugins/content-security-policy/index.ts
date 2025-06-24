@@ -3,6 +3,8 @@ import type { NitroApp } from 'nitro/types'
 import { useRuntimeConfig } from 'nitro/runtime'
 import type { ContentSecurityPolicyConfig } from './types'
 import { defuReplaceArray, headerStringFromObject } from './utils'
+import { generateNonce } from './nonce'
+import { updateCsp } from './update-csp'
 
 const defaultCSPConfig: ContentSecurityPolicyConfig = {
   value: {
@@ -31,12 +33,18 @@ const defaultCSPConfig: ContentSecurityPolicyConfig = {
  * This plugin sets the Content Security Policy header for the response.
  */
 export default (nitroApp: NitroApp) => {
-  nitroApp.hooks.hook('render:response', (_, { event }) => {
-    const config = useRuntimeConfig(event)
-    const cspConfigFromUser = config.contentSecurityPolicy || {}
-    const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...cspConfigFromUser }, { ...defaultCSPConfig })
+  const config = useRuntimeConfig()
+  const cspConfigFromUser = config.contentSecurityPolicy || {}
+  const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...cspConfigFromUser }, { ...defaultCSPConfig })
 
+  nitroApp.hooks.hook('render:response', (_, { event }) => {
     const headerValue = headerStringFromObject(contentSecurityPolicyConfig.value)
     setResponseHeader(event, 'content-security-policy', headerValue)
   })
+
+  if (contentSecurityPolicyConfig.nonce) {
+    // Generate nonce and set it in the response headers
+    generateNonce(nitroApp, contentSecurityPolicyConfig)
+    updateCsp(nitroApp, contentSecurityPolicyConfig)
+  }
 }
