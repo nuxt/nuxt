@@ -194,7 +194,7 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`. |
 | `error` | `Ref<ErrorT \| null>` | Error object if the data fetching failed. |
 | `status` | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>` | Status of the data request. See below for possible values. |
-| `clear` | `() => void` | Resets `data` to `undefined`, `error` to `null`, `status` to `'idle'`, and cancels any pending requests. |
+| `clear` | `() => void` | Resets `data` to `undefined` (or the value of `options.default()` if provided), `error` to `undefined`, set `status` to `idle`, and cancels any pending requests. |
 
 ### Status values
 
