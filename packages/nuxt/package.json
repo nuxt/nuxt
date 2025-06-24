@@ -137,7 +137,7 @@
     "@nuxt/scripts": "0.11.8",
     "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.8",
-    "@vitejs/plugin-vue": "5.2.4",
+    "@vitejs/plugin-vue": "6.0.0",
     "@vitejs/plugin-vue-jsx": "4.2.0",
     "@vue/compiler-sfc": "3.5.17",
     "unbuild": "3.5.0",
