@@ -113,7 +113,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, nuxt.options.vite.$server || {}))
 
   if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
-    delete serverConfig.build.rollupOptions.output.manualChunks
+    serverConfig.build.rollupOptions.output.manualChunks = undefined
   }
 
   serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev })
