@@ -169,7 +169,7 @@ export default defineNuxtModule({
           '}',
           'export {}',
         ].join('\n'),
-      }, { nuxt: true, nitro: true })
+      }, { nuxt: true, nitro: true, node: true })
       addComponent({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
@@ -618,7 +618,7 @@ export default defineNuxtModule({
           '}',
         ].join('\n')
       },
-    }, { nuxt: true, nitro: true })
+    }, { nuxt: true, nitro: true, node: true })
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
