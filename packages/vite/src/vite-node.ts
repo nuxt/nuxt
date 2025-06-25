@@ -7,8 +7,9 @@ import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { createError } from 'h3'
 import { join, normalize, resolve } from 'pathe'
-import type { FetchResult, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
+import type { FetchResult } from 'vite-node'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
@@ -278,7 +279,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                   }
                 }
                 throw createError({ data: errorData, message: err.message || 'Error fetching module' })
-              })
+              }) as Exclude<FetchResult, { cache: true }>
             sendResponse<'module'>(socket, requestId, response)
             return
           }
