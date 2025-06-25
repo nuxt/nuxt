@@ -1,7 +1,7 @@
 import type { UseHeadInput } from '@unhead/vue/types'
-import type { NuxtApp, useNuxtApp } from '../nuxt.js'
+import type { NuxtApp, useNuxtApp } from '../nuxt'
 
-export * from './dist/index.js'
+export * from '../../../dist/index'
 
 declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
@@ -31,6 +31,7 @@ declare module 'nitropack/types' {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface Process {
       /** @deprecated Use `import.meta.browser` instead. This may be removed in Nuxt v5 or a future major version. */
@@ -46,7 +47,7 @@ declare global {
     }
   }
 
-  interface ImportMeta extends NuxtStaticBuildFlags {
+  interface ImportMeta {
     browser: boolean
     client: boolean
     dev: boolean
