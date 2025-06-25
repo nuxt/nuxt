@@ -1,3 +1,5 @@
+/// <reference path="./config-types.ts" />
+
 import { addTypeTemplate, installModule } from 'nuxt/kit'
 
 export default defineNuxtConfig({
@@ -10,7 +12,7 @@ export default defineNuxtConfig({
       addTypeTemplate({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
-      }, { nuxt: true, nitro: true })
+      }, { nuxt: true, nitro: true, node: true })
       function _test () {
         installModule('~~/modules/example', {
           typeTest (val) {
@@ -90,6 +92,14 @@ export default defineNuxtConfig({
     appManifest: true,
   },
   compatibilityDate: 'latest',
+  typescript: {
+    tsConfig: {
+      include: ['../index.d.ts'],
+    },
+    nodeTsConfig: {
+      include: ['../index.d.ts'],
+    },
+  },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {
