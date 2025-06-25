@@ -23,11 +23,11 @@ type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
 export interface ViteNodeRequestMap {
   manifest: {
-    request: void
+    request: undefined
     response: Manifest
   }
   invalidates: {
-    request: void
+    request: undefined
     response: string[]
   }
   resolve: {
@@ -410,7 +410,7 @@ function sendResponse<T extends keyof ViteNodeRequestMap> (
   socket: net.Socket,
   id: string,
   data: ViteNodeRequestMap[T]['response'],
-): void {
+): undefined {
   try {
     const response = { id, type: 'response', data }
     const responseJSON = JSON.stringify(response)
