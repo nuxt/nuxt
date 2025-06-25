@@ -329,7 +329,6 @@ export function useAsyncData<
         const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
         const isRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
         if (oldKey) {
-          // todo: handle dedupe/cancel oldKey when isRunning is true
           unregister(oldKey)
         }
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
@@ -339,7 +338,6 @@ export function useAsyncData<
         }
         nuxtApp._asyncData[newKey]._deps++
 
-        console.log(options.immediate, hasRun, isRunning)
         if (options.immediate || hasRun || isRunning) {
           nuxtApp._asyncData[newKey].execute(initialFetchOptions)
         }
