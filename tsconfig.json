@@ -41,6 +41,7 @@
   "exclude": [
     "**/dist/**",
     "**/.nuxt/**",
+    "packages/nuxt/src/app/types/**",
     "**/nuxt.d.ts",
     "**/examples/**",
     "**/docs/**",

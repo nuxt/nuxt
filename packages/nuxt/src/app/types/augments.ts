@@ -1,8 +1,6 @@
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
-export * from '../../../dist/index'
-
 declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
