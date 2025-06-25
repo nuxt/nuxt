@@ -260,16 +260,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       })
     }
   })
+  async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
+    if (!enabled) { return fn() }
+
+    const start = performance.now()
+    await fn()
+    const duration = performance.now() - start
+    logger.success(`${message} in ${Math.round(duration)}ms`)
+  }
 
   await withLogs(() => buildClient(nuxt, ctx), 'Vite client built', nuxt.options.dev)
   await withLogs(() => buildServer(nuxt, ctx), 'Vite server built', nuxt.options.dev)
-}
-
-async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
-  if (!enabled) { return fn() }
-
-  const start = performance.now()
-  await fn()
-  const duration = performance.now() - start
-  logger.success(`${message} in ${Math.round(duration)}ms`)
 }

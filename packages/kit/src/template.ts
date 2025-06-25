@@ -146,10 +146,11 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
-// Exclude bridge alias types to support Volar
-const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 export async function _generateTypes (nuxt: Nuxt) {
+  const RELATIVE_WITH_DOT_RE = /^([^.])/
+  function relativeWithDot (from: string, to: string) {
+    return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+  }
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
 
@@ -272,6 +273,9 @@ export async function _generateTypes (nuxt: Nuxt) {
   } satisfies TSConfig)
 
   const aliases: Record<string, string> = nuxt.options.alias
+  const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
+  // Exclude bridge alias types to support Volar
+  const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
   const basePath = tsConfig.compilerOptions!.baseUrl
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
@@ -352,6 +356,16 @@ export async function _generateTypes (nuxt: Nuxt) {
     }))
   }
 
+  function sortTsPaths (paths: Record<string, string[]>) {
+    for (const pathKey in paths) {
+      if (pathKey.startsWith('#build')) {
+        const pathValue = paths[pathKey]!
+        // Delete & Reassign to ensure key is inserted at the end of object.
+        delete paths[pathKey]
+        paths[pathKey] = pathValue
+      }
+    }
+  }
   // Ensure `#build` is placed at the end of the paths object.
   // https://github.com/nuxt/nuxt/issues/30325
   sortTsPaths(tsConfig.compilerOptions.paths)
@@ -359,6 +373,17 @@ export async function _generateTypes (nuxt: Nuxt) {
   tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
   tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
+  function renderAttrs (obj: Record<string, string>) {
+    const attrs: string[] = []
+    for (const key in obj) {
+      attrs.push(renderAttr(key, obj[key]))
+    }
+    return attrs.join(' ')
+  }
+
+  function renderAttr (key: string, value?: string) {
+    return value ? `${key}="${value}"` : ''
+  }
   const declaration = [
     ...references.map((ref) => {
       if ('path' in ref && isAbsolute(ref.path)) {
@@ -387,32 +412,4 @@ export async function writeTypes (nuxt: Nuxt) {
 
   const declarationPath = resolve(nuxt.options.buildDir, 'nuxt.d.ts')
   await fsp.writeFile(declarationPath, declaration)
-}
-
-function sortTsPaths (paths: Record<string, string[]>) {
-  for (const pathKey in paths) {
-    if (pathKey.startsWith('#build')) {
-      const pathValue = paths[pathKey]!
-      // Delete & Reassign to ensure key is inserted at the end of object.
-      delete paths[pathKey]
-      paths[pathKey] = pathValue
-    }
-  }
-}
-
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
-}
-
-const RELATIVE_WITH_DOT_RE = /^([^.])/
-function relativeWithDot (from: string, to: string) {
-  return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
 }

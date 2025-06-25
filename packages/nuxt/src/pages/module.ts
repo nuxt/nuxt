@@ -20,27 +20,6 @@ import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
 
-const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
-
-const runtimeDir = resolve(distDir, 'pages/runtime')
-
-async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
-  const context = {
-    files: [] as Array<{ path: string, optional?: boolean }>,
-  }
-
-  for (const layer of nuxt.options._layers) {
-    const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
-    if (path) { context.files.unshift({ path }) }
-  }
-
-  // Add default options at beginning
-  context.files.unshift({ path: builtInRouterOptions, optional: true })
-
-  await nuxt.callHook('pages:routerOptions', context)
-  return context.files
-}
-
 export default defineNuxtModule({
   meta: {
     name: 'nuxt:pages',
@@ -53,6 +32,27 @@ export default defineNuxtModule({
   async setup (_options, nuxt) {
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
+
+    const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+
+    const runtimeDir = resolve(distDir, 'pages/runtime')
+
+    async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
+      const context = {
+        files: [] as Array<{ path: string, optional?: boolean }>,
+      }
+
+      for (const layer of nuxt.options._layers) {
+        const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
+        if (path) { context.files.unshift({ path }) }
+      }
+
+      // Add default options at beginning
+      context.files.unshift({ path: builtInRouterOptions, optional: true })
+
+      await nuxt.callHook('pages:routerOptions', context)
+      return context.files
+    }
 
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
@@ -539,6 +539,40 @@ export default defineNuxtModule({
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
     // Add routes template
+    const ROUTES_HMR_CODE = /* js */`
+if (import.meta.hot) {
+  import.meta.hot.accept((mod) => {
+    const router = import.meta.hot.data.router
+    const generateRoutes = import.meta.hot.data.generateRoutes
+    if (!router || !generateRoutes) {
+      import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
+      return
+    }
+    router.clearRoutes()
+    const routes = generateRoutes(mod.default || mod)
+    function addRoutes (routes) {
+      for (const route of routes) {
+        router.addRoute(route)
+      }
+      router.replace(router.currentRoute.value.fullPath)
+    }
+    if (routes && 'then' in routes) {
+      routes.then(addRoutes)
+    } else {
+      addRoutes(routes)
+    }
+  })
+}
+
+export function handleHotUpdate(_router, _generateRoutes) {
+  if (import.meta.hot) {
+    import.meta.hot.data ||= {}
+    import.meta.hot.data.router = _router
+    import.meta.hot.data.generateRoutes = _generateRoutes
+  }
+}
+`
+
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
@@ -660,37 +694,3 @@ export default defineNuxtModule({
     })
   },
 })
-
-const ROUTES_HMR_CODE = /* js */`
-if (import.meta.hot) {
-  import.meta.hot.accept((mod) => {
-    const router = import.meta.hot.data.router
-    const generateRoutes = import.meta.hot.data.generateRoutes
-    if (!router || !generateRoutes) {
-      import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
-      return
-    }
-    router.clearRoutes()
-    const routes = generateRoutes(mod.default || mod)
-    function addRoutes (routes) {
-      for (const route of routes) {
-        router.addRoute(route)
-      }
-      router.replace(router.currentRoute.value.fullPath)
-    }
-    if (routes && 'then' in routes) {
-      routes.then(addRoutes)
-    } else {
-      addRoutes(routes)
-    }
-  })
-}
-
-export function handleHotUpdate(_router, _generateRoutes) {
-  if (import.meta.hot) {
-    import.meta.hot.data ||= {}
-    import.meta.hot.data.router = _router
-    import.meta.hot.data.generateRoutes = _generateRoutes
-  }
-}
-`

@@ -9,10 +9,6 @@ import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
 import { logger } from '../utils'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
-const ISLAND_RE = /\.island(?:\.global)?$/
-const GLOBAL_RE = /\.global(?:\.island)?$/
-const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
-const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
@@ -29,6 +25,20 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
   // All scanned paths
   const scannedPaths: string[] = []
+
+  const ISLAND_RE = /\.island(?:\.global)?$/
+  const GLOBAL_RE = /\.global(?:\.island)?$/
+  const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
+  const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
+
+  const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/
+
+  function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
+    logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
+      `\n - ${filePath}` +
+      `\n - ${duplicatePath}`,
+    )
+  }
 
   for (const dir of dirs) {
     if (dir.enabled === false) {
@@ -171,12 +181,3 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
   return components
 }
-
-function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
-    `\n - ${filePath}` +
-    `\n - ${duplicatePath}`,
-  )
-}
-
-const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/
