@@ -9,7 +9,7 @@ import type { Nitro } from 'nitropack/types'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
-import { initViteNodeServer } from './vite-node'
+import { writeDevServer } from './vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
@@ -159,5 +159,5 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   // Initialize plugins
   await ssrServer.pluginContainer.buildStart({})
 
-  await initViteNodeServer(nuxt, ssrServer)
+  await writeDevServer(nuxt)
 }
