@@ -167,9 +167,6 @@ declare module 'nuxt/schema' {
 }
 `
       const typesPath = resolve(nuxt.options.buildDir, 'schema/nuxt.schema.d.ts')
-      await Promise.all([
-        writeFile(typesPath, types, 'utf8'),
-      ])
       await writeFile(typesPath, types, 'utf8')
       await nuxt.hooks.callHook('schema:written')
     }
