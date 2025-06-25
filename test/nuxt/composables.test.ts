@@ -913,7 +913,16 @@ describe('useFetch', () => {
     expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 
-  it('should refetch ')
+  it('should fetch if immediate is false and only the key changes with `experimental.alwaysRunFetchOnKeyChange`', async () => {
+    const key = shallowRef('a')
+    const { status } = useFetch('/api/test', { key, immediate: false })
+
+    expect.soft(status.value).toBe('idle')
+
+    key.value += 'a'
+    await nextTick()
+    expect.soft(status.value).toBe('pending')
+  })
 })
 
 describe('errors', () => {
