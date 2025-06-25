@@ -743,6 +743,20 @@ describe('useAsyncData', () => {
     expect.soft(handler).toHaveBeenCalledTimes(1)
     expect.soft(getCachedData).toHaveBeenCalledTimes(1)
   })
+
+  it('should not execute if immediate is false and only the key changes', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const key = shallowRef('a')
+    const { status } = useAsyncData(key, promiseFn, { immediate: false })
+
+    expect.soft(status.value).toBe('idle')
+    expect.soft(promiseFn).toHaveBeenCalledTimes(0)
+
+    key.value += 'a'
+    await nextTick()
+    expect.soft(status.value).toBe('idle')
+    expect.soft(promiseFn).toHaveBeenCalledTimes(0)
+  })
 })
 
 describe('useFetch', () => {
@@ -897,6 +911,17 @@ describe('useFetch', () => {
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
     expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
+  })
+
+  it('should fetch if immediate is false and only the key changes with `experimental.alwaysRunFetchOnKeyChange`', async () => {
+    const key = shallowRef('a')
+    const { status } = useFetch('/api/test', { key, immediate: false })
+
+    expect.soft(status.value).toBe('idle')
+
+    key.value += 'a'
+    await nextTick()
+    expect.soft(status.value).toBe('pending')
   })
 })
 
