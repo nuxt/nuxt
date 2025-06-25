@@ -9,7 +9,7 @@ import type { Nitro } from 'nitropack'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
-import { initViteNodeServer } from './vite-node'
+import { writeDevServer } from './vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
@@ -154,7 +154,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   await ssrServer.pluginContainer.buildStart({})
 
   if (ctx.config.devBundler !== 'legacy') {
-    await initViteNodeServer(nuxt, ssrServer)
+    await writeDevServer(nuxt)
   } else {
     logger.info('Vite server using legacy server bundler...')
     await import('./dev-bundler').then(r => r.initViteDevBundler(ctx, () => nuxt.callHook('vite:compiled')))
