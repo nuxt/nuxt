@@ -6,18 +6,19 @@ import fs from 'node:fs' // For sync operations like unlinkSync if needed during
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { createError } from 'h3'
-import { ViteNodeServer } from 'vite-node/server'
 import { join, normalize, resolve } from 'pathe'
-import type { ModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { FetchResult, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
-import type { FetchResult, ViteNodeResolveId } from 'vite-node'
+import type { Nuxt } from '@nuxt/schema'
 import { provider } from 'std-env'
 
 import { distDir } from './dirs'
-import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
+import { resolveClientEntry, resolveServerEntry } from './utils/config'
+
+type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
 export interface ViteNodeRequestMap {
   manifest: {
@@ -30,7 +31,7 @@ export interface ViteNodeRequestMap {
   }
   resolve: {
     request: { id: string, importer?: string }
-    response: ViteNodeResolveId | null
+    response: ResolveIdResponse | null
   }
   module: {
     request: { moduleId: string }
@@ -44,26 +45,24 @@ export interface ViteNodeFetch {
   /** Gets the list of invalidated files. */
   getInvalidates(): Promise<string[]>
   /** Resolves a module ID. */
-  resolveId(id: string, importer?: string): Promise<ViteNodeResolveId | null>
+  resolveId(id: string, importer?: string): Promise<ResolveIdResponse | null>
   /** Fetches a module. */
   fetchModule(moduleId: string): Promise<FetchResult>
   /** Ensures the IPC socket is connected. */
   ensureConnected(): Promise<Socket>
 }
 
-function getManifest (ctx: ViteBuildContext): Manifest {
+function getManifest (nuxt: Nuxt, ssrServer: ViteDevServer, clientEntry: string) {
   const css = new Set<string>()
-  if (ctx.ssrServer) {
-    for (const key of ctx.ssrServer.moduleGraph.urlToModuleMap.keys()) {
-      if (isCSS(key)) {
-        const query = getQuery(key)
-        if ('raw' in query) { continue }
-        const importers = ctx.ssrServer.moduleGraph.urlToModuleMap.get(key)?.importers
-        if (importers && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) {
-          continue
-        }
-        css.add(key)
+  for (const key of ssrServer.moduleGraph.urlToModuleMap.keys()) {
+    if (isCSS(key)) {
+      const query = getQuery(key)
+      if ('raw' in query) { continue }
+      const importers = ssrServer.moduleGraph.urlToModuleMap.get(key)?.importers
+      if (importers && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) {
+        continue
       }
+      css.add(key)
     }
   }
 
@@ -74,11 +73,11 @@ function getManifest (ctx: ViteBuildContext): Manifest {
       module: true,
       isEntry: true,
     },
-    ...ctx.nuxt.options.features.noScripts === 'all'
+    ...nuxt.options.features.noScripts === 'all'
       ? {}
       : {
-          [ctx.entry]: {
-            file: ctx.entry,
+          [clientEntry]: {
+            file: clientEntry,
             isEntry: true,
             module: true,
             resourceType: 'script',
@@ -119,11 +118,9 @@ function generateSocketPath () {
   return join(os.tmpdir(), `${socketName}.sock`)
 }
 
-export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
+function useInvalidates () {
+  // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
-  let socketServer: net.Server | undefined
-  let socketPath: string | undefined
-  let viteNodeServerOptions: ViteNodeServerOptions | undefined
 
   function markInvalidate (mod: ModuleNode) {
     if (!mod.id) { return }
@@ -139,76 +136,71 @@ export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     }
   }
 
-  function initializeViteNodeConfig () {
-    if (viteNodeServerOptions) {
-      return viteNodeServerOptions // Already initialized
-    }
-
-    const generatedSocketPath = generateSocketPath()
-
-    viteNodeServerOptions = {
-      // TODO: remove in future
-      baseURL: ctx.nuxt.options.devServer.url,
-      socketPath: generatedSocketPath,
-      root: ctx.nuxt.options.srcDir,
-      entryPath: ctx.entry,
-      base: ctx.config.base || '/_nuxt/',
-    }
-
-    process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
-
-    return viteNodeServerOptions
+  return {
+    invalidates,
+    markInvalidate,
+    markInvalidates,
   }
+}
 
-  function setupSocket (server: ViteDevServer) {
-    if (socketServer) {
-      return // Socket already created
+export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
+  let socketServer: net.Server | undefined
+  const socketPath = generateSocketPath()
+  let viteNodeServerOptions: ViteNodeServerOptions | undefined
+
+  const { invalidates, markInvalidate, markInvalidates } = useInvalidates()
+
+  const cleanupSocket = async () => {
+    if (socketServer && socketServer.listening) {
+      await new Promise<void>(resolveClose => socketServer!.close(() => resolveClose()))
     }
-
-    const config = initializeViteNodeConfig()
-    socketPath = config.socketPath
-    socketServer = createViteNodeSocketServer(ctx, invalidates, config)
-
-    const cleanupSocket = async () => {
-      if (socketServer && socketServer.listening) {
-        await new Promise<void>(resolveClose => socketServer!.close(() => resolveClose()))
-      }
-      if (socketPath && !socketPath.startsWith('\\\\.\\pipe\\')) {
-        try {
-          await unlink(socketPath)
-        } catch {
-          // Error is ignored if the file doesn't exist or cannot be unlinked
-        }
+    if (socketPath && !socketPath.startsWith('\\\\.\\pipe\\')) {
+      try {
+        await unlink(socketPath)
+      } catch {
+      // Error is ignored if the file doesn't exist or cannot be unlinked
       }
     }
-
-    server.httpServer?.on('close', cleanupSocket)
   }
 
   return {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
-    configureServer (server) {
-      // Try to set up the socket immediately
-      setupSocket(server)
+    applyToEnvironment: environment => environment.name === 'client',
+    configureServer (clientServer) {
+      nuxt.hook('vite:serverCreated', (ssrServer, ctx) => {
+        if (!ctx.isServer) {
+          return
+        }
 
-      ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
+        viteNodeServerOptions = {
+          socketPath,
+          root: nuxt.options.srcDir,
+          entryPath: resolveServerEntry(ssrServer.config),
+          base: ssrServer.config.base || '/_nuxt/',
+          // TODO: remove baseURL in future
+          baseURL: nuxt.options.devServer.url,
+        }
+
+        process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
+
+        socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, viteNodeServerOptions)
+      })
+      nuxt.hook('close', cleanupSocket)
+
+      nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
         for (const template of changedTemplates) {
-          const mods = server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
+          const mods = clientServer.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
           for (const mod of mods || []) {
             markInvalidate(mod)
           }
         }
       })
 
-      server.watcher.on('all', (_event, file) => {
+      clientServer.watcher.on('all', (_event, file) => {
         invalidates.add(file)
-        markInvalidates(server.moduleGraph.getModulesByFile(normalize(file)))
+        markInvalidates(clientServer.moduleGraph.getModulesByFile(normalize(file)))
       })
-    },
-    buildStart () {
-      // Try to set up the socket again in case it wasn't set up during configureServer
-      // This ensures socket creation when needed
     },
     async buildEnd () {
       if (socketServer && socketServer.listening) {
@@ -225,20 +217,7 @@ export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   }
 }
 
-function createViteNodeSocketServer (ctx: ViteBuildContext, invalidates: Set<string>, config: ViteNodeServerOptions) {
-  let _node: ViteNodeServer | undefined
-  function getNode (viteDevServer: ViteDevServer) {
-    return _node ||= new ViteNodeServer(viteDevServer, {
-      deps: {
-        inline: [/^#/, /\?/],
-      },
-      transformMode: {
-        ssr: [/.*/],
-        web: [],
-      },
-    })
-  }
-
+function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
   const server = net.createServer((socket) => {
     const INITIAL_BUFFER_SIZE = 64 * 1024 // 64kB
     const MAX_BUFFER_SIZE = 1024 * 1024 * 1024 // 1GB
@@ -257,7 +236,7 @@ function createViteNodeSocketServer (ctx: ViteBuildContext, invalidates: Set<str
       try {
         switch (type) {
           case 'manifest': {
-            const manifestData = getManifest(ctx)
+            const manifestData = getManifest(nuxt, ssrServer, resolveClientEntry(clientServer.config))
             sendResponse<'manifest'>(socket, requestId, manifestData)
             return
           }
@@ -269,37 +248,37 @@ function createViteNodeSocketServer (ctx: ViteBuildContext, invalidates: Set<str
           }
           case 'resolve': {
             const { id: resolveId, importer } = payload
-            if (!resolveId || !ctx.ssrServer) {
+            if (!resolveId || !ssrServer) {
               throw createError({ statusCode: 400, message: 'Missing id for resolve' })
             }
-            const resolvedResult = await getNode(ctx.ssrServer).resolveId(resolveId, importer).catch(() => null)
+            const resolvedResult = await ssrServer.pluginContainer.resolveId(resolveId, importer).catch(() => null)
             sendResponse<'resolve'>(socket, requestId, resolvedResult)
             return
           }
           case 'module': {
-            if (payload.moduleId === '/' || !ctx.ssrServer) {
+            if (payload.moduleId === '/' || !ssrServer) {
               throw createError({ statusCode: 400, message: 'Invalid moduleId' })
             }
-            const node = getNode(ctx.ssrServer)
-            const response = await node.fetchModule(payload.moduleId).catch(async (err) => {
-              const errorData: Record<string, any> = {
-                code: 'VITE_ERROR',
-                id: payload.moduleId,
-                stack: err.stack || '',
-                message: err.message || '',
-              }
-              if (err.frame) { errorData.frame = err.frame }
-
-              if (!errorData.frame && err.code === 'PARSE_ERROR') {
-                try {
-                  const transformed = await node.transformModule(payload.moduleId, 'web')
-                  errorData.frame = `${err.message || ''}\\n${transformed.code}`
-                } catch {
-                  // Ignore transform errors
+            const response = await ssrServer.environments.ssr.fetchModule(payload.moduleId)
+              .catch(async (err) => {
+                const errorData: Record<string, any> = {
+                  code: 'VITE_ERROR',
+                  id: payload.moduleId,
+                  stack: err.stack || '',
+                  message: err.message || '',
                 }
-              }
-              throw createError({ data: errorData, message: err.message || 'Error fetching module' })
-            })
+                if (err.frame) { errorData.frame = err.frame }
+
+                if (!errorData.frame && err.code === 'PARSE_ERROR') {
+                  try {
+                    errorData.frame = await clientServer.transformRequest(payload.moduleId)
+                      .then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
+                  } catch {
+                  // Ignore transform errors
+                  }
+                }
+                throw createError({ data: errorData, message: err.message || 'Error fetching module' })
+              })
             sendResponse<'module'>(socket, requestId, response)
             return
           }
@@ -489,18 +468,20 @@ export type ViteNodeServerOptions = {
   base: string
 }
 
-export async function initViteNodeServer (ctx: ViteBuildContext) {
+export async function writeDevServer (nuxt: Nuxt) {
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
   const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
 
-  await mkdir(join(ctx.nuxt.options.buildDir, 'dist/server'), { recursive: true })
+  await mkdir(join(nuxt.options.buildDir, 'dist/server'), { recursive: true })
 
-  await writeFile(
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
-    `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
-  )
-  await writeFile(
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
-    `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
-  )
+  await Promise.all([
+    writeFile(
+      resolve(nuxt.options.buildDir, 'dist/server/server.mjs'),
+      `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
+    ),
+    writeFile(
+      resolve(nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
+      `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
+    ),
+  ])
 }
