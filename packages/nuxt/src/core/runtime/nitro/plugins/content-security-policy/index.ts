@@ -5,6 +5,7 @@ import type { ContentSecurityPolicyConfig } from './types'
 import { defuReplaceArray, headerStringFromObject } from './utils'
 import { generateNonce } from './nonce'
 import { updateCsp } from './update-csp'
+import { addCspToMeta } from './meta'
 
 const defaultCSPConfig: ContentSecurityPolicyConfig = {
   value: {
@@ -46,5 +47,9 @@ export default (nitroApp: NitroApp) => {
     // Generate nonce and set it in the response headers
     generateNonce(nitroApp, contentSecurityPolicyConfig)
     updateCsp(nitroApp, contentSecurityPolicyConfig)
+  }
+
+  if (contentSecurityPolicyConfig.ssg.meta) {
+    addCspToMeta(nitroApp, contentSecurityPolicyConfig)
   }
 }
