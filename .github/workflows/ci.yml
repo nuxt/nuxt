@@ -183,8 +183,11 @@ jobs:
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Test (unit + runtime test)
-        run: pnpm vitest run --project unit --project nuxt
+      - name: Test (nuxt runtime)
+        run: pnpm test:runtime
+
+      - name: Test (unit)
+        run: pnpm test:unit
 
   test-size:
     runs-on: ubuntu-latest
