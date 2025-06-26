@@ -824,7 +824,7 @@ describe('useFetch', () => {
     expect(data.value).toStrictEqual({ count: 0 })
   })
 
-  it('should work with reactive keys and immediate: false', async () => {
+  it.skipIf(process.env.NUXT_LEGACY !== '1')('should work with reactive keys and immediate: false', async () => {
     registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
 
     const q = ref('')
@@ -843,7 +843,7 @@ describe('useFetch', () => {
     expect(data.value).toEqual({ url: '/api/immediate-false' })
   })
 
-  it('should work with reactive request path and immediate: false', async () => {
+  it.skipIf(process.env.NUXT_LEGACY !== '1')('should work with reactive request path and immediate: false', async () => {
     registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
 
     const q = ref('')
@@ -913,7 +913,7 @@ describe('useFetch', () => {
     expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
   })
 
-  it('should fetch if immediate is false and only the key changes with `experimental.alwaysRunFetchOnKeyChange`', async () => {
+  it.skipIf(process.env.NUXT_LEGACY !== '1')('should fetch if immediate is false and only the key changes with `experimental.alwaysRunFetchOnKeyChange`', async () => {
     const key = shallowRef('a')
     const { status } = useFetch('/api/test', { key, immediate: false })
 
@@ -1262,7 +1262,7 @@ describe('routing utilities: `encodeURL`', () => {
   })
 })
 
-describe('routing utilities: `useRoute`', () => {
+describe.skipIf(process.env.NUXT_LEGACY !== '1')('routing utilities: `useRoute`', () => {
   it('should provide a route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',

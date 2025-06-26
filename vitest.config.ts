@@ -76,6 +76,35 @@ export default defineConfig({
           environmentOptions: {
             nuxt: {
               overrides: {
+                routeRules: {
+                  '/specific-prerendered': { prerender: true },
+                  '/pre/test': { redirect: '/' },
+                  '/pre/**': { prerender: true },
+                },
+                experimental: {
+                  appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+                },
+                imports: {
+                  polyfills: false,
+                },
+              },
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        test: {
+          name: 'nuxt-legacy',
+          dir: './test/nuxt',
+          exclude: [...defaultExclude, '**/universal/**'],
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          env: {
+            NUXT_LEGACY: '1',
+          },
+          environmentOptions: {
+            nuxt: {
+              overrides: {
                 pages: true,
                 routeRules: {
                   '/specific-prerendered': { prerender: true },

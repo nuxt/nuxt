@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { NuxtLayout, NuxtPage } from '#components'
 
-describe('NuxtPage should work with keepalive options', () => {
+describe.skipIf(process.env.NUXT_LEGACY !== '1')('NuxtPage should work with keepalive options', () => {
   let visits = 0
   const router = useRouter()
   beforeEach(() => {
@@ -78,7 +78,7 @@ describe('NuxtPage should work with keepalive options', () => {
     el.unmount()
   })
 
-  it('should not remount a page when keepalive options are modified', async () => {
+  it.skipIf(process.env.NUXT_LEGACY !== '1')('should not remount a page when keepalive options are modified', async () => {
     const pages = ref('home')
     const el = await mountSuspended({
       setup () {

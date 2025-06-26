@@ -105,7 +105,7 @@ describe('NuxtLayout', () => {
     }
   })
 
-  it('should have access to route when initially loading', async () => {
+  it.skipIf(process.env.NUXT_LEGACY !== '1')('should have access to route when initially loading', async () => {
     expect.soft(el.html()).toMatchInlineSnapshot(`"<div>catchall</div>"`)
 
     // accesses layout of _new_ path when layout is loaded in a route change
