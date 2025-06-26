@@ -23,7 +23,7 @@ const waitFor = async (condition: () => boolean, timeout = 1000) => {
   }
 }
 
-describe.skipIf(process.env.NUXT_LEGACY !== '1')('scrollBehavior of router options', () => {
+describe('scrollBehavior of router options', () => {
   const router = useRouter()
   const nuxtApp = useNuxtApp()
 

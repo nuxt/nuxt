@@ -77,7 +77,7 @@ describe('page loading indicator', () => {
     router.removeRoute('page-load-hook')
   })
 
-  it.skipIf(process.env.NUXT_LEGACY !== '1')('should hide nuxt page load indicator after navigating from nested page to other nested page', async () => {
+  it('should hide nuxt page load indicator after navigating from nested page to other nested page', async () => {
     let startedLoading = 0
     let stoppedLoading = 0
     nuxtApp.hook('page:loading:start', () => { startedLoading++ })

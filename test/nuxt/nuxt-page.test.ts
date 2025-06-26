@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { NuxtLayout, NuxtPage } from '#components'
 
-describe.skipIf(process.env.NUXT_LEGACY !== '1')('NuxtPage should work with keepalive options', () => {
+describe('NuxtPage should work with keepalive options', () => {
   let visits = 0
   const router = useRouter()
   beforeEach(() => {
