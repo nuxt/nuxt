@@ -1,6 +1,6 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
-import { getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 
 import { isJsonRequest } from '../utils/error'
 import { useRuntimeConfig } from '#internal/nitro'
@@ -75,6 +75,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   const html = await res.text()
   for (const [header, value] of res.headers.entries()) {
+    if (header === 'set-cookie') {
+      appendResponseHeader(event, header, value)
+      continue
+    }
     setResponseHeader(event, header, value)
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
