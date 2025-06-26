@@ -1,14 +1,12 @@
 <template>
-  <div>
-    <input
-      v-model="query.q"
-      data-testid="query"
-      type="text"
-    >
-    <pre data-testid="status">{{ status }}</pre>
-    <pre data-testid="data">{{ data }}</pre>
-    <pre data-testid="error">{{ error }}</pre>
-  </div>
+  <input
+    v-model="query.q"
+    data-testid="query"
+    type="text"
+  >
+  <pre data-testid="status">{{ status }}</pre>
+  <pre data-testid="data">{{ data }}</pre>
+  <pre data-testid="error">{{ error }}</pre>
 </template>
 
 <script setup>
