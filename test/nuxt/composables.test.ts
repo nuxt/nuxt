@@ -924,7 +924,7 @@ describe('useFetch', () => {
     expect.soft(status.value).toBe('pending')
   })
 
-  it.skipIf(process.env.NUXT_LEGACY !== '1')('should handle parallel execute with `immediate: false`', async () => {
+  it.runIf(process.env.PROJECT === 'nuxt-legacy')('should handle parallel execute with `immediate: false`', async () => {
     const query = reactive({ q: 1 })
     const { execute, status } = useFetch(
       '/api/test',
