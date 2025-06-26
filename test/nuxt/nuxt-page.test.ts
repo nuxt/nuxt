@@ -78,7 +78,7 @@ describe.skipIf(process.env.NUXT_LEGACY !== '1')('NuxtPage should work with keep
     el.unmount()
   })
 
-  it.skipIf(process.env.NUXT_LEGACY !== '1')('should not remount a page when keepalive options are modified', async () => {
+  it('should not remount a page when keepalive options are modified', async () => {
     const pages = ref('home')
     const el = await mountSuspended({
       setup () {
