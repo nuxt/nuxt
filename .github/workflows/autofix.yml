@@ -29,8 +29,11 @@ jobs:
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Test (unit + runtime)
-        run: pnpm vitest run --project unit --project nuxt-legacy -u
+      - name: Test (nuxt runtime)
+        run: pnpm test:runtime -u
+
+      - name: Test (unit)
+        run: pnpm test:unit -u
 
       - name: Lint (code)
         run: pnpm lint:fix
