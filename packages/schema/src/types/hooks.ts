@@ -306,7 +306,7 @@ export interface NuxtHooks {
    * @param options Objects containing `references`, `declarations`, `tsConfig`
    * @returns Promise
    */
-  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig }) => HookResult
+  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[] }) => HookResult
   /**
    * Called when the dev server is loading.
    * @param listenerServer The HTTP/HTTPS server object

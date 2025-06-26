@@ -4,6 +4,32 @@ import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } 
 import { isCI, isWindows } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
+import type { NuxtConfig } from 'nuxt/schema'
+import { defu } from 'defu'
+
+const commonSettings: NuxtConfig = {
+  pages: true,
+  routeRules: {
+    '/specific-prerendered': { prerender: true },
+    '/pre/test': { redirect: '/' },
+    '/pre/**': { prerender: true },
+  },
+  experimental: {
+    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+  },
+  imports: {
+    polyfills: false,
+  },
+}
+
+const projects: Record<string, NuxtConfig> = {
+  'nuxt': {},
+  'nuxt-legacy': {
+    experimental: {
+      alwaysRunFetchOnKeyChange: true,
+    },
+  },
+}
 
 export default defineConfig({
   test: {
@@ -66,34 +92,23 @@ export default defineConfig({
           },
         },
       }),
-      await defineVitestProject({
+      ...await Promise.all(Object.entries(projects).map(([project, config]) => defineVitestProject({
         test: {
-          name: 'nuxt',
+          name: project,
           dir: './test/nuxt',
           exclude: [...defaultExclude, '**/universal/**'],
           environment: 'nuxt',
           setupFiles: ['./test/setup-runtime.ts'],
+          env: {
+            PROJECT: project,
+          },
           environmentOptions: {
             nuxt: {
-              overrides: {
-                pages: true,
-                routeRules: {
-                  '/specific-prerendered': { prerender: true },
-                  '/pre/test': { redirect: '/' },
-                  '/pre/**': { prerender: true },
-                },
-                experimental: {
-                  appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-                  alwaysRunFetchOnKeyChange: true,
-                },
-                imports: {
-                  polyfills: false,
-                },
-              },
+              overrides: defu(config, commonSettings),
             },
           },
         },
-      }),
+      }))),
     ],
   },
 })
