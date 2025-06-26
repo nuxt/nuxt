@@ -186,7 +186,7 @@ jobs:
         run: pnpm dev:prepare
 
       - name: Test (unit + runtime test)
-        run: pnpm vitest run --project unit --project nuxt
+        run: pnpm vitest run --project unit --project nuxt-legacy
 
   test-size:
     runs-on: ubuntu-latest

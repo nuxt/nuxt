@@ -30,7 +30,7 @@ jobs:
         run: pnpm dev:prepare
 
       - name: Test (unit + runtime)
-        run: pnpm vitest run --project unit --project nuxt -u
+        run: pnpm vitest run --project unit --project nuxt-legacy -u
 
       - name: Lint (code)
         run: pnpm lint:fix
