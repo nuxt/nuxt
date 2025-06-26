@@ -190,8 +190,12 @@ export const schemaTemplate: NuxtTemplate = {
     }
 
     return [
-      'import { RuntimeConfig } from \'nuxt/schema\'',
-      'declare module \'nuxt/schema\' {',
+      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
+      `declare module '@nuxt/schema' {`,
+      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
+      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
+      `}`,
+      `declare module 'nuxt/schema' {`,
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'RuntimeConfig',
@@ -211,7 +215,7 @@ export const schemaTemplate: NuxtTemplate = {
       '}',
       `declare module 'vue' {
         interface ComponentCustomProperties {
-          $config: RuntimeConfig
+          $config: UserRuntimeConfig
         }
       }`,
     ].join('\n')
@@ -359,7 +363,7 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
     return /* typescript */`
 ${lines.join('\n')}
-/// <reference path="./schema.d.ts" />
+/// <reference path="./runtime-config.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
