@@ -895,6 +895,32 @@ describe('useFetch', () => {
     await nextTick()
     expect.soft(status.value).toBe('pending')
   })
+
+  it('should handle parallel execute with `immediate: false`', async () => {
+    const query = reactive({ q: 1 })
+    const { execute, status } = useFetch(
+      '/api/test',
+      {
+        query,
+        immediate: false,
+      },
+    )
+    watch(query, () => execute(), { once: true })
+
+    expect.soft(status.value).toBe('idle')
+    query.q++
+    query.q++
+
+    await nextTick()
+    query.q++
+
+    expect.soft(status.value).toBe('pending')
+    await vi.waitFor(() => {
+      expect(status.value).toBe('success')
+    })
+    query.q++
+    expect.soft(status.value).toBe('pending')
+  })
 })
 
 describe('errors', () => {
