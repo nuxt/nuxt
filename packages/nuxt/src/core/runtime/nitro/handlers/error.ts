@@ -4,7 +4,6 @@ import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setRe
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
-import { showSSRDebugPrompt } from '../utils/ssr-debug'
 import type { NuxtPayload } from '#app/nuxt'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -51,6 +50,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // Show debug prompt with link to open page with SSR disabled in development
   if (import.meta.dev && !isRenderingError) {
+    const { showSSRDebugPrompt } = await import('../utils/ssr-debug')
     showSSRDebugPrompt(event)
   }
 
