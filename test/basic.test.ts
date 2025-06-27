@@ -2891,9 +2891,14 @@ describe('lazy import components', () => {
     expect(html).toContain('lazy-named-comp-server')
   })
 
-  describe('delayed hydration comps', () => {
+  const hydrationTests = {
+    'in template': '',
+    'with vue macros': '/macro',
+  }
+
+  describe.each(Object.entries(hydrationTests))('delayed hydration components %s', (description, path) => {
     it('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
-      const html = await $fetch<string>('/lazy-import-components/delayed-hydration')
+      const html = await $fetch<string>(`/lazy-import-components/delayed-hydration${path}`)
 
       const hydratedText = 'This is mounted.'
       const unhydratedText = 'This is not mounted.'
@@ -2901,7 +2906,7 @@ describe('lazy import components', () => {
       expect.soft(html).toContain(unhydratedText)
       expect.soft(html).not.toContain(hydratedText)
 
-      const { page } = await renderPage('/lazy-import-components/delayed-hydration')
+      const { page } = await renderPage(`/lazy-import-components/delayed-hydration${path}`)
 
       await page.locator('data-testid=hydrate-on-visible', { hasText: hydratedText }).waitFor()
       expect.soft(await page.locator('data-testid=hydrate-on-visible-bottom').textContent().then(r => r?.trim())).toBe(unhydratedText)
@@ -2928,7 +2933,7 @@ describe('lazy import components', () => {
     })
 
     it('respects custom delayed hydration triggers and overrides defaults', async () => {
-      const { page } = await renderPage('/lazy-import-components/delayed-hydration')
+      const { page } = await renderPage(`/lazy-import-components/delayed-hydration${path}`)
 
       const unhydratedText = 'This is not mounted.'
       const hydratedText = 'This is mounted.'
@@ -2945,7 +2950,7 @@ describe('lazy import components', () => {
       await page.close()
     })
 
-    it('does not delay hydration of components named after modifiers', async () => {
+    it.runIf(description === 'in template')('does not delay hydration of components named after modifiers', async () => {
       const { page } = await renderPage('/lazy-import-components/delayed-hydration')
 
       await page.locator('data-testid=event-view-normal-component', { hasText: 'This is mounted.' }).waitFor()
@@ -2956,10 +2961,10 @@ describe('lazy import components', () => {
 
     it('handles time-based hydration correctly', async () => {
       const unhydratedText = 'This is not mounted.'
-      const html = await $fetch<string>('/lazy-import-components/delayed-hydration/time')
+      const html = await $fetch<string>(`/lazy-import-components/delayed-hydration${path}/time`)
       expect(html).toContain(unhydratedText)
 
-      const { page, consoleLogs } = await renderPage('/lazy-import-components/delayed-hydration/time')
+      const { page, consoleLogs } = await renderPage(`/lazy-import-components/delayed-hydration${path}/time`)
 
       const hydratedText = 'This is mounted.'
       await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
@@ -2971,7 +2976,7 @@ describe('lazy import components', () => {
     })
 
     it('keeps reactivity with models', async () => {
-      const { page } = await renderPage('/lazy-import-components/delayed-hydration/model-event')
+      const { page } = await renderPage(`/lazy-import-components/delayed-hydration${path}/model-event`)
 
       const countLocator = page.getByTestId('count')
       const incrementButton = page.getByTestId('increment')
@@ -2990,113 +2995,7 @@ describe('lazy import components', () => {
     })
 
     it('emits hydration events', async () => {
-      const { page, consoleLogs } = await renderPage('/lazy-import-components/delayed-hydration/model-event')
-
-      const initialLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
-      expect(initialLogs.length).toBe(0)
-
-      await page.getByTestId('count').click()
-
-      // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
-      const hydrationLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
-      expect(hydrationLogs.length).toBeGreaterThan(0)
-
-      await page.close()
-    })
-  })
-
-  describe('delayed hydration comps with vue macros', () => {
-    it('lazy load delayed hydration comps at the right time with vue macros', { timeout: 20_000 }, async () => {
-      const html = await $fetch<string>('/lazy-import-components/delayed-hydration/macro')
-
-      const hydratedText = 'This is mounted.'
-      const unhydratedText = 'This is not mounted.'
-
-      expect.soft(html).toContain(unhydratedText)
-      expect.soft(html).not.toContain(hydratedText)
-
-      const { page } = await renderPage('/lazy-import-components/delayed-hydration/macro')
-
-      await page.locator('data-testid=hydrate-on-visible', { hasText: hydratedText }).waitFor()
-      expect.soft(await page.locator('data-testid=hydrate-on-visible-bottom').textContent().then(r => r?.trim())).toBe(unhydratedText)
-
-      await page.locator('data-testid=hydrate-on-interaction-default', { hasText: unhydratedText }).waitFor()
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor()
-
-      await page.locator('data-testid=hydrate-when-always', { hasText: hydratedText }).waitFor()
-      await page.locator('data-testid=hydrate-when-state', { hasText: unhydratedText }).waitFor()
-
-      const component = page.getByTestId('hydrate-on-interaction-default')
-      await component.hover()
-      await page.locator('data-testid=hydrate-on-interaction-default', { hasText: hydratedText }).waitFor()
-
-      await page.getByTestId('button-increase-state').click()
-      await page.locator('data-testid=hydrate-when-state', { hasText: hydratedText }).waitFor()
-
-      await page.getByTestId('hydrate-on-visible-bottom').scrollIntoViewIfNeeded()
-      await page.locator('data-testid=hydrate-on-visible-bottom', { hasText: hydratedText }).waitFor()
-
-      await page.locator('data-testid=hydrate-never', { hasText: unhydratedText }).waitFor()
-
-      await page.close()
-    })
-
-    it('respects custom delayed hydration triggers and overrides defaults with vue macros', async () => {
-      const { page } = await renderPage('/lazy-import-components/delayed-hydration/macro')
-
-      const unhydratedText = 'This is not mounted.'
-      const hydratedText = 'This is mounted.'
-
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
-
-      await page.getByTestId('hydrate-on-interaction-click').hover()
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
-
-      await page.getByTestId('hydrate-on-interaction-click').click()
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: hydratedText }).waitFor({ state: 'visible' })
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'hidden' })
-
-      await page.close()
-    })
-
-    it('handles time-based hydration correctly with vue macros', async () => {
-      const unhydratedText = 'This is not mounted.'
-      const html = await $fetch<string>('/lazy-import-components/delayed-hydration/macro/time')
-      expect(html).toContain(unhydratedText)
-
-      const { page, consoleLogs } = await renderPage('/lazy-import-components/delayed-hydration/macro/time')
-
-      const hydratedText = 'This is mounted.'
-      await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
-
-      const hydrationLogs = consoleLogs.filter(log => !log.text.includes('[vite]') && !log.text.includes('<Suspense>'))
-      expect(hydrationLogs.map(log => log.text)).toEqual([])
-
-      await page.close()
-    })
-
-    it('keeps reactivity with models with vue macros', async () => {
-      const { page } = await renderPage('/lazy-import-components/delayed-hydration/macro/model-event')
-
-      const countLocator = page.getByTestId('count')
-      const incrementButton = page.getByTestId('increment')
-
-      await countLocator.waitFor()
-
-      for (let i = 0; i < 10; i++) {
-        expect(await countLocator.textContent()).toBe(`${i}`)
-        await incrementButton.hover()
-        await incrementButton.click()
-      }
-
-      expect(await countLocator.textContent()).toBe('10')
-
-      await page.close()
-    })
-
-    it('emits hydration events with vue macros', async () => {
-      const { page, consoleLogs } = await renderPage('/lazy-import-components/delayed-hydration/macro/model-event')
+      const { page, consoleLogs } = await renderPage(`/lazy-import-components/delayed-hydration${path}/model-event`)
 
       const initialLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
       expect(initialLogs.length).toBe(0)
