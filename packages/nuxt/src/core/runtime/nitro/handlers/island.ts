@@ -7,7 +7,7 @@ import { defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
-import { serializeApp } from 'vue-bento/runtime/serialize'
+import { serializeApp } from 'vue-bento/runtime/serializeAsync'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/renderer/build-files'
@@ -38,24 +38,26 @@ export default defineEventHandler(async (event) => {
     noSSR: false,
     url: islandContext.url,
   }
-
+  console.time('entry')
   // Render app
   const renderer = await getSSRRenderer()
-
-  const renderResult = await renderer.renderToString(ssrContext).catch(async (error) => {
-    await ssrContext.nuxt?.hooks.callHook('app:error', error)
-    throw error
-  })
 
   const createSSRApp = await getServerEntry()
 
   ssrContext.rootComponent = components[islandContext.name]
+  
+  console.timeEnd('entry')
+  console.time('createApp')
   const app = await createSSRApp(ssrContext, renderer.rendererContext)
-  const ast = await app.runWithContext(() => serializeApp(app, islandContext.props, ssrContext))
 
+  console.timeEnd('createApp')
+  console.time('ast')
+  const ast = await app.runWithContext(() => serializeApp(app, ssrContext))
+
+  console.timeEnd('ast')
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
-  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
+  await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
 
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles })
@@ -98,9 +100,6 @@ export default defineEventHandler(async (event) => {
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
     head: islandHead,
-    html: getServerComponentHTML(renderResult.html),
-    components: getClientIslandResponse(ssrContext),
-    slots: getSlotIslandResponse(ssrContext),
     ast,
   }
 
@@ -110,6 +109,7 @@ export default defineEventHandler(async (event) => {
     await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)
     await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
   }
+  
   return islandResponse
 })
 

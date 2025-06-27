@@ -42,7 +42,7 @@ importers:
     dependencies:
       vue-bento:
         specifier: file:../vue-bento
-        version: file:../vue-bento(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(yaml@2.7.1)
+        version: vue-onigiri@file:../vue-bento(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(yaml@2.7.1)
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 0.17.4
@@ -7598,9 +7598,6 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  vue-bento@file:../vue-bento:
-    resolution: {directory: ../vue-bento, type: directory}
-
   vue-bundle-renderer@2.1.1:
     resolution: {integrity: sha512-+qALLI5cQncuetYOXp4yScwYvqh8c6SMXee3B+M7oTZxOgtESP0l4j/fXdEJoZ+EdMxkGWIj+aSEyjXkOdmd7g==}
 
@@ -7632,6 +7629,9 @@ packages:
         optional: true
       vue:
         optional: true
+
+  vue-onigiri@file:../vue-bento:
+    resolution: {directory: ../vue-bento, type: directory}
 
   vue-resize@2.0.0-alpha.1:
     resolution: {integrity: sha512-7+iqOueLU7uc9NrMfrzbG8hwMqchfVfSzpVlCMeJQe4pyibqyoifDNbKTZvwxZKDvGkB+PdFeKvnGZMoEb8esg==}
@@ -15312,38 +15312,6 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  vue-bento@file:../vue-bento(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(yaml@2.7.1):
-    dependencies:
-      '@module-federation/vite': 1.4.0(rollup@4.40.1)
-      '@vitejs/plugin-vue': 5.2.3(vite@6.3.5(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(yaml@2.7.1))(vue@3.5.13(typescript@5.8.3))
-      '@vue/compiler-dom': 3.5.13
-      '@vue/compiler-ssr': 3.5.13
-      '@vue/server-renderer': 3.5.13(vue@3.5.13(typescript@5.8.3))
-      '@vue/shared': 3.5.13
-      '@vue/test-utils': 2.4.6
-      acorn: 8.14.1
-      defu: 6.1.4
-      magic-string: 0.30.17
-      ohash: 2.0.11
-      pathe: 2.0.3
-      rollup: 4.40.1
-      unplugin: 2.3.5
-      vite: 6.3.5(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(yaml@2.7.1)
-      vue: 3.5.13(typescript@5.8.3)
-    transitivePeerDependencies:
-      - '@types/node'
-      - jiti
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - typescript
-      - yaml
-
   vue-bundle-renderer@2.1.1:
     dependencies:
       ufo: 1.6.1
@@ -15378,6 +15346,38 @@ snapshots:
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.13
       vue: 3.5.13(typescript@5.8.3)
+
+  vue-onigiri@file:../vue-bento(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(yaml@2.7.1):
+    dependencies:
+      '@module-federation/vite': 1.4.0(rollup@4.40.1)
+      '@vitejs/plugin-vue': 5.2.3(vite@6.3.5(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(yaml@2.7.1))(vue@3.5.13(typescript@5.8.3))
+      '@vue/compiler-dom': 3.5.13
+      '@vue/compiler-ssr': 3.5.13
+      '@vue/server-renderer': 3.5.13(vue@3.5.13(typescript@5.8.3))
+      '@vue/shared': 3.5.13
+      '@vue/test-utils': 2.4.6
+      acorn: 8.14.1
+      defu: 6.1.4
+      magic-string: 0.30.17
+      ohash: 2.0.11
+      pathe: 2.0.3
+      rollup: 4.40.1
+      unplugin: 2.3.5
+      vite: 6.3.5(@types/node@22.15.11)(jiti@2.4.2)(terser@5.39.0)(yaml@2.7.1)
+      vue: 3.5.13(typescript@5.8.3)
+    transitivePeerDependencies:
+      - '@types/node'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - typescript
+      - yaml
 
   vue-resize@2.0.0-alpha.1(vue@3.5.13(typescript@5.8.3)):
     dependencies:

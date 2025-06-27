@@ -20,14 +20,7 @@ const count = ref(0)
         name="PureComponent"
         :props="islandProps"
       />
-      <div id="wrapped-client-only">
-        <ClientOnly>
-          <NuxtIsland
-            name="PureComponent"
-            :props="islandProps"
-          />
-        </ClientOnly>
-      </div>
+      
     </div>
     <button
       id="increase-pure-component"
@@ -36,23 +29,8 @@ const count = ref(0)
       Increase
     </button>
     <hr>
-    Route island component:
-    <div
-      v-if="routeIslandVisible"
-      class="box"
-    >
-      <NuxtIsland
-        name="RouteComponent"
-        :context="{ url: '/test' }"
-      />
-    </div>
-    <button
-      v-else
-      id="show-route"
-      @click="routeIslandVisible = true"
-    >
-      Show
-    </button>
+    Route island component: 
+    
   </div>
 </template>
 

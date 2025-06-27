@@ -1,9 +1,9 @@
-import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
-import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
+import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import type { ComponentInternalInstance, ComponentOptions, InjectionKey, RendererNode, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
-import { elToStaticVNode } from './utils'
+import { getFragmentHTML } from './utils'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
@@ -136,4 +136,27 @@ function extractDirectives (instance: ComponentInternalInstance | null) {
   const directives = instance.vnode.dirs
   instance.vnode.dirs = null
   return directives
+}
+
+
+/**
+ * Return a static vnode from an element
+ * Default to a div if the element is not found and if a fallback is not provided
+ * @param el renderer node retrieved from the component internal instance
+ * @param staticNodeFallback fallback string to use if the element is not found. Must be a valid HTML string
+ */
+function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: string): VNode {
+  const fragment: string[] | undefined = el ? getFragmentHTML(el) : staticNodeFallback ? [staticNodeFallback] : undefined
+  if (fragment) {
+    return createStaticVNode(fragment.join(''), fragment.length)
+  }
+  return h('div')
+}
+
+export function isStartFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === '['
+}
+
+export function isEndFragment (element: RendererNode) {
+  return element.nodeName === '#comment' && element.nodeValue === ']'
 }

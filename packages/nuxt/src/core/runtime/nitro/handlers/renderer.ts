@@ -271,7 +271,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
-      componentIslands ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
+     _rendered.html,
       APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : '') + APP_TELEPORT_CLOSE_TAG,
     ],
     bodyAppend: [bodyTags],
