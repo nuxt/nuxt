@@ -7,7 +7,7 @@ settings:
 overrides:
   '@babel/core': 7.27.4
   '@babel/helper-plugin-utils': 7.27.1
-  '@nuxt/cli': 3.25.1
+  '@nuxt/cli': 3.26.0-rc.1
   '@nuxt/kit': workspace:*
   '@nuxt/rspack-builder': workspace:*
   '@nuxt/schema': workspace:*
@@ -56,8 +56,8 @@ importers:
         specifier: 4.0.1
         version: 4.0.1(vite@7.0.0(@types/node@22.15.32)(jiti@2.4.2)(terser@5.40.0)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.32)(happy-dom@18.0.1)(jiti@2.4.2)(terser@5.40.0)(yaml@2.8.0))
       '@nuxt/cli':
-        specifier: 3.25.1
-        version: 3.25.1(magicast@0.3.5)
+        specifier: 3.26.0-rc.1
+        version: 3.26.0-rc.1(magicast@0.3.5)
       '@nuxt/eslint-config':
         specifier: 1.4.1
         version: 1.4.1(@typescript-eslint/utils@8.34.1(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.17)(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3)
@@ -347,8 +347,8 @@ importers:
   packages/nuxt:
     dependencies:
       '@nuxt/cli':
-        specifier: 3.25.1
-        version: 3.25.1(magicast@0.3.5)
+        specifier: 3.26.0-rc.1
+        version: 3.26.0-rc.1(magicast@0.3.5)
       '@nuxt/devalue':
         specifier: ^2.0.2
         version: 2.0.2
@@ -2008,8 +2008,8 @@ packages:
     resolution: {integrity: sha512-pwK+BfEBZJbKdNYpHHRTNBwBoqrN/iIMO0AiGvYsp3Hoaq0WbgGSWQR6SCldZovoDpY3yje5lkFUe6gsDgJ2vg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  '@nuxt/cli@3.25.1':
-    resolution: {integrity: sha512-7+Ut7IvAD4b5piikJFSgIqSPbHKFT5gq05JvCsEHRM0MPA5QR9QHkicklyMqSj0D/oEkDohen8qRgdxRie3oUA==}
+  '@nuxt/cli@3.26.0-rc.1':
+    resolution: {integrity: sha512-qnTOV9hidHRKh0pkKDASbD+DFKaHpNCv50RdMpkRd0inkBfkjdTOdPBVBEhL5Tgs12v5FSdtXXXd7b60M1NUjw==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
 
@@ -9440,14 +9440,15 @@ snapshots:
 
   '@npmcli/name-from-folder@2.0.0': {}
 
-  '@nuxt/cli@3.25.1(magicast@0.3.5)':
+  '@nuxt/cli@3.26.0-rc.1(magicast@0.3.5)':
     dependencies:
       c12: 3.0.4(magicast@0.3.5)
-      chokidar: 4.0.3
       citty: 0.1.6
       clipboardy: 4.0.0
+      confbox: 0.2.2
       consola: 3.4.2
       defu: 6.1.4
+      exsolve: 1.0.7
       fuse.js: 7.1.0
       giget: 2.0.0
       h3: 1.15.3
