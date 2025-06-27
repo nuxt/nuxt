@@ -2,10 +2,10 @@ import type { NitroApp } from 'nitro/types'
 import { generateRandomNonce } from './utils'
 import type { ContentSecurityPolicyConfig } from './types'
 
-const LINK_RE = /<link([^>]*?>)/gi
+const LINK_RE = /<link([^>]*>)/gi
 const NONCE_RE = /nonce="[^"]+"/i
-const SCRIPT_RE = /<script([^>]*?>)/gi
-const STYLE_RE = /<style([^>]*?>)/gi
+const SCRIPT_RE = /<script([^>]*>)/gi
+const STYLE_RE = /<style([^>]*>)/gi
 
 /**
  * This plugin generates a nonce for the current request and adds it to the HTML.
