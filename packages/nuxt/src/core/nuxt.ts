@@ -19,7 +19,7 @@ import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import defu from 'defu'
-import { gt, satisfies } from 'semver'
+import { satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
@@ -838,15 +838,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nuxt = createNuxt(options)
 
   nuxt.runWithContext(() => {
-    if (nuxt.options.dev && !nuxt.options.test) {
-      nuxt.hooks.hookOnce('build:done', () => {
-        for (const dep of keyDependencies) {
-          checkDependencyVersion(dep, nuxt._version)
-            .catch(e => logger.warn(`Problem checking \`${dep}\` version.`, e))
-        }
-      })
-    }
-
     // We register hooks layer-by-layer so any overrides need to be registered separately
     if (opts.overrides?.hooks) {
       nuxt.hooks.addHooks(opts.overrides.hooks)
@@ -866,17 +857,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   return nuxt
-}
-
-export async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
-  const path = resolveModulePath(name, { try: true })
-
-  if (!path) { return }
-  const { version } = await readPackageJSON(path)
-
-  if (version && gt(nuxtVersion, version)) {
-    console.warn(`[nuxt] Expected \`${name}\` to be at least \`${nuxtVersion}\` but got \`${version}\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
-  }
 }
 
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
