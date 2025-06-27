@@ -209,7 +209,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const layer of nuxt.options._layers) {
     const srcOrCwd = withTrailingSlash(layer.config.srcDir ?? layer.cwd)
-    if (!srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd === rootDirWithSlash || srcOrCwd.includes('node_modules')) {
+    if (!srcOrCwd.startsWith(rootDirWithSlash) || layer.cwd === nuxt.options.rootDir || srcOrCwd.includes('node_modules')) {
       const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.cwd), '**/*')
       const paths = resolveLayerPaths(nuxt.options.buildDir, layer.cwd, layer.config.srcDir)
       for (const path of paths.nuxt) {
