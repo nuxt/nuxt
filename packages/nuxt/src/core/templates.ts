@@ -180,8 +180,50 @@ export { }
 const IMPORT_NAME_RE = /\.\w+$/
 const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
-  filename: 'types/schema.d.ts',
+  filename: 'types/runtime-config.d.ts',
   getContents: async ({ nuxt }) => {
+    const privateRuntimeConfig = Object.create(null)
+    for (const key in nuxt.options.runtimeConfig) {
+      if (key !== 'public') {
+        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
+      }
+    }
+
+    return [
+      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
+      `declare module '@nuxt/schema' {`,
+      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
+      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
+      `}`,
+      `declare module 'nuxt/schema' {`,
+      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
+        {
+          interfaceName: 'RuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
+      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
+        {
+          interfaceName: 'PublicRuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
+      '}',
+      `declare module 'vue' {
+        interface ComponentCustomProperties {
+          $config: UserRuntimeConfig
+        }
+      }`,
+    ].join('\n')
+  },
+}
+export const schemaNodeTemplate: NuxtTemplate = {
+  filename: 'types/modules.d.ts',
+  getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
@@ -196,13 +238,6 @@ export const schemaTemplate: NuxtTemplate = {
         continue
       }
       modules.push([genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m])
-    }
-
-    const privateRuntimeConfig = Object.create(null)
-    for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public') {
-        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
-      }
     }
 
     const moduleOptionsInterface = (options: { addJSDocTags: boolean, unresolved: boolean }) => [
@@ -244,7 +279,7 @@ export const schemaTemplate: NuxtTemplate = {
     ].filter(Boolean)
 
     return [
-      'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
+      'import { NuxtModule } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
       '  interface NuxtOptions {',
       ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
@@ -262,28 +297,7 @@ export const schemaTemplate: NuxtTemplate = {
       '  interface NuxtConfig {',
       ...moduleOptionsInterface({ addJSDocTags: true, unresolved: true }),
       '  }',
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-        {
-          interfaceName: 'RuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-        {
-          interfaceName: 'PublicRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
       '}',
-      `declare module 'vue' {
-        interface ComponentCustomProperties {
-          $config: RuntimeConfig
-        }
-      }`,
     ].join('\n')
   },
 }
@@ -349,7 +363,7 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
     return /* typescript */`
 ${lines.join('\n')}
-/// <reference path="./schema.d.ts" />
+/// <reference path="./runtime-config.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
@@ -498,15 +512,16 @@ export const publicPathTemplate: NuxtTemplate = {
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
-        ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
-        : 'const appConfig = useRuntimeConfig().app',
+        ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
+        : 'const getAppConfig = () => useRuntimeConfig().app',
 
-      'export const baseURL = () => appConfig.baseURL',
-      'export const buildAssetsDir = () => appConfig.buildAssetsDir',
+      'export const baseURL = () => getAppConfig().baseURL',
+      'export const buildAssetsDir = () => getAppConfig().buildAssetsDir',
 
       'export const buildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
 
       'export const publicAssetsURL = (...path) => {',
+      '  const appConfig = getAppConfig()',
       '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',

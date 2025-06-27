@@ -3,12 +3,12 @@
   "name": "fixture-minimal-types",
   "scripts": {
     "build": "nuxt build",
-    "test:types": "nuxt prepare && npx vue-tsc --noEmit"
+    "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
   },
   "dependencies": {
     "nuxt": "workspace:*"
   },
   "engines": {
-    "node": "^20.11.1 || >=22.0.0"
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

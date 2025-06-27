@@ -327,6 +327,7 @@ export function useAsyncData<
     const unsubExecute = watch([key, ...(options.watch || [])], ([newKey], [oldKey]) => {
       if ((newKey || oldKey) && newKey !== oldKey) {
         const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
+        const isRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
         if (oldKey) {
           unregister(oldKey)
         }
@@ -336,7 +337,8 @@ export function useAsyncData<
           nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialFetchOptions.cachedData)
         }
         nuxtApp._asyncData[newKey]._deps++
-        if (options.immediate || hasRun) {
+
+        if (options.immediate || hasRun || isRunning) {
           nuxtApp._asyncData[newKey].execute(initialFetchOptions)
         }
       } else {
