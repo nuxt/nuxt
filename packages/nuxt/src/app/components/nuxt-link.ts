@@ -511,6 +511,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           rel,
           target,
           onClick: (event) => {
+            if (isExternal.value || hasTarget.value) {
+              return
+            }
+
             event.preventDefault()
 
             return props.replace
