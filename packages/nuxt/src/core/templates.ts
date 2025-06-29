@@ -430,10 +430,7 @@ export const clientConfigTemplate: NuxtTemplate = {
     const appId = JSON.stringify(nuxt.options.appId)
     return [
       'export const useRuntimeConfig = () => ',
-      (!nuxt.options.future.multiApp
-        ? 'window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config'
-        : `window?.__NUXT__?.[${appId}]?.config || window?.useNuxtApp?.(${appId}).payload?.config`)
-        || {},
+      `window?.__NUXT__?.[${appId}]?.config || window?.useNuxtApp?.(${appId}).payload?.config`,
     ].join('\n')
   },
 }
