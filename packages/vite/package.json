@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "rollup": "4.44.0",
+    "rollup": "4.44.1",
     "unbuild": "3.5.0",
     "vue": "3.5.17"
   },
@@ -53,12 +53,12 @@
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
-    "pkg-types": "^2.1.0",
+    "pkg-types": "^2.2.0",
     "postcss": "^8.5.6",
     "rollup-plugin-visualizer": "^6.0.3",
     "std-env": "^3.9.0",
     "ufo": "^1.6.1",
-    "unenv": "^2.0.0-rc.17",
+    "unenv": "^2.0.0-rc.18",
     "unplugin": "^2.3.5",
     "vite": "^6.3.5",
     "vite-node": "^3.2.4",
