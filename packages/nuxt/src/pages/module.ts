@@ -489,7 +489,12 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
-    const extractedKeys = [...defaultExtractionKeys, 'middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]
+    const extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys
+    const extractedKeys = [
+      ...defaultExtractionKeys,
+      'middleware',
+      ...(Array.isArray(extraPageMetaExtractionKeys) ? extraPageMetaExtractionKeys : []),
+    ]
 
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({

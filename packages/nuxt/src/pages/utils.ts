@@ -70,8 +70,13 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     return pages
   }
 
+  const extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys
+
   const augmentCtx = {
-    extraExtractionKeys: new Set(['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]),
+    extraExtractionKeys: new Set([
+      'middleware',
+      ...(Array.isArray(extraPageMetaExtractionKeys) ? extraPageMetaExtractionKeys : []),
+    ]),
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
   }
   if (shouldAugment === 'after-resolve') {
