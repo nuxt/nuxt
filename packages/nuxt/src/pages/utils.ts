@@ -70,7 +70,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     return pages
   }
 
-  const extraPageMetaExtractionKeys = nuxt.options.experimental.extraPageMetaExtractionKeys
+  const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys
 
   const augmentCtx = {
     extraExtractionKeys: new Set([
