@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.4.1",
+    "@rspack/core": "1.4.2",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
     "rollup": "4.44.1",
