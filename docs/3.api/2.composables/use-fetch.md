@@ -103,7 +103,7 @@ function useFetch<DataT, ErrorT>(
 ): Promise<AsyncData<DataT, ErrorT>>
 
 type UseFetchOptions<DataT> = {
-  key?: string
+  key?: MaybeRefOrGetter<string>
   method?: string
   query?: SearchParams
   params?: SearchParams
@@ -119,7 +119,8 @@ type UseFetchOptions<DataT> = {
   default?: () => DataT
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
-  watch?: WatchSource[] | false
+  $fetch?: typeof globalThis.$fetch
+  watch?: MultiWatchSources | false
 }
 
 type AsyncDataRequestContext = {
@@ -128,11 +129,12 @@ type AsyncDataRequestContext = {
 }
 
 type AsyncData<DataT, ErrorT> = {
-  data: Ref<DataT | null>
+  data: Ref<DataT | undefined>
+  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
-  error: Ref<ErrorT | null>
+  error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
 }
 
@@ -151,7 +153,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 | Option | Type | Default | Description |
 | ---| --- | --- | --- |
-| `key` | `string` | auto-gen | Unique key for de-duplication. If not provided, generated from URL and options. |
+| `key` | `MaybeRefOrGetter<string>` | auto-gen | Unique key for de-duplication. If not provided, generated from URL and options. |
 | `method` | `string` | `'GET'` | HTTP request method. |
 | `query` | `object` | - | Query/search params to append to the URL. Alias: `params`. Supports refs/computed. |
 | `params` | `object` | - | Alias for `query`. |
@@ -167,10 +169,10 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `transform` | `(input: DataT) => DataT \| Promise<DataT>` | - | Function to transform the result after resolving. |
 | `getCachedData`| `(key, nuxtApp, ctx) => DataT \| undefined` | - | Function to return cached data. See below for default. |
 | `pick` | `string[]` | - | Only pick specified keys from the result. |
-| `watch` | `WatchSource[] \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
+| `watch` | `MultiWatchSources \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
 | `deep` | `boolean` | `false` | Return data in a deep ref object. |
 | `dedupe` | `'cancel' \| 'defer'` | `'cancel'` | Avoid fetching same key more than once at a time. |
-| `$fetch` | `typeof $fetch` | - | Custom $fetch implementation. |
+| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -190,6 +192,7 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 | Name | Type | Description |
 | --- | --- |--- |
 | `data` | `Ref<DataT \| null>` | The result of the asynchronous fetch. |
+| `pending` | `Ref<boolean>` | [For specific explanations](https://nuxt.com/docs/getting-started/upgrade#alignment-of-pending-value-in-useasyncdata-and-usefetch)  |
 | `refresh` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Function to manually refresh the data. By default, Nuxt waits until a `refresh` is finished before it can be executed again. |
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`. |
 | `error` | `Ref<ErrorT \| null>` | Error object if the data fetching failed. |
