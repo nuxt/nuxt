@@ -106,7 +106,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 export const bento: NuxtTemplate = {
   // components.islands.mjs'
   getContents () {
-    return `export * from "vue-bento/runtime/deserialize"`
+    return `export * from "vue-onigiri/runtime/deserialize"`
   },
   write: true
 }

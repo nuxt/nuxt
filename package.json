@@ -146,6 +146,6 @@
   "packageManager": "pnpm@10.10.0",
   "version": "",
   "dependencies": {
-    "vue-bento": "file:../vue-bento"
+    "vue-onigiri": "file:../vue-onigiri"
   }
 }

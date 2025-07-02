@@ -192,7 +192,7 @@ export default defineNuxtConfig({
 
     externals: {
       inline: [(id) => {
-        if (id.includes('vue-bento')) {
+        if (id.includes('vue-onigiri')) {
           return true
         }
         return false

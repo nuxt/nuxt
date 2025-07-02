@@ -7,7 +7,7 @@ import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
-import { renderServerComponent } from 'vue-bento/runtime/deserialize'
+import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
 import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -178,7 +178,7 @@ export default defineComponent({
     }
 
     return () => {
-      return renderServerComponent(
+      return renderOnigiri(
         ast.value,
         viteFetch,
       )
