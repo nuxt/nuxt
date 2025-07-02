@@ -145,6 +145,7 @@ const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { imm
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
+- `pending`: a boolean ref that indicates whether the request is in progress.[For specific explanations](https://nuxt.com/docs/getting-started/upgrade#alignment-of-pending-value-in-useasyncdata-and-usefetch)
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
 - `status`: a string indicating the status of the data request:
@@ -159,7 +160,7 @@ const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { imm
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
 ::note
-If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/api/composables/use-async-data) on the client side, `data` will remain `null` within `<script setup>`.
+If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/api/composables/use-async-data) on the client side, `data` will remain `undefined` within `<script setup>`.
 ::
 
 ## Type

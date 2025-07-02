@@ -191,11 +191,11 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 
 | Name | Type | Description |
 | --- | --- |--- |
-| `data` | `Ref<DataT \| null>` | The result of the asynchronous fetch. |
+| `data` | `Ref<DataT \| undefined>` | The result of the asynchronous fetch. |
 | `pending` | `Ref<boolean>` | [For specific explanations](https://nuxt.com/docs/getting-started/upgrade#alignment-of-pending-value-in-useasyncdata-and-usefetch)  |
 | `refresh` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Function to manually refresh the data. By default, Nuxt waits until a `refresh` is finished before it can be executed again. |
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`. |
-| `error` | `Ref<ErrorT \| null>` | Error object if the data fetching failed. |
+| `error` | `Ref<ErrorT \| undefined>` | Error object if the data fetching failed. |
 | `status` | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>` | Status of the data request. See below for possible values. |
 | `clear` | `() => void` | Resets `data` to `undefined` (or the value of `options.default()` if provided), `error` to `undefined`, set `status` to `idle`, and cancels any pending requests. |
 
