@@ -123,6 +123,10 @@ describe('resolveLayerPaths', () => {
     const paths = resolveLayerPaths(nuxtOptions.dir, nuxtOptions.buildDir, nuxtOptions.rootDir, nuxtOptions.srcDir)
     expect(paths).toMatchInlineSnapshot(`
       {
+        "globalDeclarations": [
+          "../*.d.ts",
+          "../layers/*/*.d.ts",
+        ],
         "nitro": [
           "../custom-modules/*/runtime/server/**/*",
           "../layers/*/modules/*/runtime/server/**/*",

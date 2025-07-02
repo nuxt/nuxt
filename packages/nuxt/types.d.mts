@@ -10,7 +10,6 @@ export * from './dist/index.js'
 
 declare global {
   const defineNuxtConfig: DefineNuxtConfig
-  const defineAppConfig: <T>(appConfig: T) => T
   const defineNuxtSchema: (schema: SchemaDefinition) => SchemaDefinition
 
   interface ImportMeta {

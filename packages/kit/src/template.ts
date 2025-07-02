@@ -191,7 +191,7 @@ export function resolveLayerPaths (dir: Nuxt['options']['dir'], buildDir: string
       join(relativeRootDir, `layers/*/shared/**/*.d.ts`),
     ],
     globalDeclarations: [
-      join(relativeSrcDir, `**/*.d.ts`),
+      join(relativeRootDir, `*.d.ts`),
       join(relativeRootDir, `layers/*/*.d.ts`),
     ],
   }

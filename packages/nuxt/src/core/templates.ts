@@ -191,14 +191,9 @@ export const schemaTemplate: NuxtTemplate = {
 
     return [
       `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
-      `declare module '@nuxt/schema' {`,
-      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
-      `}`,
-      `declare module 'nuxt/schema' {`,
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
-          interfaceName: 'RuntimeConfig',
+          interfaceName: 'SharedRuntimeConfig',
           addExport: false,
           addDefaults: false,
           allowExtraKeys: false,
@@ -206,12 +201,19 @@ export const schemaTemplate: NuxtTemplate = {
         }),
       generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
         {
-          interfaceName: 'PublicRuntimeConfig',
+          interfaceName: 'SharedPublicRuntimeConfig',
           addExport: false,
           addDefaults: false,
           allowExtraKeys: false,
           indentation: 2,
         }),
+      `declare module '@nuxt/schema' {`,
+      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
+      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
+      `}`,
+      `declare module 'nuxt/schema' {`,
+      `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
+      `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
       '}',
       `declare module 'vue' {
         interface ComponentCustomProperties {
@@ -448,6 +450,10 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
 import type { CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
 ${configPaths.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
+
+declare global {
+  const defineAppConfig: <T>(appConfig: T) => T
+}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
