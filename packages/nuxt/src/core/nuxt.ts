@@ -267,17 +267,24 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
 
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
 
+    // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
+    opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
+
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
       if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
         opts.nodeReferences.push({ path: declaration })
+        opts.sharedReferences.push({ path: declaration })
       }
     }
   })

@@ -32,6 +32,7 @@ export default defineNuxtModule({
     // Register module types
     nuxt.hook('prepare:types', async (ctx) => {
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
+      ctx.sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
       ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
       if (nuxt.options._prepare) {
         await writeSchema(schema)
