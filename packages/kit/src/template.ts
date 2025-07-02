@@ -180,7 +180,7 @@ const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 export async function _generateTypes (nuxt: Nuxt) {
   const include = new Set<string>(['./nuxt.d.ts'])
   const nodeInclude = new Set<string>(['./nuxt.node.d.ts'])
-  const legacyInclude = new Set<string>(['./nuxt.d.ts'])
+  const legacyInclude = new Set<string>([...include, ...nodeInclude])
 
   const exclude = new Set<string>()
   const nodeExclude = new Set<string>()
@@ -468,8 +468,9 @@ export async function _generateTypes (nuxt: Nuxt) {
   ].join('\n')
 
   // Legacy tsConfig for backward compatibility
-  const legacyTsConfig: TSConfig = defu({}, tsConfig, {
-    include: [...legacyInclude],
+  const legacyTsConfig: TSConfig = defu({}, {
+    ...tsConfig,
+    include: [...new Set([...tsConfig.include, ...legacyInclude])],
     exclude: [...legacyExclude],
   })
 
