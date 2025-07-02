@@ -130,7 +130,6 @@ type AsyncDataRequestContext = {
 
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | undefined>
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
@@ -192,7 +191,6 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 | Name | Type | Description |
 | --- | --- |--- |
 | `data` | `Ref<DataT \| undefined>` | The result of the asynchronous fetch. |
-| `pending` | `Ref<boolean>` | [For specific explanations](https://nuxt.com/docs/getting-started/upgrade#alignment-of-pending-value-in-useasyncdata-and-usefetch)  |
 | `refresh` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Function to manually refresh the data. By default, Nuxt waits until a `refresh` is finished before it can be executed again. |
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`. |
 | `error` | `Ref<ErrorT \| undefined>` | Error object if the data fetching failed. |

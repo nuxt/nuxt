@@ -145,7 +145,6 @@ const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { imm
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
-- `pending`: a boolean ref that indicates whether the request is in progress.[For specific explanations](https://nuxt.com/docs/getting-started/upgrade#alignment-of-pending-value-in-useasyncdata-and-usefetch)
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
 - `status`: a string indicating the status of the data request:
@@ -196,7 +195,6 @@ type AsyncDataRequestContext = {
 
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | undefined>
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
