@@ -92,14 +92,6 @@ export default defineNuxtConfig({
     appManifest: true,
   },
   compatibilityDate: 'latest',
-  typescript: {
-    tsConfig: {
-      include: ['../index.d.ts'],
-    },
-    nodeTsConfig: {
-      include: ['../index.d.ts'],
-    },
-  },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {

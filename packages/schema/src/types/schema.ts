@@ -1635,14 +1635,19 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
-     * You can extend generated `.nuxt/tsconfig.json` using this option.
+     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
     /**
-     * You can extend generated `.nuxt/tsconfig.node.json` using this option.
+     * You can extend the generated `.nuxt/tsconfig.node.json` using this option.
      */
     nodeTsConfig: TSConfig
+
+    /**
+     * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.
+     */
+    sharedTsConfig: TSConfig
 
     /**
      * Generate a `*.vue` shim.
