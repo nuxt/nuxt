@@ -176,6 +176,12 @@ export function useFetch<
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
   }, _asyncDataOptions)
+  const clear = asyncData.clear
+
+  asyncData.clear = () => {
+    clear()
+    controller?.abort?.(new DOMException('Request aborted as the async data was cleared.', 'AbortError'))
+  }
 
   return asyncData
 }
