@@ -963,7 +963,7 @@ describe('useFetch', () => {
     expect.soft(status.value).toBe('pending')
   })
 
-  it('should cancel fetch request on clear', async () => {
+  it('should cancel fetch request on clear', () => {
     let aborted = false
 
     class Mock {
