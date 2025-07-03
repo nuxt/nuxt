@@ -98,6 +98,10 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
+  /**
+   * AbortController to use within the handler, useful to cancel the request when the async data is cleared.
+   */
+  abortController?: AbortController
 }
 
 export interface AsyncDataExecuteOptions {
@@ -361,7 +365,10 @@ export function useAsyncData<
     error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
     refresh: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
     execute: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
-    clear: () => clearNuxtDataByKey(nuxtApp, key.value),
+    clear: () => {
+      options.abortController?.abort?.(new DOMException('Request aborted as the async data was cleared.', 'AbortError'))
+      clearNuxtDataByKey(nuxtApp, key.value)
+    },
   }
 
   // Allow directly awaiting on asyncData

@@ -145,11 +145,9 @@ export function useFetch<
     watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
-  let controller: AbortController
-
   const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
-    controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
-    controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
+    _asyncDataOptions.abortController?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
+    _asyncDataOptions.abortController = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
     /**
      * Workaround for `timeout` not working due to custom abort controller
@@ -160,8 +158,8 @@ export function useFetch<
     const timeoutLength = toValue(opts.timeout)
     let timeoutId: NodeJS.Timeout
     if (timeoutLength) {
-      timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
-      controller.signal.onabort = () => clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => _asyncDataOptions.abortController?.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
+      _asyncDataOptions.abortController.signal.onabort = () => clearTimeout(timeoutId)
     }
 
     let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
@@ -174,14 +172,8 @@ export function useFetch<
       }
     }
 
-    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
+    return _$fetch(_request.value, { signal: _asyncDataOptions.abortController.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
   }, _asyncDataOptions)
-  const clear = asyncData.clear
-
-  asyncData.clear = () => {
-    clear()
-    controller?.abort?.(new DOMException('Request aborted as the async data was cleared.', 'AbortError'))
-  }
 
   return asyncData
 }
