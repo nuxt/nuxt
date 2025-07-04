@@ -573,9 +573,15 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
   }
 
+  nuxt._modulesToDefer = new Map()
   for (const [key, options] of modules) {
-    await installModule(key, options)
+    await installModule(key, options, nuxt, { defer: false })
   }
+  for (const [key, _options] of nuxt._modulesToDefer) {
+    const [firstOptions, ...options] = _options.reverse()
+    await installModule(key, defu(firstOptions, ...options), nuxt, { defer: false })
+  }
+  delete nuxt._modulesToDefer
 
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
