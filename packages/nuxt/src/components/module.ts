@@ -1,10 +1,11 @@
 import { existsSync, statSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
+import { lazyHydrationMacroPreset } from '../imports/presets'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 
@@ -14,6 +15,7 @@ import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
+import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -227,6 +229,13 @@ export default defineNuxtModule<ComponentsOptions>({
         ...sharedLoaderOptions,
         sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
       }), { prepend: true })
+
+      addBuildPlugin(LazyHydrationMacroTransformPlugin({
+        ...sharedLoaderOptions,
+        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+      }))
+
+      addImportsSources(lazyHydrationMacroPreset)
     }
 
     if (nuxt.options.experimental.componentIslands) {
@@ -249,16 +258,14 @@ export default defineNuxtModule<ComponentsOptions>({
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
-      const chunk = ComponentsChunkPlugin({ getComponents })
-
-      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-        config.plugins ||= []
-        if (selectiveClient && isClient) {
-          config.plugins.push(chunk.client.vite())
-        }
-      })
-
-      addBuildPlugin(chunk.server, { client: false, prepend: true })
+      if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
+        addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
+      } else {
+        addTemplate({
+          filename: 'component-chunk.mjs',
+          getContents: () => `export default {}`,
+        })
+      }
     }
   },
 })

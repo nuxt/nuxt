@@ -267,6 +267,13 @@ export const appCompatPresets: InlinePreset[] = [
   },
 ]
 
+export const lazyHydrationMacroPreset = [
+  {
+    imports: ['defineLazyHydrationComponent'],
+    from: '#app/composables/lazy-hydration',
+  },
+]
+
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
   ...granularAppPresets,

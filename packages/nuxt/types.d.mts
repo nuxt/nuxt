@@ -1,5 +1,4 @@
 /// <reference types="nitropack/types" />
-/// <reference path="dist/app/types/augments.d.ts" />
 
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
@@ -12,14 +11,15 @@ export * from './dist/index.js'
 declare global {
   const defineNuxtConfig: DefineNuxtConfig
   const defineNuxtSchema: (schema: SchemaDefinition) => SchemaDefinition
+
+  interface ImportMeta {
+    url: string
+    readonly env: ImportMetaEnv
+  }
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
 declare module 'nitropack' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
@@ -27,13 +27,6 @@ declare module 'nitropack' {
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
@@ -42,10 +35,6 @@ declare module 'nitropack' {
   }
 }
 declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
@@ -53,13 +42,6 @@ declare module 'nitropack/types' {
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>

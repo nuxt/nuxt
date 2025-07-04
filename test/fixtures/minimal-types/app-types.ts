@@ -13,19 +13,6 @@ describe('routing utilities', () => {
 })
 
 describe('auto-imports', () => {
-  it('defineNuxtConfig', () => {
-    defineNuxtConfig({
-      modules: [],
-      // @ts-expect-error Should show error on unknown properties
-      unknownProp: '',
-    })
-    defineNuxtConfig({
-      routeRules: {
-        // Should accept any string
-        '/named': { appMiddleware: 'named' },
-      },
-    })
-  })
   it('core composables', () => {
     ref()
     useHead({
@@ -38,13 +25,13 @@ describe('auto-imports', () => {
 
 describe('config typings', () => {
   it('runtimeConfig', () => {
-    expectTypeOf(useRuntimeConfig()).toMatchTypeOf<{
-      app: {
-        baseURL: string
-        buildAssetsDir: string
-        cdnURL: string
-      }
-      public: Record<string, any>
+    const config = useRuntimeConfig()
+    expectTypeOf(config.public).toEqualTypeOf<Record<string, unknown>>()
+    expectTypeOf(config.app).toEqualTypeOf<{
+      baseURL: string
+      buildAssetsDir: string
+      cdnURL: string
+      [key: string]: any
     }>()
   })
 
