@@ -770,6 +770,27 @@ describe('useAsyncData', () => {
     expect.soft(status.value).toBe('idle')
     expect.soft(promiseFn).toHaveBeenCalledTimes(0)
   })
+
+  it('should trigger AbortController on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    const { promise, resolve } = Promise.withResolvers<boolean>()
+    const { clear } = useAsyncData('', () => promise, { abortController: new AbortController() })
+    expect(aborted).toBe(false)
+    clear()
+    expect(aborted).toBe(true)
+    resolve(true)
+  })
 })
 
 describe('useFetch', () => {
