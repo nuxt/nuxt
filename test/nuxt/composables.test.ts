@@ -14,6 +14,7 @@ import * as composables from '#app/composables'
 
 import type { NuxtApp } from '#app/nuxt'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
+import { useFetch } from '#app/composables/fetch'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
@@ -30,6 +31,18 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries()),
 })))
+
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ method: event.method, headers: Object.fromEntries(event.headers.entries()) })
+    }, 100)
+  })
+}))
+
+beforeEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('app config', () => {
   it('can be updated', () => {
@@ -757,6 +770,27 @@ describe('useAsyncData', () => {
     expect.soft(status.value).toBe('idle')
     expect.soft(promiseFn).toHaveBeenCalledTimes(0)
   })
+
+  it('should trigger AbortController on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    const { promise, resolve } = Promise.withResolvers<boolean>()
+    const { clear } = useAsyncData('', () => promise, { abortController: new AbortController() })
+    expect(aborted).toBe(false)
+    clear()
+    expect(aborted).toBe(true)
+    resolve(true)
+  })
 })
 
 describe('useFetch', () => {
@@ -948,6 +982,25 @@ describe('useFetch', () => {
     })
     query.q++
     expect.soft(status.value).toBe('pending')
+  })
+
+  it('should cancel fetch request on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    const { clear } = useLazyFetch('/api/sleep')
+    expect(aborted).toBe(false)
+    clear()
+    expect(aborted).toBe(true)
   })
 })
 
