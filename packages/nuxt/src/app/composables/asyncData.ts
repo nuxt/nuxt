@@ -99,7 +99,7 @@ export interface AsyncDataOptions<
    */
   dedupe?: 'cancel' | 'defer'
   /**
-   * AbortController to use within the handler, useful to cancel the request when the async data is cleared.
+   * AbortController that can be used to cancel the handler function.
    */
   abortController?: AbortController
 }
