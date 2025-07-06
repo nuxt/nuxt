@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { klona } from 'klona'
-import type { AppConfig } from 'nuxt/schema'
 import { useNuxtApp } from './nuxt'
+import type { AppConfig } from 'nuxt/schema'
 // @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 

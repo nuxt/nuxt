@@ -12,10 +12,11 @@ const runner = createRunner()
 let render
 
 export function executeFile(src) {
-  return runner.executeId(src)
+  /// ??????
+  return runner.executeId(src.replace('/_nuxt/app', ''))
 }
 
-/** @param ssrContext {import('#app').NuxtSSRContext} */
+/** @param {import('#app').NuxtSSRContext} ssrContext */
 export default async (ssrContext) => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
@@ -24,7 +25,7 @@ export default async (ssrContext) => {
   import.meta.server = true
 
   // Invalidate cache for files changed since last rendering
-  const invalidates = await viteNodeFetch('/invalidates')
+  const invalidates = await viteNodeFetch.getInvalidates()
   const updates = runner.moduleCache.invalidateDepTree(invalidates)
 
   // Execute SSR bundle on demand
@@ -44,11 +45,11 @@ function createRunner () {
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
     async resolveId (id, importer) {
-      return await viteNodeFetch('/resolve/' + encodeURIComponent(id) + (importer ? '?importer=' + encodeURIComponent(importer) : '')) ?? undefined
+      return await viteNodeFetch.resolveId(id, importer)
     },
     async fetchModule (id) {
       id = id.replace(/\/\//g, '/') // TODO: fix in vite-node
-      return await viteNodeFetch('/module/' + encodeURI(id)).catch((err) => {
+      return await viteNodeFetch.fetchModule(id).catch((err) => {
         const errorData = err?.data?.data
         if (!errorData) {
           throw err
@@ -78,16 +79,16 @@ function createRunner () {
 }
 
 /**
- * @param errorData {any}
- * @param id {string}
+ * @param {any} errorData
+ * @param {string} id
  */
 function formatViteError (errorData, id) {
   const errorCode = errorData.name || errorData.reasonCode || errorData.code
   const frame = errorData.frame || errorData.source || errorData.pluginCode
 
-  /** @param locObj {{ file?: string, id?: string, url?: string }} */
+  /** @param {{ file?: string, id?: string, url?: string }} locObj */
   const getLocId = (locObj = {}) => locObj.file || locObj.id || locObj.url || id || ''
-  /** @param locObj {{ line?: string, column?: string }} */
+  /** @param {{ line?: string, column?: string }} locObj */
   const getLocPos = (locObj = {}) => locObj.line ? `${locObj.line}:${locObj.column || 0}` : ''
   const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData)
   const locPos = getLocPos(errorData.loc) || getLocPos(errorData.location) || getLocPos(errorData.input) || getLocPos(errorData)

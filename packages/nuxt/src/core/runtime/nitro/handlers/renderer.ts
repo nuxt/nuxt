@@ -5,13 +5,13 @@ import {
   getRequestDependencies,
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
-import type { RenderResponse } from 'nitro/types'
+import type { RenderResponse } from 'nitropack/types'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitro/runtime'
+import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runtime'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -223,7 +223,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
-    // TODO: add priorities based on Capo
     ssrContext.head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext).filter(l => !l.href.includes('virtual:vsc:')) as Link[],
     }, headEntryOptions)
@@ -249,6 +248,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 6. Scripts
   if (!routeOptions.noScripts) {
+    const tagPosition = (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head'
+
     ssrContext.head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
@@ -256,7 +257,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         defer: resource.module ? null : true,
         // if we are rendering script tag payloads that import an async payload
         // we need to ensure this resolves before executing the Nuxt entry
-        tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
+        tagPosition,
         crossorigin: '',
       })),
     }, headEntryOptions)
@@ -271,7 +272,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
-     _rendered.html,
+      _rendered.html,
       APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : '') + APP_TELEPORT_CLOSE_TAG,
     ],
     bodyAppend: [bodyTags],

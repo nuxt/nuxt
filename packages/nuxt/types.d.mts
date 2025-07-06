@@ -1,25 +1,25 @@
-/// <reference types="nitro/types" />
-/// <reference path="dist/app/types/augments.d.ts" />
+/// <reference types="nitropack/types" />
 
-import type { DefineNuxtConfig } from 'nuxt/config'
-import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/app/types.js'
+import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
+import type { DefineNuxtConfig } from 'nuxt/config'
 
 export * from './dist/index.js'
 
 declare global {
   const defineNuxtConfig: DefineNuxtConfig
   const defineNuxtSchema: (schema: SchemaDefinition) => SchemaDefinition
+
+  interface ImportMeta {
+    url: string
+    readonly env: ImportMetaEnv
+  }
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
-declare module 'nitro/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
+declare module 'nitropack' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
@@ -27,13 +27,6 @@ declare module 'nitro/types' {
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
@@ -42,10 +35,6 @@ declare module 'nitro/types' {
   }
 }
 declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
@@ -53,13 +42,6 @@ declare module 'nitropack/types' {
     noScripts?: boolean
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>

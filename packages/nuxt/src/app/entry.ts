@@ -4,6 +4,8 @@ import type { App } from 'vue'
 // This file must be imported first as we set globalThis.$fetch via this import
 // @ts-expect-error virtual file
 import '#build/fetch.mjs'
+// @ts-expect-error virtual file
+import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions } from './nuxt'
@@ -47,7 +49,7 @@ if (import.meta.client) {
     import.meta.webpackHot.accept()
   }
 
-  // eslint-disable-next-line
+  // eslint-disable-next-line prefer-const
   let vueAppPromise: Promise<App<Element>>
 
   entry = async function initApp () {

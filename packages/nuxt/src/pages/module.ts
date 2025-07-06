@@ -4,13 +4,12 @@ import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, 
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
-import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
-import type { NitroRouteConfig } from 'nitro/types'
+import type { NitroRouteConfig } from 'nitropack/types'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
@@ -19,6 +18,7 @@ import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRout
 import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
+import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
@@ -162,14 +162,14 @@ export default defineNuxtModule({
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
           '}',
-          'declare module \'nitro/types\' {',
+          'declare module \'nitropack\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
           '}',
           'export {}',
         ].join('\n'),
-      }, { nuxt: true, nitro: true })
+      }, { nuxt: true, nitro: true, node: true })
       addComponent({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
@@ -205,7 +205,7 @@ export default defineNuxtModule({
             // way to add a route without a file, which must be possible
             const route = addedPagePaths.has(absolutePagePath)
               ? parent
-              : /^\//.test(page.path)
+              : page.path[0] === '/'
                 // @ts-expect-error TODO: either fix types upstream or figure out another
                 // way to add a route without a file, which must be possible
                 ? rootPage.insert(page.path, page.file)
@@ -489,9 +489,11 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
-    const extractedKeys = nuxt.options.future.compatibilityVersion === 4
-      ? [...defaultExtractionKeys, 'middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]
-      : ['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]
+    const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
+    const extractedKeys = [
+      ...defaultExtractionKeys,
+      ...extraPageMetaExtractionKeys,
+    ]
 
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
@@ -613,14 +615,14 @@ export default defineNuxtModule({
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}',
-          'declare module \'nitro/types\' {',
+          'declare module \'nitropack\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}',
         ].join('\n')
       },
-    }, { nuxt: true, nitro: true })
+    }, { nuxt: true, nitro: true, node: true })
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',

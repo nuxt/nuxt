@@ -1,5 +1,5 @@
 import type { PropType } from 'vue'
-import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
@@ -19,10 +19,17 @@ import { remoteComponentIslands } from '#build/nuxt.config.mjs'
 
 const viteFetch = import.meta.server ?
   import.meta.dev
-    ? (src: string) => import('#build/dist/server/server.mjs').then(r => r.executeFile(src)).then(r => r.default || r) :
+    ? (src: string) => import('#build/dist/server/server.mjs').then(r => r.executeFile(src)).then(r => {
+
+      return r.default || r
+    }).catch(e => {
+      
+      throw e
+    })  :
     // todo path association between server and client chunks
-      (src: string) => import(/* @vite-ignore */src.replace('/_nuxt/', './')).then(r => r.default || r._ || r)
-  : (src: string) => import(/* @vite-ignore */join(src)).then(r => r.default || r)
+      (src: string) => import(/* @vite-ignore */src.replace('/_nuxt/app', './')).then(r => r.default || r._ || r)
+      ///: ?????????????????????????? todo fix 
+  : (src: string) => import(/* @vite-ignore */join(src.replace('/app', ''))).then(r => r.default || r)
 
 const pKey = '_islandPromises'
 let id = 1
@@ -73,7 +80,7 @@ export default defineComponent({
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
-    const mounted = ref(false)
+    const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {

@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { useRuntimeConfig } from 'nitro/runtime'
+import { useRuntimeConfig } from 'nitropack/runtime'
 import { createHead } from '@unhead/vue/server'
 import { sharedPrerenderCache } from '../cache'
 import type { NuxtSSRContext } from '#app'
