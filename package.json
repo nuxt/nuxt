@@ -143,9 +143,5 @@
     "vue-tsc": "2.2.10",
     "webpack": "5.99.7"
   },
-  "packageManager": "pnpm@10.10.0",
-  "version": "",
-  "dependencies": {
-    "vue-onigiri": "file:../vue-onigiri"
-  }
+  "packageManager": "pnpm@10.10.0"
 }
