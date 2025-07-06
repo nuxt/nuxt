@@ -23,7 +23,7 @@ let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
 if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
-    const vueApp = createApp(ssrContext?.rootComponent ?? RootComponent)
+    const vueApp = createApp(ssrContext?.rootComponent ?? RootComponent, ssrContext?.islandContext?.props)
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
 

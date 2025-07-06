@@ -38,23 +38,17 @@ export default defineEventHandler(async (event) => {
     noSSR: false,
     url: islandContext.url,
   }
-  console.time('entry')
   // Render app
   const renderer = await getSSRRenderer()
 
   const createSSRApp = await getServerEntry()
 
   ssrContext.rootComponent = components[islandContext.name]
-  
-  console.timeEnd('entry')
-  console.time('createApp')
+
   const app = await createSSRApp(ssrContext, renderer.rendererContext)
 
-  console.timeEnd('createApp')
-  console.time('ast')
   const ast = await app.runWithContext(() => serializeApp(app, ssrContext))
 
-  console.timeEnd('ast')
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
