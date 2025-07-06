@@ -147,6 +147,6 @@
   "packageManager": "pnpm@10.12.4",
   "version": "",
   "dependencies": {
-    "vue-onigiri": "^0.1.0"
+    "vue-onigiri": "^0.1.1"
   }
 }

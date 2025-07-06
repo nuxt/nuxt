@@ -41,8 +41,8 @@ importers:
   .:
     dependencies:
       vue-onigiri:
-        specifier: ^0.1.0
-        version: 0.1.0(@types/node@22.16.0)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(vitest@3.2.4)(yaml@2.8.0)
+        specifier: ^0.1.1
+        version: 0.1.1(@types/node@22.16.0)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(vitest@3.2.4)(yaml@2.8.0)
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 0.18.2
@@ -543,8 +543,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
       vue-onigiri:
-        specifier: ^0.1.0
-        version: 0.1.0(@types/node@22.16.0)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(vitest@3.2.4)(yaml@2.8.0)
+        specifier: ^0.1.1
+        version: 0.1.1(@types/node@22.16.0)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(vitest@3.2.4)(yaml@2.8.0)
       vue-router:
         specifier: ^4.5.1
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
@@ -8546,8 +8546,8 @@ packages:
       vue:
         optional: true
 
-  vue-onigiri@0.1.0:
-    resolution: {integrity: sha512-DQItuxkSj3CpU/ENAtVLdvmm51zuTMAqO1G5W3LC6TvG1XONd8wLh+rOomezahCj/FPqXKbLde3idlMCiF5QOg==}
+  vue-onigiri@0.1.1:
+    resolution: {integrity: sha512-NUsEYMGIUN4nY1byM0/V/v9R3++smKlHueaOEBGv8bUDqoU+Hi2uL6njYiHeDh52Lawkuv9a5TTfJasY74/S5w==}
 
   vue-resize@2.0.0-alpha.1:
     resolution: {integrity: sha512-7+iqOueLU7uc9NrMfrzbG8hwMqchfVfSzpVlCMeJQe4pyibqyoifDNbKTZvwxZKDvGkB+PdFeKvnGZMoEb8esg==}
@@ -17157,7 +17157,7 @@ snapshots:
       '@vue/compiler-sfc': 3.5.17
       vue: 3.5.17(typescript@5.8.3)
 
-  vue-onigiri@0.1.0(@types/node@22.16.0)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(vitest@3.2.4)(yaml@2.8.0):
+  vue-onigiri@0.1.1(@types/node@22.16.0)(jiti@2.4.2)(terser@5.39.0)(typescript@5.8.3)(vitest@3.2.4)(yaml@2.8.0):
     dependencies:
       '@module-federation/vite': 1.4.0(rollup@4.44.1)
       '@vitejs/plugin-vue': 5.2.3(vite@7.0.0(@types/node@22.16.0)(jiti@2.4.2)(terser@5.39.0)(yaml@2.8.0))(vue@3.5.17(typescript@5.8.3))
