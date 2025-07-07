@@ -285,7 +285,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       include.add(join(relative, 'dist/runtime'))
       nodeInclude.add(join(relative, '*.*'))
     }
-    
+
     legacyInclude.add(join(relative, 'runtime'))
     legacyInclude.add(join(relative, 'dist/runtime'))
 
