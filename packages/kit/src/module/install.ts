@@ -30,6 +30,11 @@ export async function installModule<
   // nuxt._modulesToDefer is only set when nuxt is installing modules
   if (options.defer !== false && nuxt._modulesToDefer) {
     const currentOptions = nuxt._modulesToDefer.get(moduleToInstall) || []
+    // inline options are always the first item in the array (with higher priority
+    // 1. most recent installModule call
+    // 2. ... previous installModule calls
+    // 3. nuxt config options
+    // 4. module default options
     nuxt._modulesToDefer.set(moduleToInstall, [inlineOptions, ...currentOptions])
     return /* install module after all other modules */
   }
