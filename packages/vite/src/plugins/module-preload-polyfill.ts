@@ -12,9 +12,13 @@ export function ModulePreloadPolyfillPlugin (): Plugin {
     name: 'nuxt:module-preload-polyfill',
     applyToEnvironment: environment => environment.name === 'client',
     configResolved (config) {
-      isDisabled = config.build.modulePreload === false || config.build.modulePreload.polyfill === false
-      sourcemap = !!config.build.sourcemap
-      entry = resolveClientEntry(config)
+      try {
+        isDisabled = config.build.modulePreload === false || config.build.modulePreload.polyfill === false
+        sourcemap = !!config.build.sourcemap
+        entry = resolveClientEntry(config)
+      } catch {
+        console.debug('[nuxt:module-preload-polyfill] Could not resolve client entry, module preload polyfill will not be injected.')
+      }
     },
     transform (code, id) {
       if (isDisabled || id.replace(QUERY_RE, '') !== entry) { return }
