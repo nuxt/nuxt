@@ -5,7 +5,7 @@ export { defineNuxtComponent, useAsyncData, useLazyAsyncData, useNuxtData, refre
 export type { AddRouteMiddlewareOptions, AsyncData, AsyncDataOptions, AsyncDataRequestStatus, CookieOptions, CookieRef, FetchResult, NuxtAppManifest, NuxtAppManifestMeta, NuxtError, Politeness, ReloadNuxtAppOptions, RouteMiddleware, UseFetchOptions } from './composables/index'
 
 export { defineNuxtLink } from './components/index'
-export type { NuxtLinkOptions, NuxtLinkProps } from './components/index'
+export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
 export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext, PageMeta, NuxtPageProps } from './types'

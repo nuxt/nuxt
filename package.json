@@ -38,7 +38,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:dev": "TEST_ENV=dev playwright test",
     "test:e2e:webpack": "TEST_BUILDER=webpack playwright test",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "vue-tsc --noEmit",
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxt prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
   "resolutions": {
