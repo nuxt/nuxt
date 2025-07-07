@@ -80,7 +80,7 @@
     "@codspeed/core": "4.0.1",
     "@codspeed/vitest-plugin": "4.0.1",
     "@nuxt/cli": "3.26.0-rc.3",
-    "@nuxt/eslint-config": "1.5.2",
+    "@nuxt/eslint-config": "1.4.1",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "3.19.2",
