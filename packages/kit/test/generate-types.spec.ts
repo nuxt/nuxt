@@ -132,7 +132,7 @@ describe('resolveLayerPaths', () => {
           "../layers/*/modules/*/runtime/server/**/*",
         ],
         "node": [
-          "../custom-modules/**/*",
+          "../custom-modules/*.*",
           "../nuxt.config.*",
           "../.config/nuxt.*",
           "../layers/*/nuxt.config.*",
