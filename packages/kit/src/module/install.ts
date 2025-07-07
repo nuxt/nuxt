@@ -30,7 +30,7 @@ export async function installModule<
   // nuxt._modulesToDefer is only set when nuxt is installing modules
   if (options.defer !== false && nuxt._modulesToDefer) {
     const currentOptions = nuxt._modulesToDefer.get(moduleToInstall) || []
-    nuxt._modulesToDefer.set(moduleToInstall, [...currentOptions, inlineOptions])
+    nuxt._modulesToDefer.set(moduleToInstall, [inlineOptions, ...currentOptions])
     return /* install module after all other modules */
   }
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
