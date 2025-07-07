@@ -173,7 +173,7 @@ export function resolveLayerPaths (dir: Nuxt['options']['dir'], buildDir: string
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
     ],
     node: [
-      join(relativeModulesDir, `**/*`),
+      join(relativeModulesDir, `*.*`),
       join(relativeRootDir, `nuxt.config.*`),
       join(relativeRootDir, `.config/nuxt.*`),
       join(relativeRootDir, `layers/*/nuxt.config.*`),
@@ -280,8 +280,12 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   for (const path of modulePaths) {
     const relative = relativeWithDot(nuxt.options.buildDir, path)
-    include.add(join(relative, 'runtime'))
-    include.add(join(relative, 'dist/runtime'))
+    if (!path.includes('node_modules')) {
+      include.add(join(relative, 'runtime'))
+      include.add(join(relative, 'dist/runtime'))
+      nodeInclude.add(join(relative, '*.*'))
+    }
+
     legacyInclude.add(join(relative, 'runtime'))
     legacyInclude.add(join(relative, 'dist/runtime'))
 
@@ -290,6 +294,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
+    exclude.add(join(relative, '*.*'))
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
   }

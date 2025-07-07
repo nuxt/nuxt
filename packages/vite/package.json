@@ -59,7 +59,7 @@
     "unenv": "^2.0.0-rc.18",
     "vite": "^7.0.2",
     "vite-node": "^3.2.4",
-    "vite-plugin-checker": "^0.9.3",
+    "vite-plugin-checker": "^0.10.0",
     "vue-bundle-renderer": "^2.1.1"
   },
   "peerDependencies": {
