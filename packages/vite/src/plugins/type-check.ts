@@ -15,8 +15,12 @@ export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
       return !nuxt.options.test && nuxt.options.typescript.typeCheck === true
     },
     configResolved (config) {
-      entry = resolveClientEntry(config)
-      sourcemap = !!config.build.sourcemap
+      try {
+        entry = resolveClientEntry(config)
+        sourcemap = !!config.build.sourcemap
+      } catch {
+        console.debug('[nuxt:type-check] Could not resolve client entry, type checking will not be applied.')
+      }
     },
     transform (code, id) {
       if (id.replace(QUERY_RE, '') !== entry) { return }
