@@ -3,7 +3,7 @@ import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
 import { onPrehydrate } from '../composables/ssr'
 import { useNuxtApp } from '../nuxt'
 
-const props = withDefaults(defineProps<{
+export interface NuxtTimeProps {
   locale?: string
   datetime: string | number | Date
   localeMatcher?: 'best fit' | 'lookup'
@@ -29,7 +29,9 @@ const props = withDefaults(defineProps<{
   hourCycle?: 'h11' | 'h12' | 'h23' | 'h24'
   relative?: boolean
   title?: boolean | string
-}>(), {
+}
+
+const props = withDefaults(defineProps<NuxtTimeProps>(), {
   hour12: undefined,
 })
 
