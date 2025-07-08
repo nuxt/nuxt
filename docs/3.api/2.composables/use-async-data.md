@@ -194,11 +194,11 @@ type AsyncDataRequestContext = {
 }
 
 type AsyncData<DataT, ErrorT> = {
-  data: Ref<DataT | undefined>
+  data: Ref<DataT | null>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
-  error: Ref<ErrorT | undefined>
+  error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
 };
 
