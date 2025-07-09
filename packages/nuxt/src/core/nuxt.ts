@@ -746,7 +746,7 @@ export default defineNuxtPlugin({
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
-  if (!(satisfies(coerce(nuxt._version), nuxt.options.future.compatibilityVersion + '.x'))) {
+  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
     logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
