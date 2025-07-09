@@ -20,14 +20,10 @@ import { remoteComponentIslands } from '#build/nuxt.config.mjs'
 const viteFetch = import.meta.server ?
   import.meta.dev
     ? (src: string) => import('#build/dist/server/server.mjs').then(r => r.executeFile(src)).then(r => {
-
-      return r.default || r
-    }).catch(e => {
-      
-      throw e
-    })  :
+        return r.default || r
+    }) :
     // todo path association between server and client chunks
-      (src: string) => import(/* @vite-ignore */src.replace('/_nuxt/app', './')).then(r => r.default || r._ || r)
+      (src: string) => import(/* @vite-ignore */src.replace('/_nuxt/', './')).then(r => r.default || r._ || r)
       ///: ?????????????????????????? todo fix 
   : (src: string) => import(/* @vite-ignore */join(src.replace('/app', ''))).then(r => r.default || r)
 
