@@ -35,12 +35,12 @@ export default <RouterConfig> {
 
     return new Promise((resolve) => {
       if (from === START_LOCATION) {
-        resolve(_calculatePosition(to, from, savedPosition))
+        resolve(_calculatePosition(to, from, savedPosition, behavior))
         return
       }
 
       nuxtApp.hooks.hookOnce(hookToWait, () => {
-        requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition)))
+        requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition, behavior)))
       })
     })
   },
@@ -62,21 +62,28 @@ function _calculatePosition (
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
   savedPosition: ScrollPosition | null,
+  defaultBehavior: ScrollBehavior,
 ): ScrollPosition {
-  if (!savedPosition && isChangingPage(to, from) && !to.hash) {
-    return { left: 0, top: 0 }
-  }
-
+  // By default when the returned position is falsy or an empty object, vue-router will retain the current scroll position
+  // savedPosition is only available for popstate navigations (back button)
   if (savedPosition) {
     return savedPosition
   }
 
+  const isPageNavigation = isChangingPage(to, from)
+
+  // Scroll to the element specified in the URL hash, if present
   if (to.hash) {
     return {
       el: to.hash,
       top: _getHashElementScrollMarginTop(to.hash),
+      behavior: isPageNavigation ? defaultBehavior : 'instant',
     }
   }
 
-  return { left: 0, top: 0 }
+  return {
+    left: 0,
+    top: 0,
+    behavior: isPageNavigation ? defaultBehavior : 'instant',
+  }
 }
