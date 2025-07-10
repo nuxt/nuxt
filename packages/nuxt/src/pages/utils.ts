@@ -70,8 +70,13 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     return pages
   }
 
+  const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
+
   const augmentCtx = {
-    extraExtractionKeys: new Set(['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]),
+    extraExtractionKeys: new Set([
+      'middleware',
+      ...extraPageMetaExtractionKeys,
+    ]),
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
   }
   if (shouldAugment === 'after-resolve') {
@@ -144,7 +149,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       // ex: parent.vue + parent/child.vue
       const routePath = getRoutePath(tokens, segments[i + 1] !== undefined && segments[i + 1] !== 'index')
       const path = withLeadingSlash(joinURL(route.path, routePath.replace(INDEX_PAGE_RE, '/')))
-      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
+      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path.replace('([^/]*)*', '(.*)*'))
 
       if (child && child.children) {
         parent = child.children

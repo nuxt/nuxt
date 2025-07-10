@@ -19,7 +19,7 @@ import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import defu from 'defu'
-import { gt, satisfies } from 'semver'
+import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
@@ -250,7 +250,6 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add nuxt types
   nuxt.hook('prepare:types', (opts) => {
-    opts.references.push({ types: 'nuxt' })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {
@@ -258,17 +257,34 @@ async function initNuxt (nuxt: Nuxt) {
     }
     // Add shims for `#build/*` imports that do not already have matching types
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
-    // Add module augmentations directly to NuxtConfig
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+    opts.references.push({ types: 'nuxt/app' })
+
+    // Add module augmentations directly to NuxtConfig
+    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/modules.d.ts') })
+    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.nodeReferences.push({ types: 'nuxt' })
+
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
+
+    // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
+    opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
+
+    // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
+    opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
 
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
       if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
+        opts.nodeReferences.push({ path: declaration })
+        opts.sharedReferences.push({ path: declaration })
       }
     }
   })
@@ -730,7 +746,7 @@ export default defineNuxtPlugin({
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
-  if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
     logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
@@ -829,15 +845,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nuxt = createNuxt(options)
 
   nuxt.runWithContext(() => {
-    if (nuxt.options.dev && !nuxt.options.test) {
-      nuxt.hooks.hookOnce('build:done', () => {
-        for (const dep of keyDependencies) {
-          checkDependencyVersion(dep, nuxt._version)
-            .catch(e => logger.warn(`Problem checking \`${dep}\` version.`, e))
-        }
-      })
-    }
-
     // We register hooks layer-by-layer so any overrides need to be registered separately
     if (opts.overrides?.hooks) {
       nuxt.hooks.addHooks(opts.overrides.hooks)
@@ -857,17 +864,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   return nuxt
-}
-
-export async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
-  const path = resolveModulePath(name, { try: true })
-
-  if (!path) { return }
-  const { version } = await readPackageJSON(path)
-
-  if (version && gt(nuxtVersion, version)) {
-    console.warn(`[nuxt] Expected \`${name}\` to be at least \`${nuxtVersion}\` but got \`${version}\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
-  }
 }
 
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i

@@ -263,7 +263,7 @@ describe('pages:generateRoutesFromFiles', () => {
     },
     {
       description: 'should generate correct catch-all route',
-      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }],
+      files: [{ path: `${pagesDir}/[...slug].vue` }, { path: `${pagesDir}/index.vue` }, { path: `${pagesDir}/[...slug]/[id].vue` }],
       output: [
         {
           name: 'index',
@@ -275,7 +275,13 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'slug',
           path: '/:slug(.*)*',
           file: `${pagesDir}/[...slug].vue`,
-          children: [],
+          children: [
+            {
+              name: 'slug-id',
+              path: ':id()',
+              file: `${pagesDir}/[...slug]/[id].vue`,
+              children: [],
+            }],
         },
       ],
     },
@@ -720,6 +726,14 @@ describe('pages:generateRoutesFromFiles', () => {
   const normalizedResults: Record<string, any> = {}
   const normalizedOverrideMetaResults: Record<string, any> = {}
 
+  const enUSComparator = new Intl.Collator('en-US')
+  function sortRoutes (routes: NuxtPage[]) {
+    for (const route of routes) {
+      route.children &&= sortRoutes([...route.children])
+    }
+    return [...routes].sort((a, b) => enUSComparator.compare(b.path, a.path))
+  }
+
   for (const test of tests) {
     const _it = test.it || it
     _it(test.description, async () => {
@@ -730,11 +744,13 @@ describe('pages:generateRoutesFromFiles', () => {
         ) as Record<string, string>
 
         try {
-          result = generateRoutesFromFiles(test.files.map(file => ({
+          const files = test.files.map(file => ({
             shouldUseServerComponents: true,
             absolutePath: file.path,
             relativePath: file.path.replace(/^(pages|layer\/pages)\//, ''),
-          }))).map((route, index) => {
+          })).sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
+
+          result = generateRoutesFromFiles(files).map((route, index) => {
             return {
               ...route,
               meta: test.files![index]!.meta,
@@ -750,7 +766,7 @@ describe('pages:generateRoutesFromFiles', () => {
       }
 
       if (result) {
-        expect.soft(result).toEqual(test.output)
+        expect.soft(sortRoutes(result)).toEqual(test.output ? sortRoutes(test.output) : undefined)
 
         normalizedResults[test.description] = normalizeRoutes(result, new Set(), {
           clientComponentRuntime: '<client-component-runtime>',

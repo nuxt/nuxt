@@ -1,8 +1,12 @@
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
+import { withoutTrailingSlash } from 'ufo'
+import { normalize } from 'pathe'
 
-import { _generateTypes } from '../src/template'
+import { loadNuxtConfig } from '../src/loader/config'
+import { _generateTypes, resolveLayerPaths } from '../src/template'
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
@@ -51,13 +55,13 @@ describe('tsConfig generation', () => {
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
-        "../dist",
-        "../.data",
         "../modules/test/node_modules",
         "../modules/node_modules",
         "../node_modules/@some/module/node_modules",
         "../node_modules",
         "../../node_modules",
+        "../dist",
+        "../.data",
       ]
     `)
   })
@@ -98,5 +102,59 @@ describe('tsConfig generation', () => {
         './build-dir/*',
       ],
     })
+  })
+})
+
+describe('resolveLayerPaths', () => {
+  const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+
+  it('should respect custom nuxt options', async () => {
+    const nuxtOptions = await loadNuxtConfig({
+      cwd: repoRoot,
+      overrides: {
+        _prepare: true,
+        srcDir: 'app',
+        dir: {
+          modules: 'custom-modules',
+          shared: 'custom-shared',
+        },
+      },
+    })
+    const paths = resolveLayerPaths(nuxtOptions.dir, nuxtOptions.buildDir, nuxtOptions.rootDir, nuxtOptions.srcDir)
+    expect(paths).toMatchInlineSnapshot(`
+      {
+        "globalDeclarations": [
+          "../*.d.ts",
+          "../layers/*/*.d.ts",
+        ],
+        "nitro": [
+          "../custom-modules/*/runtime/server/**/*",
+          "../layers/*/modules/*/runtime/server/**/*",
+        ],
+        "node": [
+          "../custom-modules/*.*",
+          "../nuxt.config.*",
+          "../.config/nuxt.*",
+          "../layers/*/nuxt.config.*",
+          "../layers/*/.config/nuxt.*",
+          "../layers/*/modules/**/*",
+        ],
+        "nuxt": [
+          "../app/**/*",
+          "../custom-modules/*/runtime/**/*",
+          "../layers/*/modules/*/runtime/**/*",
+        ],
+        "shared": [
+          "../custom-shared/**/*",
+          "../custom-modules/*/shared/**/*",
+          "../layers/*/shared/**/*",
+        ],
+        "sharedDeclarations": [
+          "../custom-shared/**/*.d.ts",
+          "../custom-modules/*/shared/**/*.d.ts",
+          "../layers/*/shared/**/*.d.ts",
+        ],
+      }
+    `)
   })
 })

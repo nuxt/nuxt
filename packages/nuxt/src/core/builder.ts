@@ -240,8 +240,8 @@ async function bundle (nuxt: Nuxt) {
 async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
-  } catch {
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
+  } catch (err) {
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``, { cause: err })
   }
 }
 
