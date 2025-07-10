@@ -31,24 +31,16 @@ export default <RouterConfig> {
 
     if (routeAllowsScrollToTop === false) { return false }
 
-    // By default when the returned position is falsy or an empty object, vue-router will retain the current scroll position
-    // savedPosition is only available for popstate navigations (back button)
-    let position: ScrollPosition = savedPosition || undefined
-
-    // Scroll to top if route is changed by default
-    if (!position && isChangingPage(to, from)) {
-      position = { left: 0, top: 0 }
-    }
-
     const hookToWait = nuxtApp._runningTransition ? 'page:transition:finish' : 'page:loading:end'
+
     return new Promise((resolve) => {
       if (from === START_LOCATION) {
-        resolve(_calculatePosition(to, 'instant', position))
+        resolve(_calculatePosition(to, from, savedPosition, behavior))
         return
       }
 
       nuxtApp.hooks.hookOnce(hookToWait, () => {
-        requestAnimationFrame(() => resolve(_calculatePosition(to, 'instant', position)))
+        requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition, behavior)))
       })
     })
   },
@@ -68,23 +60,30 @@ function _getHashElementScrollMarginTop (selector: string): number {
 
 function _calculatePosition (
   to: RouteLocationNormalized,
-  scrollBehaviorType: ScrollBehavior,
-  position?: ScrollPosition,
+  from: RouteLocationNormalized,
+  savedPosition: ScrollPosition | null,
+  defaultBehavior: ScrollBehavior,
 ): ScrollPosition {
-  // Handle saved position for backward/forward navigation
-  if (position) {
-    return position
+  // By default when the returned position is falsy or an empty object, vue-router will retain the current scroll position
+  // savedPosition is only available for popstate navigations (back button)
+  if (savedPosition) {
+    return savedPosition
   }
+
+  const isPageNavigation = isChangingPage(to, from)
 
   // Scroll to the element specified in the URL hash, if present
   if (to.hash) {
     return {
       el: to.hash,
       top: _getHashElementScrollMarginTop(to.hash),
-      behavior: scrollBehaviorType,
+      behavior: isPageNavigation ? defaultBehavior : 'instant',
     }
   }
 
-  // Default scroll to the top left of the page
-  return { left: 0, top: 0, behavior: scrollBehaviorType }
+  return {
+    left: 0,
+    top: 0,
+    behavior: isPageNavigation ? defaultBehavior : 'instant',
+  }
 }
