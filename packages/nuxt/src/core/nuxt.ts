@@ -19,7 +19,7 @@ import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import defu from 'defu'
-import { satisfies } from 'semver'
+import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
@@ -746,7 +746,7 @@ export default defineNuxtPlugin({
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
-  if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
     logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
