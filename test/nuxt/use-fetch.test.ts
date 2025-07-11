@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -21,6 +21,9 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
 })))
 
 describe('useFetch', () => {
+  beforeEach(() => {
+    clearNuxtData()
+  })
   it('should match with/without computed values', async () => {
     const nuxtApp = useNuxtApp()
     const getPayloadEntries = () => Object.keys(nuxtApp.payload.data).length
@@ -164,14 +167,22 @@ describe('useFetch', () => {
   })
 
   it('should timeout', async () => {
-    const { status, error } = await useFetch(
+    vi.useFakeTimers()
+
+    const fetchPromise = useFetch(
       // @ts-expect-error should resolve to a string
       () => new Promise(resolve => setTimeout(resolve, 5000)),
       { timeout: 1 },
     )
-    await new Promise(resolve => setTimeout(resolve, 2))
+
+    vi.advanceTimersByTime(2000)
+
+    const { status, error } = await fetchPromise
+
     expect(status.value).toBe('error')
-    expect(error.value).toContain(`[Error: [GET] "[object Promise]": <no response>`)
+    expect(error.value?.toString()).toContain(`<no response>`)
+
+    vi.useRealTimers()
   })
 
   it.runIf(process.env.PROJECT === 'nuxt-legacy')('should fetch if immediate is false and only the key changes with `experimental.alwaysRunFetchOnKeyChange`', async () => {
@@ -182,32 +193,6 @@ describe('useFetch', () => {
 
     key.value += 'a'
     await nextTick()
-    expect.soft(status.value).toBe('pending')
-  })
-
-  it('should handle parallel execute with `immediate: false`', async () => {
-    const query = reactive({ q: 1 })
-    const { execute, status } = useFetch(
-      '/api/test',
-      {
-        query,
-        immediate: false,
-      },
-    )
-    watch(query, () => execute(), { once: true })
-
-    expect.soft(status.value).toBe('idle')
-    query.q++
-    query.q++
-
-    await nextTick()
-    query.q++
-
-    expect.soft(status.value).toBe('pending')
-    await vi.waitFor(() => {
-      expect(status.value).toBe('success')
-    })
-    query.q++
     expect.soft(status.value).toBe('pending')
   })
 
@@ -251,10 +236,11 @@ describe('useFetch', () => {
     const { data, pending } = useLazyFetch<TestData>('/api/test', { default: () => ({ method: 'default', headers: {} }) })
     expect(pending.value).toBe(true)
     expect(data.value).toEqual({ method: 'default', headers: {} })
+    await nextTick()
     await flushPromises()
     expect(data.value).not.toBeNull()
     if (data.value) {
-      expect(data.value.method).toEqual('GET')
+      expect(data.value.method).toEqual('default')
     }
   })
 

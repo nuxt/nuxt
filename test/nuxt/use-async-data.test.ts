@@ -89,7 +89,7 @@ describe('useAsyncData', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
       /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
     ))
-    warn.mockClear()
+    warn.mockRestore()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
