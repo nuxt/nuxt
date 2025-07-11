@@ -499,7 +499,7 @@ describe('useAsyncData', () => {
     comp.unmount()
   })
 
-  // 
+  //
 
   it('should clear memory when last component using asyncData is unmounted', async () => {
     const key = 'several'

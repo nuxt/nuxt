@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { type App, createApp, createError, defineEventHandler, toNodeListener } from 'h3'
+import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
+import type { App } from 'h3'
 import { isAbsolute, join, normalize, resolve } from 'pathe'
 // import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'

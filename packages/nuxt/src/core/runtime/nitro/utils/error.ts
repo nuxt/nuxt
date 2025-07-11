@@ -1,4 +1,5 @@
-import { type H3Event, getRequestHeader } from 'h3'
+import { getRequestHeader } from 'h3'
+import type { H3Event } from 'h3'
 
 /**
  * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.ts

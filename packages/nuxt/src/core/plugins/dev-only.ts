@@ -1,6 +1,7 @@
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
-import { type Node, parse } from 'ultrahtml'
+import { parse } from 'ultrahtml'
+import type { Node } from 'ultrahtml'
 import { isVue } from '../utils'
 
 interface DevOnlyPluginOptions {

@@ -1,7 +1,8 @@
 import { walk as _walk } from 'estree-walker'
 import type { Node, SyncHandler } from 'estree-walker'
 import type { ArrowFunctionExpression, CatchClause, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program, VariableDeclaration } from 'estree'
-import { type SameShape, type TransformOptions, type TransformResult, transform as esbuildTransform } from 'esbuild'
+import { transform as esbuildTransform } from 'esbuild'
+import type { SameShape, TransformOptions, TransformResult } from 'esbuild'
 import { tryUseNuxt } from '@nuxt/kit'
 import { parseSync } from 'oxc-parser'
 

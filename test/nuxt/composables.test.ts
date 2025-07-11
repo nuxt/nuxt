@@ -23,7 +23,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 
-import { asyncDataDefaults, nuxtDefaultErrorValue, pendingWhenIdle } from '#build/nuxt.config.mjs'
+import { nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,

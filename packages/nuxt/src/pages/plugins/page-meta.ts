@@ -8,13 +8,13 @@ import { isAbsolute } from 'pathe'
 
 import {
   ScopeTracker,
-  type ScopeTrackerNode,
   getUndeclaredIdentifiersInFunction,
   isNotReferencePosition,
   parseAndWalk,
   walk,
   withLocations,
 } from '../../core/utils/parse'
+import type { ScopeTrackerNode } from '../../core/utils/parse'
 import { logger } from '../../utils'
 import { isSerializable } from '../utils'
 
