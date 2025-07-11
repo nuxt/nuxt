@@ -1,7 +1,8 @@
 import { tryUseNuxt } from '@nuxt/kit'
 import type { TransformOptions, TransformResult } from 'oxc-transform'
 import { transform as oxcTransform } from 'oxc-transform'
-import { minify, type MinifyResult } from 'oxc-minify'
+import { minify } from 'oxc-minify'
+import type { MinifyResult } from 'oxc-minify'
 
 export function transformAndMinify (input: string, options?: TransformOptions): TransformResult | MinifyResult {
   // not async until https://github.com/oxc-project/oxc/issues/10900
