@@ -129,6 +129,7 @@ describe('resolveLayerPaths', () => {
         ],
         "nitro": [
           "../custom-modules/*/runtime/server/**/*",
+          "../layers/*/server/**/*",
           "../layers/*/modules/*/runtime/server/**/*",
         ],
         "node": [
@@ -142,6 +143,7 @@ describe('resolveLayerPaths', () => {
         "nuxt": [
           "../app/**/*",
           "../custom-modules/*/runtime/**/*",
+          "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
         ],
         "shared": [
