@@ -701,7 +701,7 @@ describe('useAsyncData', () => {
     watch(q, execute)
 
     expect(promiseFn).toHaveBeenCalledTimes(0)
-    
+
     q.value = null
     await nextTick()
     await flushPromises()
