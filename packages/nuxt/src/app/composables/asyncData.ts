@@ -676,12 +676,12 @@ function createAsyncData<
             result = pick(result as any, options.pick) as DataT
           }
 
-          if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
+          if (import.meta.dev && import.meta.server && result == null) {
             const stack = captureStackTrace()
             const { source, line, column } = stack[stack.length - 1] ?? {}
             const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
             // @ts-expect-error private property
-            console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
+            console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\` or \`null\`) or the request may be duplicated on the client side.`)
           }
 
           nuxtApp.payload.data[key] = result
