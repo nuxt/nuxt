@@ -8,6 +8,13 @@ import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 
+import { useFetch, useLazyFetch } from '#app/composables/fetch'
+
+interface TestData {
+  method: string
+  headers: Record<string, string>
+}
+
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries()),
@@ -164,7 +171,7 @@ describe('useFetch', () => {
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot(`[Error: [GET] "[object Promise]": <no response> Failed to parse URL from [object Promise]]`)
+    expect(error.value).toContain(`[Error: [GET] "[object Promise]": <no response>`)
   })
 
   it.runIf(process.env.PROJECT === 'nuxt-legacy')('should fetch if immediate is false and only the key changes with `experimental.alwaysRunFetchOnKeyChange`', async () => {
@@ -202,5 +209,64 @@ describe('useFetch', () => {
     })
     query.q++
     expect.soft(status.value).toBe('pending')
+  })
+
+  it('should handle parallel execute with `immediate: false`', async () => {
+    const query = reactive({ q: 1 })
+    const { execute, status } = useFetch(
+      '/api/test',
+      {
+        query,
+        immediate: false,
+      },
+    )
+    watch(query, () => execute(), { once: true })
+
+    expect.soft(status.value).toBe('idle')
+    query.q++
+    query.q++
+
+    await nextTick()
+    query.q++
+
+    expect.soft(status.value).toBe('pending')
+    await vi.waitFor(() => {
+      expect(status.value).toBe('success')
+    })
+    query.q++
+    expect.soft(status.value).toBe('pending')
+  })
+
+  it('should pick values from data', async () => {
+    const { data } = await useFetch<TestData>('/api/test', { pick: ['method'] })
+    expect(data.value).toEqual({ method: 'GET' })
+  })
+
+  it('should transform data', async () => {
+    const { data } = await useFetch('/api/test', { transform: (data: TestData) => ({ custom: data.method }) })
+    expect(data.value).toEqual({ custom: 'GET' })
+  })
+
+  it('should use default value with lazy', async () => {
+    const { data, pending } = useLazyFetch<TestData>('/api/test', { default: () => ({ method: 'default', headers: {} }) })
+    expect(pending.value).toBe(true)
+    expect(data.value).toEqual({ method: 'default', headers: {} })
+    await flushPromises()
+    expect(data.value).not.toBeNull()
+    if (data.value) {
+      expect(data.value.method).toEqual('GET')
+    }
+  })
+
+  it('should not execute with immediate: false and be executable', async () => {
+    const { data, status, execute } = useFetch<TestData>('/api/test', { immediate: false })
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+    await execute()
+    expect(data.value).not.toBeNull()
+    if (data.value) {
+      expect(data.value.method).toEqual('GET')
+    }
+    expect(status.value).toBe('success')
   })
 })

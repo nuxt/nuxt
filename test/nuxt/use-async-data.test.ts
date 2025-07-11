@@ -9,7 +9,7 @@ import { flushPromises } from '@vue/test-utils'
 import { Transition } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
-import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
+import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -119,7 +119,7 @@ describe('useAsyncData', () => {
         "resolved": true,
       }
     `)
-    expect(data.value).toEqual(cachedData.value)
+    expect(data.value).toStrictEqual(cachedData.value)
     clearNuxtData(uniqueKey)
   })
 
@@ -639,5 +639,45 @@ describe('useAsyncData', () => {
     await nextTick()
     expect.soft(status.value).toBe('idle')
     expect.soft(promiseFn).toHaveBeenCalledTimes(0)
+  })
+
+  it('should pick values from data', async () => {
+    const { data } = await useAsyncData(() => Promise.resolve({ a: 1, b: 2 }), { pick: ['a'] })
+    expect(data.value).toStrictEqual({ a: 1 })
+  })
+
+  it('should transform data', async () => {
+    const { data } = await useAsyncData(() => Promise.resolve({ a: 1, b: 2 }), { transform: data => ({ c: data.a }) })
+    expect(data.value).toStrictEqual({ c: 1 })
+  })
+
+  it('should use default value with lazy', async () => {
+    const { data, pending } = useLazyAsyncData(() => new Promise(resolve => setTimeout(() => resolve('test'), 10)), { default: () => 'default' })
+    expect(pending.value).toBe(true)
+    expect(data.value).toBe('default')
+    await vi.waitFor(() => {
+      expect(data.value).toBe('test')
+    })
+  })
+
+  it('should not execute with immediate: false and be executable', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data, status, execute } = useAsyncData(promiseFn, { immediate: false })
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+    expect(promiseFn).toHaveBeenCalledTimes(0)
+    await execute()
+    expect(data.value).toBe('test')
+    expect(status.value).toBe('success')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not refetch on the client when hydrating', () => {
+    useNuxtData('hydration-on-client').data.value = 'server-renderered'
+    useNuxtApp().isHydrating = true
+    const { data, status } = useAsyncData('hydration-on-client', () => Promise.resolve('test'))
+    expect(data.value).toBe('server-renderered')
+    expect(status.value).toBe('success')
+    useNuxtApp().isHydrating = false
   })
 })
