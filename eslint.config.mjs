@@ -121,16 +121,12 @@ export default createConfigForNuxt({
 
   // Append local rules
   .append(
-    // @ts-expect-error conflicts with signature
+    // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
       plugins: {
-        'import-x': {
-          rules: {
-            'no-restricted-paths': importX.rules['no-restricted-paths'],
-          },
-        },
+        'import-x': importX,
       },
       rules: {
         'import-x/no-restricted-paths': [
@@ -235,7 +231,6 @@ export default createConfigForNuxt({
       },
     },
     // Sort rule keys in eslint config
-    // @ts-expect-error type issues in eslint
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',
