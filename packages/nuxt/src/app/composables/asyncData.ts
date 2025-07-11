@@ -622,7 +622,7 @@ function createAsyncData<
     execute: (...args) => {
       const [_opts, newValue = undefined] = args
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
-      if (import.meta.dev && opts !== _opts) {
+      if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
         // @ts-expect-error private property
         console.warn(`[nuxt] [${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`)
       }
