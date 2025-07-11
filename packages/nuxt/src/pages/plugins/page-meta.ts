@@ -8,12 +8,13 @@ import { isAbsolute } from 'pathe'
 
 import {
   ScopeTracker,
-  type ScopeTrackerNode,
+
   getUndeclaredIdentifiersInFunction,
   isBindingIdentifier,
   parseAndWalk,
   walk,
 } from 'oxc-walker'
+import type { ScopeTrackerNode } from 'oxc-walker'
 import { logger } from '../../utils'
 import { isSerializable } from '../utils'
 
