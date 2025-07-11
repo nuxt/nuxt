@@ -4,6 +4,7 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
 import perfectionist from 'eslint-plugin-perfectionist'
+import { importX } from 'eslint-plugin-import-x'
 
 import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
 
@@ -120,11 +121,19 @@ export default createConfigForNuxt({
 
   // Append local rules
   .append(
+    // @ts-expect-error conflicts with signature
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
+      plugins: {
+        'import-x': {
+          rules: {
+            'no-restricted-paths': importX.rules['no-restricted-paths'],
+          },
+        },
+      },
       rules: {
-        'import/no-restricted-paths': [
+        'import-x/no-restricted-paths': [
           'error',
           {
             zones: [
