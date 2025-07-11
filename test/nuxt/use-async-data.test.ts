@@ -154,6 +154,8 @@ describe('useAsyncData', () => {
   })
 
   it('should allow overriding requests', async () => {
+    vi.useFakeTimers()
+
     let count = 0
     let timeout = 0
     // pretending we're hydrating a server rendered app
@@ -183,15 +185,20 @@ describe('useAsyncData', () => {
     expect.soft(data.value).toBe(1)
 
     timeout = 0
-    await refresh()
+    const refreshPromise = refresh()
+    vi.advanceTimersByTime(0)
+    await refreshPromise
 
     expect.soft(count).toBe(1)
     expect.soft(data.value).toBe(1)
 
+    vi.advanceTimersByTime(100)
     await p
 
     expect.soft(count).toBe(2)
     expect.soft(data.value).toBe(1)
+
+    vi.useRealTimers()
   })
 
   it('should be clearable', async () => {
@@ -207,6 +214,8 @@ describe('useAsyncData', () => {
   })
 
   it('should have correct status for previously fetched requests', async () => {
+    vi.useFakeTimers()
+
     const route = useRoute()
 
     const res = await mountWithAsyncData(route.fullPath,
@@ -220,7 +229,8 @@ describe('useAsyncData', () => {
     expect(res.status.value).toBe('pending')
     expect(res.pending.value).toBe(true)
 
-    await new Promise(resolve => setTimeout(resolve, 1))
+    vi.advanceTimersByTime(1)
+    await flushPromises()
 
     expect(res.data.value).toBe('test')
     expect(res.status.value).toBe('success')
@@ -245,11 +255,14 @@ describe('useAsyncData', () => {
     expect(res2.status.value).toBe('pending')
     expect(res2.pending.value).toBe(true)
 
-    await new Promise(resolve => setTimeout(resolve, 1))
+    vi.advanceTimersByTime(1)
+    await flushPromises()
 
     expect(res2.data.value).toBe('test')
     expect(res2.status.value).toBe('success')
     expect(res2.pending.value).toBe(false)
+
+    vi.useRealTimers()
   })
 
   it('should be refreshable with force and cache', async () => {
@@ -652,12 +665,18 @@ describe('useAsyncData', () => {
   })
 
   it('should use default value with lazy', async () => {
+    vi.useFakeTimers()
+
     const { data, pending } = useLazyAsyncData(() => new Promise(resolve => setTimeout(() => resolve('test'), 10)), { default: () => 'default' })
     expect(pending.value).toBe(true)
     expect(data.value).toBe('default')
-    await vi.waitFor(() => {
-      expect(data.value).toBe('test')
-    })
+
+    vi.advanceTimersByTime(10)
+    await flushPromises()
+
+    expect(data.value).toBe('test')
+
+    vi.useRealTimers()
   })
 
   it('should not execute with immediate: false and be executable', async () => {
