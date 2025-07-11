@@ -691,6 +691,23 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
 
+  it('should handle being passed to watch', async () => {
+    const q = ref<null | string>('test')
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { execute } = useAsyncData(promiseFn, { immediate: false })
+    expect(promiseFn).toHaveBeenCalledTimes(0)
+
+    // @ts-expect-error type is not valid
+    watch(q, execute)
+
+    expect(promiseFn).toHaveBeenCalledTimes(0)
+    
+    q.value = null
+    await nextTick()
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
   it('should not refetch on the client when hydrating', () => {
     useNuxtData('hydration-on-client').data.value = 'server-renderered'
     useNuxtApp().isHydrating = true

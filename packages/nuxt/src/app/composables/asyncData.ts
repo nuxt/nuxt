@@ -619,7 +619,13 @@ function createAsyncData<
     pending: pendingWhenIdle ? shallowRef(!hasCachedData) : computed(() => asyncData.status.value === 'pending'),
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: shallowRef('idle'),
-    execute: (opts = {}) => {
+    execute: (...args) => {
+      const [_opts, newValue = undefined] = args
+      const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
+      if (import.meta.dev && newValue !== undefined) {
+        // @ts-expect-error private property
+        console.warn(`[nuxt] [${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`)
+      }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
         // Avoid fetching same key more than once at a time
