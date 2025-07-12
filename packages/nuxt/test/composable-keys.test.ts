@@ -8,17 +8,17 @@ describe('detectImportNames', () => {
     useCustomFetch: { source: 'custom-fetch', argumentLength: 2 },
   }
   it('should not include imports from nuxt', () => {
-    expect([...detectImportNames('import { useFetch } from \'#app\'', {})]).toMatchInlineSnapshot('[]')
-    expect([...detectImportNames('import { useFetch } from \'nuxt/app\'', {})]).toMatchInlineSnapshot('[]')
+    expect([...detectImportNames('import { useFetch } from \'#app\'', {}, '', '')]).toMatchInlineSnapshot('[]')
+    expect([...detectImportNames('import { useFetch } from \'nuxt/app\'', {}, '', '')]).toMatchInlineSnapshot('[]')
   })
   it('should pick up other imports', () => {
-    expect([...detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', {})]).toMatchInlineSnapshot(`
+    expect([...detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', {}, '', '')]).toMatchInlineSnapshot(`
       [
         "useCustomFetch",
         "someThingRenamed",
       ]
     `)
-    expect([...detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', keyedComposables)]).toMatchInlineSnapshot(`
+    expect([...detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', keyedComposables, '', '')]).toMatchInlineSnapshot(`
       [
         "someThingRenamed",
       ]
@@ -32,7 +32,7 @@ describe('composable keys plugin', () => {
     source: '#app',
     argumentLength: 2,
   }]
-  const transformPlugin = ComposableKeysPlugin({ sourcemap: false, rootDir: '/', composables }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+  const transformPlugin = ComposableKeysPlugin({ sourcemap: false, rootDir: '/', srcDir: '/', composables }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
   it('should add keyed hash when there is none already provided', () => {
     const code = `
