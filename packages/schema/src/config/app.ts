@@ -7,11 +7,14 @@ import type { NuxtAppConfig } from '../types/config'
 export default defineResolvers({
   vue: {
     transformAssetUrls: {
-      video: ['src', 'poster'],
-      source: ['src'],
-      img: ['src'],
-      image: ['xlink:href', 'href'],
-      use: ['xlink:href', 'href'],
+      preserveTilde: true,
+      tags: {
+        video: ['src', 'poster'],
+        source: ['src'],
+        img: ['src'],
+        image: ['xlink:href', 'href'],
+        use: ['xlink:href', 'href'],
+      },
     },
     compilerOptions: {},
     runtimeCompiler: {
