@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { basename, dirname, join, normalize, resolve } from 'pathe'
+import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -89,7 +89,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
         resolve: {
           alias: {
-            [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
             'web-streams-polyfill/ponyfill/es2018': mockEmpty,
