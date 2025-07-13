@@ -166,10 +166,12 @@ export function resolveLayerPaths (dir: Nuxt['options']['dir'], buildDir: string
     nuxt: [
       join(relativeSrcDir, '**/*'),
       join(relativeModulesDir, `*/runtime/**/*`),
+      join(relativeRootDir, `layers/*/app/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/**/*`),
     ],
     nitro: [
       join(relativeModulesDir, `*/runtime/server/**/*`),
+      join(relativeRootDir, `layers/*/server/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
     ],
     node: [

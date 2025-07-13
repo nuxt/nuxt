@@ -346,27 +346,27 @@ describe('useAsyncData', () => {
 
   it('should execute the promise function once when dedupe option is "defer" for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
-    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
-    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
+    useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
+    useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
 
   it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    useAsyncData('dedupedKey1', promiseFn)
-    useAsyncData('dedupedKey1', promiseFn)
-    useAsyncData('dedupedKey1', promiseFn)
+    useAsyncData(uniqueKey, promiseFn)
+    useAsyncData(uniqueKey, promiseFn)
+    useAsyncData(uniqueKey, promiseFn)
 
     expect(promiseFn).toHaveBeenCalledTimes(3)
   })
 
   it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    useAsyncData('dedupedKey2', promiseFn, { dedupe: 'defer' })
-    useAsyncData('dedupedKey2', promiseFn)
-    useAsyncData('dedupedKey2', promiseFn, { dedupe: 'defer' })
+    useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
+    useAsyncData(uniqueKey, promiseFn)
+    useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
   })
@@ -386,24 +386,24 @@ describe('useAsyncData', () => {
       warn.mockClear()
       count++
 
-      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
-      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
+      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
+      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { [opt]: () => ({}) })
       expect(warn).not.toHaveBeenCalled()
-      await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'))
+      await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
       expect(warn).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different \`${opt}\` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+          new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}" \\(used at .*:\\d+:\\d+\\):\n- different \`${opt}\` option\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
         ))
     }
 
     warn.mockClear()
     count++
 
-    await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('test'))
+    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
     expect(warn).not.toHaveBeenCalled()
-    await mountWithAsyncData(`dedupedKey3-${count}`, () => Promise.resolve('bob'))
+    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('bob'))
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "dedupedKey3-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
+      new RegExp(`\\[nuxt\\] \\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}" \\(used at .*:\\d+:\\d+\\):\n- different handler\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`),
     ))
 
     warn.mockReset()
@@ -691,10 +691,27 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
 
+  it('should handle being passed to watch', async () => {
+    const q = ref<null | string>('test')
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { execute } = useAsyncData(promiseFn, { immediate: false })
+    expect(promiseFn).toHaveBeenCalledTimes(0)
+
+    // @ts-expect-error type is not valid
+    watch(q, execute)
+
+    expect(promiseFn).toHaveBeenCalledTimes(0)
+
+    q.value = null
+    await nextTick()
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
   it('should not refetch on the client when hydrating', () => {
-    useNuxtData('hydration-on-client').data.value = 'server-renderered'
+    useNuxtData(uniqueKey).data.value = 'server-renderered'
     useNuxtApp().isHydrating = true
-    const { data, status } = useAsyncData('hydration-on-client', () => Promise.resolve('test'))
+    const { data, status } = useAsyncData(uniqueKey, () => Promise.resolve('test'))
     expect(data.value).toBe('server-renderered')
     expect(status.value).toBe('success')
     useNuxtApp().isHydrating = false
