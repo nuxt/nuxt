@@ -54,7 +54,7 @@ export default defineResolvers({
             return rootDir
           }
         }
-        const keys = ['assets', 'layouts', 'middleware', 'pages', 'plugins'] as const
+        const keys = ['layouts', 'middleware', 'pages', 'plugins'] as const
         const dirs = await Promise.all(keys.map(key => get(`dir.${key}`)))
         for (const dir of dirs) {
           if (existsSync(resolve(rootDir, dir))) {
@@ -163,7 +163,6 @@ export default defineResolvers({
         return resolve(await get('srcDir'), val && typeof val === 'string' ? val : (srcDir === rootDir ? 'app' : '.'))
       },
     },
-    assets: 'assets',
     layouts: 'layouts',
     middleware: 'middleware',
     modules: {
