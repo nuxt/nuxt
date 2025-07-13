@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import '../../dist/app/types/augments'
 
 export { applyPlugin, applyPlugins, callWithNuxt, createNuxtApp, defineAppConfig, defineNuxtPlugin, definePayloadPlugin, isNuxtPlugin, registerPluginHooks, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from './nuxt'
