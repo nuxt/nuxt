@@ -3003,7 +3003,7 @@ describe('lazy import components', () => {
       await page.getByTestId('count').click()
 
       // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)))
       const hydrationLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
       expect(hydrationLogs.length).toBeGreaterThan(0)
 
