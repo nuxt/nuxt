@@ -60,7 +60,7 @@
     "h3": "1.15.3",
     "jiti": "2.4.2",
     "magic-string": "^0.30.17",
-    "nitropack": "2.11.13",
+    "nitropack": "npm:nitropack-nightly@2.12.0-20250714-160324.f380b6c6",
     "nuxt": "workspace:*",
     "postcss": "8.5.6",
     "rollup": "4.45.0",

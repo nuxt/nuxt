@@ -679,3 +679,24 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     serializable: false,
   }
 }
+
+export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
+  const routes: string[] = []
+  for (const page of pages) {
+    // convert to rou3-compatible path (https://github.com/h3js/rou3)
+    const path = page.path
+      // remove all regex patterns
+      .replace(/\([^)]*\)/g, '')
+      // catchalls: `:name([^/]*)*` or `:catchall(.*)*`
+      .replace(/:(\w+)\*.*/g, (_, name) => `:${name}**`)
+      // dynamic paths, including custom patterns, e.g. :id([^/]*)*/suffix
+      .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
+
+    routes.push(joinURL(prefix, path))
+
+    if (page.children) {
+      routes.push(...toRou3Patterns(page.children, joinURL(prefix, path)))
+    }
+  }
+  return routes
+}

@@ -23,7 +23,7 @@ overrides:
   h3: 1.15.3
   jiti: 2.4.2
   magic-string: ^0.30.17
-  nitropack: 2.11.13
+  nitropack: npm:nitropack-nightly@2.12.0-20250714-160324.f380b6c6
   nuxt: workspace:*
   postcss: 8.5.6
   rollup: 4.45.0
@@ -179,8 +179,8 @@ importers:
         specifier: 4.17.2
         version: 4.17.2
       nitropack:
-        specifier: 2.11.13
-        version: 2.11.13
+        specifier: npm:nitropack-nightly@2.12.0-20250714-160324.f380b6c6
+        version: nitropack-nightly@2.12.0-20250714-160324.f380b6c6
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -332,8 +332,8 @@ importers:
         specifier: 5.5.3
         version: 5.5.3
       nitropack:
-        specifier: 2.11.13
-        version: 2.11.13
+        specifier: npm:nitropack-nightly@2.12.0-20250714-160324.f380b6c6
+        version: nitropack-nightly@2.12.0-20250714-160324.f380b6c6
       unbuild:
         specifier: 3.5.0
         version: 3.5.0(typescript@5.8.3)(vue-sfc-transformer@0.1.16(@vue/compiler-core@3.5.17)(esbuild@0.25.6)(vue@3.5.17(typescript@5.8.3)))(vue-tsc@3.0.1(typescript@5.8.3))(vue@3.5.17(typescript@5.8.3))
@@ -452,8 +452,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitropack:
-        specifier: 2.11.13
-        version: 2.11.13
+        specifier: npm:nitropack-nightly@2.12.0-20250714-160324.f380b6c6
+        version: nitropack-nightly@2.12.0-20250714-160324.f380b6c6
       nypm:
         specifier: ^0.6.0
         version: 0.6.0
@@ -794,8 +794,8 @@ importers:
         specifier: 2.9.2
         version: 2.9.2(webpack@5.99.9(esbuild@0.25.6))
       nitropack:
-        specifier: 2.11.13
-        version: 2.11.13
+        specifier: npm:nitropack-nightly@2.12.0-20250714-160324.f380b6c6
+        version: nitropack-nightly@2.12.0-20250714-160324.f380b6c6
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -956,8 +956,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1
       nitropack:
-        specifier: 2.11.13
-        version: 2.11.13
+        specifier: npm:nitropack-nightly@2.12.0-20250714-160324.f380b6c6
+        version: nitropack-nightly@2.12.0-20250714-160324.f380b6c6
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -1807,10 +1807,6 @@ packages:
     resolution: {integrity: sha512-gtF186CXhIl1p4pJNGZw8Yc6RlshoePRvE0X91oPGb3vZ8pM3qOS9W9NGPat9LziaBV7XrJWGylNQXkGcnM3IQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/js@9.30.1':
-    resolution: {integrity: sha512-zXhuECFlyep42KZUhWjfvsmXGX39W8K8LFb8AWXM9gSV9dQB+MrJGLKvW6Zw0Ggnbpw0VHTtrhFXYe3Gym18jg==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@eslint/js@9.31.0':
     resolution: {integrity: sha512-LOm5OVt7D4qiKCqoiPbA7LWmI+tbw1VbTUowBcUMgQSuM6poJufkFkYDcQpo5KfgD39TnNySV26QjOh7VFpSyw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -1972,9 +1968,6 @@ packages:
 
   '@module-federation/webpack-bundler-runtime@0.15.0':
     resolution: {integrity: sha512-i+3wu2Ljh2TmuUpsnjwZVupOVqV50jP0ndA8PSP4gwMKlgdGeaZ4VH5KkHAXGr2eiYUxYLMrJXz1+eILJqeGDg==}
-
-  '@napi-rs/wasm-runtime@0.2.11':
-    resolution: {integrity: sha512-9DPkXtvHydrcOsopiYpUgPHpmj0HWZKMUnL2dZqpvC42lsratuBG06V5ipyno0fUek5VlFsNQ+AcFATSrJXgMA==}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -2912,6 +2905,9 @@ packages:
   '@shikijs/core@3.7.0':
     resolution: {integrity: sha512-yilc0S9HvTPyahHpcum8eonYrQtmGTU0lbtwxhA6jHv4Bm1cAdlPFRCJX4AHebkCm75aKTjjRAW+DezqD1b/cg==}
 
+  '@shikijs/core@3.8.0':
+    resolution: {integrity: sha512-gWt8NNZFurL6FMESO4lEsmspDh0H1fyUibhx1NnEH/S3kOXgYiWa6ZFqy+dcjBLhZqCXsepuUaL1QFXk6PrpsQ==}
+
   '@shikijs/engine-javascript@1.29.2':
     resolution: {integrity: sha512-iNEZv4IrLYPv64Q6k7EPpOCE/nuvGiKl7zxdq0WFuRPF5PAE9PRo2JGq/d8crLusM59BRemJ4eOqrFrC4wiQ+A==}
 
@@ -2939,8 +2935,8 @@ packages:
   '@shikijs/transformers@3.7.0':
     resolution: {integrity: sha512-VplaqIMRNsNOorCXJHkbF5S0pT6xm8Z/s7w7OPZLohf8tR93XH0krvUafpNy/ozEylrWuShJF0+ftEB+wFRwGA==}
 
-  '@shikijs/twoslash@3.7.0':
-    resolution: {integrity: sha512-EjnV193iasm/M5UHVDJg6WyX6dIMCb0YhsKKlgWv3OK7iLFjuW7sUp978ZkO2OIn3niqBT6e+CX1LgoPM8jYjQ==}
+  '@shikijs/twoslash@3.8.0':
+    resolution: {integrity: sha512-VSldcH/kNG5EqE0Gj6DaeWgzuUHXZbth1Zy54nQjXLrFLsx67+QMSZCLcWsKJS7mohhmdF3s69P3C4mfgJwoQg==}
     peerDependencies:
       typescript: 5.8.3
 
@@ -2949,6 +2945,9 @@ packages:
 
   '@shikijs/types@3.7.0':
     resolution: {integrity: sha512-MGaLeaRlSWpnP0XSAum3kP3a8vtcTsITqoEPYdt3lQG3YCdQH4DnEhodkYcNMcU0uW0RffhoD1O3e0vG5eSBBg==}
+
+  '@shikijs/types@3.8.0':
+    resolution: {integrity: sha512-I/b/aNg0rP+kznVDo7s3UK8jMcqEGTtoPDdQ+JlQ2bcJIyu/e2iRvl42GLIDMK03/W1YOHOuhlhQ7aM+XbKUeg==}
 
   '@shikijs/vitepress-twoslash@1.29.2':
     resolution: {integrity: sha512-KIwXZBqbKF0+9mLtV5IyiSBiflXm8vSGyCwFKVttpXRxpepMOcqqo1YGMW8Hd1qpt9XFqF/mRlihCSwHPXSh9A==}
@@ -3006,9 +3005,6 @@ packages:
 
   '@tybys/wasm-util@0.10.0':
     resolution: {integrity: sha512-VyyPYFlOMNylG45GoAe0xDoLwWuowvf92F9kySqzYh8vmYm7D2u4iUJKa1tOUpS70Ku13ASrOkS4ScXFsTaCNQ==}
-
-  '@tybys/wasm-util@0.9.0':
-    resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
 
   '@types/aria-query@5.0.4':
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
@@ -5112,9 +5108,6 @@ packages:
     resolution: {integrity: sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==}
     engines: {node: '>= 0.4'}
 
-  get-port-please@3.1.2:
-    resolution: {integrity: sha512-Gxc29eLs1fbn6LQ4jSU4vXjlwyZhF5HsGuMAa7gqBP4Rw4yxxltyDUuF5MBclFzDTXO+ACchGQoeela4DSfzdQ==}
-
   get-port-please@3.2.0:
     resolution: {integrity: sha512-I9QVvBw5U/hw3RmWpYKRumUeaDgxTPd401x364rLmWBJcOQ753eov1eTgzDqRG9bqFIfDc7gfzcQEWrUri3o1A==}
 
@@ -6355,8 +6348,8 @@ packages:
     resolution: {integrity: sha512-Nc3loyVASW59W+8fLDZT1lncpG7llffyZ2o0UQLx/Fr20i7P8oP+lE7+TEcFvXj9IUWU6LjB9P3BH+iFGyp+mg==}
     engines: {node: ^14.16.0 || >=16.0.0}
 
-  nitropack@2.11.13:
-    resolution: {integrity: sha512-xKng/szRZmFEsrB1Z+sFzYDhXL5KUtUkEouPCj9LiBPhJ7qV3jdOv1MSis++8H8zNI6dEurt51ZlK4VRDvedsA==}
+  nitropack-nightly@2.12.0-20250714-160324.f380b6c6:
+    resolution: {integrity: sha512-55s3v2KqNM5svEg09heDmnbAkomfy8bVZHNVdp8otvPK+Gg/JeUdWwe5iban3dySrc1eZgRLYP0dENHrqfPRYg==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -9137,8 +9130,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/js@9.30.1': {}
-
   '@eslint/js@9.31.0': {}
 
   '@eslint/object-schema@2.1.6': {}
@@ -9327,13 +9318,6 @@ snapshots:
       '@module-federation/runtime': 0.15.0
       '@module-federation/sdk': 0.15.0
 
-  '@napi-rs/wasm-runtime@0.2.11':
-    dependencies:
-      '@emnapi/core': 1.4.3
-      '@emnapi/runtime': 1.4.3
-      '@tybys/wasm-util': 0.9.0
-    optional: true
-
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
       '@emnapi/core': 1.4.3
@@ -9513,7 +9497,7 @@ snapshots:
       error-stack-parser-es: 1.0.5
       execa: 8.0.1
       fast-npm-meta: 0.4.4
-      get-port-please: 3.1.2
+      get-port-please: 3.2.0
       hookable: 5.5.3
       image-meta: 0.2.1
       is-installed-globally: 1.0.0
@@ -9545,7 +9529,7 @@ snapshots:
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 0.11.0
-      '@eslint/js': 9.30.1
+      '@eslint/js': 9.31.0
       '@nuxt/eslint-plugin': 1.5.2(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       '@stylistic/eslint-plugin': 5.1.0(eslint@9.31.0(jiti@2.4.2))
       '@typescript-eslint/eslint-plugin': 8.35.1(@typescript-eslint/parser@8.35.1(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
@@ -9931,7 +9915,7 @@ snapshots:
 
   '@oxc-resolver/binding-wasm32-wasi@11.5.0':
     dependencies:
-      '@napi-rs/wasm-runtime': 0.2.11
+      '@napi-rs/wasm-runtime': 0.2.12
     optional: true
 
   '@oxc-resolver/binding-win32-arm64-msvc@11.5.0':
@@ -10236,7 +10220,7 @@ snapshots:
 
   '@rspack/binding-wasm32-wasi@1.4.6':
     dependencies:
-      '@napi-rs/wasm-runtime': 0.2.11
+      '@napi-rs/wasm-runtime': 0.2.12
     optional: true
 
   '@rspack/binding-win32-arm64-msvc@1.4.6':
@@ -10285,6 +10269,13 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
+  '@shikijs/core@3.8.0':
+    dependencies:
+      '@shikijs/types': 3.8.0
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.4
+      hast-util-to-html: 9.0.5
+
   '@shikijs/engine-javascript@1.29.2':
     dependencies:
       '@shikijs/types': 1.29.2
@@ -10328,10 +10319,10 @@ snapshots:
       '@shikijs/core': 3.7.0
       '@shikijs/types': 3.7.0
 
-  '@shikijs/twoslash@3.7.0(typescript@5.8.3)':
+  '@shikijs/twoslash@3.8.0(typescript@5.8.3)':
     dependencies:
-      '@shikijs/core': 3.7.0
-      '@shikijs/types': 3.7.0
+      '@shikijs/core': 3.8.0
+      '@shikijs/types': 3.8.0
       twoslash: 0.3.2(typescript@5.8.3)
       typescript: 5.8.3
     transitivePeerDependencies:
@@ -10347,9 +10338,14 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
+  '@shikijs/types@3.8.0':
+    dependencies:
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.4
+
   '@shikijs/vitepress-twoslash@1.29.2(@nuxt/kit@packages+kit)(typescript@5.8.3)':
     dependencies:
-      '@shikijs/twoslash': 3.7.0(typescript@5.8.3)
+      '@shikijs/twoslash': 3.8.0(typescript@5.8.3)
       floating-vue: 5.2.2(@nuxt/kit@packages+kit)(vue@3.5.17(typescript@5.8.3))
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.1.0
@@ -10413,11 +10409,6 @@ snapshots:
   '@trysound/sax@0.2.0': {}
 
   '@tybys/wasm-util@0.10.0':
-    dependencies:
-      tslib: 2.8.1
-    optional: true
-
-  '@tybys/wasm-util@0.9.0':
     dependencies:
       tslib: 2.8.1
     optional: true
@@ -12829,8 +12820,6 @@ snapshots:
       hasown: 2.0.2
       math-intrinsics: 1.1.0
 
-  get-port-please@3.1.2: {}
-
   get-port-please@3.2.0: {}
 
   get-proto@1.0.1:
@@ -14328,7 +14317,7 @@ snapshots:
       p-wait-for: 5.0.2
       qs: 6.14.0
 
-  nitropack@2.11.13:
+  nitropack-nightly@2.12.0-20250714-160324.f380b6c6:
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@netlify/functions': 3.1.10(rollup@4.45.0)
@@ -14354,7 +14343,7 @@ snapshots:
       defu: 6.1.4
       destr: 2.0.5
       dot-prop: 9.0.0
-      esbuild: 0.25.5
+      esbuild: 0.25.6
       escape-string-regexp: 5.0.0
       etag: 1.8.1
       exsolve: 1.0.7
@@ -16204,7 +16193,7 @@ snapshots:
       citty: 0.1.6
       consola: 3.4.2
       defu: 6.1.4
-      esbuild: 0.25.5
+      esbuild: 0.25.6
       fix-dts-default-cjs-exports: 1.0.1
       hookable: 5.5.3
       jiti: 2.4.2
