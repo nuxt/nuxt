@@ -739,5 +739,6 @@ describe('useAsyncData', () => {
     await nextTick()
     expect(data.value).toBe('about')
     expect(promiseFn).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
   })
 })
