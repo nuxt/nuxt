@@ -688,7 +688,7 @@ export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
       // remove all regex patterns
       .replace(/\([^)]*\)/g, '')
       // catchalls: `:name([^/]*)*` or `:catchall(.*)*`
-      .replace(/:(\w+)\*.*/g, (_, name) => `:${name}**`)
+      .replace(/:(\w+)\*.*/g, (_, name) => `**:${name}`)
       // dynamic paths, including custom patterns, e.g. :id([^/]*)*/suffix
       .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
 
