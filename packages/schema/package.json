@@ -45,7 +45,7 @@
     "@vue/compiler-core": "3.5.17",
     "@vue/compiler-sfc": "3.5.17",
     "@vue/language-core": "3.0.1",
-    "c12": "3.0.4",
+    "c12": "3.1.0",
     "chokidar": "4.0.3",
     "compatx": "0.2.0",
     "css-minimizer-webpack-plugin": "7.0.2",
