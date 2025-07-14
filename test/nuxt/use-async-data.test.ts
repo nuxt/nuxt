@@ -721,7 +721,7 @@ describe('useAsyncData', () => {
     vi.useFakeTimers()
     const page = ref('index')
     const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(page.value), 100)))
-    const { data } = useAsyncData(() => page.value, promiseFn)
+    const { data, status } = useAsyncData(() => page.value, promiseFn)
 
     vi.advanceTimersToNextTimer()
     await flushPromises()
@@ -733,6 +733,7 @@ describe('useAsyncData', () => {
     await flushPromises()
     expect(promiseFn).toHaveBeenCalledTimes(2)
     expect(data.value).toBe('index')
+    expect(status.value).toBe('pending')
 
     vi.advanceTimersToNextTimer()
     await flushPromises()
