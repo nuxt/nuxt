@@ -134,7 +134,7 @@ importers:
         specifier: 9.31.0
         version: 9.31.0(jiti@2.4.2)
       eslint-plugin-import-x:
-        specifier: ^4.16.1
+        specifier: 4.16.1
         version: 4.16.1(@typescript-eslint/utils@8.35.1(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3))(eslint@9.31.0(jiti@2.4.2))
       eslint-plugin-no-only-tests:
         specifier: 3.3.0
@@ -10863,7 +10863,7 @@ snapshots:
 
   '@unrs/resolver-binding-wasm32-wasi@1.11.0':
     dependencies:
-      '@napi-rs/wasm-runtime': 0.2.11
+      '@napi-rs/wasm-runtime': 0.2.12
     optional: true
 
   '@unrs/resolver-binding-win32-arm64-msvc@1.11.0':
