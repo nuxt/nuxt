@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "rollup": "4.44.2",
+    "rollup": "4.45.0",
     "unbuild": "3.5.0",
     "vue": "3.5.17"
   },
