@@ -73,7 +73,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "@nuxt/cli": "^3.25.1",
+    "@nuxt/cli": "^3.26.0",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/devtools": "^2.6.2",
     "@nuxt/kit": "workspace:*",
@@ -128,7 +128,7 @@
     "unimport": "^5.1.0",
     "unplugin": "^2.3.5",
     "unplugin-vue-router": "^0.14.0",
-    "unstorage": "^1.16.0",
+    "unstorage": "^1.16.1",
     "untyped": "^2.0.0",
     "vue": "^3.5.17",
     "vue-bundle-renderer": "^2.1.1",

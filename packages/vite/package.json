@@ -37,7 +37,7 @@
     "@vitejs/plugin-vue-jsx": "^4.2.0",
     "autoprefixer": "^10.4.21",
     "consola": "^3.4.2",
-    "cssnano": "^7.0.7",
+    "cssnano": "^7.1.0",
     "defu": "^6.1.4",
     "esbuild": "^0.25.6",
     "escape-string-regexp": "^5.0.0",
