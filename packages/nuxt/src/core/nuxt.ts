@@ -137,8 +137,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
-// TODO: update to nitro import
-const fallbackCompatibilityDate = '2024-04-03' as DateString
+const fallbackCompatibilityDate = '2025-07-15' as DateString
 
 const nightlies = {
   'nitropack': 'nitropack-nightly',

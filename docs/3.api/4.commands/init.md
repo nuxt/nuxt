@@ -38,6 +38,8 @@ Option | Default | Description
 `--gitInit` |  | Initialize git repository
 `--shell` |  | Start shell after installation in project directory
 `--packageManager` |  | Package manager choice (npm, pnpm, yarn, bun)
+`--modules` |  | Nuxt modules to install (comma separated without spaces)
+`--no-modules` |  | Skip module installation prompt
 <!--/init-opts-->
 
 ## Environment variables

@@ -716,4 +716,30 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('success')
     useNuxtApp().isHydrating = false
   })
+
+  it('should retain the old data when a computed key changes', async () => {
+    vi.useFakeTimers()
+    const page = ref('index')
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(page.value), 100)))
+    const { data, status } = useAsyncData(() => page.value, promiseFn)
+
+    vi.advanceTimersToNextTimer()
+    await flushPromises()
+    expect(data.value).toBe('index')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    page.value = 'about'
+    await nextTick()
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(data.value).toBe('index')
+    expect(status.value).toBe('pending')
+
+    vi.advanceTimersToNextTimer()
+    await flushPromises()
+    await nextTick()
+    expect(data.value).toBe('about')
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
+  })
 })
