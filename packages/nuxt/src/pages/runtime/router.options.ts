@@ -13,7 +13,7 @@ export default <RouterConfig> {
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
     // @ts-expect-error untyped, nuxt-injected option
-    const behavior = useRouter().options?.scrollBehaviorType ?? 'auto'
+    const hashScrollBehaviour = useRouter().options?.scrollBehaviorType ?? 'auto'
 
     // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path === from.path) {
@@ -21,7 +21,7 @@ export default <RouterConfig> {
         return { left: 0, top: 0 }
       }
       if (to.hash) {
-        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
+        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior: hashScrollBehaviour }
       }
       // The route isn't changing so keep current scroll position
       return false
@@ -35,12 +35,12 @@ export default <RouterConfig> {
 
     return new Promise((resolve) => {
       if (from === START_LOCATION) {
-        resolve(_calculatePosition(to, from, savedPosition, behavior))
+        resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour))
         return
       }
 
       nuxtApp.hooks.hookOnce(hookToWait, () => {
-        requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition, behavior)))
+        requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour)))
       })
     })
   },
@@ -62,7 +62,7 @@ function _calculatePosition (
   to: RouteLocationNormalized,
   from: RouteLocationNormalized,
   savedPosition: ScrollPosition | null,
-  defaultBehavior: ScrollBehavior,
+  defaultHashScrollBehaviour: ScrollBehavior,
 ): ScrollPosition {
   // By default when the returned position is falsy or an empty object, vue-router will retain the current scroll position
   // savedPosition is only available for popstate navigations (back button)
@@ -77,13 +77,12 @@ function _calculatePosition (
     return {
       el: to.hash,
       top: _getHashElementScrollMarginTop(to.hash),
-      behavior: isPageNavigation ? defaultBehavior : 'instant',
+      behavior: isPageNavigation ? defaultHashScrollBehaviour : 'instant',
     }
   }
 
   return {
     left: 0,
     top: 0,
-    behavior: isPageNavigation ? defaultBehavior : 'instant',
   }
 }
