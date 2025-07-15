@@ -333,8 +333,14 @@ export function useAsyncData<
         }
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
         if (!nuxtApp._asyncData[newKey]?._init) {
-          initialFetchOptions.cachedData = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialFetchOptions.cachedData)
+          let value: NoInfer<DataT> | undefined
+          if (oldKey && hasRun) {
+            value = nuxtApp._asyncData[oldKey]?.data.value as NoInfer<DataT>
+          } else {
+            value = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+            initialFetchOptions.cachedData = value
+          }
+          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, value)
         }
         nuxtApp._asyncData[newKey]._deps++
 
