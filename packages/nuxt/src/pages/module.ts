@@ -14,7 +14,7 @@ import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { logger } from '../utils'
-import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
+import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
@@ -355,6 +355,11 @@ export default defineNuxtModule({
 
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      nitro.options.ssrRoutes = [
+        ...nitro.options.ssrRoutes || [],
+        ...toRou3Patterns(nuxt.apps.default?.pages || []),
+      ]
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
