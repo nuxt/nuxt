@@ -146,6 +146,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
           ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
+          ...nuxt.options._layers.map(layer =>
+            relativeWithDot(
+              nuxt.options.buildDir,
+              resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', '**/*.d.ts'),
+            ),
+          ),
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),

@@ -20,7 +20,7 @@ Using `$fetch` in components without wrapping it with [`useAsyncData`](/docs/api
 
 ## Usage
 
-We recommend to use [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) + `$fetch` to prevent double data fetching when fetching the component data.
+We recommend using [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) + `$fetch` to prevent double data fetching when fetching the component data.
 
 ```vue [app.vue]
 <script setup lang="ts">

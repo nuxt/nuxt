@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "4.0.0-rc.0",
+  "version": "4.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -51,10 +51,10 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.4.6",
+    "@rspack/core": "1.4.8",
     "@types/semver": "7.7.0",
     "hookable": "5.5.3",
-    "nitropack": "2.11.13",
+    "nitropack": "2.12.0",
     "unbuild": "3.5.0",
     "vite": "7.0.4",
     "vitest": "3.2.4",
