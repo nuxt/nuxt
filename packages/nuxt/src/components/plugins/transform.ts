@@ -1,3 +1,22 @@
+
+const charMap = {
+  '<': '\\u003C',
+  '>': '\\u003E',
+  '/': '\\u002F',
+  '\\': '\\\\',
+  '\b': '\\b',
+  '\f': '\\f',
+  '\n': '\\n',
+  '\r': '\\r',
+  '\t': '\\t',
+  '\0': '\\0',
+  '\u2028': '\\u2028',
+  '\u2029': '\\u2029',
+};
+
+function escapeUnsafeChars(str: string): string {
+  return str.replace(/[<>\b\f\n\r\t\0\u2028\u2029]/g, x => charMap[x] || x);
+}
 import { isIgnored } from '@nuxt/kit'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
@@ -74,7 +93,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
           return {
             code: [
               'import { defineAsyncComponent } from "vue"',
-              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r[${JSON.stringify(componentExport)}] || r.default || r))`,
+              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(escapeUnsafeChars(bare))}).then(r => r[${JSON.stringify(componentExport)}] || r.default || r))`,
             ].join('\n'),
             map: null,
           }
