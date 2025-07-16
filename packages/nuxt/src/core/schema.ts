@@ -34,6 +34,10 @@ export default defineNuxtModule({
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
       ctx.sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
       ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
+
+      ctx.nodeTsConfig.include ||= []
+      ctx.nodeTsConfig.include.push('../nuxt.schema.*')
+
       if (nuxt.options._prepare) {
         await writeSchema(schema)
       }
