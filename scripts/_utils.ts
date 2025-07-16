@@ -126,7 +126,7 @@ export async function getContributors () {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': `token ${process.env.GITHUB_TOKEN}`,
       },
-    })
+    }).catch(() => ({ author: null }))
     if (!author) { continue }
     if (!contributors.some(c => c.username === author.login)) {
       contributors.push({ name: commit.author.name, username: author.login })
