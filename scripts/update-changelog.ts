@@ -3,12 +3,12 @@ import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
 import { consola } from 'consola'
-import { determineBumpType, getContributors, getLatestCommits, getLatestReleasedTag, getLatestTag, getPreviousReleasedCommits, loadWorkspace } from './_utils'
+import { determineBumpType, getContributors, getLatestCommits, getLatestReleasedTag, getLatestTag, getPreviousReleasedCommits, loadWorkspace } from './_utils.ts'
 
 const handleSeparateBranch = true
 
 async function main () {
-  const releaseBranch = await getCurrentGitBranch()
+  const releaseBranch = getCurrentGitBranch()
   const workspace = await loadWorkspace(process.cwd())
   const config = await loadChangelogConfig(process.cwd(), {})
 
