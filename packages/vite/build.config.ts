@@ -18,5 +18,6 @@ export default defineBuildConfig({
   ],
   externals: [
     '@nuxt/schema',
+    'nitropack',
   ],
 })
