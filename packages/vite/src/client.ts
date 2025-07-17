@@ -21,6 +21,12 @@ import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
 import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
+// https://github.com/oven-sh/bun/issues/18737
+const removeTrailingSlash = (s: string) => {
+  const parsed = new URL(s, 'http://example.com').pathname
+  return parsed.length > 1 && parsed.at(-1) === '/' ? parsed.slice(0, -1) : parsed
+}
+
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const nodeCompat = nuxt.options.experimental.clientNodeCompat
     ? {
@@ -32,7 +38,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: nuxt.options.dev
-      ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
+      ? removeTrailingSlash(joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir))
       : './',
     css: {
       devSourcemap: !!nuxt.options.sourcemap.client,
