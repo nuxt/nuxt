@@ -1,3 +1,5 @@
+import '../../dist/app/types/augments'
+
 export { applyPlugin, applyPlugins, callWithNuxt, createNuxtApp, defineAppConfig, defineNuxtPlugin, definePayloadPlugin, isNuxtPlugin, registerPluginHooks, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from './nuxt'
 export type { CreateOptions, NuxtApp, NuxtPayload, NuxtPluginIndicator, NuxtSSRContext, ObjectPlugin, Plugin, PluginEnvContext, PluginMeta, ResolvedPluginMeta, RuntimeNuxtHooks } from './nuxt'
 
@@ -5,7 +7,7 @@ export { defineNuxtComponent, useAsyncData, useLazyAsyncData, useNuxtData, refre
 export type { AddRouteMiddlewareOptions, AsyncData, AsyncDataOptions, AsyncDataRequestStatus, CookieOptions, CookieRef, FetchResult, NuxtAppManifest, NuxtAppManifestMeta, NuxtError, Politeness, ReloadNuxtAppOptions, RouteMiddleware, UseFetchOptions } from './composables/index'
 
 export { defineNuxtLink } from './components/index'
-export type { NuxtLinkOptions, NuxtLinkProps } from './components/index'
+export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
 export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext, PageMeta, NuxtPageProps } from './types'

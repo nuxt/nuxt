@@ -16,7 +16,8 @@ import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSla
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
-import { type NuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
@@ -505,8 +506,23 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           } satisfies NuxtLinkDefaultSlotProps<true>)
         }
 
-        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
-        return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
+        return h('a', {
+          ref: el,
+          href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+          rel,
+          target,
+          onClick: (event) => {
+            if (isExternal.value || hasTarget.value) {
+              return
+            }
+
+            event.preventDefault()
+
+            return props.replace
+              ? router.replace(href.value)
+              : router.push(href.value)
+          },
+        }, slots.default?.())
       }
     },
     // }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>

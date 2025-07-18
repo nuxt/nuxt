@@ -15,6 +15,7 @@ describe('<NuxtTime>', () => {
             month: 'long',
             day: 'numeric',
             second: 'numeric',
+            timeZone: 'UTC',
           }),
       }),
     )

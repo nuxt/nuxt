@@ -75,7 +75,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
     define: {},
   })
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (plugin.transform! as Function)(source, name, { ssr })
+  const result = await ((plugin.transform as any)!.handler as Function)(source, name, { ssr })
 
   return typeof result === 'string' ? result : result?.code
 }

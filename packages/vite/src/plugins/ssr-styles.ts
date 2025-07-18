@@ -10,7 +10,7 @@ import { findStaticImports } from 'mlly'
 
 import { isCSS, isVue } from '../utils'
 
-interface SSRStylePluginOptions {
+interface SSRStylesPluginOptions {
   srcDir: string
   chunksWithInlinedCSS: Set<string>
   shouldInline?: ((id?: string) => boolean) | boolean
@@ -23,7 +23,7 @@ interface SSRStylePluginOptions {
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 
-export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
+export function SSRStylesPlugin (options: SSRStylesPluginOptions): Plugin {
   const cssMap: Record<string, { files: string[], inBundle?: boolean }> = {}
   const idRefMap: Record<string, string> = {}
 
