@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
+import type { ParsedQuery } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
@@ -17,6 +18,7 @@ import {
 import type { ScopeTrackerNode } from 'oxc-walker'
 import { logger } from '../../utils'
 import { isSerializable } from '../utils'
+import type { ParserOptions } from 'oxc-parser'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -214,8 +216,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const { program: ast } = parseAndWalk(code, id + (query.lang ? '.' + query.lang : '.ts'), {
+      const { program: ast } = parseAndWalk(code, id, {
         scopeTracker,
+        parseOptions: {
+          lang: query.lang ?? 'ts',
+        },
       })
 
       scopeTracker.freeze()
@@ -343,7 +348,9 @@ function rewriteQuery (id: string) {
 
 function parseMacroQuery (id: string) {
   const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
-  const query = parseQuery(search)
+  const query = parseQuery<{
+    lang?: ParserOptions['lang']
+  } & ParsedQuery>(search)
   if (id.includes('?macro=true')) {
     return { macro: 'true', ...query }
   }
