@@ -629,6 +629,21 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
+
+    // ensure aliases shared between nuxt + nitro are included in shared tsconfig
+    opts.sharedTsConfig.compilerOptions ||= {}
+    opts.sharedTsConfig.compilerOptions.paths ||= {}
+    for (const key in nuxt.options.alias) {
+      if (nitro.options.alias[key] && nitro.options.alias[key] === nuxt.options.alias[key]) {
+        const dirKey = join(key, '*')
+        if (opts.tsConfig.compilerOptions?.paths[key]) {
+          opts.sharedTsConfig.compilerOptions.paths[key] = opts.tsConfig.compilerOptions.paths[key]
+        }
+        if (opts.tsConfig.compilerOptions?.paths[dirKey]) {
+          opts.sharedTsConfig.compilerOptions.paths[dirKey] = opts.tsConfig.compilerOptions.paths[dirKey]
+        }
+      }
+    }
   })
 
   if (nitro.options.static) {
@@ -734,4 +749,17 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   return ''
+}
+
+function arrayEquals (_arr1: string[], _arr2: string[]) {
+  const arr1 = [...new Set(_arr1)].sort()
+  const arr2 = [...new Set(_arr2)].sort()
+  if (arr1.length !== arr2.length) {
+    return false
+  }
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) {
+      return false
+    }
+  }
 }
