@@ -750,16 +750,3 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
 
   return ''
 }
-
-function arrayEquals (_arr1: string[], _arr2: string[]) {
-  const arr1 = [...new Set(_arr1)].sort()
-  const arr2 = [...new Set(_arr2)].sort()
-  if (arr1.length !== arr2.length) {
-    return false
-  }
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) {
-      return false
-    }
-  }
-}
