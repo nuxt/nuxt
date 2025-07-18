@@ -152,6 +152,22 @@ export interface ConfigSchema {
     buildAssetsDir: string
 
     /**
+     * A prefix to add to the file names of built assets. This can be used to add a custom prefix to all generated asset file names.
+     *
+     * This can be set to a different value at runtime by setting the `NUXT_APP_BUILD_ASSETS_FILE_NAME_PREFIX` environment variable.
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     buildAssetsFileNamePrefix: 'custom-'
+     *   }
+     * })
+     * ```
+     */
+    buildAssetsFileNamePrefix: string
+
+    /**
      * An absolute URL to serve the public folder from (production-only).
      *
      * For example:
