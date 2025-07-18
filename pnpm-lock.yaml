@@ -476,8 +476,8 @@ importers:
         specifier: ^0.77.0
         version: 0.77.0
       oxc-walker:
-        specifier: ^0.3.0
-        version: 0.3.0(oxc-parser@0.77.0)
+        specifier: ^0.4.0
+        version: 0.4.0(oxc-parser@0.77.0)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -955,9 +955,6 @@ importers:
       mocked-exports:
         specifier: ^0.1.1
         version: 0.1.1
-      nitropack:
-        specifier: 2.12.0
-        version: 2.12.0(@netlify/blobs@9.1.2)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -995,6 +992,9 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      nitropack:
+        specifier: 2.12.0
+        version: 2.12.0(@netlify/blobs@9.1.2)
       rollup:
         specifier: 4.45.1
         version: 4.45.1
@@ -6539,8 +6539,8 @@ packages:
     resolution: {integrity: sha512-oVghVTznBpDkrfrFMcPjtfsm+1z16eLnrtp0KRS1ZAyxrX94cwdKKGbMDRTSqM/jIrMACU/MFUuTqyHYoAI+Wg==}
     engines: {node: '>=14.0.0'}
 
-  oxc-walker@0.3.0:
-    resolution: {integrity: sha512-mGGgl9dmYHUX7Z3bxXhibwarI0fJVj2E64FNIOZQWUDvEeIPyJTe5ElyJmp4nmDdfdnrlG0bhdR+bR9D6DM/dA==}
+  oxc-walker@0.4.0:
+    resolution: {integrity: sha512-x5TJAZQD3kRnRBGZ+8uryMZUwkTYddwzBftkqyJIcmpBOXmoK/fwriRKATjZroR2d+aS7+2w1B0oz189bBTwfw==}
     peerDependencies:
       oxc-parser: '>=0.72.0'
 
@@ -14660,7 +14660,7 @@ snapshots:
       '@oxc-transform/binding-win32-arm64-msvc': 0.77.0
       '@oxc-transform/binding-win32-x64-msvc': 0.77.0
 
-  oxc-walker@0.3.0(oxc-parser@0.77.0):
+  oxc-walker@0.4.0(oxc-parser@0.77.0):
     dependencies:
       estree-walker: 3.0.3
       magic-regexp: 0.10.0
