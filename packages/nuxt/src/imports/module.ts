@@ -235,12 +235,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
   addTypeTemplate({
     filename: 'imports.d.ts',
     getContents: async ({ nuxt }) => {
-      const allImports = await ctx.getImports()
-      // Exclude shared imports to avoid duplication
-      const nonSharedImports = allImports.filter(imp => !isSharedImport(imp))
       return [
         '/// <reference path="./types/shared.d.ts" />',
-        toExports(nonSharedImports, nuxt.options.buildDir, true),
+        toExports(await ctx.getImports(), nuxt.options.buildDir, true),
       ].join('\n')
     },
   })
@@ -251,12 +248,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
       const allImports = await ctx.getImports()
       await cacheImportPaths(allImports)
 
-      // Exclude shared imports to avoid duplication
-      const nonSharedImports = allImports.filter(imp => !isSharedImport(imp))
-
-      // Create a temporary context with only non-shared imports
-      const nonSharedCtx = createUnimport({
-        imports: nonSharedImports,
+      // Create a context with all imports
+      const importsCtx = createUnimport({
+        imports: allImports,
       })
 
       return [
@@ -264,7 +258,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
         '/// <reference path="./shared.d.ts" />',
         '',
         options.autoImport
-          ? await nonSharedCtx.generateTypeDeclarations({ resolvePath: r })
+          ? await importsCtx.generateTypeDeclarations({ resolvePath: r })
           : '// Implicit auto importing is disabled, you can use explicitly import from `#imports` instead.',
       ].join('\n')
     },
