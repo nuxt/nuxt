@@ -6,6 +6,7 @@ import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
+import { isValidIslandKey } from './utils'
 
 const revivers: [string, (data: any) => any][] = [
   ['NuxtError', data => createError(data)],
@@ -18,8 +19,14 @@ const revivers: [string, (data: any) => any][] = [
 ]
 
 if (componentIslands) {
-  revivers.push(['Island', ({ key, params, result }: any) => {
+  revivers.push(['Island', (data) => {
+    const { key, params, result } = data
     const nuxtApp = useNuxtApp()
+
+    if (!isValidIslandKey(key)) {
+      return data
+    }
+    
     if (!nuxtApp.isHydrating) {
       nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
         responseType: 'json',
