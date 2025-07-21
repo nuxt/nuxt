@@ -70,8 +70,13 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     return pages
   }
 
+  const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
+
   const augmentCtx = {
-    extraExtractionKeys: new Set(['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]),
+    extraExtractionKeys: new Set([
+      'middleware',
+      ...extraPageMetaExtractionKeys,
+    ]),
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
   }
   if (shouldAugment === 'after-resolve') {
@@ -673,4 +678,25 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
   return {
     serializable: false,
   }
+}
+
+export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
+  const routes: string[] = []
+  for (const page of pages) {
+    // convert to rou3-compatible path (https://github.com/h3js/rou3)
+    const path = page.path
+      // remove all regex patterns
+      .replace(/\([^)]*\)/g, '')
+      // catchalls: `:name([^/]*)*` or `:catchall(.*)*`
+      .replace(/:(\w+)\*.*/g, (_, name) => `**:${name}`)
+      // dynamic paths, including custom patterns, e.g. :id([^/]*)*/suffix
+      .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
+
+    routes.push(joinURL(prefix, path))
+
+    if (page.children) {
+      routes.push(...toRou3Patterns(page.children, joinURL(prefix, path)))
+    }
+  }
+  return routes
 }

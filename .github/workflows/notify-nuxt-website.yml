@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 3.x
+      - main
     paths:
       - "docs/**"
 

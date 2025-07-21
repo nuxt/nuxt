@@ -327,16 +327,24 @@ export function useAsyncData<
     const unsubExecute = watch([key, ...(options.watch || [])], ([newKey], [oldKey]) => {
       if ((newKey || oldKey) && newKey !== oldKey) {
         const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
+        const isRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
         if (oldKey) {
           unregister(oldKey)
         }
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
         if (!nuxtApp._asyncData[newKey]?._init) {
-          initialFetchOptions.cachedData = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialFetchOptions.cachedData)
+          let value: NoInfer<DataT> | undefined
+          if (oldKey && hasRun) {
+            value = nuxtApp._asyncData[oldKey]?.data.value as NoInfer<DataT>
+          } else {
+            value = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+            initialFetchOptions.cachedData = value
+          }
+          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, value)
         }
         nuxtApp._asyncData[newKey]._deps++
-        if (options.immediate || hasRun) {
+
+        if (options.immediate || hasRun || isRunning) {
           nuxtApp._asyncData[newKey].execute(initialFetchOptions)
         }
       } else {
@@ -617,7 +625,13 @@ function createAsyncData<
     pending: pendingWhenIdle ? shallowRef(!hasCachedData) : computed(() => asyncData.status.value === 'pending'),
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: shallowRef('idle'),
-    execute: (opts = {}) => {
+    execute: (...args) => {
+      const [_opts, newValue = undefined] = args
+      const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
+      if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
+        // @ts-expect-error private property
+        console.warn(`[nuxt] [${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`)
+      }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
         // Avoid fetching same key more than once at a time
