@@ -18,7 +18,7 @@ export default defineComponent({
       default?: () => VNode[]
 
       /**
-       * Specify a content to be rendered on the server and displayed until <ClientOnly> is mounted in the browser.
+       * Specify a content to be rendered on the server and displayed until `<ClientOnly>` is mounted in the browser.
        */
       fallback?: () => VNode[]
       placeholder?: () => VNode[]
