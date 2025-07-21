@@ -7,7 +7,7 @@ settings:
 overrides:
   '@babel/core': 7.28.0
   '@babel/helper-plugin-utils': 7.27.1
-  '@nuxt/cli': 3.26.3
+  '@nuxt/cli': 3.26.4
   '@nuxt/kit': workspace:*
   '@nuxt/rspack-builder': workspace:*
   '@nuxt/schema': workspace:*
@@ -56,8 +56,8 @@ importers:
         specifier: 4.0.1
         version: 4.0.1(vite@7.0.5(@types/node@22.16.5)(jiti@2.4.2)(terser@5.43.1)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.16.5)(happy-dom@18.0.1)(jiti@2.4.2)(terser@5.43.1)(yaml@2.8.0))
       '@nuxt/cli':
-        specifier: 3.26.3
-        version: 3.26.3(magicast@0.3.5)
+        specifier: 3.26.4
+        version: 3.26.4(magicast@0.3.5)
       '@nuxt/eslint-config':
         specifier: 1.6.0
         version: 1.6.0(@typescript-eslint/utils@8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.17)(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
@@ -350,8 +350,8 @@ importers:
   packages/nuxt:
     dependencies:
       '@nuxt/cli':
-        specifier: 3.26.3
-        version: 3.26.3(magicast@0.3.5)
+        specifier: 3.26.4
+        version: 3.26.4(magicast@0.3.5)
       '@nuxt/devalue':
         specifier: ^2.0.2
         version: 2.0.2
@@ -2031,8 +2031,8 @@ packages:
     resolution: {integrity: sha512-pwK+BfEBZJbKdNYpHHRTNBwBoqrN/iIMO0AiGvYsp3Hoaq0WbgGSWQR6SCldZovoDpY3yje5lkFUe6gsDgJ2vg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  '@nuxt/cli@3.26.3':
-    resolution: {integrity: sha512-UIxGgzB8mhLdJmUtkT/S6iiZmAVhxlVpLh92aYKMDXuww/0B7y2GOlslbExY9YHkx5nU5JHcN1nXhAkQ7h339w==}
+  '@nuxt/cli@3.26.4':
+    resolution: {integrity: sha512-PeZcH7ghQxIcCaKyu+So3qGEjKG18TN1ic4jKvKFQouNgzPSVfvZAeBOHU4znEuDFp/wmoN5EliyHO4HaSs+rw==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
 
@@ -9468,7 +9468,7 @@ snapshots:
 
   '@npmcli/name-from-folder@2.0.0': {}
 
-  '@nuxt/cli@3.26.3(magicast@0.3.5)':
+  '@nuxt/cli@3.26.4(magicast@0.3.5)':
     dependencies:
       c12: 3.1.0(magicast@0.3.5)
       citty: 0.1.6
