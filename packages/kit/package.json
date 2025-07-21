@@ -46,7 +46,7 @@
     "tinyglobby": "^0.2.14",
     "ufo": "^1.6.1",
     "unctx": "^2.4.1",
-    "unimport": "^5.1.0",
+    "unimport": "^5.2.0",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
