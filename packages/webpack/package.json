@@ -72,11 +72,11 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.4.6",
+    "@rspack/core": "1.4.8",
     "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "rollup": "4.45.0",
+    "rollup": "4.45.1",
     "unbuild": "3.5.0",
     "vue": "3.5.17"
   },
