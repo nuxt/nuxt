@@ -6,8 +6,6 @@
 
 <!-- Describe your changes in detail. Why is this change required? What problem does it solve? -->
 
-### 🤖 AI-Assisted Contributions
-
 <!-- If you used AI tools to help with this contribution, please ensure the PR description and code reflect your own understanding.
      Write in your own voice rather than copying AI-generated text. -->
 
