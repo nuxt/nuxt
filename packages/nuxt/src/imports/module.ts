@@ -229,9 +229,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
   let nitroImports: Import[] = []
 
   nuxt.hook('nitro:init', async (nitro) => {
-    const unimportCtx = nitro.unimport
-    if (unimportCtx) {
-      nitroImports = await unimportCtx.getImports()
+    const nitroCtx = nitro.unimport
+    if (nitroCtx) {
+      nitroImports = await nitroCtx.getImports()
     }
   })
 
