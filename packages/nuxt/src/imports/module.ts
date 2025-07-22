@@ -226,19 +226,46 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
     }))
   }
 
-  const isSharedImport = (imp: Import) => {
-    const normalizedFrom = normalize(imp.from)
-    return normalizedFrom.includes('/shared/') || normalizedFrom.includes('\\shared\\')
-  }
+  let nitroImports: Import[] = []
+
+  nuxt.hook('nitro:init', async (nitro) => {
+    const unimportCtx = nitro.unimport
+    if (unimportCtx) {
+      nitroImports = await unimportCtx.getImports()
+    }
+  })
 
   // Create shared context once for better performance
   let sharedCtx: Unimport | null = null
   const getSharedCtx = async () => {
     if (!sharedCtx) {
-      const imports = await ctx.getImports()
-      const sharedImports = imports.filter(isSharedImport)
+      const nuxt = useNuxt()
+      const sharedDir = nuxt.options.dir?.shared ?? 'shared'
+      const nuxtImports = await ctx.getImports()
+
+      // Get all shared imports based on nuxt.options.dir.shared
+      const sharedImports = nuxtImports.filter((imp: Import) => {
+        const normalizedFrom = normalize(imp.from)
+        return normalizedFrom.includes(`/${sharedDir}/`) || normalizedFrom.includes(`\\${sharedDir}\\`)
+      })
+
+      // Find intersection of Nuxt and Nitro imports
+      const nitroKeySet = new Set(nitroImports.map(i => i.name))
+      const intersection = nuxtImports.filter(i => nitroKeySet.has(i.name))
+
+      // Union shared imports and intersection, deduped
+      const allKeys = new Set<string>()
+      const union: Import[] = []
+      for (const i of [...sharedImports, ...intersection]) {
+        const key = `${i.name}::${i.from}`
+        if (!allKeys.has(key)) {
+          allKeys.add(key)
+          union.push(i)
+        }
+      }
+
       sharedCtx = createUnimport({
-        imports: sharedImports,
+        imports: union,
         presets: [],
         addons: {},
       })
