@@ -173,7 +173,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `getCachedData`| `(key, nuxtApp, ctx) => DataT \| undefined` | - | Function to return cached data. See below for default. |
 | `pick` | `string[]` | - | Only pick specified keys from the result. |
 | `watch` | `MultiWatchSources \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
-| `deep` | `boolean` | `false` | Return data in a deep ref object. |
+| `deep` | `boolean` | `true` | Return data in a deep ref object. |
 | `dedupe` | `'cancel' \| 'defer'` | `'cancel'` | Avoid fetching same key more than once at a time. |
 | `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. |
 
