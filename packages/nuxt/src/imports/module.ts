@@ -253,19 +253,8 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
       const nitroKeySet = new Set(nitroImports.map(i => i.name))
       const intersection = nuxtImports.filter(i => nitroKeySet.has(i.name))
 
-      // Union shared imports and intersection, deduped
-      const allKeys = new Set<string>()
-      const union: Import[] = []
-      for (const i of [...sharedImports, ...intersection]) {
-        const key = `${i.name}::${i.from}`
-        if (!allKeys.has(key)) {
-          allKeys.add(key)
-          union.push(i)
-        }
-      }
-
       sharedCtx = createUnimport({
-        imports: union,
+        imports: [...sharedImports, ...intersection],
         presets: [],
         addons: {},
       })
