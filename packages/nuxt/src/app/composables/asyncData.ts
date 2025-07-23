@@ -366,7 +366,12 @@ export function useAsyncData<
     refresh: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
     execute: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
     clear: () => {
-      options.abortController?.abort?.(new DOMException('Request aborted as the async data was cleared.', 'AbortError'))
+      if (options.abortController) {
+        options.abortController.abort(new DOMException('Request aborted as the async data was cleared.', 'AbortError'))
+      }
+      if (nuxtApp._asyncDataPromises[key.value]) {
+        (nuxtApp._asyncDataPromises[key.value] as any).cancelled = true
+      }
       clearNuxtDataByKey(nuxtApp, key.value)
     },
   }
