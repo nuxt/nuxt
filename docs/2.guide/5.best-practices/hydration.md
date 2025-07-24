@@ -1,7 +1,7 @@
 ---
 navigation.title: 'Nuxt and hydration'
 title: Nuxt and hydration
-description: Why fixing hydration issues important
+description: Why fixing hydration issues is important
 ---
 
 When developing, you may face hydration issues. Don't ignore those warnings.
@@ -12,7 +12,7 @@ Hydration mismatches are not just warnings - they are indicators of serious prob
 
 ## Performance Impact
 
-- **Increased time to interactive**: Hydration errors force Vue to re-render the entire component tree which will increase the time for your Nuxt app to become interactive
+- **Increased time to interactive**: Hydration errors force Vue to re-render the entire component tree, which will increase the time for your Nuxt app to become interactive
 - **Poor user experience**: Users may see content flashing or unexpected layout shifts
 
 ## Functionality Issues
@@ -27,7 +27,7 @@ Hydration mismatches are not just warnings - they are indicators of serious prob
 
 Vue will log hydration mismatch warnings in the browser console during development:
 
-![vue hydration warning in console](/assets/docs/best-practices/vue-console-hydration.png)
+![Screenshot of Vue hydration mismatch warning in the browser console](/assets/docs/best-practices/vue-console-hydration.png)
 
 # Common reasons
 
@@ -118,7 +118,7 @@ if (import.meta.client) {
 </script>
 ```
 
-**Solution**: Initialize libraries once hydration completed:
+**Solution**: Initialise libraries after hydration has completed:
 
 ```html
 <script setup>
