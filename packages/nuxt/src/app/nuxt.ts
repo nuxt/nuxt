@@ -447,7 +447,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
       if (plugin.parallel) {
         parallels.push(promise.catch(e => errors.push(e)))
       } else {
-        await promise
+        await promise.catch(e => errors.push(e))
       }
     }
   }
