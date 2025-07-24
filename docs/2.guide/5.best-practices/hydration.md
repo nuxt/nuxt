@@ -25,7 +25,7 @@ Hydration mismatches are not just warnings - they are indicators of serious prob
 
 Vue will log hydration mismatch warnings in the browser console during development:
 
-![vue hydration warning in console](image.png)
+![vue hydration warning in console](/assets/docs/best-practices/vue-console-hydration.png)
 
 # Common reasons
 
