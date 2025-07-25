@@ -495,11 +495,13 @@ export async function _generateTypes (nuxt: Nuxt) {
       const pkg = await readPackageJSON(id, { parent }).catch(() => null)
       if (pkg) {
         nodeReferences.push(({ types: pkg.name ?? id }))
+        references.push(({ types: pkg.name ?? id }))
         return
       }
     }
 
     nodeReferences.push(({ types: id }))
+    references.push(({ types: id }))
   }))
 
   const declarations: string[] = []
