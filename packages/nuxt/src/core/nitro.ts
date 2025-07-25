@@ -480,10 +480,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
 
     const absolutePath = resolve(basePath, aliases[alias]!)
-    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    const isDirectory = aliases[alias]!.endsWith('/') || await fsp.stat(absolutePath).then(r => r.isDirectory()).catch(() => null /* file does not exist */)
     // note - nitro will check + remove the file extension as required
     tsConfig.compilerOptions.paths[alias] = [absolutePath]
-    if (stats?.isDirectory()) {
+    if (isDirectory) {
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
     }
   }
