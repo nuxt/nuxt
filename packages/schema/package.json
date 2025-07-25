@@ -63,7 +63,7 @@
     "rollup-plugin-visualizer": "6.0.3",
     "sass-loader": "16.0.5",
     "scule": "1.3.0",
-    "unbuild": "3.5.0",
+    "unbuild": "3.6.0",
     "unctx": "2.4.1",
     "unimport": "5.2.0",
     "untyped": "2.0.0",

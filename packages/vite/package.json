@@ -28,7 +28,7 @@
     "@nuxt/schema": "workspace:*",
     "nitropack": "2.12.3",
     "rollup": "4.45.1",
-    "unbuild": "3.5.0",
+    "unbuild": "3.6.0",
     "vue": "3.5.17"
   },
   "dependencies": {
