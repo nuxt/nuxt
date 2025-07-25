@@ -429,25 +429,27 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
-      const promise = applyPlugin(nuxtApp, plugin).then(async () => {
-        if (plugin._name) {
-          resolvedPlugins.add(plugin._name)
-          await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
-            if (dependsOn.has(plugin._name!)) {
-              dependsOn.delete(plugin._name!)
-              if (dependsOn.size === 0) {
-                promiseDepth++
-                await executePlugin(unexecutedPlugin)
+      const promise = applyPlugin(nuxtApp, plugin)
+        .then(async () => {
+          if (plugin._name) {
+            resolvedPlugins.add(plugin._name)
+            await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
+              if (dependsOn.has(plugin._name!)) {
+                dependsOn.delete(plugin._name!)
+                if (dependsOn.size === 0) {
+                  promiseDepth++
+                  await executePlugin(unexecutedPlugin)
+                }
               }
-            }
-          }))
-        }
-      })
+            }))
+          }
+        })
+        .catch(e => errors.push(e))
 
       if (plugin.parallel) {
-        parallels.push(promise.catch(e => errors.push(e)))
+        parallels.push(promise)
       } else {
-        await promise.catch(e => errors.push(e))
+        await promise
       }
     }
   }
