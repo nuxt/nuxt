@@ -732,6 +732,9 @@ importers:
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
+      ufo:
+        specifier: 1.6.1
+        version: 1.6.1
     devDependencies:
       '@types/pug':
         specifier: 2.0.10
