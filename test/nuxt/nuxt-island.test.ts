@@ -94,12 +94,12 @@ describe('runtime server component', () => {
     await server.close()
   })
 
-    it('expect remote island with baseURL to be rendered', async () => {
+  it('expect remote island with baseURL to be rendered', async () => {
     const port = await getPort({ host: 'localhost', public: false, random: true })
     let url: string
     const server = serve({
       port,
-     fetch (r) {
+      fetch (r) {
         url = r.url
         return new Response(JSON.stringify({
           html: '<div>hello world from another server</div>',
@@ -373,7 +373,6 @@ describe('client components', () => {
     expectNoConsoleIssue()
   })
 })
-
 
 function removeDataIslandUid (html: string) {
   return html.replaceAll(/ data-island-uid="[^"]*"/g, '')
