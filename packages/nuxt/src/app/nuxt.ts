@@ -425,27 +425,34 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
+    // Short-circuit when not rendering error page
+    if (!nuxtApp.payload.error && errors.length) {
+      throw errors[0]
+    }
+
     const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
-      const promise = applyPlugin(nuxtApp, plugin).then(async () => {
-        if (plugin._name) {
-          resolvedPlugins.add(plugin._name)
-          await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
-            if (dependsOn.has(plugin._name!)) {
-              dependsOn.delete(plugin._name!)
-              if (dependsOn.size === 0) {
-                promiseDepth++
-                await executePlugin(unexecutedPlugin)
+      const promise = applyPlugin(nuxtApp, plugin)
+        .then(async () => {
+          if (plugin._name) {
+            resolvedPlugins.add(plugin._name)
+            await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
+              if (dependsOn.has(plugin._name!)) {
+                dependsOn.delete(plugin._name!)
+                if (dependsOn.size === 0) {
+                  promiseDepth++
+                  await executePlugin(unexecutedPlugin)
+                }
               }
-            }
-          }))
-        }
-      })
+            }))
+          }
+        })
+        .catch(e => errors.push(e))
 
       if (plugin.parallel) {
-        parallels.push(promise.catch(e => errors.push(e)))
+        parallels.push(promise)
       } else {
         await promise
       }
