@@ -28,7 +28,7 @@ describe('resolvePath', () => {
 
 describe('resolveNuxtModule', () => {
   it('should resolve Nuxt module paths correctly', async () => {
-    const installedModulePaths = nuxt.options._installedModules.map(m => m.entryPath || m.meta?.rawPath || m.entryPath!).filter(Boolean)
+    const installedModulePaths = nuxt.options._installedModules.map(m => m.meta?.rawPath || m.entryPath!).filter(Boolean)
     expect(installedModulePaths).toMatchInlineSnapshot(`
       [
         "@nuxt/devtools",
