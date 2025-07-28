@@ -10,6 +10,7 @@ import { join, normalize, resolve } from 'pathe'
 import type { ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
+import { ViteNodeServer } from 'vite-node/server'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
@@ -228,6 +229,20 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
   }
 }
 
+let _node: ViteNodeServer | undefined
+
+function getNode (server: ViteDevServer) {
+  return _node ||= new ViteNodeServer(server, {
+    deps: {
+      inline: [/^#/, /\?/],
+    },
+    transformMode: {
+      ssr: [/.*/],
+      web: [],
+    },
+  })
+}
+
 function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
   const server = net.createServer((socket) => {
     const INITIAL_BUFFER_SIZE = 64 * 1024 // 64kB
@@ -260,7 +275,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             if (!resolveId || !ssrServer) {
               throw createError({ statusCode: 400, message: 'Missing id for resolve' })
             }
-            const resolvedResult = await ssrServer.pluginContainer.resolveId(resolveId, importer).catch(() => null)
+            const resolvedResult = await getNode(ssrServer).resolveId(resolveId, importer).catch(() => null)
             sendResponse<typeof request.type>(socket, request.id, resolvedResult)
             return
           }
@@ -268,7 +283,8 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             if (request.payload.moduleId === '/' || !ssrServer) {
               throw createError({ statusCode: 400, message: 'Invalid moduleId' })
             }
-            const response = await ssrServer.environments.ssr.fetchModule(request.payload.moduleId)
+            const node = getNode(ssrServer)
+            const response = await node.fetchModule(request.payload.moduleId)
               .catch(async (err) => {
                 const errorData: Record<string, any> = {
                   code: 'VITE_ERROR',
@@ -280,7 +296,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
                 if (!errorData.frame && err.code === 'PARSE_ERROR') {
                   try {
-                    errorData.frame = await clientServer.transformRequest(request.payload.moduleId)
+                    errorData.frame = await node.transformRequest(request.payload.moduleId, 'web')
                       .then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
                   } catch {
                   // Ignore transform errors
