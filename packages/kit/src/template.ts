@@ -273,8 +273,9 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const moduleEntryPaths: string[] = []
   for (const m of nuxt.options._installedModules) {
-    if (m.entryPath) {
-      moduleEntryPaths.push(getDirectory(m.entryPath))
+    const path = m.meta?.rawPath || m.entryPath
+    if (path) {
+      moduleEntryPaths.push(getDirectory(path))
     }
   }
 
@@ -282,7 +283,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   for (const path of modulePaths) {
     const relative = relativeWithDot(nuxt.options.buildDir, path)
-    if (!path.includes('node_modules')) {
+    if (!path.includes('node_modules') && path.startsWith(rootDirWithSlash)) {
       include.add(join(relative, 'runtime'))
       include.add(join(relative, 'dist/runtime'))
       nodeInclude.add(join(relative, '*.*'))
@@ -297,6 +298,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
     exclude.add(join(relative, '*.*'))
+    exclude.add(join(relative, 'dist/*.*'))
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
   }
