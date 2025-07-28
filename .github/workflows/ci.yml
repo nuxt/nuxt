@@ -360,8 +360,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
-  release-pr:
-    if: github.repository_owner == 'nuxt' && github.event_name != 'push'
+  release-pkg-pr-new:
+    if: github.repository_owner == 'nuxt'
     needs:
       - build
     runs-on: ubuntu-latest
