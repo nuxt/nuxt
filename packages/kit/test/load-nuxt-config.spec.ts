@@ -11,15 +11,15 @@ describe('loadNuxtConfig', () => {
     }
     expect(config.alias).toMatchInlineSnapshot(`
       {
-        "#build": "<rootDir>/.nuxt",
+        "#build": "<rootDir>/.nuxt/",
         "#internal/nuxt/paths": "<rootDir>/.nuxt/paths.mjs",
-        "#layers/layer-fixture": "<rootDir>",
-        "#layers/test": "<rootDir>/layers/test",
-        "#shared": "<rootDir>/shared",
-        "@": "<rootDir>",
-        "@@": "<rootDir>",
-        "~": "<rootDir>",
-        "~~": "<rootDir>",
+        "#layers/layer-fixture": "<rootDir>/",
+        "#layers/test": "<rootDir>/layers/test/",
+        "#shared": "<rootDir>/shared/",
+        "@": "<rootDir>/",
+        "@@": "<rootDir>/",
+        "~": "<rootDir>/",
+        "~~": "<rootDir>/",
       }
     `)
   })

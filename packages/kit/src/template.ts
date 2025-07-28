@@ -469,7 +469,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     }
 
     const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
-    if (stats?.isDirectory()) {
+    if (stats?.isDirectory() || aliases[alias]!.endsWith('/')) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
     } else {
@@ -495,11 +495,13 @@ export async function _generateTypes (nuxt: Nuxt) {
       const pkg = await readPackageJSON(id, { parent }).catch(() => null)
       if (pkg) {
         nodeReferences.push(({ types: pkg.name ?? id }))
+        references.push(({ types: pkg.name ?? id }))
         return
       }
     }
 
     nodeReferences.push(({ types: id }))
+    references.push(({ types: id }))
   }))
 
   const declarations: string[] = []
