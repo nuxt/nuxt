@@ -425,11 +425,6 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    // Short-circuit when not rendering error page
-    if (!nuxtApp.payload.error && errors.length) {
-      throw errors[0]
-    }
-
     const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
@@ -449,7 +444,13 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
             }))
           }
         })
-        .catch(e => errors.push(e))
+        .catch((e) => {
+          // do not throw error if we are rendering `error.vue`
+          if (!plugin.parallel && !nuxtApp.payload.error) {
+            throw e
+          }
+          errors.push(e)
+        })
 
       if (plugin.parallel) {
         parallels.push(promise)
