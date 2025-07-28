@@ -15,13 +15,13 @@ import type { NuxtAppLiterals } from 'nuxt/app'
 // TODO: temporary module for backwards compatibility
 import type { DefaultAsyncDataErrorValue, DefaultErrorValue } from 'nuxt/app/defaults'
 
-import type { NuxtIslandContext } from '../app/types'
-import type { RouteMiddleware } from '../app/composables/router'
-import type { NuxtError } from '../app/composables/error'
-import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from '../app/composables/asyncData'
-import type { NuxtAppManifestMeta } from '../app/composables/manifest'
-import type { LoadingIndicator } from '../app/composables/loading-indicator'
-import type { RouteAnnouncer } from '../app/composables/route-announcer'
+import type { NuxtIslandContext } from './types'
+import type { RouteMiddleware } from './composables/router'
+import type { NuxtError } from './composables/error'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
+import type { NuxtAppManifestMeta } from './composables/manifest'
+import type { LoadingIndicator } from './composables/loading-indicator'
+import type { RouteAnnouncer } from './composables/route-announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
@@ -427,7 +427,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   const resolvedPlugins: Set<string> = new Set()
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
-  const errors: Error[] = []
+  let error: Error | undefined = undefined
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
@@ -448,10 +448,16 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
             }
           }))
         }
+      }).catch((e) => {
+        // short circuit if we are not rendering `error.vue`
+        if (!plugin.parallel && !nuxtApp.payload.error) {
+          throw error
+        }
+        error ||= e
       })
 
       if (plugin.parallel) {
-        parallels.push(promise.catch(e => errors.push(e)))
+        parallels.push(promise)
       } else {
         await promise
       }
@@ -475,7 +481,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
     }
   }
 
-  if (errors.length) { throw errors[0] }
+  if (error) { throw nuxtApp.payload.error || error }
 }
 
 /** @since 3.0.0 */
