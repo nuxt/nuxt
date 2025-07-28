@@ -1060,7 +1060,7 @@ describe('head tags', () => {
     const page = await createPage('/head-component')
 
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
-    
+
     expect(await page.locator('link[rel="alternate"]').count()).toBe(1)
     await page.close()
   })

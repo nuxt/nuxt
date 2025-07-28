@@ -1,7 +1,10 @@
 <template>
   <div>
     <Head>
-      <Link rel="alternate" href="/" />
+      <Link
+        rel="alternate"
+        href="/"
+      />
     </Head>
   </div>
 </template>
