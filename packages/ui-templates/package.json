@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/lodash-es": "4.17.12",
     "@unocss/reset": "66.3.3",
-    "@vue/shared": "3.5.17",
+    "@vue/shared": "3.5.18",
     "beasties": "0.3.5",
     "html-validate": "9.7.1",
     "htmlnano": "2.1.2",
