@@ -187,8 +187,9 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const moduleEntryPaths: string[] = []
   for (const m of nuxt.options._installedModules) {
-    if (m.entryPath) {
-      moduleEntryPaths.push(getDirectory(m.entryPath))
+    const path = m.meta?.rawPath || m.entryPath
+    if (path) {
+      moduleEntryPaths.push(getDirectory(path))
     }
   }
 
