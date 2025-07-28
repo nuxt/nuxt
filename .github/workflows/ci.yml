@@ -322,7 +322,7 @@ jobs:
 
   release-nightly:
     concurrency:
-      group: release
+      group: release-nightly
     permissions:
       id-token: write
     if: |
