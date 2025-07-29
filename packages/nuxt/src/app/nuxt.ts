@@ -451,7 +451,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
       }).catch((e) => {
         // short circuit if we are not rendering `error.vue`
         if (!plugin.parallel && !nuxtApp.payload.error) {
-          throw error
+          throw e
         }
         error ||= e
       })
