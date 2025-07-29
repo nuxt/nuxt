@@ -61,7 +61,7 @@
     "unbuild": "3.6.0",
     "vite": "7.0.6",
     "vitest": "3.2.4",
-    "webpack": "5.99.9"
+    "webpack": "5.101.0"
   },
   "engines": {
     "node": ">=18.12.0"
