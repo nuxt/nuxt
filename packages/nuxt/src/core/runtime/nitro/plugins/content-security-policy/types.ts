@@ -71,3 +71,5 @@ export type ContentSecurityPolicyConfig = {
     exportToPresets: boolean // true
   }
 }
+
+export type Section = 'body' | 'bodyAppend' | 'bodyPrepend' | 'head'

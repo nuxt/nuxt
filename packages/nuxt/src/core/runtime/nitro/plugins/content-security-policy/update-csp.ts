@@ -12,10 +12,9 @@ export const updateCsp = (nitroApp: NitroApp, cspConfig: ContentSecurityPolicyCo
       if (config.value) {
         const csp = config.value
         const nonce = event.context.security?.nonce
-        // const scriptHashes = event.context.security?.hashes?.script
-        // const styleHashes = event.context.security?.hashes?.style
-        // config.value = updateCspVariables(csp, nonce, scriptHashes, styleHashes)
-        config.value = updateCspVariables(csp, nonce)
+        const scriptHashes = event.context.security?.hashes?.script
+        const styleHashes = event.context.security?.hashes?.style
+        config.value = updateCspVariables(csp, nonce, scriptHashes, styleHashes)
       }
     }
   })

@@ -1,14 +1,6 @@
 import { createDefu } from 'defu'
 import type { ContentSecurityPolicyValue } from './types'
 
-// These two lines are required only to maintain compatibility with Node 18
-//  - In Node 19 and above, crypto is available in the global scope
-//  - In Workers environments, crypto is available in the global scope
-// eslint-disable-next-line import/order
-import { webcrypto } from 'node:crypto'
-
-globalThis.crypto ??= webcrypto as Crypto
-
 export function headerStringFromObject (optionValue: ContentSecurityPolicyValue | false) {
   // False value translates into empty header
   if (optionValue === false) {
@@ -44,4 +36,17 @@ export function generateRandomNonce () {
   crypto.getRandomValues(array)
   const nonce = btoa(String.fromCharCode(...array))
   return nonce
+}
+
+export async function generateHash (content: Buffer | string, hashAlgorithm: 'SHA-256' | 'SHA-384' | 'SHA-512') {
+  let buffer: Uint8Array
+  if (typeof content === 'string') {
+    buffer = new TextEncoder().encode(content)
+  } else {
+    buffer = new Uint8Array(content)
+  }
+  const hashBuffer = await crypto.subtle.digest(hashAlgorithm, buffer)
+  const base64 = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)))
+  const prefix = hashAlgorithm.replace('-', '').toLowerCase()
+  return `${prefix}-${base64}`
 }

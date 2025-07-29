@@ -6,6 +6,7 @@ import { defuReplaceArray, headerStringFromObject } from './utils'
 import { generateNonce } from './nonce'
 import { updateCsp } from './update-csp'
 import { addCspToMeta } from './meta'
+import { generateSSGHashes } from './ssg-hashes'
 
 const defaultCSPConfig: ContentSecurityPolicyConfig = {
   value: {
@@ -44,12 +45,16 @@ export default (nitroApp: NitroApp) => {
   })
 
   if (contentSecurityPolicyConfig.nonce) {
-    // Generate nonce and set it in the response headers
     generateNonce(nitroApp, contentSecurityPolicyConfig)
-    updateCsp(nitroApp, contentSecurityPolicyConfig)
   }
 
   if (contentSecurityPolicyConfig.ssg.meta) {
     addCspToMeta(nitroApp, contentSecurityPolicyConfig)
   }
+
+  if (contentSecurityPolicyConfig.ssg.hashScripts || contentSecurityPolicyConfig.ssg.hashStyles) {
+    generateSSGHashes(nitroApp, contentSecurityPolicyConfig)
+  }
+
+  updateCsp(nitroApp, contentSecurityPolicyConfig)
 }
