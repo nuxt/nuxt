@@ -7,6 +7,7 @@ import { generateNonce } from './nonce'
 import { updateCsp } from './update-csp'
 import { addCspToMeta } from './meta'
 import { generateSSGHashes } from './ssg-hashes'
+import { generateSubresourceIntegrity } from './sri'
 
 const defaultCSPConfig: ContentSecurityPolicyConfig = {
   value: {
@@ -54,6 +55,10 @@ export default (nitroApp: NitroApp) => {
 
   if (contentSecurityPolicyConfig.ssg.hashScripts || contentSecurityPolicyConfig.ssg.hashStyles) {
     generateSSGHashes(nitroApp, contentSecurityPolicyConfig)
+  }
+
+  if (contentSecurityPolicyConfig.sri) {
+    generateSubresourceIntegrity(nitroApp, contentSecurityPolicyConfig)
   }
 
   updateCsp(nitroApp, contentSecurityPolicyConfig)

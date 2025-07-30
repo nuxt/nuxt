@@ -51,6 +51,7 @@ import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
+import { hashBundledAssets } from './runtime/nitro/plugins/content-security-policy/utils'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -392,6 +393,16 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('nitro:config', (nitroConfig) => {
       nitroConfig.runtimeConfig ||= {}
       nitroConfig.runtimeConfig.contentSecurityPolicy = nuxt.options.contentSecurityPolicy
+    })
+
+    // Record SRI Hashes in the Virtual File System at build time
+    let sriHashes: Record<string, string> = {}
+    nuxt.options.nitro.virtual = defu(
+      { '#sri-hashes': () => `export default ${JSON.stringify(sriHashes)}` },
+      nuxt.options.nitro.virtual,
+    )
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      sriHashes = await hashBundledAssets(nitro)
     })
 
     addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy'))
