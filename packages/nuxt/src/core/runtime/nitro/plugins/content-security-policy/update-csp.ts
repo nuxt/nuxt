@@ -1,4 +1,4 @@
-import type { NitroApp } from 'nitro/types'
+import type { NitroApp } from 'nitropack/types'
 import type { ContentSecurityPolicyConfig, ContentSecurityPolicyValue } from './types'
 
 /**

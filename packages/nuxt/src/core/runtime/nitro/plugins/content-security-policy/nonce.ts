@@ -1,4 +1,4 @@
-import type { NitroApp } from 'nitro/types'
+import type { NitroApp } from 'nitropack/types'
 import { generateRandomNonce } from './utils'
 import type { ContentSecurityPolicyConfig } from './types'
 

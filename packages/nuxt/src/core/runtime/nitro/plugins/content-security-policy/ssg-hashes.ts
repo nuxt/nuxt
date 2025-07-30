@@ -1,4 +1,4 @@
-import type { NitroApp } from 'nitro/types'
+import type { NitroApp } from 'nitropack/types'
 import type { ContentSecurityPolicyConfig, Section } from './types'
 import { generateHash } from './utils'
 

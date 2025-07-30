@@ -1,4 +1,4 @@
-import type { NitroApp } from 'nitro/types'
+import type { NitroApp } from 'nitropack/types'
 import type { ContentSecurityPolicyConfig, Section } from './types'
 // @ts-expect-error : we are importing from the virtual file system
 import sriHashes from '#sri-hashes'

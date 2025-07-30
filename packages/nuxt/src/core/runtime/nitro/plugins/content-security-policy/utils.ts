@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { isAbsolute, join } from 'pathe'
 import { createDefu } from 'defu'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 import type { ContentSecurityPolicyValue } from './types'
 
 export function headerStringFromObject (optionValue: ContentSecurityPolicyValue | false) {

@@ -1,6 +1,6 @@
 import { setResponseHeader } from 'h3'
-import type { NitroApp } from 'nitro/types'
-import { useRuntimeConfig } from 'nitro/runtime'
+import type { NitroApp } from 'nitropack/types'
+import { useRuntimeConfig } from 'nitropack/runtime'
 import type { ContentSecurityPolicyConfig } from './types'
 import { defuReplaceArray, headerStringFromObject } from './utils'
 import { generateNonce } from './nonce'
