@@ -46,7 +46,7 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 }
 
 // User configuration in `nuxt.config` file
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro' | 'contentSecurityPolicy'>> {
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
@@ -79,7 +79,7 @@ export interface NuxtBuilder {
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
-export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'debug' | 'builder' | 'postcss' | 'webpack'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'debug' | 'builder' | 'postcss' | 'webpack' | 'contentSecurityPolicy'> {
   vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   debug: Required<Exclude<ConfigSchema['debug'], true>>
