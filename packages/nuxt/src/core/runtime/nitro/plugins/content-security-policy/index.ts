@@ -28,6 +28,7 @@ const defaultCSPConfig: ContentSecurityPolicyConfig = {
     meta: true,
     hashScripts: true,
     hashStyles: false,
+    // Will be added later
     exportToPresets: true,
   },
 }
@@ -49,11 +50,11 @@ export default (nitroApp: NitroApp) => {
     generateNonce(nitroApp, contentSecurityPolicyConfig)
   }
 
-  if (contentSecurityPolicyConfig.ssg.meta) {
+  if (contentSecurityPolicyConfig.ssg?.meta) {
     addCspToMeta(nitroApp, contentSecurityPolicyConfig)
   }
 
-  if (contentSecurityPolicyConfig.ssg.hashScripts || contentSecurityPolicyConfig.ssg.hashStyles) {
+  if (contentSecurityPolicyConfig.ssg?.hashScripts || contentSecurityPolicyConfig.ssg?.hashStyles) {
     generateSSGHashes(nitroApp, contentSecurityPolicyConfig)
   }
 
