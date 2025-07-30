@@ -17,7 +17,7 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 ::
 
 ::note
-`navigateTo` cannot be used within Nitro routes. To perform a server-side redirect in Nitro routes, use [`sendRedirect`](https://h3.unjs.io/utils/response#sendredirectevent-location-code) instead.
+`navigateTo` cannot be used within Nitro routes. To perform a server-side redirect in Nitro routes, use [`sendRedirect`](https://h3.dev/utils/response#sendredirectevent-location-code) instead.
 ::
 
 ### Within a Vue Component

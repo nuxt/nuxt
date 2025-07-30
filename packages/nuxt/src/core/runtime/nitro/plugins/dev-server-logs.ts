@@ -9,7 +9,7 @@ import { captureRawStackTrace, parseRawStackTrace } from 'errx'
 import type { ParsedTrace } from 'errx'
 
 import { isVNode } from 'vue'
-import type { NitroApp } from 'nitro/types'
+import type { NitroApp } from 'nitropack/types'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'

@@ -1,13 +1,11 @@
 import { pathToFileURL } from 'node:url'
-import fs from 'node:fs'
-import { join } from 'pathe'
 import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
-import { resolvePath } from '@nuxt/kit'
-import defu from 'defu'
+import { genObjectFromRawEntries, genString } from 'knitwork'
+import type { Plugin } from 'vite'
 import { isVue } from '../../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -16,11 +14,6 @@ interface ServerOnlyComponentTransformPluginOptions {
    * allow using `nuxt-client` attribute on components
    */
   selectiveClient?: boolean | 'deep'
-}
-
-interface ComponentChunkOptions {
-  getComponents: () => Component[]
-  buildDir: string
 }
 
 const SCRIPT_RE = /<script[^>]*>/gi
@@ -182,59 +175,80 @@ function getPropsToString (bindings: Record<string, string>): string {
   }
 }
 
-export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOptions) => {
-  const { buildDir } = options
-  return {
-    name: 'nuxt:components-chunk',
-    vite: {
-      async config (config) {
-        const components = options.getComponents()
+type ChunkPluginOptions = {
+  dev: boolean
+  getComponents: () => Component[]
+}
 
-        config.build = defu(config.build, {
-          rollupOptions: {
-            input: {},
-            output: {},
-          },
-        })
+const COMPONENT_CHUNK_ID = `#build/component-chunk`
+const COMPONENT_CHUNK_RESOLVED_ID = '\0nuxt-component-chunk'
 
-        const rollupOptions = config.build.rollupOptions!
-
-        if (typeof rollupOptions.input === 'string') {
-          rollupOptions.input = { entry: rollupOptions.input }
-        } else if (typeof rollupOptions.input === 'object' && Array.isArray(rollupOptions.input)) {
-          rollupOptions.input = rollupOptions.input.reduce<{ [key: string]: string }>((acc, input) => { acc[input] = input; return acc }, {})
-        }
-
-        // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
-        rollupOptions.preserveEntrySignatures = 'allow-extension'
-        for (const component of components) {
-          if (component.mode === 'client' || component.mode === 'all') {
-            rollupOptions.input![component.pascalName] = await resolvePath(component.filePath)
+export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => {
+  const chunkIds = new Map<string, string>()
+  const paths = new Map<string, string>()
+  return [
+    {
+      name: 'nuxt:components-chunk:client',
+      apply: () => !options.dev,
+      applyToEnvironment: environment => environment.name === 'client',
+      buildStart () {
+        for (const c of options.getComponents()) {
+          if (!c.filePath || c.mode === 'server') {
+            continue
           }
+          chunkIds.set(c.pascalName, this.emitFile({
+            type: 'chunk',
+            name: `${c.pascalName}-chunk.mjs`,
+            id: c.filePath,
+            preserveSignature: 'strict',
+          }))
         }
       },
-
-      async generateBundle (_opts, bundle) {
-        const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
-        const pathAssociation: Record<string, string> = {}
-        for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
-          if (chunkInfo.type !== 'chunk') { continue }
-
-          for (const component of components) {
-            if (chunkInfo.facadeModuleId && chunkInfo.exports.length > 0) {
-              const { pathname } = parseURL(decodeURIComponent(pathToFileURL(chunkInfo.facadeModuleId).href))
-              const isPath = await resolvePath(component.filePath) === pathname
-              if (isPath) {
-                // avoid importing the component chunk in all pages
-                chunkInfo.isEntry = false
-                pathAssociation[component.pascalName] = chunkPath
-              }
+      generateBundle (_, bundle) {
+        const ids = new Set<string>()
+        for (const [name, id] of chunkIds.entries()) {
+          const filename = this.getFileName(id)
+          ids.add(filename)
+          paths.set(name, filename)
+        }
+        for (const chunk of Object.values(bundle)) {
+          if (chunk.type === 'chunk') {
+            if (ids.has(chunk.fileName)) {
+              chunk.isEntry = false
             }
           }
         }
-
-        fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(pathAssociation, null, 2)}`)
       },
     },
-  }
-})
+    {
+      name: 'nuxt:components-chunk:server',
+      resolveId: {
+        order: 'pre',
+        handler (id) {
+          if (id === COMPONENT_CHUNK_ID) {
+            return COMPONENT_CHUNK_RESOLVED_ID
+          }
+        },
+      },
+      load (id) {
+        if (id === COMPONENT_CHUNK_RESOLVED_ID) {
+          if (options.dev) {
+            const filePaths: Record<string, string> = {}
+            for (const c of options.getComponents()) {
+              if (!c.filePath || c.mode === 'server') {
+                continue
+              }
+              filePaths[c.pascalName] = `@fs/${c.filePath}`
+            }
+            return `export default ${genObjectFromRawEntries(Object.entries(filePaths).map(([name, path]) => [name, genString(path)]))}`
+          }
+
+          return `export default ${
+            genObjectFromRawEntries(Array.from(paths.entries())
+              .map(([name, id]) => [name, genString('/' + id)]))
+          }`
+        }
+      },
+    },
+  ]
+}

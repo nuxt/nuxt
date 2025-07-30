@@ -1,4 +1,4 @@
-name: Convert Labels to Issue Types
+name: chore
 
 on:
   issues:
@@ -9,7 +9,7 @@ permissions:
   issues: write
 
 jobs:
-  convert-to-issue-type:
+  convert-label-to-issue-type:
     name: Convert labels to issue types
     runs-on: ubuntu-latest
     if: github.repository == 'nuxt/nuxt'

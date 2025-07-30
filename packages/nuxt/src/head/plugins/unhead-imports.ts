@@ -4,7 +4,7 @@ import type { Identifier, ImportSpecifier } from 'estree'
 import { normalize, relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { parseAndWalk } from 'oxc-walker'
 import { isJS, isVue } from '../../core/utils'
 import { distDir } from '../../dirs'
 import { logger } from '../../utils'
@@ -55,7 +55,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         parseAndWalk(code, id, function (node) {
           if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
             importsToAdd.push(...node.specifiers as ImportSpecifier[])
-            const { start, end } = withLocations(node)
+            const { start, end } = node
             s.remove(start, end)
           }
         })

@@ -1,4 +1,5 @@
-import { type MockedFunction, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
@@ -249,7 +250,7 @@ definePageMeta({ name: 'bar' })
       bar: true,
     })
     </script>
-    `, filePath, ['bar', 'foo'])
+    `, filePath, new Set(['bar', 'foo']))
 
     expect(meta).toMatchInlineSnapshot(`
       {
@@ -269,7 +270,7 @@ definePageMeta({ name: 'bar' })
       bar: true,
     })
     </script>
-    `, filePath, ['bar'])
+    `, filePath, new Set(['bar']))
 
     expect(meta).toMatchInlineSnapshot(`
       {

@@ -1,5 +1,5 @@
 ---
-title: 'nuxi prepare'
+title: 'nuxt prepare'
 description: The prepare command creates a .nuxt directory in your application and generates types.
 links:
   - label: Source
@@ -10,7 +10,7 @@ links:
 
 <!--prepare-cmd-->
 ```bash [Terminal]
-npx nuxi prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName]
+npx nuxt prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName]
 ```
 <!--/prepare-cmd-->
 

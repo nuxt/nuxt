@@ -4,6 +4,7 @@ import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
+import { parseNodeModulePath } from 'mlly'
 import { directoryToURL } from './internal/esm'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
@@ -107,10 +108,16 @@ export async function resolveNuxtModule (base: string, paths: string[]): Promise
   for (const path of paths) {
     if (path.startsWith(base)) {
       resolved.push(path.split('/index.ts')[0]!)
-    } else {
-      const resolvedPath = await resolver.resolvePath(path)
-      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+      continue
     }
+    const resolvedPath = await resolver.resolvePath(path)
+    const dir = parseNodeModulePath(resolvedPath).dir
+    if (dir) {
+      resolved.push(dir)
+      continue
+    }
+    const index = resolvedPath.lastIndexOf(path)
+    resolved.push(index === -1 ? dirname(resolvedPath) : resolvedPath.slice(0, index + path.length))
   }
 
   return resolved
@@ -220,8 +227,8 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
 }
 
 async function existsSensitive (path: string) {
-  const dirFiles = await fsp.readdir(dirname(path)).catch(() => null)
-  return dirFiles && dirFiles.includes(basename(path))
+  const dirFiles = new Set(await fsp.readdir(dirname(path)).catch(() => []))
+  return dirFiles.has(basename(path))
 }
 
 function existsInVFS (path: string, nuxt = tryUseNuxt()) {

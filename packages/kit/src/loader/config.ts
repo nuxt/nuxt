@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
@@ -11,6 +10,7 @@ import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm'
+import { withTrailingSlash } from 'ufo'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -39,7 +39,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     extend: { extendKey: ['theme', '_extends', 'extends'] },
     dotenv: true,
     globalRc: true,
-    merger: merger as any, // TODO: fix type in c12, it should accept createDefu directly
+    // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
+    merger,
     ...opts,
   })
   delete globalSelf.defineNuxtConfig
@@ -53,7 +54,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   if (meta?.name) {
     const alias = `#layers/${meta.name}`
-    nuxtConfig.alias[alias] ||= nuxtConfig.rootDir
+    nuxtConfig.alias[alias] ||= withTrailingSlash(nuxtConfig.rootDir)
   }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
@@ -73,6 +74,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   const processedLayers = new Set<string>()
+  const localRelativePaths = new Set(localLayers)
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     layer.config ||= {}
@@ -89,7 +91,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
     // Add layer name for local layers
-    if (layer.cwd && cwd && localLayers.includes(relative(cwd, layer.cwd))) {
+    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
       layer.meta ||= {}
       layer.meta.name ||= basename(layer.cwd)
     }
@@ -97,7 +99,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // Add layer alias
     if (layer.meta?.name) {
       const alias = `#layers/${layer.meta.name}`
-      nuxtConfig.alias[alias] ||= layer.config.rootDir || layer.cwd
+      nuxtConfig.alias[alias] ||= withTrailingSlash(layer.config.rootDir || layer.cwd)
     }
     _layers.push(layer)
   }
@@ -121,10 +123,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
 async function loadNuxtSchema (cwd: string) {
   const url = directoryToURL(cwd)
-  const urls = [url]
+  const urls: Array<URL | string> = [url]
   const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
   if (nuxtPath) {
-    urls.unshift(pathToFileURL(nuxtPath))
+    urls.unshift(nuxtPath)
   }
   const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
   return await import(schemaPath).then(r => r.NuxtConfigSchema)

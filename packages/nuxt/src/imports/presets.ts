@@ -139,6 +139,7 @@ export const scriptsStubsPreset = {
     'useScriptNpm',
     'useScriptUmamiAnalytics',
     'useScriptSnapchatPixel',
+    'useScriptRybbitAnalytics',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',
@@ -200,6 +201,7 @@ const vuePreset = defineUnimportPreset({
     'watchEffect',
     'watchPostEffect',
     'watchSyncEffect',
+    'onWatcherCleanup',
     'isShallow',
 
     // effect
@@ -262,6 +264,13 @@ export const appCompatPresets: InlinePreset[] = [
   {
     imports: ['setInterval'],
     from: '#app/compat/interval',
+  },
+]
+
+export const lazyHydrationMacroPreset = [
+  {
+    imports: ['defineLazyHydrationComponent'],
+    from: '#app/composables/lazy-hydration',
   },
 ]
 

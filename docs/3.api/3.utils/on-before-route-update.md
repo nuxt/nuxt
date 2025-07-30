@@ -8,4 +8,4 @@ links:
     size: xs
 ---
 
-:read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/#onBeforeRouteUpdate" title="Vue Router Docs" target="_blank"}
+:read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/functions/onBeforeRouteUpdate.html" title="Vue Router Docs" target="_blank"}

@@ -41,6 +41,7 @@ jobs:
       - name: 🛠 Build and release project
         run: ./scripts/release.sh
         env:
+          TAG: ${{ startsWith(github.event.pull_request.head.ref, 'v3.') && '3x' || 'latest' }}
           NODE_AUTH_TOKEN: ${{secrets.RELEASE_NODE_AUTH_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
 
