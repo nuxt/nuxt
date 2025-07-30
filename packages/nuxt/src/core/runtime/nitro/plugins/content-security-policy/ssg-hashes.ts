@@ -25,6 +25,8 @@ export const generateSSGHashes = (nitroApp: NitroApp, cspConfig: ContentSecurity
       return
     }
 
+    event.context.security ||= {}
+
     event.context.security!.hashes = {
       script: new Set(),
       style: new Set(),

@@ -32,7 +32,7 @@ const defaultCSPConfig: ContentSecurityPolicyConfig = {
 }
 
 /**
- * This plugin sets the Content Security Policy header for the response.
+ * This plugin sets the Content Security Policy header for the response. It also sets smaller plugins like nonce, meta, ssg-hashes.
  */
 export default (nitroApp: NitroApp) => {
   const config = useRuntimeConfig()
