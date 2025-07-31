@@ -682,7 +682,7 @@ describe('callOnce', () => {
       await execute()
       expect(fn).toHaveBeenCalledTimes(1)
 
-      await nuxtApp.callHook('page:start')
+      await navigateTo('/test')
       await execute()
       expect(fn).toHaveBeenCalledTimes(2)
     })
