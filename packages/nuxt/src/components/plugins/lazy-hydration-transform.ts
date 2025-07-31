@@ -75,6 +75,9 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               return
             }
             if (!/^(?:Lazy|lazy-)/.test(node.name)) {
+              if (node.name !== 'template') {
+                logger.warn(`Component ${node.name} has lazy-hydration props but it's not declared as lazy component. \nChange it to <Lazy${node.name} /> or remove the lazy-hydration props.`)
+              }
               return
             }
 
