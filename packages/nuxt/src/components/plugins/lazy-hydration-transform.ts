@@ -2,6 +2,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
 
+import { tryUseNuxt } from '@nuxt/kit'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils'
@@ -31,6 +32,7 @@ const LAZY_HYDRATION_PROPS_RE = /\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-v
 export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
+  const nuxt = tryUseNuxt()
 
   return {
     name: 'nuxt:components-loader-pre',
@@ -75,7 +77,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               return
             }
             if (!/^(?:Lazy|lazy-)/.test(node.name)) {
-              if (node.name !== 'template') {
+              if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
                 logger.warn(`Component <${node.name}> has lazy-hydration props but is not declared as a lazy component.\n` +
                   `Rename it to <Lazy${node.name} /> or remove the lazy-hydration props to avoid unexpected behavior.`)
               }
