@@ -188,6 +188,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     addVitePlugin(checker({
       vueTsc: {
         tsconfigPath: await resolveTSConfig(nuxt.options.rootDir),
+        buildMode: true,
       },
     }), { server: nuxt.options.ssr })
   }
