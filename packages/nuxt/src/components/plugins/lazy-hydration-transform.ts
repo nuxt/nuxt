@@ -79,7 +79,8 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             if (!/^(?:Lazy|lazy-)/.test(node.name)) {
               if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
                 logger.warn(`Component <${node.name}> has lazy-hydration props but is not declared as a lazy component.\n` +
-                  `Rename it to <Lazy${node.name} /> or remove the lazy-hydration props to avoid unexpected behavior.`)
+                  `Rename it to <Lazy${node.name} /> or remove the lazy-hydration props to avoid unexpected behavior. \n` +
+                  `Cause: ${id}`)
               }
               return
             }
