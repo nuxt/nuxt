@@ -8,7 +8,7 @@ import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
-import { resolveTSConfig } from 'pkg-types'
+import { readTSConfig, resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
@@ -184,11 +184,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   // Add type-checking
   if (!nuxt.options.test && (nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
+    const tsconfigPath = await resolveTSConfig(nuxt.options.rootDir)
+    const supportsProjects = await readTSConfig(tsconfigPath).then(r => !!(r.references?.length))
     const checker = await import('vite-plugin-checker').then(r => r.default)
     addVitePlugin(checker({
       vueTsc: {
-        tsconfigPath: await resolveTSConfig(nuxt.options.rootDir),
-        buildMode: true,
+        tsconfigPath,
+        buildMode: supportsProjects,
       },
     }), { server: nuxt.options.ssr })
   }
