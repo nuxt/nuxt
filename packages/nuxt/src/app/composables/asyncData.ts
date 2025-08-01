@@ -632,6 +632,13 @@ function createAsyncData<
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: shallowRef('idle'),
     execute: (opts = {}) => {
+      if (options.abortController) {
+        options.abortController.signal.addEventListener('abort', () => {
+          if (nuxtApp._asyncDataPromises[key]) {
+            (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+          }
+        })
+      }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
         // Avoid fetching same key more than once at a time
