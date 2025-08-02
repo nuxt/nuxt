@@ -157,7 +157,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   }
 
   // We want to respect users' own rollup output options
-  const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
+  const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${nuxt.options.app.buildAssetsFileNamePrefix || ''}[hash].js`))
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
       chunkFileNames: nuxt.options.dev ? undefined : fileNames,
