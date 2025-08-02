@@ -98,10 +98,6 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
-  /**
-   * AbortController that can be used to cancel the handler function.
-   */
-  abortController?: AbortController
 }
 
 export interface AsyncDataExecuteOptions {
@@ -144,7 +140,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (
-  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  handler: (ctx: NuxtApp, options: { abortController: AbortController }) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
@@ -154,7 +150,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
-  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  handler: (ctx: NuxtApp, options: { abortController: AbortController }) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
@@ -172,7 +168,7 @@ export function useAsyncData<
   DefaultT = undefined,
 > (
   key: MaybeRefOrGetter<string>,
-  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  handler: (ctx: NuxtApp, options: { abortController: AbortController }) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
@@ -183,7 +179,7 @@ export function useAsyncData<
   DefaultT = DataT,
 > (
   key: MaybeRefOrGetter<string>,
-  handler: (ctx?: NuxtApp) => Promise<ResT>,
+  handler: (ctx: NuxtApp, options: { abortController: AbortController }) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
@@ -197,7 +193,7 @@ export function useAsyncData<
   if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
   // eslint-disable-next-line prefer-const
-  let [_key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  let [_key, _handler, options = {}] = args as [string, (nuxtApp?: NuxtApp, ctx?: { abortController: AbortController }) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   // Validate arguments
   const key = computed(() => toValue(_key)!)
@@ -366,10 +362,10 @@ export function useAsyncData<
     refresh: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
     execute: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
     clear: () => {
-      if (options.abortController) {
-        options.abortController.abort(new DOMException('Request aborted as the async data was cleared.', 'AbortError'))
-      }
       if (nuxtApp._asyncDataPromises[key.value]) {
+        if(nuxtApp._asyncData[key.value]?._abortController) {
+          nuxtApp._asyncData[key.value]?._abortController.abort(new DOMException('AsyncData aborted by user.', 'AbortError'))
+        }
         (nuxtApp._asyncDataPromises[key.value] as any).cancelled = true
       }
       clearNuxtDataByKey(nuxtApp, key.value)
@@ -591,7 +587,15 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & {
+  _off: () => void
+  _hash?: Record<string, string | undefined>
+  _default: () => unknown
+  _init: boolean
+  _deps: number
+  _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  _abortController?: AbortController
+}
 
 const isDev = import.meta.dev /* and in test */
 
@@ -601,7 +605,7 @@ function createAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-> (nuxtApp: NuxtApp, key: string, _handler: (ctx?: NuxtApp) => Promise<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
+> (nuxtApp: NuxtApp, key: string, _handler: (ctx: NuxtApp, options: { abortController: AbortController }) => Promise<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
   nuxtApp.payload._errors[key] ??= undefined
 
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
@@ -609,11 +613,11 @@ function createAsyncData<
   // When prerendering, share payload data automatically between requests
   const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
     ? _handler
-    : () => {
+    : (nuxtApp: NuxtApp, options: { abortController: AbortController }) => {
         const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
         if (value) { return value as Promise<ResT> }
 
-        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(nuxtApp)))
+        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(nuxtApp, options)))
 
         nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
         return promise
@@ -632,17 +636,13 @@ function createAsyncData<
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: shallowRef('idle'),
     execute: (opts = {}) => {
-      if (options.abortController) {
-        options.abortController.signal.addEventListener('abort', () => {
-          if (nuxtApp._asyncDataPromises[key]) {
-            (nuxtApp._asyncDataPromises[key] as any).cancelled = true
-          }
-        })
-      }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
         // Avoid fetching same key more than once at a time
           return nuxtApp._asyncDataPromises[key]!
+        }
+        if (asyncData._abortController) {
+          asyncData._abortController.abort(new DOMException('AsyncData request cancelled by deduplication', 'AbortError'))
         }
         (nuxtApp._asyncDataPromises[key] as any).cancelled = true
       }
@@ -659,12 +659,14 @@ function createAsyncData<
       if (pendingWhenIdle) {
         asyncData.pending.value = true
       }
+      const abortController = new AbortController()
+      asyncData._abortController = abortController
       asyncData.status.value = 'pending'
       // TODO: Cancel previous promise
       const promise = new Promise<ResT>(
         (resolve, reject) => {
           try {
-            resolve(handler(nuxtApp))
+            resolve(handler(nuxtApp, { abortController }))
           } catch (err) {
             reject(err)
           }
@@ -752,7 +754,7 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
   }
 }
 
-function createHash (_handler: () => unknown, options: Partial<Record<keyof AsyncDataOptions<any>, unknown>>) {
+function createHash (_handler: (ctx: NuxtApp, options: { abortController: AbortController }) => unknown, options: Partial<Record<keyof AsyncDataOptions<any>, unknown>>) {
   return {
     handler: hash(_handler),
     transform: options.transform ? hash(options.transform) : undefined,

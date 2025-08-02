@@ -145,10 +145,7 @@ export function useFetch<
     watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
-    _asyncDataOptions.abortController?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
-    _asyncDataOptions.abortController = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
-
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { abortController }) => {
     /**
      * Workaround for `timeout` not working due to custom abort controller
      * TODO: remove this when upstream issue is resolved
@@ -158,8 +155,8 @@ export function useFetch<
     const timeoutLength = toValue(opts.timeout)
     let timeoutId: NodeJS.Timeout
     if (timeoutLength) {
-      timeoutId = setTimeout(() => _asyncDataOptions.abortController?.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
-      _asyncDataOptions.abortController.signal.onabort = () => clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => abortController.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
+      abortController.signal.onabort = () => clearTimeout(timeoutId)
     }
 
     let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
@@ -172,7 +169,7 @@ export function useFetch<
       }
     }
 
-    return _$fetch(_request.value, { signal: _asyncDataOptions.abortController.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
+    return _$fetch(_request.value, { signal: abortController.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
