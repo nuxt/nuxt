@@ -15,10 +15,11 @@ If `needs reproduction` labeled issues don't receive any substantial activity (e
 
 ### How can I create a reproduction?
 
-We have a couple of templates for starting with a minimal reproduction:
+Please use a template below to create a minimal reproduction
 
-👉 https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz
-👉 https://codesandbox.io/s/github/nuxt/starter/v3-codesandbox
+[![Open v4 in Stackblitz](https://img.shields.io/badge/Stackblitz-Nuxt%204-blue?style=flat-square&logo=stackblitz)](https://stackblitz.com/github/nuxt/starter/tree/v4-stackblitz) [![Open v3 in Stackblitz](https://img.shields.io/badge/Stackblitz-Nuxt%203-blue?style=flat-square&logo=stackblitz)](https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz)
+
+[![Open v4 in CodeSandbox](https://img.shields.io/badge/CodeSandbox-Nuxt%204-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/nuxt/starter/tree/v4) [![Open v3 in CodeSandbox](https://img.shields.io/badge/CodeSandbox-Nuxt%203-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/nuxt/starter/tree/v3)
 
 A public GitHub repository is also perfect. 👌
 
