@@ -1,3 +1,5 @@
+/// <reference path="./config-types.ts" />
+
 import { addTypeTemplate, installModule } from 'nuxt/kit'
 
 export default defineNuxtConfig({
@@ -10,9 +12,9 @@ export default defineNuxtConfig({
       addTypeTemplate({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
-      }, { nuxt: true, nitro: true })
+      }, { nuxt: true, nitro: true, node: true })
       function _test () {
-        installModule('~/modules/example', {
+        installModule('~~/modules/example', {
           typeTest (val) {
             // @ts-expect-error module type defines val as boolean
             const b: string = val
@@ -23,7 +25,7 @@ export default defineNuxtConfig({
     },
     './modules/test',
     [
-      '~/modules/example',
+      '~~/modules/example',
       {
         typeTest (val) {
           // @ts-expect-error module type defines val as boolean

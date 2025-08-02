@@ -19,10 +19,6 @@ const orderPresets = {
 
 export default defineResolvers({
   postcss: {
-    /**
-     * A strategy for ordering PostCSS plugins.
-     *
-     */
     order: {
       $resolve: (val) => {
         if (typeof val === 'string') {
@@ -40,22 +36,8 @@ export default defineResolvers({
         return orderPresets.autoprefixerAndCssnanoLast
       },
     },
-    /**
-     * Options for configuring PostCSS plugins.
-     *
-     * @see [PostCSS docs](https://postcss.org/)
-     */
     plugins: {
-      /**
-       * Plugin to parse CSS and add vendor prefixes to CSS rules.
-       *
-       * @see [`autoprefixer`](https://github.com/postcss/autoprefixer)
-       */
       autoprefixer: {},
-
-      /**
-       * @see [`cssnano` configuration options](https://cssnano.github.io/cssnano/docs/config-file/#configuration-options)
-       */
       cssnano: {
         $resolve: async (val, get) => {
           if (val || val === false) {

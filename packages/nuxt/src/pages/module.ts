@@ -14,7 +14,7 @@ import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { logger } from '../utils'
-import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
+import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
@@ -169,7 +169,7 @@ export default defineNuxtModule({
           '}',
           'export {}',
         ].join('\n'),
-      }, { nuxt: true, nitro: true })
+      }, { nuxt: true, nitro: true, node: true })
       addComponent({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
@@ -361,6 +361,11 @@ export default defineNuxtModule({
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
 
+      nitro.options.ssrRoutes = [
+        ...nitro.options.ssrRoutes || [],
+        ...toRou3Patterns(nuxt.apps.default?.pages || []),
+      ]
+
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
         const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
@@ -489,7 +494,11 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
-    const extractedKeys = [...defaultExtractionKeys, 'middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]
+    const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
+    const extractedKeys = [
+      ...defaultExtractionKeys,
+      ...extraPageMetaExtractionKeys,
+    ]
 
     nuxt.hook('modules:done', () => {
       addBuildPlugin(PageMetaPlugin({
@@ -618,7 +627,7 @@ export default defineNuxtModule({
           '}',
         ].join('\n')
       },
-    }, { nuxt: true, nitro: true })
+    }, { nuxt: true, nitro: true, node: true })
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',

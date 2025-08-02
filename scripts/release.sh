@@ -25,7 +25,10 @@ for PKG in packages/* docs ; do
     continue
   fi
   pushd $PKG
-  TAG="latest"
+  # initialise TAG if isn't already set
+  if [[ -z "$TAG" ]] ; then
+    TAG="latest"
+  fi
   echo "⚡ Publishing $PKG with tag $TAG"
   cp $REPO_ROOT/LICENSE .
   if [[ $PKG != "docs" ]]; then

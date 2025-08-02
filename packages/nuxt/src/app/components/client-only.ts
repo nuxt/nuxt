@@ -1,5 +1,5 @@
 import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
-import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
+import type { ComponentInternalInstance, ComponentOptions, InjectionKey, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
@@ -13,6 +13,17 @@ export default defineComponent({
   name: 'ClientOnly',
   inheritAttrs: false,
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
+  ...(import.meta.dev && {
+    slots: Object as SlotsType<{
+      default?: () => VNode[]
+
+      /**
+       * Specify a content to be rendered on the server and displayed until `<ClientOnly>` is mounted in the browser.
+       */
+      fallback?: () => VNode[]
+      placeholder?: () => VNode[]
+    }>,
+  }),
   setup (props, { slots, attrs }) {
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true })
@@ -123,9 +134,11 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
         return (...args: any[]) => {
           if (mounted$.value) {
             const res = setupState(...args)
+            const attrs = clone.inheritAttrs !== false ? ctx.attrs : undefined
+
             return (res.children === null || typeof res.children === 'string')
-              ? cloneVNode(res, ctx.attrs)
-              : h(res, ctx.attrs)
+              ? cloneVNode(res, attrs)
+              : h(res, attrs)
           }
           return elToStaticVNode(instance?.vnode.el, STATIC_DIV)
         }

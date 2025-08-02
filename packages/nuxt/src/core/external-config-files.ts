@@ -44,7 +44,7 @@ async function checkWebpackConfig () {
 }
 
 async function checkNitroConfig () {
-  // https://nitro.build/config#configuration
+  // https://nitro.build/config
   return await checkAndWarnAboutConfigFileExistence({
     fileName: 'nitro.config',
     extensions: ['.ts', '.mts'],
