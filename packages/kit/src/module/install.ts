@@ -14,11 +14,30 @@ import { resolveAlias } from '../resolve'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
+interface InstallModuleOptions {
+  /**
+   * Whether to defer the installation of the module to after all other modules are installed.
+   * This is the default, to allow merging configuration/options from all modules.
+   */
+  defer?: boolean
+}
+
 /** Installs a module on a Nuxt instance. */
 export async function installModule<
   T extends string | NuxtModule,
   Config extends Extract<NonNullable<NuxtConfig['modules']>[number], [T, any]>,
-> (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
+> (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt(), options: InstallModuleOptions = {}) {
+  // nuxt._modulesToDefer is only set when nuxt is installing modules
+  if (options.defer !== false && nuxt._modulesToDefer) {
+    const currentOptions = nuxt._modulesToDefer.get(moduleToInstall) || []
+    // inline options are always the first item in the array (with higher priority
+    // 1. most recent installModule call
+    // 2. ... previous installModule calls
+    // 3. nuxt config options
+    // 4. module default options
+    nuxt._modulesToDefer.set(moduleToInstall, [inlineOptions, ...currentOptions])
+    return /* install module after all other modules */
+  }
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   const localLayerModuleDirs: string[] = []
