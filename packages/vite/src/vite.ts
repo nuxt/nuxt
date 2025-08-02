@@ -9,7 +9,7 @@ import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
-import { resolveTSConfig } from 'pkg-types'
+import { readTSConfig, resolveTSConfig } from 'pkg-types'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
@@ -185,10 +185,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   // Add type-checking
   if (!nuxt.options.test && (nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
+    const tsconfigPath = await resolveTSConfig(nuxt.options.rootDir)
+    const supportsProjects = await readTSConfig(tsconfigPath).then(r => !!(r.references?.length))
     const checker = await import('vite-plugin-checker').then(r => r.default)
     addVitePlugin(checker({
       vueTsc: {
-        tsconfigPath: await resolveTSConfig(nuxt.options.rootDir),
+        tsconfigPath,
+        buildMode: supportsProjects,
       },
     }), { server: nuxt.options.ssr })
   }
