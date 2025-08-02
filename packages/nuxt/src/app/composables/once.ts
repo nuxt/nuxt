@@ -1,3 +1,4 @@
+import { useRouter } from './router'
 import { useNuxtApp } from '../nuxt'
 
 type CallOnceOptions = {
@@ -27,8 +28,10 @@ export async function callOnce (...args: any): Promise<void> {
   const nuxtApp = useNuxtApp()
 
   if (options?.mode === 'navigation') {
-    nuxtApp.hooks.hookOnce('page:start', () => {
+    const router = useRouter()
+    const cleanup = router.beforeResolve(() => {
       nuxtApp.payload.once.delete(_key)
+      cleanup()
     })
   }
 
