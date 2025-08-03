@@ -105,8 +105,6 @@ export default defineNuxtModule<ComponentsOptions>({
         return {
           global: componentOptions.global,
           ...dirOptions,
-          // TODO: https://github.com/nuxt/framework/pull/251
-          enabled: true,
           path: dirPath,
           extensions,
           pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
@@ -117,7 +115,7 @@ export default defineNuxtModule<ComponentsOptions>({
           ],
           transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile),
         }
-      }).filter(d => d.enabled)
+      })
 
       componentDirs = [
         ...componentDirs.filter(dir => !dir.path.includes('node_modules')),
