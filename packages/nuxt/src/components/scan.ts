@@ -48,9 +48,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         for (const sibling of siblings) {
           if (sibling.toLowerCase() === directoryLowerCase) {
             const nuxt = useNuxt()
-            const original = relative(nuxt.options.srcDir, dir.path)
-            const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), sibling))
-            logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
+            const original = resolveToAlias(dir.path, nuxt)
+            const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
+            logger.warn(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`)
             break
           }
         }
