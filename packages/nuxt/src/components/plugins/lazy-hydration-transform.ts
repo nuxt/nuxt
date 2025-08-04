@@ -8,6 +8,7 @@ import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
+import { reverseResolveAlias } from 'pathe/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -78,9 +79,9 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             }
             if (!/^(?:Lazy|lazy-)/.test(node.name)) {
               if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
-                logger.warn(`Component <${node.name}> has lazy-hydration props but is not declared as a lazy component.\n` +
-                  `Rename it to <Lazy${node.name} /> or remove the lazy-hydration props to avoid unexpected behavior. \n` +
-                  `Cause: ${id}`)
+                const relativePath = reverseResolveAlias(id, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || id
+                logger.warn(`Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
+                  `Rename it to \`<Lazy${node.name} />\` or remove the lazy-hydration props to avoid unexpected behavior.`)
               }
               return
             }
@@ -137,3 +138,8 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
     },
   }
 })
+
+const strippedAtAliases = {
+  '@': '',
+  '@@': '',
+}
