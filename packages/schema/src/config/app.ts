@@ -41,6 +41,15 @@ export default defineResolvers({
       },
     },
 
+    buildAssetsFileNamePrefix: {
+      $resolve: (val) => {
+        if (typeof val === 'string') {
+          return val
+        }
+        return process.env.NUXT_APP_BUILD_ASSETS_FILE_NAME_PREFIX || ''
+      },
+    },
+
     cdnURL: {
       $resolve: async (val, get) => {
         if (await get('dev')) {
