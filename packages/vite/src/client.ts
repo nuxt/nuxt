@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { join, resolve } from 'pathe'
+import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
@@ -158,10 +158,20 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   // We want to respect users' own rollup output options
   const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
+  const clientOutputDir = join(useNitro().options.output.publicDir, nuxt.options.app.buildAssetsDir)
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
       chunkFileNames: nuxt.options.dev ? undefined : fileNames,
       entryFileNames: nuxt.options.dev ? 'entry.js' : fileNames,
+      sourcemapPathTransform (relativeSourcePath, sourcemapPath) {
+        // client build is running in a temporary build directory, like `.nuxt/dist/client`
+        // so we need to transform the sourcemap path to be relative to the final build directory
+        if (!isAbsolute(relativeSourcePath)) {
+          const absoluteSourcePath = resolve(dirname(sourcemapPath), relativeSourcePath)
+          return relative(clientOutputDir, absoluteSourcePath)
+        }
+        return relativeSourcePath
+      },
     } satisfies NonNullable<BuildOptions['rollupOptions']>['output'],
   }) as any
 
