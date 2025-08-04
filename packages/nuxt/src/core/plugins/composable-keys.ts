@@ -6,7 +6,7 @@ import { hash } from 'ohash'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { ScopeTracker, parseAndWalk, walk } from '../utils/parse'
+import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 
 import { matchWithStringOrRegex } from '../utils/plugins'
 
@@ -56,15 +56,15 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
         // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
         const scopeTracker = new ScopeTracker({
-          keepExitedScopes: true,
+          preserveExitedScopes: true,
         })
-        const ast = parseAndWalk(script, id, {
+        const parseResult = parseAndWalk(script, id, {
           scopeTracker,
         })
 
         scopeTracker.freeze()
 
-        walk(ast, {
+        walk(parseResult.program, {
           scopeTracker,
           enter (node) {
             if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }

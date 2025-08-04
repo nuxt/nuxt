@@ -1,5 +1,4 @@
 import { isIgnored } from '@nuxt/kit'
-import type { Nuxt } from 'nuxt/schema'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
@@ -8,6 +7,7 @@ import { parseQuery } from 'vue-router'
 import { normalize } from 'pathe'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module'
+import type { Nuxt } from 'nuxt/schema'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 

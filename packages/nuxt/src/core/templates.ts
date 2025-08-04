@@ -7,11 +7,11 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
-import type { Nitro } from 'nitro/types'
+import type { Nitro } from 'nitropack/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
+import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -180,8 +180,52 @@ export { }
 const IMPORT_NAME_RE = /\.\w+$/
 const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
-  filename: 'types/schema.d.ts',
+  filename: 'types/runtime-config.d.ts',
   getContents: async ({ nuxt }) => {
+    const privateRuntimeConfig = Object.create(null)
+    for (const key in nuxt.options.runtimeConfig) {
+      if (key !== 'public') {
+        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
+      }
+    }
+
+    return [
+      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
+      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
+        {
+          interfaceName: 'SharedRuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
+      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
+        {
+          interfaceName: 'SharedPublicRuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
+      `declare module '@nuxt/schema' {`,
+      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
+      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
+      `}`,
+      `declare module 'nuxt/schema' {`,
+      `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
+      `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
+      '}',
+      `declare module 'vue' {
+        interface ComponentCustomProperties {
+          $config: UserRuntimeConfig
+        }
+      }`,
+    ].join('\n')
+  },
+}
+export const schemaNodeTemplate: NuxtTemplate = {
+  filename: 'types/modules.d.ts',
+  getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
@@ -196,13 +240,6 @@ export const schemaTemplate: NuxtTemplate = {
         continue
       }
       modules.push([genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m])
-    }
-
-    const privateRuntimeConfig = Object.create(null)
-    for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public') {
-        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
-      }
     }
 
     const moduleOptionsInterface = (options: { addJSDocTags: boolean, unresolved: boolean }) => [
@@ -244,7 +281,7 @@ export const schemaTemplate: NuxtTemplate = {
     ].filter(Boolean)
 
     return [
-      'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
+      'import { NuxtModule } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
       '  interface NuxtOptions {',
       ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
@@ -262,28 +299,7 @@ export const schemaTemplate: NuxtTemplate = {
       '  interface NuxtConfig {',
       ...moduleOptionsInterface({ addJSDocTags: true, unresolved: true }),
       '  }',
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-        {
-          interfaceName: 'RuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-        {
-          interfaceName: 'PublicRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
       '}',
-      `declare module 'vue' {
-        interface ComponentCustomProperties {
-          $config: RuntimeConfig
-        }
-      }`,
     ].join('\n')
   },
 }
@@ -349,14 +365,14 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
     return /* typescript */`
 ${lines.join('\n')}
-/// <reference path="./schema.d.ts" />
+/// <reference path="./runtime-config.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
-declare module 'nitro/types' {
+declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -431,9 +447,13 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
     const configPaths = app.configs.map(path => relative(typesDir, path).replace(EXTENSION_RE, ''))
 
     return `
-import type { CustomAppConfig } from 'nuxt/schema'
+import type { AppConfigInput, CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
 ${configPaths.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
+
+declare global {
+  const defineAppConfig: <C extends AppConfigInput> (config: C) => C
+}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
@@ -495,18 +515,19 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
-        ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
-        : 'const appConfig = useRuntimeConfig().app',
+        ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
+        : 'const getAppConfig = () => useRuntimeConfig().app',
 
-      'export const baseURL = () => appConfig.baseURL',
-      'export const buildAssetsDir = () => appConfig.buildAssetsDir',
+      'export const baseURL = () => getAppConfig().baseURL',
+      'export const buildAssetsDir = () => getAppConfig().buildAssetsDir',
 
       'export const buildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
 
       'export const publicAssetsURL = (...path) => {',
+      '  const appConfig = getAppConfig()',
       '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
       '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
@@ -571,7 +592,11 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
+      `export const asyncDataDefaults = ${JSON.stringify({
+        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
+        errorValue: undefined,
+        value: undefined,
+      })}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,

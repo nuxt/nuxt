@@ -4,12 +4,12 @@ import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
-import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 import { isDirectory, logger } from '../utils'
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'
+import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -240,8 +240,8 @@ async function bundle (nuxt: Nuxt) {
 async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
-  } catch {
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
+  } catch (err) {
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``, { cause: err })
   }
 }
 

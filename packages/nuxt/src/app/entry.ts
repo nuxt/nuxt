@@ -49,7 +49,7 @@ if (import.meta.client) {
     import.meta.webpackHot.accept()
   }
 
-  // eslint-disable-next-line
+  // eslint-disable-next-line prefer-const
   let vueAppPromise: Promise<App<Element>>
 
   entry = async function initApp () {

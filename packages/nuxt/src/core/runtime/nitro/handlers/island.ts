@@ -1,5 +1,5 @@
-import { useNitroApp } from 'nitro/runtime'
-import type { RenderResponse } from 'nitro/types'
+import { useNitroApp } from 'nitropack/runtime'
+import type { RenderResponse } from 'nitropack/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'h3'
@@ -11,7 +11,8 @@ import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
-import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import type { NuxtIslandContext, NuxtIslandResponse } from '../utils/renderer/islands'
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 
@@ -82,10 +83,6 @@ export default defineEventHandler(async (event) => {
       islandHead[key as keyof SerializableHead] = value
     }
   }
-
-  // TODO: remove for v4
-  islandHead.link ||= []
-  islandHead.style ||= []
 
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,

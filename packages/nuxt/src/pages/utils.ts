@@ -7,13 +7,13 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import type { Node, Property } from 'estree'
-import type { NuxtPage } from 'nuxt/schema'
 
 import { klona } from 'klona'
-import { parseAndWalk, withLocations } from '../core/utils/parse'
+import { parseAndWalk } from 'oxc-walker'
+import type { Node, ObjectProperty } from 'oxc-parser'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
+import type { NuxtPage } from 'nuxt/schema'
 
 enum SegmentParserState {
   initial,
@@ -70,8 +70,13 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
     return pages
   }
 
+  const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
+
   const augmentCtx = {
-    extraExtractionKeys: new Set(['middleware', ...nuxt.options.experimental.extraPageMetaExtractionKeys]),
+    extraExtractionKeys: new Set([
+      'middleware',
+      ...extraPageMetaExtractionKeys,
+    ]),
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
   }
   if (shouldAugment === 'after-resolve') {
@@ -144,7 +149,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       // ex: parent.vue + parent/child.vue
       const routePath = getRoutePath(tokens, segments[i + 1] !== undefined && segments[i + 1] !== 'index')
       const path = withLeadingSlash(joinURL(route.path, routePath.replace(INDEX_PAGE_RE, '/')))
-      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
+      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path.replace('([^/]*)*', '(.*)*'))
 
       if (child && child.children) {
         parent = child.children
@@ -257,12 +262,10 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
 
       for (const key of extractionKeys) {
-        const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+        const property = pageMetaArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        const propertyValue = withLocations(property.value)
-
-        const { value, serializable } = isSerializable(script.code, propertyValue)
+        const { value, serializable } = isSerializable(script.code, property.value)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
@@ -630,10 +633,8 @@ export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
 }
 
 export function isSerializable (code: string, node: Node): { value?: any, serializable: boolean } {
-  const propertyValue = withLocations(node)
-
-  if (propertyValue.type === 'ObjectExpression') {
-    const valueString = code.slice(propertyValue.start, propertyValue.end)
+  if (node.type === 'ObjectExpression') {
+    const valueString = code.slice(node.start, node.end)
     try {
       return {
         value: JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {})),
@@ -646,9 +647,9 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
-  if (propertyValue.type === 'ArrayExpression') {
+  if (node.type === 'ArrayExpression') {
     const values: string[] = []
-    for (const element of propertyValue.elements) {
+    for (const element of node.elements) {
       if (!element) {
         continue
       }
@@ -667,9 +668,9 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
-  if (propertyValue.type === 'Literal' && (typeof propertyValue.value === 'string' || typeof propertyValue.value === 'boolean' || typeof propertyValue.value === 'number' || propertyValue.value === null)) {
+  if (node.type === 'Literal' && (typeof node.value === 'string' || typeof node.value === 'boolean' || typeof node.value === 'number' || node.value === null)) {
     return {
-      value: propertyValue.value,
+      value: node.value,
       serializable: true,
     }
   }
@@ -677,4 +678,25 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
   return {
     serializable: false,
   }
+}
+
+export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
+  const routes: string[] = []
+  for (const page of pages) {
+    // convert to rou3-compatible path (https://github.com/h3js/rou3)
+    const path = page.path
+      // remove all regex patterns
+      .replace(/\([^)]*\)/g, '')
+      // catchalls: `:name([^/]*)*` or `:catchall(.*)*`
+      .replace(/:(\w+)\*.*/g, (_, name) => `**:${name}`)
+      // dynamic paths, including custom patterns, e.g. :id([^/]*)*/suffix
+      .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
+
+    routes.push(joinURL(prefix, path))
+
+    if (page.children) {
+      routes.push(...toRou3Patterns(page.children, joinURL(prefix, path)))
+    }
+  }
+  return routes
 }

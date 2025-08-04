@@ -98,7 +98,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
     Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
-  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object for performance.
+  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
@@ -142,6 +142,10 @@ const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { imm
 const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: false })
 ```
 
+::tip
+Keyed state created using `useAsyncData` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/api/composables/use-nuxt-data).
+::
+
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
@@ -154,12 +158,12 @@ const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { imm
   - `pending`: the request is in progress
   - `success`: the request has completed successfully
   - `error`: the request has failed
-- `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
+- `clear`: a function that can be used to set `data` to `undefined` (or the value of `options.default()` if provided), set `error` to `undefined`, set `status` to `idle`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
 ::note
-If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/api/composables/use-async-data) on the client side, `data` will remain `null` within `<script setup>`.
+If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/api/composables/use-async-data) on the client side, `data` will remain `undefined` within `<script setup>`.
 ::
 
 ## Type
@@ -170,7 +174,7 @@ function useAsyncData<DataT, DataE>(
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
 function useAsyncData<DataT, DataE>(
-  key: string | Ref<string> | ComputedRef<string>,
+  key: MaybeRefOrGetter<string>,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): Promise<AsyncData<DataT, DataE>>
@@ -184,7 +188,7 @@ type AsyncDataOptions<DataT> = {
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
-  watch?: WatchSource[] | false
+  watch?: MultiWatchSources | false
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
 }
 
@@ -194,11 +198,11 @@ type AsyncDataRequestContext = {
 }
 
 type AsyncData<DataT, ErrorT> = {
-  data: Ref<DataT | null>
+  data: Ref<DataT | undefined>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
-  error: Ref<ErrorT | null>
+  error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
 };
 

@@ -1,11 +1,12 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { parse, walk } from 'ultrahtml'
+import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils'
 import { logger } from '../../utils'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -13,6 +14,7 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
+const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
@@ -23,7 +25,9 @@ const hydrationStrategyMap = {
   hydrateWhen: 'If',
   hydrateNever: 'Never',
 }
-const LAZY_HYDRATION_PROPS_RE = /\bhydrate-?on-?idle|hydrate-?on-?visible|hydrate-?on-?interaction|hydrate-?on-?media-?query|hydrate-?after|hydrate-?when|hydrate-?never\b/
+
+const LAZY_HYDRATION_PROPS_RE = /\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b/
+
 export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -38,14 +42,25 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-
       return isVue(id)
     },
     transform: {
       filter: {
         code: { include: TEMPLATE_RE },
       },
-      async handler (code) {
+
+      async handler (code, id) {
+        const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+
+        for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
+          if (!script) { continue }
+          try {
+            parseAndWalk(script, id, {
+              scopeTracker,
+            })
+          } catch { /* ignore */ }
+        }
+
         // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
         const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
         if (!template || !LAZY_HYDRATION_PROPS_RE.test(template)) {
@@ -62,6 +77,11 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             if (!/^(?:Lazy|lazy-)/.test(node.name)) {
               return
             }
+
+            if (scopeTracker.getDeclaration(node.name)) {
+              return
+            }
+
             const pascalName = pascalCase(node.name.slice(4))
             if (!components.some(c => c.pascalName === pascalName)) {
               // not auto-imported

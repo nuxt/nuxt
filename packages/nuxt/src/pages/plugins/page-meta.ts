@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
+import type { ParsedQuery } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
@@ -8,15 +9,16 @@ import { isAbsolute } from 'pathe'
 
 import {
   ScopeTracker,
-  type ScopeTrackerNode,
+
   getUndeclaredIdentifiersInFunction,
-  isNotReferencePosition,
+  isBindingIdentifier,
   parseAndWalk,
   walk,
-  withLocations,
-} from '../../core/utils/parse'
+} from 'oxc-walker'
+import type { ScopeTrackerNode } from 'oxc-walker'
 import { logger } from '../../utils'
 import { isSerializable } from '../utils'
+import type { ParserOptions } from 'oxc-parser'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -176,7 +178,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       }
 
       const scopeTracker = new ScopeTracker({
-        keepExitedScopes: true,
+        preserveExitedScopes: true,
       })
 
       function processDeclaration (scopeTrackerNode: ScopeTrackerNode | null) {
@@ -192,7 +194,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                   throw new Error('await in definePageMeta')
                 }
                 if (
-                  isNotReferencePosition(node, parent)
+                  isBindingIdentifier(node, parent)
                   || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
                 ) { return }
 
@@ -214,8 +216,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const ast = parseAndWalk(code, id + (query.lang ? '.' + query.lang : '.ts'), {
+      const { program: ast } = parseAndWalk(code, id, {
         scopeTracker,
+        parseOptions: {
+          lang: query.lang ?? 'ts',
+        },
       })
 
       scopeTracker.freeze()
@@ -229,7 +234,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
 
           instances++
-          const meta = withLocations(node.arguments[0])
+          const meta = node.arguments[0]
 
           if (!meta) { return }
           const metaCode = code!.slice(meta.start, meta.end)
@@ -237,13 +242,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
           if (meta.type === 'ObjectExpression') {
             for (let i = 0; i < meta.properties.length; i++) {
-              const prop = withLocations(meta.properties[i])
+              const prop = meta.properties[i]!
               if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
                 const { serializable } = isSerializable(metaCode, prop.value)
                 if (!serializable) {
                   continue
                 }
-                const nextProperty = withLocations(meta.properties[i + 1])
+                const nextProperty = meta.properties[i + 1]
                 if (nextProperty) {
                   m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
                 } else if (code[prop.end] === ',') {
@@ -261,7 +266,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             scopeTracker,
             enter (node, parent) {
               if (
-                isNotReferencePosition(node, parent)
+                isBindingIdentifier(node, parent)
                 || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
               ) { return }
 
@@ -343,7 +348,9 @@ function rewriteQuery (id: string) {
 
 function parseMacroQuery (id: string) {
   const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
-  const query = parseQuery(search)
+  const query = parseQuery<{
+    lang?: ParserOptions['lang']
+  } & ParsedQuery>(search)
   if (id.includes('?macro=true')) {
     return { macro: 'true', ...query }
   }
