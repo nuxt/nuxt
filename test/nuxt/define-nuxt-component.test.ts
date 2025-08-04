@@ -3,7 +3,7 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import { refreshNuxtData } from '#app/composables/asyncData'
-import { NuxtLayout, NuxtPage } from '#components'
+import { NuxtPage } from '#components'
 import { flushPromises } from '@vue/test-utils'
 
 registerEndpoint('/api/hello', defineEventHandler(() => 'Hello API'))
