@@ -58,7 +58,6 @@
     "nitropack": "2.12.4",
     "ofetch": "1.4.1",
     "oxc-transform": "0.80.0",
-    "oxc-walker": "^0.4.0",
     "pkg-types": "2.2.0",
     "postcss": "8.5.6",
     "rollup-plugin-visualizer": "6.0.3",
@@ -83,6 +82,9 @@
     "pathe": "^2.0.3",
     "std-env": "^3.9.0",
     "ufo": "1.6.1"
+  },
+  "peerDependencies": {
+    "oxc-walker": "^0.4.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
