@@ -72,17 +72,9 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
         const s = new MagicString(code)
         try {
           const ast = parse(template)
-          const components = options.getComponents()
+          const components = new Set(options.getComponents().map(c => c.pascalName))
           await walk(ast, (node) => {
             if (node.type !== 1 /* ELEMENT_NODE */) {
-              return
-            }
-            if (!/^(?:Lazy|lazy-)/.test(node.name)) {
-              if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
-                const relativePath = reverseResolveAlias(id, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || id
-                logger.warn(`Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
-                  `Rename it to \`<Lazy${node.name} />\` or remove the lazy-hydration props to avoid unexpected behavior.`)
-              }
               return
             }
 
@@ -90,8 +82,8 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               return
             }
 
-            const pascalName = pascalCase(node.name.slice(4))
-            if (!components.some(c => c.pascalName === pascalName)) {
+            const pascalName = pascalCase(node.name.replace(/^(Lazy|lazy-)/, ''))
+            if (!components.has(pascalName)) {
               // not auto-imported
               return
             }
@@ -108,6 +100,15 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
                   strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
                 }
               }
+            }
+
+            if (strategy && !/^(?:Lazy|lazy-)/.test(node.name)) {
+              if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
+                const relativePath = reverseResolveAlias(id, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || id
+                logger.warn(`Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
+                  `Rename it to \`<Lazy${pascalCase(node.name)} />\` or remove the lazy-hydration props to avoid unexpected behavior.`)
+              }
+              return
             }
 
             if (strategy) {
