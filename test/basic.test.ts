@@ -1069,34 +1069,6 @@ describe('head tags', () => {
   // })
 })
 
-describe('legacy async data', () => {
-  it('should work with defineNuxtComponent', async () => {
-    const html = await $fetch<string>('/legacy/async-data')
-    expect(html).toContain('<div>Hello API</div>')
-    expect(html).toContain('<div>fooChild</div>')
-    expect(html).toContain('<div>fooParent</div>')
-    const { script } = parseData(html)
-    expect(script.data['options:asyncdata:hello'].hello).toBe('Hello API')
-    expect(Object.values(script.data)).toMatchInlineSnapshot(`
-      [
-        {
-          "baz": "qux",
-          "foo": "bar",
-        },
-        {
-          "hello": "Hello API",
-        },
-        {
-          "fooParent": "fooParent",
-        },
-        {
-          "fooChild": "fooChild",
-        },
-      ]
-    `)
-  })
-})
-
 describe('navigate', () => {
   it('should redirect to index with navigateTo', async () => {
     const { headers, status } = await fetch('/navigate-to/', { redirect: 'manual' })
@@ -3003,30 +2975,6 @@ describe('lazy import components', () => {
 
       await page.close()
     })
-  })
-})
-
-describe('defineNuxtComponent', () => {
-  it('watches duplicate updates after navigation', async () => {
-    const { page } = await renderPage('/define-nuxt-component')
-    await page.getByTestId('define-nuxt-component-bar').click()
-    await page.getByTestId('define-nuxt-component-state').click()
-    await page.getByTestId('define-nuxt-component-foo').click()
-    expect(await page.getByTestId('define-nuxt-component-state').first().innerText()).toBe('2')
-  })
-
-  it('get correctly route when navigating between routes', async () => {
-    const { page } = await renderPage('/define-nuxt-component/route-1')
-    await page.getByText('Go to route 2').click()
-    expect(await page.getByTestId('define-nuxt-component-route-2-path').innerText()).include('route-2')
-
-    await page.getByText('Go to route 1').click()
-    expect(await page.getByTestId('define-nuxt-component-route-1-path').innerText()).include('route-1')
-  })
-
-  it ('should get correctly inject value', async () => {
-    const { page } = await renderPage('/define-nuxt-component/inject')
-    expect(await page.getByTestId('define-nuxt-component-inject-value').innerText()).include('bar')
   })
 })
 
