@@ -7,18 +7,18 @@ describe('detectImportNames', () => {
     useFetch: { source: '#app', argumentLength: 2 },
     useCustomFetch: { source: 'custom-fetch', argumentLength: 2 },
   }
-  it('should not include imports from nuxt', () => {
-    expect([...detectImportNames('import { useFetch } from \'#app\'', {}, '')]).toMatchInlineSnapshot('[]')
-    expect([...detectImportNames('import { useFetch } from \'nuxt/app\'', {}, '')]).toMatchInlineSnapshot('[]')
+  it('should not include imports from nuxt', async () => {
+    expect([...await detectImportNames('import { useFetch } from \'#app\'', {})]).toMatchInlineSnapshot('[]')
+    expect([...await detectImportNames('import { useFetch } from \'nuxt/app\'', {})]).toMatchInlineSnapshot('[]')
   })
-  it('should pick up other imports', () => {
-    expect([...detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', {}, '')]).toMatchInlineSnapshot(`
+  it('should pick up other imports', async () => {
+    expect([...await detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', {})]).toMatchInlineSnapshot(`
       [
         "useCustomFetch",
         "someThingRenamed",
       ]
     `)
-    expect([...detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', keyedComposables, '')]).toMatchInlineSnapshot(`
+    expect([...await detectImportNames('import { useCustomFetch, someThing as someThingRenamed } from \'custom-fetch\'', keyedComposables)]).toMatchInlineSnapshot(`
       [
         "someThingRenamed",
       ]
@@ -32,38 +32,38 @@ describe('composable keys plugin', () => {
     source: '#app',
     argumentLength: 2,
   }]
-  const transformPlugin = ComposableKeysPlugin({ sourcemap: false, rootDir: '/', composables }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+  const transformPlugin = ComposableKeysPlugin({ sourcemap: false, composables }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
-  it('should add keyed hash when there is none already provided', () => {
+  it('should add keyed hash when there is none already provided', async () => {
     const code = `
 import { useAsyncData } from '#app'
 useAsyncData(() => {})
     `
-    expect(transformPlugin.transform.handler(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useAsyncData } from '#app'
-      useAsyncData(() => {}, '$fd2WfVgce_')"
+      useAsyncData(() => {}, '$HJiaryoL2y')"
     `)
   })
 
-  it('should not add hash when one exists', () => {
+  it('should not add hash when one exists', async () => {
     const code = `useAsyncData(() => {}, 'foo')`
-    expect(transformPlugin.transform.handler(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 
-  it('should not add hash to functions that overshadow the composable', () => {
+  it('should not add hash to functions that overshadow the composable', async () => {
     const code = `
 const useAsyncData = () => {}
 useAsyncData(() => {})
     `
-    expect(transformPlugin.transform.handler(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 
-  it('should add hash when processing file in `source`', () => {
+  it('should add hash when processing file in `source`', async () => {
     const code = `
 const useAsyncData = () => {}
 useAsyncData(() => {})
     `
-    expect(transformPlugin.transform.handler(code, '#app')?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, '#app'))?.code.trim()).toMatchInlineSnapshot(`
     "const useAsyncData = () => {}
 useAsyncData(() => {}, '$QQV3F06xQZ')"
 `)

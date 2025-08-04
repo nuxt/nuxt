@@ -135,7 +135,6 @@ export function _createUseFetch<
     Partial<CreateUseFetchOptions<CResT, CReqT, CMethod, C_ResT, CDataT, CPickKeys, CDefaultT>>
     | (() => Partial<CreateUseFetchOptions<CResT, CReqT, CMethod, C_ResT, CDataT, CPickKeys, CDefaultT>>) = {},
 ) {
-  const factoryOptions = typeof options === 'function' ? options : () => options
   /**
    * Fetch data from an API endpoint with an SSR-friendly composable.
    * See {@link https://nuxt.com/docs/api/composables/use-fetch}
@@ -193,6 +192,8 @@ export function _createUseFetch<
       throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
     }
 
+    const factoryOptions = typeof options === 'function' ? options() : options
+
     const {
       server,
       lazy,
@@ -206,7 +207,7 @@ export function _createUseFetch<
       dedupe,
       ...fetchOptions
     } = {
-      ...factoryOptions().defaults as Partial<typeof opts>,
+      ...factoryOptions.defaults as Partial<typeof opts>,
       ...opts,
     }
 

@@ -805,6 +805,9 @@ importers:
       oxc-transform:
         specifier: 0.80.0
         version: 0.80.0
+      oxc-walker:
+        specifier: ^0.4.0
+        version: 0.4.0(oxc-parser@0.80.0)
       pkg-types:
         specifier: 2.2.0
         version: 2.2.0

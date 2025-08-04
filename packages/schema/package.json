@@ -58,6 +58,7 @@
     "nitropack": "2.12.4",
     "ofetch": "1.4.1",
     "oxc-transform": "0.80.0",
+    "oxc-walker": "^0.4.0",
     "pkg-types": "2.2.0",
     "postcss": "8.5.6",
     "rollup-plugin-visualizer": "6.0.3",
