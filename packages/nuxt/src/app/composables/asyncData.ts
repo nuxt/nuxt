@@ -401,7 +401,6 @@ export function useAsyncData<
         if (nuxtApp._asyncData[key.value]?._abortController) {
           nuxtApp._asyncData[key.value]?._abortController.abort(new DOMException('AsyncData aborted by user.', 'AbortError'))
         }
-        (nuxtApp._asyncDataPromises[key.value] as any).cancelled = true
       }
       clearNuxtDataByKey(nuxtApp, key.value)
     },
@@ -608,10 +607,6 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (key in nuxtApp._asyncDataPromises) {
-    if (nuxtApp._asyncDataPromises[key]) {
-      (nuxtApp._asyncDataPromises[key] as any).cancelled = true
-    }
-
     nuxtApp._asyncDataPromises[key] = undefined
   }
 }
@@ -687,7 +682,6 @@ function createAsyncData<
         if (asyncData._abortController) {
           asyncData._abortController.abort(new DOMException('AsyncData request cancelled by deduplication', 'AbortError'))
         }
-        (nuxtApp._asyncDataPromises[key] as any).cancelled = true
       }
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
@@ -712,10 +706,13 @@ function createAsyncData<
             const timeout = opts.timeout ?? options.timeout
             const mergedSignal = AbortSignal.any([abortController.signal, opts?.signal, typeof timeout === 'number' ? AbortSignal.timeout(timeout) : undefined].filter((s): s is NonNullable<typeof s> => Boolean(s)))
             mergedSignal.addEventListener('abort', () => {
-              reject(abortController.signal.reason) // todo
+              if (nuxtApp._asyncDataPromises[key]) {
+                (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+              }
+              reject(new Error(abortController.signal.reason)) // todo
             })
 
-            resolve(handler(nuxtApp, { signal: mergedSignal }))
+            return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
             reject(err)
           }

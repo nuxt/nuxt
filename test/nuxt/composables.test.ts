@@ -791,6 +791,51 @@ describe('useAsyncData', () => {
     expect(aborted).toBe(true)
     resolve(true)
   })
+
+  it('should be externally cancellable when executing', async () => {
+    vi.useFakeTimers()
+    const controller = new AbortController()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { execute, status } = useAsyncData(() => 'index', promiseFn)
+    vi.advanceTimersToNextTimer()
+    await flushPromises()
+    expect(status.value).toBe('success')
+    execute({ signal: controller.signal })
+    vi.advanceTimersByTime(100)
+    expect(status.value).toBe('pending')
+    controller.abort('test abort')
+    await flushPromises()
+    expect(status.value).toBe('error')
+    vi.useRealTimers()
+  })
+
+  it('should be cancellable via abort', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(status.value).toBe('error')
+    vi.useRealTimers()
+  })
+
+  it('should abort handler signal', async () => {
+    vi.useFakeTimers()
+    let _signal
+    const promiseFn = vi.fn((_, { signal }) => {
+      _signal = signal
+      new Promise(resolve => setTimeout(() => resolve('index'), 1000))
+    })
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(_signal.aborted).toBe(true)
+    vi.useRealTimers()
+  })
 })
 
 describe('useFetch', () => {
