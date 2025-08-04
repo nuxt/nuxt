@@ -146,12 +146,6 @@ export function useFetch<
   }
 
   const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
-    /**
-     * Workaround for `timeout` not working due to custom abort controller
-     * TODO: remove this when upstream issue is resolved
-     * @see https://github.com/unjs/ofetch/issues/326
-     * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
-     */
     let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
