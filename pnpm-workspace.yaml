@@ -5,7 +5,9 @@ packages:
   - '!packages/test-utils'
   - playground
   - test/fixtures/*
+
 ignoredBuiltDependencies:
   - esbuild
+  - oxc-resolver
   - unrs-resolver
   - vue-demi
