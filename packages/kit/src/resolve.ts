@@ -244,8 +244,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
   const files: string[] = []
-  for (const file of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
-    const p = resolve(path, file)
+  for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true })) {
     if (!isIgnored(p)) {
       files.push(p)
     }
