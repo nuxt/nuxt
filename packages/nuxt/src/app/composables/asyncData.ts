@@ -706,9 +706,6 @@ function createAsyncData<
             const timeout = opts.timeout ?? options.timeout
             const mergedSignal = AbortSignal.any([abortController.signal, opts?.signal, typeof timeout === 'number' ? AbortSignal.timeout(timeout) : undefined].filter((s): s is NonNullable<typeof s> => Boolean(s)))
             mergedSignal.addEventListener('abort', () => {
-              if (nuxtApp._asyncDataPromises[key]) {
-                (nuxtApp._asyncDataPromises[key] as any).cancelled = true
-              }
               reject(new Error(abortController.signal.reason)) // todo
             })
 
@@ -718,11 +715,6 @@ function createAsyncData<
           }
         })
         .then(async (_result) => {
-          // If this request is cancelled, resolve to the latest request.
-          if ((promise as any).cancelled) {
-            return nuxtApp._asyncDataPromises[key]
-          }
-
           let result = _result as unknown as DataT
           if (options.transform) {
             result = await options.transform(_result)
@@ -746,20 +738,11 @@ function createAsyncData<
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
-          // If this request is cancelled, resolve to the latest request.
-          if ((promise as any).cancelled) {
-            return nuxtApp._asyncDataPromises[key]
-          }
-
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
         })
         .finally(() => {
-          if ((promise as any).cancelled) {
-            return
-          }
-
           if (pendingWhenIdle) {
             asyncData.pending.value = false
           }
