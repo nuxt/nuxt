@@ -1,0 +1,155 @@
+name: team-triage
+
+on:
+  issues:
+    types:
+      - labeled
+  pull_request:
+    types:
+      - labeled
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+jobs:
+  handle-discussion-label:
+    runs-on: ubuntu-latest
+    if: github.repository == 'nuxt/nuxt' && contains(github.event.label.name, 'discussion')
+    
+    steps:
+      - name: Create Discord Thread
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_DISCUSSIONS_WEBHOOK }}
+        with:
+          script: |
+            const item = context.payload.issue || context.payload.pull_request;
+            const itemUrl = item.html_url;
+            const itemNumber = item.number;
+            const itemType = context.payload.issue ? 'Issue' : 'Pull Request';
+            const labeledBy = context.payload.sender;
+            
+            // Sanitize user-controlled inputs to prevent injection attacks
+            const sanitizeText = (text) => {
+              if (!text) return '';
+              return text
+                .replace(/[<>@#`\*\[\]]/g, '') // Remove potentially dangerous characters
+                .replace(/\n/g, ' ') // Replace newlines with spaces
+                .trim()
+                .substring(0, 200); // Limit length
+            };
+            
+            const title = sanitizeText(item.title);
+            const author = sanitizeText(item.user.login);
+            const requester = sanitizeText(labeledBy.login);
+            
+            // Create Discord thread via webhook
+            const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+            
+            if (!webhookUrl) {
+              console.log('Discord webhook URL not configured');
+              return;
+            }
+            
+            // Discord thread names are limited to 100 characters
+            const threadName = `#${itemNumber}: ${title}`.substring(0, 100);
+            
+            const payload = {
+              thread_name: threadName,
+              content: `🧵 **Team Discussion Thread**\n\n**${itemType}:** [#${itemNumber} ${title}](${itemUrl})\n**Author:** [\`${author}\`](https://github.com/${author})\n**Requested by:** [\`${requester}\`](https://github.com/${requester})\n\nThis thread has been created for team discussion about the above ${itemType.toLowerCase()}. Please share your thoughts and feedback here.`
+            };
+            
+            try {
+              const response = await fetch(`${webhookUrl}?thread_name=${encodeURIComponent(threadName)}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+              });
+              
+              if (response.ok) {
+                console.log('Discord thread created successfully');
+              } else {
+                console.log('Failed to create Discord thread:', response.status, response.statusText);
+              }
+            } catch (error) {
+              console.log('Error creating Discord thread:', error.message);
+            }
+
+      - name: Add to Team Board Project
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_ID: PVT_kwDOAWR1pc4AaZWS
+          DISCUSSING_STATUS_ID: PVTSSF_lADOAWR1pc4AaZWSzgQ7T9k
+          DISCUSSING_OPTION_ID: f75ad846
+        with:
+          script: |
+            const projectId = process.env.PROJECT_ID;
+            const discussingStatusId = process.env.DISCUSSING_STATUS_ID;
+            
+            if (!projectId || !discussingStatusId) {
+              console.log('Project configuration not available');
+              return;
+            }
+            
+            const issue = context.payload.issue || context.payload.pull_request;
+            const issueNodeId = issue.node_id;
+            
+            try {
+              // Add issue to project
+              const addToProjectMutation = `
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemByContentId(input: {
+                    projectId: $projectId
+                    contentId: $contentId
+                  }) {
+                    item {
+                      id
+                    }
+                  }
+                }
+              `;
+              
+              const addResult = await github.graphql(addToProjectMutation, {
+                projectId: projectId,
+                contentId: issueNodeId
+              });
+              
+              const itemId = addResult.addProjectV2ItemByContentId.item.id;
+              console.log('Added issue to project with item ID:', itemId);
+              
+              // Set status to "Discussing"
+              const updateStatusMutation = `
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: $value
+                  }) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `;
+              
+              await github.graphql(updateStatusMutation, {
+                projectId: projectId,
+                itemId: itemId,
+                fieldId: discussingStatusId,
+                value: {
+                  singleSelectOptionId: process.env.DISCUSSING_OPTION_ID
+                }
+              });
+              
+              console.log('Updated item status to Discussing');
+              
+            } catch (error) {
+              console.log('Error managing project:', error.message);
+              // Don't fail the workflow if project management fails
+            }
+
