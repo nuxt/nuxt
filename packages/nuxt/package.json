@@ -125,7 +125,7 @@
     "unctx": "^2.4.1",
     "unimport": "^5.2.0",
     "unplugin": "^2.3.5",
-    "unplugin-vue-router": "^0.14.0",
+    "unplugin-vue-router": "^0.15.0",
     "unstorage": "^1.16.1",
     "untyped": "^2.0.0",
     "vue": "^3.5.18",

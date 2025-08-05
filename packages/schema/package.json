@@ -54,7 +54,7 @@
     "h3": "1.15.4",
     "hookable": "5.5.3",
     "ignore": "7.0.5",
-    "mini-css-extract-plugin": "2.9.2",
+    "mini-css-extract-plugin": "2.9.3",
     "nitropack": "2.12.4",
     "ofetch": "1.4.1",
     "oxc-transform": "0.80.0",
