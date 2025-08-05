@@ -2902,8 +2902,8 @@ packages:
   '@shikijs/core@3.4.2':
     resolution: {integrity: sha512-AG8vnSi1W2pbgR2B911EfGqtLE9c4hQBYkv/x7Z+Kt0VxhgQKcW7UNDVYsu9YxwV6u+OJrvdJrMq6DNWoBjihQ==}
 
-  '@shikijs/core@3.8.1':
-    resolution: {integrity: sha512-uTSXzUBQ/IgFcUa6gmGShCHr4tMdR3pxUiiWKDm8pd42UKJdYhkAYsAmHX5mTwybQ5VyGDgTjW4qKSsRvGSang==}
+  '@shikijs/core@3.9.2':
+    resolution: {integrity: sha512-3q/mzmw09B2B6PgFNeiaN8pkNOixWS726IHmJEpjDAcneDPMQmUg2cweT9cWXY4XcyQS3i6mOOUgQz9RRUP6HA==}
 
   '@shikijs/engine-javascript@1.29.2':
     resolution: {integrity: sha512-iNEZv4IrLYPv64Q6k7EPpOCE/nuvGiKl7zxdq0WFuRPF5PAE9PRo2JGq/d8crLusM59BRemJ4eOqrFrC4wiQ+A==}
@@ -2932,8 +2932,8 @@ packages:
   '@shikijs/transformers@3.4.2':
     resolution: {integrity: sha512-I5baLVi/ynLEOZoWSAMlACHNnG+yw5HDmse0oe+GW6U1u+ULdEB3UHiVWaHoJSSONV7tlcVxuaMy74sREDkSvg==}
 
-  '@shikijs/twoslash@3.8.1':
-    resolution: {integrity: sha512-Y6hF8cA0fS5w8iIPC20pLgVABfzwkWeQ8hca9h2XaZvdCR0R121JDr+HmjJ6lc9l8MyCOww+k9HK+QUbH6CCag==}
+  '@shikijs/twoslash@3.9.2':
+    resolution: {integrity: sha512-LRAhdZwp+4AXyScSgWAyoo1EM6lf2iTQPivl3w9fWSBi3yp4MJZfbed/6dcemd20jW4A9olzB3j1mFAKv/CRFw==}
     peerDependencies:
       typescript: 5.9.2
 
@@ -2943,8 +2943,8 @@ packages:
   '@shikijs/types@3.4.2':
     resolution: {integrity: sha512-zHC1l7L+eQlDXLnxvM9R91Efh2V4+rN3oMVS2swCBssbj2U/FBwybD1eeLaq8yl/iwT+zih8iUbTBCgGZOYlVg==}
 
-  '@shikijs/types@3.8.1':
-    resolution: {integrity: sha512-5C39Q8/8r1I26suLh+5TPk1DTrbY/kn3IdWA5HdizR0FhlhD05zx5nKCqhzSfDHH3p4S0ZefxWd77DLV+8FhGg==}
+  '@shikijs/types@3.9.2':
+    resolution: {integrity: sha512-/M5L0Uc2ljyn2jKvj4Yiah7ow/W+DJSglVafvWAJ/b8AZDeeRAdMu3c2riDzB7N42VD+jSnWxeP9AKtd4TfYVw==}
 
   '@shikijs/vitepress-twoslash@1.29.2':
     resolution: {integrity: sha512-KIwXZBqbKF0+9mLtV5IyiSBiflXm8vSGyCwFKVttpXRxpepMOcqqo1YGMW8Hd1qpt9XFqF/mRlihCSwHPXSh9A==}
@@ -3436,20 +3436,11 @@ packages:
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
 
-  '@volar/language-core@2.4.20':
-    resolution: {integrity: sha512-dRDF1G33xaAIDqR6+mXUIjXYdu9vzSxlMGfMEwBxQsfY/JMUEXSpLTR057oTKlUQ2nIvCmP9k94A8h8z2VrNSA==}
-
   '@volar/language-core@2.4.22':
     resolution: {integrity: sha512-gp4M7Di5KgNyIyO903wTClYBavRt6UyFNpc5LWfyZr1lBsTUY+QrVZfmbNF2aCyfklBOVk9YC4p+zkwoyT7ECg==}
 
-  '@volar/source-map@2.4.20':
-    resolution: {integrity: sha512-mVjmFQH8mC+nUaVwmbxoYUy8cww+abaO8dWzqPUjilsavjxH0jCJ3Mp8HFuHsdewZs2c+SP+EO7hCd8Z92whJg==}
-
   '@volar/source-map@2.4.22':
     resolution: {integrity: sha512-L2nVr/1vei0xKRgO2tYVXtJYd09HTRjaZi418e85Q+QdbbqA8h7bBjfNyPPSsjnrOO4l4kaAo78c8SQUAdHvgA==}
-
-  '@volar/typescript@2.4.20':
-    resolution: {integrity: sha512-Oc4DczPwQyXcVbd+5RsNEqX6ia0+w3p+klwdZQ6ZKhFjWoBP9PCPQYlKYRi/tDemWphW93P/Vv13vcE9I9D2GQ==}
 
   '@volar/typescript@2.4.22':
     resolution: {integrity: sha512-6ZczlJW1/GWTrNnkmZxJp4qyBt/SGVlcTuCWpI5zLrdPdCZsj66Aff9ZsfFaT3TyjG8zVYgBMYPuCm/eRkpcpQ==}
@@ -3809,10 +3800,6 @@ packages:
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
     engines: {node: '>=12'}
-
-  ast-kit@2.1.0:
-    resolution: {integrity: sha512-ROM2LlXbZBZVk97crfw8PGDOBzzsJvN2uJCmwswvPUNyfH14eg90mSN3xNqsri1JS1G9cz0VzeDUhxJkTrr4Ew==}
-    engines: {node: '>=20.18.0'}
 
   ast-kit@2.1.1:
     resolution: {integrity: sha512-mfh6a7gKXE8pDlxTvqIc/syH/P3RkzbOF6LeHdcKztLEzYe6IMsRCL7N8vI7hqTGWNxpkCuuRTpT21xNWqhRtQ==}
@@ -5251,9 +5238,6 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  h3@1.15.3:
-    resolution: {integrity: sha512-z6GknHqyX0h9aQaTx22VZDf6QyZn+0Nh+Ym8O/u0SGSkyF5cuTJYKlc8MkzW3Nzf9LE1ivcpmYC3FUGpywhuUQ==}
-
   h3@1.15.4:
     resolution: {integrity: sha512-z5cFQWDffyOe4vQ9xIqNfCZdV4p//vy6fBnr8Q1AWnVZ0teurKMG66rLj++TKwKPUP3u7iMUvrvKaEUiQw2QWQ==}
 
@@ -6449,9 +6433,6 @@ packages:
   node-gyp-build@4.8.4:
     resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
-
-  node-mock-http@1.0.1:
-    resolution: {integrity: sha512-0gJJgENizp4ghds/Ywu2FCmcRsgBTmRQzYPZm61wy+Em2sBarSka0OhQS5huLBg6od1zkNpnWMCZloQDFVvOMQ==}
 
   node-mock-http@1.0.2:
     resolution: {integrity: sha512-zWaamgDUdo9SSLw47we78+zYw/bDr5gH8pH7oRRs8V3KmBtu8GLgGIbV2p/gRPd3LWpEOpjQj7X1FOU3VFMJ8g==}
@@ -7947,8 +7928,8 @@ packages:
   twoslash-protocol@0.2.12:
     resolution: {integrity: sha512-5qZLXVYfZ9ABdjqbvPc4RWMr7PrpPaaDSeaYY55vl/w1j6H6kzsWK/urAEIXlzYlyrFmyz1UbwIt+AA0ck+wbg==}
 
-  twoslash-protocol@0.3.2:
-    resolution: {integrity: sha512-lWIL1dGcMr7cywSLSn8ufCoeyPab3bIwPE6DmAlQYQSMjJUgzzRvSz/LsQ179eNJafRghYDlIgF2v7pmsjV3Ww==}
+  twoslash-protocol@0.3.3:
+    resolution: {integrity: sha512-26NXjXEj+2NgytwOjjhFtNpQI7Zgct6PTyLg6JO7fIbO7MIm+kx89IxvBustgBOSKxoWjNBN2LXjNHHMD7+k0g==}
 
   twoslash-vue@0.2.12:
     resolution: {integrity: sha512-kxH60DLn2QBcN2wjqxgMDkyRgmPXsytv7fJIlsyFMDPSkm1/lMrI/UMrNAshNaRHcI+hv8x3h/WBgcvlb2RNAQ==}
@@ -7960,8 +7941,8 @@ packages:
     peerDependencies:
       typescript: 5.9.2
 
-  twoslash@0.3.2:
-    resolution: {integrity: sha512-TB+ja888uMKhbng8HzpTHm+JfxIWbngIHPy4nKEt2N93MFjpqmkqn8ppnPhIKj4kDnrohEsiogMF7T1gMY06rw==}
+  twoslash@0.3.3:
+    resolution: {integrity: sha512-Yen1RBSYh/NUR6tfK6xT7DsXkBYby7lfp078Q7XoJR5dtAeG9jB5PVL1oF2sZwHapLjaqcZNlw7GSB8himZNsQ==}
     peerDependencies:
       typescript: 5.9.2
 
@@ -9688,7 +9669,7 @@ snapshots:
       local-pkg: 1.1.1
       magic-string: 0.30.17
       node-fetch-native: 1.6.6
-      node-mock-http: 1.0.1
+      node-mock-http: 1.0.2
       ofetch: 1.4.1
       pathe: 2.0.3
       perfect-debounce: 1.0.0
@@ -10312,9 +10293,9 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
-  '@shikijs/core@3.8.1':
+  '@shikijs/core@3.9.2':
     dependencies:
-      '@shikijs/types': 3.8.1
+      '@shikijs/types': 3.9.2
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
@@ -10362,11 +10343,11 @@ snapshots:
       '@shikijs/core': 3.4.2
       '@shikijs/types': 3.4.2
 
-  '@shikijs/twoslash@3.8.1(typescript@5.9.2)':
+  '@shikijs/twoslash@3.9.2(typescript@5.9.2)':
     dependencies:
-      '@shikijs/core': 3.8.1
-      '@shikijs/types': 3.8.1
-      twoslash: 0.3.2(typescript@5.9.2)
+      '@shikijs/core': 3.9.2
+      '@shikijs/types': 3.9.2
+      twoslash: 0.3.3(typescript@5.9.2)
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
@@ -10381,14 +10362,14 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
-  '@shikijs/types@3.8.1':
+  '@shikijs/types@3.9.2':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
   '@shikijs/vitepress-twoslash@1.29.2(@nuxt/kit@packages+kit)(typescript@5.9.2)':
     dependencies:
-      '@shikijs/twoslash': 3.8.1(typescript@5.9.2)
+      '@shikijs/twoslash': 3.9.2(typescript@5.9.2)
       floating-vue: 5.2.2(@nuxt/kit@packages+kit)(vue@3.5.18(typescript@5.9.2))
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.1.0
@@ -11033,24 +11014,11 @@ snapshots:
       loupe: 3.1.4
       tinyrainbow: 2.0.0
 
-  '@volar/language-core@2.4.20':
-    dependencies:
-      '@volar/source-map': 2.4.20
-
   '@volar/language-core@2.4.22':
     dependencies:
       '@volar/source-map': 2.4.22
 
-  '@volar/source-map@2.4.20': {}
-
   '@volar/source-map@2.4.22': {}
-
-  '@volar/typescript@2.4.20':
-    dependencies:
-      '@volar/language-core': 2.4.20
-      path-browserify: 1.0.1
-      vscode-uri: 3.1.0
-    optional: true
 
   '@volar/typescript@2.4.22':
     dependencies:
@@ -11190,7 +11158,7 @@ snapshots:
 
   '@vue/language-core@2.1.10(typescript@5.9.2)':
     dependencies:
-      '@volar/language-core': 2.4.20
+      '@volar/language-core': 2.4.22
       '@vue/compiler-dom': 3.5.18
       '@vue/compiler-vue2': 2.7.16
       '@vue/shared': 3.5.18
@@ -11203,7 +11171,7 @@ snapshots:
 
   '@vue/language-core@2.2.10(typescript@5.9.2)':
     dependencies:
-      '@volar/language-core': 2.4.20
+      '@volar/language-core': 2.4.22
       '@vue/compiler-dom': 3.5.18
       '@vue/compiler-vue2': 2.7.16
       '@vue/shared': 3.5.18
@@ -11510,11 +11478,6 @@ snapshots:
 
   assertion-error@2.0.1: {}
 
-  ast-kit@2.1.0:
-    dependencies:
-      '@babel/parser': 7.28.0
-      pathe: 2.0.3
-
   ast-kit@2.1.1:
     dependencies:
       '@babel/parser': 7.28.0
@@ -11531,7 +11494,7 @@ snapshots:
   ast-walker-scope@0.8.1:
     dependencies:
       '@babel/parser': 7.28.0
-      ast-kit: 2.1.0
+      ast-kit: 2.1.1
 
   async-sema@3.1.1: {}
 
@@ -13054,18 +13017,6 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3@1.15.3:
-    dependencies:
-      cookie-es: 1.2.2
-      crossws: 0.3.5
-      defu: 6.1.4
-      destr: 2.0.5
-      iron-webcrypto: 1.2.1
-      node-mock-http: 1.0.1
-      radix3: 1.1.2
-      ufo: 1.6.1
-      uncrypto: 0.1.3
-
   h3@1.15.4:
     dependencies:
       cookie-es: 1.2.2
@@ -14515,7 +14466,7 @@ snapshots:
       exsolve: 1.0.7
       globby: 14.1.0
       gzip-size: 7.0.0
-      h3: 1.15.3
+      h3: 1.15.4
       hookable: 5.5.3
       httpxy: 0.1.7
       ioredis: 5.6.1
@@ -14528,7 +14479,7 @@ snapshots:
       mime: 4.0.7
       mlly: 1.7.4
       node-fetch-native: 1.6.6
-      node-mock-http: 1.0.1
+      node-mock-http: 1.0.2
       ofetch: 1.4.1
       ohash: 2.0.11
       pathe: 2.0.3
@@ -14611,8 +14562,6 @@ snapshots:
   node-forge@1.3.1: {}
 
   node-gyp-build@4.8.4: {}
-
-  node-mock-http@1.0.1: {}
 
   node-mock-http@1.0.2: {}
 
@@ -16293,7 +16242,7 @@ snapshots:
 
   twoslash-protocol@0.2.12: {}
 
-  twoslash-protocol@0.3.2: {}
+  twoslash-protocol@0.3.3: {}
 
   twoslash-vue@0.2.12(typescript@5.9.2):
     dependencies:
@@ -16312,10 +16261,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  twoslash@0.3.2(typescript@5.9.2):
+  twoslash@0.3.3(typescript@5.9.2):
     dependencies:
       '@typescript/vfs': 1.6.1(typescript@5.9.2)
-      twoslash-protocol: 0.3.2
+      twoslash-protocol: 0.3.3
       typescript: 5.9.2
     transitivePeerDependencies:
       - supports-color
@@ -16905,7 +16854,7 @@ snapshots:
 
   vue-tsc@2.2.10(typescript@5.9.2):
     dependencies:
-      '@volar/typescript': 2.4.20
+      '@volar/typescript': 2.4.22
       '@vue/language-core': 2.2.10(typescript@5.9.2)
       typescript: 5.9.2
     optional: true
