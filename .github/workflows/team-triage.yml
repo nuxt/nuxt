@@ -22,6 +22,8 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_DISCUSSIONS_WEBHOOK }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_DISCUSSIONS_CHANNEL_ID }}
         with:
           script: |
             const item = context.payload.issue || context.payload.pull_request;
@@ -41,25 +43,24 @@ jobs:
             };
             
             const title = sanitizeText(item.title);
-            const author = sanitizeText(item.user.login);
             const requester = sanitizeText(labeledBy.login);
             
-            // Create Discord thread via webhook
             const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+            const botToken = process.env.DISCORD_BOT_TOKEN;
+            const channelId = process.env.DISCORD_CHANNEL_ID;
             
             if (!webhookUrl) {
               console.log('Discord webhook URL not configured');
               return;
             }
             
-            // Discord thread names are limited to 100 characters
-            const threadName = `#${itemNumber}: ${title}`.substring(0, 100);
-            
+            // Simplified message content - Discord will show rich preview
             const payload = {
-              content: `🧵 **Team Discussion Thread**\n\n**${itemType}:** [#${itemNumber} ${title}](${itemUrl})\n**Author:** [\`${author}\`](https://github.com/${author})\n**Requested by:** [\`${requester}\`](https://github.com/${requester})\n\nThis thread has been created to discuss implementation details, concerns, and decisions.`
+              content: `🧵 **[Team discussion](${itemUrl})** requested by \`${requester}\``
             };
             
             try {
+              // Post initial message via webhook
               const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: {
@@ -70,6 +71,58 @@ jobs:
               
               if (response.ok) {
                 console.log('Discord message posted successfully');
+                
+                // Get message data for thread creation and reactions
+                const messageData = await response.json();
+                
+                if (botToken && channelId && messageData && messageData.id) {
+                  try {
+                    // Create thread name
+                    const threadName = `#${itemNumber}: ${title}`.substring(0, 100);
+                    
+                    // Create thread using Discord API
+                    const threadResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/${messageData.id}/threads`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bot ${botToken}`
+                      },
+                      body: JSON.stringify({
+                        name: threadName,
+                        type: 11, // PUBLIC_THREAD
+                        auto_archive_duration: 10080 // 7 days
+                      })
+                    });
+                    
+                    if (threadResponse.ok) {
+                      console.log('Discord thread created successfully');
+                    } else {
+                      console.log('Failed to create thread:', threadResponse.status, await threadResponse.text());
+                    }
+                    
+                    // Add default reactions for easy feedback
+                    const reactions = ['👍', '👎', '🤔', '❤️', '🚀'];
+                    
+                    for (const emoji of reactions) {
+                      try {
+                        await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/${messageData.id}/reactions/${encodeURIComponent(emoji)}/@me`, {
+                          method: 'PUT',
+                          headers: {
+                            'Authorization': `Bot ${botToken}`
+                          }
+                        });
+                        console.log(`Added reaction: ${emoji}`);
+                      } catch (reactionError) {
+                        console.log(`Failed to add reaction ${emoji}:`, reactionError.message);
+                      }
+                    }
+                    
+                  } catch (botError) {
+                    console.log('Bot operations failed, but message was posted:', botError.message);
+                  }
+                } else {
+                  console.log('Bot token or channel ID not configured, skipping thread creation');
+                }
               } else {
                 console.log('Failed to create Discord message:', response.status, response.statusText);
               }
