@@ -56,12 +56,11 @@ jobs:
             const threadName = `#${itemNumber}: ${title}`.substring(0, 100);
             
             const payload = {
-              thread_name: threadName,
-              content: `🧵 **Team Discussion Thread**\n\n**${itemType}:** [#${itemNumber} ${title}](${itemUrl})\n**Author:** [\`${author}\`](https://github.com/${author})\n**Requested by:** [\`${requester}\`](https://github.com/${requester})\n\nThis thread has been created for team discussion about the above ${itemType.toLowerCase()}. Please share your thoughts and feedback here.`
+              content: `🧵 **Team Discussion Thread**\n\n**${itemType}:** [#${itemNumber} ${title}](${itemUrl})\n**Author:** [\`${author}\`](https://github.com/${author})\n**Requested by:** [\`${requester}\`](https://github.com/${requester})\n\nThis thread has been created to discuss implementation details, concerns, and decisions.`
             };
             
             try {
-              const response = await fetch(`${webhookUrl}?thread_name=${encodeURIComponent(threadName)}`, {
+              const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -70,12 +69,12 @@ jobs:
               });
               
               if (response.ok) {
-                console.log('Discord thread created successfully');
+                console.log('Discord message posted successfully');
               } else {
-                console.log('Failed to create Discord thread:', response.status, response.statusText);
+                console.log('Failed to create Discord message:', response.status, response.statusText);
               }
             } catch (error) {
-              console.log('Error creating Discord thread:', error.message);
+              console.log('Error creating Discord message:', error.message);
             }
 
       - name: Add to Team Board Project
@@ -99,13 +98,9 @@ jobs:
             const issueNodeId = issue.node_id;
             
             try {
-              // Add issue to project
               const addToProjectMutation = `
-                mutation($projectId: ID!, $contentId: ID!) {
-                  addProjectV2ItemByContentId(input: {
-                    projectId: $projectId
-                    contentId: $contentId
-                  }) {
+                mutation($input: AddProjectV2ItemByIdInput!) {
+                  addProjectV2ItemById(input: $input) {
                     item {
                       id
                     }
@@ -114,22 +109,19 @@ jobs:
               `;
               
               const addResult = await github.graphql(addToProjectMutation, {
-                projectId: projectId,
-                contentId: issueNodeId
+                input: {
+                  projectId: projectId,
+                  contentId: issueNodeId
+                }
               });
               
-              const itemId = addResult.addProjectV2ItemByContentId.item.id;
-              console.log('Added issue to project with item ID:', itemId);
+              const itemId = addResult.addProjectV2ItemById.item.id;
+              console.log('Added item to project with item ID:', itemId);
               
-              // Set status to "Discussing"
+              // Set status to "Discussing"  
               const updateStatusMutation = `
-                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
-                  updateProjectV2ItemFieldValue(input: {
-                    projectId: $projectId
-                    itemId: $itemId
-                    fieldId: $fieldId
-                    value: $value
-                  }) {
+                mutation($input: UpdateProjectV2ItemFieldValueInput!) {
+                  updateProjectV2ItemFieldValue(input: $input) {
                     projectV2Item {
                       id
                     }
@@ -138,11 +130,13 @@ jobs:
               `;
               
               await github.graphql(updateStatusMutation, {
-                projectId: projectId,
-                itemId: itemId,
-                fieldId: discussingStatusId,
-                value: {
-                  singleSelectOptionId: process.env.DISCUSSING_OPTION_ID
+                input: {
+                  projectId: projectId,
+                  itemId: itemId,
+                  fieldId: discussingStatusId,
+                  value: {
+                    singleSelectOptionId: process.env.DISCUSSING_OPTION_ID
+                  }
                 }
               });
               
