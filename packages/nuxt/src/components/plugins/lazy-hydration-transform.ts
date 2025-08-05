@@ -6,9 +6,8 @@ import { tryUseNuxt } from '@nuxt/kit'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils'
-import { logger } from '../../utils'
+import { logger, resolveToAlias } from '../../utils'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
-import { reverseResolveAlias } from 'pathe/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -104,7 +103,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
 
             if (strategy && !/^(?:Lazy|lazy-)/.test(node.name)) {
               if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
-                const relativePath = reverseResolveAlias(id, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || id
+                const relativePath = resolveToAlias(id, nuxt)
                 logger.warn(`Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
                   `Rename it to \`<Lazy${pascalCase(node.name)} />\` or remove the lazy-hydration props to avoid unexpected behavior.`)
               }
@@ -139,8 +138,3 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
     },
   }
 })
-
-const strippedAtAliases = {
-  '@': '',
-  '@@': '',
-}
