@@ -6,6 +6,8 @@ import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
 import type { Component } from './components'
 import type { NuxtOptions } from './config'
 import type { NuxtDebugContext } from './debug'
+import type { Awaitable, MaybeArray } from '../utils/definition.ts'
+import type { parseAndWalk } from 'oxc-walker'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -70,6 +72,58 @@ export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtPluginTemplate<Options = TemplateDefaultOptions> extends _TemplatePlugin<Options> { }
+
+export interface ScanPluginHandlerContext {
+  /**
+   * The identifier of the file being scanned. (usually the file path)
+   */
+  id: string
+  /**
+   * The string contents of the file being scanned.
+   */
+  input: string
+  /**
+   * The global Nuxt instance.
+   */
+  nuxt: Nuxt
+}
+
+interface ScanPluginHandlerThisContext {
+  /**
+   * A shared walk function from `oxc-walker` that re-uses the same AST in all plugins for the same file.
+   * Only the first invocation of this function will parse the file.
+   */
+  walkParsed: (options: Parameters<typeof parseAndWalk>[2]) => ReturnType<typeof parseAndWalk>
+}
+
+type ScanPluginHandler = (this: ScanPluginHandlerThisContext, ctx: ScanPluginHandlerContext) => Awaitable<void>
+
+export interface ScanPlugin {
+  name: string
+  filter?: {
+    /**
+     * Filter the files by their identifier.
+     */
+    id?: ScanPluginFilter
+    /**
+     * Filter the files by their contents.
+     */
+    code?: ScanPluginFilter
+  }
+  scan: ScanPluginHandler
+  /**
+   * This function is called after the scan is complete.
+   * It can be used to perform any final actions like adding build plugins or modifying
+   * the Nuxt instance before proceeding with the build.
+   */
+  afterScan?: (nuxt: Nuxt) => Awaitable<void>
+}
+
+type FilterPattern = MaybeArray<RegExp | string>
+type ScanPluginPatternFilter =
+  | { include: FilterPattern, exclude?: FilterPattern }
+  | { include?: FilterPattern, exclude: FilterPattern }
+export type ScanPluginFilter<T = string> = ((input: T) => boolean) | ScanPluginPatternFilter
 
 export interface NuxtApp {
   mainComponent?: string | null

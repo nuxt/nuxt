@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -29,6 +29,7 @@ import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import importsModule from '../imports/module'
+import compilerModule from '../compiler/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
@@ -285,13 +286,6 @@ async function initNuxt (nuxt: Nuxt) {
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
-  // Add keys for useFetch, useAsyncData, etc.
-  addBuildPlugin(ComposableKeysPlugin({
-    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    rootDir: nuxt.options.rootDir,
-    composables: nuxt.options.optimization.keyedComposables,
-  }))
-
   // shared folder import protection
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
   const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
@@ -415,13 +409,6 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.options.modulesDir.push(...nuxt.options._layers
     .filter(l => l.cwd !== nuxt.options.rootDir && locallyScannedLayersDirs.every(dir => !l.cwd.startsWith(dir)))
     .map(l => resolve(l.cwd, 'node_modules')))
-
-  // Init user modules
-  await nuxt.callHook('modules:before')
-
-  const { paths: modulePaths, modules } = await resolveModules(nuxt)
-
-  nuxt.options.watch.push(...modulePaths)
 
   // Add <NuxtWelcome>
   // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
@@ -548,9 +535,27 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
   }
 
+  // Init user modules
+  await nuxt.callHook('modules:before')
+
+  const { paths: modulePaths, modules } = await resolveModules(nuxt)
+  nuxt.options.watch.push(...modulePaths)
+
   for (const [key, options] of modules) {
     await installModule(key, options)
   }
+
+  // Add keys for useFetch, useAsyncData, etc.
+
+  const normalizedKeyedComposables = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
+    ...rest,
+    source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
+  })))
+
+  addBuildPlugin(ComposableKeysPlugin({
+    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    composables: normalizedKeyedComposables,
+  }))
 
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
@@ -787,6 +792,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
+
+  // add the compiler module as the last one so that all previous ones can hook into it
+  options._modules.push(compilerModule)
+
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
   }

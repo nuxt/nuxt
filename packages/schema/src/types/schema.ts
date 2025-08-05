@@ -39,6 +39,7 @@ import type { SerializableHtmlAttributes } from './head'
 import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteConfig } from './config'
 import type { ImportsOptions } from './imports'
 import type { ComponentsOptions } from './components'
+import type { KeyedComposable, NuxtCompilerOptions } from './compiler.ts'
 
 export interface ConfigSchema {
   /**
@@ -56,6 +57,11 @@ export interface ConfigSchema {
    * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/composables)
    */
   imports: ImportsOptions
+
+  /**
+   * Configure the Nuxt compiler.
+   */
+  compiler: NuxtCompilerOptions
 
   /**
    * Whether to use the vue-router integration in Nuxt 3. If you do not provide a value it will be enabled if you have a `pages/` directory in your source folder.
@@ -503,7 +509,7 @@ export interface ConfigSchema {
    * The key will be unique based on the location of the function being invoked within the file.
    *
    */
-    keyedComposables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
+    keyedComposables: KeyedComposable[]
 
     /**
      * Tree shake code from specific builds.

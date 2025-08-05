@@ -1,10 +1,10 @@
-import { existsSync, statSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
-import { logger } from '../utils'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension } from '../utils'
 import { lazyHydrationMacroPreset } from '../imports/presets'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
@@ -19,14 +19,12 @@ import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macr
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 const SLASH_SEPARATOR_RE = /[\\/]/
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
   return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
 }
 
 const DEFAULT_COMPONENTS_DIRS_RE = /\/components(?:\/(?:global|islands))?$/
-const STARTER_DOT_RE = /^\./g
 
 export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
@@ -95,9 +93,9 @@ export default defineNuxtModule<ComponentsOptions>({
         const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
         const dirPath = resolveAlias(dirOptions.path)
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(STARTER_DOT_RE, ''))
+        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => normalizeExtension(e))
 
-        const present = isDirectory(dirPath)
+        const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
           logger.warn('Components directory not found: `' + dirPath + '`')
         }
@@ -112,7 +110,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.{cts,mts,ts}', // .d.ts files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // .d.ts files
             ...(dirOptions.ignore || []),
           ],
           transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile),
