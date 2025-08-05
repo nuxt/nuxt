@@ -80,11 +80,12 @@ jobs:
       - name: Add to Team Board Project
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_ACCESS_TOKEN: ${{ secrets.PROJECT_ACCESS_TOKEN }}
           PROJECT_ID: PVT_kwDOAWR1pc4AaZWS
           DISCUSSING_STATUS_ID: PVTSSF_lADOAWR1pc4AaZWSzgQ7T9k
           DISCUSSING_OPTION_ID: f75ad846
         with:
+          github-token: ${{ secrets.PROJECT_ACCESS_TOKEN }}
           script: |
             const projectId = process.env.PROJECT_ID;
             const discussingStatusId = process.env.DISCUSSING_STATUS_ID;
