@@ -13,7 +13,7 @@ import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
-import { logger } from '../utils'
+import { logger, resolveToAlias } from '../utils'
 import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
@@ -417,11 +417,11 @@ export default defineNuxtModule({
         const glob = pageToGlobMap[path]
         const code = path in nuxt.vfs ? nuxt.vfs[path]! : await readFile(path!, 'utf-8')
         try {
-          const extractedRule = await extractRouteRules(code, path)
+          const extractedRule = extractRouteRules(code, path)
           if (extractedRule) {
             if (!glob) {
-              const relativePath = relative(nuxt.options.srcDir, path)
-              logger.error(`Could not set inline route rules in \`~/${relativePath}\` as it could not be mapped to a Nitro route.`)
+              const relativePath = resolveToAlias(path, nuxt)
+              logger.error(`Could not set inline route rules in \`${relativePath}\` as it could not be mapped to a Nitro route.`)
               return
             }
 
@@ -431,8 +431,7 @@ export default defineNuxtModule({
           }
         } catch (e: any) {
           if (e.toString().includes('Error parsing route rules')) {
-            const relativePath = relative(nuxt.options.srcDir, path)
-            logger.error(`Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
+            logger.error(`Error parsing route rules within \`${resolveToAlias(path, nuxt)}\`. They should be JSON-serializable.`)
           } else {
             logger.error(e)
           }
