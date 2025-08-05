@@ -6,7 +6,7 @@ import { createUnimport, scanDirExports, toExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
-import { isDirectory, logger } from '../utils'
+import { isDirectory, logger, resolveToAlias } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets } from './presets'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -148,7 +148,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           if (!defaultImportSources.has(i.from)) {
             const value = i.as || i.name
             if (defaultImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
-              const relativePath = isAbsolute(i.from) ? `~/${relative(nuxt.options.srcDir, i.from)}` : i.from
+              const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
               logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
             }
           }
