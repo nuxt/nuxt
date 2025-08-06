@@ -52,9 +52,8 @@ jobs:
               return;
             }
             
-            // Simplified message content - Discord will show rich preview
             const payload = {
-              content: `🧵 **[Team discussion](${itemUrl})** requested by \`${requester}\``
+              content: `🧵 [**Team discussion**]($itemUrl) **requested by \`${requester}\`**`
             };
             
             try {
