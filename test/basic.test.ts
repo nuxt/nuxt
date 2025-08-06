@@ -1062,6 +1062,16 @@ describe('head tags', () => {
     expect(html).toContain('<meta http-equiv="content-security-policy" content="default-src https">')
   })
 
+  // TODO: https://github.com/nuxt/nuxt/issues/32670
+  it.fails('should not duplicate link tags with rel="alternate"', async () => {
+    const page = await createPage('/head-component')
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    expect(await page.locator('link[rel="alternate"]').count()).toBe(1)
+    await page.close()
+  })
+
   // TODO: Doesn't adds header in test environment
   // it.todo('should render stylesheet link tag (SPA mode)', async () => {
   //   const html = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
