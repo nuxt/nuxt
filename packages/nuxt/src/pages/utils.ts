@@ -75,6 +75,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   const augmentCtx = {
     extraExtractionKeys: new Set([
       'middleware',
+      'routeRules',
       ...extraPageMetaExtractionKeys,
     ]),
     fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
