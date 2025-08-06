@@ -21,7 +21,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       if (meta.id !== currentManifest.id) {
         // There is a newer build which we will let the user handle
         nuxtApp.hooks.callHook('app:manifest:update', meta)
-        if(timeout) { clearTimeout(timeout) }
+        if (timeout) { clearTimeout(timeout) }
       }
     } catch {
       // fail gracefully on network issue
