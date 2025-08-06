@@ -106,6 +106,8 @@ jobs:
                         'Authorization': `Bot ${botToken}`
                       }
                     });
+
+                    await new Promise(resolve => setTimeout(resolve, 100)); // Rate limit handling
                     
                     if (reactionResponse.ok) {
                       console.log(`Added reaction: ${emoji}`);
