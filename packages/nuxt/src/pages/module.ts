@@ -11,11 +11,12 @@ import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
 import type { NitroRouteConfig } from 'nitropack/types'
 import { defu } from 'defu'
+import { isEqual } from 'ohash'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { logger, resolveToAlias } from '../utils'
-import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
-import { extractRouteRules, getMappedPages } from './route-rules'
+import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
+import { extractRouteRules, getMappedPages, globRouteRulesFromPages, removePagesMetaRouteRules } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
@@ -53,6 +54,29 @@ export default defineNuxtModule({
   async setup (_options, nuxt) {
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
+
+    let inlineRulesCache: Record<string, NitroRouteConfig> = {}
+    let updateRouteConfig: (inlineRules: Record<string, NitroRouteConfig>) => void | Promise<void>
+    nuxt.hook('nitro:init', (nitro) => {
+      updateRouteConfig = async (inlineRules) => {
+        if (!isEqual(inlineRulesCache, inlineRules)) {
+          await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
+          inlineRulesCache = inlineRules
+        }
+      }
+    })
+
+    const resolvePagesRoutes = async (pattern: string | string[], nuxt: Nuxt) => {
+      const pages = await _resolvePagesRoutes(pattern, nuxt)
+
+      if (nuxt.options.experimental.inlineRouteRules !== true) {
+        const routeRules = globRouteRulesFromPages(pages)
+        removePagesMetaRouteRules(pages)
+        await updateRouteConfig?.(routeRules)
+      }
+
+      return pages
+    }
 
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
@@ -497,6 +521,7 @@ export default defineNuxtModule({
     const extractedKeys = [
       ...defaultExtractionKeys,
       ...extraPageMetaExtractionKeys,
+      'routeRules',
     ]
 
     nuxt.hook('modules:done', () => {
@@ -602,6 +627,20 @@ export default defineNuxtModule({
           'declare module \'nuxt/app\' {',
           '  interface PageMeta {',
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
+          '  }',
+          '}',
+        ].join('\n')
+      },
+    })
+
+    addTypeTemplate({
+      filename: 'types/meta-route-rules.d.ts',
+      getContents: () => {
+        return [
+          'import type { NitroRouteConfig } from \'nitropack/types\'',
+          'declare module \'nuxt/app\' {',
+          '  interface PageMeta {',
+          '    routeRules?: NitroRouteConfig',
           '  }',
           '}',
         ].join('\n')
