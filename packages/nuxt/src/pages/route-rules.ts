@@ -59,7 +59,7 @@ export function getMappedPages (pages: NuxtPage[], paths = {} as { [absolutePath
 
 export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glob: string]: NitroRouteConfig }, prefix = '') {
   for (const page of pages) {
-    if (page.meta?.routeRules) {
+    if (page.meta?.routeRules && Object.keys(page.meta.routeRules).length) {
       const glob = pathToNitroGlob(prefix + page.path)
       if (glob) {
         paths[glob] = page.meta.routeRules
@@ -75,6 +75,9 @@ export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glo
 export function removePagesMetaRouteRules (routes: NuxtPage[]) {
   for (const route of routes) {
     delete route.meta?.routeRules
+    if (route.meta && Object.keys(route.meta).length === 0) {
+      delete route.meta
+    }
     if (route.children?.length) {
       removePagesMetaRouteRules(route.children)
     }
