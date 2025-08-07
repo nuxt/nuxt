@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { extractRouteRules } from '../src/pages/route-rules'
+import { extractRouteRules, globRouteRulesFromPages, removePagesMetaRouteRules } from '../src/pages/route-rules'
 
 describe('route-rules', () => {
   it('should extract route rules from pages', () => {
@@ -53,3 +53,47 @@ export default {
 }
     `,
 }
+
+describe('routeRules from page meta', () => {
+  const pages = [
+    {
+      path: '/',
+      meta: { routeRules: { prerender: true } },
+    },
+    // page with routeRules and other meta
+    {
+      path: '/about',
+      meta: { foo: 'foo', routeRules: { prerender: true } },
+    },
+    // parent without routeRules
+    {
+      path: '/users',
+      meta: {},
+      children: [{ path: ':id', meta: { routeRules: { prerender: true } } }],
+    },
+    // page with empty routeRules
+    {
+      path: '/contact',
+      meta: { routeRules: {} },
+    },
+  ]
+
+  it('extracts route rules from pages meta', () => {
+    const result = globRouteRulesFromPages(pages)
+    expect(result).toEqual({
+      '/': { prerender: true },
+      '/about': { prerender: true },
+      '/users/**': { prerender: true },
+    })
+  })
+
+  it('removes route rules from pages meta', () => {
+    removePagesMetaRouteRules(pages)
+    expect(pages).toEqual([
+      { path: '/' },
+      { path: '/about', meta: { foo: 'foo' } },
+      { path: '/users', children: [{ path: ':id' }] },
+      { path: '/contact' },
+    ])
+  })
+})
