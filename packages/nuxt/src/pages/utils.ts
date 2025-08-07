@@ -8,6 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 
+import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
 import type { Node, ObjectProperty } from 'oxc-parser'
@@ -183,7 +184,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
         : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
-        routeMeta.meta = { ...routeMeta.meta, ...route.meta }
+        routeMeta.meta = defu({}, routeMeta.meta, route.meta)
       }
 
       Object.assign(route, routeMeta)
