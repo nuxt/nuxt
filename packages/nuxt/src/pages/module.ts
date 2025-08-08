@@ -16,7 +16,7 @@ import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { logger } from '../utils'
 import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
-import { globRouteRulesFromPages } from './route-rules'
+import { globRouteRulesFromPages, removePagesRules } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
@@ -74,6 +74,9 @@ export default defineNuxtModule({
       if (nuxt.options.experimental.inlineRouteRules) {
         const routeRules = globRouteRulesFromPages(pages)
         await updateRouteConfig?.(routeRules)
+      } else {
+        // also remove rules when disabled
+        removePagesRules(pages)
       }
 
       return pages
