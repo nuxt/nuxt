@@ -139,7 +139,7 @@ interface PageMeta {
 
     Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-approuteroptions)) for more info.
 
-  **`routeRules`**
+  **`rules`**
 
   - **Type**: [`NitroRouteConfig`](/docs/guide/concepts/rendering#route-rules)
 
