@@ -21,3 +21,12 @@ export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glo
   }
   return paths
 }
+
+export function removePagesRules (routes: NuxtPage[]) {
+  for (const route of routes) {
+    delete route.rules
+    if (route.children?.length) {
+      removePagesRules(route.children)
+    }
+  }
+}
