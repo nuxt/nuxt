@@ -77,12 +77,12 @@ const formattedDate = computed(() => {
     seconds: number
     threshold: number
   }> = [
-    { unit: 'second', seconds: 1, threshold: 60 },       // 60 seconds → minute
-    { unit: 'minute', seconds: 60, threshold: 60 },      // 60 minutes → hour
-    { unit: 'hour',   seconds: 3600, threshold: 24 },    // 24 hours → day
-    { unit: 'day',    seconds: 86400, threshold: 30 },   // ~30 days → month
-    { unit: 'month',  seconds: 2592000, threshold: 12 }, // 12 months → year
-    { unit: 'year',   seconds: 31536000, threshold: Infinity }
+    { unit: 'second', seconds: 1, threshold: 60 }, // 60 seconds → minute
+    { unit: 'minute', seconds: 60, threshold: 60 }, // 60 minutes → hour
+    { unit: 'hour', seconds: 3600, threshold: 24 }, // 24 hours → day
+    { unit: 'day', seconds: 86400, threshold: 30 }, // ~30 days → month
+    { unit: 'month', seconds: 2592000, threshold: 12 }, // 12 months → year
+    { unit: 'year', seconds: 31536000, threshold: Infinity },
   ]
 
   const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
