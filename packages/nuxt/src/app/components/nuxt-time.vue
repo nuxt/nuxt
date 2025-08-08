@@ -126,15 +126,20 @@ if (import.meta.server) {
 
     if (options.relative) {
       const diffInSeconds = (date.getTime() - now) / 1000
-      const units: Array<{ unit: Intl.RelativeTimeFormatUnit, value: number }> = [
-        { unit: 'second', value: diffInSeconds },
-        { unit: 'minute', value: diffInSeconds / 60 },
-        { unit: 'hour', value: diffInSeconds / 3600 },
-        { unit: 'day', value: diffInSeconds / 86400 },
-        { unit: 'month', value: diffInSeconds / 2592000 },
-        { unit: 'year', value: diffInSeconds / 31536000 },
+      const units: Array<{
+        unit: Intl.RelativeTimeFormatUnit
+        seconds: number
+        threshold: number
+      }> = [
+        { unit: 'second', seconds: 1, threshold: 60 }, // 60 seconds → minute
+        { unit: 'minute', seconds: 60, threshold: 60 }, // 60 minutes → hour
+        { unit: 'hour', seconds: 3600, threshold: 24 }, // 24 hours → day
+        { unit: 'day', seconds: 86400, threshold: 30 }, // ~30 days → month
+        { unit: 'month', seconds: 2592000, threshold: 12 }, // 12 months → year
+        { unit: 'year', seconds: 31536000, threshold: Infinity },
       ]
-      const { unit, value } = units.find(({ value }) => Math.abs(value) < 60) || units[units.length - 1]!
+      const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
+      const value = diffInSeconds / seconds
       const formatter = new Intl.RelativeTimeFormat(options.locale, options)
       el.textContent = formatter.format(Math.round(value), unit)
     } else {
