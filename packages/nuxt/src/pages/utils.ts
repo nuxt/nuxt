@@ -15,7 +15,7 @@ import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 import type { NuxtPage } from 'nuxt/schema'
 
-const SegmentTokenMap = {
+const SegmentTokenType = {
   static: 'static',
   dynamic: 'dynamic',
   optional: 'optional',
@@ -23,14 +23,14 @@ const SegmentTokenMap = {
   group: 'group',
 } as const
 
-type SegmentTokenType = typeof SegmentTokenMap[keyof typeof SegmentTokenMap]
+type SegmentTokenType = typeof SegmentTokenType[keyof typeof SegmentTokenType]
 
-const SegmentParserStateMap = {
+const SegmentParserState = {
   initial: 'initial',
-  ...SegmentTokenMap,
+  ...SegmentTokenType,
 } as const
 
-type SegmentParserState = typeof SegmentParserStateMap[keyof typeof SegmentParserStateMap]
+type SegmentParserState = typeof SegmentParserState[keyof typeof SegmentParserState]
 
 interface SegmentToken {
   type: SegmentTokenType
@@ -137,11 +137,11 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       const tokens = parseSegment(segment!, file.absolutePath)
 
       // Skip group segments
-      if (tokens.every(token => token.type === SegmentTokenMap.group)) {
+      if (tokens.every(token => token.type === SegmentTokenType.group)) {
         continue
       }
 
-      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenMap.group ? '' : value).join('')
+      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
@@ -310,15 +310,15 @@ const COLON_RE = /:/g
 function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
   return tokens.reduce((path, token) => {
     switch (token.type) {
-      case SegmentTokenMap.optional:
+      case SegmentTokenType.optional:
         return path + `:${token.value}?`
-      case SegmentTokenMap.dynamic:
+      case SegmentTokenType.dynamic:
         return path + `:${token.value}()`
-      case SegmentTokenMap.catchall:
+      case SegmentTokenType.catchall:
         return path + (hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`)
-      case SegmentTokenMap.group:
+      case SegmentTokenType.group:
         return path
-      case SegmentTokenMap.static:
+      case SegmentTokenType.static:
       default:
         return path + encodePath(token.value).replace(COLON_RE, '\\:')
     }
@@ -328,7 +328,7 @@ function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): st
 const PARAM_CHAR_RE = /[\w.]/
 
 function parseSegment (segment: string, absolutePath: string) {
-  let state: SegmentParserState = SegmentParserStateMap.initial
+  let state: SegmentParserState = SegmentParserState.initial
   let i = 0
 
   let buffer = ''
@@ -338,7 +338,7 @@ function parseSegment (segment: string, absolutePath: string) {
     if (!buffer) {
       return
     }
-    if (state === SegmentParserStateMap.initial) {
+    if (state === SegmentParserState.initial) {
       throw new Error('wrong state')
     }
 
@@ -351,58 +351,58 @@ function parseSegment (segment: string, absolutePath: string) {
     const c = segment[i]
 
     switch (state) {
-      case SegmentParserStateMap.initial:
+      case SegmentParserState.initial:
         buffer = ''
         if (c === '[') {
-          state = SegmentParserStateMap.dynamic
+          state = SegmentParserState.dynamic
         } else if (c === '(') {
-          state = SegmentParserStateMap.group
+          state = SegmentParserState.group
         } else {
           i--
-          state = SegmentParserStateMap.static
+          state = SegmentParserState.static
         }
         break
 
-      case SegmentParserStateMap.static:
+      case SegmentParserState.static:
         if (c === '[') {
           consumeBuffer()
-          state = SegmentParserStateMap.dynamic
+          state = SegmentParserState.dynamic
         } else if (c === '(') {
           consumeBuffer()
-          state = SegmentParserStateMap.group
+          state = SegmentParserState.group
         } else {
           buffer += c
         }
         break
 
-      case SegmentParserStateMap.catchall:
-      case SegmentParserStateMap.dynamic:
-      case SegmentParserStateMap.optional:
-      case SegmentParserStateMap.group:
+      case SegmentParserState.catchall:
+      case SegmentParserState.dynamic:
+      case SegmentParserState.optional:
+      case SegmentParserState.group:
         if (buffer === '...') {
           buffer = ''
-          state = SegmentParserStateMap.catchall
+          state = SegmentParserState.catchall
         }
-        if (c === '[' && state === SegmentParserStateMap.dynamic) {
-          state = SegmentParserStateMap.optional
+        if (c === '[' && state === SegmentParserState.dynamic) {
+          state = SegmentParserState.optional
         }
-        if (c === ']' && (state !== SegmentParserStateMap.optional || segment[i - 1] === ']')) {
+        if (c === ']' && (state !== SegmentParserState.optional || segment[i - 1] === ']')) {
           if (!buffer) {
             throw new Error('Empty param')
           } else {
             consumeBuffer()
           }
-          state = SegmentParserStateMap.initial
-        } else if (c === ')' && state === SegmentParserStateMap.group) {
+          state = SegmentParserState.initial
+        } else if (c === ')' && state === SegmentParserState.group) {
           if (!buffer) {
             throw new Error('Empty group')
           } else {
             consumeBuffer()
           }
-          state = SegmentParserStateMap.initial
+          state = SegmentParserState.initial
         } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
-        } else if (state === SegmentParserStateMap.dynamic || state === SegmentParserStateMap.optional) {
+        } else if (state === SegmentParserState.dynamic || state === SegmentParserState.optional) {
           if (c !== '[' && c !== ']') {
             logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
           }
@@ -412,7 +412,7 @@ function parseSegment (segment: string, absolutePath: string) {
     i++
   }
 
-  if (state === SegmentParserStateMap.dynamic) {
+  if (state === SegmentParserState.dynamic) {
     throw new Error(`Unfinished param "${buffer}"`)
   }
 
