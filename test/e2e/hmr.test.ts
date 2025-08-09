@@ -173,5 +173,14 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       // Verify no unexpected errors
       expect(filteredLogs).toStrictEqual([])
     })
+
+    test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
+      await goto('/issues/32177')
+
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/issues/32177.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
+      await new Promise(resolve => setTimeout(resolve, 100))
+      await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
+    })
   }
 }
