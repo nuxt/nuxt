@@ -736,12 +736,8 @@ function createAsyncData<
 // Used to get default values
 const getDefault = () => undefined
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
-  if (nuxtApp.isHydrating) {
-    return nuxtApp.payload.data[key]
-  }
-
   if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook') {
-    return nuxtApp.static.data[key]
+    return nuxtApp.payload.data[key] || nuxtApp.static.data[key] || undefined
   }
 }
 
