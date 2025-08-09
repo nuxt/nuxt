@@ -116,7 +116,7 @@ export interface NavigateToOptions {
 
 const URL_QUOTE_RE = /"/g
 /** @since 3.0.0 */
-export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
+export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | WindowProxy | NavigationFailure | false> | false | void | RouteLocationRaw => {
   to ||= '/'
 
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
@@ -130,8 +130,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
       .join(', ')
 
-    open(toPath, target, features)
-    return Promise.resolve()
+    const windowObjectReference = open(toPath, target, features)
+    return Promise.resolve(windowObjectReference || undefined)
   }
 
   const isExternalHost = hasProtocol(toPath, { acceptRelative: true })
