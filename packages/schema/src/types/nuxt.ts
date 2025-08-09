@@ -92,6 +92,7 @@ export interface Nuxt {
   _version: string
   _ignore?: Ignore
   _dependencies?: Set<string>
+  _modulesToDefer?: Map<string | NuxtModule, Array<undefined | Record<string, any>>>
   _debug?: NuxtDebugContext
   /** Async local storage for current running Nuxt module instance. */
   _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
