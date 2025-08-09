@@ -674,6 +674,10 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
     }
   }
 
+  if (node.type === 'TSSatisfiesExpression') {
+    return isSerializable(code, node.expression)
+  }
+
   return {
     serializable: false,
   }
