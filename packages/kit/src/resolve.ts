@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { glob } from 'tinyglobby'
+import { type GlobOptions, glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { parseNodeModulePath } from 'mlly'
@@ -242,9 +242,15 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
   return templates.some(template => template.dst === path)
 }
 
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
+/**
+ * Resolve absolute file paths in the provided directory with respect to `.nuxtignore` and return them sorted.
+ * @param path path to the directory to resolve files in
+ * @param pattern glob pattern or an array of glob patterns to match files
+ * @param opts options for globbing
+ */
+export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}) {
   const files: string[] = []
-  for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true })) {
+  for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true, ignore: opts.ignore })) {
     if (!isIgnored(p)) {
       files.push(p)
     }
