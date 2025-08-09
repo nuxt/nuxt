@@ -16,10 +16,10 @@ let requestIdCounter = 0
 let clientSocket
 /** @type {Promise<Socket> | undefined} */
 let currentConnectPromise
-const MAX_RETRY_ATTEMPTS = 5
-const BASE_RETRY_DELAY_MS = 100
-const MAX_RETRY_DELAY_MS = 2000
-const REQUEST_TIMEOUT_MS = 10000
+const MAX_RETRY_ATTEMPTS = viteNodeOptions.maxRetryAttempts ?? 5
+const BASE_RETRY_DELAY_MS = viteNodeOptions.baseRetryDelay ?? 100
+const MAX_RETRY_DELAY_MS = viteNodeOptions.maxRetryDelay ?? 2000
+const REQUEST_TIMEOUT_MS = viteNodeOptions.requestTimeout ?? 60000
 
 /**
  * Calculates exponential backoff delay with jitter.

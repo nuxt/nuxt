@@ -1647,7 +1647,17 @@ export interface ConfigSchema {
    * @see [Vite configuration docs](https://vite.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
-  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig }
+  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig } & {
+    viteNode?: {
+      maxRetryAttempts?: number
+      /** in milliseconds */
+      baseRetryDelay?: number
+      /** in milliseconds */
+      maxRetryDelay?: number
+      /** in milliseconds */
+      requestTimeout?: number
+    }
+  }
 
   webpack: {
   /**
