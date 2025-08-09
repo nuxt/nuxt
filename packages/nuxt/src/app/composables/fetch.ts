@@ -1,4 +1,4 @@
-import type { FetchError, FetchOptions } from 'ofetch'
+import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
 import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
@@ -22,11 +22,11 @@ type ComputedOptions<T extends Record<string, any>> = {
   [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
 }
 
-interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
+interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>, DataT = any> extends FetchOptions<_ResponseType, DataT> {
   method?: M
 }
 
-type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
+type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>, DataT = any> = ComputedOptions<NitroFetchOptions<R, M, DataT>>
 
 export interface UseFetchOptions<
   ResT,
@@ -35,7 +35,7 @@ export interface UseFetchOptions<
   DefaultT = undefined,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M, DataT> {
   key?: MaybeRefOrGetter<string>
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
