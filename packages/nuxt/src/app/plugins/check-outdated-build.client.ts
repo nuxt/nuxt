@@ -10,7 +10,7 @@ import { outdatedBuildInterval } from '#build/nuxt.config.mjs'
 export default defineNuxtPlugin((nuxtApp) => {
   if (import.meta.test) { return }
 
-  let timeout: NodeJS.Timeout
+  let timeout: ReturnType<typeof setTimeout>
 
   async function getLatestManifest () {
     const currentManifest = await getAppManifest()
@@ -21,6 +21,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       if (meta.id !== currentManifest.id) {
         // There is a newer build which we will let the user handle
         nuxtApp.hooks.callHook('app:manifest:update', meta)
+        if (timeout) { clearTimeout(timeout) }
       }
     } catch {
       // fail gracefully on network issue
