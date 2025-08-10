@@ -10,7 +10,8 @@ import { hash } from 'ohash'
 
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
-import type { Node, ObjectProperty } from 'oxc-parser'
+import { parseSync } from 'oxc-parser'
+import type { CallExpression, ExpressionStatement, Node, ObjectExpression, ObjectProperty } from 'oxc-parser'
 import { transform as oxcTransform } from 'oxc-transform'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
@@ -250,35 +251,39 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
     let foundMeta = false
 
-    // transform ts to js if needed
-    if (/tsx?/.test(script.loader)) {
-      const transformed = oxcTransform(absolutePath, script.code, { lang: script.loader })
-      if (transformed.errors.length) {
-        for (const error of transformed.errors) {
-          logger.warn('Error while parsing `definePageMeta()`' + error.codeframe)
-        }
-        continue
-      }
-      script.code = transformed.code
-    }
-
     parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (foundMeta) { return }
 
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
 
       foundMeta = true
-      const pageMetaArgument = node.expression.arguments[0]
+      let code = script.code
+      let pageMetaArgument = node.expression.arguments[0]
       if (pageMetaArgument?.type !== 'ObjectExpression') {
         logger.warn(`\`definePageMeta\` must be called with an object literal (reading \`${absolutePath}\`).`)
         return
+      }
+
+      // when using ts we slice, transform and parse the `definePageMeta` node to avoid parsing the whole file
+      if (/tsx?/.test(script.loader)) {
+        const transformed = oxcTransform(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        code = transformed.code
+        if (transformed.errors.length) {
+          for (const error of transformed.errors) {
+            logger.warn('Error while transforming `definePageMeta()`' + error.codeframe)
+          }
+          return
+        }
+
+        // we already know that the first statement is a call expression
+        pageMetaArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]! as ObjectExpression
       }
 
       for (const key of extractionKeys) {
         const property = pageMetaArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        const { value, serializable } = isSerializable(script.code, property.value)
+        const { value, serializable } = isSerializable(code, property.value)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
