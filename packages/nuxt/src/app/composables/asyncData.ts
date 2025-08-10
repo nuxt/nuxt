@@ -679,9 +679,6 @@ function createAsyncData<
           // Avoid fetching same key more than once at a time
           return nuxtApp._asyncDataPromises[key]!
         }
-        if (asyncData._abortController) {
-          asyncData._abortController.abort(new DOMException('AsyncData request cancelled by deduplication', 'AbortError'))
-        }
       }
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
@@ -695,6 +692,9 @@ function createAsyncData<
       }
       if (pendingWhenIdle) {
         asyncData.pending.value = true
+      }
+      if (asyncData._abortController) {
+        asyncData._abortController.abort(new DOMException('AsyncData request cancelled by deduplication', 'AbortError'))
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
