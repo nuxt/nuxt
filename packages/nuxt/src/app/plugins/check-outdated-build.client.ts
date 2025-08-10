@@ -1,4 +1,4 @@
-import { FetchError } from 'ofetch'
+import type { FetchError } from 'ofetch'
 import { defineNuxtPlugin } from '../nuxt'
 import { getAppManifest } from '../composables/manifest'
 import type { NuxtAppManifestMeta } from '../composables/manifest'
@@ -18,9 +18,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     try {
       currentManifest = await getAppManifest()
     } catch (e) {
-      // The build is already outdated but the manifest is not cached
-      if (!(e instanceof FetchError && (e.status === 404 || e.status === 403))) {
-        throw e
+      const err = e as FetchError | Error
+      // The build is already outdated but the manifest was not cached
+      if (!('status' in err && (err.status === 404 || err.status === 403))) {
+        throw err
       }
     }
     if (timeout) { clearTimeout(timeout) }
