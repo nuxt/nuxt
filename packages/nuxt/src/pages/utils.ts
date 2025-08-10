@@ -257,6 +257,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         for (const error of transformed.errors) {
           logger.warn('Error while parsing `definePageMeta()`' + error.codeframe)
         }
+        continue
       }
       script.code = transformed.code
     }
