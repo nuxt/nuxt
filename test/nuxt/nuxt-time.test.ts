@@ -75,8 +75,15 @@ describe('<NuxtTime>', () => {
     )
   })
 
-  it('should generate the correct hydrateable code', async () => {
-    const datetime = Date.now() - 32 * 24 * 60 * 60 * 1000
+  const tests = [
+    [`${Date.now() - 25 * 60 * 60 * 1000}`, '1 day ago'],
+    [`${Date.now() - 45 * 24 * 60 * 60 * 1000}`, '2 months ago'],
+    [`${Date.now() - 15 * 30 * 24 * 60 * 60 * 1000}`, '1 year ago'],
+  ]
+
+  it.each(tests)('should generate the correct hydrateable code', async (_datetime,
+    description) => {
+    const datetime = Number(_datetime)
     const thing = await mountSuspended(
       defineComponent({
         render: () =>
@@ -92,8 +99,8 @@ describe('<NuxtTime>', () => {
 
     const html = thing.html()
     const id = html.match(/data-prehydrate-id="([^"]+)"/)?.[1]
-    expect(thing.html()).toMatchInlineSnapshot(
-      `"<time data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">1 month ago</time>"`,
+    expect(thing.html()).toEqual(
+      `<time data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
     const oldQuerySelector = document.querySelectorAll
 
@@ -113,8 +120,8 @@ describe('<NuxtTime>', () => {
 
     expect(window._nuxtTimeNow).toBeDefined()
 
-    expect(thing.html()).toMatchInlineSnapshot(
-      `"<time data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">1 month ago</time>"`,
+    expect(thing.html()).toEqual(
+      `<time data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
 
     document.querySelectorAll = oldQuerySelector
