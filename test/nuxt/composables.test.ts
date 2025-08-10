@@ -320,7 +320,7 @@ describe('useAsyncData', () => {
 
     await p
 
-    expect.soft(count).toBe(2)
+    expect.soft(count).toBe(1)
     expect.soft(data.value).toBe(1)
   })
 

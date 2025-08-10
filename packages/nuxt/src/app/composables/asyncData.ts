@@ -399,7 +399,7 @@ export function useAsyncData<
     clear: () => {
       if (nuxtApp._asyncDataPromises[key.value]) {
         if (nuxtApp._asyncData[key.value]?._abortController) {
-          nuxtApp._asyncData[key.value]?._abortController.abort(new DOMException('AsyncData aborted by user.', 'AbortError'))
+          nuxtApp._asyncData[key.value]?._abortController?.abort(new DOMException('AsyncData aborted by user.', 'AbortError'))
         }
       }
       clearNuxtDataByKey(nuxtApp, key.value)
@@ -696,17 +696,15 @@ function createAsyncData<
       if (pendingWhenIdle) {
         asyncData.pending.value = true
       }
-      const abortController = new AbortController()
-      asyncData._abortController = abortController
+      asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
-      // TODO: Cancel previous promise
       const promise = new Promise<ResT>(
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = AbortSignal.any([abortController.signal, opts?.signal, typeof timeout === 'number' ? AbortSignal.timeout(timeout) : undefined].filter((s): s is NonNullable<typeof s> => Boolean(s)))
-            mergedSignal.addEventListener('abort', () => {
-              reject(new Error(abortController.signal.reason)) // todo
+            const mergedSignal = AbortSignal.any([asyncData._abortController?.signal, opts?.signal, typeof timeout === 'number' ? AbortSignal.timeout(timeout) : undefined].filter((s): s is NonNullable<typeof s> => Boolean(s)))
+            mergedSignal.addEventListener('abort', (event) => {
+              reject(new Error(event.target?.reason ?? mergedSignal.reason)) // todo: new error or not? use event.target.reason?
             })
 
             return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
