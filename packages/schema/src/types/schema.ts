@@ -285,7 +285,7 @@ export interface ConfigSchema {
     spaLoaderTag: string
 
     /**
-     * Customize Nuxt Nuxt SpaLoader element attributes.
+     * Customize Nuxt SPA loading template element attributes.
      */
     spaLoaderAttrs: SerializableHtmlAttributes
   }
