@@ -11,6 +11,7 @@ import { hash } from 'ohash'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
 import type { Node, ObjectProperty } from 'oxc-parser'
+import { transform as oxcTransform } from 'oxc-transform'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 import type { NuxtPage } from 'nuxt/schema'
@@ -248,6 +249,17 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     const dynamicProperties = new Set<keyof NuxtPage>()
 
     let foundMeta = false
+
+    // transform ts to js if needed
+    if (/tsx?/.test(script.loader)) {
+      const transformed = oxcTransform(absolutePath, script.code, { lang: script.loader })
+      if (transformed.errors.length) {
+        for (const error of transformed.errors) {
+          logger.warn('Error while parsing `definePageMeta()`' + error.codeframe)
+        }
+      }
+      script.code = transformed.code
+    }
 
     parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (foundMeta) { return }
@@ -673,10 +685,6 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
       value: node.value,
       serializable: true,
     }
-  }
-
-  if (node.type === 'TSSatisfiesExpression' || node.type === 'TSAsExpression' || node.type === 'ParenthesizedExpression') {
-    return isSerializable(code, node.expression)
   }
 
   return {
