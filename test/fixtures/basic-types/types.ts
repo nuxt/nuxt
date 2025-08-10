@@ -112,6 +112,16 @@ describe('API routes', () => {
     expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
   })
+
+  it('works with useFetch and generic type', () => {
+    type ApiResponse = { message: string }
+
+    useFetch<ApiResponse>('/api/v1/users', {
+      onResponse ({ response }) {
+        expectTypeOf(response._data).toEqualTypeOf<ApiResponse | undefined>()
+      },
+    })
+  })
 })
 
 describe('nitro compatible APIs', () => {
