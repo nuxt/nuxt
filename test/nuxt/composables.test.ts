@@ -836,6 +836,17 @@ describe('useAsyncData', () => {
     expect(_signal.aborted).toBe(true)
     vi.useRealTimers()
   })
+
+  it('should accept timeout', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { status } = useAsyncData(promiseFn, { timeout: 1 })
+    expect(status.value).toBe('pending')
+    await vi.waitFor(() => { // todo: advanceTimersToNextTimer is not working here (?)
+      expect(status.value).toBe('error')
+    })
+    vi.useRealTimers()
+  })
 })
 
 describe('useFetch', () => {
