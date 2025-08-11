@@ -8,7 +8,7 @@ import { parseNodeModulePath } from 'mlly'
 import { directoryToURL } from './internal/esm'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
-import { toArray } from './utils'
+import { type RequirePicked, toArray } from './utils'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -17,7 +17,12 @@ export interface ResolvePathOptions {
   /** An object of aliases. Default is Nuxt configured aliases. */
   alias?: Record<string, string>
 
-  /** The file extensions to try. Default is Nuxt configured extensions. */
+  /**
+   * The file extensions to try.
+   * Default is Nuxt configured extensions.
+   *
+   * Isn't considered when `type` is set to `'dir'`.
+   */
   extensions?: string[]
 
   /**
@@ -28,21 +33,28 @@ export interface ResolvePathOptions {
 
   /**
    * Whether to fallback to the original path if the resolved path does not exist instead of returning the normalized input path.
-   *
    * @default false
    */
   fallbackToOriginal?: boolean
+  /**
+   * The type of the path to be resolved.
+   * @default 'file'
+   */
+  type?: PathType
 }
 
 /**
- * Resolve full path to a file or directory respecting Nuxt alias and extensions options
+ * Resolve the full path to a file or a directory (based on the provided type), respecting Nuxt alias and extensions options.
  *
- * If path could not be resolved, normalized input path will be returned
+ * If a path cannot be resolved, normalized input will be returned unless the `fallbackToOriginal` option is set to `true`,
+ * in which case the original input path will be returned.
  */
 export async function resolvePath (path: string, opts: ResolvePathOptions = {}): Promise<string> {
-  const res = await _resolvePathGranularly(path, opts)
+  const { type = 'file' } = opts
 
-  if (res.type === 'file') {
+  const res = await _resolvePathGranularly(path, { ...opts, type })
+
+  if (res.type === type) {
     return res.path
   }
 
@@ -53,9 +65,13 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
 /**
  * Try to resolve first existing file in paths
  */
-export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: 'file' | 'dir' = 'file'): Promise<string | null> {
+export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: PathType = 'file'): Promise<string | null> {
   for (const path of toArray(paths)) {
-    const res = await _resolvePathGranularly(path, opts)
+    const res = await _resolvePathGranularly(path, {
+      ...opts,
+      // TODO: this is for backwards compatibility, remove the `pathType` argument in Nuxt 5
+      type: opts?.type || pathType,
+    })
 
     if (!res.type || (pathType && res.type !== pathType)) {
       continue
@@ -125,9 +141,11 @@ export async function resolveNuxtModule (base: string, paths: string[]): Promise
 
 // --- Internal ---
 
+type PathType = 'file' | 'dir'
+
 interface PathResolution {
   path: string
-  type?: 'file' | 'dir'
+  type?: PathType
   virtual?: boolean
 }
 
@@ -159,7 +177,11 @@ async function _resolvePathType (path: string, opts: ResolvePathOptions = {}, sk
   }
 }
 
-async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = {}): Promise<PathResolution> {
+function normalizeExtension (ext: string) {
+  return ext.startsWith('.') ? ext : `.${ext}`
+}
+
+async function _resolvePathGranularly (path: string, opts: RequirePicked<ResolvePathOptions, 'type'> = { type: 'file' }): Promise<PathResolution> {
   // Always normalize input
   const _path = path
   path = normalize(path)
@@ -167,7 +189,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   // Fast return if the path exists
   if (isAbsolute(path)) {
     const res = await _resolvePathType(path, opts)
-    if (res && res.type === 'file') {
+    if (res && res.type === opts.type) {
       return res
     }
   }
@@ -187,36 +209,40 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   }
 
   const res = await _resolvePathType(path, opts)
-  if (res && res.type === 'file') {
+  if (res && res.type === opts.type) {
     return res
   }
 
   // Check possible extensions
-  for (const ext of extensions) {
-    // path.[ext]
-    const extPath = await _resolvePathType(path + ext, opts)
-    if (extPath && extPath.type === 'file') {
-      return extPath
+  if (opts.type === 'file') {
+    for (const ext of extensions) {
+      const normalizedExt = normalizeExtension(ext)
+
+      // path.[ext]
+      const extPath = await _resolvePathType(path + normalizedExt, opts)
+      if (extPath && extPath.type === 'file') {
+        return extPath
+      }
+
+      // path/index.[ext]
+      const indexPath = await _resolvePathType(join(path, 'index' + normalizedExt), opts, res?.type !== 'dir' /* skip checking if parent is not a directory */)
+      if (indexPath && indexPath.type === 'file') {
+        return indexPath
+      }
     }
 
-    // path/index.[ext]
-    const indexPath = await _resolvePathType(join(path, 'index' + ext), opts, res?.type !== 'dir' /* skip checking if parent is not a directory */)
-    if (indexPath && indexPath.type === 'file') {
-      return indexPath
-    }
-  }
-
-  // Try to resolve as module id
-  const resolvedModulePath = resolveModulePath(_path, {
-    try: true,
-    suffixes: ['', 'index'],
-    from: [cwd, ...modulesDir].map(d => directoryToURL(d)),
-  })
-  if (resolvedModulePath) {
-    return {
-      path: resolvedModulePath,
-      type: 'file',
-      virtual: false,
+    // Try to resolve as module id
+    const resolvedModulePath = resolveModulePath(_path, {
+      try: true,
+      suffixes: ['', 'index'],
+      from: [cwd, ...modulesDir].map(d => directoryToURL(d)),
+    })
+    if (resolvedModulePath) {
+      return {
+        path: resolvedModulePath,
+        type: 'file',
+        virtual: false,
+      }
     }
   }
 
