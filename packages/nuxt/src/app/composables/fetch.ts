@@ -109,6 +109,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     ...fetchOptions
   } = opts
 
@@ -128,6 +129,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
   }
 
