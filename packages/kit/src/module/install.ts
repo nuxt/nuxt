@@ -32,26 +32,31 @@ export async function installModule<
     }
   }
 
-  const meta = await nuxtModule?.getMeta?.()
+  // module lifecycle hooks
+  if (nuxtModule.getMeta && (nuxtModule.onInstall || nuxtModule.onUpgrade)) {
+    const meta = await nuxtModule.getMeta?.()
 
-  if (meta?.name && meta?.version) {
-    const rc = readRc({ dir: nuxt.options.rootDir, name: '.nuxtrc' })
-    const previousVersion = rc?.setups?.[meta.name]
+    if (meta && meta.name && meta.version) {
+      const rc = readRc({ dir: nuxt.options.rootDir, name: '.nuxtrc' })
+      const previousVersion = rc?.setups?.[meta.name]
 
-    try {
-      if (!previousVersion) {
-        await nuxtModule?.onInstall?.(nuxt)
-      } else if (semver.gt(meta.version, previousVersion)) {
-        await nuxtModule?.onUpgrade?.(inlineOptions, nuxt, previousVersion)
+      try {
+        if (!previousVersion) {
+          await nuxtModule.onInstall?.(nuxt)
+        } else if (semver.gt(meta.version, previousVersion)) {
+          await nuxtModule.onUpgrade?.(inlineOptions, nuxt, previousVersion)
+        }
+        if (previousVersion !== meta.version) {
+          updateRc(
+            { setups: { [meta.name]: meta?.version } },
+            { dir: nuxt.options.rootDir, name: '.nuxtrc' },
+          )
+        }
+      } catch (e) {
+        logger.error(
+          `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module \`${meta.name}\`: ${e}`,
+        )
       }
-      updateRc(
-        { setups: { [meta.name]: meta?.version } },
-        { dir: nuxt.options.rootDir, name: '.nuxtrc' },
-      )
-    } catch (e) {
-      logger.error(
-        `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module ${meta.name}: ${e}`,
-      )
     }
   }
 
