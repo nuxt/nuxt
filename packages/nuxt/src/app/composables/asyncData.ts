@@ -741,6 +741,11 @@ function createAsyncData<
             return promise
           }
 
+          // If the asyncData was cleared, we do not update the asyncData
+          if (nuxtApp._asyncDataPromises[key] === undefined) {
+            return
+          }
+
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
