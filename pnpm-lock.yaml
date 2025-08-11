@@ -794,8 +794,8 @@ importers:
         specifier: 7.0.5
         version: 7.0.5
       mini-css-extract-plugin:
-        specifier: 2.9.3
-        version: 2.9.3(webpack@5.101.0(esbuild@0.25.8))
+        specifier: 2.9.4
+        version: 2.9.4(webpack@5.101.0(esbuild@0.25.8))
       nitropack:
         specifier: 2.12.4
         version: 2.12.4(@netlify/blobs@9.1.2)
@@ -1059,8 +1059,8 @@ importers:
         specifier: ^4.36.0
         version: 4.36.0
       mini-css-extract-plugin:
-        specifier: ^2.9.3
-        version: 2.9.3(webpack@5.101.0(esbuild@0.25.8))
+        specifier: ^2.9.4
+        version: 2.9.4(webpack@5.101.0(esbuild@0.25.8))
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -6290,8 +6290,8 @@ packages:
     resolution: {integrity: sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==}
     engines: {node: '>=4'}
 
-  mini-css-extract-plugin@2.9.3:
-    resolution: {integrity: sha512-tRA0+PsS4kLVijnN1w9jUu5lkxBwUk9E8SbgEB5dBJqchE6pVYdawROG6uQtpmAri7tdCK9i7b1bULeVWqS6Ag==}
+  mini-css-extract-plugin@2.9.4:
+    resolution: {integrity: sha512-ZWYT7ln73Hptxqxk2DxPU9MmapXRhxkJD6tkSR04dnQxm8BGu2hzgKLugK5yySD97u/8yy7Ma7E76k9ZdvtjkQ==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
       webpack: 5.101.0
@@ -14363,7 +14363,7 @@ snapshots:
 
   min-indent@1.0.1: {}
 
-  mini-css-extract-plugin@2.9.3(webpack@5.101.0(esbuild@0.25.8)):
+  mini-css-extract-plugin@2.9.4(webpack@5.101.0(esbuild@0.25.8)):
     dependencies:
       schema-utils: 4.3.2
       tapable: 2.2.2
