@@ -261,7 +261,7 @@ jobs:
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
         payload: ["json", "js"]
-        node: [20]
+        node: ["lts/-1"]
         exclude:
           - builder: "webpack"
             payload: "js"
