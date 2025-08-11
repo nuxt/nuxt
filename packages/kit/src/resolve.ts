@@ -1,9 +1,10 @@
 import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { glob } from 'tinyglobby'
+import { type GlobOptions, glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
+import { parseNodeModulePath } from 'mlly'
 import { directoryToURL } from './internal/esm'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
@@ -107,10 +108,16 @@ export async function resolveNuxtModule (base: string, paths: string[]): Promise
   for (const path of paths) {
     if (path.startsWith(base)) {
       resolved.push(path.split('/index.ts')[0]!)
-    } else {
-      const resolvedPath = await resolver.resolvePath(path)
-      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+      continue
     }
+    const resolvedPath = await resolver.resolvePath(path)
+    const dir = parseNodeModulePath(resolvedPath).dir
+    if (dir) {
+      resolved.push(dir)
+      continue
+    }
+    const index = resolvedPath.lastIndexOf(path)
+    resolved.push(index === -1 ? dirname(resolvedPath) : resolvedPath.slice(0, index + path.length))
   }
 
   return resolved
@@ -235,10 +242,15 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
   return templates.some(template => template.dst === path)
 }
 
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
+/**
+ * Resolve absolute file paths in the provided directory with respect to `.nuxtignore` and return them sorted.
+ * @param path path to the directory to resolve files in
+ * @param pattern glob pattern or an array of glob patterns to match files
+ * @param opts options for globbing
+ */
+export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}) {
   const files: string[] = []
-  for (const file of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
-    const p = resolve(path, file)
+  for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true, ignore: opts.ignore })) {
     if (!isIgnored(p)) {
       files.push(p)
     }

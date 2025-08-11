@@ -248,6 +248,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 6. Scripts
   if (!routeOptions.noScripts) {
+    const tagPosition = (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head'
+
     ssrContext.head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
@@ -255,7 +257,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         defer: resource.module ? null : true,
         // if we are rendering script tag payloads that import an async payload
         // we need to ensure this resolves before executing the Nuxt entry
-        tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
+        tagPosition,
         crossorigin: '',
       })),
     }, headEntryOptions)

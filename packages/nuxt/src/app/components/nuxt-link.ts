@@ -16,7 +16,8 @@ import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSla
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
-import { type NuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
@@ -470,7 +471,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
         ) || null
 
-        // https://router.vuejs.org/api/#custom
+        // https://router.vuejs.org/api/interfaces/RouterLinkProps.html#custom-
         if (props.custom) {
           if (!slots.default) {
             return null
@@ -511,6 +512,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           rel,
           target,
           onClick: (event) => {
+            if (isExternal.value || hasTarget.value) {
+              return
+            }
+
             event.preventDefault()
 
             return props.replace

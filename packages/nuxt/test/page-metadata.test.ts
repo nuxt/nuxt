@@ -1,4 +1,5 @@
-import { type MockedFunction, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
@@ -134,7 +135,57 @@ definePageMeta({ name: 'bar' })
       }
     `)
   })
+  it('should extract metadata with TS satisfies', () => {
+    const meta = getRouteMeta(`
+    <script setup lang="ts">
+    type PageName = 'name-from-page-meta' | 'whatever';
 
+    definePageMeta({
+      name: 'name-from-page-meta' satisfies PageName,
+    });
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "name": "name-from-page-meta",
+      }
+    `)
+  })
+
+  it('should extract metadata with TS as expression', () => {
+    const meta = getRouteMeta(`
+    <script setup lang="ts">
+    type PageName = 'name-from-page-meta' | 'whatever';
+
+    definePageMeta({
+      name: 'name-from-page-meta' as PageName,
+    });
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "name": "name-from-page-meta",
+      }
+    `)
+  })
+
+  it('should extract metadata with TS ParenthesisExpression with as', () => {
+    const meta = getRouteMeta(`
+    <script setup lang="ts">
+    definePageMeta({
+      name: ('name-from-page-meta') as const,
+    });
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "name": "name-from-page-meta",
+      }
+    `)
+  })
   it('should not extract non-serialisable meta', () => {
     const meta = getRouteMeta(`
     <script setup>

@@ -46,11 +46,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
-  const modules = await resolveNuxtModule(rootDirWithSlash,
-    nuxt.options._installedModules
-      .filter(m => m.entryPath)
-      .map(m => m.entryPath!),
-  )
+  const moduleEntryPaths: string[] = []
+  for (const m of nuxt.options._installedModules) {
+    const path = m.meta?.rawPath || m.entryPath
+    if (path) {
+      moduleEntryPaths.push(path)
+    }
+  }
+
+  const modules = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
 
   const sharedDirs = new Set<string>()
   if (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false) {
@@ -141,10 +145,23 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig: {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
+          skipLibCheck: true,
         },
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
-          ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
+          ...modules.flatMap((m) => {
+            const moduleDir = relativeWithDot(nuxt.options.buildDir, m)
+            return [
+              join(moduleDir, 'runtime/server'),
+              join(moduleDir, 'dist/runtime/server'),
+            ]
+          }),
+          ...nuxt.options._layers.map(layer =>
+            relativeWithDot(
+              nuxt.options.buildDir,
+              resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', '**/*.d.ts'),
+            ),
+          ),
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
@@ -474,10 +491,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
 
     const absolutePath = resolve(basePath, aliases[alias]!)
-    const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+    const isDirectory = aliases[alias]!.endsWith('/') || await fsp.stat(absolutePath).then(r => r.isDirectory()).catch(() => null /* file does not exist */)
     // note - nitro will check + remove the file extension as required
     tsConfig.compilerOptions.paths[alias] = [absolutePath]
-    if (stats?.isDirectory()) {
+    if (isDirectory) {
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
     }
   }
@@ -604,6 +621,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
+  // ensure Nitro types only apply to server directory and not the whole root directory
+  nitro.hooks.hook('types:extend', (types) => {
+    types.tsConfig ||= {}
+    const rootDirGlob = relativeWithDot(nuxt.options.buildDir, join(nuxt.options.rootDir, '**/*'))
+    types.tsConfig.include = types.tsConfig.include?.filter(i => i !== rootDirGlob)
+  })
+
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
     if (!nuxt.options.dev) {
@@ -613,7 +637,23 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     // Exclude nitro output dir from typescript
     opts.tsConfig.exclude ||= []
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
+    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
+
+    // ensure aliases shared between nuxt + nitro are included in shared tsconfig
+    opts.sharedTsConfig.compilerOptions ||= {}
+    opts.sharedTsConfig.compilerOptions.paths ||= {}
+    for (const key in nuxt.options.alias) {
+      if (nitro.options.alias[key] && nitro.options.alias[key] === nuxt.options.alias[key]) {
+        const dirKey = join(key, '*')
+        if (opts.tsConfig.compilerOptions?.paths[key]) {
+          opts.sharedTsConfig.compilerOptions.paths[key] = opts.tsConfig.compilerOptions.paths[key]
+        }
+        if (opts.tsConfig.compilerOptions?.paths[dirKey]) {
+          opts.sharedTsConfig.compilerOptions.paths[dirKey] = opts.tsConfig.compilerOptions.paths[dirKey]
+        }
+      }
+    }
   })
 
   if (nitro.options.static) {

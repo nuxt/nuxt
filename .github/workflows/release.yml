@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
@@ -41,6 +41,7 @@ jobs:
       - name: 🛠 Build and release project
         run: ./scripts/release.sh
         env:
+          TAG: ${{ startsWith(github.event.pull_request.head.ref, 'v3.') && '3x' || 'latest' }}
           NODE_AUTH_TOKEN: ${{secrets.RELEASE_NODE_AUTH_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
 

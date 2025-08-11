@@ -193,6 +193,7 @@ const excludedVueHelpers = [
   'hydrateOnIdle',
   'onWatcherCleanup',
   'getCurrentWatcher',
+  'module.exports',
 ]
 
 describe('imports:vue', () => {
