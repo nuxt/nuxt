@@ -736,6 +736,11 @@ function createAsyncData<
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
+          // If the promise was replaced by another one, we do not update the asyncData
+          if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
+            return promise
+          }
+
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
