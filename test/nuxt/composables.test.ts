@@ -811,13 +811,15 @@ describe('useAsyncData', () => {
 
   it('should be cancellable via abort', async () => {
     vi.useFakeTimers()
-    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    let count = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(count++), 1000)))
     const { clear, status } = useAsyncData(promiseFn)
     expect(status.value).toBe('pending')
     clear()
     await nextTick()
     await flushPromises()
-    expect(status.value).toBe('error')
+    expect(status.value).toBe('idle')
+    expect(count).toBe(0)
     vi.useRealTimers()
   })
 
