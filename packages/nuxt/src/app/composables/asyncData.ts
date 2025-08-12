@@ -704,7 +704,8 @@ function createAsyncData<
             const timeout = opts.timeout ?? options.timeout
             const mergedSignal = AbortSignal.any([asyncData._abortController?.signal, opts?.signal, typeof timeout === 'number' ? AbortSignal.timeout(timeout) : undefined].filter((s): s is NonNullable<typeof s> => Boolean(s)))
             mergedSignal.addEventListener('abort', (event) => {
-              reject(new Error(event.target?.reason ?? mergedSignal.reason)) // todo: new error or not? use event.target.reason?
+              const reason = event.target?.reason ?? mergedSignal.reason
+              reject(reason instanceof Error ? reason : new DOMException(reason, 'AbortError'))
             })
 
             return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
