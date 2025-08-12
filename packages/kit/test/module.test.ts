@@ -1,23 +1,42 @@
-import { fileURLToPath } from 'node:url'
 import { mkdir, readFile, rm } from 'node:fs/promises'
+import { appendFileSync } from 'node:fs'
+
+import type { Nuxt } from 'nuxt/schema'
+
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { dirname, join, normalize } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
-
+import { join } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
-import { installModule, loadNuxt } from '../src'
 
-const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
-const testModule = withoutTrailingSlash(normalize(fileURLToPath(new URL('./module-fixture/module', import.meta.url))))
-const hooksLogFile = join(dirname(testModule), './hooks-logs')
+import { defineNuxtModule, installModule, loadNuxt } from '../src'
 
-async function getHooksLogs () {
-  const logs = await readFile(hooksLogFile, { encoding: 'utf8' }).catch(_ => '')
-  return logs.split('\n').slice(0, -1)
-}
+const repoRoot = await findWorkspaceDir()
 
-describe.sequential('installModule', () => {
-  const tempDir = join(repoRoot, 'module-temp')
+describe('installNuxtModule', { sequential: true }, () => {
+  let nuxt: Nuxt
+
+  const tempDir = join(repoRoot, 'node_modules/.temp/module-temp-hooks')
+  const hooksLogFile = join(tempDir, 'hooks-logs')
+
+  async function getHooksLogs () {
+    const logs = await readFile(hooksLogFile, { encoding: 'utf8' }).catch(_ => '')
+    return logs.split('\n').slice(0, -1)
+  }
+
+  const testModule = defineNuxtModule({
+    meta: {
+      name: 'test-module',
+      version: '1.0.0',
+    },
+
+    onInstall () {
+      appendFileSync(hooksLogFile, 'install\n')
+    },
+
+    onUpgrade () {
+      appendFileSync(hooksLogFile, 'upgrade\n')
+    },
+  })
 
   beforeAll(async () => {
     await mkdir(join(tempDir, 'nuxt'), { recursive: true })
@@ -29,11 +48,12 @@ describe.sequential('installModule', () => {
   })
 
   afterEach(async () => {
+    await nuxt?.close()
     await rm(hooksLogFile, { force: true })
   })
 
   it('runs onInstall hook when a module is added', async () => {
-    const nuxt = await loadNuxt({ cwd: tempDir })
+    nuxt = await loadNuxt({ cwd: tempDir })
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual(['install'])
@@ -47,7 +67,7 @@ describe.sequential('installModule', () => {
       { dir: tempDir, name: '.nuxtrc' },
     )
 
-    const nuxt = await loadNuxt({ cwd: tempDir })
+    nuxt = await loadNuxt({ cwd: tempDir })
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual([])
@@ -59,7 +79,7 @@ describe.sequential('installModule', () => {
       { dir: tempDir, name: '.nuxtrc' },
     )
 
-    const nuxt = await loadNuxt({ cwd: tempDir })
+    nuxt = await loadNuxt({ cwd: tempDir })
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual(['upgrade'])

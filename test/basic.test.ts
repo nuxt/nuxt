@@ -2819,7 +2819,7 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
 describe('import components', () => {
   let html = ''
 
-  it.sequential('fetch import-components page', async () => {
+  it('fetch import-components page', { sequential: true }, async () => {
     html = await $fetch<string>('/import-components')
   })
 
@@ -2851,7 +2851,7 @@ describe('import components', () => {
 describe('lazy import components', () => {
   let html = ''
 
-  it.sequential('fetch lazy-import-components page', async () => {
+  it('fetch lazy-import-components page', { sequential: true }, async () => {
     html = await $fetch<string>('/lazy-import-components')
   })
 
