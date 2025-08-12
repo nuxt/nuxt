@@ -73,6 +73,8 @@ export interface ModuleDefinition<
   defaults?: TOptionsDefaults | ((nuxt: Nuxt) => Awaitable<TOptionsDefaults>)
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
+  onInstall?: (nuxt: Nuxt) => Awaitable<void>
+  onUpgrade?: (nuxt: Nuxt, options: TOptions, previousVersion: string) => Awaitable<void>
   setup?: (
     this: void,
     resolvedOptions: TWith extends true
@@ -103,4 +105,12 @@ export interface NuxtModule<
       : TOptions
   >
   getMeta?: () => Promise<ModuleMeta>
+  onInstall?: (nuxt: Nuxt) => Awaitable<void>
+  onUpgrade?: (
+    options: TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions,
+    nuxt: Nuxt,
+    previousVersion: string
+  ) => Awaitable<void>
 }

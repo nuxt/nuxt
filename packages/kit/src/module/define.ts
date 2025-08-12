@@ -146,6 +146,9 @@ function _defineNuxtModule<
   normalizedModule.getMeta = () => Promise.resolve(module.meta)
   normalizedModule.getOptions = getOptions
 
+  normalizedModule.onInstall = module.onInstall
+  normalizedModule.onUpgrade = module.onUpgrade
+
   return <NuxtModule<TOptions, TOptionsDefaults, TWith>> normalizedModule
 }
 
