@@ -320,7 +320,7 @@ describe('useAsyncData', () => {
 
     await p
 
-    expect.soft(count).toBe(2)
+    expect.soft(count).toBe(1)
     expect.soft(data.value).toBe(1)
   })
 
@@ -790,6 +790,64 @@ describe('useAsyncData', () => {
     clear()
     expect(aborted).toBe(true)
     resolve(true)
+  })
+
+  it('should be externally cancellable when executing', async () => {
+    vi.useFakeTimers()
+    const controller = new AbortController()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { execute, status } = useAsyncData(() => 'index', promiseFn)
+    vi.advanceTimersToNextTimer()
+    await flushPromises()
+    expect(status.value).toBe('success')
+    execute({ signal: controller.signal })
+    vi.advanceTimersByTime(100)
+    expect(status.value).toBe('pending')
+    controller.abort('test abort')
+    await flushPromises()
+    expect(status.value).toBe('error')
+    vi.useRealTimers()
+  })
+
+  it('should be cancellable via abort', async () => {
+    vi.useFakeTimers()
+    let count = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(count++), 1000)))
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(status.value).toBe('idle')
+    expect(count).toBe(0)
+    vi.useRealTimers()
+  })
+
+  it('should abort handler signal', async () => {
+    vi.useFakeTimers()
+    let _signal
+    const promiseFn = vi.fn((_, { signal }) => {
+      _signal = signal
+      new Promise(resolve => setTimeout(() => resolve('index'), 1000))
+    })
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(_signal.aborted).toBe(true)
+    vi.useRealTimers()
+  })
+
+  it('should accept timeout', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { status } = useAsyncData(promiseFn, { timeout: 1 })
+    expect(status.value).toBe('pending')
+    await vi.waitFor(() => { // todo: advanceTimersToNextTimer is not working here (?)
+      expect(status.value).toBe('error')
+    })
+    vi.useRealTimers()
   })
 })
 

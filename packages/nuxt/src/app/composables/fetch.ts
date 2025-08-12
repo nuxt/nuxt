@@ -109,6 +109,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     ...fetchOptions
   } = opts
 
@@ -128,6 +129,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
   }
 
@@ -145,20 +147,7 @@ export function useFetch<
     watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { abortController }) => {
-    /**
-     * Workaround for `timeout` not working due to custom abort controller
-     * TODO: remove this when upstream issue is resolved
-     * @see https://github.com/unjs/ofetch/issues/326
-     * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
-     */
-    const timeoutLength = toValue(opts.timeout)
-    let timeoutId: NodeJS.Timeout
-    if (timeoutLength) {
-      timeoutId = setTimeout(() => abortController.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
-      abortController.signal.onabort = () => clearTimeout(timeoutId)
-    }
-
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
     let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
@@ -169,7 +158,7 @@ export function useFetch<
       }
     }
 
-    return _$fetch(_request.value, { signal: abortController.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
+    return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
