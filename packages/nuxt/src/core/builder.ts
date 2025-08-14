@@ -20,8 +20,8 @@ export async function build (nuxt: Nuxt) {
 
   if (nuxt.options.dev) {
     const noAppFolder = nuxt.options.srcDir === nuxt.options.rootDir
-    if (noAppFolder) {
-      console.warn('You are using the Nuxt v3 directory structure. We recommend moving your application code inside an /app directory in Nuxt v4. https://nuxt.com/blog/v4#%EF%B8%8F-new-project-structure')
+    if (noAppFolder && !nuxt.options.test) {
+      logger.warn('You are using the Nuxt v3 directory structure. We recommend moving your application code inside an /app directory in Nuxt v4. https://nuxt.com/blog/v4#%EF%B8%8F-new-project-structure')
     }
 
     watch(nuxt)
