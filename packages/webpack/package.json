@@ -46,7 +46,7 @@
     "knitwork": "^1.2.0",
     "magic-string": "^0.30.17",
     "memfs": "^4.36.0",
-    "mini-css-extract-plugin": "^2.9.3",
+    "mini-css-extract-plugin": "^2.9.4",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
@@ -75,7 +75,7 @@
     "@nuxt/schema": "workspace:*",
     "@rspack/core": "1.4.11",
     "@types/webpack-bundle-analyzer": "4.7.0",
-    "@types/webpack-hot-middleware": "2.25.9",
+    "@types/webpack-hot-middleware": "2.25.10",
     "rollup": "4.46.2",
     "unbuild": "3.6.0",
     "vue": "3.5.18"
