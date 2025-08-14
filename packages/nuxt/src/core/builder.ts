@@ -19,6 +19,11 @@ export async function build (nuxt: Nuxt) {
   await generateApp()
 
   if (nuxt.options.dev) {
+    const noAppFolder = nuxt.options.srcDir === nuxt.options.rootDir
+    if (noAppFolder) {
+      console.warn('You are using the Nuxt v3 directory structure. We recommend moving your application code inside an /app directory in Nuxt v4. https://nuxt.com/blog/v4#%EF%B8%8F-new-project-structure')
+    }
+
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, relativePath) => {
       // Unset mainComponent and errorComponent if app or error component is changed

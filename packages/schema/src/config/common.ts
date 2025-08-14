@@ -11,8 +11,6 @@ import type { NuxtModule } from '../types/module'
 import { defineResolvers } from '../utils/definition'
 import { withTrailingSlash } from 'ufo'
 
-let warnedNuxt3DirStructure = false
-
 export default defineResolvers({
   extends: undefined,
   compatibilityDate: undefined,
@@ -163,11 +161,6 @@ export default defineResolvers({
     app: {
       $resolve: async (val, get) => {
         const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
-        const noAppFolder = srcDir === rootDir
-        if (noAppFolder && !warnedNuxt3DirStructure) {
-          console.warn('You are using the Nuxt v3 directory structure. We recommend moving your application code inside an /app directory in Nuxt v4. https://nuxt.com/blog/v4#%EF%B8%8F-new-project-structure')
-          warnedNuxt3DirStructure = true
-        }
         return resolve(await get('srcDir'), val && typeof val === 'string' ? val : (srcDir === rootDir ? 'app' : '.'))
       },
     },
