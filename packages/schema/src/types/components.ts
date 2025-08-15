@@ -53,10 +53,6 @@ export interface ScanDir {
    */
   pathPrefix?: boolean
   /**
-   * Ignore scanning this directory if set to `false`
-   */
-  enabled?: boolean
-  /**
    * These properties (prefetch/preload) are used in production to configure how components with Lazy prefix are handled by webpack via its magic comments.
    * Learn more on webpack documentation: https://webpack.js.org/api/module-methods/#magic-comments
    */
