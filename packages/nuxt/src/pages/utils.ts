@@ -16,22 +16,22 @@ import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 import type { NuxtPage } from 'nuxt/schema'
 
-enum SegmentParserState {
-  initial,
-  static,
-  dynamic,
-  optional,
-  catchall,
-  group,
-}
+const SegmentTokenType = {
+  static: 'static',
+  dynamic: 'dynamic',
+  optional: 'optional',
+  catchall: 'catchall',
+  group: 'group',
+} as const
 
-enum SegmentTokenType {
-  static,
-  dynamic,
-  optional,
-  catchall,
-  group,
-}
+type SegmentTokenType = typeof SegmentTokenType[keyof typeof SegmentTokenType]
+
+const SegmentParserState = {
+  initial: 'initial',
+  ...SegmentTokenType,
+} as const
+
+type SegmentParserState = typeof SegmentParserState[keyof typeof SegmentParserState]
 
 interface SegmentToken {
   type: SegmentTokenType
@@ -310,18 +310,19 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 const COLON_RE = /:/g
 function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
   return tokens.reduce((path, token) => {
-    return (
-      path +
-      (token.type === SegmentTokenType.optional
-        ? `:${token.value}?`
-        : token.type === SegmentTokenType.dynamic
-          ? `:${token.value}()`
-          : token.type === SegmentTokenType.catchall
-            ? hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`
-            : token.type === SegmentTokenType.group
-              ? ''
-              : encodePath(token.value).replace(COLON_RE, '\\:'))
-    )
+    switch (token.type) {
+      case SegmentTokenType.optional:
+        return path + `:${token.value}?`
+      case SegmentTokenType.dynamic:
+        return path + `:${token.value}()`
+      case SegmentTokenType.catchall:
+        return path + (hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`)
+      case SegmentTokenType.group:
+        return path
+      case SegmentTokenType.static:
+      default:
+        return path + encodePath(token.value).replace(COLON_RE, '\\:')
+    }
   }, '/')
 }
 
@@ -342,19 +343,7 @@ function parseSegment (segment: string, absolutePath: string) {
       throw new Error('wrong state')
     }
 
-    tokens.push({
-      type:
-        state === SegmentParserState.static
-          ? SegmentTokenType.static
-          : state === SegmentParserState.dynamic
-            ? SegmentTokenType.dynamic
-            : state === SegmentParserState.optional
-              ? SegmentTokenType.optional
-              : state === SegmentParserState.catchall
-                ? SegmentTokenType.catchall
-                : SegmentTokenType.group,
-      value: buffer,
-    })
+    tokens.push({ type: state, value: buffer })
 
     buffer = ''
   }
@@ -674,6 +663,10 @@ export function isSerializable (code: string, node: Node): { value?: any, serial
       value: node.value,
       serializable: true,
     }
+  }
+
+  if (node.type === 'TSSatisfiesExpression' || node.type === 'TSAsExpression' || node.type === 'ParenthesizedExpression') {
+    return isSerializable(code, node.expression)
   }
 
   return {
