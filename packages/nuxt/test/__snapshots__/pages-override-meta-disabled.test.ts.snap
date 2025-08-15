@@ -486,7 +486,7 @@
     {
       "alias": "mockMeta?.alias || []",
       "component": "() => import("pages/page-with-meta.vue")",
-      "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1,"extracted":{"foo":"foo","bar":"bar"}} }",
       "name": "mockMeta?.name ?? "page-with-meta"",
       "path": "mockMeta?.path ?? "/page-with-meta"",
       "props": "mockMeta?.props ?? false",
