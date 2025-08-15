@@ -115,7 +115,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
-      if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
+      if (to.matched[to.matched.length - 1]?.components?.default === from.matched[from.matched.length - 1]?.components?.default) {
         syncCurrentRoute()
       }
     })
