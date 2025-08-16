@@ -261,7 +261,7 @@ jobs:
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
         payload: ["json", "js"]
-        node: [20]
+        node: ["lts/-1"]
         exclude:
           - builder: "webpack"
             payload: "js"
@@ -342,7 +342,7 @@ jobs:
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: lts/*
+          node-version: current
           cache: "pnpm"
 
       - name: Install dependencies
@@ -356,9 +356,6 @@ jobs:
 
       - name: Release Edge
         run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
