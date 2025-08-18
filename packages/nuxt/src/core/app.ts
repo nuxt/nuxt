@@ -157,7 +157,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve layouts/ from all config layers
   const layerConfigs = nuxt.options._layers.map(layer => layer.config)
   const reversedConfigs = layerConfigs.slice().reverse()
-  app.layouts = {}
+  const layouts: NuxtApp['layouts'] = {}
   for (const config of layerConfigs) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.layouts || 'layouts'
     const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${extensionGlob}}`)
@@ -168,12 +168,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         logger.warn(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
-      app.layouts[name] ||= { name, file }
+      layouts[name] ||= { name, file }
     }
   }
 
   // Resolve middleware/ from all config layers, layers first
-  app.middleware = []
+  let middleware: NuxtApp['middleware'] = []
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
@@ -187,15 +187,15 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         logger.warn(`No middleware name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
         continue
       }
-      app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
+      middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
     }
   }
 
   // Resolve plugins, first extended layers and then base
-  app.plugins = []
+  let plugins: NuxtApp['plugins'] = []
   for (const config of reversedConfigs) {
     const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.plugins || 'plugins'
-    app.plugins.push(...[
+    plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
@@ -209,31 +209,33 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Add back plugins not specified in layers or user config
   for (const p of [...nuxt.options.plugins].reverse()) {
     const plugin = normalizePlugin(p)
-    if (!app.plugins.some(p => p.src === plugin.src)) {
-      app.plugins.unshift(plugin)
+    if (!plugins.some(p => p.src === plugin.src)) {
+      plugins.unshift(plugin)
     }
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(nuxt, [...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
+  middleware = uniqueBy(await resolvePaths(nuxt, [...middleware].reverse(), 'path'), 'name').reverse()
+  plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
 
   // Resolve app.config
-  app.configs = []
+  const configs: NuxtApp['configs'] = []
   for (const config of layerConfigs) {
     const appConfigPath = await findPath(resolve(config.srcDir, 'app.config'))
     if (appConfigPath) {
-      app.configs.push(appConfigPath)
+      configs.push(appConfigPath)
     }
   }
+
+  Object.assign(app, { middleware, plugins, configs, layouts })
 
   // Extend app
   await nuxt.callHook('app:resolve', app)
 
   // Normalize and de-duplicate plugins, middleware and app configs
-  app.middleware = uniqueBy(await resolvePaths(nuxt, app.middleware, 'path'), 'name')
-  app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
-  app.configs = [...new Set(app.configs)]
+  app.middleware = uniqueBy(await resolvePaths(nuxt, middleware, 'path'), 'name')
+  app.plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
+  app.configs = [...new Set(configs)]
 }
 
 function resolvePaths<Item extends Record<string, any>> (nuxt: Nuxt, items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
