@@ -1,4 +1,4 @@
-Would you be able to provide a [reproduction](https://nuxt.com/docs/community/reporting-bugs/#create-a-minimal-reproduction)? 🙏
+Would you be able to provide a **minimal** [reproduction](https://nuxt.com/docs/community/reporting-bugs/#create-a-minimal-reproduction)? 🙏
 
 <details>
 <summary>More info</summary>
