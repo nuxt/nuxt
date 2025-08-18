@@ -55,10 +55,6 @@ describe('tsConfig generation', () => {
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
-        "../modules/test/node_modules",
-        "../modules/node_modules",
-        "../node_modules/@some/module/node_modules",
-        "../node_modules",
         "../../node_modules",
         "../dist",
         "../.data",
