@@ -305,7 +305,7 @@
   "should merge route.meta with meta from file": [
     {
       "component": "() => import("pages/page-with-meta.vue")",
-      "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1,"extracted":{"foo":"foo","bar":"bar"}} }",
       "name": ""page-with-meta"",
       "path": ""/page-with-meta"",
     },
