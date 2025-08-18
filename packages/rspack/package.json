@@ -60,7 +60,7 @@
     "ts-checker-rspack-plugin": "^1.1.5",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.19",
-    "unplugin": "^2.3.5",
+    "unplugin": "^2.3.6",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.2",
     "vue-loader": "^17.4.2",
@@ -74,8 +74,8 @@
     "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.10",
-    "rollup": "4.46.2",
-    "unbuild": "3.6.0",
+    "rollup": "4.46.3",
+    "unbuild": "3.6.1",
     "vue": "3.5.18"
   },
   "peerDependencies": {
