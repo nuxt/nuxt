@@ -53,10 +53,6 @@ describe('tsConfig generation', () => {
       [
         "../dist",
         "../.data",
-        "../modules/test/node_modules",
-        "../modules/node_modules",
-        "../node_modules/@some/module/node_modules",
-        "../node_modules",
         "../../node_modules",
       ]
     `)

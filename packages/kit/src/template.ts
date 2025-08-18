@@ -181,8 +181,14 @@ export async function _generateTypes (nuxt: Nuxt) {
     relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, '.data')),
   ])
 
+  const sourceDirs = nuxt.options._layers.map(layer => withTrailingSlash(layer.config.srcDir ?? layer.cwd))
+
   for (const dir of nuxt.options.modulesDir) {
-    exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    // we only need to exclude node_modules directories if they are
+    // being included automatically by being inside the source directory
+    if (!sourceDirs.some(srcDir => dir.startsWith(srcDir))) {
+      exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    }
   }
 
   const moduleEntryPaths: string[] = []
