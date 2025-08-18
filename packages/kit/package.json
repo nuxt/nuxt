@@ -56,8 +56,8 @@
     "@types/semver": "7.7.0",
     "hookable": "5.5.3",
     "nitropack": "2.12.4",
-    "unbuild": "3.6.0",
-    "vite": "7.1.1",
+    "unbuild": "3.6.1",
+    "vite": "7.1.2",
     "vitest": "3.2.4",
     "webpack": "5.101.0"
   },
