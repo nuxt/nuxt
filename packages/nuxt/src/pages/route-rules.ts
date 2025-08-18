@@ -8,13 +8,20 @@ import { getLoader } from '../core/utils'
 import { extractScriptContent, pathToNitroGlob } from './utils'
 
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/
+const pageCodeCache: Record<string, string> = {}
 const ruleCache: Record<string, NitroRouteConfig | null> = {}
 
 export function extractRouteRules (code: string, path: string): NitroRouteConfig | null {
   if (!ROUTE_RULE_RE.test(code)) { return null }
 
-  if (code in ruleCache) {
-    return ruleCache[code] || null
+  // set/update pageCodeCache, invalidate ruleCache on cache mismatch
+  if (!(path in pageCodeCache) || pageCodeCache[path] !== code) {
+    pageCodeCache[path] = code
+    delete ruleCache[path]
+  }
+
+  if (path in ruleCache) {
+    return ruleCache[path] || null
   }
 
   const loader = getLoader(path)
@@ -40,7 +47,7 @@ export function extractRouteRules (code: string, path: string): NitroRouteConfig
     })
   }
 
-  ruleCache[code] = rule
+  ruleCache[path] = rule
   return rule
 }
 

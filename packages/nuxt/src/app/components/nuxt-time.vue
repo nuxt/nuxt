@@ -3,7 +3,7 @@ import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
 import { onPrehydrate } from '../composables/ssr'
 import { useNuxtApp } from '../nuxt'
 
-const props = withDefaults(defineProps<{
+export interface NuxtTimeProps {
   locale?: string
   datetime: string | number | Date
   localeMatcher?: 'best fit' | 'lookup'
@@ -29,7 +29,9 @@ const props = withDefaults(defineProps<{
   hourCycle?: 'h11' | 'h12' | 'h23' | 'h24'
   relative?: boolean
   title?: boolean | string
-}>(), {
+}
+
+const props = withDefaults(defineProps<NuxtTimeProps>(), {
   hour12: undefined,
 })
 
@@ -64,21 +66,29 @@ const formatter = computed(() => {
 })
 
 const formattedDate = computed(() => {
-  if (props.relative) {
-    const diffInSeconds = (date.value.getTime() - now.value.getTime()) / 1000
-    const units: Array<{ unit: Intl.RelativeTimeFormatUnit, value: number }> = [
-      { unit: 'second', value: diffInSeconds },
-      { unit: 'minute', value: diffInSeconds / 60 },
-      { unit: 'hour', value: diffInSeconds / 3600 },
-      { unit: 'day', value: diffInSeconds / 86400 },
-      { unit: 'month', value: diffInSeconds / 2592000 },
-      { unit: 'year', value: diffInSeconds / 31536000 },
-    ]
-    const { unit, value } = units.find(({ value }) => Math.abs(value) < 60) || units[units.length - 1]!
-    return formatter.value.format(Math.round(value), unit)
+  if (!props.relative) {
+    return (formatter.value as Intl.DateTimeFormat).format(date.value)
   }
 
-  return (formatter.value as Intl.DateTimeFormat).format(date.value)
+  const diffInSeconds = (date.value.getTime() - now.value.getTime()) / 1000
+
+  const units: Array<{
+    unit: Intl.RelativeTimeFormatUnit
+    seconds: number
+    threshold: number
+  }> = [
+    { unit: 'second', seconds: 1, threshold: 60 }, // 60 seconds → minute
+    { unit: 'minute', seconds: 60, threshold: 60 }, // 60 minutes → hour
+    { unit: 'hour', seconds: 3600, threshold: 24 }, // 24 hours → day
+    { unit: 'day', seconds: 86400, threshold: 30 }, // ~30 days → month
+    { unit: 'month', seconds: 2592000, threshold: 12 }, // 12 months → year
+    { unit: 'year', seconds: 31536000, threshold: Infinity },
+  ]
+
+  const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
+
+  const value = diffInSeconds / seconds
+  return (formatter.value as Intl.RelativeTimeFormat).format(Math.round(value), unit)
 })
 
 const isoDate = computed(() => date.value.toISOString())
@@ -116,15 +126,20 @@ if (import.meta.server) {
 
     if (options.relative) {
       const diffInSeconds = (date.getTime() - now) / 1000
-      const units: Array<{ unit: Intl.RelativeTimeFormatUnit, value: number }> = [
-        { unit: 'second', value: diffInSeconds },
-        { unit: 'minute', value: diffInSeconds / 60 },
-        { unit: 'hour', value: diffInSeconds / 3600 },
-        { unit: 'day', value: diffInSeconds / 86400 },
-        { unit: 'month', value: diffInSeconds / 2592000 },
-        { unit: 'year', value: diffInSeconds / 31536000 },
+      const units: Array<{
+        unit: Intl.RelativeTimeFormatUnit
+        seconds: number
+        threshold: number
+      }> = [
+        { unit: 'second', seconds: 1, threshold: 60 }, // 60 seconds → minute
+        { unit: 'minute', seconds: 60, threshold: 60 }, // 60 minutes → hour
+        { unit: 'hour', seconds: 3600, threshold: 24 }, // 24 hours → day
+        { unit: 'day', seconds: 86400, threshold: 30 }, // ~30 days → month
+        { unit: 'month', seconds: 2592000, threshold: 12 }, // 12 months → year
+        { unit: 'year', seconds: 31536000, threshold: Infinity },
       ]
-      const { unit, value } = units.find(({ value }) => Math.abs(value) < 60) || units[units.length - 1]!
+      const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
+      const value = diffInSeconds / seconds
       const formatter = new Intl.RelativeTimeFormat(options.locale, options)
       el.textContent = formatter.format(Math.round(value), unit)
     } else {

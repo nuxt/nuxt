@@ -2,7 +2,10 @@ import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
   future: {
-    compatibilityVersion: 4,
+    compatibilityVersion: {
+      // force resolution to `4` no matter what users pass
+      $resolve: () => 4,
+    },
     multiApp: false,
     typescriptBundlerResolution: {
       async $resolve (val, get) {

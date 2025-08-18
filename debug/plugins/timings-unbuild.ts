@@ -1,6 +1,7 @@
 import type { Plugin } from 'rollup'
 import { parse } from 'acorn'
-import { type Node, walk } from 'estree-walker'
+import { walk } from 'estree-walker'
+import type { Node } from 'estree-walker'
 import MagicString from 'magic-string'
 import tsBlankSpace from 'ts-blank-space'
 

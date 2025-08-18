@@ -33,7 +33,7 @@ export function resolveComponentNameSegments (fileName: string, prefixParts: str
     matchedSuffix.unshift(...splitByCase(prefixPart).map(p => p.toLowerCase()))
     const matchedSuffixContent = matchedSuffix.join('/')
     if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
-      // e.g Item/Item/Item.vue -> Item
+      // e.g. Item/Item/Item.vue -> Item
       (prefixPart.toLowerCase() === fileNamePartsContent &&
         prefixParts[index + 1] &&
         prefixParts[index] === prefixParts[index + 1])) {

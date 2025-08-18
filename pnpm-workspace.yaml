@@ -5,8 +5,11 @@ packages:
   - '!packages/test-utils'
   - playground
   - test/fixtures/*
+
 ignoredBuiltDependencies:
+  - '@parcel/watcher'
   - esbuild
+  - oxc-resolver
   - unrs-resolver
   - vue-demi
 overrides:

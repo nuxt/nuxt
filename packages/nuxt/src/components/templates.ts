@@ -1,5 +1,6 @@
-import { isAbsolute, relative } from 'pathe'
+import { isAbsolute, relative, resolve } from 'pathe'
 import { genDynamicImport } from 'knitwork'
+import { distDir } from '../dirs'
 import type { NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ImportMagicCommentsOptions = {
@@ -116,13 +117,15 @@ export const componentsTypeTemplate = {
   filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
+    const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
     const componentTypes = app.components.filter(c => !c.island).map((c) => {
       const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(NON_VUE_RE, '')
         : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
+      const isServerOnly = c.mode === 'server' && c.filePath !== serverPlaceholderPath && !app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')
       return [
         c.pascalName,
-        c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
+        isServerOnly ? `IslandComponent<${type}>` : type,
       ]
     })
     const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'

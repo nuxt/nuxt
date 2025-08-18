@@ -55,10 +55,6 @@ describe('tsConfig generation', () => {
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
-        "../modules/test/node_modules",
-        "../modules/node_modules",
-        "../node_modules/@some/module/node_modules",
-        "../node_modules",
         "../../node_modules",
         "../dist",
         "../.data",
@@ -129,10 +125,11 @@ describe('resolveLayerPaths', () => {
         ],
         "nitro": [
           "../custom-modules/*/runtime/server/**/*",
+          "../layers/*/server/**/*",
           "../layers/*/modules/*/runtime/server/**/*",
         ],
         "node": [
-          "../custom-modules/**/*",
+          "../custom-modules/*.*",
           "../nuxt.config.*",
           "../.config/nuxt.*",
           "../layers/*/nuxt.config.*",
@@ -142,6 +139,7 @@ describe('resolveLayerPaths', () => {
         "nuxt": [
           "../app/**/*",
           "../custom-modules/*/runtime/**/*",
+          "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
         ],
         "shared": [

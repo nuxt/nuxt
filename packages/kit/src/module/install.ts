@@ -8,9 +8,12 @@ import { parseNodeModulePath } from 'mlly'
 import { resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
 import { resolvePackageJSON } from 'pkg-types'
+import { read as readRc, update as updateRc } from 'rc9'
+import semver from 'semver'
 import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias } from '../resolve'
+import { logger } from '../logger'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
@@ -26,6 +29,34 @@ export async function installModule<
     const srcDir = l.config.srcDir || l.cwd
     if (!NODE_MODULES_RE.test(srcDir)) {
       localLayerModuleDirs.push(resolve(srcDir, l.config?.dir?.modules || 'modules').replace(/\/?$/, '/'))
+    }
+  }
+
+  // module lifecycle hooks
+  if (nuxtModule.getMeta && (nuxtModule.onInstall || nuxtModule.onUpgrade)) {
+    const meta = await nuxtModule.getMeta?.()
+
+    if (meta && meta.name && meta.version) {
+      const rc = readRc({ dir: nuxt.options.rootDir, name: '.nuxtrc' })
+      const previousVersion = rc?.setups?.[meta.name]
+
+      try {
+        if (!previousVersion) {
+          await nuxtModule.onInstall?.(nuxt)
+        } else if (semver.gt(meta.version, previousVersion)) {
+          await nuxtModule.onUpgrade?.(inlineOptions, nuxt, previousVersion)
+        }
+        if (previousVersion !== meta.version) {
+          updateRc(
+            { setups: { [meta.name]: meta?.version } },
+            { dir: nuxt.options.rootDir, name: '.nuxtrc' },
+          )
+        }
+      } catch (e) {
+        logger.error(
+          `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module \`${meta.name}\`: ${e}`,
+        )
+      }
     }
   }
 
@@ -135,7 +166,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
       const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
       // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
-      // i.e module is importing a module that is missing
+      // i.e. module is importing a module that is missing
       if (module && !module.includes(nuxtModule as string)) {
         throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`)
       }

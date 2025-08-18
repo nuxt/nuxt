@@ -12,7 +12,8 @@ import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
-import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import type { NuxtIslandContext, NuxtIslandResponse } from '../utils/renderer/islands'
 
 const components = ((await getComponentsIslands())).islandComponents
 

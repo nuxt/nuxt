@@ -19,7 +19,7 @@ import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import defu from 'defu'
-import { satisfies } from 'semver'
+import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
@@ -137,8 +137,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
-// TODO: update to nitro import
-const fallbackCompatibilityDate = '2024-04-03' as DateString
+const fallbackCompatibilityDate = '2025-07-15' as DateString
 
 const nightlies = {
   'nitropack': 'nitropack-nightly',
@@ -185,7 +184,6 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
-  const coreTypePackages = nuxt.options.typescript.hoist || []
 
   // Disable environment types entirely if `typescript.builder` is false
   if (nuxt.options.typescript.builder !== false) {
@@ -217,39 +215,19 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
-  const NESTED_PKG_RE = /^[^@]+\//
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
-  const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
-    const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
-    const subpath = _subpath ? '/' + _subpath : ''
-
-    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
-
-    // deduplicate types for nightly releases
-    if (_pkg in nightlies) {
-      const nightly = nightlies[_pkg as keyof typeof nightlies]
-      const path = await resolveTypePath(nightly + subpath, subpath, nuxt.options.modulesDir)
-      if (path) {
-        return [[pkg, [path]], [nightly + subpath, [path]]]
-      }
-    }
-
-    const path = await resolveTypePath(_pkg + subpath, subpath, nuxt.options.modulesDir)
-    if (path) {
-      return [[pkg, [path]]]
-    }
-
-    return []
-  })).then(r => r.flat()))
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
-  nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {
-    tsConfig: { compilerOptions: { paths: { ...paths } } },
+  let paths: Record<string, [string]> | undefined
+  nuxt.hook('nitro:config', async (nitroConfig) => {
+    paths ||= await resolveTypescriptPaths(nuxt)
+    nitroConfig.typescript = defu(nitroConfig.typescript, {
+      tsConfig: { compilerOptions: { paths: { ...paths } } },
+    })
   })
 
   // Add nuxt types
-  nuxt.hook('prepare:types', (opts) => {
+  nuxt.hook('prepare:types', async (opts) => {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {
@@ -271,12 +249,9 @@ async function initNuxt (nuxt: Nuxt) {
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
+    paths ||= await resolveTypescriptPaths(nuxt)
     opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
-
-    // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
-
-    // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
 
     for (const layer of nuxt.options._layers) {
@@ -746,7 +721,7 @@ export default defineNuxtPlugin({
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
-  if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
     logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
@@ -757,7 +732,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = await loadNuxtConfig(opts)
 
   // Temporary until finding better placement for each
-  options.appDir = options.alias['#app'] = resolve(distDir, 'app')
+  options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
   options._majorVersion = 4
 
   // De-duplicate key arrays
@@ -1000,4 +975,34 @@ async function resolveModules (nuxt: Nuxt) {
     paths,
     modules,
   }
+}
+
+const NESTED_PKG_RE = /^[^@]+\//
+async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [string]>> {
+  nuxt.options.typescript.hoist ||= []
+  const paths = Object.fromEntries(await Promise.all(nuxt.options.typescript.hoist.map(async (pkg) => {
+    const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
+    const subpath = _subpath ? '/' + _subpath : ''
+
+    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
+    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
+
+    // deduplicate types for nightly releases
+    if (_pkg in nightlies) {
+      const nightly = nightlies[_pkg as keyof typeof nightlies]
+      const path = await resolveTypePath(nightly + subpath, subpath, nuxt.options.modulesDir)
+      if (path) {
+        return [[pkg, [path]], [nightly + subpath, [path]]]
+      }
+    }
+
+    const path = await resolveTypePath(_pkg + subpath, subpath, nuxt.options.modulesDir)
+    if (path) {
+      return [[pkg, [path]]]
+    }
+
+    return []
+  })).then(r => r.flat()))
+
+  return paths
 }

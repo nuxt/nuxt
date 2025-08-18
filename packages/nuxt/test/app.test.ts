@@ -265,6 +265,40 @@ describe('resolveApp', () => {
       }
     `)
   })
+
+  it('does not allow parallel access to freshly created app components', async () => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(join(rootDir, 'app/layouts'), { recursive: true })
+    await mkdir(join(rootDir, 'app/middleware'), { recursive: true })
+    await mkdir(join(rootDir, 'app/plugins'), { recursive: true })
+
+    await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+    await writeFile(join(rootDir, 'app/layouts/default.vue'), '<template><div>Default Layout</div></template>')
+    await writeFile(join(rootDir, 'app/middleware/global.global.ts'), 'export default defineNuxtRouteMiddleware(() => {})')
+    await writeFile(join(rootDir, 'app/plugins/my-plugin.ts'), 'export default defineNuxtPlugin(() => {})')
+
+    const nuxt = await loadNuxt({ cwd: rootDir })
+    const _app = createApp(nuxt)
+    const app = new Proxy(_app, {
+      get (target, p, receiver) {
+        return Reflect.get(target, p, receiver)
+      },
+      set (target, p, newValue, receiver) {
+        if (p === 'middleware' || p === 'plugins') {
+          expect(newValue).not.toEqual([])
+        }
+        if (p === 'layouts') {
+          expect(newValue).not.toEqual({})
+        }
+        return Reflect.set(target, p, newValue, receiver)
+      },
+    })
+
+    await resolveApp(nuxt, app)
+
+    await nuxt.close()
+    await rm(rootDir, { recursive: true, force: true })
+  })
 })
 
 async function getResolvedApp (files: Array<string | { name: string, contents: string }>) {

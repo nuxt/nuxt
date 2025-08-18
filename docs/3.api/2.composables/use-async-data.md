@@ -142,6 +142,10 @@ const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { imm
 const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: false })
 ```
 
+::tip
+Keyed state created using `useAsyncData` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/api/composables/use-nuxt-data).
+::
+
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
