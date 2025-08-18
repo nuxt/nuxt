@@ -119,7 +119,7 @@
     "magic-regexp": "0.10.0",
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.45.0",
-    "memfs": "4.36.0",
+    "memfs": "4.36.3",
     "nitropack": "2.12.4",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
