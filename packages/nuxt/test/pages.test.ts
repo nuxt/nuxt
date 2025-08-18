@@ -51,7 +51,7 @@ describe('pages:generateRoutesFromFiles', () => {
             }
           })
 
-          await augmentPages(result, vfs)
+          await augmentPages(result, vfs, { extraExtractionKeys: new Set(['extracted']) })
         } catch (error: any) {
           expect(error.message).toEqual(test.error)
         }
@@ -885,11 +885,13 @@ export const pageTests: Array<{
         path: `${pagesDir}/page-with-meta.vue`,
         meta: {
           test: 1,
+          extracted: { foo: 'foo' },
         },
         template: `
             <script setup lang="ts">
             definePageMeta({
-              hello: 'world'
+              hello: 'world',
+              extracted: { bar: 'bar' },
             })
             </script>
           `,
@@ -901,7 +903,7 @@ export const pageTests: Array<{
         path: '/page-with-meta',
         file: `${pagesDir}/page-with-meta.vue`,
         children: [],
-        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: 1 },
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: 1, extracted: { foo: 'foo', bar: 'bar' } },
       },
     ],
   },
