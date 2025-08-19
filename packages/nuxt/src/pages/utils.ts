@@ -223,26 +223,26 @@ export const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirec
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
-const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
+const extractCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set()): Partial<Record<keyof NuxtPage, any>> {
-  // set/update pageContentsCache, invalidate metaCache on cache mismatch
+  // set/update pageContentsCache, invalidate extractCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
-    delete metaCache[absolutePath]
+    delete extractCache[absolutePath]
   }
 
-  if (absolutePath in metaCache && metaCache[absolutePath]) {
-    return klona(metaCache[absolutePath])
+  if (absolutePath in extractCache && extractCache[absolutePath]) {
+    return klona(extractCache[absolutePath])
   }
 
   const loader = getLoader(absolutePath)
   const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader }]
   if (!scriptBlocks) {
-    metaCache[absolutePath] = {}
+    extractCache[absolutePath] = {}
     return {}
   }
 
-  const extractedMeta: Partial<Record<keyof NuxtPage, any>> = {}
+  const extractedData: Partial<Record<keyof NuxtPage, any>> = {}
 
   const extractionKeys = new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraExtractionKeys as Set<keyof NuxtPage>])
 
@@ -262,37 +262,51 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
     parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier') { return }
 
-      if ('defineRouteRules' in found && !found.defineRouteRules && node.expression.callee.name === 'defineRouteRules') {
-        found.defineRouteRules = true
+      // function name is one of the extracted macro functions and not yet found
+      const fnName = node.expression.callee.name
+      if (fnName in found === false || found[fnName] !== false) { return }
+      found[fnName] = true
 
-        const transformed = transformCode(script, absolutePath, node, 'defineRouteRules')
-        if (!transformed) {
-          return
-        }
-
-        const { value, serializable } = isSerializable(script.code, transformed.arg)
-        if (serializable) {
-          extractedMeta.rules = value
-          return
-        }
-
-        logger.warn(`\`defineRouteRules\` must be called with a serializable object literal (reading \`${absolutePath}\`).`)
+      let code = script.code
+      let pageExtractArgument = node.expression.arguments[0]
+      if (pageExtractArgument?.type !== 'ObjectExpression') {
+        logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`).`)
         return
       }
 
-      if ('definePageMeta' in found && !found.definePageMeta && node.expression.callee.name === 'definePageMeta') {
-        found.definePageMeta = true
-
-        const transformed = transformCode(script, absolutePath, node, 'definePageMeta')
-        if (!transformed) {
+      // TODO: always true because `extractScriptContent` only detects ts/tsx loader
+      if (/tsx?/.test(script.loader)) {
+        // slice, transform and parse the `define...` macro node to avoid parsing the whole file
+        const transformed = oxcTransform(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        if (transformed.errors.length) {
+          for (const error of transformed.errors) {
+            logger.warn(`Error while transforming \`${fnName}()\`` + error.codeframe)
+          }
           return
         }
 
+        // we already know that the first statement is a call expression
+        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]! as ObjectExpression
+        code = transformed.code
+      }
+
+      if (fnName === 'defineRouteRules') {
+        const { value, serializable } = isSerializable(code, pageExtractArgument)
+        if (!serializable) {
+          logger.warn(`\`${fnName}\` must be called with a serializable object literal (reading \`${absolutePath}\`).`)
+          return
+        }
+
+        extractedData.rules = value
+        return
+      }
+
+      if (fnName === 'definePageMeta') {
         for (const key of extractionKeys) {
-          const property = transformed.arg.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+          const property = pageExtractArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
           if (!property) { continue }
 
-          const { value, serializable } = isSerializable(transformed.code, property.value)
+          const { value, serializable } = isSerializable(code, property.value)
           if (!serializable) {
             logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
             dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
@@ -300,14 +314,14 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
           }
 
           if (extraExtractionKeys.has(key)) {
-            extractedMeta.meta ??= {}
-            extractedMeta.meta[key] = value
+            extractedData.meta ??= {}
+            extractedData.meta[key] = value
           } else {
-            extractedMeta[key] = value
+            extractedData[key] = value
           }
         }
 
-        for (const property of transformed.arg.properties) {
+        for (const property of pageExtractArgument.properties) {
           if (property.type !== 'Property') {
             continue
           }
@@ -323,44 +337,15 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         }
 
         if (dynamicProperties.size) {
-          extractedMeta.meta ??= {}
-          extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
+          extractedData.meta ??= {}
+          extractedData.meta[DYNAMIC_META_KEY] = dynamicProperties
         }
       }
     })
   }
 
-  metaCache[absolutePath] = extractedMeta
-  return klona(extractedMeta)
-}
-
-function transformCode (script: { loader: 'tsx' | 'ts', code: string }, absolutePath: string, node: Node, fn: string) {
-  if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier') { return }
-  let arg = node.expression.arguments[0]
-  if (arg?.type !== 'ObjectExpression') {
-    logger.warn(`\`${fn}\` must be called with an object literal (reading \`${absolutePath}\`).`)
-    return
-  }
-
-  // using ts => slice, transform and parse the `define...` macro node to avoid parsing the whole file
-  if (/tsx?/.test(script.loader)) {
-    const transformed = oxcTransform(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
-    script.code = transformed.code
-    if (transformed.errors.length) {
-      for (const error of transformed.errors) {
-        logger.warn(`Error while transforming \`${fn}()\`` + error.codeframe)
-      }
-      return
-    }
-
-    // we already know that the first statement is a call expression
-    arg = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]! as ObjectExpression
-  }
-
-  return {
-    arg,
-    code: script.code,
-  }
+  extractCache[absolutePath] = extractedData
+  return klona(extractedData)
 }
 
 const COLON_RE = /:/g
