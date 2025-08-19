@@ -57,7 +57,7 @@
     "hookable": "5.5.3",
     "nitropack": "2.12.4",
     "unbuild": "3.6.1",
-    "vite": "7.1.2",
+    "vite": "7.1.3",
     "vitest": "3.2.4",
     "webpack": "5.101.3"
   },
