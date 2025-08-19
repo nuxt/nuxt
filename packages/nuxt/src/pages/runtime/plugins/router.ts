@@ -261,9 +261,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:end')
     })
 
-    router.afterEach(async (to, _from) => {
+    router.afterEach((to) => {
       if (to.matched.length === 0) {
-        await nuxtApp.runWithContext(() => showError(createError({
+        nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`,
