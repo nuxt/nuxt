@@ -496,18 +496,26 @@ describe('routing utilities: `useRoute`', () => {
 
   it('should sync route after child suspense resolves', async () => {
     router.addRoute({
+      name: 'parent-test',
       path: '/parent',
-      component: () => import('../fixtures/basic/app/pages/parent.vue'),
+      component: defineComponent({
+        setup: () => () => h('div', ['parent', h(NuxtPage)]),
+      }),
       children: [
         {
           name: 'parent',
           path: '',
-          component: () => import('../fixtures/basic/app/pages/parent/index.vue'),
+          component: defineComponent({
+            template: '<div> parent/index </div>',
+          }),
         },
         {
           name: 'parent-suspense',
           path: 'suspense',
-          component: () => import('../fixtures/basic/app/pages/parent/suspense.vue'),
+          component: defineComponent({
+            template: '<div> parent/suspense </div>',
+            setup: () => new Promise(resolve => setTimeout(resolve, 1)),
+          }),
         },
       ],
     })
@@ -530,6 +538,9 @@ describe('routing utilities: `useRoute`', () => {
 
     expect(el.html()).toContain('<div> parent/suspense </div>')
     expect(route.name).toBe('parent-suspense')
+
+    el.unmount()
+    router.removeRoute('parent-test')
   })
 })
 
