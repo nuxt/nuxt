@@ -22,6 +22,7 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
+import { NuxtPage } from '#components'
 
 import { nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
 
@@ -470,6 +471,17 @@ describe('routing utilities: `encodeURL`', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
+  const nuxtApp = useNuxtApp()
+  const router = useRouter()
+
+  function waitForPageChange () {
+    return new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+  }
+
+  afterEach(() => {
+    router.clearRoutes()
+  })
+
   it('should provide a route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',
@@ -482,6 +494,55 @@ describe('routing utilities: `useRoute`', () => {
       query: {},
       redirectedFrom: undefined,
     })
+  })
+
+  it('should sync route after child suspense resolves', async () => {
+    router.addRoute({
+      name: 'parent-test',
+      path: '/parent',
+      component: defineComponent({
+        setup: () => () => h('div', ['parent', h(NuxtPage)]),
+      }),
+      children: [
+        {
+          name: 'parent',
+          path: '',
+          component: defineComponent({
+            template: '<div> parent/index </div>',
+          }),
+        },
+        {
+          name: 'parent-suspense',
+          path: 'suspense',
+          component: defineComponent({
+            template: '<div> parent/suspense </div>',
+            setup: () => new Promise(resolve => setTimeout(resolve, 1)),
+          }),
+        },
+      ],
+    })
+
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage) })
+    const route = useRoute()
+
+    await navigateTo('/parent')
+    await waitForPageChange()
+
+    expect(el.html()).toContain('<div> parent/index </div>')
+    expect(route.name).toBe('parent')
+
+    await navigateTo('/parent/suspense')
+
+    expect(el.html()).toContain('<div> parent/index </div>')
+    expect(route.name).toBe('parent')
+
+    await waitForPageChange()
+
+    expect(el.html()).toContain('<div> parent/suspense </div>')
+    expect(route.name).toBe('parent-suspense')
+
+    el.unmount()
+    router.removeRoute('parent-test')
   })
 })
 
