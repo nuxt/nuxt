@@ -263,7 +263,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     router.afterEach((to) => {
       if (to.matched.length === 0) {
-        nuxtApp.runWithContext(() => showError(createError({
+        return nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`,
