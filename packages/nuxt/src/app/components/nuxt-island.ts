@@ -2,7 +2,6 @@ import type { Component, PropType, RendererNode, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -94,7 +93,7 @@ export default defineComponent({
     let activeHead: ActiveHeadEntry<SerializableHead>
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
+    const eventFetch = import.meta.server ? event!.app!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -212,7 +211,7 @@ export default defineComponent({
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')
           if (hints) {
-            appendResponseHeader(event!, 'x-nitro-prerender', hints)
+            event!.res.headers.append('x-nitro-prerender', hints)
           }
         }
         setPayload(key, result)

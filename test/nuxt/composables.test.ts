@@ -25,7 +25,7 @@ import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
+  method: event.req.method,
   headers: Object.fromEntries(event.headers.entries()),
 })))
 

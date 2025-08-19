@@ -9,10 +9,10 @@ import type { DotenvOptions, SourceOptions } from 'c12'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
-import type { H3CorsOptions } from 'h3'
+import type { CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
-import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
+import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitro/types'
 import type { Options as Options0 } from 'autoprefixer'
 import type { Options as Options1 } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -981,7 +981,7 @@ export interface ConfigSchema {
     /**
      * Set CORS options for the dev server
      */
-    cors: H3CorsOptions
+    cors: CorsOptions
   }
 
   /**

@@ -9,7 +9,7 @@ import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
-import type { NitroRouteConfig } from 'nitropack/types'
+import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'

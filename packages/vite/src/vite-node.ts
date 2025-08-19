@@ -5,7 +5,7 @@ import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { createError } from 'h3'
+import { HTTPError } from 'h3'
 import { join, normalize, resolve } from 'pathe'
 import type { ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
@@ -277,7 +277,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           case 'resolve': {
             const { id: resolveId, importer } = request.payload
             if (!resolveId || !ssrServer) {
-              throw createError({ statusCode: 400, message: 'Missing id for resolve' })
+              throw new HTTPError({ statusCode: 400, message: 'Missing id for resolve' })
             }
             const resolvedResult = await getNode(ssrServer).resolveId(resolveId, importer).catch(() => null)
             sendResponse<typeof request.type>(socket, request.id, resolvedResult)
@@ -285,7 +285,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           }
           case 'module': {
             if (request.payload.moduleId === '/' || !ssrServer) {
-              throw createError({ statusCode: 400, message: 'Invalid moduleId' })
+              throw new HTTPError({ statusCode: 400, message: 'Invalid moduleId' })
             }
             const node = getNode(ssrServer)
             const response = await node.fetchModule(request.payload.moduleId)
@@ -306,14 +306,14 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                   // Ignore transform errors
                   }
                 }
-                throw createError({ data: errorData, message: err.message || 'Error fetching module' })
+                throw new HTTPError({ data: errorData, message: err.message || 'Error fetching module' })
               }) as Exclude<FetchResult, { cache: true }>
             sendResponse<typeof request.type>(socket, request.id, response)
             return
           }
           default:
             // @ts-expect-error this should never happen
-            throw createError({ statusCode: 400, message: `Unknown request type: ${request.type}` })
+            throw new HTTPError({ statusCode: 400, message: `Unknown request type: ${request.type}` })
         }
       } catch (error: any) {
         sendError(socket, request.id, error)

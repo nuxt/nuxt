@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { Nitro } from 'nitropack/types'
+import type { Nitro } from 'nitro/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
@@ -372,7 +372,7 @@ import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
-declare module 'nitropack' {
+declare module 'nitro' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -397,7 +397,7 @@ declare module 'nitropack' {
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
-declare module 'nitropack/types' {
+declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -515,7 +515,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
 
       nuxt.options.dev
         ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`

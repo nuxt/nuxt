@@ -1,4 +1,3 @@
-import { getRequestHeader } from 'h3'
 import type { H3Event } from 'h3'
 
 /**
@@ -15,13 +14,13 @@ export function isJsonRequest (event: H3Event) {
     hasReqHeader(event, 'user-agent', 'curl/') ||
     hasReqHeader(event, 'user-agent', 'httpie/') ||
     hasReqHeader(event, 'sec-fetch-mode', 'cors') ||
-    event.path.startsWith('/api/') ||
-    event.path.endsWith('.json')
+    event.url.pathname.startsWith('/api/') ||
+    event.url.pathname.endsWith('.json')
   )
 }
 
 export function hasReqHeader (event: H3Event, name: string, includes: string) {
-  const value = getRequestHeader(event, name)
+  const value = event.req.headers.get(name)
   return (
     value && typeof value === 'string' && value.toLowerCase().includes(includes)
   )

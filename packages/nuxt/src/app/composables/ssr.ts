@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
+import { getRequestHeaders } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import type { H3Event$Fetch } from 'nitropack/types'
+import type { H3Event$Fetch } from 'nitro/types'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -15,7 +15,10 @@ export function useRequestEvent (nuxtApp?: NuxtApp) {
   return nuxtApp.ssrContext?.event
 }
 
-/** @since 3.0.0 */
+/**
+ * @since 3.0.0
+ * @deprecated Use useRequestEvent().req.headers
+ */
 export function useRequestHeaders<K extends string = string> (include: K[]): { [key in Lowercase<K>]?: string }
 export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]) {
@@ -38,7 +41,7 @@ export function useRequestHeaders (include?: any[]) {
 export function useRequestHeader (header: string) {
   if (import.meta.client) { return undefined }
   const event = useRequestEvent()
-  return event ? getRequestHeader(event, header) : undefined
+  return event ? event.req.headers.get(header) : undefined
 }
 
 /** @since 3.2.0 */
@@ -56,11 +59,13 @@ export function setResponseStatus (code: number, message?: string): void
 export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: number | string, arg3?: string) {
   if (import.meta.client) { return }
   if (arg1 && typeof arg1 !== 'number') {
-    return _setResponseStatus(arg1, arg2 as number | undefined, arg3)
+    arg1.res.status = arg2 as number | undefined
+    arg1.res.statusText = arg3
   }
   const event = useRequestEvent()
   if (event) {
-    return _setResponseStatus(event, arg1, arg2 as string | undefined)
+    event.res.status = arg1 as number
+    event.res.statusText = arg2 as string | undefined
   }
 }
 
@@ -80,14 +85,14 @@ export function useResponseHeader (header: string) {
 
   return computed({
     get () {
-      return getResponseHeader(event, header)
+      return event.res.headers.get(header)
     },
     set (newValue) {
       if (!newValue) {
-        return removeResponseHeader(event, header)
+        return event.res.headers.delete(header)
       }
 
-      return setResponseHeader(event, header, newValue)
+      return event.res.headers.set(header, newValue)
     },
   })
 }
@@ -97,7 +102,7 @@ export function prerenderRoutes (path: string | string[]) {
   if (!import.meta.server || !import.meta.prerender) { return }
 
   const paths = toArray(path)
-  appendHeader(useRequestEvent()!, 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
+  useRequestEvent()?.res.headers.set('x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
 }
 
 const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
