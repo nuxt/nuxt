@@ -93,7 +93,8 @@ export default defineComponent({
     let activeHead: ActiveHeadEntry<SerializableHead>
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event!.app!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
+    // TODO: fix type assertions
+    const eventFetch = import.meta.server ? event!.app!.fetch as typeof global.fetch : (import.meta.dev ? $fetch.raw : globalThis.fetch)
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })

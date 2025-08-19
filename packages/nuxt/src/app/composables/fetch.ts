@@ -1,5 +1,5 @@
 import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
@@ -164,7 +164,7 @@ export function useFetch<
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
-    let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
+    let _$fetch: typeof global.$fetch = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
     if (import.meta.server && !opts.$fetch) {

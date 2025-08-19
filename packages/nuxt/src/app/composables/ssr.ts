@@ -1,7 +1,6 @@
 import type { H3Event } from 'h3'
-import { getRequestHeaders } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import type { H3Event$Fetch } from 'nitro/types'
+import { createFetch } from 'ofetch'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -24,7 +23,7 @@ export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]) {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
-  const _headers = event ? getRequestHeaders(event) : {}
+  const _headers = event ? Object.fromEntries(event.req.headers.entries()) : {}
   if (!include || !event) { return _headers }
   const headers = Object.create(null)
   for (const _key of include) {
@@ -45,11 +44,14 @@ export function useRequestHeader (header: string) {
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): H3Event$Fetch | typeof global.$fetch {
+export function useRequestFetch (): typeof global.$fetch {
   if (import.meta.client) {
     return globalThis.$fetch
   }
-  return useRequestEvent()?.$fetch || globalThis.$fetch
+  const event = useRequestEvent()!
+  // TODO: fix type assertions
+  const $fetch = createFetch({ fetch: event.app!.fetch as typeof global.fetch, defaults: { headers: event.req.headers } }) as typeof global.$fetch
+  return $fetch || globalThis.$fetch
 }
 
 /** @since 3.0.0 */
