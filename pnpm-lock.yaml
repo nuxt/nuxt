@@ -1161,9 +1161,6 @@ importers:
 
   playground:
     dependencies:
-      '@nuxt/webpack-builder':
-        specifier: workspace:*
-        version: link:../packages/webpack
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
