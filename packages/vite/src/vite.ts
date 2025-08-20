@@ -139,6 +139,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/],
               }
             : {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore Rollup-only
                 chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
                 exclude: nuxt.options.ignore,
               }
