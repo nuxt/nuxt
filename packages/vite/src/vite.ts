@@ -55,6 +55,18 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore Rolldown-check
+  if (vite.rolldownVersion) {
+    // Delete unused esbuild settings
+    if (viteConfig.esbuild) {
+      delete viteConfig.esbuild
+    }
+    if (viteConfig.optimizeDeps?.esbuildOptions) {
+      delete viteConfig.optimizeDeps.esbuildOptions
+    }
+  }
+
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
@@ -119,10 +131,18 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
-          watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-            exclude: nuxt.options.ignore,
-          },
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore Rolldown-check
+          watch: (vite.rolldownVersion
+            ? {
+                // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+                exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/],
+              }
+            : {
+                chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+                exclude: nuxt.options.ignore,
+              }
+          ),
         },
         plugins: [
           // add resolver for files in public assets directories
