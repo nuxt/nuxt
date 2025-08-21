@@ -1,10 +1,10 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 import { x } from 'tinyexec'
 
 import { loadNuxt } from '../src'
-import { findWorkspaceDir } from 'pkg-types'
 
 const repoRoot = await findWorkspaceDir()
 
