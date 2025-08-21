@@ -46,8 +46,8 @@ importers:
   .:
     dependencies:
       vue-onigiri:
-        specifier: link:../vue-onigiri
-        version: link:../vue-onigiri
+        specifier: 0.2.0
+        version: 0.2.0(@types/node@22.17.2)(jiti@2.5.1)(terser@5.39.0)(typescript@5.9.2)(vitest@3.2.4)(yaml@2.8.0)
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: 0.18.2
@@ -8376,6 +8376,10 @@ packages:
     resolution: {integrity: sha512-+/MdXl8bLTXI2lJF22gUBeCFqZruEpL/oM9f8wxCuKh9+Mw9qeul3gTqgbKpMeOFlusCzc0s7x2Kax2xKW+FQg==}
     engines: {node: '>=18.12.0'}
 
+  unplugin@2.3.8:
+    resolution: {integrity: sha512-lkaSIlxceytPyt9yfb1h7L9jDFqwMqvUZeGsKB7Z8QrvAO3xZv2S+xMQQYzxk0AGJHcQhbcvhKEstrMy99jnuQ==}
+    engines: {node: '>=18.12.0'}
+
   unrs-resolver@1.11.0:
     resolution: {integrity: sha512-uw3hCGO/RdAEAb4zgJ3C/v6KIAFFOtBoxR86b2Ejc5TnH7HrhTWJR2o0A9ullC3eWMegKQCw/arQ/JivywQzkg==}
 
@@ -8691,6 +8695,9 @@ packages:
 
   vue-onigiri@0.1.1:
     resolution: {integrity: sha512-NUsEYMGIUN4nY1byM0/V/v9R3++smKlHueaOEBGv8bUDqoU+Hi2uL6njYiHeDh52Lawkuv9a5TTfJasY74/S5w==}
+
+  vue-onigiri@0.2.0:
+    resolution: {integrity: sha512-yBd2Au1srHE+cj1KEztuWcDCqDxK10hWH5YfNKuC+fdBzGcNV6fWbCblPQmxVue+wmIa+s3+01J+VU++V/3xBw==}
 
   vue-resize@2.0.0-alpha.1:
     resolution: {integrity: sha512-7+iqOueLU7uc9NrMfrzbG8hwMqchfVfSzpVlCMeJQe4pyibqyoifDNbKTZvwxZKDvGkB+PdFeKvnGZMoEb8esg==}
@@ -17158,6 +17165,13 @@ snapshots:
       picomatch: 4.0.3
       webpack-virtual-modules: 0.6.2
 
+  unplugin@2.3.8:
+    dependencies:
+      '@jridgewell/remapping': 2.3.5
+      acorn: 8.15.0
+      picomatch: 4.0.3
+      webpack-virtual-modules: 0.6.2
+
   unrs-resolver@1.11.0:
     dependencies:
       napi-postinstall: 0.3.0
@@ -17491,6 +17505,41 @@ snapshots:
       pathe: 2.0.3
       rollup: 4.46.3
       unplugin: 2.3.6
+      vite: 7.1.2(@types/node@22.17.2)(jiti@2.5.1)(terser@5.39.0)(yaml@2.8.0)
+      vue: 3.5.18(typescript@5.9.2)
+    transitivePeerDependencies:
+      - '@types/node'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - typescript
+      - vitest
+      - yaml
+
+  vue-onigiri@0.2.0(@types/node@22.17.2)(jiti@2.5.1)(terser@5.39.0)(typescript@5.9.2)(vitest@3.2.4)(yaml@2.8.0):
+    dependencies:
+      '@module-federation/vite': 1.4.0(rollup@4.46.3)
+      '@vitejs/plugin-vue': 5.2.3(vite@7.1.2(@types/node@22.17.2)(jiti@2.5.1)(terser@5.39.0)(yaml@2.8.0))(vue@3.5.18(typescript@5.9.2))
+      '@vitest/ui': 3.2.4(vitest@3.2.4)
+      '@vue/compiler-dom': 3.5.18
+      '@vue/compiler-ssr': 3.5.18
+      '@vue/server-renderer': 3.5.18(vue@3.5.18(typescript@5.9.2))
+      '@vue/shared': 3.5.18
+      '@vue/test-utils': 2.4.6
+      acorn: 8.15.0
+      defu: 6.1.4
+      estree-walker: 3.0.3
+      magic-string: 0.30.17
+      ohash: 2.0.11
+      pathe: 2.0.3
+      rollup: 4.46.3
+      unplugin: 2.3.8
       vite: 7.1.2(@types/node@22.17.2)(jiti@2.5.1)(terser@5.39.0)(yaml@2.8.0)
       vue: 3.5.18(typescript@5.9.2)
     transitivePeerDependencies:
