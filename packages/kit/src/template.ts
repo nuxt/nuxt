@@ -94,6 +94,15 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
     })
   }
 
+  if (!context || context.nuxt || context.shared) {
+    // expose global types to vue compiler
+    nuxt.options.vite.vue = defu(nuxt.options.vite.vue, {
+      script: {
+        globalTypeFiles: [template.dst],
+      },
+    })
+  }
+
   if (context?.nitro) {
     nuxt.hook('nitro:prepare:types', ({ references }) => {
       references.push({ path: template.dst })
