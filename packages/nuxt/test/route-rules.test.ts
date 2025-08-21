@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { globRouteRulesFromPages, removePagesRules } from '../src/pages/route-rules'
 
 describe('routeRules from page meta', () => {
-  const pages = [
+  const getPages = () => [
     {
       path: '/',
       rules: { prerender: true },
@@ -21,6 +21,7 @@ describe('routeRules from page meta', () => {
   ]
 
   it('extracts route rules from pages', () => {
+    const pages = getPages()
     const result = globRouteRulesFromPages(pages)
     expect(result).toEqual({
       '/': { prerender: true },
@@ -29,6 +30,7 @@ describe('routeRules from page meta', () => {
   })
 
   it('removes route rules from pages', () => {
+    const pages = getPages()
     removePagesRules(pages)
     expect(pages).toEqual([
       { path: '/' },
