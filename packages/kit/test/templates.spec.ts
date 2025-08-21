@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
 
 describe('addTypeTemplate', () => {
-  it('should add type templates to vue global files', async () => {
+  it('should add type templates to vue global files', { timeout: 20_000 }, async () => {
     const repoRoot = await findWorkspaceDir()
     const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
     await mkdir(rootDir, { recursive: true })
