@@ -1,10 +1,10 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 import { x } from 'tinyexec'
 
 import { loadNuxt } from '../src'
-import { findWorkspaceDir } from 'pkg-types'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -14,7 +14,7 @@ describe('loadNuxt', () => {
   beforeAll(async () => {
     await mkdir(join(tempDir, 'nuxt'), { recursive: true })
     await writeFile(join(tempDir, 'package.json'), '{"dependencies":{"nuxt":"file:./nuxt"}}')
-    await writeFile(join(tempDir, 'nuxt', 'package.json'), '{"name":"nuxt","version":"3.0.0","type":"module","exports":{".":"./index.js"}}')
+    await writeFile(join(tempDir, 'nuxt', 'package.json'), '{"name":"nuxt","type":"module","exports":{".":"./index.js"}}')
     await writeFile(join(tempDir, 'nuxt', 'index.js'), 'export const loadNuxt = (opts) => ({ name: "it me" })')
     await x('npm', ['install'], { nodeOptions: { cwd: tempDir } })
   })
