@@ -269,10 +269,6 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
       let code = script.code
       let pageExtractArgument = node.expression.arguments[0]
-      if (pageExtractArgument?.type !== 'ObjectExpression') {
-        logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`).`)
-        return
-      }
 
       // TODO: always true because `extractScriptContent` only detects ts/tsx loader
       if (/tsx?/.test(script.loader)) {
@@ -286,8 +282,13 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         }
 
         // we already know that the first statement is a call expression
-        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]! as ObjectExpression
+        pageExtractArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]
         code = transformed.code
+      }
+
+      if (pageExtractArgument?.type !== 'ObjectExpression') {
+        logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`)
+        return
       }
 
       if (fnName === 'defineRouteRules') {
