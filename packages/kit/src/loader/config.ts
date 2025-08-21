@@ -19,8 +19,11 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  const localLayers = (await glob('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() }))
+  const localLayers = (await glob('layers/*', {
+    onlyDirectories: true, cwd: opts.cwd || process.cwd(),
+  }))
     .map((d: string) => d.endsWith('/') ? d.substring(0, d.length - 1) : d)
+    .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers });
 
   (globalThis as any).defineNuxtConfig = (c: any) => c
