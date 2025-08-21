@@ -12,6 +12,7 @@ ignoredBuiltDependencies:
   - oxc-resolver
   - unrs-resolver
   - vue-demi
+
 overrides:
   '@babel/core': 7.27.1
   '@babel/helper-plugin-utils': 7.27.1
@@ -43,3 +44,6 @@ overrides:
   vite: 6.3.5
   vue: 3.5.13
   webpack: 5.99.7
+
+patchedDependencies:
+  nitropack: patches/nitropack.patch

@@ -1,0 +1,12 @@
+diff --git a/dist/core/index.mjs b/dist/core/index.mjs
+index 7b0074a58e7dc780c6e7f9240e1874e89454d9d2..5554d18bd117bf68851f076ae2893291fb0521dd 100644
+--- a/dist/core/index.mjs
++++ b/dist/core/index.mjs
+@@ -1608,6 +1608,7 @@ async function buildProduction(nitro, rollupConfig) {
+       nitro.logger.error(formatRollupError(error));
+       throw error;
+     });
++    console.log(rollupConfig.output)
+     await build.write(rollupConfig.output);
+   }
+   const buildInfoPath = resolve(nitro.options.output.dir, "nitro.json");

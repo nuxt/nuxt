@@ -131,7 +131,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
       // 'virtual:vue-onigiri-client-to-server-chunks': () => {
-  
+
       //   console.log(nuxt.vfs['virtual:vue-onigiri-client-to-server-chunks']  )
       //   console.log('?????')
       //   return nuxt.vfs['virtual:vue-onigiri-client-to-server-chunks'] || ''
@@ -266,6 +266,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         },
       },
       plugins: [],
+      external:  [
+            ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+              const serverRendererPath = resolve(path, 'vue/index.mjs')
+              if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+              return targets
+            }, []),
+          ] 
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)

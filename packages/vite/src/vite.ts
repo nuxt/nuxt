@@ -143,6 +143,48 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ),
   }
 
+  const { client, server, serverChunks, clientChunks } = vueOnigiriPluginFactory({
+    serverAssetsDir: '_nuxt/',
+    clientAssetsDir: '_nuxt/',
+    includeClientChunks: ctx.nuxt.apps.default!.components.map(c => relative(ctx.nuxt.options.rootDir, c.filePath)),
+    rootDir: ctx.nuxt.options.rootDir,
+  })
+  nuxt.hook('vite:extendConfig', (ctx, { isServer }) => {
+    if (isServer) {
+      const allComponents = nuxt.apps.default!.components
+      ctx.plugins!.push({
+        name: 'nuxt:vue-onigiri',
+        load: {
+          order: 'pre',
+          handler (id) {
+            if (id === 'virtual:vue-onigiri') {
+              const imports = new Set()
+              const mapValues = new Map()
+
+              for (const chunk of clientChunks) {
+                const components = allComponents.filter(c => (c.mode === 'client' || c.mode === 'all') && normalize(c.filePath) === normalize(chunk.originalPath))
+                if (!components.length) { continue }
+                for (const component of components) {
+                  const serverSideCounterPart = allComponents.find(c => normalize(c.filePath) === normalize(chunk.originalPath) && (c.mode === 'server' || c.mode === 'all'))
+                  if (!serverSideCounterPart) { continue }
+                  imports.add(`import { ${component.export} as ${component.pascalName} } from 'virtual:vsc:${component.filePath}'`)
+                  mapValues.set(`/${chunk.filename}__${component.export}`, serverSideCounterPart.pascalName)
+                }
+              }
+
+              return {
+                code: `
+                  ${[...imports].join('\n')}
+                  export default new Map([ ${[...mapValues].map(([k, v]) => `['${k}', ${v}]`).join(', ')}] )
+                `,
+              }
+            }
+          },
+        },
+      })
+    }
+  })
+
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
   if (!nuxt.options.dev) {
@@ -263,12 +305,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           .catch(logger.error)
       })
     }
-  })
-  const { client, server } = vueOnigiriPluginFactory({
-    serverAssetsDir: '_nuxt/',
-    clientAssetsDir: '_nuxt/',
-    includeClientChunks: ctx.nuxt.apps.default!.components.map(c => relative(ctx.nuxt.options.rootDir, c.filePath)),
-    rootDir: ctx.nuxt.options.rootDir,
   })
   await withLogs(() => buildClient(nuxt, ctx, client), 'Vite client built', nuxt.options.dev)
   await withLogs(() => buildServer(nuxt, ctx, server), 'Vite server built', nuxt.options.dev)

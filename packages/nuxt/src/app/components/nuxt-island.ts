@@ -2,7 +2,7 @@ import type { PropType } from 'vue'
 import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
+import { appendResponseHeader, defineLazyEventHandler } from 'h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -16,15 +16,17 @@ import { injectHead } from '../composables/head'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
-
-const viteFetch = import.meta.server ?
+ const viteFetch = import.meta.server ?
   import.meta.dev
-    ? (src: string) => import('#build/dist/server/server.mjs').then(r => r.executeFile(src)).then(r => {
-        return r.default || r
-    }) :
+    ? (src: string, exportName: string) => import('#build/dist/server/server.mjs').then(r => r.executeFile(src)).then((r) => {
+        return r[exportName]
+      }) :
     // todo path association between server and client chunks
-      (src: string) => import(/* @vite-ignore */src.replace('/_nuxt/', './')).then(r => r.default || r._ || r)
-      ///: ?????????????????????????? todo fix 
+       ((src: string, exportName: string) => import(/* @vite-ignore */ 'virtual:vue-onigiri').then(r => {
+        console.log(src, exportName)
+        return r.default.get(src)[exportName]
+       }))
+      /// : ?????????????????????????? todo fix
   : (src: string) => import(/* @vite-ignore */join(src.replace('/app', ''))).then(r => r.default || r)
 
 const pKey = '_islandPromises'

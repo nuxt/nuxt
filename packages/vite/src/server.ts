@@ -54,6 +54,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
         // TODO: remove in v5
         '#internal/nitro',
         '#internal/nitro/utils',
+        'vue-onigiri'
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: nuxt.options.dev }),
@@ -80,6 +81,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
           '#internal/nuxt/paths',
           '#internal/nuxt/app-config',
           '#app-manifest',
+          
           '#shared',
           new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))),
         ],
