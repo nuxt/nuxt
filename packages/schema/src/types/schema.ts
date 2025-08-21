@@ -13,8 +13,8 @@ import type { H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
 import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitropack'
-import type { Options as Options0 } from 'autoprefixer'
-import type { Options as Options1 } from 'cssnano'
+import type { Options as AutoprefixerOptions } from 'autoprefixer'
+import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
 import type { RawVueCompilerOptions } from '@vue/language-core'
 import type { PluginOptions } from 'mini-css-extract-plugin'
@@ -24,7 +24,7 @@ import type { VueLoaderOptions } from 'vue-loader'
 import type { BasePluginOptions, DefinedDefaultMinimizerAndOptions } from 'css-minimizer-webpack-plugin'
 import type { Configuration, WebpackError } from 'webpack'
 import type { ProcessOptions } from 'postcss'
-import type { Options as Options3 } from 'webpack-dev-middleware'
+import type { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
@@ -1898,7 +1898,7 @@ export interface ConfigSchema {
      *
      * @see [PostCSS docs](https://postcss.org/)
      */
-    plugins: Record<string, unknown> & { autoprefixer?: Options0, cssnano?: Options1 }
+    plugins: Record<string, unknown> & { autoprefixer?: false | AutoprefixerOptions, cssnano?: false | CssnanoOptions }
   }
 
   router: {
@@ -2310,13 +2310,13 @@ export interface ConfigSchema {
      * Customize PostCSS Loader. same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
      *
      */
-    postcss: { execute?: boolean, postcssOptions: ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: Options0, cssnano?: Options1 } }, sourceMap?: boolean, implementation?: any }
+    postcss: { execute?: boolean, postcssOptions: ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: AutoprefixerOptions, cssnano?: CssnanoOptions } }, sourceMap?: boolean, implementation?: any }
 
     /**
      * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
      *
      */
-    devMiddleware: Options3<IncomingMessage, ServerResponse>
+    devMiddleware: WebpackDevMiddlewareOptions<IncomingMessage, ServerResponse>
 
     /**
      * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
