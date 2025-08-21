@@ -53,6 +53,9 @@ export default defineConfig({
         },
       },
       {
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
         test: {
           name: 'fixtures',
           include: ['test/*.test.ts'],
@@ -64,6 +67,9 @@ export default defineConfig({
         },
       },
       {
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
@@ -96,6 +102,9 @@ export default defineConfig({
         },
       }),
       ...await Promise.all(Object.entries(projects).map(([project, config]) => defineVitestProject({
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
         test: {
           name: project,
           dir: './test/nuxt',

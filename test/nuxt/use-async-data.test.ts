@@ -71,6 +71,8 @@ describe('useAsyncData', () => {
   })
 
   it('should capture errors', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
@@ -90,7 +92,8 @@ describe('useAsyncData', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
       /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
     ))
-    warn.mockClear()
+    warn.mockRestore()
+    vi.unstubAllGlobals()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -374,6 +377,7 @@ describe('useAsyncData', () => {
   })
 
   it('should warn if incompatible options are used', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
@@ -409,6 +413,7 @@ describe('useAsyncData', () => {
     ))
 
     warn.mockReset()
+    vi.unstubAllGlobals()
   })
 
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
