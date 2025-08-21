@@ -226,7 +226,21 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
               }, []),
             ]
           : [],
+
+          // todo fix 
+        ...[
+          ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+            const serverRendererPath = resolve(path, 'vue/index.mjs')
+            if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+            return targets
+          }, []),
+        ],
       ],
+
+      // todo this too...
+      external: [
+        'vue'
+      ]
     },
     alias: {
       // Vue 3 mocks
@@ -266,13 +280,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         },
       },
       plugins: [],
-      external:  [
-            ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
-              const serverRendererPath = resolve(path, 'vue/index.mjs')
-              if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
-              return targets
-            }, []),
-          ] 
+      external: [
+        'vue',
+      ],
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)

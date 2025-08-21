@@ -24,7 +24,7 @@ import { remoteComponentIslands } from '#build/nuxt.config.mjs'
     // todo path association between server and client chunks
        ((src: string, exportName: string) => import(/* @vite-ignore */ 'virtual:vue-onigiri').then(r => {
         console.log(src, exportName)
-        return r.default.get(src)[exportName]
+   return r.default.get(src+'__'+exportName);
        }))
       /// : ?????????????????????????? todo fix
   : (src: string) => import(/* @vite-ignore */join(src.replace('/app', ''))).then(r => r.default || r)

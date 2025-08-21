@@ -167,8 +167,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 for (const component of components) {
                   const serverSideCounterPart = allComponents.find(c => normalize(c.filePath) === normalize(chunk.originalPath) && (c.mode === 'server' || c.mode === 'all'))
                   if (!serverSideCounterPart) { continue }
-                  imports.add(`import { ${component.export} as ${component.pascalName} } from 'virtual:vsc:${component.filePath}'`)
-                  mapValues.set(`/${chunk.filename}__${component.export}`, serverSideCounterPart.pascalName)
+                  imports.add(`import { ${component.export} as ${component.pascalName} } from 'virtual:vsc:${serverSideCounterPart.filePath}'`)
+                  mapValues.set(`/${chunk.filename}__${component.export}`, component.pascalName)
                 }
               }
 
