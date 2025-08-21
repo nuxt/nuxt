@@ -10,7 +10,7 @@ import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
 import { defineEnv } from 'unenv'
 import { resolveModulePath } from 'exsolve'
-import { createError, defineEventHandler, handleCors, setHeader } from 'h3'
+import { HTTPError, defineEventHandler, handleCors } from 'h3'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
 import type { ViteBuildContext } from './vite'
@@ -257,31 +257,30 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
           viteRoutes.push(m)
         }
       }
-      if (!event.path.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
+      if (!event.url.pathname.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.url.pathname.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
-        event.node.req._skip_transform = true
+        event.runtime!.node!.req._skip_transform = true
       } else if (!useViteCors) {
         const isPreflight = handleCors(event, nuxt.options.devServer.cors)
         if (isPreflight) {
           return null
         }
-        setHeader(event, 'Vary', 'Origin')
+        event.res.headers.set('Vary', 'Origin')
       }
 
       // Workaround: vite devmiddleware modifies req.url
-      const _originalPath = event.node.req.url
+      // const _originalPathname = event.url.pathname
+      const _originalPath = event.runtime!.node!.req.url
       await new Promise((resolve, reject) => {
-        viteServer.middlewares.handle(event.node.req, event.node.res, (err: Error) => {
-          event.node.req.url = _originalPath
+        viteServer.middlewares.handle(event.runtime!.node!.req as IncomingMessage, event.runtime!.node!.res as ServerResponse, (err: Error) => {
+          event.runtime!.node!.req.url = _originalPath
           return err ? reject(err) : resolve(null)
         })
       })
 
       // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-      if (!event.handled && event.path.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
-        throw createError({
-          statusCode: 404,
-        })
+      if (event.url.pathname.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.url.pathname.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.url.pathname))) {
+        throw new HTTPError({ status: 404 })
       }
     })
     await nuxt.callHook('server:devHandler', viteMiddleware)

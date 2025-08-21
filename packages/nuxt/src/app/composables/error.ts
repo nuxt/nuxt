@@ -1,5 +1,4 @@
-import type { H3Error } from 'h3'
-import { createError as createH3Error } from 'h3'
+import { HTTPError } from 'h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
@@ -11,8 +10,13 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /** @since 3.0.0 */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-export interface NuxtError<DataT = unknown> extends H3Error<DataT> {
+type Writable<T> = {
+  -readonly [K in keyof T]: T[K]
+}
+
+export interface NuxtError<DataT = unknown> extends Writable<HTTPError<DataT>> {
   error?: true
+  fatal?: boolean
 }
 
 /** @since 3.0.0 */
@@ -57,7 +61,9 @@ export const clearError = async (options: { redirect?: string } = {}) => {
 /** @since 3.0.0 */
 export const isNuxtError = <DataT = unknown>(
   error: unknown,
-): error is NuxtError<DataT> => !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
+): error is NuxtError<DataT> => {
+  return !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
+}
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(
@@ -66,7 +72,7 @@ export const createError = <DataT = unknown>(
     statusText?: string
   }),
 ) => {
-  const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
+  const nuxtError: NuxtError<DataT> = typeof error === 'string' ? new HTTPError<DataT>(error) : new HTTPError<DataT>(error.message || '', error)
 
   Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {
     value: true,
@@ -74,5 +80,8 @@ export const createError = <DataT = unknown>(
     writable: false,
   })
 
-  return nuxtError
+  nuxtError.fatal ??= nuxtError.unhandled
+
+  // TODO: work around devalue limitation: https://github.com/sveltejs/devalue/pull/95
+  return Object.assign({}, nuxtError)
 }

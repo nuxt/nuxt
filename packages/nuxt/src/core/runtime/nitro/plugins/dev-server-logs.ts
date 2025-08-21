@@ -9,7 +9,7 @@ import { captureRawStackTrace, parseRawStackTrace } from 'errx'
 import type { ParsedTrace } from 'errx'
 
 import { isVNode } from 'vue'
-import type { NitroApp } from 'nitropack/types'
+import type { NitroApp } from 'nitro/types'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
@@ -66,10 +66,10 @@ export default (nitroApp: NitroApp) => {
     ctx.logs.push(log)
   })
 
-  nitroApp.hooks.hook('afterResponse', () => {
+  nitroApp.hooks.hook('response', () => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
-    return nitroApp.hooks.callHook('dev:ssr-logs', { logs: ctx.logs, path: ctx.event.path })
+    return nitroApp.hooks.callHook('dev:ssr-logs', { logs: ctx.logs, path: ctx.event.url.pathname })
   })
 
   // Pass any logs to the client

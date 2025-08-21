@@ -5,13 +5,13 @@ import {
   getRequestDependencies,
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
-import type { RenderResponse } from 'nitropack/types'
-import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
+import type { RenderResponse } from 'nitro/types'
+import { HTTPError, getQuery, writeEarlyHints } from 'h3'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runtime'
+import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitro/runtime'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -67,14 +67,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
-  const ssrError = event.path.startsWith('/__nuxt_error')
+  const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
     : null
-
-  if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Page Not Found: /__nuxt_error',
+    // TODO: add special case
+  if (ssrError && !!event.runtime /* allow internal fetch */) {
+    throw new HTTPError({
+      status: 404,
+      statusText: 'Page Not Found: /__nuxt_error',
     })
   }
 
@@ -86,7 +86,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   ssrContext.head.push(appHead, headEntryOptions)
 
   if (ssrError) {
-    ssrError.statusCode &&= Number.parseInt(ssrError.statusCode as any)
+    ssrError.status &&= Number.parseInt(ssrError.statusCode as any)
     if (process.env.PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
       try {
         ssrError.data = destr(ssrError.data)
@@ -103,7 +103,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
 
-    event._path = event.node.req.url = url
     if (import.meta.prerender && await payloadCache!.hasItem(url)) {
       return payloadCache!.getItem(url) as Promise<Partial<RenderResponse>>
     }
@@ -127,7 +126,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   if (process.env.NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
     if (link) {
-      writeEarlyHints(event, link)
+      writeEarlyHints(event, { link })
     }
   }
 
@@ -172,7 +171,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(withoutTrailingSlash(ssrContext.url), renderPayloadResponse(ssrContext))
   }
@@ -284,8 +283,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Construct HTML response
   return {
     body: renderHTMLDocument(htmlContext),
-    statusCode: getResponseStatus(event),
-    statusMessage: getResponseStatusText(event),
+    status: event.res.status || 200,
+    statusText: event.res.statusText || '',
     headers: {
       'content-type': 'text/html;charset=utf-8',
       'x-powered-by': 'Nuxt',
