@@ -48,6 +48,26 @@ describe('lazy hydration macro transform', () => {
     `)
   })
 
+  it ('should correctly transform lazy hydration macro in sfc with non-auto-imported components', async () => {
+    const sfc = `
+    <script setup>
+    const LazyHydrationIfMyComponent = defineLazyHydrationComponent('if', () => import('~/components/MyComponent.vue'))
+    </script>
+
+    <template>
+      <LazyHydrationIfMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue', true)
+    expect(code).toContain(`import { createLazyIfComponent } from '../client-runtime.mjs';`)
+
+    const component = code.split('\n').map(line => line.trim()).find(line => line.startsWith('const LazyHydration'))
+    expect(component).toMatchInlineSnapshot(`
+      "const LazyHydrationIfMyComponent = createLazyIfComponent("~/components/MyComponent.vue", () => import('~/components/MyComponent.vue').then(c => c.default || c));"
+    `)
+  })
+
   it ('should correctly transform lazy hydration macro in jsx', async () => {
     const component = `
     import { defineComponent } from 'vue'
@@ -131,8 +151,8 @@ describe('lazy hydration macro transform', () => {
   })
 })
 
-async function transform (code: string, filename: string) {
-  const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
+async function transform (code: string, filename: string, noComponents?: boolean) {
+  const components = noComponents ? [] : ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
     export: opts.export || 'default',
     chunkName: 'components/' + kebabCase(opts.name),
     global: opts.global ?? false,
