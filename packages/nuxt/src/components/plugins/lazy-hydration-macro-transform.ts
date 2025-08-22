@@ -78,7 +78,7 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           let component = findComponent(components, name)
           if (!component) {
             const componentImportPath = matchedString.match(COMPONENT_IMPORT)
-            if(!componentImportPath || !componentImportPath[1]) {
+            if (!componentImportPath || !componentImportPath[1]) {
               s.remove(startIndex, endIndex)
               continue
             }
@@ -90,7 +90,7 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
             } as Component
             shouldUseRelativePathAsParam = false
           }
-          
+
           const relativePath = relative(options.srcDir, component.filePath)
           const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
           const replaceFunctionName = `createLazy${upperFirst(hydrationStrategy)}Component`

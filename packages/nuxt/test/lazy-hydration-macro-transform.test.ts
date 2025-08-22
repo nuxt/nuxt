@@ -152,20 +152,22 @@ describe('lazy hydration macro transform', () => {
 })
 
 async function transform (code: string, filename: string, noComponents?: boolean) {
-  const components = noComponents ? [] : ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
-    export: opts.export || 'default',
-    chunkName: 'components/' + kebabCase(opts.name),
-    global: opts.global ?? false,
-    kebabName: kebabCase(opts.name || ''),
-    pascalName: pascalCase(opts.name || ''),
-    prefetch: false,
-    preload: false,
-    mode: 'all' as const,
-    shortPath: opts.filePath,
-    priority: 0,
-    meta: {},
-    ...opts,
-  }))
+  const components = noComponents
+    ? []
+    : ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
+        export: opts.export || 'default',
+        chunkName: 'components/' + kebabCase(opts.name),
+        global: opts.global ?? false,
+        kebabName: kebabCase(opts.name || ''),
+        pascalName: pascalCase(opts.name || ''),
+        prefetch: false,
+        preload: false,
+        mode: 'all' as const,
+        shortPath: opts.filePath,
+        priority: 0,
+        meta: {},
+        ...opts,
+      }))
 
   const bundle = await rollup({
     input: filename,
