@@ -16,7 +16,7 @@ export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glo
       delete page.rules
     }
     if (page.children?.length) {
-      globRouteRulesFromPages(page.children, paths, page.path + '/')
+      globRouteRulesFromPages(page.children, paths, prefix + page.path + '/')
     }
   }
   return paths

@@ -13,6 +13,16 @@ describe('routeRules from page meta', () => {
       path: '/users',
       children: [{ path: ':id', rules: { prerender: true } }],
     },
+    // nested paths
+    {
+      path: '/some',
+      children: [
+        {
+          path: 'nested',
+          children: [{ path: 'page', rules: { prerender: true } }],
+        },
+      ],
+    },
     // page with empty routeRules
     {
       path: '/contact',
@@ -25,6 +35,7 @@ describe('routeRules from page meta', () => {
     const result = globRouteRulesFromPages(pages)
     expect(result).toEqual({
       '/': { prerender: true },
+      '/some/nested/page': { prerender: true },
       '/users/**': { prerender: true },
     })
   })
@@ -35,6 +46,10 @@ describe('routeRules from page meta', () => {
     expect(pages).toEqual([
       { path: '/' },
       { path: '/users', children: [{ path: ':id' }] },
+      {
+        path: '/some',
+        children: [{ path: 'nested', children: [{ path: 'page' }] }],
+      },
       { path: '/contact' },
     ])
   })
