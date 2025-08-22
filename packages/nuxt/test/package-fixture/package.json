@@ -1,0 +1,8 @@
+{
+	"name": "package-fixture",
+	"description": "This package uses the #components import mapping internally and is used to test the components TransformPlugin",
+	"private": true,
+	"imports": {
+		"#components": "./index.js"
+	}
+}
