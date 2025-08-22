@@ -10,6 +10,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
+import { captureStackTrace } from 'errx'
 
 /** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
@@ -19,7 +20,10 @@ export const useRouter: typeof _useRouter = () => {
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
-    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/guide/directory-structure/app/middleware#accessing-route-in-middleware')
+    const distURL = import.meta.url.replace(/\/app\/.*$/, '/app')
+    const stack = captureStackTrace().filter(entry => !entry.source.startsWith(distURL))
+    const trace = stack.map(({ source, line, column }) => `at ${source.replace(/^file:\/\//, '')}:${line}:${column}`).join('\n')
+    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.' + ('\n' + trace))
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)
