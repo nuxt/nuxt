@@ -1,10 +1,13 @@
+import { readFileSync } from 'node:fs'
+import { isObject } from '@vue/shared'
 import { isIgnored } from '@nuxt/kit'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
-import { normalize } from 'pathe'
+import { resolveModulePath } from 'exsolve'
+import { basename, dirname, normalize } from 'pathe'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module'
 import type { Nuxt } from 'nuxt/schema'
@@ -110,7 +113,37 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
         }
       }
 
-      if (!code.includes('#components')) { return }
+      if (code.includes('#components')) {
+        // Lookup package.json
+        let pkgPath: string | undefined
+        let dir = id
+        while (true) {
+          const parentDir = dirname(dir)
+          if (parentDir === dir || basename(parentDir) === 'node_modules') {
+            break
+          }
+
+          pkgPath = resolveModulePath('./package.json', {
+            from: dir = parentDir,
+            try: true,
+          })
+
+          if (pkgPath) {
+            // Load package.json
+            const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+
+            // If package defines a "#components" import mapping,
+            // assume is used internally by the package.
+            if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
+              return
+            }
+
+            break
+          }
+        }
+      } else {
+        return
+      }
 
       componentUnimport.modifyDynamicImports((imports) => {
         imports.length = 0
