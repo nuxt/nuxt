@@ -17,6 +17,7 @@ interface LoaderOptions {
 
 const LAZY_HYDRATION_MACRO_RE = /(?:\b(?:const|let|var)\s+(\w+)\s*=\s*)?defineLazyHydrationComponent\(\s*['"]([^'"]+)['"]\s*,\s*\(\s*\)\s*=>\s*import\s*\(\s*['"]([^'"]+)['"]\s*\)\s*\)/g
 const COMPONENT_NAME = /import\(["'].*\/([^\\/]+?)\.\w+["']\)/
+const COMPONENT_IMPORT = /import\(["']([^'"]+)["']\)/
 const HYDRATION_STRATEGY = ['visible', 'idle', 'interaction', 'mediaQuery', 'if', 'time', 'never']
 
 export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
@@ -73,16 +74,27 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           }
 
           const name = componentNameMatch[1]
-          const component = findComponent(components, name)
+          let shouldUseRelativePathAsParam = true
+          let component = findComponent(components, name)
           if (!component) {
-            s.remove(startIndex, endIndex)
-            continue
-          }
+            const componentImportPath = matchedString.match(COMPONENT_IMPORT)
+            if(!componentImportPath || !componentImportPath[1]) {
+              s.remove(startIndex, endIndex)
+              continue
+            }
 
+            // Component is not auto imported, use source import path as is
+            component = {
+              filePath: componentImportPath[1],
+              pascalName: pascalCase(name),
+            } as Component
+            shouldUseRelativePathAsParam = false
+          }
+          
           const relativePath = relative(options.srcDir, component.filePath)
           const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
           const replaceFunctionName = `createLazy${upperFirst(hydrationStrategy)}Component`
-          const replacement = `const ${variableName} = __${replaceFunctionName}(${JSON.stringify(relativePath)}, ${dynamicImport})`
+          const replacement = `const ${variableName} = __${replaceFunctionName}(${JSON.stringify(shouldUseRelativePathAsParam ? relativePath : component.filePath)}, ${dynamicImport})`
 
           s.overwrite(startIndex, endIndex, replacement)
           names.add(replaceFunctionName)
