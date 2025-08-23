@@ -69,7 +69,7 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
   for (const path of toArray(paths)) {
     const res = await _resolvePathGranularly(path, {
       ...opts,
-      // TODO: this is for backwards compatibility, remove the `PathType` argument in Nuxt 5
+      // TODO: this is for backwards compatibility, remove the `pathType` argument in Nuxt 5
       type: opts?.type || pathType,
     })
 

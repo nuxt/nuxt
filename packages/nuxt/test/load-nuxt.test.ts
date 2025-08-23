@@ -3,10 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
+import { findWorkspaceDir } from 'pkg-types'
 import { loadNuxt } from '../src'
 import type { NuxtConfig } from '../schema'
 
-const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
 
 vi.stubGlobal('console', {
   ...console,

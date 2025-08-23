@@ -1,5 +1,6 @@
 import { promises as fsp, statSync } from 'node:fs'
-import { useLogger } from '@nuxt/kit'
+import { tryUseNuxt, useLogger } from '@nuxt/kit'
+import { reverseResolveAlias } from 'pathe/utils'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
@@ -38,3 +39,12 @@ export const JS_EXTENSIONS = ['js', 'ts', 'tsx', 'jsx', 'mjs', 'cjs', 'mts', 'ct
 export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts']
 
 export const logger = useLogger('nuxt')
+
+export function resolveToAlias (path: string, nuxt = tryUseNuxt()) {
+  return reverseResolveAlias(path, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || path
+}
+
+const strippedAtAliases = {
+  '@': '',
+  '@@': '',
+}
