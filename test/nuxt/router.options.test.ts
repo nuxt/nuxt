@@ -1,8 +1,9 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import type { VueWrapper } from '@vue/test-utils'
 import { config, flushPromises } from '@vue/test-utils'
 import { NuxtPage } from '#components'
 
@@ -23,48 +24,44 @@ const waitFor = async (condition: () => boolean, timeout = 1000) => {
   }
 }
 
-describe('scrollBehavior of router options', () => {
+describe('scrollBehavior of router options with global transition', () => {
   const router = useRouter()
   const nuxtApp = useNuxtApp()
 
+  let wrapper: VueWrapper<unknown>
   let scrollTo: ReturnType<typeof vi.spyOn>
 
-  const addRoute = (sync: boolean) => {
-    router.addRoute({
-      name: 'slug',
-      path: '/:slug(.*)*',
-      component: defineComponent({
-        name: '~/pages/[...slug].vue',
-        ...(sync
-          ? {
-              setup: () => () => h('div'),
-            }
-          : {
-              async setup () {
-                await sleep(10)
-                return () => h('div')
-              },
-            }
-        ),
+  const pageTransitionFinish = vi.fn()
+  const pageLoadingEnd = vi.fn()
 
-      }),
-    })
-  }
-
-  beforeEach(() => {
-    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+  router.addRoute({
+    name: 'transitions',
+    path: '/transitions',
+    component: defineComponent({ setup: () => () => h('div', [h(NuxtPage)]) }),
+    children: [
+      {
+        name: 'transition-async',
+        path: 'async',
+        component: defineComponent({
+          async setup () {
+            await sleep(10)
+            return () => h('div')
+          },
+        }),
+      },
+      {
+        name: 'transition-sync',
+        path: 'sync',
+        component: defineComponent({ setup: () => () => h('div') }),
+      },
+    ],
   })
 
-  afterEach(() => {
-    router.removeRoute('slug')
-    vi.clearAllMocks()
-    scrollTo.mockClear()
-  })
+  beforeAll(async () => {
+    nuxtApp.hook('page:transition:finish', pageTransitionFinish)
+    nuxtApp.hook('page:loading:end', pageLoadingEnd)
 
-  it('should call scrollTo after page transition is finished with async component', async () => {
-    addRoute(false)
-
-    await mountSuspended({
+    wrapper = await mountSuspended(defineComponent({
       setup: () => () => h(NuxtPage, {
         transition: {
           name: 'fade',
@@ -72,17 +69,24 @@ describe('scrollBehavior of router options', () => {
           duration: 10,
         },
       }),
-    })
-
+    }))
     await flushPromises()
+  })
 
-    const pageTransitionFinish = vi.fn()
-    const pageLoadingEnd = vi.fn()
+  beforeEach(async () => {
+    await navigateTo('/')
+    await flushPromises()
+    vi.clearAllMocks()
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+  })
 
-    nuxtApp.hook('page:transition:finish', pageTransitionFinish)
-    nuxtApp.hook('page:loading:end', pageLoadingEnd)
+  afterAll(() => {
+    router.removeRoute('transitions')
+    wrapper.unmount()
+  })
 
-    await router.push('/page')
+  it('should call scrollTo after page transition is finished with async component', async () => {
+    await navigateTo('/transitions/async')
 
     // Ensure everything is settled
     await waitFor(() => pageTransitionFinish.mock.calls.length > 0)
@@ -94,27 +98,7 @@ describe('scrollBehavior of router options', () => {
   })
 
   it('should call scrollTo after page transition is finished with sync component', async () => {
-    addRoute(true)
-
-    await mountSuspended({
-      setup: () => () => h(NuxtPage, {
-        transition: {
-          name: 'fade',
-          mode: 'out-in',
-          duration: 10,
-        },
-      }),
-    })
-
-    await flushPromises()
-
-    const pageTransitionFinish = vi.fn()
-    const pageLoadingEnd = vi.fn()
-
-    nuxtApp.hook('page:transition:finish', pageTransitionFinish)
-    nuxtApp.hook('page:loading:end', pageLoadingEnd)
-
-    await router.push('/page')
+    await navigateTo('/transitions/sync')
 
     // Ensure everything is settled
     await waitFor(() => pageTransitionFinish.mock.calls.length > 0)

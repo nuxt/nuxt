@@ -1,10 +1,11 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { normalize } from 'pathe'
+import { join } from 'pathe'
 import type { NuxtConfig } from '@nuxt/schema'
 import { loadNuxt } from '../src'
+import { findWorkspaceDir } from 'pkg-types'
 
-const fixtureDir = normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url)))
+const repoRoot = await findWorkspaceDir()
+const fixtureDir = join(repoRoot, 'test/fixtures/basic')
 
 describe('loadNuxt', () => {
   it('adds shared directories for layers to nitro auto-imports in v4', async () => {

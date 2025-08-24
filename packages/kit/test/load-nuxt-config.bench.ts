@@ -1,8 +1,7 @@
-import { fileURLToPath } from 'node:url'
 import { bench, describe } from 'vitest'
-import { join, normalize } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
+import { join } from 'pathe'
 import { loadNuxtConfig } from '@nuxt/kit'
+import { findWorkspaceDir } from 'pkg-types'
 
 const fixtures = {
   'empty directory': 'node_modules/fixture',
@@ -12,10 +11,10 @@ const fixtures = {
   'minimal test fixture (types)': 'test/fixtures/minimal-types',
 }
 
-describe('loadNuxtConfig', () => {
+describe('loadNuxtConfig', async () => {
+  const repoRoot = await findWorkspaceDir()
   for (const fixture in fixtures) {
-    const relativeDir = join('../../..', fixtures[fixture as keyof typeof fixtures])
-    const path = withoutTrailingSlash(normalize(fileURLToPath(new URL(relativeDir, import.meta.url))))
+    const path = join(repoRoot, fixtures[fixture as keyof typeof fixtures])
     bench(`loadNuxtConfig in the ${fixture}`, async () => {
       await loadNuxtConfig({ cwd: path })
     })

@@ -222,7 +222,7 @@ export function useAsyncData<
 
   // check and warn if different defaults/fetcher are provided
   const currentData = nuxtApp._asyncData[key.value]
-  if (isDev && currentData) {
+  if (import.meta.dev && currentData) {
     const warnings: string[] = []
     const values = createHash(_handler, options)
     if (values.handler !== currentData._hash?.handler) {
@@ -587,8 +587,6 @@ function pick (obj: Record<string, any>, keys: string[]) {
 
 export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
 
-const isDev = import.meta.dev /* and in test */
-
 function createAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
@@ -712,7 +710,7 @@ function createAsyncData<
     _default: options.default!,
     _deps: 0,
     _init: true,
-    _hash: isDev ? createHash(_handler, options) : undefined,
+    _hash: import.meta.dev ? createHash(_handler, options) : undefined,
     _off: () => {
       unsubRefreshAsyncData()
       if (nuxtApp._asyncData[key]?._init) {
