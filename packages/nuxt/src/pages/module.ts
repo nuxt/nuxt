@@ -19,6 +19,7 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
+import { createInternalImport } from '../imports/utils.ts'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
@@ -396,7 +397,7 @@ export default defineNuxtModule({
 
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
-        { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
+        createInternalImport({ name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') }),
         { name: 'useLink', as: 'useLink', from: 'vue-router' },
       )
       if (nuxt.options.experimental.inlineRouteRules) {
