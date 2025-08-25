@@ -1,6 +1,6 @@
 // Module
 export { defineNuxtModule } from './module/define'
-export { getDirectory, installModule, loadNuxtModuleInstance, normalizeModuleTranspilePath } from './module/install'
+export { getDirectory, installModule, installModules, loadNuxtModuleInstance, normalizeModuleTranspilePath, resolveModuleWithOptions } from './module/install'
 export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './module/compatibility'
 
 // Loader
