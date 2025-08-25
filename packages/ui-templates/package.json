@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@unocss/reset": "66.4.2",
-    "@vue/shared": "3.5.18",
+    "@vue/shared": "3.5.20",
     "beasties": "0.3.5",
     "html-validate": "10.0.0",
     "htmlnano": "2.1.2",
