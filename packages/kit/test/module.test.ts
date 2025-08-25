@@ -270,9 +270,9 @@ export default () => {
       }
     `)
     // @ts-expect-error untyped nuxt option
-    expect(nuxt.options.c).toMatchInlineSnapshot(`{}`)
+    expect(nuxt.options.c).toMatchInlineSnapshot(`undefined`)
     // @ts-expect-error untyped nuxt option
-    expect(nuxt.options.d).toMatchInlineSnapshot(`{}`)
+    expect(nuxt.options.d).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should warn if version constraints do not match', async () => {
