@@ -40,7 +40,7 @@
     "@types/webpack-hot-middleware": "2.25.10",
     "@unhead/vue": "2.0.14",
     "@vitejs/plugin-vue": "6.0.1",
-    "@vitejs/plugin-vue-jsx": "5.0.1",
+    "@vitejs/plugin-vue-jsx": "5.1.0",
     "@vue/compiler-core": "3.5.20",
     "@vue/compiler-sfc": "3.5.20",
     "@vue/language-core": "3.0.6",
