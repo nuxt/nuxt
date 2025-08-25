@@ -63,6 +63,13 @@ export type ResolvedModuleOptions<
     >
   >
 
+export interface ModuleDependencyMeta {
+  version?: string
+  overrides?: Record<string, unknown>
+  defaults?: Record<string, unknown>
+  optional?: boolean
+}
+
 /** Module definition passed to 'defineNuxtModule(...)' or 'defineNuxtModule().with(...)'. */
 export interface ModuleDefinition<
   TOptions extends ModuleOptions,
@@ -73,6 +80,9 @@ export interface ModuleDefinition<
   defaults?: TOptionsDefaults | ((nuxt: Nuxt) => Awaitable<TOptionsDefaults>)
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
+  // TODO: review option name
+  // TODO: type constraints for module options
+  modules?: Record<string, ModuleDependencyMeta>
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (nuxt: Nuxt, options: TOptions, previousVersion: string) => Awaitable<void>
   setup?: (
@@ -104,6 +114,7 @@ export interface NuxtModule<
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions
   >
+  getDependencyMeta?: () => Record<string, ModuleDependencyMeta> | undefined
   getMeta?: () => Promise<ModuleMeta>
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (

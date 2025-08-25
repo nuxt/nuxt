@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
-import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
+import type { ModuleDefinition, ModuleDependencyMeta, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
 import { logger } from '../logger'
 import { tryUseNuxt, useNuxt } from '../context'
 import { checkNuxtCompatibility } from '../compatibility'
@@ -75,6 +75,10 @@ function _defineNuxtModule<
     return Promise.resolve(options)
   }
 
+  function getDependencyMeta (): ModuleDependencyMeta | undefined {
+    return module.modules
+  }
+
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
@@ -141,6 +145,7 @@ function _defineNuxtModule<
   // Define getters for options and meta
   normalizedModule.getMeta = () => Promise.resolve(module.meta)
   normalizedModule.getOptions = getOptions
+  normalizedModule.getDependencyMeta = getDependencyMeta
 
   normalizedModule.onInstall = module.onInstall
   normalizedModule.onUpgrade = module.onUpgrade
