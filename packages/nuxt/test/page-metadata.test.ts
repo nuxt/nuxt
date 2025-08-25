@@ -147,7 +147,7 @@ definePageMeta({ name: 'bar' })
       props: <{ foo: string }>{
         foo: 'bar' satisfies string,
       },
-    });
+    } as const);
     </script>
     `, filePath)
 
