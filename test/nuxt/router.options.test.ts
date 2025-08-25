@@ -4,25 +4,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
-import { config, flushPromises } from '@vue/test-utils'
+import { flushPromises } from '@vue/test-utils'
 import { NuxtPage } from '#components'
-
-config.global.stubs = {
-  transition: false,
-}
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-// Helper function to wait for conditions
-const waitFor = async (condition: () => boolean, timeout = 1000) => {
-  const start = Date.now()
-  while (!condition() && Date.now() - start < timeout) {
-    await new Promise(resolve => setTimeout(resolve, 10))
-  }
-  if (!condition()) {
-    throw new Error('Timeout waiting for condition')
-  }
-}
 
 describe('scrollBehavior of router options with global transition', () => {
   const router = useRouter()
@@ -30,6 +13,7 @@ describe('scrollBehavior of router options with global transition', () => {
 
   let wrapper: VueWrapper<unknown>
   let scrollTo: ReturnType<typeof vi.spyOn>
+  const cleanups: Array<() => void> = []
 
   const pageTransitionFinish = vi.fn()
   const pageLoadingEnd = vi.fn()
@@ -37,29 +21,13 @@ describe('scrollBehavior of router options with global transition', () => {
   router.addRoute({
     name: 'transitions',
     path: '/transitions',
-    component: defineComponent({ setup: () => () => h('div', [h(NuxtPage)]) }),
-    children: [
-      {
-        name: 'transition-async',
-        path: 'async',
-        component: defineComponent({
-          async setup () {
-            await sleep(10)
-            return () => h('div')
-          },
-        }),
-      },
-      {
-        name: 'transition-sync',
-        path: 'sync',
-        component: defineComponent({ setup: () => () => h('div') }),
-      },
-    ],
+    component: NestedPageParent,
+    children: [{ path: 'async', component: AsyncComponent }, { path: 'sync', component: SyncComponent }],
   })
 
   beforeAll(async () => {
-    nuxtApp.hook('page:transition:finish', pageTransitionFinish)
-    nuxtApp.hook('page:loading:end', pageLoadingEnd)
+    cleanups.push(nuxtApp.hook('page:transition:finish', pageTransitionFinish))
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
 
     wrapper = await mountSuspended(defineComponent({
       setup: () => () => h(NuxtPage, {
@@ -69,7 +37,7 @@ describe('scrollBehavior of router options with global transition', () => {
           duration: 10,
         },
       }),
-    }))
+    }), { global: { stubs: { transition: false } } })
     await flushPromises()
   })
 
@@ -83,13 +51,16 @@ describe('scrollBehavior of router options with global transition', () => {
   afterAll(() => {
     router.removeRoute('transitions')
     wrapper.unmount()
+    for (const cleanup of cleanups) {
+      cleanup()
+    }
   })
 
   it('should call scrollTo after page transition is finished with async component', async () => {
     await navigateTo('/transitions/async')
 
     // Ensure everything is settled
-    await waitFor(() => pageTransitionFinish.mock.calls.length > 0)
+    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
 
     expect(pageTransitionFinish).toHaveBeenCalled()
     expect(pageLoadingEnd).toHaveBeenCalled()
@@ -101,11 +72,27 @@ describe('scrollBehavior of router options with global transition', () => {
     await navigateTo('/transitions/sync')
 
     // Ensure everything is settled
-    await waitFor(() => pageTransitionFinish.mock.calls.length > 0)
+    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
 
     expect(pageTransitionFinish).toHaveBeenCalled()
     expect(pageLoadingEnd).toHaveBeenCalled()
     expect(scrollTo).toHaveBeenCalled()
     expect(pageTransitionFinish).toHaveBeenCalledBefore(scrollTo)
   })
+})
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+const NestedPageParent = defineComponent({
+  setup () {
+    return () => h('div', [h(NuxtPage)])
+  },
+})
+
+const SyncComponent = defineComponent({ setup: () => () => h('div') })
+const AsyncComponent = defineComponent({
+  async setup () {
+    await sleep(10)
+    return () => h('div')
+  },
 })
