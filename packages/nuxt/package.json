@@ -143,7 +143,7 @@
     "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.8",
     "@vitejs/plugin-vue": "6.0.1",
-    "@vitejs/plugin-vue-jsx": "5.0.1",
+    "@vitejs/plugin-vue-jsx": "5.1.0",
     "@vue/compiler-sfc": "3.5.20",
     "unbuild": "3.6.1",
     "vite": "7.1.3",
