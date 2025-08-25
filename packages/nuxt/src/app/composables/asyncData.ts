@@ -117,7 +117,7 @@ export interface AsyncDataExecuteOptions {
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
   /**
-   * @deprecated Use `status` instead. `pending` will be removed in Nuxt 5.
+   * @deprecated Use `status` instead.
    */
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
