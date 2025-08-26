@@ -94,6 +94,15 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
     })
   }
 
+  if (!context || context.nuxt || context.shared) {
+    // expose global types to vue compiler
+    nuxt.options.vite.vue = defu(nuxt.options.vite.vue, {
+      script: {
+        globalTypeFiles: [template.dst],
+      },
+    })
+  }
+
   if (context?.nitro) {
     nuxt.hook('nitro:prepare:types', ({ references }) => {
       references.push({ path: template.dst })
@@ -218,9 +227,15 @@ export async function _generateTypes (nuxt: Nuxt) {
     legacyInclude.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
   }
 
+  const sourceDirs = nuxt.options._layers.map(layer => withTrailingSlash(layer.config.srcDir ?? layer.cwd))
+
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
-    exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    // we only need to exclude node_modules directories if they are
+    // being included automatically by being inside the source directory
+    if (!sourceDirs.some(srcDir => dir.startsWith(srcDir))) {
+      exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    }
     nodeExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
     legacyExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
   }
@@ -273,8 +288,9 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const moduleEntryPaths: string[] = []
   for (const m of nuxt.options._installedModules) {
-    if (m.entryPath) {
-      moduleEntryPaths.push(getDirectory(m.entryPath))
+    const path = m.meta?.rawPath || m.entryPath
+    if (path) {
+      moduleEntryPaths.push(getDirectory(path))
     }
   }
 
@@ -282,7 +298,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   for (const path of modulePaths) {
     const relative = relativeWithDot(nuxt.options.buildDir, path)
-    if (!path.includes('node_modules')) {
+    if (!path.includes('node_modules') && path.startsWith(rootDirWithSlash)) {
       include.add(join(relative, 'runtime'))
       include.add(join(relative, 'dist/runtime'))
       nodeInclude.add(join(relative, '*.*'))
@@ -297,6 +313,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
     exclude.add(join(relative, '*.*'))
+    exclude.add(join(relative, 'dist/*.*'))
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
   }
@@ -469,7 +486,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     }
 
     const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
-    if (stats?.isDirectory()) {
+    if (stats?.isDirectory() || aliases[alias]!.endsWith('/')) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
     } else {
@@ -495,11 +512,13 @@ export async function _generateTypes (nuxt: Nuxt) {
       const pkg = await readPackageJSON(id, { parent }).catch(() => null)
       if (pkg) {
         nodeReferences.push(({ types: pkg.name ?? id }))
+        references.push(({ types: pkg.name ?? id }))
         return
       }
     }
 
     nodeReferences.push(({ types: id }))
+    references.push(({ types: id }))
   }))
 
   const declarations: string[] = []

@@ -447,12 +447,12 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
     const configPaths = app.configs.map(path => relative(typesDir, path).replace(EXTENSION_RE, ''))
 
     return `
-import type { CustomAppConfig } from 'nuxt/schema'
+import type { AppConfigInput, CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
 ${configPaths.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
 declare global {
-  const defineAppConfig: <T>(appConfig: T) => T
+  const defineAppConfig: <C extends AppConfigInput> (config: C) => C
 }
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
