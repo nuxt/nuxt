@@ -18,7 +18,15 @@ const reducers: [string, (data: any) => any][] = [
 ]
 
 if (componentIslands) {
-  reducers.push(['Island', data => data && data?.__nuxt_island && data?.key && isValidIslandKey(data.key)])
+  reducers.push([
+    'Island',
+    data =>
+      data &&
+      data.__nuxt_island &&
+      typeof data.key === 'string' &&
+      isValidIslandKey(data.key) &&
+      data
+  ])
 }
 
 export default defineNuxtPlugin({
