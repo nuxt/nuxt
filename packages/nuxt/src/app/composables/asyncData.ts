@@ -755,5 +755,6 @@ function createHash (_handler: () => unknown, options: Partial<Record<keyof Asyn
     transform: options.transform ? hash(options.transform) : undefined,
     pick: options.pick ? hash(options.pick) : undefined,
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
+    retainPreviousDataOnKeyChange: hash(options.retainPreviousDataOnKeyChange ?? true),
   }
 }
