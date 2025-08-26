@@ -5,7 +5,7 @@ import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'chan
 import { consola } from 'consola'
 import { determineBumpType, getContributors, getLatestCommits, getLatestReleasedTag, getLatestTag, getPreviousReleasedCommits, loadWorkspace } from './_utils.ts'
 
-const handleSeparateBranch = true
+const handleSeparateBranch = false
 
 async function main () {
   const releaseBranch = getCurrentGitBranch()

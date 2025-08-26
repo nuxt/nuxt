@@ -8,7 +8,7 @@ import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
-import { resolveTSConfig } from 'pkg-types'
+import { readTSConfig, resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
@@ -54,6 +54,17 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
+
+  // @ts-expect-error non-public property
+  if (vite.rolldownVersion) {
+    // esbuild is not used in `rolldown-vite`
+    if (viteConfig.esbuild) {
+      delete viteConfig.esbuild
+    }
+    if (viteConfig.optimizeDeps?.esbuildOptions) {
+      delete viteConfig.optimizeDeps.esbuildOptions
+    }
+  }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
@@ -119,10 +130,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
-          watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-            exclude: nuxt.options.ignore,
-          },
+
+          // @ts-expect-error non-public property
+          watch: (vite.rolldownVersion
+            // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+            ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
+            : {
+                chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+                exclude: nuxt.options.ignore,
+              }
+          ),
         },
         plugins: [
           // add resolver for files in public assets directories
@@ -184,10 +201,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   // Add type-checking
   if (!nuxt.options.test && (nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
+    const tsconfigPath = await resolveTSConfig(nuxt.options.rootDir)
+    const supportsProjects = await readTSConfig(tsconfigPath).then(r => !!(r.references?.length))
     const checker = await import('vite-plugin-checker').then(r => r.default)
     addVitePlugin(checker({
       vueTsc: {
-        tsconfigPath: await resolveTSConfig(nuxt.options.rootDir),
+        tsconfigPath,
+        buildMode: supportsProjects,
       },
     }), { server: nuxt.options.ssr })
   }

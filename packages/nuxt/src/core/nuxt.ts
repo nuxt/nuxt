@@ -370,6 +370,9 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     // Add plugin to check if layouts are defined without NuxtLayout being instantiated
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
+
+    // add plugin to make warnings less verbose in dev mode
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
   }
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
@@ -732,7 +735,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = await loadNuxtConfig(opts)
 
   // Temporary until finding better placement for each
-  options.appDir = options.alias['#app'] = resolve(distDir, 'app')
+  options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
   options._majorVersion = 4
 
   // De-duplicate key arrays

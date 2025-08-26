@@ -8,29 +8,32 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 
+import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
-import type { Node, ObjectProperty } from 'oxc-parser'
+import { parseSync } from 'oxc-parser'
+import type { CallExpression, ExpressionStatement, Node, ObjectExpression, ObjectProperty } from 'oxc-parser'
+import { transform as oxcTransform } from 'oxc-transform'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 import type { NuxtPage } from 'nuxt/schema'
 
-enum SegmentParserState {
-  initial,
-  static,
-  dynamic,
-  optional,
-  catchall,
-  group,
-}
+const SegmentTokenType = {
+  static: 'static',
+  dynamic: 'dynamic',
+  optional: 'optional',
+  catchall: 'catchall',
+  group: 'group',
+} as const
 
-enum SegmentTokenType {
-  static,
-  dynamic,
-  optional,
-  catchall,
-  group,
-}
+type SegmentTokenType = typeof SegmentTokenType[keyof typeof SegmentTokenType]
+
+const SegmentParserState = {
+  initial: 'initial',
+  ...SegmentTokenType,
+} as const
+
+type SegmentParserState = typeof SegmentParserState[keyof typeof SegmentParserState]
 
 interface SegmentToken {
   type: SegmentTokenType
@@ -183,7 +186,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
         : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
-        routeMeta.meta = { ...routeMeta.meta, ...route.meta }
+        routeMeta.meta = defu({}, routeMeta.meta, route.meta)
       }
 
       Object.assign(route, routeMeta)
@@ -255,17 +258,33 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
 
       foundMeta = true
-      const pageMetaArgument = node.expression.arguments[0]
+      let code = script.code
+      let pageMetaArgument = node.expression.arguments[0]
       if (pageMetaArgument?.type !== 'ObjectExpression') {
         logger.warn(`\`definePageMeta\` must be called with an object literal (reading \`${absolutePath}\`).`)
         return
+      }
+
+      // when using ts we slice, transform and parse the `definePageMeta` node to avoid parsing the whole file
+      if (/tsx?/.test(script.loader)) {
+        const transformed = oxcTransform(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        code = transformed.code
+        if (transformed.errors.length) {
+          for (const error of transformed.errors) {
+            logger.warn('Error while transforming `definePageMeta()`' + error.codeframe)
+          }
+          return
+        }
+
+        // we already know that the first statement is a call expression
+        pageMetaArgument = ((parseSync('', transformed.code, { lang: 'js' }).program.body[0]! as ExpressionStatement).expression as CallExpression).arguments[0]! as ObjectExpression
       }
 
       for (const key of extractionKeys) {
         const property = pageMetaArgument.properties.find((property): property is ObjectProperty => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        const { value, serializable } = isSerializable(script.code, property.value)
+        const { value, serializable } = isSerializable(code, property.value)
         if (!serializable) {
           logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
           dynamicProperties.add(extraExtractionKeys.has(key) ? 'meta' : key)
@@ -309,18 +328,19 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 const COLON_RE = /:/g
 function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
   return tokens.reduce((path, token) => {
-    return (
-      path +
-      (token.type === SegmentTokenType.optional
-        ? `:${token.value}?`
-        : token.type === SegmentTokenType.dynamic
-          ? `:${token.value}()`
-          : token.type === SegmentTokenType.catchall
-            ? hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`
-            : token.type === SegmentTokenType.group
-              ? ''
-              : encodePath(token.value).replace(COLON_RE, '\\:'))
-    )
+    switch (token.type) {
+      case SegmentTokenType.optional:
+        return path + `:${token.value}?`
+      case SegmentTokenType.dynamic:
+        return path + `:${token.value}()`
+      case SegmentTokenType.catchall:
+        return path + (hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`)
+      case SegmentTokenType.group:
+        return path
+      case SegmentTokenType.static:
+      default:
+        return path + encodePath(token.value).replace(COLON_RE, '\\:')
+    }
   }, '/')
 }
 
@@ -341,19 +361,7 @@ function parseSegment (segment: string, absolutePath: string) {
       throw new Error('wrong state')
     }
 
-    tokens.push({
-      type:
-        state === SegmentParserState.static
-          ? SegmentTokenType.static
-          : state === SegmentParserState.dynamic
-            ? SegmentTokenType.dynamic
-            : state === SegmentParserState.optional
-              ? SegmentTokenType.optional
-              : state === SegmentParserState.catchall
-                ? SegmentTokenType.catchall
-                : SegmentTokenType.group,
-      value: buffer,
-    })
+    tokens.push({ type: state, value: buffer })
 
     buffer = ''
   }

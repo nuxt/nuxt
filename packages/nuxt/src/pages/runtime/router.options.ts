@@ -8,7 +8,7 @@ import { useRouter } from '#app/composables/router'
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
 // Default router options
-// https://router.vuejs.org/api/#routeroptions
+// https://router.vuejs.org/api/interfaces/RouterOptions.html
 export default <RouterConfig> {
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
