@@ -234,7 +234,7 @@ export function useAsyncData<
     if (values.handler !== currentData._hash?.handler) {
       warnings.push(`different handler`)
     }
-    for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+    for (const opt of ['transform', 'pick', 'getCachedData', 'retainPreviousDataOnKeyChange'] as const) {
       if (values[opt] !== currentData._hash![opt]) {
         warnings.push(`different \`${opt}\` option`)
       }
