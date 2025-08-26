@@ -25,7 +25,7 @@ if (componentIslands) {
       data.__nuxt_island &&
       typeof data.key === 'string' &&
       isValidIslandKey(data.key) &&
-      data
+      data.__nuxt_island,
   ])
 }
 
