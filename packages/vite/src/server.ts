@@ -80,12 +80,19 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
-          generatedCode: {
-            symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
-            constBindings: true,
-            // temporary fix for https://github.com/rollup/rollup/issues/5975
-            arrowFunctions: true,
-          },
+
+          // @ts-expect-error non-public property
+          ...(vite.rolldownVersion
+            // Wait for https://github.com/rolldown/rolldown/issues/206
+            ? {}
+            : {
+                generatedCode: {
+                  symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
+                  constBindings: true,
+                  // temporary fix for https://github.com/rollup/rollup/issues/5975
+                  arrowFunctions: true,
+                },
+              }),
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
@@ -107,6 +114,12 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
     serverConfig.build.rollupOptions.output.manualChunks = undefined
+
+    // @ts-expect-error non-public property
+    if (vite.rolldownVersion) {
+      // @ts-expect-error rolldown-specific
+      serverConfig.build.rollupOptions.output.advancedChunks = undefined
+    }
   }
 
   serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev })
