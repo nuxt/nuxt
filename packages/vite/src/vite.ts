@@ -55,10 +55,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore Rolldown-check
+  // @ts-expect-error non-public property
   if (vite.rolldownVersion) {
-    // Delete unused esbuild settings
+    // esbuild is not used in `rolldown-vite`
     if (viteConfig.esbuild) {
       delete viteConfig.esbuild
     }
@@ -131,13 +130,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore Rolldown-check
+
+          // @ts-expect-error non-public property
           watch: (vite.rolldownVersion
-            ? {
-                // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
-                exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/],
-              }
+            // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+            ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
             : {
                 chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
                 exclude: nuxt.options.ignore,

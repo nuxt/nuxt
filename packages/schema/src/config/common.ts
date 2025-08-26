@@ -261,9 +261,6 @@ export default defineResolvers({
       ignoreInitial: true,
       ignorePermissionErrors: true,
     },
-    rolldown: {
-
-    },
   },
   hooks: undefined,
   runtimeConfig: {
