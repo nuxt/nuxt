@@ -102,7 +102,7 @@ export interface AsyncDataOptions<
    * When a reactive key changes retain the data from the old key during handler exection.
    * @default true
    */
-  retainPreviousDataOnKeyChange: boolean
+  retainPreviousDataOnKeyChange?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
