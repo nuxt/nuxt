@@ -120,7 +120,7 @@ export default () => {
         modules: [
           defineNuxtModule({
             meta: { name: 'foo' },
-            modules: {
+            moduleDependencies: {
               'some-module': {},
               'non-existent-module': { optional: true },
             },
@@ -142,7 +142,7 @@ export default () => {
           }),
           defineNuxtModule({
             meta: { name: 'foo' },
-            modules: {
+            moduleDependencies: {
               'some-module': {},
             },
           }),
@@ -160,7 +160,7 @@ export default () => {
         modules: [
           defineNuxtModule({
             meta: { name: 'foo' },
-            modules: {
+            moduleDependencies: {
               'some-module': {},
             },
           }),
@@ -214,7 +214,7 @@ export default () => {
             setup (options) {
               expect(options).toMatchInlineSnapshot(`{}`)
             },
-            modules: {
+            moduleDependencies: {
               'a': {
                 overrides: {
                   value: 'provided by c',
@@ -239,7 +239,7 @@ export default () => {
             setup (options) {
               expect(options).toMatchInlineSnapshot(`{}`)
             },
-            modules: {
+            moduleDependencies: {
               'b': {
                 overrides: {
                   value: 'provided by d',
@@ -283,7 +283,7 @@ export default () => {
         modules: [
           defineNuxtModule({
             meta: { name: 'foo' },
-            modules: {
+            moduleDependencies: {
               'some-module': {
                 version: '>=2',
               },
