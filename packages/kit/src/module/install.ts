@@ -43,7 +43,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   const optionsFunctions = new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
   const resolvedModules: Array<ResolvedModule> = []
   const inlineConfigKeys = new Set(
-    await Promise.all([...modulesToInstall].map(([mod]) => typeof mod !== 'string' && mod.getMeta?.()?.then(r => r.configKey))),
+    await Promise.all([...modulesToInstall].map(([mod]) => typeof mod !== 'string' && Promise.resolve(mod.getMeta?.())?.then(r => r?.configKey))),
   )
   let error: Error | undefined
   const dependencyMap = new Map<ModuleToInstall, string>()
