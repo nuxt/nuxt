@@ -11,11 +11,12 @@ import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
 import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
+import { isEqual } from 'ohash'
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
-import { logger, resolveToAlias } from '../utils'
-import { defaultExtractionKeys, normalizeRoutes, resolvePagesRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
-import { extractRouteRules, getMappedPages } from './route-rules'
+import { logger } from '../utils'
+import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
+import { globRouteRulesFromPages, removePagesRules } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
@@ -53,6 +54,33 @@ export default defineNuxtModule({
   async setup (_options, nuxt) {
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
+
+    let inlineRulesCache: Record<string, NitroRouteConfig> = {}
+    let updateRouteConfig: (inlineRules: Record<string, NitroRouteConfig>) => void | Promise<void>
+    if (nuxt.options.experimental.inlineRouteRules) {
+      nuxt.hook('nitro:init', (nitro) => {
+        updateRouteConfig = async (inlineRules) => {
+          if (!isEqual(inlineRulesCache, inlineRules)) {
+            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
+            inlineRulesCache = inlineRules
+          }
+        }
+      })
+    }
+
+    const resolvePagesRoutes = async (pattern: string | string[], nuxt: Nuxt) => {
+      const pages = await _resolvePagesRoutes(pattern, nuxt)
+
+      if (nuxt.options.experimental.inlineRouteRules) {
+        const routeRules = globRouteRulesFromPages(pages)
+        await updateRouteConfig?.(routeRules)
+      } else {
+        // also remove rules when disabled
+        removePagesRules(pages)
+      }
+
+      return pages
+    }
 
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
@@ -398,63 +426,6 @@ export default defineNuxtModule({
         imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
       }
     })
-
-    if (nuxt.options.experimental.inlineRouteRules) {
-      // Track mappings of absolute files to globs
-      let pageToGlobMap = {} as { [absolutePath: string]: string | null }
-      nuxt.hook('pages:extend', (pages) => { pageToGlobMap = getMappedPages(pages) })
-
-      // Extracted route rules defined inline in pages
-      const inlineRules = {} as { [glob: string]: NitroRouteConfig }
-
-      // Allow telling Nitro to reload route rules
-      let updateRouteConfig: () => void | Promise<void>
-      nuxt.hook('nitro:init', (nitro) => {
-        updateRouteConfig = () => nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
-      })
-
-      const updatePage = async function updatePage (path: string) {
-        const glob = pageToGlobMap[path]
-        const code = path in nuxt.vfs ? nuxt.vfs[path]! : await readFile(path!, 'utf-8')
-        try {
-          const extractedRule = extractRouteRules(code, path)
-          if (extractedRule) {
-            if (!glob) {
-              const relativePath = resolveToAlias(path, nuxt)
-              logger.error(`Could not set inline route rules in \`${relativePath}\` as it could not be mapped to a Nitro route.`)
-              return
-            }
-
-            inlineRules[glob] = extractedRule
-          } else if (glob) {
-            delete inlineRules[glob]
-          }
-        } catch (e: any) {
-          if (e.toString().includes('Error parsing route rules')) {
-            logger.error(`Error parsing route rules within \`${resolveToAlias(path, nuxt)}\`. They should be JSON-serializable.`)
-          } else {
-            logger.error(e)
-          }
-        }
-      }
-
-      nuxt.hook('builder:watch', async (event, relativePath) => {
-        const path = resolve(nuxt.options.srcDir, relativePath)
-        if (!(path in pageToGlobMap)) { return }
-        if (event === 'unlink') {
-          delete inlineRules[path]
-          delete pageToGlobMap[path]
-        } else {
-          await updatePage(path)
-        }
-        await updateRouteConfig?.()
-      })
-
-      nuxt.hooks.hookOnce('pages:extend', async () => {
-        for (const page in pageToGlobMap) { await updatePage(page) }
-        await updateRouteConfig?.()
-      })
-    }
 
     const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
     if (nuxt.options.test && nuxt.options.dev) {

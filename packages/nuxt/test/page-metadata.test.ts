@@ -152,14 +152,27 @@ definePageMeta({ name: 'bar' })
     type PageName = 'name-from-page-meta' | 'whatever';
 
     definePageMeta({
-      name: 'name-from-page-meta' satisfies PageName,
-    });
+      name: 'name-from-page-meta' as PageName,
+      path: ('/some-custom-path') as const,
+      props: <{ foo: string }>{
+        foo: 'bar' satisfies string,
+      },
+    } as const);
     </script>
     `, filePath)
 
     expect(meta).toMatchInlineSnapshot(`
       {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
         "name": "name-from-page-meta",
+        "path": "/some-custom-path",
+        "props": {
+          "foo": "bar",
+        },
       }
     `)
   })
@@ -177,6 +190,11 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
         "name": "name-from-page-meta",
       }
     `)
@@ -193,6 +211,11 @@ definePageMeta({ name: 'bar' })
 
     expect(meta).toMatchInlineSnapshot(`
       {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
         "name": "name-from-page-meta",
       }
     `)
