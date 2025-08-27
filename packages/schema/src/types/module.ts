@@ -81,7 +81,7 @@ export interface ModuleDefinition<
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
   // TODO: type constraints for module options
-  moduleDependencies?: Record<string, ModuleDependencyMeta>
+  moduleDependencies?: Record<string, ModuleDependencyMeta> | ((nuxt: Nuxt) => Record<string, ModuleDependencyMeta>)
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (nuxt: Nuxt, options: TOptions, previousVersion: string) => Awaitable<void>
   setup?: (
@@ -113,7 +113,7 @@ export interface NuxtModule<
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions
   >
-  getModuleDependencies?: () => Record<string, ModuleDependencyMeta> | undefined
+  getModuleDependencies?: (nuxt: Nuxt) => Record<string, ModuleDependencyMeta> | undefined
   getMeta?: () => Promise<ModuleMeta>
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (

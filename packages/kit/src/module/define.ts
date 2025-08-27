@@ -75,7 +75,10 @@ function _defineNuxtModule<
     return Promise.resolve(options)
   }
 
-  function getModuleDependencies () {
+  function getModuleDependencies (nuxt: Nuxt = useNuxt()) {
+    if (typeof module.moduleDependencies === 'function') {
+      return module.moduleDependencies(nuxt)
+    }
     return module.moduleDependencies
   }
 
