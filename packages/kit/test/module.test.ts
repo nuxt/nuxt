@@ -276,7 +276,7 @@ export default () => {
   })
 
   it('should warn if version constraints do not match', async () => {
-    vi.spyOn(logger, 'warn').mockImplementation(() => vi.fn())
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
     nuxt = await loadNuxt({
       cwd: tempDir,
       overrides: {
@@ -292,7 +292,7 @@ export default () => {
         ],
       },
     })
-    expect(logger.warn).toHaveBeenCalledWith('Module `some-module` version (`1.0.0`) does not satisfy `>=2` (requested by a module in `nuxt.options`).')
+    expect(warnSpy).toHaveBeenCalledWith('Module `some-module` version (`1.0.0`) does not satisfy `>=2` (requested by a module in `nuxt.options`).')
   })
 })
 

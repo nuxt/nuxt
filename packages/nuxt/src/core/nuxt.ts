@@ -550,10 +550,6 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
   }
 
-  // for (const [key, options] of modules) {
-  //   await installModule(key, options)
-  // }
-
   await installModules(modules, modulePaths, nuxt)
 
   // (Re)initialise ignore handler with resolved ignores from modules
