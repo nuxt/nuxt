@@ -152,6 +152,7 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    entryImportMap: true,
     decorators: true,
     typedPages: true,
     clientFallback: true,
