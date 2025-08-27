@@ -17,8 +17,9 @@ import { logger } from '../logger'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
+type ModuleToInstall = string | NuxtModule<ModuleOptions, Partial<ModuleOptions>, false>
 interface ResolvedModule {
-  moduleToInstall: string | NuxtModule<ModuleOptions, Partial<ModuleOptions>, false>
+  moduleToInstall: ModuleToInstall
   nuxtModule: NuxtModule<ModuleOptions, Partial<ModuleOptions>, false>
   buildTimeModuleMeta: ModuleMeta
   resolvedModulePath: string | undefined
@@ -30,7 +31,7 @@ interface ResolvedModule {
  * Installs a set of modules on a Nuxt instance.
  * @internal
  */
-export async function installModules (modulesToInstall: Map<string | NuxtModule<ModuleOptions, Partial<ModuleOptions>, false>, Record<string, any>>, resolvedModulePaths: Set<string>, nuxt: Nuxt = useNuxt()) {
+export async function installModules (modulesToInstall: Map<ModuleToInstall, Record<string, any>>, resolvedModulePaths: Set<string>, nuxt: Nuxt = useNuxt()) {
   const localLayerModuleDirs: string[] = []
   for (const l of nuxt.options._layers) {
     const srcDir = l.config.srcDir || l.cwd
@@ -39,13 +40,20 @@ export async function installModules (modulesToInstall: Map<string | NuxtModule<
     }
   }
 
-  const optionsFunctions = new Map<string | NuxtModule<ModuleOptions, Partial<ModuleOptions>, false>, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
+  const optionsFunctions = new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
   const resolvedModules: Array<ResolvedModule> = []
   const inlineConfigKeys = new Set(
     await Promise.all([...modulesToInstall].map(([mod]) => typeof mod !== 'string' && mod.getMeta?.()?.then(r => r.configKey))),
   )
+  let error: Error | undefined
+  const dependencyMap = new Map<ModuleToInstall, string>()
   for (const [key, options] of modulesToInstall) {
-    const res = await loadNuxtModuleInstance(key, nuxt)
+    const res = await loadNuxtModuleInstance(key, nuxt).catch((err) => {
+      if (dependencyMap.has(key) && typeof key === 'string') {
+        (err as Error).cause = `Could not resolve \`${key}\` (specified as a dependency of ${dependencyMap.get(key)!}).`
+      }
+      throw err
+    })
 
     const dependencyMeta = res.nuxtModule.getModuleDependencies?.(nuxt) || {}
     for (const [name, value] of Object.entries(dependencyMeta)) {
@@ -56,15 +64,17 @@ export async function installModules (modulesToInstall: Map<string | NuxtModule<
       const resolvedModule = resolveModuleWithOptions(name, nuxt)
       const moduleToAttribute = typeof key === 'string' ? `\`${key}\`` : 'a module in `nuxt.options`'
 
-      if (!resolvedModule) {
-        logger.warn(`Could not resolve \`${name}\` (specified as a dependency of ${moduleToAttribute}).`)
+      if (!resolvedModule?.module) {
+        const message = `Could not resolve \`${name}\` (specified as a dependency of ${moduleToAttribute}).`
+        error = new TypeError(message)
         continue
       }
 
       if (value.version) {
         const pkg = await readPackageJSON(name, { from: [res.resolvedModulePath!, ...nuxt.options.modulesDir] }).catch(() => null)
         if (pkg?.version && !semver.satisfies(pkg.version, value.version)) {
-          logger.warn(`Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`)
+          const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
+          error = new TypeError(message)
         }
       }
 
@@ -86,6 +96,7 @@ export async function installModules (modulesToInstall: Map<string | NuxtModule<
           continue
         }
         modulesToInstall.set(resolvedModule.module, resolvedModule.options)
+        dependencyMap.set(resolvedModule.module, moduleToAttribute)
         const path = resolvedModule.resolvedPath || typeof resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
@@ -101,6 +112,10 @@ export async function installModules (modulesToInstall: Map<string | NuxtModule<
       resolvedModulePath: res.resolvedModulePath,
       inlineOptions: options,
     })
+  }
+
+  if (error) {
+    throw error
   }
 
   for (const { nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
@@ -294,7 +309,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   }
 }
 
-async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions: Record<string, unknown> | undefined, resolvedModulePath: string | undefined, moduleToInstall: string | NuxtModule<ModuleOptions, Partial<ModuleOptions>, false>, localLayerModuleDirs: string[], buildTimeModuleMeta: ModuleMeta, nuxt = useNuxt()) {
+async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions: Record<string, unknown> | undefined, resolvedModulePath: string | undefined, moduleToInstall: ModuleToInstall, localLayerModuleDirs: string[], buildTimeModuleMeta: ModuleMeta, nuxt = useNuxt()) {
   const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
     ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
     : await nuxtModule(inlineOptions || {}, nuxt) ?? {}

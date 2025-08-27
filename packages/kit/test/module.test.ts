@@ -3,12 +3,12 @@ import { appendFileSync } from 'node:fs'
 
 import type { Nuxt } from 'nuxt/schema'
 
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
 
-import { defineNuxtModule, installModule, loadNuxt, logger } from '../src'
+import { defineNuxtModule, installModule, loadNuxt } from '../src'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -276,8 +276,7 @@ export default () => {
   })
 
   it('should warn if version constraints do not match', async () => {
-    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
-    nuxt = await loadNuxt({
+    await expect(loadNuxt({
       cwd: tempDir,
       overrides: {
         modules: [
@@ -291,8 +290,7 @@ export default () => {
           }),
         ],
       },
-    })
-    expect(warnSpy).toHaveBeenCalledWith('Module `some-module` version (`1.0.0`) does not satisfy `>=2` (requested by a module in `nuxt.options`).')
+    })).rejects.toThrowErrorMatchingInlineSnapshot(`[TypeError: Module \`some-module\` version (\`1.0.0\`) does not satisfy \`>=2\` (requested by a module in \`nuxt.options\`).]`)
   })
 })
 
