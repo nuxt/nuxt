@@ -84,7 +84,7 @@
     "cookie-es": "^2.0.0",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
-    "devalue": "^5.1.1",
+    "devalue": "^5.3.2",
     "errx": "^0.1.0",
     "esbuild": "^0.25.9",
     "escape-string-regexp": "^5.0.0",
