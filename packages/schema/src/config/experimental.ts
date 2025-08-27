@@ -216,6 +216,6 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
-    entryImportMap: false,
+    entryImportMap: true,
   },
 })
