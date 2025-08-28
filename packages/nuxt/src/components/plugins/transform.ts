@@ -1,3 +1,4 @@
+import { isObject } from '@vue/shared'
 import { isIgnored } from '@nuxt/kit'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
@@ -5,6 +6,7 @@ import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
 import { normalize } from 'pathe'
+import { readPackage } from 'pkg-types'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module'
 import type { Nuxt } from 'nuxt/schema'
@@ -110,7 +112,20 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
         }
       }
 
-      if (!code.includes('#components')) { return }
+      if (code.includes('#components')) {
+        try {
+          const pkg = await readPackage(id)
+
+          // If package defines a "#components" import mapping, assume is used internally by the package.
+          if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
+            return
+          }
+        } catch {
+          // package.json not found
+        }
+      } else {
+        return
+      }
 
       componentUnimport.modifyDynamicImports((imports) => {
         imports.length = 0
