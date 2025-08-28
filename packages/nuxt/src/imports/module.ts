@@ -10,6 +10,7 @@ import { isDirectory, logger, resolveToAlias } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets } from './presets'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
+import type { InternalImportPresetWithDeprecation } from './utils.ts'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
@@ -122,7 +123,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     const isIgnored = createIsIgnored(nuxt)
-    const defaultImportSources = new Set(defaultPresets.flatMap(i => i.from))
+    const defaultImportSources = new Set([...defaultPresets, ...(presets as InternalImportPresetWithDeprecation[]).filter(p => p.__nuxt_internal)].flatMap(i => i.from))
     const defaultImports = new Set(presets.flatMap(p => defaultImportSources.has(p.from) ? p.imports : []))
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
