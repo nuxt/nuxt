@@ -7,4 +7,7 @@ describe('shared folder', () => {
     expectTypeOf(foo).not.toBeAny()
     expectTypeOf(foo).toEqualTypeOf<string>()
   })
+  it('can reference auto-imported utils', () => {
+    expectTypeOf(useSharedUtil()).toEqualTypeOf<string>()
+  })
 })
