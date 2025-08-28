@@ -46,17 +46,9 @@ export default defineNuxtConfig({
     app: fileURLToPath(new URL('./test/runtime/app', import.meta.url)),
   },
   vite: {
-    plugins: [
-      {
-        name: 'enable some dev logging',
-        enforce: 'pre',
-        transform (code) {
-          if (code.includes('import.meta.dev /* and in test */')) {
-            return code.replace('import.meta.dev /* and in test */', 'true')
-          }
-        },
-      },
-    ],
+    define: {
+      'import.meta.dev': 'globalThis.__TEST_DEV__',
+    },
   },
   typescript: {
     shim: process.env.DOCS_TYPECHECK === 'true',

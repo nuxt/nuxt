@@ -94,6 +94,15 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
     })
   }
 
+  if (!context || context.nuxt || context.shared) {
+    // expose global types to vue compiler
+    nuxt.options.vite.vue = defu(nuxt.options.vite.vue, {
+      script: {
+        globalTypeFiles: [template.dst],
+      },
+    })
+  }
+
   if (context?.nitro) {
     nuxt.hook('nitro:prepare:types', ({ references }) => {
       references.push({ path: template.dst })
@@ -218,9 +227,15 @@ export async function _generateTypes (nuxt: Nuxt) {
     legacyInclude.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
   }
 
+  const sourceDirs = nuxt.options._layers.map(layer => withTrailingSlash(layer.config.srcDir ?? layer.cwd))
+
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
-    exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    // we only need to exclude node_modules directories if they are
+    // being included automatically by being inside the source directory
+    if (!sourceDirs.some(srcDir => dir.startsWith(srcDir))) {
+      exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    }
     nodeExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
     legacyExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
   }
