@@ -114,6 +114,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
+  if (import.meta.dev && (!!routeOptions.prerender || isRenderingPayload)) {
+    ssrContext.payload.prerenderedAt = Date.now()
+  }
+
   if (routeOptions.ssr === false) {
     ssrContext.noSSR = true
   }
