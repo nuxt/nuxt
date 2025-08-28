@@ -1443,6 +1443,11 @@ export interface ConfigSchema {
      * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
      */
     pendingWhenIdle: boolean
+
+    /**
+     * Whether to improve chunk stability by using an import map to resolve the entry chunk of the bundle.
+     */
+    entryImportMap: boolean
   }
 
   /**
