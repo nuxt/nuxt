@@ -127,7 +127,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
                 ? undefined
-                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
+                : nuxt.options.future.compatibilityVersion === 4
+                  ? chunk =>
+                    withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}-[hash].[ext]`))
+                  : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
 
