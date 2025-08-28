@@ -3,7 +3,8 @@ import { useNitro } from '@nuxt/kit'
 import { withLeadingSlash, withTrailingSlash } from 'ufo'
 import { dirname, relative } from 'pathe'
 import MagicString from 'magic-string'
-import { type Plugin, isCSSRequest } from 'vite'
+import { isCSSRequest } from 'vite'
+import type { Plugin } from 'vite'
 
 const PREFIX = 'virtual:public?'
 const CSS_URL_RE = /url\((\/[^)]+)\)/g

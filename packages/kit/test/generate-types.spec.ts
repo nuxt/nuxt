@@ -1,9 +1,7 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
-import { withoutTrailingSlash } from 'ufo'
-import { normalize } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 
 import { loadNuxtConfig } from '../src/loader/config'
 import { _generateTypes, resolveLayerPaths } from '../src/template'
@@ -55,10 +53,6 @@ describe('tsConfig generation', () => {
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
-        "../modules/test/node_modules",
-        "../modules/node_modules",
-        "../node_modules/@some/module/node_modules",
-        "../node_modules",
         "../../node_modules",
         "../dist",
         "../.data",
@@ -105,8 +99,8 @@ describe('tsConfig generation', () => {
   })
 })
 
-describe('resolveLayerPaths', () => {
-  const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+describe('resolveLayerPaths', async () => {
+  const repoRoot = await findWorkspaceDir()
 
   it('should respect custom nuxt options', async () => {
     const nuxtOptions = await loadNuxtConfig({
@@ -129,10 +123,11 @@ describe('resolveLayerPaths', () => {
         ],
         "nitro": [
           "../custom-modules/*/runtime/server/**/*",
+          "../layers/*/server/**/*",
           "../layers/*/modules/*/runtime/server/**/*",
         ],
         "node": [
-          "../custom-modules/**/*",
+          "../custom-modules/*.*",
           "../nuxt.config.*",
           "../.config/nuxt.*",
           "../layers/*/nuxt.config.*",
@@ -142,6 +137,7 @@ describe('resolveLayerPaths', () => {
         "nuxt": [
           "../app/**/*",
           "../custom-modules/*/runtime/**/*",
+          "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
         ],
         "shared": [

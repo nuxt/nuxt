@@ -14,6 +14,7 @@ export const stubOptions = {
       },
     },
   },
+  absoluteJitiPath: true,
 } satisfies BuildOptions['stubOptions']
 
 export function addRollupTimingsPlugin (options: { plugins: InputPluginOption[] }) {

@@ -1,6 +1,7 @@
-import { isAbsolute, relative } from 'pathe'
+import { isAbsolute, relative, resolve } from 'pathe'
 import { genDynamicImport } from 'knitwork'
-import type { NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import { distDir } from '../dirs'
+import type { Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ImportMagicCommentsOptions = {
   chunkName: string
@@ -103,23 +104,24 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 }
 
 const NON_VUE_RE = /\b\.(?!vue)\w+$/g
-export const componentsTypeTemplate = {
-  filename: 'components.d.ts' as const,
-  getContents: ({ app, nuxt }) => {
-    const buildDir = nuxt.options.buildDir
-    const componentTypes = app.components.filter(c => !c.island).map((c) => {
-      const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-        ? relative(buildDir, c.filePath).replace(NON_VUE_RE, '')
-        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
-      return [
-        c.pascalName,
-        c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
-      ]
-    })
-    const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
-    return `
-import type { DefineComponent, SlotsType } from 'vue'
-${nuxt.options.experimental.componentIslands ? islandType : ''}
+function resolveComponentTypes (nuxt: Nuxt, app: NuxtApp) {
+  const buildDir = nuxt.options.buildDir
+  const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
+  const componentTypes = app.components.filter(c => !c.island).map((c) => {
+    const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
+      ? relative(buildDir, c.filePath).replace(NON_VUE_RE, '')
+      : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
+    const isServerOnly = c.mode === 'server' && c.filePath !== serverPlaceholderPath && !app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')
+    return [
+      c.pascalName,
+      isServerOnly ? `IslandComponent<${type}>` : type,
+    ]
+  })
+
+  return componentTypes
+}
+const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+const hydrationTypes = `
 type HydrationStrategies = {
   hydrateOnVisible?: IntersectionObserverInit | true
   hydrateOnIdle?: number | true
@@ -130,6 +132,33 @@ type HydrationStrategies = {
   hydrateNever?: true
 }
 type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>)
+`
+export const componentsDeclarationTemplate = {
+  filename: 'components.d.ts' as const,
+  write: true,
+  getContents: ({ app, nuxt }) => {
+    const componentTypes = resolveComponentTypes(nuxt, app)
+    return `
+import type { DefineComponent, SlotsType } from 'vue'
+${nuxt.options.experimental.componentIslands ? islandType : ''}
+${hydrationTypes}
+
+${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
+
+export const componentNames: string[]
+`
+  },
+} satisfies NuxtTemplate
+
+export const componentsTypeTemplate = {
+  filename: 'types/components.d.ts' as const,
+  getContents: ({ app, nuxt }) => {
+    const componentTypes = resolveComponentTypes(nuxt, app)
+    return `
+import type { DefineComponent, SlotsType } from 'vue'
+${nuxt.options.experimental.componentIslands ? islandType : ''}
+${hydrationTypes}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
@@ -139,10 +168,7 @@ declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
 
-${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: LazyComponent<${type}>`).join('\n')}
-
-export const componentNames: string[]
+export {}
 `
   },
 } satisfies NuxtTemplate

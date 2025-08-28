@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
@@ -34,6 +34,13 @@ export default defineNuxtModule({
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
       ctx.sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
       ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
+
+      ctx.nodeTsConfig.include ||= []
+      ctx.nodeTsConfig.include.push(
+        relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'nuxt.schema.*')),
+        relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'layers/*/nuxt.schema.*')),
+      )
+
       if (nuxt.options._prepare) {
         await writeSchema(schema)
       }

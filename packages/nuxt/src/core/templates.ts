@@ -274,7 +274,7 @@ export const schemaNodeTemplate: NuxtTemplate = {
           `     * Configuration for \`${importName}\``,
           ...options.addJSDocTags && link ? [`     * @see ${link}`] : [],
           `     */`,
-          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
+          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O, unknown, boolean> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
         ]
       }),
       modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
@@ -447,12 +447,12 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
     const configPaths = app.configs.map(path => relative(typesDir, path).replace(EXTENSION_RE, ''))
 
     return `
-import type { CustomAppConfig } from 'nuxt/schema'
+import type { AppConfigInput, CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
 ${configPaths.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
 declare global {
-  const defineAppConfig: <T>(appConfig: T) => T
+  const defineAppConfig: <C extends AppConfigInput> (config: C) => C
 }
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
