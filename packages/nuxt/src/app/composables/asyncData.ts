@@ -749,7 +749,7 @@ function createAsyncData<
         .catch((error: any) => {
           // If the promise was replaced by another one, we do not update the asyncData
           if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
-            return promise
+            return
           }
 
           // If the asyncData was explicitly aborted internally (dedupe or clear), we do not update the asyncData
