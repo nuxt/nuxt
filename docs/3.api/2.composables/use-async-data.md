@@ -102,6 +102,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
+  - `retainPreviousDataOnKeyChange`: on reactive key change retain data from previous key during refetch
 
 ::note
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
@@ -124,6 +125,7 @@ The following options **must be consistent** across all calls with the same key:
 - `pick` array
 - `getCachedData` function
 - `default` value
+- `retainPreviousDataOnKeyChange` value
 
 The following options **can differ** without triggering warnings:
 - `server`
@@ -185,6 +187,7 @@ type AsyncDataOptions<DataT> = {
   immediate?: boolean
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
+  retainPreviousDataOnKeyChange?: boolean
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]

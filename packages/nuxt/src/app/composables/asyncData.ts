@@ -98,6 +98,11 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
+  /**
+   * When a reactive key changes retain the data from the old key during handler exection.
+   * @default true
+   */
+  retainPreviousDataOnKeyChange?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -216,6 +221,7 @@ export function useAsyncData<
   options.immediate ??= true
   options.deep ??= asyncDataDefaults.deep
   options.dedupe ??= 'cancel'
+  options.retainPreviousDataOnKeyChange ??= true
 
   // @ts-expect-error private property
   const functionName = options._functionName || 'useAsyncData'
@@ -228,7 +234,7 @@ export function useAsyncData<
     if (values.handler !== currentData._hash?.handler) {
       warnings.push(`different handler`)
     }
-    for (const opt of ['transform', 'pick', 'getCachedData'] as const) {
+    for (const opt of ['transform', 'pick', 'getCachedData', 'retainPreviousDataOnKeyChange'] as const) {
       if (values[opt] !== currentData._hash![opt]) {
         warnings.push(`different \`${opt}\` option`)
       }
@@ -334,7 +340,7 @@ export function useAsyncData<
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
         if (!nuxtApp._asyncData[newKey]?._init) {
           let value: NoInfer<DataT> | undefined
-          if (oldKey && hasRun) {
+          if (options.retainPreviousDataOnKeyChange && oldKey && hasRun) {
             value = nuxtApp._asyncData[oldKey]?.data.value as NoInfer<DataT>
           } else {
             value = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
@@ -749,5 +755,6 @@ function createHash (_handler: () => unknown, options: Partial<Record<keyof Asyn
     transform: options.transform ? hash(options.transform) : undefined,
     pick: options.pick ? hash(options.pick) : undefined,
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
+    retainPreviousDataOnKeyChange: hash(options.retainPreviousDataOnKeyChange ?? true),
   }
 }
