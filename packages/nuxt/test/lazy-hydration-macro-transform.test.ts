@@ -164,7 +164,9 @@ async function transform (code: string, filename: string) {
         },
       },
       LazyHydrationTransformPlugin({ getComponents: () => components }).rollup(),
+      // @ts-expect-error Rolldown-related type error
       vuePlugin(),
+      // @ts-expect-error Rolldown-related type error
       vuePluginJsx(),
       LoaderPlugin({
         clientDelayedComponentRuntime: '/client-runtime.mjs',
