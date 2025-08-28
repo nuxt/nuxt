@@ -16,7 +16,7 @@ interface TestData {
 }
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
+  method: event.req.method,
   headers: Object.fromEntries(event.headers.entries()),
 })))
 

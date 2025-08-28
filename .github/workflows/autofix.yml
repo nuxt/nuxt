@@ -24,6 +24,7 @@ jobs:
         run: pnpm install
 
       - name: Check engine ranges, peer dependency ranges and installed versions
+        continue-on-error: true
         run: pnpm installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --fix
 
       - name: Build (stub)

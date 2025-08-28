@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
+import { deleteCookie, getCookie, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
@@ -172,7 +172,7 @@ export function refreshCookie (name: string) {
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
-    return parse(getRequestHeader(useRequestEvent()!, 'cookie') || '', opts)
+    return parse(useRequestEvent()!.req.headers.get('cookie') || '', opts)
   } else if (import.meta.client) {
     return parse(document.cookie, opts)
   }

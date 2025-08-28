@@ -1,7 +1,7 @@
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
-declare module 'nitropack' {
+declare module 'nitro' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -14,7 +14,7 @@ declare module 'nitropack' {
     appMiddleware?: Record<string, boolean>
   }
 }
-declare module 'nitropack/types' {
+declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
