@@ -82,6 +82,5 @@ export const createError = <DataT = unknown>(
 
   nuxtError.fatal ??= nuxtError.unhandled
 
-  // TODO: work around devalue limitation: https://github.com/sveltejs/devalue/pull/95
-  return Object.assign({}, nuxtError)
+  return nuxtError
 }
