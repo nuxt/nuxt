@@ -708,13 +708,13 @@ function createAsyncData<
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
-      const promise = new Promise<ResT>(
+      const promise : Promise<ResT | void> = new Promise<ResT>(
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
             const mergedSignal = AbortSignal.any([asyncData._abortController?.signal, opts?.signal, typeof timeout === 'number' ? AbortSignal.timeout(timeout) : undefined].filter((s): s is NonNullable<typeof s> => Boolean(s)))
             mergedSignal.addEventListener('abort', (event) => {
-              const reason = event.target?.reason ?? mergedSignal.reason
+              const reason = (event.target as any)?.reason ?? mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(reason, 'AbortError'))
             })
 
