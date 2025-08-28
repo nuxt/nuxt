@@ -421,9 +421,9 @@ async function initNuxt (nuxt: Nuxt) {
   // Init user modules
   await nuxt.callHook('modules:before')
 
-  const { paths: modulePaths, modules } = await resolveModules(nuxt)
+  const { paths: watchedModulePaths, resolvedModulePaths, modules } = await resolveModules(nuxt)
 
-  nuxt.options.watch.push(...modulePaths)
+  nuxt.options.watch.push(...watchedModulePaths)
 
   // Add <NuxtWelcome>
   // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
@@ -550,7 +550,7 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
   }
 
-  await installModules(modules, modulePaths, nuxt)
+  await installModules(modules, resolvedModulePaths, nuxt)
 
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
@@ -663,7 +663,7 @@ export default defineNuxtPlugin({
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
-    if (modulePaths.has(path)) {
+    if (watchedModulePaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
     }
 
@@ -900,7 +900,7 @@ async function resolveModules (nuxt: Nuxt) {
       const resolvedModule = resolveModuleWithOptions(module, nuxt)
       if (resolvedModule && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
         modules.set(resolvedModule.module, resolvedModule.options)
-        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
         }
@@ -931,7 +931,7 @@ async function resolveModules (nuxt: Nuxt) {
 
       if (resolvedModule && !modules.has(resolvedModule.module) && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
         modules.set(resolvedModule.module, resolvedModule.options)
-        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
         }
@@ -941,6 +941,7 @@ async function resolveModules (nuxt: Nuxt) {
 
   return {
     paths,
+    resolvedModulePaths,
     modules,
   }
 }

@@ -71,7 +71,8 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
 
       if (value.version) {
-        const pkg = await readPackageJSON(name, { from: [res.resolvedModulePath!, ...nuxt.options.modulesDir] }).catch(() => null)
+        const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
+        const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
         if (pkg?.version && !semver.satisfies(pkg.version, value.version)) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)
@@ -86,7 +87,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         ])
       }
 
-      if (value.optional === false) {
+      if (value.optional === true) {
         continue
       }
 
@@ -97,7 +98,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         }
         modulesToInstall.set(resolvedModule.module, resolvedModule.options)
         dependencyMap.set(resolvedModule.module, moduleToAttribute)
-        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
         }

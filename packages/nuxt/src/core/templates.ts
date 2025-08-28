@@ -281,7 +281,7 @@ export const schemaNodeTemplate: NuxtTemplate = {
     ].filter(Boolean)
 
     const moduleDependencies = modules.flatMap(([_configKey, importName]) => [
-      `    [${genString(importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, unknown>>`,
+      `    [${genString(importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? O : Record<string, unknown>>`,
     ]).join('\n')
 
     return [
