@@ -20,6 +20,18 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
   headers: Object.fromEntries(event.headers.entries()),
 })))
 
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ method: event.method, headers: Object.fromEntries(event.headers.entries()) })
+    }, 100)
+  })
+}))
+
+beforeEach(() => {
+  vi.unstubAllGlobals()
+})
+
 describe('useFetch', () => {
   beforeEach(() => {
     clearNuxtData()
