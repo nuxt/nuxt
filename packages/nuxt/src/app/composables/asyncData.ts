@@ -708,7 +708,7 @@ function createAsyncData<
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
-      const promise : Promise<ResT | void> = new Promise<ResT>(
+      const promise: Promise<ResT | void> = new Promise<ResT>(
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
