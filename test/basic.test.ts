@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestConte
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
+import { expectNoClientErrors, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
 
@@ -2096,12 +2096,8 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
   it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
-    await expectWithPolling(
-      () => consoleLogs
-        .map(w => w.text).join('\n')
-        .includes('does not have a single root node and will cause errors when navigating between routes'),
-      true,
-    )
+    await expect.poll(() => consoleLogs.map(w => w.text).join('\n'))
+      .toContain('does not have a single root node and will cause errors when navigating between routes')
 
     await page.close()
   })

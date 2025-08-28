@@ -84,24 +84,6 @@ export async function gotoPath (page: Page, path: string, retries = 0) {
   await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
 }
 
-type EqualityVal = string | number | boolean | null | undefined | RegExp
-export async function expectWithPolling (
-  get: () => Promise<EqualityVal> | EqualityVal,
-  expected: EqualityVal,
-  retries = process.env.CI ? 100 : 30,
-  delay = process.env.CI ? 500 : 100,
-) {
-  let result: EqualityVal
-  for (let i = retries; i >= 0; i--) {
-    result = await get()
-    if (result?.toString() === expected?.toString()) {
-      break
-    }
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
-  expect(result?.toString(), `"${result?.toString()}" did not equal "${expected?.toString()}" in ${retries * delay}ms`).toEqual(expected?.toString())
-}
-
 const revivers = {
   NuxtError: (data: any) => createError(data),
   EmptyShallowRef: (data: any) => shallowRef(JSON.parse(data)),
