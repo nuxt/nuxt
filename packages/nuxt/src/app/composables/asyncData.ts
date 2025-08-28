@@ -754,7 +754,7 @@ function createAsyncData<
 
           // If the asyncData was explicitly aborted internally (dedupe or clear), we do not update the asyncData
           if (asyncData._abortController?.signal.aborted) {
-            return promise
+            return
           }
 
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
