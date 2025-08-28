@@ -806,5 +806,6 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future')).compatibilityVersion !== 4
       },
     },
+    entryImportMap: true,
   },
 })

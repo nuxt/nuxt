@@ -20,6 +20,7 @@ import { TypeCheckPlugin } from './plugins/type-check'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
 import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
+import { StableEntryPlugin } from './plugins/stable-entry'
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const nodeCompat = nuxt.options.experimental.clientNodeCompat
@@ -129,6 +130,8 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       // Type checking client panel
       TypeCheckPlugin(nuxt),
       ModulePreloadPolyfillPlugin(),
+      // ensure changes in chunks do not invalidate whole build
+      StableEntryPlugin(nuxt),
     ],
     appType: 'custom',
     server: {

@@ -1729,6 +1729,11 @@ export interface ConfigSchema {
      * @default true
      */
     pendingWhenIdle: boolean
+
+    /**
+     * Whether to improve chunk stability by using an import map to resolve the entry chunk of the bundle.
+     */
+    entryImportMap: boolean
   }
 
   generate: {
