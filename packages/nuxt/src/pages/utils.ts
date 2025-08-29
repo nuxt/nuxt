@@ -468,8 +468,13 @@ function findRouteByName (name: string, routes: NuxtPage[]): NuxtPage | undefine
     if (route.name === name) {
       return route
     }
+    if (route.children && route.children.length > 0) {
+      const child = findRouteByName(name, route.children)
+      if (child) {
+        return child
+      }
+    }
   }
-  return findRouteByName(name, routes)
 }
 
 const NESTED_PAGE_RE = /\//g
