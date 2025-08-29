@@ -92,6 +92,7 @@
     "@types/babel__helper-plugin-utils": "7.10.3",
     "@types/node": "22.18.0",
     "@types/semver": "7.7.0",
+    "@typescript-eslint/parser": "8.41.0",
     "@unhead/vue": "2.0.14",
     "@vitest/coverage-v8": "3.2.4",
     "@vue/test-utils": "2.4.6",
