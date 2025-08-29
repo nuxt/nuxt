@@ -128,8 +128,8 @@ importers:
         specifier: 2.0.5
         version: 2.0.5
       devalue:
-        specifier: 5.1.1
-        version: 5.1.1
+        specifier: 5.3.2
+        version: 5.3.2
       eslint:
         specifier: 9.34.0
         version: 9.34.0(jiti@2.5.1)
@@ -404,8 +404,8 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5
       devalue:
-        specifier: ^5.1.1
-        version: 5.1.1
+        specifier: ^5.3.2
+        version: 5.3.2
       errx:
         specifier: ^0.1.0
         version: 0.1.0
@@ -4567,8 +4567,8 @@ packages:
     peerDependencies:
       typescript: 5.9.2
 
-  devalue@5.1.1:
-    resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
+  devalue@5.3.2:
+    resolution: {integrity: sha512-UDsjUbpQn9kvm68slnrs+mfxwFkIflOhkanmyabZ8zOYk8SMEIbJ3TK+88g70hSIeytu4y18f0z/hYHMTrXIWw==}
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
@@ -12290,7 +12290,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  devalue@5.1.1: {}
+  devalue@5.3.2: {}
 
   devlop@1.1.0:
     dependencies:
