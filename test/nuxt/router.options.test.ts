@@ -79,6 +79,69 @@ describe('scrollBehavior of router options with global transition', () => {
     expect(scrollTo).toHaveBeenCalled()
     expect(pageTransitionFinish).toHaveBeenCalledBefore(scrollTo)
   })
+
+  it('should set _runningTransition after page:start and be deleted after page:loading:end with async component', async () => {
+    let runningTransitionAtStart: boolean | undefined
+    let runningTransitionAtLoadingEnd: boolean | undefined
+
+    const pageStartSpy = vi.fn(() => {
+      runningTransitionAtStart = nuxtApp._runningTransition as boolean
+    })
+    const pageLoadingEndSpy = vi.fn(() => {
+      runningTransitionAtLoadingEnd = nuxtApp._runningTransition as undefined
+    })
+
+    cleanups.push(nuxtApp.hook('page:start', pageStartSpy))
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEndSpy))
+
+    await navigateTo('/transitions/async')
+
+    // Ensure everything is settled
+    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+
+    // Verify _runningTransition is true at page:start
+    expect(runningTransitionAtStart).toBe(true)
+    // Verify _runningTransition is still true at page:loading:end (not deleted yet)
+    expect(runningTransitionAtLoadingEnd).toBeUndefined()
+    // Verify _runningTransition is deleted after page:loading:end completes
+    expect(nuxtApp._runningTransition).toBeUndefined()
+    expect(pageStartSpy).toHaveBeenCalled()
+    expect(pageLoadingEnd).toHaveBeenCalled()
+    expect(scrollTo).toHaveBeenCalled()
+    expect(pageTransitionFinish).toHaveBeenCalledBefore(scrollTo)
+  })
+
+  it('should set _runningTransition after page:start and be deleted after page:loading:end with sync component', async () => {
+    let runningTransitionAtStart: boolean | undefined
+    let runningTransitionAtLoadingEnd: boolean | undefined
+
+    const pageStartSpy = vi.fn(() => {
+      runningTransitionAtStart = nuxtApp._runningTransition as boolean
+    })
+    const pageLoadingEndSpy = vi.fn(() => {
+      runningTransitionAtLoadingEnd = nuxtApp._runningTransition as undefined
+    })
+
+    cleanups.push(nuxtApp.hook('page:start', pageStartSpy))
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEndSpy))
+
+    await navigateTo('/transitions/sync')
+
+    // Ensure everything is settled
+    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+
+    // Verify _runningTransition is true at page:start
+    expect(runningTransitionAtStart).toBe(true)
+    // Verify _runningTransition is still true at page:loading:end (not deleted yet)
+    expect(runningTransitionAtLoadingEnd).toBeUndefined()
+    // Verify _runningTransition is deleted after page:loading:end completes
+    expect(nuxtApp._runningTransition).toBeUndefined()
+    // Verify pageLoadingEnd and scrollTo are also called
+    expect(pageStartSpy).toHaveBeenCalled()
+    expect(pageLoadingEnd).toHaveBeenCalled()
+    expect(scrollTo).toHaveBeenCalled()
+    expect(pageTransitionFinish).toHaveBeenCalledBefore(scrollTo)
+  })
 })
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
