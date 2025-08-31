@@ -55,6 +55,17 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  // @ts-expect-error non-public property
+  if (vite.rolldownVersion) {
+    // esbuild is not used in `rolldown-vite`
+    if (viteConfig.esbuild) {
+      delete viteConfig.esbuild
+    }
+    if (viteConfig.optimizeDeps?.esbuildOptions) {
+      delete viteConfig.optimizeDeps.esbuildOptions
+    }
+  }
+
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
@@ -119,10 +130,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
-          watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-            exclude: nuxt.options.ignore,
-          },
+
+          // @ts-expect-error non-public property
+          watch: (vite.rolldownVersion
+            // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+            ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
+            : {
+                chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+                exclude: nuxt.options.ignore,
+              }
+          ),
         },
         plugins: [
           // add resolver for files in public assets directories
@@ -229,14 +246,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
     // Remove CSS entries for files that will have inlined styles
     nuxt.hook('build:manifest', (manifest) => {
-      for (const [key, entry] of Object.entries(manifest)) {
-        const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
-        if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
-          // @ts-expect-error internal key
-          entry._globalCSS = true
+      for (const id of chunksWithInlinedCSS) {
+        const chunk = manifest[id]
+        if (!chunk) {
+          continue
         }
-        if (shouldRemoveCSS && entry.css) {
-          entry.css = []
+        if (chunk.isEntry) {
+          // @ts-expect-error internal key
+          chunk._globalCSS = true
+        } else {
+          chunk.css &&= []
         }
       }
     })

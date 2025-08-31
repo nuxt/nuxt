@@ -130,6 +130,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
+      // this will be overridden in vite plugin
+      '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
