@@ -41,7 +41,7 @@ describe('pages:generateRoutesFromFiles', () => {
           const files = test.files.map(file => ({
             shouldUseServerComponents: true,
             absolutePath: file.path,
-            relativePath: file.path.replace(/^(pages|layer\/pages)\//, ''),
+            relativePath: file.path.replace(/^(?:pages|layer\/pages)\//, ''),
           })).sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
 
           result = generateRoutesFromFiles(files).map((route, index) => {
