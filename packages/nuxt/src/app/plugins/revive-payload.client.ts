@@ -26,7 +26,7 @@ if (componentIslands) {
     if (!isValidIslandKey(key)) {
       return data
     }
-    
+
     if (!nuxtApp.isHydrating) {
       nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
         responseType: 'json',
