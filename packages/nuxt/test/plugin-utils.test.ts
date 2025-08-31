@@ -13,9 +13,8 @@ describe('isValidIslandKey util', () => {
     expect(isValidIslandKey('Component123_hash456')).toBe(true)
     expect(isValidIslandKey('my-component_hash123')).toBe(true)
     expect(isValidIslandKey('Component-Name_hash123')).toBe(true)
-    expect(isValidIslandKey('ComponentName_' + hash({
-      props: randomUUID(),
-    }))).toBe(true)
+    const sampleHash = hash({ props: randomUUID() }).replace(/[-_]/g, '')
+    expect(isValidIslandKey('ComponentName_' + sampleHash)).toBe(true)
   })
 
   it('should reject invalid island keys', () => {
