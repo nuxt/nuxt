@@ -1,5 +1,6 @@
 import { createUnplugin } from 'unplugin'
-import { relative, resolve } from 'pathe'
+import { relative } from 'pathe'
+import { resolveAlias } from 'pathe/utils'
 import MagicString from 'magic-string'
 import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils'
@@ -30,8 +31,6 @@ const HYDRATION_TO_FACTORY = new Map<string, string>([
 export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
-
-  const aliases = Object.entries(options.alias || {}).sort((a, b) => b[0].length - a[0].length)
 
   return {
     name: 'nuxt:lazy-hydration-macro',
@@ -98,7 +97,7 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           if (!isStringLiteral(importLiteral)) { return }
 
           const rawPath = importLiteral.value
-          const filePath = resolveAliases(aliases, rawPath)
+          const filePath = resolveAlias(rawPath, options.alias || {})
           const relativePath = relative(options.srcDir, filePath)
 
           const originalLoader = code.slice(loaderArgument.start, loaderArgument.end)
@@ -132,14 +131,4 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
 
 function isStringLiteral (node: any): node is StringLiteral {
   return !!node && node.type === 'Literal' && typeof node.value === 'string'
-}
-
-function resolveAliases (aliases: [string, string][], filePath: string) {
-  for (const [alias, target] of aliases) {
-    if (!filePath.startsWith(alias)) { continue }
-    const rest = filePath.slice(alias.length).replace(/^[/\\]+/, '')
-    return resolve(target, rest)
-  }
-
-  return filePath
 }
