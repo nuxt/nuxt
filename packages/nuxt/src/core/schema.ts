@@ -17,6 +17,7 @@ export default defineNuxtModule({
     name: 'nuxt:nuxt-config-schema',
   },
   async setup (_, nuxt) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (!nuxt.options.experimental.configSchema) {
       return
     }

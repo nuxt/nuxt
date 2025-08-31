@@ -32,6 +32,7 @@ export function tryResolveModule (id: string, url: string | string[] | URL | URL
 
 export function resolveModule (id: string, options?: ResolveModuleOptions) {
   return resolveModulePath(id, {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     from: options?.url ?? options?.paths ?? [import.meta.url],
     extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
   })
@@ -70,6 +71,7 @@ export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptio
   const jiti = createJiti(import.meta.url, {
     interopDefault: opts?.interopDefault !== false,
   })
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return jiti(pathToFileURL(resolvedPath).href) as T
 }
 
@@ -78,6 +80,7 @@ export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptio
  */
 export function tryRequireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return requireModule<T>(id, opts)
   } catch {
     // intentionally empty as this is a `try-` function

@@ -8,7 +8,7 @@ import { parseNodeModulePath } from 'mlly'
 import { resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
 import { resolvePackageJSON } from 'pkg-types'
-import { isNuxt2 } from '../compatibility'
+import { isNuxtMajorVersion } from '../compatibility'
 import { read as readRc, update as updateRc } from 'rc9'
 import semver from 'semver'
 import { directoryToURL } from '../internal/esm'
@@ -63,7 +63,7 @@ export async function installModule<
 
   // Call module
   const res = (
-    isNuxt2()
+    isNuxtMajorVersion(2, nuxt)
       // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
       ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
       : nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule

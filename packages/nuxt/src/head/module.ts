@@ -49,6 +49,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     // Opt-out feature allowing dependencies using @vueuse/head to work
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
     const unheadPlugins = resolveModulePath('@unhead/vue/plugins', { try: true, from: importPaths }) || '@unhead/vue/plugins'
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (nuxt.options.experimental.polyfillVueUseHead) {
       // backwards compatibility
       nuxt.options.alias['@vueuse/head'] = resolveModulePath('@unhead/vue', { try: true, from: importPaths }) || '@unhead/vue'

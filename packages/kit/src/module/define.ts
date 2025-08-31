@@ -6,7 +6,7 @@ import { dirname } from 'pathe'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
 import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
-import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
+import { checkNuxtCompatibility, isNuxtMajorVersion } from '../compatibility'
 import { compileTemplate, templateUtils } from '../internal/template'
 
 /**
@@ -156,7 +156,7 @@ function _defineNuxtModule<
 const NUXT2_SHIMS_KEY = '__nuxt2_shims_key__'
 function nuxt2Shims (nuxt: Nuxt) {
   // Avoid duplicate install and only apply to Nuxt2
-  if (!isNuxt2(nuxt) || nuxt[NUXT2_SHIMS_KEY as keyof Nuxt]) { return }
+  if (!isNuxtMajorVersion(2, nuxt) || nuxt[NUXT2_SHIMS_KEY as keyof Nuxt]) { return }
   nuxt[NUXT2_SHIMS_KEY as keyof Nuxt] = true
 
   // Allow using nuxt.hooks
@@ -164,8 +164,11 @@ function nuxt2Shims (nuxt: Nuxt) {
   nuxt.hooks = nuxt
 
   // Allow using useNuxt()
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (!nuxtCtx.tryUse()) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     nuxtCtx.set(nuxt)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     nuxt.hook('close', () => nuxtCtx.unset())
   }
 
@@ -182,6 +185,7 @@ function nuxt2Shims (nuxt: Nuxt) {
   nuxt.hook('build:templates', async (templates) => {
     const context = {
       nuxt,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       utils: templateUtils,
       app: {
         dir: nuxt.options.srcDir,
@@ -195,6 +199,7 @@ function nuxt2Shims (nuxt: Nuxt) {
       },
     }
     for await (const template of virtualTemplates) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const contents = await compileTemplate({ ...template, src: '' }, context)
       await fsp.mkdir(dirname(template.dst), { recursive: true })
       await fsp.writeFile(template.dst, contents)

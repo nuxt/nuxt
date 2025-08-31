@@ -210,6 +210,7 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (nuxt.options.experimental.treeshakeClientOnly) {
       addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
     }

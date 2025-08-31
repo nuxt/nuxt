@@ -1,7 +1,7 @@
 import type { NuxtTemplate } from '@nuxt/schema'
 import { join, parse } from 'pathe'
 import { kebabCase } from 'scule'
-import { isNuxt2 } from './compatibility'
+import { isNuxtMajorVersion } from './compatibility'
 import { useNuxt } from './context'
 import { logger } from './logger'
 import { addTemplate } from './template'
@@ -13,7 +13,7 @@ export function addLayout (this: any, template: NuxtTemplate | string, name?: st
   const { filename, src } = addTemplate(template)
   const layoutName = kebabCase(name || parse(filename).name).replace(LAYOUT_RE, '')
 
-  if (isNuxt2(nuxt)) {
+  if (isNuxtMajorVersion(2, nuxt)) {
     // Nuxt 2 adds layouts in options
     const layout = (nuxt.options as any).layouts[layoutName]
     if (layout) {

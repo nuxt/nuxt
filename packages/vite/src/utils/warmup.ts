@@ -24,7 +24,7 @@ function normaliseURL (url: string, base: string) {
     url = url.slice('/@id/'.length).replace('__x00__', '\0')
   }
   // strip query
-  url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')
+  url = url.replace(/[?&]import=?(?:&|$)/, '').replace(/[?&]$/, '')
   return url
 }
 

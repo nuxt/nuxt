@@ -27,7 +27,7 @@ export async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: any) {
 }
 
 /** @deprecated */
-const serialize = (data: any) => JSON.stringify(data, null, 2).replace(/"\{(.+)\}"(?=,?$)/gm, r => JSON.parse(r).replace(/^\{(.*)\}$/, '$1'))
+const serialize = (data: any) => JSON.stringify(data, null, 2).replace(/"\{.+\}"(?=,?$)/gm, r => JSON.parse(r).replace(/^\{(.*)\}$/, '$1'))
 
 /** @deprecated */
 const importSources = (sources: string | string[], { lazy = false } = {}) => {
@@ -44,4 +44,5 @@ const importSources = (sources: string | string[], { lazy = false } = {}) => {
 const importName = genSafeVariableName
 
 /** @deprecated */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export const templateUtils = { serialize, importName, importSources }

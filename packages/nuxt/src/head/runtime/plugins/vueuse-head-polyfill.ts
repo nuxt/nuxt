@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import type { UseHeadInput, UseHeadOptions, VueHeadClient } from '@unhead/vue'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { useHead } from '#app/composables/head'

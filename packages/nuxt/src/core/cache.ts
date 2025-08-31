@@ -23,6 +23,7 @@ export async function getVueHash (nuxt: Nuxt) {
         '**',
         `!${relative(srcDir, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
         `!${relative(srcDir, resolve(layer.cwd, layer.config.dir?.public || 'public'))}/**`,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         `!${relative(srcDir, resolve(layer.cwd, layer.config.dir?.static || 'public'))}/**`,
         '!node_modules/**',
         '!nuxt.config.*',

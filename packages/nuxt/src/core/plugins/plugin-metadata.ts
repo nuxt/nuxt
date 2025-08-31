@@ -44,7 +44,8 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   if (metaCache[code]) {
     return metaCache[code]
   }
-  if (code.match(/defineNuxtPlugin\s*\([\w(]/)) {
+  // non-object syntax plugin
+  if (/defineNuxtPlugin\s*\([\w(]/.test(code)) {
     return {}
   }
   parseAndWalk(code, `file.${loader}`, (node) => {

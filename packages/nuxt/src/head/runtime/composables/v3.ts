@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import type { ActiveHeadEntry, UseHeadInput, UseHeadOptions, UseHeadSafeInput, UseSeoMetaInput, VueHeadClient } from '@unhead/vue'
 import { hasInjectionContext, inject } from 'vue'
 import {

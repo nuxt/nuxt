@@ -37,7 +37,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
   }
 
   // Bridge compatibility check
-  if (isNuxt2(nuxt)) {
+  if (isNuxtMajorVersion(2, nuxt)) {
     const bridgeRequirement = constraints.bridge
     const hasBridge = !!(nuxt.options as any).bridge
     if (bridgeRequirement === true && !hasBridge) {

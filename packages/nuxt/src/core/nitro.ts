@@ -311,7 +311,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       nuxt.hook('nitro:config', (config) => {
         for (const value of Object.values(config.routeRules || {})) {
           if ('experimentalNoScripts' in value) {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             value.noScripts = value.experimentalNoScripts
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             delete value.experimentalNoScripts
           }
         }
@@ -422,6 +424,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 
   // Add backward-compatible middleware to respect `x-nuxt-no-ssr` header
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.respectNoSSRHeader) {
     nitroConfig.handlers ||= []
     nitroConfig.handlers.push({

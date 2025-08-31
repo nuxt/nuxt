@@ -55,7 +55,9 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   // Compile templates into vfs
   // TODO: remove utils in v4
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const templateContext = { utils: templateUtils, nuxt, app }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const compileTemplate = nuxt.options.experimental.compileTemplate ? _compileTemplate : futureCompileTemplate
 
   const writes: Array<() => void> = []

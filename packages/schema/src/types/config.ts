@@ -39,8 +39,10 @@ type RuntimeConfigNamespace = Record<string, unknown>
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   app: NitroRuntimeConfigApp
   /** Only available on the server. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   nitro?: NitroRuntimeConfig['nitro']
   public: PublicRuntimeConfig
 }

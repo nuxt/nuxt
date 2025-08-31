@@ -23,7 +23,9 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   opts.cwd ||= opts.rootDir
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   opts.overrides ||= opts.config || {}
 
   // Apply dev as config override
