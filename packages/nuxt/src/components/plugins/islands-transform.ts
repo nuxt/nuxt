@@ -16,7 +16,8 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-const SCRIPT_RE = /<script[^>]*>/gi
+const SCRIPT_RE = /<script[^>]*>/i
+const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(?:="[^"]*")?/g
@@ -59,7 +60,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         if (!SCRIPT_RE.test(code)) {
           s.prepend('<script setup>' + IMPORT_CODE + '</script>')
         } else {
-          s.replace(SCRIPT_RE, (full) => {
+          s.replace(SCRIPT_RE_GLOBAL, (full) => {
             return full + IMPORT_CODE
           })
         }
