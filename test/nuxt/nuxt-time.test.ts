@@ -122,6 +122,6 @@ describe('<NuxtTime>', () => {
       `<time data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
 
-    vi.resetAllMocks()
+    vi.restoreAllMocks()
   })
 })
