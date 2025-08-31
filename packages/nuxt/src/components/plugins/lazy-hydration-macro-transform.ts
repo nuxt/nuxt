@@ -60,11 +60,11 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
 
         parseAndWalk(code, id, (node, parent) => {
           if (node.type !== 'CallExpression') { return }
-          if (!node.callee || node.callee.type !== 'Identifier') { return }
+          if (node.callee?.type !== 'Identifier') { return }
           if (node.callee.name !== 'defineLazyHydrationComponent') { return }
 
-          if (!parent || parent.type !== 'VariableDeclarator') { return }
-          if (!parent.id || parent.id.type !== 'Identifier') { return }
+          if (parent?.type !== 'VariableDeclarator') { return }
+          if (parent.id.type !== 'Identifier') { return }
 
           if (node.arguments.length < 2) { return }
           const [strategyArgument, loaderArgument] = node.arguments
