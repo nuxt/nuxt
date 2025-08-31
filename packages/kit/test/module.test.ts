@@ -54,6 +54,7 @@ describe('installNuxtModule', { sequential: true }, () => {
 
   it('runs onInstall hook when a module is added', async () => {
     nuxt = await loadNuxt({ cwd: tempDir })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual(['install'])
@@ -68,6 +69,7 @@ describe('installNuxtModule', { sequential: true }, () => {
     )
 
     nuxt = await loadNuxt({ cwd: tempDir })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual([])
@@ -80,6 +82,7 @@ describe('installNuxtModule', { sequential: true }, () => {
     )
 
     nuxt = await loadNuxt({ cwd: tempDir })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual(['upgrade'])
