@@ -5,7 +5,6 @@ import { defineNuxtPlugin } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
-import { isValidIslandKey } from './utils'
 
 const reducers: [string, (data: any) => any][] = [
   ['NuxtError', data => isNuxtError(data) && data.toJSON()],
@@ -18,14 +17,7 @@ const reducers: [string, (data: any) => any][] = [
 ]
 
 if (componentIslands) {
-  reducers.push([
-    'Island',
-    data =>
-      data &&
-      typeof data.key === 'string' &&
-      isValidIslandKey(data.key) &&
-      data.__nuxt_island,
-  ])
+  reducers.push(['Island', data => data && data?.__nuxt_island])
 }
 
 export default defineNuxtPlugin({
