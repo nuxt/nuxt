@@ -58,7 +58,7 @@ export const cssTemplate: NuxtTemplate = {
   getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n'),
 }
 
-const PLUGIN_TEMPLATE_RE = /_(45|46|47)/g
+const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
   async getContents (ctx) {
@@ -274,7 +274,7 @@ export const schemaNodeTemplate: NuxtTemplate = {
           `     * Configuration for \`${importName}\``,
           ...options.addJSDocTags && link ? [`     * @see ${link}`] : [],
           `     */`,
-          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
+          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O, unknown, boolean> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
         ]
       }),
       modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',

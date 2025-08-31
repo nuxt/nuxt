@@ -235,6 +235,7 @@ export default defineNuxtModule<ComponentsOptions>({
       addBuildPlugin(LazyHydrationMacroTransformPlugin({
         ...sharedLoaderOptions,
         sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+        alias: nuxt.options.alias,
       }))
 
       addImportsSources(lazyHydrationMacroPreset)

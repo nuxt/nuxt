@@ -16,12 +16,13 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-const SCRIPT_RE = /<script[^>]*>/gi
+const SCRIPT_RE = /<script[^>]*>/i
+const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
-const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
-const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
+const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
+const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(?:="[^"]*")?/g
 const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
-const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
+const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(?:="[^"]*")?/g
 const KEY_RE = /:?key="[^"]"/g
 
 function wrapWithVForDiv (code: string, vfor: string): string {
@@ -56,10 +57,10 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         const startingIndex = template.index || 0
         const s = new MagicString(code)
 
-        if (!code.match(SCRIPT_RE)) {
+        if (!SCRIPT_RE.test(code)) {
           s.prepend('<script setup>' + IMPORT_CODE + '</script>')
         } else {
-          s.replace(SCRIPT_RE, (full) => {
+          s.replace(SCRIPT_RE_GLOBAL, (full) => {
             return full + IMPORT_CODE
           })
         }

@@ -11,8 +11,8 @@ import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
 const GLOBAL_RE = /\.global(?:\.island)?$/
-const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
-const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
+const COMPONENT_MODE_RE = /(?<=\.)(client|server)(?:\.global|\.island)*$/
+const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
