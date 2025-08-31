@@ -6,7 +6,7 @@ import { genImport } from 'knitwork'
 import { isJS, isVue } from '../../core/utils'
 import type { ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
-import type { Argument, Expression, ImportExpression } from 'oxc-parser'
+import type { Argument, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
 
 interface LoaderOptions {
   srcDir: string
@@ -75,26 +75,9 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
           if (!functionName) { return }
 
           if (loaderArgument?.type !== 'ArrowFunctionExpression') { return }
-          if (loaderArgument.body.type === 'BlockStatement') { return }
 
-          let importExpression: ImportExpression | null = null
-          let importLiteral: Expression | null = null
-
-          if (loaderArgument.body.type === 'ImportExpression') {
-            importExpression = loaderArgument.body
-            importLiteral = loaderArgument.body.source
-          } else if (
-            loaderArgument.body.type === 'CallExpression' &&
-              loaderArgument.body.callee.type === 'MemberExpression' &&
-              loaderArgument.body.callee.object.type === 'ImportExpression'
-          ) {
-            importExpression = loaderArgument.body.callee.object
-            importLiteral = importExpression.source
-          } else {
-            return
-          }
-
-          if (!isStringLiteral(importLiteral)) { return }
+          const { importExpression, importLiteral } = findImportExpression(loaderArgument.body)
+          if (!importExpression || !isStringLiteral(importLiteral)) { return }
 
           const rawPath = importLiteral.value
           const filePath = resolveAlias(rawPath, options.alias || {})
@@ -131,4 +114,33 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
 
 function isStringLiteral (node: Argument | undefined) {
   return !!node && node.type === 'Literal' && typeof node.value === 'string'
+}
+
+function findImportExpression (node: Expression | FunctionBody): { importExpression?: ImportExpression, importLiteral?: Expression } {
+  if (node.type === 'ImportExpression') {
+    return { importExpression: node, importLiteral: node.source }
+  }
+  if (node.type === 'BlockStatement') {
+    const returnStmt = node.body.find(stmt => stmt.type === 'ReturnStatement')
+    if (returnStmt && returnStmt.argument) {
+      return findImportExpression(returnStmt.argument)
+    }
+    return {}
+  }
+  if (node.type === 'ParenthesizedExpression') {
+    return findImportExpression(node.expression)
+  }
+  if (node.type === 'AwaitExpression') {
+    return findImportExpression(node.argument)
+  }
+  if (node.type === 'ConditionalExpression') {
+    return findImportExpression(node.consequent) || findImportExpression(node.alternate)
+  }
+  if (node.type === 'MemberExpression') {
+    return findImportExpression(node.object)
+  }
+  if (node.type === 'CallExpression') {
+    return findImportExpression(node.callee)
+  }
+  return {}
 }

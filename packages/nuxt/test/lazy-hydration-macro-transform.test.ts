@@ -149,6 +149,143 @@ describe('lazy hydration macro transform', () => {
       const LazyHydrationNeverMyComponent = createLazyNeverComponent("components/MyComponent.vue", () => import('~/components/MyComponent.vue'));"
     `)
   })
+
+  it('should handle arrow functions with block statements', async () => {
+    const sfc = `
+    <script setup>
+    const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', () => {
+      return import('~/components/MyComponent.vue')
+    })
+    const LazyHydrationIdleMyComponent = defineLazyHydrationComponent('idle', () => {
+      // Some comment
+      return import('~/components/MyComponent.vue')
+    })
+    </script>
+
+    <template>
+      <LazyHydrationVisibleMyComponent />
+      <LazyHydrationIdleMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain(`import { createLazyVisibleComponent, createLazyIdleComponent } from '../client-runtime.mjs';`)
+
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
+    expect(components).toContain(`const LazyHydrationVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue"`)
+    expect(components).toContain(`const LazyHydrationIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue"`)
+  })
+
+  it('should handle async/await patterns', async () => {
+    const sfc = `
+    <script setup>
+    const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', async () => await import('~/components/MyComponent.vue'))
+    const LazyHydrationIdleMyComponent = defineLazyHydrationComponent('idle', async () => {
+      return await import('~/components/MyComponent.vue')
+    })
+    </script>
+
+    <template>
+      <LazyHydrationVisibleMyComponent />
+      <LazyHydrationIdleMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain(`import { createLazyVisibleComponent, createLazyIdleComponent } from '../client-runtime.mjs';`)
+
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
+    expect(components).toContain(`const LazyHydrationVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue"`)
+    expect(components).toContain(`const LazyHydrationIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue"`)
+  })
+
+  it('should handle parenthesized expressions', async () => {
+    const sfc = `
+    <script setup>
+    const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', () => (import('~/components/MyComponent.vue')))
+    const LazyHydrationIdleMyComponent = defineLazyHydrationComponent('idle', () => {
+      return (import('~/components/MyComponent.vue'))
+    })
+    </script>
+
+    <template>
+      <LazyHydrationVisibleMyComponent />
+      <LazyHydrationIdleMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain(`import { createLazyVisibleComponent, createLazyIdleComponent } from '../client-runtime.mjs';`)
+
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
+    expect(components).toContain(`const LazyHydrationVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue"`)
+    expect(components).toContain(`const LazyHydrationIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue"`)
+  })
+
+  it('should handle member expressions and method chaining', async () => {
+    const sfc = `
+    <script setup>
+    const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', () => import('~/components/MyComponent.vue').then(m => m.default))
+    const LazyHydrationIdleMyComponent = defineLazyHydrationComponent('idle', () => {
+      return import('~/components/MyComponent.vue').then(m => m.default)
+    })
+    </script>
+
+    <template>
+      <LazyHydrationVisibleMyComponent />
+      <LazyHydrationIdleMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain(`import { createLazyVisibleComponent, createLazyIdleComponent } from '../client-runtime.mjs';`)
+
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
+    expect(components).toContain(`const LazyHydrationVisibleMyComponent = createLazyVisibleComponent("components/MyComponent.vue"`)
+    expect(components).toContain(`const LazyHydrationIdleMyComponent = createLazyIdleComponent("components/MyComponent.vue"`)
+  })
+
+  it('should handle conditional expressions', async () => {
+    const sfc = `
+    <script setup>
+    const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', () => 
+      process.env.NODE_ENV === 'development' 
+        ? import('~/components/MyComponent.vue')
+        : import('~/components/MyComponent.vue')
+    )
+    </script>
+
+    <template>
+      <LazyHydrationVisibleMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain(`import { createLazyVisibleComponent } from '../client-runtime.mjs';`)
+
+    const component = code.split('\n').map(line => line.trim()).find(line => line.startsWith('const LazyHydration'))
+    expect(component).toContain(`createLazyVisibleComponent("components/MyComponent.vue"`)
+  })
+
+  it('should handle complex nested patterns', async () => {
+    const sfc = `
+    <script setup>
+    const LazyHydrationVisibleMyComponent = defineLazyHydrationComponent('visible', async () => {
+      return await (import('~/components/MyComponent.vue')).then(m => m.default)
+    })
+    </script>
+
+    <template>
+      <LazyHydrationVisibleMyComponent />
+    </template>
+    `
+
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain(`import { createLazyVisibleComponent } from '../client-runtime.mjs';`)
+
+    const components = code.split('\n').map(line => line.trim()).filter(line => line.startsWith('const LazyHydration')).join('\n')
+    expect(components).toContain(`createLazyVisibleComponent("components/MyComponent.vue"`)
+  })
 })
 
 async function transform (code: string, filename: string, noComponents?: boolean) {
