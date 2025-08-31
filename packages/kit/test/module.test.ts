@@ -88,7 +88,7 @@ describe('installNuxtModule', { sequential: true }, () => {
   })
 })
 
-describe('module dependencies', () => {
+describe('module dependencies', { sequential: true }, () => {
   let nuxt: Nuxt
 
   const tempDir = join(repoRoot, 'node_modules/.temp/module-dependencies')
@@ -96,7 +96,7 @@ describe('module dependencies', () => {
   beforeAll(async () => {
     const fakeModule = join(tempDir, 'node_modules/some-module')
     await mkdir(fakeModule, { recursive: true })
-    await writeFile(join(fakeModule, 'package.json'), JSON.stringify({ name: 'some-module', version: '1.0.0', exports: './index.js' }))
+    await writeFile(join(fakeModule, 'package.json'), JSON.stringify({ name: 'some-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(fakeModule, 'index.js'), `
 export default () => {
   globalThis.someModuleLoaded ||= 0
