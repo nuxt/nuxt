@@ -253,10 +253,10 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
-  for (const layer of layerDirs) {
-    if (!layer.src.startsWith(rootDirWithSlash) || layer.root === nuxt.options.rootDir || layer.src.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.root), '**/*')
-      const paths = resolveLayerPaths(layer, nuxt.options.buildDir)
+  for (const dirs of layerDirs) {
+    if (!dirs.src.startsWith(rootDirWithSlash) || normalize(dirs.root) === normalize(nuxt.options.rootDir) || dirs.src.includes('node_modules')) {
+      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
+      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)

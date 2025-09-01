@@ -420,12 +420,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
   const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
-  for (const layer of layerDirs) {
-    if (layer.root === nuxt.options.rootDir) {
+  for (const dirs of layerDirs) {
+    if (normalize(dirs.root) === normalize(nuxt.options.rootDir)) {
       continue
     }
-    if (locallyScannedLayersDirs.every(dir => !layer.root.startsWith(dir))) {
-      nuxt.options.modulesDir.push(join(layer.root, 'node_modules'))
+    if (locallyScannedLayersDirs.every(dir => !dirs.root.startsWith(dir))) {
+      nuxt.options.modulesDir.push(join(dirs.root, 'node_modules'))
     }
   }
 
@@ -919,10 +919,10 @@ async function resolveModules (nuxt: Nuxt) {
     }
 
     // Secondly automatically register modules from layer's module directory
-    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.modules || 'modules'
-    const layerModules = await resolveFiles(config.srcDir, [
-      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
-      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,
+    const modulesDir = resolve(config.srcDir, (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.modules || 'modules')
+    const layerModules = await resolveFiles(modulesDir, [
+      `*{${nuxt.options.extensions.join(',')}}`,
+      `*/index{${nuxt.options.extensions.join(',')}}`,
     ])
 
     for (const module of layerModules) {

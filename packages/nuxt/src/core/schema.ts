@@ -107,8 +107,8 @@ export default defineNuxtModule({
 
       // Load schema from layers
       const schemaDefs: SchemaDefinition[] = [nuxt.options.$schema]
-      for (const layer of layerDirs) {
-        const filePath = await resolver.resolvePath(join(layer.root, 'nuxt.schema'))
+      for (const dirs of layerDirs) {
+        const filePath = await resolver.resolvePath(join(dirs.root, 'nuxt.schema'))
         if (filePath && existsSync(filePath)) {
           let loadedConfig: SchemaDefinition
           try {
