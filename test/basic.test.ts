@@ -1175,8 +1175,8 @@ describe('errors', () => {
       {
         "error": true,
         "message": "Page Not Found: /__nuxt_error",
-        "statusCode": 404,
-        "statusMessage": "Page Not Found: /__nuxt_error",
+        "status": 404,
+        "statusText": "Page Not Found: /__nuxt_error",
         "url": "http://localhost:3000/__nuxt_error",
       }
     `)
