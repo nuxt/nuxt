@@ -26,11 +26,11 @@ export async function build (nuxt: Nuxt) {
         const path = resolve(nuxt.options.srcDir, relativePath)
         for (const layer of getLayerDirectories(nuxt)) {
           const relativePath = relative(layer.srcDir, path)
-          if (relativePath.match(/^app\./i)) {
+          if (/^app\./i.test(relativePath)) {
             app.mainComponent = undefined
             break
           }
-          if (relativePath.match(/^error\./i)) {
+          if (/^error\./i.test(relativePath)) {
             app.errorComponent = undefined
             break
           }
