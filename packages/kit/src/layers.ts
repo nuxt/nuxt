@@ -38,7 +38,7 @@ export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
 
     const src = withTrailingSlash(config.srcDir || layer.cwd)
     const root = withTrailingSlash(config.rootDir || layer.cwd)
-    
+
     const directories = {
       src,
       root,

@@ -140,7 +140,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   const reversedLayerDirs = [...layerDirs].reverse()
 
   // Resolve main (app.vue)
-  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.src, 'App'), join(d.src, 'app')]),)
+  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.src, 'App'), join(d.src, 'app')]))
   app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
   // Resolve root component
@@ -183,7 +183,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
     }
   }
-
 
   const reversedLayers = nuxt.options._layers.slice().reverse()
   // Resolve plugins, first extended layers and then base
