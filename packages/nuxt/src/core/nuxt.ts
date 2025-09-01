@@ -420,8 +420,9 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
   const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
+  const rootWithTrailingSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (dirs.root === withTrailingSlash(nuxt.options.rootDir)) {
+    if (dirs.root === rootWithTrailingSlash) {
       continue
     }
     if (locallyScannedLayersDirs.every(dir => !dirs.root.startsWith(dir))) {
