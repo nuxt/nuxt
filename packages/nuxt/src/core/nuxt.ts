@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, getLayerDirectories, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -155,6 +155,8 @@ export const keyDependencies = [
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
+  const layerDirs = getLayerDirectories(nuxt)
+
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
@@ -254,8 +256,8 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
 
-    for (const layer of nuxt.options._layers) {
-      const declaration = join(layer.cwd, 'index.d.ts')
+    for (const layer of layerDirs) {
+      const declaration = join(layer.rootDir, 'index.d.ts')
       if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
         opts.nodeReferences.push({ path: declaration })
@@ -410,14 +412,19 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
-    ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
+    ...layerDirs.filter(i => i.rootDir.includes('node_modules')).map(i => i.rootDir),
   )
 
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
-  const locallyScannedLayersDirs = nuxt.options._layers.map(l => resolve(l.cwd, 'layers').replace(/\/?$/, '/'))
-  nuxt.options.modulesDir.push(...nuxt.options._layers
-    .filter(l => l.cwd !== nuxt.options.rootDir && locallyScannedLayersDirs.every(dir => !l.cwd.startsWith(dir)))
-    .map(l => resolve(l.cwd, 'node_modules')))
+  const locallyScannedLayersDirs = layerDirs.map(l => join(l.rootDir, 'layers/'))
+  for (const layer of layerDirs) {
+    if (layer.rootDir === nuxt.options.rootDir) {
+      continue
+    }
+    if (locallyScannedLayersDirs.every(dir => !layer.rootDir.startsWith(dir))) {
+      nuxt.options.modulesDir.push(join(layer.rootDir, 'node_modules'))
+    }
+  }
 
   // Init user modules
   await nuxt.callHook('modules:before')
@@ -671,7 +678,7 @@ export default defineNuxtPlugin({
     }
 
     // User provided patterns
-    const layerRelativePaths = new Set(nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path)))
+    const layerRelativePaths = new Set(getLayerDirectories(nuxt).map(l => relative(l.srcDir, path)))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
         // Test (normalized) strings against absolute path and relative path to any layer `srcDir`

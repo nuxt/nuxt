@@ -5,6 +5,7 @@ import { findWorkspaceDir } from 'pkg-types'
 
 import { loadNuxtConfig } from '../src/loader/config'
 import { _generateTypes, resolveLayerPaths } from '../src/template'
+import { getLayerDirectories } from 'nuxt/kit'
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
@@ -23,7 +24,7 @@ const mockNuxt = {
     modulesDir: ['/my-app/node_modules', '/node_modules'],
     modules: [],
     extensions: ['.ts', '.mjs', '.js'],
-    _layers: [{ config: { srcDir: '/my-app' } }],
+    _layers: [{ config: { rootDir: '/my-app', srcDir: '/my-app' } }],
     _installedModules: [],
     _modules: [],
   },
@@ -114,7 +115,8 @@ describe('resolveLayerPaths', async () => {
         },
       },
     })
-    const paths = resolveLayerPaths(nuxtOptions.dir, nuxtOptions.buildDir, nuxtOptions.rootDir, nuxtOptions.srcDir)
+    const [layer] = getLayerDirectories({ options: nuxtOptions } as Nuxt)
+    const paths = resolveLayerPaths(layer!, nuxtOptions.buildDir)
     expect(paths).toMatchInlineSnapshot(`
       {
         "globalDeclarations": [

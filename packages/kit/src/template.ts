@@ -16,6 +16,8 @@ import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
+import { getLayerDirectories } from './layers'
+import type { LayerDirectories } from './layers'
 
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
@@ -166,11 +168,11 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-export function resolveLayerPaths (dir: Nuxt['options']['dir'], buildDir: string, rootDir: string, srcDir: string) {
-  const relativeRootDir = relativeWithDot(buildDir, rootDir)
-  const relativeSrcDir = relativeWithDot(buildDir, srcDir)
-  const relativeModulesDir = relativeWithDot(buildDir, resolve(rootDir, dir.modules || 'modules'))
-  const relativeSharedDir = relativeWithDot(buildDir, resolve(rootDir, dir.shared || 'shared'))
+export function resolveLayerPaths (layer: LayerDirectories, projectBuildDir: string) {
+  const relativeRootDir = relativeWithDot(projectBuildDir, layer.rootDir)
+  const relativeSrcDir = relativeWithDot(projectBuildDir, layer.srcDir)
+  const relativeModulesDir = relativeWithDot(projectBuildDir, layer.dir.modules)
+  const relativeSharedDir = relativeWithDot(projectBuildDir, layer.dir.shared)
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
@@ -227,7 +229,9 @@ export async function _generateTypes (nuxt: Nuxt) {
     legacyInclude.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
   }
 
-  const sourceDirs = nuxt.options._layers.map(layer => withTrailingSlash(layer.config.srcDir ?? layer.cwd))
+  const layerDirs = getLayerDirectories(nuxt)
+
+  const sourceDirs = layerDirs.map(layer => layer.srcDir)
 
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
@@ -249,11 +253,10 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
-  for (const layer of nuxt.options._layers) {
-    const srcOrCwd = withTrailingSlash(layer.config.srcDir ?? layer.cwd)
-    if (!srcOrCwd.startsWith(rootDirWithSlash) || layer.cwd === nuxt.options.rootDir || srcOrCwd.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.cwd), '**/*')
-      const paths = resolveLayerPaths(defu(layer.config.dir, nuxt.options.dir), nuxt.options.buildDir, layer.cwd, layer.config.srcDir)
+  for (const layer of layerDirs) {
+    if (!layer.srcDir.startsWith(rootDirWithSlash) || layer.rootDir === nuxt.options.rootDir || layer.srcDir.includes('node_modules')) {
+      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.rootDir), '**/*')
+      const paths = resolveLayerPaths(layer, nuxt.options.buildDir)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)

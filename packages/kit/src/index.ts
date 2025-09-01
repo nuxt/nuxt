@@ -10,6 +10,9 @@ export { extendNuxtSchema } from './loader/schema'
 export { buildNuxt, loadNuxt } from './loader/nuxt'
 export type { LoadNuxtOptions } from './loader/nuxt'
 
+// Layers
+export { getLayerDirectories } from './layers'
+
 // Utils
 export { addImports, addImportsDir, addImportsSources } from './imports'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config'

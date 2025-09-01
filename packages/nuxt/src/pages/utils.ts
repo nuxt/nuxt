@@ -1,8 +1,8 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
-import { extname, normalize, relative, resolve } from 'pathe'
+import { extname, normalize, relative } from 'pathe'
 import { encodePath, joinURL, withLeadingSlash } from 'ufo'
-import { resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
@@ -47,9 +47,8 @@ interface ScannedFile {
 
 const enUSComparator = new Intl.Collator('en-US')
 export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
-  const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : layer.config.dir)?.pages || 'pages'),
-  )
+  const pagesDirs = getLayerDirectories(nuxt)
+    .map(layer => layer.dir.pages)
 
   const scannedFiles: ScannedFile[] = []
   for (const dir of pagesDirs) {

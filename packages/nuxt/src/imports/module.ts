@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
@@ -114,7 +114,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Transform to inject imports in production mode
     addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
-    const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
+    const priorities = getLayerDirectories(nuxt).map((layer, i) => [layer.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
     const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {

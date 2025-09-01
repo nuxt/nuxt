@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -24,8 +24,8 @@ export async function build (nuxt: Nuxt) {
       // Unset mainComponent and errorComponent if app or error component is changed
       if (event === 'add' || event === 'unlink') {
         const path = resolve(nuxt.options.srcDir, relativePath)
-        for (const layer of nuxt.options._layers) {
-          const relativePath = relative(layer.config.srcDir || layer.cwd, path)
+        for (const layer of getLayerDirectories(nuxt)) {
+          const relativePath = relative(layer.srcDir, path)
           if (relativePath.match(/^app\./i)) {
             app.mainComponent = undefined
             break
@@ -102,7 +102,7 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
+  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(i => i.srcDir), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -247,11 +247,10 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
 
 function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
-  for (const layer of nuxt.options._layers) {
-    const dir = layer.config.srcDir || layer.cwd
-    if (!dir || isIgnored(dir)) { continue }
+  for (const layer of getLayerDirectories(nuxt)) {
+    if (!layer.srcDir || isIgnored(layer.srcDir)) { continue }
 
-    pathsToWatch.add(dir.replace(/[^/]$/, '$&/'))
+    pathsToWatch.add(layer.srcDir)
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
