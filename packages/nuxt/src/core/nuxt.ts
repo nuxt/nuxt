@@ -16,7 +16,7 @@ import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
-import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import defu from 'defu'
 import { coerce, satisfies } from 'semver'
@@ -421,7 +421,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
   const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
   for (const dirs of layerDirs) {
-    if (normalize(dirs.root) === normalize(nuxt.options.rootDir)) {
+    if (dirs.root === withTrailingSlash(nuxt.options.rootDir)) {
       continue
     }
     if (locallyScannedLayersDirs.every(dir => !dirs.root.startsWith(dir))) {
@@ -985,4 +985,8 @@ async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [stri
   })).then(r => r.flat()))
 
   return paths
+}
+
+function withTrailingSlash (dir: string) {
+  return dir.replace(/[^/]$/, '$&/')
 }

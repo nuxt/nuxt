@@ -57,6 +57,15 @@ describe('tsConfig generation', () => {
         "../../node_modules",
         "../dist",
         "../.data",
+        "../modules/*/runtime/server/**/*",
+        "../layers/*/server/**/*",
+        "../layers/*/modules/*/runtime/server/**/*",
+        "../modules/*.*",
+        "../nuxt.config.*",
+        "../.config/nuxt.*",
+        "../layers/*/nuxt.config.*",
+        "../layers/*/.config/nuxt.*",
+        "../layers/*/modules/**/*",
       ]
     `)
   })

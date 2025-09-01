@@ -1,5 +1,5 @@
 import type { NuxtConfigLayer, NuxtOptions } from '@nuxt/schema'
-import { normalize, resolve } from 'pathe'
+import { resolve } from 'pathe'
 
 import { useNuxt } from './context'
 import { resolveAlias } from './resolve'
@@ -46,7 +46,7 @@ export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
       return layerMap.get(layer)!
     }
 
-    const isRoot = normalize(layer.config.rootDir) === normalize(nuxt.options.rootDir)
+    const isRoot = withTrailingSlash(layer.config.rootDir) === withTrailingSlash(nuxt.options.rootDir)
     const config = isRoot ? nuxt.options : (layer.config as NuxtOptions)
 
     const src = withTrailingSlash(config.srcDir || layer.cwd)

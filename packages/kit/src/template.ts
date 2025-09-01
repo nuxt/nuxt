@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
-import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
@@ -254,7 +253,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (!dirs.app.startsWith(rootDirWithSlash) || normalize(dirs.root) === normalize(nuxt.options.rootDir) || dirs.app.includes('node_modules')) {
+    if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
       const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
       const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
       for (const path of paths.nuxt) {
@@ -658,4 +657,8 @@ function renderAttr (key: string, value?: string) {
 const RELATIVE_WITH_DOT_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
+
+function withTrailingSlash (dir: string) {
+  return dir.replace(/[^/]$/, '$&/')
 }
