@@ -135,27 +135,21 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
-  const layerSrcs = getLayerDirectories(nuxt).map(l => l.srcDir)
+  // resolve layer
+  const layerDirs = getLayerDirectories(nuxt)
+  const reversedLayerDirs = [...layerDirs].reverse()
 
   // Resolve main (app.vue)
-  app.mainComponent ||= await findPath(
-    layerSrcs.flatMap(d => [join(d, 'App'), join(d, 'app')]),
-  )
+  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.srcDir, 'App'), join(d.srcDir, 'app')]),)
   app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
   // Resolve root component
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
-  app.errorComponent ||= (await findPath(layerSrcs.map(d => join(d, 'error')))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
+  app.errorComponent ||= (await findPath(layerDirs.map(d => join(d.srcDir, 'error')))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   const extensionGlob = nuxt.options.extensions.join(',')
-
-  // resolve layers
-  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
-  const reversedConfigs = layerConfigs.slice().reverse()
-  const layerDirs = getLayerDirectories(nuxt)
-  const reversedLayerDirs = [...layerDirs].reverse()
 
   // Resolve layouts/ from all config layers
   const layouts: NuxtApp['layouts'] = {}
@@ -190,10 +184,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
+
+  const reversedLayers = nuxt.options._layers.slice().reverse()
   // Resolve plugins, first extended layers and then base
   let plugins: NuxtApp['plugins'] = []
   for (let i = 0; i < reversedLayerDirs.length; i++) {
-    const config = reversedConfigs[i]!
+    const config = reversedLayers[i]!.config
     const layer = reversedLayerDirs[i]!
     plugins.push(...[
       ...(config.plugins || []),
