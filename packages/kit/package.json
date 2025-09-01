@@ -52,12 +52,12 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.5.1",
+    "@rspack/core": "1.5.2",
     "@types/semver": "7.7.0",
     "hookable": "5.5.3",
     "nitropack": "2.12.4",
     "unbuild": "3.6.1",
-    "vite": "7.1.3",
+    "vite": "7.1.4",
     "vitest": "3.2.4",
     "webpack": "5.101.3"
   },
