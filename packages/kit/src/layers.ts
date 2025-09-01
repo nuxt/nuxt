@@ -16,15 +16,15 @@ export interface LayerDirectories {
   /** Public directory (`/public` by default) */
   readonly public: string
   /** Nuxt srcDir (`/app/` by default) */
-  readonly src: string
+  readonly app: string
   /** Layouts directory (`/app/layouts` by default) */
-  readonly layouts: string
+  readonly appLayouts: string
   /** Middleware directory (`/app/middleware` by default) */
-  readonly middleware: string
+  readonly appMiddleware: string
   /** Pages directory (`/app/pages` by default) */
-  readonly pages: string
+  readonly appPages: string
   /** Plugins directory (`/app/plugins` by default) */
-  readonly plugins: string
+  readonly appPlugins: string
 }
 
 const layerMap = new WeakMap<NuxtConfigLayer, LayerDirectories>()
@@ -53,7 +53,6 @@ export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
     const root = withTrailingSlash(config.rootDir || layer.cwd)
 
     const directories = {
-      src,
       root,
       shared: withTrailingSlash(resolve(root, resolveAlias(config.dir?.shared || 'shared', nuxt.options.alias))),
       // these are resolved relative to root in `@nuxt/schema` for v4+
@@ -62,10 +61,11 @@ export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
       modules: withTrailingSlash(resolve(src, resolveAlias(config.dir?.modules || 'modules', nuxt.options.alias))),
       public: withTrailingSlash(resolve(src, resolveAlias(config.dir?.public || 'public', nuxt.options.alias))),
       // nuxt app
-      layouts: withTrailingSlash(resolve(src, resolveAlias(config.dir?.layouts || 'layouts', nuxt.options.alias))),
-      middleware: withTrailingSlash(resolve(src, resolveAlias(config.dir?.middleware || 'middleware', nuxt.options.alias))),
-      pages: withTrailingSlash(resolve(src, resolveAlias(config.dir?.pages || 'pages', nuxt.options.alias))),
-      plugins: withTrailingSlash(resolve(src, resolveAlias(config.dir?.plugins || 'plugins', nuxt.options.alias))),
+      app: src,
+      appLayouts: withTrailingSlash(resolve(src, resolveAlias(config.dir?.layouts || 'layouts', nuxt.options.alias))),
+      appMiddleware: withTrailingSlash(resolve(src, resolveAlias(config.dir?.middleware || 'middleware', nuxt.options.alias))),
+      appPages: withTrailingSlash(resolve(src, resolveAlias(config.dir?.pages || 'pages', nuxt.options.alias))),
+      appPlugins: withTrailingSlash(resolve(src, resolveAlias(config.dir?.plugins || 'plugins', nuxt.options.alias))),
     }
     layerMap.set(layer, directories)
     return directories

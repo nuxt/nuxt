@@ -157,7 +157,7 @@ export async function installModule<
 
   const localLayerModuleDirs: string[] = []
   for (const dirs of getLayerDirectories(nuxt)) {
-    if (!NODE_MODULES_RE.test(dirs.src)) {
+    if (!NODE_MODULES_RE.test(dirs.app)) {
       localLayerModuleDirs.push(dirs.modules)
     }
   }

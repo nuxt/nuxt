@@ -136,7 +136,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '/__nuxt_error': { cache: false },
     },
     appConfig: nuxt.options.appConfig,
-    appConfigFiles: layerDirs.map(dirs => join(dirs.src, 'app.config')),
+    appConfigFiles: layerDirs.map(dirs => join(dirs.app, 'app.config')),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -200,7 +200,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt-nightly/dist',
         distDir,
         // Ensure app config files have auto-imports injected even if they are pure .js files
-        ...getLayerDirectories(nuxt).map(dirs => join(dirs.src, 'app.config')),
+        ...getLayerDirectories(nuxt).map(dirs => join(dirs.app, 'app.config')),
       ],
       traceInclude: [
         // force include files used in generated code from the runtime-compiler

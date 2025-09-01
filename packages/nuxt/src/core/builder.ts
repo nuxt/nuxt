@@ -25,7 +25,7 @@ export async function build (nuxt: Nuxt) {
       if (event === 'add' || event === 'unlink') {
         const path = resolve(nuxt.options.srcDir, relativePath)
         for (const dirs of getLayerDirectories(nuxt)) {
-          const relativePath = relative(dirs.src, path)
+          const relativePath = relative(dirs.app, path)
           if (/^app\./i.test(relativePath)) {
             app.mainComponent = undefined
             break
@@ -102,7 +102,7 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(dirs => dirs.src), {
+  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(dirs => dirs.app), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -248,9 +248,9 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
 function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
   for (const dirs of getLayerDirectories(nuxt)) {
-    if (!dirs.src || isIgnored(dirs.src)) { continue }
+    if (!dirs.app || isIgnored(dirs.app)) { continue }
 
-    pathsToWatch.add(dirs.src)
+    pathsToWatch.add(dirs.app)
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }

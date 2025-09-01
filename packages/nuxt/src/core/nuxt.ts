@@ -679,7 +679,7 @@ export default defineNuxtPlugin({
     }
 
     // User provided patterns
-    const layerRelativePaths = new Set(getLayerDirectories(nuxt).map(l => relative(l.src, path)))
+    const layerRelativePaths = new Set(getLayerDirectories(nuxt).map(l => relative(l.app, path)))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
         // Test (normalized) strings against absolute path and relative path to any layer `srcDir`

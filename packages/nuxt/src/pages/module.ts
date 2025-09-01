@@ -85,7 +85,7 @@ export default defineNuxtModule({
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
 
-    const pagesDirs = getLayerDirectories(nuxt).map(dirs => dirs.pages)
+    const pagesDirs = getLayerDirectories(nuxt).map(dirs => dirs.appPages)
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
     const routerPath = await resolveTypePath('vue-router', '', nuxt.options.modulesDir) || 'vue-router'
@@ -306,9 +306,9 @@ export default defineNuxtModule({
     // Regenerate templates when adding or removing pages
     const updateTemplatePaths = getLayerDirectories(nuxt)
       .flatMap(dirs => [
-        dirs.pages,
-        dirs.layouts,
-        dirs.middleware,
+        dirs.appPages,
+        dirs.appLayouts,
+        dirs.appMiddleware,
       ])
 
     function isPage (file: string, pages = nuxt.apps.default?.pages): boolean {

@@ -140,23 +140,23 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   const reversedLayerDirs = [...layerDirs].reverse()
 
   // Resolve main (app.vue)
-  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.src, 'App'), join(d.src, 'app')]))
+  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.app, 'App'), join(d.app, 'app')]))
   app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
   // Resolve root component
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
-  app.errorComponent ||= await findPath(layerDirs.map(d => join(d.src, 'error'))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
+  app.errorComponent ||= await findPath(layerDirs.map(d => join(d.app, 'error'))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   const extensionGlob = nuxt.options.extensions.join(',')
 
   // Resolve layouts/ from all config layers
   const layouts: NuxtApp['layouts'] = {}
   for (const dirs of layerDirs) {
-    const layoutFiles = await resolveFiles(dirs.layouts, `**/*{${extensionGlob}}`)
+    const layoutFiles = await resolveFiles(dirs.appLayouts, `**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
-      const name = getNameFromPath(file, dirs.layouts)
+      const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
         logger.warn(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
@@ -169,7 +169,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve middleware/ from all config layers, layers first
   let middleware: NuxtApp['middleware'] = []
   for (const dirs of reversedLayerDirs) {
-    const middlewareFiles = await resolveFiles(dirs.middleware, [
+    const middlewareFiles = await resolveFiles(dirs.appMiddleware, [
       `*{${extensionGlob}}`,
       `*/index{${extensionGlob}}`,
     ])
@@ -192,7 +192,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     const dirs = reversedLayerDirs[i]!
     plugins.push(...[
       ...(config.plugins || []),
-      ...await resolveFiles(dirs.plugins, [
+      ...await resolveFiles(dirs.appPlugins, [
         `*{${extensionGlob}}`,
         `*/index{${extensionGlob}}`,
       ]),
@@ -214,7 +214,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve app.config
   const configs: NuxtApp['configs'] = []
   for (const dirs of layerDirs) {
-    const appConfigPath = await findPath(join(dirs.src, 'app.config'))
+    const appConfigPath = await findPath(join(dirs.app, 'app.config'))
     if (appConfigPath) {
       configs.push(appConfigPath)
     }

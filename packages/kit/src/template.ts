@@ -170,7 +170,7 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
 
 export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string) {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
-  const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.src)
+  const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
   const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
   return {
@@ -231,7 +231,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const layerDirs = getLayerDirectories(nuxt)
 
-  const sourceDirs = layerDirs.map(layer => layer.src)
+  const sourceDirs = layerDirs.map(layer => layer.app)
 
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
@@ -254,7 +254,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (!dirs.src.startsWith(rootDirWithSlash) || normalize(dirs.root) === normalize(nuxt.options.rootDir) || dirs.src.includes('node_modules')) {
+    if (!dirs.app.startsWith(rootDirWithSlash) || normalize(dirs.root) === normalize(nuxt.options.rootDir) || dirs.app.includes('node_modules')) {
       const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
       const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
       for (const path of paths.nuxt) {

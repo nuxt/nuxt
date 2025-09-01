@@ -172,8 +172,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const layerDirs: string[] = []
     const delimitedRootDir = nuxt.options.rootDir + '/'
     for (const dirs of getLayerDirectories(nuxt)) {
-      if (dirs.src !== nuxt.options.srcDir && !dirs.src.startsWith(delimitedRootDir)) {
-        layerDirs.push(dirs.src + '/')
+      if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(delimitedRootDir)) {
+        layerDirs.push(dirs.app)
       }
     }
     if (layerDirs.length > 0) {
