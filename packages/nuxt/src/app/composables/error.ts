@@ -80,7 +80,7 @@ export const createError = <DataT = unknown>(
     writable: false,
   })
 
-  nuxtError.fatal ??= nuxtError.unhandled
+  nuxtError.fatal ??= typeof error === 'object' && 'fatal' in error ? error.fatal || nuxtError.unhandled : nuxtError.unhandled
 
   return nuxtError
 }
