@@ -47,8 +47,7 @@ interface ScannedFile {
 
 const enUSComparator = new Intl.Collator('en-US')
 export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
-  const pagesDirs = getLayerDirectories(nuxt)
-    .map(layer => layer.dir.pages)
+  const pagesDirs = getLayerDirectories(nuxt).map(d => d.pages)
 
   const scannedFiles: ScannedFile[] = []
   for (const dir of pagesDirs) {

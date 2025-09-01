@@ -171,8 +171,8 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
 export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string) {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.src)
-  const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.dir.modules)
-  const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.dir.shared)
+  const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
+  const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),

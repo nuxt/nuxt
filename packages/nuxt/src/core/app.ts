@@ -153,10 +153,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve layouts/ from all config layers
   const layouts: NuxtApp['layouts'] = {}
-  for (const layer of layerDirs) {
-    const layoutFiles = await resolveFiles(layer.dir.layouts, `**/*{${extensionGlob}}`)
+  for (const dirs of layerDirs) {
+    const layoutFiles = await resolveFiles(dirs.layouts, `**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
-      const name = getNameFromPath(file, layer.dir.layouts)
+      const name = getNameFromPath(file, dirs.layouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
         logger.warn(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
@@ -168,8 +168,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve middleware/ from all config layers, layers first
   let middleware: NuxtApp['middleware'] = []
-  for (const layer of reversedLayerDirs) {
-    const middlewareFiles = await resolveFiles(layer.dir.middleware, [
+  for (const dirs of reversedLayerDirs) {
+    const middlewareFiles = await resolveFiles(dirs.middleware, [
       `*{${extensionGlob}}`,
       `*/index{${extensionGlob}}`,
     ])
@@ -190,10 +190,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   let plugins: NuxtApp['plugins'] = []
   for (let i = 0; i < reversedLayerDirs.length; i++) {
     const config = reversedLayers[i]!.config
-    const layer = reversedLayerDirs[i]!
+    const dirs = reversedLayerDirs[i]!
     plugins.push(...[
       ...(config.plugins || []),
-      ...await resolveFiles(layer.dir.plugins, [
+      ...await resolveFiles(dirs.plugins, [
         `*{${extensionGlob}}`,
         `*/index{${extensionGlob}}`,
       ]),

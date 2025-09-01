@@ -155,9 +155,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
               join(moduleDir, 'dist/runtime/server'),
             ]
           }),
-          ...getLayerDirectories(nuxt).map(layer =>
-            relativeWithDot(nuxt.options.buildDir, join(layer.dir.shared, '**/*.d.ts')),
-          ),
+          ...getLayerDirectories(nuxt).map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
@@ -175,9 +173,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             baseURL: nuxt.options.app.buildAssetsDir,
           },
       ...getLayerDirectories(nuxt)
-        .map(layer => layer.dir.public)
-        .filter(dir => existsSync(dir))
-        .map(dir => ({ dir })),
+        .filter(dirs => existsSync(dirs.public))
+        .map(dirs => ({ dir: dirs.public })),
     ],
     prerender: {
       ignoreUnprefixedPublicAssets: true,
