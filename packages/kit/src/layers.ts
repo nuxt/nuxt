@@ -29,19 +29,18 @@ export function getLayerDirectories (nuxt = useNuxt()) {
 
     const srcDir = withTrailingSlash(config.srcDir || layer.cwd)
     const rootDir = withTrailingSlash(config.rootDir || layer.cwd)
-    const dir = config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir
     const directories = {
       srcDir,
       rootDir,
       serverDir: withTrailingSlash(resolve(layer.cwd, config?.serverDir || 'server')),
       dir: {
-        layouts: withTrailingSlash(resolve(srcDir, dir?.layouts || 'layouts')),
-        middleware: withTrailingSlash(resolve(srcDir, dir?.middleware || 'middleware')),
-        modules: withTrailingSlash(resolve(rootDir, dir?.modules || 'modules')),
-        pages: withTrailingSlash(resolve(srcDir, dir?.pages || 'pages')),
-        plugins: withTrailingSlash(resolve(srcDir, dir?.plugins || 'plugins')),
-        shared: withTrailingSlash(resolve(rootDir, dir?.shared || 'shared')),
-        public: withTrailingSlash(resolve(rootDir, dir?.public || 'public')),
+        layouts: withTrailingSlash(resolve(srcDir, config.dir?.layouts || 'layouts')),
+        middleware: withTrailingSlash(resolve(srcDir, config.dir?.middleware || 'middleware')),
+        modules: withTrailingSlash(resolve(rootDir, config.dir?.modules || 'modules')),
+        pages: withTrailingSlash(resolve(srcDir, config.dir?.pages || 'pages')),
+        plugins: withTrailingSlash(resolve(srcDir, config.dir?.plugins || 'plugins')),
+        shared: withTrailingSlash(resolve(rootDir, config.dir?.shared || 'shared')),
+        public: withTrailingSlash(resolve(rootDir, config.dir?.public || 'public')),
       },
     }
     layerMap.set(layer, directories)
