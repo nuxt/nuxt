@@ -53,5 +53,10 @@ export default defineNuxtConfig({
   typescript: {
     shim: process.env.DOCS_TYPECHECK === 'true',
     hoist: ['@vitejs/plugin-vue', 'vue-router'],
+    tsConfig: {
+      include: [
+        fileURLToPath(new URL('./test/nuxt', import.meta.url)),
+      ],
+    },
   },
 })
