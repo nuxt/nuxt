@@ -35,8 +35,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
   const excludePaths = layerDirs.flatMap(dirs => [
-    dirs.root.match(NODE_MODULES_RE)?.[1],
-    dirs.root.match(PNPM_NODE_MODULES_RE)?.[1],
+    dirs.root.match(NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
+    dirs.root.match(PNPM_NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
   ].filter((dir): dir is string => Boolean(dir)).map(dir => escapeRE(dir)))
 
   const excludePattern = excludePaths.length
