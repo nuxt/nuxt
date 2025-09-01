@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
-import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
@@ -16,6 +15,7 @@ import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
+import { getLayerDirectories } from './layers'
 
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
@@ -160,6 +160,8 @@ export async function _generateTypes (nuxt: Nuxt) {
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
 
+  const layerDirs = getLayerDirectories(nuxt)
+
   const include = new Set<string>([
     join(relativeRootDir, '**/*'),
     join(relativeRootDir, '.config/nuxt.*'),
@@ -174,10 +176,9 @@ export async function _generateTypes (nuxt: Nuxt) {
     include.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
   }
 
-  for (const layer of nuxt.options._layers) {
-    const srcOrCwd = layer.config.srcDir ?? layer.cwd
-    if (!srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules')) {
-      include.add(join(relative(nuxt.options.buildDir, srcOrCwd), '**/*'))
+  for (const dirs of layerDirs) {
+    if (!dirs.root.startsWith(rootDirWithSlash) || dirs.app.includes('node_modules')) {
+      include.add(join(relative(nuxt.options.buildDir, dirs.app), '**/*'))
     }
   }
 
@@ -188,7 +189,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, '.data')),
   ])
 
-  const sourceDirs = nuxt.options._layers.map(layer => withTrailingSlash(layer.config.srcDir ?? layer.cwd))
+  const sourceDirs = layerDirs.map(d => d.app)
 
   for (const dir of nuxt.options.modulesDir) {
     // we only need to exclude node_modules directories if they are
@@ -439,4 +440,8 @@ function renderAttr (key: string, value?: string) {
 const RELATIVE_WITH_DOT_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
+
+function withTrailingSlash (dir: string) {
+  return dir.replace(/[^/]$/, '$&/')
 }
