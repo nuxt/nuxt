@@ -36,9 +36,10 @@ export function getLayerDirectories (nuxt = useNuxt()) {
       dir: {
         layouts: withTrailingSlash(resolve(srcDir, config.dir?.layouts || 'layouts')),
         middleware: withTrailingSlash(resolve(srcDir, config.dir?.middleware || 'middleware')),
-        modules: withTrailingSlash(resolve(rootDir, config.dir?.modules || 'modules')),
         pages: withTrailingSlash(resolve(srcDir, config.dir?.pages || 'pages')),
         plugins: withTrailingSlash(resolve(srcDir, config.dir?.plugins || 'plugins')),
+        // TODO: consider extracting these from `dir`
+        modules: withTrailingSlash(resolve(rootDir, config.dir?.modules || 'modules')),
         shared: withTrailingSlash(resolve(rootDir, config.dir?.shared || 'shared')),
         public: withTrailingSlash(resolve(rootDir, config.dir?.public || 'public')),
       },
