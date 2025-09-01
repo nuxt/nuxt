@@ -1,6 +1,8 @@
 import type { NuxtConfigLayer, NuxtOptions } from '@nuxt/schema'
-import { useNuxt } from './context'
 import { resolve } from 'pathe'
+
+import { useNuxt } from './context'
+import { resolveAlias } from './resolve'
 
 export interface LayerDirectories {
   /** Nuxt rootDir (`/` by default) */
@@ -53,17 +55,17 @@ export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
     const directories = {
       src,
       root,
-      shared: withTrailingSlash(resolve(root, config.dir?.shared || 'shared')),
+      shared: withTrailingSlash(resolve(root, resolveAlias(config.dir?.shared || 'shared', nuxt.options.alias))),
       // these are resolved relative to root in `@nuxt/schema` for v4+
       // so resolving relative to `src` covers backward compatibility for v3
-      server: withTrailingSlash(resolve(src, config.serverDir || 'server')),
-      modules: withTrailingSlash(resolve(src, config.dir?.modules || 'modules')),
-      public: withTrailingSlash(resolve(src, config.dir?.public || 'public')),
+      server: withTrailingSlash(resolve(src, resolveAlias(config.serverDir || 'server', nuxt.options.alias))),
+      modules: withTrailingSlash(resolve(src, resolveAlias(config.dir?.modules || 'modules', nuxt.options.alias))),
+      public: withTrailingSlash(resolve(src, resolveAlias(config.dir?.public || 'public', nuxt.options.alias))),
       // nuxt app
-      layouts: withTrailingSlash(resolve(src, config.dir?.layouts || 'layouts')),
-      middleware: withTrailingSlash(resolve(src, config.dir?.middleware || 'middleware')),
-      pages: withTrailingSlash(resolve(src, config.dir?.pages || 'pages')),
-      plugins: withTrailingSlash(resolve(src, config.dir?.plugins || 'plugins')),
+      layouts: withTrailingSlash(resolve(src, resolveAlias(config.dir?.layouts || 'layouts', nuxt.options.alias))),
+      middleware: withTrailingSlash(resolve(src, resolveAlias(config.dir?.middleware || 'middleware', nuxt.options.alias))),
+      pages: withTrailingSlash(resolve(src, resolveAlias(config.dir?.pages || 'pages', nuxt.options.alias))),
+      plugins: withTrailingSlash(resolve(src, resolveAlias(config.dir?.plugins || 'plugins', nuxt.options.alias))),
     }
     layerMap.set(layer, directories)
     return directories
