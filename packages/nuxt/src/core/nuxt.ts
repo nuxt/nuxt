@@ -415,7 +415,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
-    ...layerDirs.filter(i => i.root.includes('node_modules')).map(i => i.root),
+    ...layerDirs.filter(i => i.root.includes('node_modules')).map(i => i.root.replace(/\/$/, '')),
   )
 
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
