@@ -147,7 +147,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
-  app.errorComponent ||= (await findPath(layerDirs.map(d => join(d.src, 'error')))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
+  app.errorComponent ||= await findPath(layerDirs.map(d => join(d.src, 'error'))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   const extensionGlob = nuxt.options.extensions.join(',')
 
