@@ -27,6 +27,17 @@ export interface LayerDirectories {
 
 const layerMap = new WeakMap<NuxtConfigLayer, LayerDirectories>()
 
+/**
+ * Get the resolved directory paths for all layers in a Nuxt application.
+ * 
+ * Returns an array of LayerDirectories objects, ordered by layer priority:
+ * - The first layer is the user/project layer (highest priority)
+ * - Earlier layers override later layers in the array
+ * - Base layers appear last in the array (lowest priority)
+ * 
+ * @param nuxt - The Nuxt instance to get layers from. Defaults to the current Nuxt context.
+ * @returns Array of LayerDirectories objects, ordered by priority (user layer first)
+ */
 export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
   return nuxt.options._layers.map((layer) => {
     if (layerMap.has(layer)) {
