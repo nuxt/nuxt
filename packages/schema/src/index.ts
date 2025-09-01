@@ -5,7 +5,7 @@ export type { AppConfig, AppConfigInput, CustomAppConfig, NuxtAppConfig, NuxtBui
 export type { GenerateAppOptions, HookResult, ImportPresetWithDeprecation, NuxtAnalyzeMeta, NuxtHookName, NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, TSReference, VueTSConfig, WatchEvent } from './types/hooks'
 export type { ImportsOptions } from './types/imports'
 export type { AppHeadMetaObject, MetaObject, MetaObjectRaw } from './types/head'
-export type { ModuleDefinition, ModuleMeta, ModuleOptions, ModuleSetupReturn, ModuleSetupInstallResult, NuxtModule, ResolvedModuleOptions } from './types/module'
+export type { ModuleDefinition, ModuleDependencies, ModuleDependencyMeta, ModuleMeta, ModuleOptions, ModuleSetupReturn, ModuleSetupInstallResult, NuxtModule, ResolvedModuleOptions } from './types/module'
 export type { Nuxt, NuxtApp, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate } from './types/nuxt'
 export type { RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router'
 export type { NuxtDebugContext, NuxtDebugModuleMutationRecord } from './types/debug'

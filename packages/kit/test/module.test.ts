@@ -1,9 +1,9 @@
-import { mkdir, readFile, rm } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { appendFileSync } from 'node:fs'
 
 import type { Nuxt } from 'nuxt/schema'
 
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
@@ -54,6 +54,7 @@ describe('installNuxtModule', { sequential: true }, () => {
 
   it('runs onInstall hook when a module is added', async () => {
     nuxt = await loadNuxt({ cwd: tempDir })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual(['install'])
@@ -68,6 +69,7 @@ describe('installNuxtModule', { sequential: true }, () => {
     )
 
     nuxt = await loadNuxt({ cwd: tempDir })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual([])
@@ -80,6 +82,7 @@ describe('installNuxtModule', { sequential: true }, () => {
     )
 
     nuxt = await loadNuxt({ cwd: tempDir })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     await installModule(testModule, {}, nuxt)
 
     expect(await getHooksLogs()).toEqual(['upgrade'])
@@ -87,3 +90,213 @@ describe('installNuxtModule', { sequential: true }, () => {
     expect(rc.setups['test-module']).toBe('1.0.0')
   })
 })
+
+describe('module dependencies', { sequential: true }, () => {
+  let nuxt: Nuxt
+
+  const tempDir = join(repoRoot, 'node_modules/.temp/module-dependencies')
+
+  beforeAll(async () => {
+    const fakeModule = join(tempDir, 'node_modules/some-module')
+    await mkdir(fakeModule, { recursive: true })
+    await writeFile(join(fakeModule, 'package.json'), JSON.stringify({ name: 'some-module', version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(fakeModule, 'index.js'), `
+export default () => {
+  globalThis.someModuleLoaded ||= 0
+  globalThis.someModuleLoaded++
+}
+    `)
+  })
+
+  beforeEach(() => {
+    delete globalThis.someModuleLoaded
+  })
+
+  afterEach(async () => {
+    await nuxt?.close()
+  })
+
+  it('should install modules that are not marked as optional', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'foo' },
+            moduleDependencies: {
+              'some-module': {},
+              'non-existent-module': { optional: true },
+            },
+          }),
+        ],
+      },
+    })
+
+    expect(globalThis.someModuleLoaded).toBe(1)
+  })
+
+  it('should not install modules that are already installed by the user', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'some-module' },
+          }),
+          defineNuxtModule({
+            meta: { name: 'foo' },
+            moduleDependencies: {
+              'some-module': {},
+            },
+          }),
+        ],
+      },
+    })
+
+    expect(globalThis.someModuleLoaded).toBeUndefined()
+  })
+
+  it('should not load a module from disk if it is present inline', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'foo' },
+            moduleDependencies: {
+              'some-module': {},
+            },
+          }),
+          'some-module',
+        ],
+      },
+    })
+
+    expect(globalThis.someModuleLoaded).toBe(1)
+  })
+
+  it('should merge options as expected', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        // @ts-expect-error untyped nuxt options
+        a: {
+          user: 'provided by user',
+        },
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'a' },
+            defaults: {
+              value: 'provided by a',
+              user: 'provided by a',
+              default: 'provided by a',
+            },
+            setup (options) {
+              expect(options).toMatchInlineSnapshot(`
+                {
+                  "default": "provided by c",
+                  "user": "provided by user",
+                  "value": "provided by c",
+                }
+              `)
+            },
+          }),
+          defineNuxtModule({
+            meta: { name: 'b' },
+            setup (options) {
+              expect(options).toMatchInlineSnapshot(`
+                {
+                  "default": "provided by c",
+                  "value": "provided by c",
+                }
+              `)
+            },
+          }),
+          defineNuxtModule({
+            meta: { name: 'c' },
+            setup (options) {
+              expect(options).toMatchInlineSnapshot(`{}`)
+            },
+            moduleDependencies: {
+              'a': {
+                overrides: {
+                  value: 'provided by c',
+                },
+                defaults: {
+                  user: 'provided by c',
+                  default: 'provided by c',
+                },
+              },
+              'b': {
+                overrides: {
+                  value: 'provided by c',
+                },
+                defaults: {
+                  default: 'provided by c',
+                },
+              },
+            },
+          }),
+          defineNuxtModule({
+            meta: { name: 'd' },
+            setup (options) {
+              expect(options).toMatchInlineSnapshot(`{}`)
+            },
+            moduleDependencies: {
+              'b': {
+                overrides: {
+                  value: 'provided by d',
+                },
+                defaults: {
+                  default: 'provided by d',
+                },
+              },
+            },
+          }),
+        ],
+      },
+    })
+
+    // @ts-expect-error untyped nuxt option
+    expect(nuxt.options.a).toMatchInlineSnapshot(`
+      {
+        "default": "provided by c",
+        "user": "provided by user",
+        "value": "provided by c",
+      }
+    `)
+    // @ts-expect-error untyped nuxt option
+    expect(nuxt.options.b).toMatchInlineSnapshot(`
+      {
+        "default": "provided by c",
+        "value": "provided by c",
+      }
+    `)
+    // @ts-expect-error untyped nuxt option
+    expect(nuxt.options.c).toMatchInlineSnapshot(`undefined`)
+    // @ts-expect-error untyped nuxt option
+    expect(nuxt.options.d).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it('should warn if version constraints do not match', async () => {
+    await expect(loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'foo' },
+            moduleDependencies: {
+              'some-module': {
+                version: '>=2',
+              },
+            },
+          }),
+        ],
+      },
+    })).rejects.toThrowErrorMatchingInlineSnapshot(`[TypeError: Module \`some-module\` version (\`1.0.0\`) does not satisfy \`>=2\` (requested by a module in \`nuxt.options\`).]`)
+  })
+})
+
+declare global {
+  var someModuleLoaded: number | undefined
+}

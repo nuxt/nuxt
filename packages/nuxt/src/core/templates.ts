@@ -257,9 +257,16 @@ export const schemaTemplate: NuxtTemplate = {
       modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
+    const moduleDependencies = modules.flatMap(([_configKey, importName]) => [
+      `    [${genString(importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? O : Record<string, unknown>>`,
+    ]).join('\n')
+
     return [
-      'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
+      'import { NuxtModule, ModuleDependencyMeta, RuntimeConfig } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
+      '  interface ModuleDependencies {',
+      moduleDependencies,
+      '  }',
       '  interface NuxtOptions {',
       ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
       '  }',
@@ -270,6 +277,9 @@ export const schemaTemplate: NuxtTemplate = {
       '  }',
       '}',
       'declare module \'nuxt/schema\' {',
+      '  interface ModuleDependencies {',
+      moduleDependencies,
+      '  }',
       '  interface NuxtOptions {',
       ...moduleOptionsInterface({ addJSDocTags: true, unresolved: false }),
       '  }',
