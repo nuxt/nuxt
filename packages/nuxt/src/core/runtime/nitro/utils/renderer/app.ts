@@ -10,11 +10,12 @@ import unheadOptions from '#internal/unhead-options.mjs'
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
 export function createSSRContext (event: H3Event): NuxtSSRContext {
+  const url = event.url.pathname + event.url.search + event.url.hash
   const ssrContext: NuxtSSRContext = {
-    url: event.url.pathname,
+    url,
     event,
     runtimeConfig: useRuntimeConfig(event) as NuxtSSRContext['runtimeConfig'],
-    noSSR: !!(process.env.NUXT_NO_SSR) || event.context.nuxt?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(event.url.pathname) : false),
+    noSSR: !!(process.env.NUXT_NO_SSR) || event.context.nuxt?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     head: createHead(unheadOptions),
     error: false,
     nuxt: undefined!, /* NuxtApp */

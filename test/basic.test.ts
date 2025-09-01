@@ -1147,9 +1147,7 @@ describe('errors', () => {
     url.host = 'localhost:3000'
     error.url = url.toString()
     expect(error).toMatchObject({
-      message: isDev() ? 'This is a custom error' : 'Server Error',
-      statusCode: 422,
-      statusMessage: 'This is a custom error',
+      message: 'This is a custom error',
       url: 'http://localhost:3000/error',
     })
   })

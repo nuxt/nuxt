@@ -22,8 +22,9 @@ export default defineEventHandler(async (event) => {
   event.res.headers.set('content-type', 'application/json;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  if (import.meta.prerender && event.url.pathname && await islandCache!.hasItem(event.url.pathname)) {
-    return islandCache!.getItem(event.url.pathname) as Promise<Partial<RenderResponse>>
+  const url = event.url.pathname + event.url.search + event.url.hash
+  if (import.meta.prerender && url && await islandCache!.hasItem(url)) {
+    return islandCache!.getItem(url) as Promise<Partial<RenderResponse>>
   }
 
   const islandContext = await getIslandContext(event)
@@ -94,17 +95,17 @@ export default defineEventHandler(async (event) => {
 
   if (import.meta.prerender) {
     await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)
-    await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.url.pathname)
+    await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, url)
   }
   return islandResponse
 })
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
-  let url = event.url.pathname || ''
-  if (import.meta.prerender && event.url.pathname && await islandPropCache!.hasItem(event.url.pathname)) {
+  let url = event.url.pathname + event.url.search + event.url.hash
+  if (import.meta.prerender && url && await islandPropCache!.hasItem(url)) {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
-    url = await islandPropCache!.getItem(event.url.pathname) as string
+    url = await islandPropCache!.getItem(url) as string
   }
   const componentParts = url.substring('/__nuxt_island'.length + 1).replace(ISLAND_SUFFIX_RE, '').split('_')
   const hashId = componentParts.length > 1 ? componentParts.pop() : undefined

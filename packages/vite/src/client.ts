@@ -260,7 +260,8 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
           viteRoutes.push(m)
         }
       }
-      if (!event.url.pathname.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.url.pathname.startsWith(route))) {
+      const url = event.url.pathname + event.url.search + event.url.hash
+      if (!url.startsWith(clientConfig.base!) && !viteRoutes.some(route => url.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
         event.runtime!.node!.req._skip_transform = true
       } else if (!useViteCors) {
@@ -272,7 +273,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       }
 
       // Workaround: vite devmiddleware modifies req.url
-      // const _originalPathname = event.url.pathname
       const _originalPath = event.runtime!.node!.req.url
       await new Promise((resolve, reject) => {
         viteServer.middlewares.handle(event.runtime!.node!.req as IncomingMessage, event.runtime!.node!.res as ServerResponse, (err: Error) => {
@@ -282,7 +282,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       })
 
       // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-      if (event.url.pathname.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.url.pathname.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.url.pathname))) {
+      if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
         throw new HTTPError({ status: 404 })
       }
     })

@@ -69,7 +69,8 @@ export default (nitroApp: NitroApp) => {
   nitroApp.hooks.hook('response', () => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
-    return nitroApp.hooks.callHook('dev:ssr-logs', { logs: ctx.logs, path: ctx.event.url.pathname })
+    const path = ctx.event.url.pathname + ctx.event.url.search + ctx.event.url.hash
+    return nitroApp.hooks.callHook('dev:ssr-logs', { logs: ctx.logs, path })
   })
 
   // Pass any logs to the client
