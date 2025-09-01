@@ -156,9 +156,9 @@ export async function installModule<
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   const localLayerModuleDirs: string[] = []
-  for (const l of getLayerDirectories(nuxt)) {
-    if (!NODE_MODULES_RE.test(l.srcDir)) {
-      localLayerModuleDirs.push(l.dir.modules)
+  for (const dirs of getLayerDirectories(nuxt)) {
+    if (!NODE_MODULES_RE.test(dirs.src)) {
+      localLayerModuleDirs.push(dirs.dir.modules)
     }
   }
 

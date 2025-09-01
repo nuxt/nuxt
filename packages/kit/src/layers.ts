@@ -3,9 +3,9 @@ import { useNuxt } from './context'
 import { resolve } from 'pathe'
 
 export interface LayerDirectories {
-  srcDir: string
-  rootDir: string
-  serverDir: string
+  src: string
+  root: string
+  server: string
   dir: {
     layouts: string
     middleware: string
@@ -27,21 +27,21 @@ export function getLayerDirectories (nuxt = useNuxt()) {
     const isRoot = layer.config.rootDir === nuxt.options.rootDir
     const config = isRoot ? nuxt.options : (layer.config as NuxtOptions)
 
-    const srcDir = withTrailingSlash(config.srcDir || layer.cwd)
-    const rootDir = withTrailingSlash(config.rootDir || layer.cwd)
+    const src = withTrailingSlash(config.srcDir || layer.cwd)
+    const root = withTrailingSlash(config.rootDir || layer.cwd)
     const directories = {
-      srcDir,
-      rootDir,
-      serverDir: withTrailingSlash(resolve(layer.cwd, config?.serverDir || 'server')),
+      src,
+      root,
+      server: withTrailingSlash(resolve(layer.cwd, config?.serverDir || 'server')),
       dir: {
-        layouts: withTrailingSlash(resolve(srcDir, config.dir?.layouts || 'layouts')),
-        middleware: withTrailingSlash(resolve(srcDir, config.dir?.middleware || 'middleware')),
-        pages: withTrailingSlash(resolve(srcDir, config.dir?.pages || 'pages')),
-        plugins: withTrailingSlash(resolve(srcDir, config.dir?.plugins || 'plugins')),
+        layouts: withTrailingSlash(resolve(src, config.dir?.layouts || 'layouts')),
+        middleware: withTrailingSlash(resolve(src, config.dir?.middleware || 'middleware')),
+        pages: withTrailingSlash(resolve(src, config.dir?.pages || 'pages')),
+        plugins: withTrailingSlash(resolve(src, config.dir?.plugins || 'plugins')),
         // TODO: consider extracting these from `dir`
-        modules: withTrailingSlash(resolve(rootDir, config.dir?.modules || 'modules')),
-        shared: withTrailingSlash(resolve(rootDir, config.dir?.shared || 'shared')),
-        public: withTrailingSlash(resolve(rootDir, config.dir?.public || 'public')),
+        modules: withTrailingSlash(resolve(root, config.dir?.modules || 'modules')),
+        shared: withTrailingSlash(resolve(root, config.dir?.shared || 'shared')),
+        public: withTrailingSlash(resolve(root, config.dir?.public || 'public')),
       },
     }
     layerMap.set(layer, directories)

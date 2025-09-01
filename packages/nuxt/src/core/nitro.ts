@@ -34,9 +34,9 @@ const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
-  const excludePaths = layerDirs.flatMap(l => [
-    l.rootDir.match(NODE_MODULES_RE)?.[1],
-    l.rootDir.match(PNPM_NODE_MODULES_RE)?.[1],
+  const excludePaths = layerDirs.flatMap(dirs => [
+    dirs.root.match(NODE_MODULES_RE)?.[1],
+    dirs.root.match(PNPM_NODE_MODULES_RE)?.[1],
   ].filter((dir): dir is string => Boolean(dir)).map(dir => escapeRE(dir)))
 
   const excludePattern = excludePaths.length
@@ -119,7 +119,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           filename: join(nuxt.options.analyzeDir, '{name}.html'),
         }
       : false,
-    scanDirs: layerDirs.map(layer => layer.serverDir),
+    scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: resolve(distDir, 'core/runtime/nitro/handlers/renderer'),
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers: nuxt.options.serverHandlers,
@@ -136,7 +136,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '/__nuxt_error': { cache: false },
     },
     appConfig: nuxt.options.appConfig,
-    appConfigFiles: layerDirs.map(layer => join(layer.srcDir, 'app.config')),
+    appConfigFiles: layerDirs.map(dirs => join(dirs.src, 'app.config')),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -203,7 +203,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt-nightly/dist',
         distDir,
         // Ensure app config files have auto-imports injected even if they are pure .js files
-        ...getLayerDirectories(nuxt).map(layer => join(layer.srcDir, 'app.config')),
+        ...getLayerDirectories(nuxt).map(dirs => join(dirs.src, 'app.config')),
       ],
       traceInclude: [
         // force include files used in generated code from the runtime-compiler

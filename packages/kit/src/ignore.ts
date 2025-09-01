@@ -22,8 +22,10 @@ export function isIgnored (pathname: string, _stats?: unknown, nuxt = tryUseNuxt
     nuxt._ignore.add(resolveIgnorePatterns())
   }
 
-  const cwds = getLayerDirectories(nuxt)?.map(layer => layer.rootDir).sort((a, b) => b.length - a.length)
-  const layer = cwds?.find(cwd => pathname.startsWith(cwd))
+  const cwds = getLayerDirectories(nuxt)
+    .map(dirs => dirs.root)
+    .sort((a, b) => b.length - a.length)
+  const layer = cwds.find(cwd => pathname.startsWith(cwd))
   const relativePath = relative(layer ?? nuxt.options.rootDir, pathname)
   if (relativePath[0] === '.' && relativePath[1] === '.') {
     return false

@@ -24,8 +24,8 @@ export async function build (nuxt: Nuxt) {
       // Unset mainComponent and errorComponent if app or error component is changed
       if (event === 'add' || event === 'unlink') {
         const path = resolve(nuxt.options.srcDir, relativePath)
-        for (const layer of getLayerDirectories(nuxt)) {
-          const relativePath = relative(layer.srcDir, path)
+        for (const dirs of getLayerDirectories(nuxt)) {
+          const relativePath = relative(dirs.src, path)
           if (/^app\./i.test(relativePath)) {
             app.mainComponent = undefined
             break
@@ -102,7 +102,7 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(i => i.srcDir), {
+  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(dirs => dirs.src), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -247,10 +247,10 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
 
 function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
-  for (const layer of getLayerDirectories(nuxt)) {
-    if (!layer.srcDir || isIgnored(layer.srcDir)) { continue }
+  for (const dirs of getLayerDirectories(nuxt)) {
+    if (!dirs.src || isIgnored(dirs.src)) { continue }
 
-    pathsToWatch.add(layer.srcDir)
+    pathsToWatch.add(dirs.src)
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }

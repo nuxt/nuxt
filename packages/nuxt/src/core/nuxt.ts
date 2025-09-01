@@ -260,8 +260,8 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
 
-    for (const layer of layerDirs) {
-      const declaration = join(layer.rootDir, 'index.d.ts')
+    for (const dirs of layerDirs) {
+      const declaration = join(dirs.root, 'index.d.ts')
       if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
         opts.nodeReferences.push({ path: declaration })
@@ -416,17 +416,17 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
-    ...layerDirs.filter(i => i.rootDir.includes('node_modules')).map(i => i.rootDir),
+    ...layerDirs.filter(i => i.root.includes('node_modules')).map(i => i.root),
   )
 
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
-  const locallyScannedLayersDirs = layerDirs.map(l => join(l.rootDir, 'layers/'))
+  const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
   for (const layer of layerDirs) {
-    if (layer.rootDir === nuxt.options.rootDir) {
+    if (layer.root === nuxt.options.rootDir) {
       continue
     }
-    if (locallyScannedLayersDirs.every(dir => !layer.rootDir.startsWith(dir))) {
-      nuxt.options.modulesDir.push(join(layer.rootDir, 'node_modules'))
+    if (locallyScannedLayersDirs.every(dir => !layer.root.startsWith(dir))) {
+      nuxt.options.modulesDir.push(join(layer.root, 'node_modules'))
     }
   }
 
@@ -680,7 +680,7 @@ export default defineNuxtPlugin({
     }
 
     // User provided patterns
-    const layerRelativePaths = new Set(getLayerDirectories(nuxt).map(l => relative(l.srcDir, path)))
+    const layerRelativePaths = new Set(getLayerDirectories(nuxt).map(l => relative(l.src, path)))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
         // Test (normalized) strings against absolute path and relative path to any layer `srcDir`

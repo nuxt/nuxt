@@ -38,7 +38,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
-    ...getLayerDirectories(nuxt).map(l => l.rootDir),
+    ...getLayerDirectories(nuxt).map(d => d.root),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
       ...app.plugins.map(p => dirname(p.src)),
@@ -171,9 +171,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Identify which layers will need to have an extra resolve step.
     const layerDirs: string[] = []
     const delimitedRootDir = nuxt.options.rootDir + '/'
-    for (const layer of getLayerDirectories(nuxt)) {
-      if (layer.srcDir !== nuxt.options.srcDir && !layer.srcDir.startsWith(delimitedRootDir)) {
-        layerDirs.push(layer.srcDir + '/')
+    for (const dirs of getLayerDirectories(nuxt)) {
+      if (dirs.src !== nuxt.options.srcDir && !dirs.src.startsWith(delimitedRootDir)) {
+        layerDirs.push(dirs.src + '/')
       }
     }
     if (layerDirs.length > 0) {

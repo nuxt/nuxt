@@ -168,11 +168,11 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-export function resolveLayerPaths (layer: LayerDirectories, projectBuildDir: string) {
-  const relativeRootDir = relativeWithDot(projectBuildDir, layer.rootDir)
-  const relativeSrcDir = relativeWithDot(projectBuildDir, layer.srcDir)
-  const relativeModulesDir = relativeWithDot(projectBuildDir, layer.dir.modules)
-  const relativeSharedDir = relativeWithDot(projectBuildDir, layer.dir.shared)
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string) {
+  const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
+  const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.src)
+  const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.dir.modules)
+  const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.dir.shared)
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
@@ -231,7 +231,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const layerDirs = getLayerDirectories(nuxt)
 
-  const sourceDirs = layerDirs.map(layer => layer.srcDir)
+  const sourceDirs = layerDirs.map(layer => layer.src)
 
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
@@ -254,8 +254,8 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const layer of layerDirs) {
-    if (!layer.srcDir.startsWith(rootDirWithSlash) || layer.rootDir === nuxt.options.rootDir || layer.srcDir.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.rootDir), '**/*')
+    if (!layer.src.startsWith(rootDirWithSlash) || layer.root === nuxt.options.rootDir || layer.src.includes('node_modules')) {
+      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.root), '**/*')
       const paths = resolveLayerPaths(layer, nuxt.options.buildDir)
       for (const path of paths.nuxt) {
         include.add(path)

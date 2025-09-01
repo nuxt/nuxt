@@ -140,14 +140,14 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   const reversedLayerDirs = [...layerDirs].reverse()
 
   // Resolve main (app.vue)
-  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.srcDir, 'App'), join(d.srcDir, 'app')]),)
+  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.src, 'App'), join(d.src, 'app')]),)
   app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
   // Resolve root component
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
-  app.errorComponent ||= (await findPath(layerDirs.map(d => join(d.srcDir, 'error')))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
+  app.errorComponent ||= (await findPath(layerDirs.map(d => join(d.src, 'error')))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   const extensionGlob = nuxt.options.extensions.join(',')
 
@@ -214,8 +214,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve app.config
   const configs: NuxtApp['configs'] = []
-  for (const layer of layerDirs) {
-    const appConfigPath = await findPath(join(layer.srcDir, 'app.config'))
+  for (const dirs of layerDirs) {
+    const appConfigPath = await findPath(join(dirs.src, 'app.config'))
     if (appConfigPath) {
       configs.push(appConfigPath)
     }

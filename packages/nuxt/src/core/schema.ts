@@ -69,8 +69,8 @@ export default defineNuxtModule({
           const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', {
             url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)),
           })
-          for (const layer of layerDirs) {
-            const subscription = await subscribe(layer.rootDir, onChange, {
+          for (const dirs of layerDirs) {
+            const subscription = await subscribe(dirs.root, onChange, {
               ignore: ['!nuxt.schema.*'],
             })
             nuxt.hook('close', () => subscription.unsubscribe())
@@ -82,7 +82,7 @@ export default defineNuxtModule({
       }
 
       const isIgnored = createIsIgnored(nuxt)
-      const rootDirs = layerDirs.map(layer => layer.rootDir)
+      const rootDirs = layerDirs.map(layer => layer.root)
       const SCHEMA_RE = /(?:^|\/)nuxt.schema.\w+$/
       const watcher = watch(rootDirs, {
         ...nuxt.options.watchers.chokidar,
@@ -108,7 +108,7 @@ export default defineNuxtModule({
       // Load schema from layers
       const schemaDefs: SchemaDefinition[] = [nuxt.options.$schema]
       for (const layer of layerDirs) {
-        const filePath = await resolver.resolvePath(join(layer.rootDir, 'nuxt.schema'))
+        const filePath = await resolver.resolvePath(join(layer.root, 'nuxt.schema'))
         if (filePath && existsSync(filePath)) {
           let loadedConfig: SchemaDefinition
           try {
