@@ -75,6 +75,13 @@ function _defineNuxtModule<
     return Promise.resolve(options)
   }
 
+  function getModuleDependencies (nuxt: Nuxt = useNuxt()) {
+    if (typeof module.moduleDependencies === 'function') {
+      return module.moduleDependencies(nuxt)
+    }
+    return module.moduleDependencies
+  }
+
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
@@ -141,6 +148,7 @@ function _defineNuxtModule<
   // Define getters for options and meta
   normalizedModule.getMeta = () => Promise.resolve(module.meta)
   normalizedModule.getOptions = getOptions
+  normalizedModule.getModuleDependencies = getModuleDependencies
 
   normalizedModule.onInstall = module.onInstall
   normalizedModule.onUpgrade = module.onUpgrade
