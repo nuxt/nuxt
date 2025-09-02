@@ -473,9 +473,7 @@ export function useLazyAsyncData<
   DefaultT = undefined,
 > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-  if (_isAutoKeyNeeded(args[0], args[1])) {
-    args.unshift(autoKey)
-  }
+  if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
   const [key, handler, options = {}] = args as [string, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   if (import.meta.dev) {
