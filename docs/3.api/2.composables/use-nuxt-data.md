@@ -71,7 +71,7 @@ const { data } = await useAsyncData('todos', () => $fetch('/api/todos'))
 </script>
 ```
 
-```vue [components/NewTodo.vue]
+```vue [app/components/NewTodo.vue]
 <script setup lang="ts">
 const newTodo = ref('')
 let previousTodos = []

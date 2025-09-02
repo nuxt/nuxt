@@ -10,7 +10,7 @@ links:
 
 `useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, also known as the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), which is available on both client and server side (but not within Nitro routes). It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const nuxtApp = useNuxtApp()
 </script>
@@ -106,7 +106,7 @@ Nuxt exposes the following properties through `ssrContext`:
 - `data` (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
   ::code-group
-  ```vue [app.vue]
+  ```vue [app/app.vue]
   <script setup lang="ts">
   const { data } = await useAsyncData('count', () => $fetch('/api/count'))
   </script>
@@ -164,7 +164,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
 Use `nuxtApp.isHydrating` (boolean) to check if the Nuxt app is hydrating on the client side.
 
-```ts [components/nuxt-error-boundary.ts]
+```ts [app/components/nuxt-error-boundary.ts]
 export default defineComponent({
   setup (_props, { slots, emit }) {
     const nuxtApp = useNuxtApp()
