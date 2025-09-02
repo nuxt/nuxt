@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 const router = useRouter()
 </script>
@@ -16,7 +16,7 @@ const router = useRouter()
 
 If you only need the router instance within your template, use `$router`:
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <template>
   <button @click="$router.back()">Back</button>
 </template>

@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-Route middleware are stored in the [`middleware/`](/docs/guide/directory-structure/middleware) of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
+Route middleware are stored in the [`app/middleware/`](/docs/guide/directory-structure/middleware) of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
 
 ## Type
 
@@ -36,7 +36,7 @@ Learn more about available properties of `RouteLocationNormalized` in the **[Vue
 
 You can use route middleware to throw errors and show helpful error messages:
 
-```ts [middleware/error.ts]
+```ts [app/middleware/error.ts]
 export default defineNuxtRouteMiddleware((to) => {
   if (to.params.id === '1') {
     throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
@@ -50,7 +50,7 @@ The above route middleware will redirect a user to the custom error page defined
 
 Use [`useState`](/docs/api/composables/use-state) in combination with `navigateTo` helper function inside the route middleware to redirect users to different routes based on their authentication status:
 
-```ts [middleware/auth.ts]
+```ts [app/middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
   const auth = useState('auth')
 

@@ -8,9 +8,9 @@ links:
     size: xs
 ---
 
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/`](/docs/guide/directory-structure/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`app/pages/`](/docs/guide/directory-structure/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   layout: 'default'
@@ -56,7 +56,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a name for this page's route. By default, name is generated based on path inside the [`pages/` directory](/docs/guide/directory-structure/pages).
+    You may define a name for this page's route. By default, name is generated based on path inside the [`app/pages/` directory](/docs/guide/directory-structure/pages).
 
   **`path`**
 
@@ -154,7 +154,7 @@ The example below demonstrates:
 - how `keepalive` property makes sure that the `<modal>` component is not cached when switching between multiple components;
 - adding `pageType` as a custom property:
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   key: (route) => route.fullPath,
@@ -172,7 +172,7 @@ definePageMeta({
 
 The example below shows how the middleware can be defined using a `function` directly within the `definePageMeta` or set as a `string` that matches the middleware file name located in the `middleware/` directory:
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   // define middleware as a function
@@ -207,7 +207,7 @@ The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug]
 
 To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
 
-```vue [pages/[postId\\]-[postSlug\\].vue]
+```vue [app/pages/[postId\\]-[postSlug\\].vue]
 <script setup lang="ts">
 definePageMeta({
   path: '/:postId(\\d+)-:postSlug' 
@@ -219,9 +219,9 @@ For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/gu
 
 ### Defining Layout
 
-You can define the layout that matches the layout's file name located (by default) in the [`layouts/` directory](/docs/guide/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
+You can define the layout that matches the layout's file name located (by default) in the [`app/layouts/` directory](/docs/guide/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   // set custom layout

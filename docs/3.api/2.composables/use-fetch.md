@@ -17,7 +17,7 @@ It automatically generates a key based on URL and fetch options, provides type h
 
 ## Usage
 
-```vue [pages/modules.vue]
+```vue [app/pages/modules.vue]
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
   pick: ['title']
@@ -70,7 +70,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 
 You can use a computed ref or a plain ref as the URL, allowing for dynamic data fetching that automatically updates when the URL changes:
 
-```vue [pages/[id\\].vue]
+```vue [app/pages/[id\\].vue]
 <script setup lang="ts">
 const route = useRoute()
 const id = computed(() => route.params.id)

@@ -52,7 +52,7 @@ Hooks available in `nuxtApp` allows you to customize the runtime aspects of your
 
 See [Runtime Hooks](/docs/api/advanced/hooks#app-hooks-runtime) for available runtime hooks called by Nuxt.
 
-```ts [plugins/test.ts]
+```ts [app/plugins/test.ts]
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook('page:start', () => {
     /* your code goes here */
@@ -124,7 +124,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
 - `state` (object) - When you use [`useState`](/docs/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
-  ```ts [plugins/my-plugin.ts]
+  ```ts [app/plugins/my-plugin.ts]
   export const useColor = () => useState<string>('color', () => 'pink')
 
   export default defineNuxtPlugin((nuxtApp) => {
@@ -142,7 +142,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   In the example below, we define a reducer (or a serializer) and a reviver (or deserializer) for the [Luxon](https://moment.github.io/luxon/#/) DateTime class, using a payload plugin.
 
-  ```ts [plugins/date-time-payload.ts]
+  ```ts [app/plugins/date-time-payload.ts]
   /**
    * This kind of plugin runs very early in the Nuxt lifecycle, before we revive the payload.
    * You will not have access to the router or other Nuxt-injected properties.
@@ -185,7 +185,7 @@ You are likely here because you got a "Nuxt instance unavailable" message. Pleas
 
 The `runWithContext` method is meant to be used to call a function and give it an explicit Nuxt context. Typically, the Nuxt context is passed around implicitly and you do not need to worry about this. However, when working with complex `async`/`await` scenarios in middleware/plugins, you can run into instances where the current instance has been unset after an async call.
 
-```ts [middleware/auth.ts]
+```ts [app/middleware/auth.ts]
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const nuxtApp = useNuxtApp()
   let user
