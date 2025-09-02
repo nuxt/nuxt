@@ -20,10 +20,10 @@ describe('loadNuxt', () => {
         "<rootDir>/shared/types",
         "<rootDir>/extends/bar/shared/utils",
         "<rootDir>/extends/bar/shared/types",
-        "<rootDir>/extends/node_modules/foo/shared/utils",
-        "<rootDir>/extends/node_modules/foo/shared/types",
         "<rootDir>/layers/bar/shared/utils",
         "<rootDir>/layers/bar/shared/types",
+        "<rootDir>/extends/node_modules/foo/shared/utils",
+        "<rootDir>/extends/node_modules/foo/shared/types",
       ]
     `)
   })

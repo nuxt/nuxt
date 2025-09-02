@@ -31,7 +31,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     name: 'nuxt',
     configFile: 'nuxt.config',
     rcFile: '.nuxtrc',
-    extend: { extendKey: ['theme', 'extends', '_extends'] },
+    extend: { extendKey: ['theme', '_extends', 'extends'] },
     dotenv: true,
     globalRc: true,
     ...opts,

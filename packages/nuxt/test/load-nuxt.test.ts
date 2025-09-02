@@ -61,8 +61,8 @@ describe('loadNuxt', () => {
 
     expect(nuxt.options.css).toMatchInlineSnapshot(`
       [
-        "auto.css",
         "custom.css",
+        "auto.css",
         "final-project.css",
         "duplicate.css",
         "override.css",
