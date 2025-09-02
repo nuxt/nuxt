@@ -177,7 +177,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   for (const dirs of layerDirs) {
-    if (!dirs.root.startsWith(rootDirWithSlash) || dirs.app.includes('node_modules')) {
+    if (!dirs.app.startsWith(rootDirWithSlash) || dirs.app.includes('node_modules')) {
       include.add(join(relative(nuxt.options.buildDir, dirs.app), '**/*'))
     }
   }
