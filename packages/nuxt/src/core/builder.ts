@@ -21,7 +21,7 @@ export async function build (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     const noAppFolder = nuxt.options.srcDir === nuxt.options.rootDir
     if (noAppFolder && !nuxt.options.test) {
-      logger.info('Using legacy directory structure. https://nuxt.com/blog/v4#%EF%B8%8F-new-project-structure')
+      logger.info('Using legacy directory structure. https://go.nuxt.com/v4-structure')
     }
 
     watch(nuxt)
