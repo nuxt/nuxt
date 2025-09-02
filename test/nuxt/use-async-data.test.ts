@@ -794,7 +794,7 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('pending')
     controller.abort('test abort')
     await flushPromises()
-    expect(status.value).toBe('error')
+    expect(status.value).toBe('idle')
     vi.useRealTimers()
   })
 

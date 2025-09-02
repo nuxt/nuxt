@@ -716,6 +716,12 @@ function createAsyncData<
             return
           }
 
+          // if the asyncData was explicitly aborted by user, we set it back to idle state
+          if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
+            asyncData.status.value = 'idle'
+            return
+          }
+
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
