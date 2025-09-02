@@ -59,7 +59,7 @@ export function getLayerDirectories (nuxt = useNuxt()): LayerDirectories[] {
       // so resolving relative to `src` covers backward compatibility for v3
       server: withTrailingSlash(resolve(src, resolveAlias(config.serverDir || 'server', nuxt.options.alias))),
       modules: withTrailingSlash(resolve(src, resolveAlias(config.dir?.modules || 'modules', nuxt.options.alias))),
-      public: withTrailingSlash(resolve(src, resolveAlias(config.dir?.public || 'public', nuxt.options.alias))),
+      public: withTrailingSlash(resolve(src, config.dir?.public || 'public')),
       // nuxt app
       app: src,
       appLayouts: withTrailingSlash(resolve(src, resolveAlias(config.dir?.layouts || 'layouts', nuxt.options.alias))),
