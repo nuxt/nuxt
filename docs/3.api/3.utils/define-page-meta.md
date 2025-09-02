@@ -170,7 +170,7 @@ definePageMeta({
 
 ### Defining Middleware
 
-The example below shows how the middleware can be defined using a `function` directly within the `definePageMeta` or set as a `string` that matches the middleware file name located in the `middleware/` directory:
+The example below shows how the middleware can be defined using a `function` directly within the `definePageMeta` or set as a `string` that matches the middleware file name located in the `app/middleware/` directory:
 
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">

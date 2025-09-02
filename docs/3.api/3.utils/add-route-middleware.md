@@ -59,7 +59,7 @@ export default defineNuxtPlugin(() => {
 })
 ```
 
-When defined in a plugin, it overrides any existing middleware of the same name located in the `middleware/` directory.
+When defined in a plugin, it overrides any existing middleware of the same name located in the `app/middleware/` directory.
 
 ### Global Route Middleware
 
