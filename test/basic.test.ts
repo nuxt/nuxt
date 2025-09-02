@@ -1825,25 +1825,42 @@ describe.runIf(isDev() && !isWebpack)('css links', () => {
 
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   const inlinedCSS = [
-    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
     '{--global:"global";', // global css from nuxt.config
+    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
+    '{--server-only-child:"server-only-child"}', // child of a server-only component
+    '{--server-only:"server-only"}', // server-only component not in client build
+    '{--shared-component:"shared-component"}', // styles in a chunk shared between pages
+    '{--style-from-parent:"style-from-parent"}', // styles on a child component from <style> in parent
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
     '{--scoped:"scoped"}', // <style lang=css>
-    '{--shared-component:"shared-component"}', // styles in a chunk shared between pages
-    '{--server-only-child:"server-only-child"}', // child of a server-only component
-    '{--server-only:"server-only"}', // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
     // '{--functional:"functional"}', // CSS imported ambiently in a functional component
   ]
 
+  let stylesHtmlPromise: Promise<string>
+  function fetchStylesPage () {
+    if (stylesHtmlPromise) {
+      return stylesHtmlPromise
+    }
+
+    stylesHtmlPromise = $fetch<string>('/styles')
+    return stylesHtmlPromise
+  }
+
   it('should inline styles', async () => {
-    const html = await $fetch<string>('/styles')
+    const html = await fetchStylesPage()
     for (const style of inlinedCSS) {
       expect.soft(html).toContain(style)
     }
+  })
+
+  it('should have correct order of inlined styles', async () => {
+    const html = await fetchStylesPage()
+    const positions = inlinedCSS.map(style => html.indexOf(style))
+    expect(positions).toEqual(positions.slice().sort((a, b) => a - b))
   })
 
   it('should inline global css when accessing a page with `ssr: false` override via route rules', async () => {
