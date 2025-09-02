@@ -18,6 +18,8 @@ export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>
 
+export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
+
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
   : T extends Record<string, any>
@@ -148,7 +150,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
@@ -158,7 +160,7 @@ export function useAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
@@ -176,7 +178,7 @@ export function useAsyncData<
   DefaultT = undefined,
 > (
   key: MaybeRefOrGetter<string>,
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
@@ -187,7 +189,7 @@ export function useAsyncData<
   DefaultT = DataT,
 > (
   key: MaybeRefOrGetter<string>,
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
@@ -201,7 +203,7 @@ export function useAsyncData<
   if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
   // eslint-disable-next-line prefer-const
-  let [_key, _handler, options = {}] = args as [string, (nuxtApp?: NuxtApp, ctx?: { signal: AbortSignal }) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  let [_key, _handler, options = {}] = args as [string, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   // Validate arguments
   const key = computed(() => toValue(_key)!)
@@ -420,7 +422,7 @@ export function useLazyAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useLazyAsyncData<
@@ -430,7 +432,7 @@ export function useLazyAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
@@ -448,7 +450,7 @@ export function useLazyAsyncData<
   DefaultT = undefined,
 > (
   key: MaybeRefOrGetter<string>,
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useLazyAsyncData<
@@ -459,7 +461,7 @@ export function useLazyAsyncData<
   DefaultT = DataT,
 > (
   key: MaybeRefOrGetter<string>,
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>,
+  handler: AsyncDataHandler<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 
@@ -474,7 +476,7 @@ export function useLazyAsyncData<
   if (_isAutoKeyNeeded(args[0], args[1])) {
     args.unshift(autoKey)
   }
-  const [key, handler, options = {}] = args as [string, (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  const [key, handler, options = {}] = args as [string, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   if (import.meta.dev) {
     // @ts-expect-error private property
@@ -606,15 +608,15 @@ function createAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-> (nuxtApp: NuxtApp, key: string, _handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
+> (nuxtApp: NuxtApp, key: string, _handler: AsyncDataHandler<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
   nuxtApp.payload._errors[key] ??= undefined
 
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
   // When prerendering, share payload data automatically between requests
-  const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
+  const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
     ? _handler
-    : (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => {
+    : (nuxtApp, options) => {
         const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
         if (value) { return value as Promise<ResT> }
 
@@ -767,7 +769,7 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
   }
 }
 
-function createHash (_handler: (ctx: NuxtApp, options: { signal: AbortSignal }) => unknown, options: Partial<Record<keyof AsyncDataOptions<any>, unknown>>) {
+function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Record<keyof AsyncDataOptions<any>, unknown>>) {
   return {
     handler: hash(_handler),
     transform: options.transform ? hash(options.transform) : undefined,
