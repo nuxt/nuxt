@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt } from './context'
+import { getLayerDirectories } from './layers'
 
 export function createIsIgnored (nuxt = tryUseNuxt()) {
   return (pathname: string, stats?: unknown) => isIgnored(pathname, stats, nuxt)
@@ -21,8 +22,10 @@ export function isIgnored (pathname: string, _stats?: unknown, nuxt = tryUseNuxt
     nuxt._ignore.add(resolveIgnorePatterns())
   }
 
-  const cwds = nuxt.options._layers?.map(layer => layer.cwd).sort((a, b) => b.length - a.length)
-  const layer = cwds?.find(cwd => pathname.startsWith(cwd))
+  const cwds = getLayerDirectories(nuxt)
+    .map(dirs => dirs.root)
+    .sort((a, b) => b.length - a.length)
+  const layer = cwds.find(cwd => pathname.startsWith(cwd))
   const relativePath = relative(layer ?? nuxt.options.rootDir, pathname)
   if (relativePath[0] === '.' && relativePath[1] === '.') {
     return false
