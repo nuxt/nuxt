@@ -171,12 +171,12 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ```ts [Signature]
 function useAsyncData<DataT, DataE>(
-  handler: (ctx: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
+  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
 function useAsyncData<DataT, DataE>(
   key: MaybeRefOrGetter<string>,
-  handler: (ctx: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
+  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): Promise<AsyncData<DataT, DataE>>
 
