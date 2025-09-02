@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-Route middleware are stored in the [`app/middleware/`](/docs/guide/directory-structure/middleware) of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
+Route middleware are stored in the [`app/middleware/`](/docs/guide/directory-structure/app/middleware) of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
 
 ## Type
 

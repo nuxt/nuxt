@@ -37,7 +37,7 @@ header.value = 'my-value';
 </template>
 ```
 
-We can use `useResponseHeader` for example in Nuxt [middleware](/docs/guide/directory-structure/middleware) to set a response header for all pages.
+We can use `useResponseHeader` for example in Nuxt [middleware](/docs/guide/directory-structure/app/middleware) to set a response header for all pages.
 
 ```ts [app/middleware/my-header-middleware.ts]
 export default defineNuxtRouteMiddleware((to, from) => {

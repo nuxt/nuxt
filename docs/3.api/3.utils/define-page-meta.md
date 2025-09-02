@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`app/pages/`](/docs/guide/directory-structure/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`app/pages/`](/docs/guide/directory-structure/app/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/pages#page-metadata"}
+:read-more{to="/docs/guide/directory-structure/app/pages#page-metadata"}
 
 ## Type
 
@@ -56,7 +56,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a name for this page's route. By default, name is generated based on path inside the [`app/pages/` directory](/docs/guide/directory-structure/pages).
+    You may define a name for this page's route. By default, name is generated based on path inside the [`app/pages/` directory](/docs/guide/directory-structure/app/pages).
 
   **`path`**
 
@@ -104,7 +104,7 @@ interface PageMeta {
 
   - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/NavigationGuard.html#navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
 
-    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/guide/directory-structure/middleware).
+    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/guide/directory-structure/app/middleware).
 
   **`pageTransition`**
 
@@ -142,7 +142,7 @@ interface PageMeta {
 
   - **Type**: `any`
 
-    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/guide/directory-structure/pages/#typing-custom-metadata).
+    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/guide/directory-structure/app/pages/#typing-custom-metadata).
 
 ## Examples
 
@@ -219,7 +219,7 @@ For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/gu
 
 ### Defining Layout
 
-You can define the layout that matches the layout's file name located (by default) in the [`app/layouts/` directory](/docs/guide/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
+You can define the layout that matches the layout's file name located (by default) in the [`app/layouts/` directory](/docs/guide/directory-structure/app/layouts). You can also disable the layout by setting the `layout` to `false`:
 
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
