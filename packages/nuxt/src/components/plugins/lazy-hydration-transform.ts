@@ -81,7 +81,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               return
             }
 
-            const pascalName = pascalCase(node.name.replace(/^(Lazy|lazy-)/, ''))
+            const pascalName = pascalCase(node.name.replace(/^(?:Lazy|lazy-)/, ''))
             if (!components.has(pascalName)) {
               // not auto-imported
               return

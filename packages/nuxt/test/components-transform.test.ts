@@ -1,8 +1,8 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
 import { normalize } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 
 import { TransformPlugin } from '../src/components/plugins/transform'
 
@@ -80,7 +80,7 @@ describe('components:transform', () => {
   })
 })
 
-const rootDir = fileURLToPath(new URL('../..', import.meta.url))
+const repoRoot = await findWorkspaceDir()
 
 function createTransformer (components: Component[], mode: 'client' | 'server' | 'all' = 'all') {
   const stubNuxt = {
@@ -100,7 +100,7 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)
-    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(rootDir), '<repo>/')
+    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(repoRoot), '<repo>/')
   }
 }
 

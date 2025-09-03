@@ -10,7 +10,7 @@ links:
 
 `useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, also known as the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), which is available on both client and server side (but not within Nitro routes). It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const nuxtApp = useNuxtApp()
 </script>
@@ -52,7 +52,7 @@ Hooks available in `nuxtApp` allows you to customize the runtime aspects of your
 
 See [Runtime Hooks](/docs/api/advanced/hooks#app-hooks-runtime) for available runtime hooks called by Nuxt.
 
-```ts [plugins/test.ts]
+```ts [app/plugins/test.ts]
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook('page:start', () => {
     /* your code goes here */
@@ -106,7 +106,7 @@ Nuxt exposes the following properties through `ssrContext`:
 - `data` (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
   ::code-group
-  ```vue [app.vue]
+  ```vue [app/app.vue]
   <script setup lang="ts">
   const { data } = await useAsyncData('count', () => $fetch('/api/count'))
   </script>
@@ -124,7 +124,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
 - `state` (object) - When you use [`useState`](/docs/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
-  ```ts [plugins/my-plugin.ts]
+  ```ts [app/plugins/my-plugin.ts]
   export const useColor = () => useState<string>('color', () => 'pink')
 
   export default defineNuxtPlugin((nuxtApp) => {
@@ -142,7 +142,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   In the example below, we define a reducer (or a serializer) and a reviver (or deserializer) for the [Luxon](https://moment.github.io/luxon/#/) DateTime class, using a payload plugin.
 
-  ```ts [plugins/date-time-payload.ts]
+  ```ts [app/plugins/date-time-payload.ts]
   /**
    * This kind of plugin runs very early in the Nuxt lifecycle, before we revive the payload.
    * You will not have access to the router or other Nuxt-injected properties.
@@ -164,7 +164,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
 Use `nuxtApp.isHydrating` (boolean) to check if the Nuxt app is hydrating on the client side.
 
-```ts [components/nuxt-error-boundary.ts]
+```ts [app/components/nuxt-error-boundary.ts]
 export default defineComponent({
   setup (_props, { slots, emit }) {
     const nuxtApp = useNuxtApp()
@@ -185,7 +185,7 @@ You are likely here because you got a "Nuxt instance unavailable" message. Pleas
 
 The `runWithContext` method is meant to be used to call a function and give it an explicit Nuxt context. Typically, the Nuxt context is passed around implicitly and you do not need to worry about this. However, when working with complex `async`/`await` scenarios in middleware/plugins, you can run into instances where the current instance has been unset after an async call.
 
-```ts [middleware/auth.ts]
+```ts [app/middleware/auth.ts]
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const nuxtApp = useNuxtApp()
   let user

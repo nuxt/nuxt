@@ -20,7 +20,7 @@ export function executeFile(src) {
 export default async (ssrContext) => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
-  // eslint-disable-next-line nuxt/prefer-import-meta
+  // eslint-disable-next-line nuxt/prefer-import-meta,@typescript-eslint/no-deprecated
   process.server = true
   import.meta.server = true
 

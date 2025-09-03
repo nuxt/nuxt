@@ -16,7 +16,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ## Usage
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
@@ -37,7 +37,7 @@ If you're using a custom useAsyncData wrapper, do not await it in the composable
 
 The built-in `watch` option allows automatically rerunning the fetcher function when any changes are detected.
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 const page = ref(1)
 const { data: posts } = await useAsyncData(
@@ -57,7 +57,7 @@ const { data: posts } = await useAsyncData(
 
 You can use a computed ref, plain ref or a getter function as the key, allowing for dynamic data fetching that automatically updates when the key changes:
 
-```vue [pages/[id\\].vue]
+```vue [app/pages/[id\\].vue]
 <script setup lang="ts">
 const route = useRoute()
 const userId = computed(() => `user-${route.params.id}`)

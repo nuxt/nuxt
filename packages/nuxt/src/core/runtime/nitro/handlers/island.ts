@@ -14,10 +14,9 @@ import { getComponentsIslands, getSSRRenderer, getServerEntry } from '../utils/r
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
 import type { NuxtIslandContext, NuxtIslandResponse } from '../utils/renderer/islands'
-
 const components = ((await getComponentsIslands())).islandComponents
 
-const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
+const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
 export default defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
@@ -80,6 +79,7 @@ export default defineEventHandler(async (event) => {
 
   const islandHead: SerializableHead = {}
   for (const entry of ssrContext.head.entries.values()) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
       const currentValue = islandHead[key as keyof SerializableHead]
       if (Array.isArray(currentValue)) {

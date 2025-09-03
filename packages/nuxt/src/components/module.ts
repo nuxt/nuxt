@@ -5,7 +5,8 @@ import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addT
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
-import { bento, componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { lazyHydrationMacroPreset } from '../imports/presets'
+import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 
 import { LoaderPlugin } from './plugins/loader'
@@ -15,7 +16,6 @@ import { ComponentNamePlugin } from './plugins/component-names'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
-import { lazyHydrationMacroPreset } from '../imports/presets'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -127,6 +127,8 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
+    addTemplate(componentsDeclarationTemplate)
+    // types/components.d.ts
     addTypeTemplate(componentsTypeTemplate)
     // components.plugin.mjs
     addPluginTemplate(componentsPluginTemplate)
@@ -232,6 +234,7 @@ export default defineNuxtModule<ComponentsOptions>({
       addBuildPlugin(LazyHydrationMacroTransformPlugin({
         ...sharedLoaderOptions,
         sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+        alias: nuxt.options.alias,
       }))
 
       addImportsSources(lazyHydrationMacroPreset)

@@ -28,6 +28,8 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
+import { entryFileName } from '#internal/entry-chunk.mjs'
+// @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
@@ -181,6 +183,18 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
+
+  // 0. Add import map for stable chunk hashes
+  if (entryFileName && !NO_SCRIPTS) {
+    ssrContext.head.push({
+      script: [{
+        tagPosition: 'head',
+        tagPriority: -2,
+        type: 'importmap',
+        innerHTML: JSON.stringify({ imports: { '#entry': buildAssetsURL(entryFileName) } }),
+      }],
+    }, headEntryOptions)
+  }
   // 1. Preload payloads and app manifest
   if (_PAYLOAD_EXTRACTION && !NO_SCRIPTS) {
     ssrContext.head.push({
