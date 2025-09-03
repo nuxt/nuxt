@@ -1,0 +1,172 @@
+import { pathToFileURL } from 'node:url'
+import type { SourceMapInput } from 'rollup'
+import { createUnplugin } from 'unplugin'
+import MagicString from 'magic-string'
+import { dirname } from 'pathe'
+import { parseQuery, parseURL } from 'ufo'
+import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
+import type { ArrowFunctionExpression } from 'oxc-parser'
+
+const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
+const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
+const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)$/
+const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
+
+export interface ExtractAsyncDataHandlersOptions {
+  sourcemap: boolean
+  rootDir: string
+}
+
+export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlersOptions) => createUnplugin(() => {
+  const asyncDatas: Record<string, { code: string, map?: SourceMapInput }> = {}
+
+  let count = 0
+
+  return {
+    name: 'nuxt:extract-async-data-handlers',
+    enforce: 'post',
+    resolveId (source) {
+      if (source in asyncDatas) {
+        return source
+      }
+    },
+    load (id) {
+      if (id in asyncDatas) {
+        return asyncDatas[id]
+      }
+    },
+    transformInclude (id) {
+      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      return SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
+    },
+    transform: {
+      filter: {
+        id: {
+          exclude: [/nuxt\/(src|dist)\/app/],
+        },
+        code: { include: FUNCTIONS_RE },
+      },
+      handler (code, id) {
+        const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { index: 0, 0: code }
+
+        let s: MagicString | undefined
+
+        // Parse and walk the AST with scope tracking
+        const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+        const parseResult = parseAndWalk(script, id, { scopeTracker })
+        scopeTracker.freeze()
+
+        walk(parseResult.program, {
+          scopeTracker,
+          enter (node) {
+            // Looking for useAsyncData and useLazyAsyncData calls
+            if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier' || !functionsToExtract.has(node.callee.name)) {
+              return
+            }
+
+            const callExpression = node
+
+            // Find the function passed as the second argument
+            const fetcherFn = callExpression.arguments[1]
+            if (!fetcherFn || (fetcherFn.type !== 'ArrowFunctionExpression' && fetcherFn.type !== 'FunctionExpression')) {
+              return
+            }
+
+            const fetcherFunction = fetcherFn as ArrowFunctionExpression
+
+            s ||= new MagicString(code)
+
+            // Get variables referenced in the function that are declared in outer scopes
+            const referencedVariables = new Set<string>()
+            const imports = new Set<string>()
+
+            // Walk the function body to find all identifiers
+            walk(fetcherFunction.body, {
+              scopeTracker,
+              enter (innerNode) {
+                if (innerNode.type !== 'Identifier') {
+                  return
+                }
+                const declaration = scopeTracker.getDeclaration(innerNode.name)
+                if (!declaration) {
+                  return
+                }
+                if (declaration.type === 'Import') {
+                  // This is an imported variable, we need to include the import
+                  imports.add(innerNode.name)
+                } else if (declaration.type !== 'FunctionParam') {
+                  // This is a variable declared outside the function (but not imported)
+                  referencedVariables.add(innerNode.name)
+                }
+              },
+            })
+
+            // Collect import statements for the referenced imports
+            const importStatements = new Set<string>()
+            walk(parseResult.program, {
+              enter (node) {
+                if (node.type !== 'ImportDeclaration') {
+                  return
+                }
+
+                const importDecl = node
+                // let hasReferencedImport = false
+
+                // Check if this import declaration contains any of our referenced imports
+                if (importDecl.specifiers?.some(spec => spec.local && imports.has(spec.local.name))) {
+                  importStatements.add(script.slice(importDecl.start, importDecl.end))
+                }
+              },
+            })
+
+            const imps = Array.from(importStatements).join('\n')
+
+            // Generate a unique key for the extracted chunk
+            const key = `${dirname(id)}/async-data-chunk-${count++}.js`
+
+            // Get the function body content
+            const isBlockStatement = fetcherFunction.body.type === 'BlockStatement'
+
+            const startOffset = codeIndex + fetcherFunction.body.start
+            const endOffset = codeIndex + fetcherFunction.body.end
+
+            // Create the extracted chunk
+            const chunk = s.clone()
+            const parameters = [...referencedVariables].join(', ')
+            const returnPrefix = isBlockStatement ? '' : 'return '
+            const preface = `${imps}\nexport default async function (${parameters}) { ${returnPrefix}`
+            const suffix = ` }`
+
+            if (isBlockStatement) {
+              // For block statements, we need to extract the content inside the braces
+              chunk.overwrite(0, startOffset + 1, preface)
+              chunk.overwrite(endOffset - 1, code.length, suffix)
+            } else {
+              // For expression bodies, wrap in return statement
+              chunk.overwrite(0, startOffset, preface)
+              chunk.overwrite(endOffset, code.length, suffix)
+            }
+
+            asyncDatas[key] = {
+              code: chunk.toString(),
+              map: options.sourcemap ? chunk.generateMap({ hires: true }) : undefined,
+            }
+
+            // Replace the original function with a dynamic import
+            const importCall = `() => import('${key}').then(r => (r.default || r)(${parameters}))`
+            s.overwrite(codeIndex + fetcherFunction.start, codeIndex + fetcherFunction.end, importCall)
+          },
+        })
+
+        if (s?.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
+          }
+        }
+      },
+    },
+  }
+})
