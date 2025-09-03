@@ -1,6 +1,7 @@
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
+import escapeStringRegexp from 'escape-string-regexp'
 
 import { isJS, isVue } from '../utils'
 
@@ -15,6 +16,10 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
   // Create a fast lookup for all composable names
   const allComposableNames = new Set(Object.values(options.composables).flat())
 
+  if (!allComposableNames.size) {
+    return []
+  }
+
   return {
     name: 'nuxt:tree-shake-composables:transform',
     enforce: 'post',
@@ -23,7 +28,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
     },
     transform: {
       filter: {
-        code: { include: new RegExp(`\\b(${[...allComposableNames].join('|')})\\s*\\(`) },
+        code: { include: new RegExp(`\\b(${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\s*\\(`) },
       },
       handler (code, id) {
         const s = new MagicString(code)
