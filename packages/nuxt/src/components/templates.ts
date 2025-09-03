@@ -1,4 +1,4 @@
-import { isAbsolute, relative, resolve } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import { genDynamicImport } from 'knitwork'
 import { distDir } from '../dirs'
 import type { Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
@@ -104,12 +104,11 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 }
 
 const NON_VUE_RE = /\b\.(?!vue)\w+$/g
-function resolveComponentTypes (nuxt: Nuxt, app: NuxtApp) {
-  const buildDir = nuxt.options.buildDir
+function resolveComponentTypes (app: NuxtApp, baseDir: string) {
   const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
   const componentTypes = app.components.filter(c => !c.island).map((c) => {
     const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-      ? relative(buildDir, c.filePath).replace(NON_VUE_RE, '')
+      ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
       : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
     const isServerOnly = c.mode === 'server' && c.filePath !== serverPlaceholderPath && !app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')
     return [
@@ -137,7 +136,7 @@ export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
   write: true,
   getContents: ({ app, nuxt }) => {
-    const componentTypes = resolveComponentTypes(nuxt, app)
+    const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir)
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
@@ -154,7 +153,7 @@ export const componentNames: string[]
 export const componentsTypeTemplate = {
   filename: 'types/components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
-    const componentTypes = resolveComponentTypes(nuxt, app)
+    const componentTypes = resolveComponentTypes(app, join(nuxt.options.buildDir, 'types'))
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
