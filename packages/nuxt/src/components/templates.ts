@@ -1,7 +1,7 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import { genDynamicImport } from 'knitwork'
 import { distDir } from '../dirs'
-import type { Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ImportMagicCommentsOptions = {
   chunkName: string
