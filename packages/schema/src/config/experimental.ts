@@ -91,7 +91,7 @@ export default defineResolvers({
           return val as EmitRouteChunkError
         }
 
-        return 'automatic'
+        return 'automatic-immediate'
       },
     },
     templateRouteInjection: true,
