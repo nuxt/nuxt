@@ -5,7 +5,7 @@ import MagicString from 'magic-string'
 import { dirname } from 'pathe'
 import { parseQuery, parseURL } from 'ufo'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
-import type { ArrowFunctionExpression } from 'oxc-parser'
+import type { ArrowFunctionExpression, Function } from 'oxc-parser'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
@@ -51,7 +51,6 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
 
         let s: MagicString | undefined
 
-        // Parse and walk the AST with scope tracking
         const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
         const parseResult = parseAndWalk(script, id, { scopeTracker })
         scopeTracker.freeze()
@@ -59,24 +58,20 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         walk(parseResult.program, {
           scopeTracker,
           enter (node) {
-            // Looking for useAsyncData and useLazyAsyncData calls
             if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier' || !functionsToExtract.has(node.callee.name)) {
               return
             }
 
             const callExpression = node
 
-            // Find the function passed as the second argument
-            const fetcherFn = callExpression.arguments[1]
-            if (!fetcherFn || (fetcherFn.type !== 'ArrowFunctionExpression' && fetcherFn.type !== 'FunctionExpression')) {
+            const fetcherFunction = callExpression.arguments.find((fn): fn is Function | ArrowFunctionExpression => fn.type === 'ArrowFunctionExpression' || fn.type === 'FunctionExpression')
+
+            if (!fetcherFunction || (fetcherFunction.type !== 'ArrowFunctionExpression' && fetcherFunction.type !== 'FunctionExpression') || !fetcherFunction.body) {
               return
             }
 
-            const fetcherFunction = fetcherFn as ArrowFunctionExpression
-
             s ||= new MagicString(code)
 
-            // Get variables referenced in the function that are declared in outer scopes
             const referencedVariables = new Set<string>()
             const imports = new Set<string>()
 
@@ -87,16 +82,23 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
                 if (innerNode.type !== 'Identifier') {
                   return
                 }
+
                 const declaration = scopeTracker.getDeclaration(innerNode.name)
                 if (!declaration) {
                   return
                 }
+
                 if (declaration.type === 'Import') {
                   // This is an imported variable, we need to include the import
                   imports.add(innerNode.name)
                 } else if (declaration.type !== 'FunctionParam') {
-                  // This is a variable declared outside the function (but not imported)
-                  referencedVariables.add(innerNode.name)
+                  const functionBodyStart = fetcherFunction.body!.start
+                  const functionBodyEnd = fetcherFunction.body!.end
+
+                  // If the declaration is not within the function body, it's external
+                  if (declaration.start < functionBodyStart || declaration.end > functionBodyEnd) {
+                    referencedVariables.add(innerNode.name)
+                  }
                 }
               },
             })
@@ -104,13 +106,10 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
             // Collect import statements for the referenced imports
             const importStatements = new Set<string>()
             walk(parseResult.program, {
-              enter (node) {
-                if (node.type !== 'ImportDeclaration') {
+              enter (importDecl) {
+                if (importDecl.type !== 'ImportDeclaration') {
                   return
                 }
-
-                const importDecl = node
-                // let hasReferencedImport = false
 
                 // Check if this import declaration contains any of our referenced imports
                 if (importDecl.specifiers?.some(spec => spec.local && imports.has(spec.local.name))) {

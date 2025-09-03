@@ -11,7 +11,7 @@ describe('extract async data handlers plugin', () => {
 
   function createTransform (options = defaultOptions) {
     const plugin = ExtractAsyncDataHandlersPlugin(options).raw({}, { framework: 'rollup' }) as { transform: { handler: (code: string, id: string) => { code: string } | undefined } }
-    return (code: string, id = '/app/test.vue') => {
+    return (code: string, id = '/app/test.ts') => {
       const result = plugin.transform.handler(code, id)
       return result?.code
     }
@@ -56,6 +56,18 @@ describe('extract async data handlers plugin', () => {
         "const userId = ref(123)
         const { data } = await useAsyncData('user', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)(userId)))"
       `)
+    })
+
+    it('should correctly handle variables in scope', async () => {
+      const transform = createTransform()
+      const code = `
+        useAsyncData(async () => {
+          const distTags = {}
+          return [].map(tag => distTags[tag])
+        })
+      `
+      const result = await transform(code)
+      expect(clean(result)).toMatchInlineSnapshot(`"useAsyncData(() => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
     })
 
     it('should handle imported functions in handlers', async () => {
