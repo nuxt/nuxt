@@ -28,7 +28,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
     },
     transform: {
       filter: {
-        code: { include: new RegExp(`\\b(${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\s*\\(`) },
+        code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },
       },
       handler (code, id) {
         const s = new MagicString(code)
@@ -69,7 +69,10 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
                 ? importSpecifier.imported.name
                 : importSpecifier.local.name
 
-              const isFromAllowedPath = importPath === '#imports' || options.composables[importPath]?.includes(importedName)
+              const isFromAllowedPath = importPath === '#imports'
+                ? allComposableNames.has(importedName)
+                : options.composables[importPath]?.includes(importedName)
+
               if (!isFromAllowedPath) {
                 return
               }
