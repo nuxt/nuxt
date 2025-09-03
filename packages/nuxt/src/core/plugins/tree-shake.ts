@@ -1,7 +1,6 @@
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
-import { parseAndWalk } from 'oxc-walker'
-import type { ImportDeclaration } from 'oxc-parser'
+import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 
 import { isJS, isVue } from '../utils'
 
@@ -29,63 +28,55 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       handler (code, id) {
         const s = new MagicString(code)
 
-        // Track imports to know which composables are imported from which paths
-        const importedComposables = new Map<string, string>() // composableName -> importPath
-        const allImportedComposableNames = new Set<string>() // Track all imports of composable names
+        // Parse and collect scope information
+        const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+        const parseResult = parseAndWalk(code, id, {
+          scopeTracker,
+        })
+        scopeTracker.freeze()
 
-        parseAndWalk(code, id, (node) => {
-          // Track import declarations
-          if (node.type === 'ImportDeclaration') {
-            const importDecl = node as ImportDeclaration
-            if (importDecl.source.type !== 'Literal' || !importDecl.specifiers) {
+        // Process nodes and check for tree-shaking opportunities
+        walk(parseResult.program, {
+          scopeTracker,
+          enter (node) {
+            if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
               return
             }
 
-            const importPath = importDecl.source.value
+            const functionName = node.callee.name
+            const scopeTrackerNode = scopeTracker.getDeclaration(functionName)
 
-            for (const specifier of importDecl.specifiers) {
-              if (specifier.type !== 'ImportSpecifier' || specifier.imported.type !== 'Identifier') {
-                continue
+            if (scopeTrackerNode) {
+            // don't tree-shake if there's a local declaration
+              if (scopeTrackerNode.type !== 'Import') {
+                return
               }
 
-              const importedName = specifier.imported.name
-              const localName = specifier.local.name
+              if (scopeTrackerNode.importNode.type !== 'ImportDeclaration') {
+                return
+              }
 
-              // Track all imports of composable names, regardless of path
-              if (allComposableNames.has(importedName)) {
-                allImportedComposableNames.add(localName)
+              // check if import is from an allowed source and composable
+              const importPath = scopeTrackerNode.importNode.source.value
 
-                // Only track the path if it's from an allowed source
-                if (importPath === '#imports' || options.composables[importPath]?.includes(importedName)) {
-                  importedComposables.set(localName, importPath)
-                }
+              const importSpecifier = scopeTrackerNode.node
+              const importedName = importSpecifier.type === 'ImportSpecifier' && importSpecifier.imported.type === 'Identifier'
+                ? importSpecifier.imported.name
+                : importSpecifier.local.name
+
+              const isFromAllowedPath = importPath === '#imports' || options.composables[importPath]?.includes(importedName)
+              if (!isFromAllowedPath) {
+                return
               }
             }
-            return
-          }
 
-          // Look for function call expressions
-          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
-            return
-          }
+            if (!scopeTrackerNode && !allComposableNames.has(functionName)) {
+              return
+            }
 
-          const functionName = node.callee.name
-
-          // Check if this is a composable we should tree-shake
-          if (!allComposableNames.has(functionName) && !importedComposables.has(functionName)) {
-            return
-          }
-
-          // If it's explicitly imported from an allowed path, tree-shake it
-          if (importedComposables.has(functionName)) {
+            // TODO: validate function name against actual auto-imports registry
             s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
-            return
-          }
-
-          // If it's not explicitly imported at all, assume it's auto-imported and tree-shake it
-          if (!allImportedComposableNames.has(functionName)) {
-            s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
-          }
+          },
         })
 
         if (s.hasChanged()) {

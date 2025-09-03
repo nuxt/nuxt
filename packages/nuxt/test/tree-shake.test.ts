@@ -67,6 +67,55 @@ describe('tree-shake', () => {
     const result = transformPlugin.transform.handler(code, 'test.js')
     expect(result).toBeUndefined()
   })
+
+  it('should handle shadowing of outer-scope composables', () => {
+    const code = `
+      import { onMounted } from '#imports'
+      
+      onMounted(() => console.log('treeshake this'))
+      
+      function foo() { 
+        onMounted()
+        
+        function onMounted() {
+          console.log('do not treeshake this')
+        }
+      }
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from '#imports'
+       false && /*@__PURE__*/ onMounted(() => console.log('treeshake this'))
+      function foo() { 
+        onMounted()
+        function onMounted() {
+          console.log('do not treeshake this')
+        }
+      }"
+    `)
+  })
+
+  it('should handle variable shadowing', () => {
+    const code = `
+      import { onMounted } from '#imports'
+      
+      onMounted()
+      
+      function test() {
+        const onMounted = () => 'local'
+        onMounted()
+      }
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from '#imports'
+       false && /*@__PURE__*/ onMounted()
+      function test() {
+        const onMounted = () => 'local'
+        onMounted()
+      }"
+    `)
+  })
 })
 
 function clean (string?: string) {
