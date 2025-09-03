@@ -56,7 +56,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
                 allImportedComposableNames.add(localName)
 
                 // Only track the path if it's from an allowed source
-                if (options.composables[importPath] && options.composables[importPath].includes(importedName)) {
+                if (importPath === '#imports' || options.composables[importPath]?.includes(importedName)) {
                   importedComposables.set(localName, importPath)
                 }
               }

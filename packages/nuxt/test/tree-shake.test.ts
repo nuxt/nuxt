@@ -34,6 +34,20 @@ describe('tree-shake', () => {
     `)
   })
 
+  it('should tree-shake explicitly-imported composables from #imports', () => {
+    const code = `
+      import { onMounted } from '#imports'
+      onMounted(() => {})
+      console.log('Hello World')
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from '#imports'
+       false && /*@__PURE__*/ onMounted(() => {})
+      console.log('Hello World')"
+    `)
+  })
+
   it('should not tree-shake composables from other paths', () => {
     const code = `
       import { onMounted } from 'other-path'
