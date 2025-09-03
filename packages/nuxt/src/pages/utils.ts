@@ -43,6 +43,7 @@ interface SegmentToken {
 interface ScannedFile {
   relativePath: string
   absolutePath: string
+  priority: number
 }
 
 const enUSComparator = new Intl.Collator('en-US')
@@ -52,12 +53,27 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   const scannedFiles: ScannedFile[] = []
   for (const dir of pagesDirs) {
     const files = await resolveFiles(dir, pattern)
-    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
+    scannedFiles.push(...files.map((file) => {
+      let relativePath = relative(dir, file)
+
+      // normalize @layout.vue → parent.vue
+      let priority = 0
+      if (relativePath.endsWith('/@layout.vue')) {
+        relativePath = relativePath.replace(/\/@layout.vue$/, '.vue')
+        priority = 1
+      }
+
+      return { relativePath, absolutePath: file, priority }
+    }))
   }
 
   // sort scanned files using en-US locale to make the result consistent across different system locales
-
-  scannedFiles.sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
+  scannedFiles.sort((a, b) => {
+    if (a.priority !== b.priority) {
+      return b.priority - a.priority
+    }
+    return enUSComparator.compare(a.relativePath, b.relativePath)
+  })
 
   const allRoutes = generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
