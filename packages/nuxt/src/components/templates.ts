@@ -85,7 +85,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
     )
 
     const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
-      return `"page_${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
+      return `"page_${p.name}": defineAsyncComponent(${genDynamicImport('virtual:vsc:' + p.file!)}.then(c => c.default || c))`
     }) || []
 
     return [
@@ -101,7 +101,6 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       '}',
     ].join('\n')
   },
-  write: true
 }
 
 export const bento: NuxtTemplate = {

@@ -60,7 +60,8 @@
     "vite": "^7.1.2",
     "vite-node": "^3.2.4",
     "vite-plugin-checker": "^0.10.2",
-    "vue-bundle-renderer": "^2.1.2"
+    "vue-bundle-renderer": "^2.1.2",
+    "vue-onigiri": "^0.2.0"
   },
   "peerDependencies": {
     "vue": "^3.3.4"

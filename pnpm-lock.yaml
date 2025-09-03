@@ -1006,6 +1006,9 @@ importers:
       vue-bundle-renderer:
         specifier: ^2.1.2
         version: 2.1.2
+      vue-onigiri:
+        specifier: ^0.2.0
+        version: 0.2.0(@types/node@22.17.2)(jiti@2.5.1)(terser@5.39.0)(typescript@5.9.2)(vitest@3.2.4)(yaml@2.8.0)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*

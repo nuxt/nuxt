@@ -20,6 +20,7 @@ import { logLevelMap } from './utils/logger'
 import { SSRStylesPlugin } from './plugins/ssr-styles'
 import { PublicDirsPlugin } from './plugins/public-dirs'
 import { distDir } from './dirs'
+import { Plugin } from "rollup"
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -183,6 +184,40 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       })
     }
+  })
+
+  useNitro().hooks.hook('rollup:before', (_, rollupConfig) => {
+    const allComponents = nuxt.apps.default!.components;
+      (rollupConfig.plugins! as Plugin[]).push({
+        name: 'nuxt:vue-onigiri',
+        load: {
+          order: 'pre',
+          handler (id) {
+            if (id === 'virtual:vue-onigiri') {
+              const imports = new Set()
+              const mapValues = new Map()
+
+              for (const chunk of clientChunks) {
+                const components = allComponents.filter(c => (c.mode === 'client' || c.mode === 'all') && normalize(c.filePath) === normalize(chunk.originalPath))
+                if (!components.length) { continue }
+                for (const component of components) {
+                  const serverSideCounterPart = allComponents.find(c => normalize(c.filePath) === normalize(chunk.originalPath) && (c.mode === 'server' || c.mode === 'all'))
+                  if (!serverSideCounterPart) { continue }
+                  imports.add(`import { ${component.export} as ${component.pascalName} } from 'virtual:vsc:${serverSideCounterPart.filePath}'`)
+                  mapValues.set(`/${chunk.filename}__${component.export}`, component.pascalName)
+                }
+              }
+
+              return {
+                code: `
+                  ${[...imports].join('\n')}
+                  export default new Map([ ${[...mapValues].map(([k, v]) => `['${k}', ${v}]`).join(', ')}] )
+                `,
+              }
+            }
+          },
+        },
+      })
   })
 
   // In build mode we explicitly override any vite options that vite is relying on
