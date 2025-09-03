@@ -15,11 +15,15 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
     },
     transform: {
       filter: {
-        code: { include: INJECTION_SINGLE_RE },
+        code: {
+          include: INJECTION_SINGLE_RE,
+          exclude: [
+            `_ctx._.provides[__nuxt_route_symbol`,
+            'this._.provides[__nuxt_route_symbol',
+          ],
+        },
       },
       handler (code, id) {
-        if (code.includes('._.provides[__nuxt_route_symbol')) { return }
-
         const s = new MagicString(code)
 
         parseAndWalk(code, id, (node) => {
