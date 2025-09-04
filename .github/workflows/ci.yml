@@ -355,7 +355,7 @@ jobs:
           path: packages
 
       - name: Release Edge
-        run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
+        run: node scripts/release.ts --edge ${{ github.ref == 'refs/heads/main' && 'latest,4x' || '3x' }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
