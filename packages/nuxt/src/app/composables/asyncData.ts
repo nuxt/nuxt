@@ -1,11 +1,10 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
-import { captureStackTrace } from 'errx'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
+import { getUserCaller, toArray } from '../utils'
 import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
 import { createError } from './error'
@@ -240,9 +239,8 @@ export function useAsyncData<
       warnings.push(`mismatching \`deep\` option`)
     }
     if (warnings.length) {
-      const distURL = import.meta.url.replace(/\/app\/.*$/, '/app')
-      const { source, line, column } = captureStackTrace().find(entry => !entry.source.startsWith(distURL)) ?? {}
-      const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
+      const caller = getUserCaller()
+      const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
       console.warn(`[nuxt] [${functionName}] Incompatible options detected for "${key.value}"${explanation}:\n${warnings.map(w => `- ${w}`).join('\n')}\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`)
     }
   }
@@ -673,9 +671,8 @@ function createAsyncData<
           }
 
           if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
-            const stack = captureStackTrace()
-            const { source, line, column } = stack[stack.length - 1] ?? {}
-            const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
+            const caller = getUserCaller()
+            const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
             // @ts-expect-error private property
             console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
           }
