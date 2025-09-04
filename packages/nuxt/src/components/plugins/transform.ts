@@ -5,7 +5,7 @@ import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
-import { normalize } from 'pathe'
+import { isAbsolute, normalize } from 'pathe'
 import { readPackage } from 'pkg-types'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module'
@@ -115,7 +115,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
       if (!code.includes('#components')) { return }
 
       // If package defines a "#components" import mapping, assume is used internally by the package.
-      const pkg = id.includes('node_modules') ? await readPackage(id, { try: true }) : undefined
+      const pkg = isAbsolute(id) && id.includes('node_modules') ? await readPackage(id, { try: true }) : undefined
       if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
         return
       }
