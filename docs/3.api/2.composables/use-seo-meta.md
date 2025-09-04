@@ -18,7 +18,7 @@ This is the recommended way to add meta tags to your site as it is XSS safe and 
 
 ## Usage
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 useSeoMeta({
   title: 'My Amazing Site',
@@ -33,7 +33,7 @@ useSeoMeta({
 
 When inserting tags that are reactive, you should use the computed getter syntax (`() => value`):
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const title = ref('My title')
 
@@ -56,7 +56,7 @@ In most instances, SEO meta tags don't need to be reactive as search engine robo
 
 For better performance, you can wrap your `useSeoMeta` calls in a server-only condition when the meta tags don't need to be reactive:
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 if (import.meta.server) {
   // These meta tags will only be added during server-side rendering
