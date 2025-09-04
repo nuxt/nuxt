@@ -339,8 +339,11 @@ export const middlewareTemplate: NuxtTemplate = {
     return [
       ...globalMiddleware.map(mw => genImport(mw.path, genSafeVariableName(mw.name))),
       `const _globalMiddleware = ${globalMiddlewareObject}`,
-      `for (const name in _globalMiddleware) {`,
-      `  Object.defineProperty(_globalMiddleware[name], 'name', { value: name })`,
+      `if (import.meta.dev) {`,
+      `  for (const name in _globalMiddleware) {`,
+      `    if (Object.getOwnPropertyDescriptor(_globalMiddleware[name], 'name')?.value) continue`,
+      `    Object.defineProperty(_globalMiddleware[name], 'name', { value: name })`,
+      `  }`,
       `}`,
       `export const globalMiddleware = Object.values(_globalMiddleware)`,
       `export const namedMiddleware = ${namedMiddlewareObject}`,
