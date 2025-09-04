@@ -128,9 +128,9 @@ const URL_QUOTE_RE = /"/g
  * A helper that aids in programmatic navigation within your Nuxt application.
  *
  * Can be called on the server and on the client, within pages, route middleware, plugins, and more.
- * @param {(RouteLocationRaw | undefined | null)} [to] The route to navigate to. Accepts a `String` of the relative path, `undefined`, and `null`.
- * @default
- * @param {NavigateToOptions} [options] Optional customization for controlling the behavior of the navigation.
+ * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
+ * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
+ * @returns {Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw} The navigation result, which varies depending on context and options.
  * @see https://nuxt.com/docs/api/utils/navigate-to
  * @since 3.0.0
  */
