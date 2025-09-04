@@ -84,9 +84,8 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
 /** @since 3.0.0 */
 const isProcessingMiddleware = () => {
   try {
-    const nuxtApp = useNuxtApp()
-    if (nuxtApp._processingMiddleware) {
-      return import.meta.dev ? nuxtApp._processingMiddleware : true
+    if (useNuxtApp()._processingMiddleware) {
+      return true
     }
   } catch {
     return false
