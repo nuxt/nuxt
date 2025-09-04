@@ -671,9 +671,8 @@ function createAsyncData<
           }
 
           if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
-            const stack = captureStackTrace()
-            const { source, line, column } = stack[stack.length - 1] ?? {}
-            const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
+            const caller = getUserCaller()
+            const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
             // @ts-expect-error private property
             console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
           }
