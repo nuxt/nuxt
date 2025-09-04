@@ -10,11 +10,16 @@ describe('extract async data handlers plugin', () => {
   }
 
   function createTransform (options = defaultOptions) {
-    const plugin = ExtractAsyncDataHandlersPlugin(options).raw({}, { framework: 'rollup' }) as { transform: { handler: (code: string, id: string) => { code: string } | undefined } }
-    return (code: string, id = '/app/test.ts') => {
-      const result = plugin.transform.handler(code, id)
-      return result?.code
+    const plugin = ExtractAsyncDataHandlersPlugin(options).raw({}, { framework: 'rollup' }) as {
+      load: (id: string) => { code: string } | undefined
+      transform: { handler: (code: string, id: string) => { code: string } | undefined }
     }
+    const fn = (code: string, id = '/app/test.ts') => {
+      const result = plugin.transform.handler(code, id)
+      return result?.code ? clean(result.code) : result?.code
+    }
+    Object.assign(fn, { load: (id: string) => clean(plugin.load(id)?.code) || undefined })
+    return fn
   }
 
   describe('basic functionality', () => {
@@ -26,6 +31,7 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
       expect(result).toBeUndefined()
+      expect(transform.load('/app/async-data-chunk-0.js')).toBeUndefined()
     })
   })
 
@@ -39,7 +45,15 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(clean(result)).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+      expect(result).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `
+        "export default async function () { 
+                  return await $fetch('/api/data')
+                 }"
+      `,
+      )
     })
 
     it('should extract function with external variable references', async () => {
@@ -52,10 +66,18 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(clean(result)).toMatchInlineSnapshot(`
+      expect(result).toMatchInlineSnapshot(`
         "const userId = ref(123)
         const { data } = await useAsyncData('user', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)(userId)))"
       `)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `
+        "export default async function (userId) { 
+                  return await $fetch(\`/api/users/\${userId.value}\`)
+                 }"
+      `,
+      )
     })
 
     it('should correctly handle variables in scope', async () => {
@@ -67,7 +89,30 @@ describe('extract async data handlers plugin', () => {
         })
       `
       const result = await transform(code)
-      expect(clean(result)).toMatchInlineSnapshot(`"useAsyncData(() => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+      expect(result).toMatchInlineSnapshot(`"useAsyncData(() => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `
+        "export default async function () { 
+                  const distTags = {}
+                  return [].map(tag => distTags[tag])
+                 }"
+      `,
+      )
+    })
+
+    it('should correctly handle auto-imported functions in scope', async () => {
+      const transform = createTransform()
+      const code = `
+        const { data: page } = await useAsyncData(() => queryCollection('landing').path('/enterprise/jobs').first())
+      `
+      const result = await transform(code)
+      expect(result).toMatchInlineSnapshot(
+        `"const { data: page } = await useAsyncData(() => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`,
+      )
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `"export default async function () { return queryCollection('landing').path('/enterprise/jobs').first() }"`,
+      )
     })
 
     it('should handle imported functions in handlers', async () => {
@@ -81,10 +126,19 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(clean(result)).toMatchInlineSnapshot(`
+      expect(result).toMatchInlineSnapshot(`
         "import { $fetch } from 'ofetch'
         const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"
       `)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `
+        "import { $fetch } from 'ofetch'
+        export default async function () { 
+                  return await $fetch('/api/data')
+                 }"
+      `,
+      )
     })
 
     it('should handle block statement function bodies', async () => {
@@ -97,7 +151,16 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(clean(result)).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)(data)))"`)
+      expect(result).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)(data)))"`)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `
+        "export default async function (data) { 
+                  const response = await $fetch('/api/data')
+                  return response.data
+                 }"
+      `,
+      )
     })
 
     it('should handle expression function bodies', async () => {
@@ -107,7 +170,11 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(clean(result)).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+      expect(result).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `"export default async function () { return $fetch('/api/data') }"`,
+      )
     })
   })
 
@@ -121,7 +188,15 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(clean(result)).toMatchInlineSnapshot(`"const { data } = await useLazyAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+      expect(result).toMatchInlineSnapshot(`"const { data } = await useLazyAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
+        `
+        "export default async function () { 
+                  return await $fetch('/api/data')
+                 }"
+      `,
+      )
     })
   })
 
@@ -135,6 +210,7 @@ describe('extract async data handlers plugin', () => {
       const result = await transform(code)
 
       expect(result).toBeUndefined()
+      expect(transform.load('/app/async-data-chunk-0.js')).toBeUndefined()
     })
 
     it('should not transform when no handler is provided', async () => {
@@ -145,6 +221,7 @@ describe('extract async data handlers plugin', () => {
       const result = await transform(code)
 
       expect(result).toBeUndefined()
+      expect(transform.load('/app/async-data-chunk-0.js')).toBeUndefined()
     })
 
     it('should handle multiple useAsyncData calls', async () => {
@@ -160,10 +237,20 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(result).toBeDefined()
-      // Should have two import statements
-      const importMatches = result!.match(/\(\) => import\(/g)
-      expect(importMatches).toHaveLength(2)
+      expect(result).toMatchInlineSnapshot(`
+        "const { data: users } = await useAsyncData('users', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))
+        const { data: posts } = await useAsyncData('posts', () => import('/app/async-data-chunk-1.js').then(r => (r.default || r)()))"
+      `)
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(`
+        "export default async function () { 
+                  return await $fetch('/api/users')
+                 }"
+      `)
+      expect(transform.load('/app/async-data-chunk-1.js')).toMatchInlineSnapshot(`
+        "export default async function () { 
+                  return await $fetch('/api/posts')
+                 }"
+      `)
     })
 
     it('should handle Vue SFC script blocks', async () => {
@@ -199,8 +286,17 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(result).toBeDefined()
-      expect(result).toContain('apiUrl, params')
+      expect(result).toMatchInlineSnapshot(`
+        "const apiUrl = ref('/api/data')
+        const params = { limit: 10 }
+        const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)(apiUrl, params)))"
+      `)
+
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(`
+        "export default async function (apiUrl, params) { 
+                  return await $fetch(apiUrl.value, { query: params })
+                 }"
+      `)
     })
 
     it('should not capture variables declared within the function', async () => {
@@ -213,9 +309,13 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(result).toBeDefined()
-      // Should not pass localVar as parameter since it's declared within the function
-      expect(result).not.toContain('localVar')
+      expect(result).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(`
+        "export default async function () { 
+                  const localVar = 'local'
+                  return await $fetch('/api/data', { headers: { 'x-local': localVar } })
+                 }"
+      `)
     })
   })
 })
