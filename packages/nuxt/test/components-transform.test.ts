@@ -1,10 +1,14 @@
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
-import { normalize } from 'pathe'
+import { join, normalize } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 
 import { TransformPlugin } from '../src/components/plugins/transform'
+
+const pkgPath = fileURLToPath(new URL('./node_modules/package-fixture', import.meta.url))
+const virtualFilePath = join(pkgPath, 'foo', 'bar', 'baz')
 
 describe('components:transform', () => {
   it('should transform #components imports', async () => {
@@ -20,6 +24,16 @@ describe('components:transform', () => {
       import { Bar } from '/Bar.vue';
       "
     `)
+  })
+
+  it('should ignore #components import mapping inside packages that use it internally', async () => {
+    const transform = createTransformer([
+      createComponent('Foo'),
+      createComponent('Bar', { export: 'Bar' }),
+    ])
+
+    const code = await transform('import { Internal, Private } from \'#components\'', virtualFilePath)
+    expect(code).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should correctly resolve server-only components', async () => {

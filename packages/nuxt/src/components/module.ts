@@ -6,7 +6,7 @@ import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
 import { logger } from '../utils'
 import { lazyHydrationMacroPreset } from '../imports/presets'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 
 import { LoaderPlugin } from './plugins/loader'
@@ -128,6 +128,8 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
+    addTemplate(componentsDeclarationTemplate)
+    // types/components.d.ts
     addTypeTemplate(componentsTypeTemplate)
     // components.plugin.mjs
     addPluginTemplate(componentsPluginTemplate)
@@ -233,6 +235,7 @@ export default defineNuxtModule<ComponentsOptions>({
       addBuildPlugin(LazyHydrationMacroTransformPlugin({
         ...sharedLoaderOptions,
         sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+        alias: nuxt.options.alias,
       }))
 
       addImportsSources(lazyHydrationMacroPreset)
