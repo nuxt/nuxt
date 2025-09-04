@@ -8,7 +8,7 @@ import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 
 // @ts-expect-error virtual file
-import { globalMiddleware, globalMiddlewareNameMap } from '#build/middleware'
+import { globalMiddleware } from '#build/middleware'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 
@@ -268,7 +268,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
           for (const middleware of middlewareEntries) {
             if (import.meta.dev) {
-              nuxtApp._processingMiddleware = globalMiddlewareNameMap[globalMiddleware.indexOf(middleware)] || middleware.name || true
+              nuxtApp._processingMiddleware = middleware.name || true
             }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server) {
