@@ -7,7 +7,7 @@ import { findWorkspaceDir } from 'pkg-types'
 
 import { TransformPlugin } from '../src/components/plugins/transform'
 
-const pkgPath = fileURLToPath(new URL('./package-fixture', import.meta.url))
+const pkgPath = fileURLToPath(new URL('./node_modules/package-fixture', import.meta.url))
 const virtualFilePath = join(pkgPath, 'foo', 'bar', 'baz')
 
 describe('components:transform', () => {
