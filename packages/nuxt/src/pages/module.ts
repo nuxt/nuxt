@@ -20,7 +20,6 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
-import { createInternalImportPresetWithDeprecation } from '../imports/utils.ts'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
@@ -419,15 +418,14 @@ export default defineNuxtModule({
       nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
-    nuxt.hook('imports:sources', (sources) => {
-      sources.push(createInternalImportPresetWithDeprecation({
-        imports: ['definePageMeta', ...(nuxt.options.experimental.inlineRouteRules ? ['defineRouteRules'] : [])],
-        from: resolve(runtimeDir, 'composables'),
-      }))
-    })
-
     nuxt.hook('imports:extend', (imports) => {
-      imports.push({ name: 'useLink', as: 'useLink', from: 'vue-router' })
+      imports.push(
+        { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
+        { name: 'useLink', as: 'useLink', from: 'vue-router' },
+      )
+      if (nuxt.options.experimental.inlineRouteRules) {
+        imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
+      }
     })
 
     const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
