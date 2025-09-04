@@ -1,13 +1,16 @@
 {
   "name": "nuxt-playground",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "nuxi dev",
-    "build": "nuxi build",
-    "start": "nuxi preview"
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "start": "nuxt preview"
   },
   "dependencies": {
-    "nuxt": "workspace:*",
-    "vue": "latest"
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

@@ -1,9 +1,22 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
+import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context'
 
+const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
 export function normalizeSemanticVersion (version: string) {
-  return version.replace(/-[0-9]+\.[0-9a-f]+/, '') // Remove edge prefix
+  return version.replace(SEMANTIC_VERSION_RE, '') // Remove edge prefix
+}
+
+const builderMap = {
+  '@nuxt/rspack-builder': 'rspack',
+  '@nuxt/vite-builder': 'vite',
+  '@nuxt/webpack-builder': 'webpack',
+}
+
+export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()) {
+  const nuxtVersion = getNuxtVersion(nuxt)
+  return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }
 
 /**
@@ -15,28 +28,38 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
   // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    if (!satisfies(normalizeSemanticVersion(nuxtVersion), constraints.nuxt, { includePrerelease: true })) {
+    if (!checkNuxtVersion(constraints.nuxt, nuxt)) {
       issues.push({
         name: 'nuxt',
-        message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``
+        message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``,
       })
     }
   }
 
-  // Bridge compatibility check
-  if (isNuxt2(nuxt)) {
-    const bridgeRequirement = constraints.bridge
-    const hasBridge = !!(nuxt.options as any).bridge
-    if (bridgeRequirement === true && !hasBridge) {
-      issues.push({
-        name: 'bridge',
-        message: 'Nuxt bridge is required'
-      })
-    } else if (bridgeRequirement === false && hasBridge) {
-      issues.push({
-        name: 'bridge',
-        message: 'Nuxt bridge is not supported'
-      })
+  // Builder compatibility check
+  if (constraints.builder && typeof nuxt.options.builder === 'string') {
+    const currentBuilder = builderMap[nuxt.options.builder] || nuxt.options.builder
+    if (currentBuilder in constraints.builder) {
+      const constraint = constraints.builder[currentBuilder]!
+      if (constraint === false) {
+        issues.push({
+          name: 'builder',
+          message: `Not compatible with \`${nuxt.options.builder}\`.`,
+        })
+      } else {
+        for (const parent of [nuxt.options.rootDir, nuxt.options.workspaceDir, import.meta.url]) {
+          const builderVersion = await readPackageJSON(nuxt.options.builder, { parent }).then(r => r.version).catch(() => undefined)
+          if (builderVersion) {
+            if (!satisfies(normalizeSemanticVersion(builderVersion), constraint, { includePrerelease: true })) {
+              issues.push({
+                name: 'builder',
+                message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`,
+              })
+            }
+            break
+          }
+        }
+      }
     }
   }
 
@@ -70,28 +93,36 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
 }
 
 /**
- * Check if current nuxt instance is version 2 legacy
+ * Check if current Nuxt instance is of specified major version
  */
-export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
+export function isNuxtMajorVersion (majorVersion: 2 | 3 | 4, nuxt: Nuxt = useNuxt()) {
   const version = getNuxtVersion(nuxt)
-  return version[0] === '2' && version[1] === '.'
+
+  return version[0] === majorVersion.toString() && version[1] === '.'
 }
 
 /**
- * Check if current nuxt instance is version 3
+ * @deprecated Use `isNuxtMajorVersion(2, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
-export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
-  const version = getNuxtVersion(nuxt)
-  return version[0] === '3' && version[1] === '.'
+export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
+  return isNuxtMajorVersion(2, nuxt)
 }
 
+/**
+ * @deprecated Use `isNuxtMajorVersion(3, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
+ */
+export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
+  return isNuxtMajorVersion(3, nuxt)
+}
+
+const NUXT_VERSION_RE = /^v/g
 /**
  * Get nuxt version
  */
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */) {
-  const version = (nuxt?._version || nuxt?.version || nuxt?.constructor?.version || '').replace(/^v/g, '')
-  if (!version) {
-    throw new Error('Cannot determine nuxt version! Is current instance passed?')
+  const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
+  if (typeof rawVersion !== 'string') {
+    throw new TypeError('Cannot determine nuxt version! Is current instance passed?')
   }
-  return version
+  return rawVersion.replace(NUXT_VERSION_RE, '')
 }

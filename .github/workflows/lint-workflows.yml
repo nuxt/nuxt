@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  merge_group:
+  push:
+    paths:
+      - ".github/workflows/**"
+    branches:
+      - main
+      - 3.x
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+    branches:
+      - main
+      - 3.x
+      - "!v[0-9]*"
+
+permissions:
+  contents: read
+
+jobs:
+  lint-workflows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
+      - name: Check workflow files
+        uses: docker://rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9
+        with:
+          args: -color

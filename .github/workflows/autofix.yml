@@ -1,4 +1,4 @@
-name: autofix.ci  # needed to securely identify the workflow
+name: autofix.ci # needed to securely identify the workflow
 
 on:
   pull_request:
@@ -13,27 +13,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - run: corepack enable
-      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
 
+      - name: Check engine ranges, peer dependency ranges and installed versions
+        run: pnpm installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' --fix
+
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Lint (code)
-        run: pnpm lint:fix
+      - name: Test (nuxt runtime)
+        run: pnpm test:runtime -u
 
       - name: Test (unit)
         run: pnpm test:unit -u
 
-      - name: Test (runtime unit)
-        run: pnpm test:runtime -u
+      - name: Lint (code)
+        run: pnpm lint:fix
 
       - name: Run build
         run: pnpm build
@@ -52,4 +55,4 @@ jobs:
         if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
 
-      - uses: autofix-ci/action@ea32e3a12414e6d3183163c3424a7d7a8631ad84
+      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27

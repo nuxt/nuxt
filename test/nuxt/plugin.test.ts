@@ -7,20 +7,21 @@ vi.mock('#app', async (original) => {
     ...(await original<typeof import('#app')>()),
     applyPlugin: vi.fn(async (_nuxtApp, plugin) => {
       await plugin()
-    })
+    }),
   }
 })
 
-function pluginFactory (name: string, dependsOn?: string[], sequence: string[], parallel = true) {
+function pluginFactory (name: string, dependsOn: string[] | undefined, sequence: string[], parallel = true) {
   return defineNuxtPlugin({
     name,
+    // @ts-expect-error we have a strong type for plugin names
     dependsOn,
     async setup () {
       sequence.push(`start ${name}`)
       await new Promise(resolve => setTimeout(resolve, 10))
       sequence.push(`end ${name}`)
     },
-    parallel
+    parallel,
   })
 }
 
@@ -30,7 +31,7 @@ describe('plugin dependsOn', () => {
     const sequence: string[] = []
     const plugins = [
       pluginFactory('A', undefined, sequence),
-      pluginFactory('B', ['A'], sequence)
+      pluginFactory('B', ['A'], sequence),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -39,7 +40,7 @@ describe('plugin dependsOn', () => {
       'start A',
       'end A',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 
@@ -49,7 +50,7 @@ describe('plugin dependsOn', () => {
     const plugins = [
       pluginFactory('A', undefined, sequence),
       pluginFactory('B', ['A'], sequence),
-      pluginFactory('C', ['A', 'B'], sequence)
+      pluginFactory('C', ['A', 'B'], sequence),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -60,7 +61,7 @@ describe('plugin dependsOn', () => {
       'start B',
       'end B',
       'start C',
-      'end C'
+      'end C',
     ])
   })
 
@@ -71,14 +72,14 @@ describe('plugin dependsOn', () => {
       pluginFactory('A', undefined, sequence),
       pluginFactory('B', ['A'], sequence),
       defineNuxtPlugin({
-        name,
+        name: 'some plugin',
         async setup () {
           sequence.push('start C')
           await new Promise(resolve => setTimeout(resolve, 5))
           sequence.push('end C')
         },
-        parallel: true
-      })
+        parallel: true,
+      }),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -89,7 +90,7 @@ describe('plugin dependsOn', () => {
       'end C',
       'end A',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 
@@ -99,14 +100,14 @@ describe('plugin dependsOn', () => {
     const plugins = [
       pluginFactory('A', undefined, sequence),
       defineNuxtPlugin({
-        name,
+        name: 'some plugin',
         async setup () {
           sequence.push('start C')
           await new Promise(resolve => setTimeout(resolve, 50))
           sequence.push('end C')
-        }
+        },
       }),
-      pluginFactory('B', ['A'], sequence)
+      pluginFactory('B', ['A'], sequence),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -117,11 +118,11 @@ describe('plugin dependsOn', () => {
       'end A',
       'end C',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 
-  it('relying on plugin not registed yet', async () => {
+  it('relying on plugin not registered yet', async () => {
     const nuxtApp = useNuxtApp()
     const sequence: string[] = []
     const plugins = [
@@ -129,7 +130,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('A', undefined, sequence, true),
       pluginFactory('E', ['B', 'C'], sequence, false),
       pluginFactory('B', undefined, sequence),
-      pluginFactory('D', ['C'], sequence, false)
+      pluginFactory('D', ['C'], sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -143,7 +144,7 @@ describe('plugin dependsOn', () => {
       'start E',
       'start D',
       'end E',
-      'end D'
+      'end D',
     ])
   })
 
@@ -155,7 +156,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('B', ['A', 'C'], sequence),
       pluginFactory('C', undefined, sequence, false),
       pluginFactory('D', undefined, sequence, false),
-      pluginFactory('E', ['C'], sequence, false)
+      pluginFactory('E', ['C'], sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -169,7 +170,7 @@ describe('plugin dependsOn', () => {
       'end B',
       'end D',
       'start E',
-      'end E'
+      'end E',
     ])
   })
 
@@ -181,7 +182,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('C', ['B', 'A'], sequence),
       pluginFactory('B', undefined, sequence, false),
       pluginFactory('E', ['D'], sequence, false),
-      pluginFactory('D', ['C'], sequence, false)
+      pluginFactory('D', ['C'], sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -195,7 +196,7 @@ describe('plugin dependsOn', () => {
       'start D',
       'end D',
       'start E',
-      'end E'
+      'end E',
     ])
   })
 
@@ -218,7 +219,7 @@ describe('plugin dependsOn', () => {
       'start B',
       'end B',
       'start A',
-      'end A'
+      'end A',
     ])
   })
 
@@ -231,7 +232,7 @@ describe('plugin dependsOn', () => {
         sequence.push('start C')
         sequence.push('end C')
       }),
-      pluginFactory('B', undefined, sequence, false)
+      pluginFactory('B', undefined, sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -241,7 +242,75 @@ describe('plugin dependsOn', () => {
       'end C',
       'start B',
       'end A',
-      'end B'
+      'end B',
+    ])
+  })
+
+  it('expect B to execute after A, C when B depends on A and C', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', undefined, sequence, false),
+      pluginFactory('B', ['A', 'C'], sequence, false),
+      pluginFactory('C', undefined, sequence, false),
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'end A',
+      'start C',
+      'end C',
+      'start B',
+      'end B',
+    ])
+  })
+
+  it('expect to execute plugins if a plugin depends on a plugin that does not exist', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('B', undefined, sequence),
+      pluginFactory('C', ['A', 'B'], sequence),
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start B',
+      'end B',
+      'start C',
+      'end C',
+    ])
+  })
+})
+
+describe('plugin hooks', () => {
+  it('registers hooks before executing plugins', async () => {
+    const nuxtApp = useNuxtApp()
+
+    const sequence: string[] = []
+    const plugins = [
+      defineNuxtPlugin({
+        name: 'A',
+        setup (nuxt) {
+          sequence.push('start A')
+          nuxt.callHook('a:setup')
+        },
+      }),
+      defineNuxtPlugin({
+        name: 'B',
+        hooks: {
+          'a:setup': () => {
+            sequence.push('listen B')
+          },
+        },
+      }),
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+    expect(sequence).toMatchObject([
+      'start A',
+      'listen B',
     ])
   })
 })

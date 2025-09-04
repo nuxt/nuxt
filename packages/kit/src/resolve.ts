@@ -1,12 +1,14 @@
-import { existsSync, promises as fsp } from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { globby } from 'globby'
-import { resolvePath as _resolvePath } from 'mlly'
+import { type GlobOptions, glob } from 'tinyglobby'
+import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
+import { parseNodeModulePath } from 'mlly'
+import { directoryToURL } from './internal/esm'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
-import { toArray } from './utils'
+import { type RequirePicked, toArray } from './utils'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -15,83 +17,69 @@ export interface ResolvePathOptions {
   /** An object of aliases. Default is Nuxt configured aliases. */
   alias?: Record<string, string>
 
-  /** The file extensions to try. Default is Nuxt configured extensions. */
+  /**
+   * The file extensions to try.
+   * Default is Nuxt configured extensions.
+   *
+   * Isn't considered when `type` is set to `'dir'`.
+   */
   extensions?: string[]
+
+  /**
+   * Whether to resolve files that exist in the Nuxt VFS (for example, as a Nuxt template).
+   * @default false
+   */
+  virtual?: boolean
+
+  /**
+   * Whether to fallback to the original path if the resolved path does not exist instead of returning the normalized input path.
+   * @default false
+   */
+  fallbackToOriginal?: boolean
+  /**
+   * The type of the path to be resolved.
+   * @default 'file'
+   */
+  type?: PathType
 }
 
 /**
- * Resolve full path to a file or directory respecting Nuxt alias and extensions options
+ * Resolve the full path to a file or a directory (based on the provided type), respecting Nuxt alias and extensions options.
  *
- * If path could not be resolved, normalized input path will be returned
+ * If a path cannot be resolved, normalized input will be returned unless the `fallbackToOriginal` option is set to `true`,
+ * in which case the original input path will be returned.
  */
 export async function resolvePath (path: string, opts: ResolvePathOptions = {}): Promise<string> {
-  // Always normalize input
-  const _path = path
-  path = normalize(path)
+  const { type = 'file' } = opts
 
-  // Fast return if the path exists
-  if (isAbsolute(path) && existsSync(path) && !(await isDirectory(path))) {
-    return path
-  }
+  const res = await _resolvePathGranularly(path, { ...opts, type })
 
-  // Use current nuxt options
-  const nuxt = tryUseNuxt()
-  const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
-  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
-  const modulesDir = nuxt ? nuxt.options.modulesDir : []
-
-  // Resolve aliases
-  path = resolveAlias(path)
-
-  // Resolve relative to cwd
-  if (!isAbsolute(path)) {
-    path = resolve(cwd, path)
-  }
-
-  // Check if resolvedPath is a file
-  let _isDir = false
-  if (existsSync(path)) {
-    _isDir = await isDirectory(path)
-    if (!_isDir) {
-      return path
-    }
-  }
-
-  // Check possible extensions
-  for (const ext of extensions) {
-    // path.[ext]
-    const pathWithExt = path + ext
-    if (existsSync(pathWithExt)) {
-      return pathWithExt
-    }
-    // path/index.[ext]
-    const pathWithIndex = join(path, 'index' + ext)
-    if (_isDir && existsSync(pathWithIndex)) {
-      return pathWithIndex
-    }
-  }
-
-  // Try to resolve as module id
-  const resolveModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir] }).catch(() => null)
-  if (resolveModulePath) {
-    return resolveModulePath
+  if (res.type === type) {
+    return res.path
   }
 
   // Return normalized input
-  return path
+  return opts.fallbackToOriginal ? path : res.path
 }
 
 /**
  * Try to resolve first existing file in paths
  */
-export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: 'file' | 'dir' = 'file'): Promise<string | null> {
+export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: PathType = 'file'): Promise<string | null> {
   for (const path of toArray(paths)) {
-    const rPath = await resolvePath(path, opts)
-    if (await existsSensitive(rPath)) {
-      const _isDir = await isDirectory(rPath)
-      if (!pathType || (pathType === 'file' && !_isDir) || (pathType === 'dir' && _isDir)) {
-        return rPath
-      }
+    const res = await _resolvePathGranularly(path, {
+      ...opts,
+      // TODO: this is for backwards compatibility, remove the `pathType` argument in Nuxt 5
+      type: opts?.type || pathType,
+    })
+
+    if (!res.type || (pathType && res.type !== pathType)) {
+      continue
+    }
+
+    // Check file system
+    if (res.virtual || await existsSensitive(res.path)) {
+      return res.path
     }
   }
   return null
@@ -101,9 +89,7 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
  * Resolve path aliases respecting Nuxt alias options
  */
 export function resolveAlias (path: string, alias?: Record<string, string>): string {
-  if (!alias) {
-    alias = tryUseNuxt()?.options.alias || {}
-  }
+  alias ||= tryUseNuxt()?.options.alias || {}
   return _resolveAlias(path, alias)
 }
 
@@ -127,21 +113,27 @@ export function createResolver (base: string | URL): Resolver {
 
   return {
     resolve: (...path) => resolve(base as string, ...path),
-    resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts })
+    resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts }),
   }
 }
 
-export async function resolveNuxtModule (base: string, paths: string[]) {
-  const resolved = []
+export async function resolveNuxtModule (base: string, paths: string[]): Promise<string[]> {
+  const resolved: string[] = []
   const resolver = createResolver(base)
 
   for (const path of paths) {
     if (path.startsWith(base)) {
-      resolved.push(path.split('/index.ts')[0])
-    } else {
-      const resolvedPath = await resolver.resolvePath(path)
-      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+      resolved.push(path.split('/index.ts')[0]!)
+      continue
     }
+    const resolvedPath = await resolver.resolvePath(path)
+    const dir = parseNodeModulePath(resolvedPath).dir
+    if (dir) {
+      resolved.push(dir)
+      continue
+    }
+    const index = resolvedPath.lastIndexOf(path)
+    resolved.push(index === -1 ? dirname(resolvedPath) : resolvedPath.slice(0, index + path.length))
   }
 
   return resolved
@@ -149,18 +141,145 @@ export async function resolveNuxtModule (base: string, paths: string[]) {
 
 // --- Internal ---
 
+type PathType = 'file' | 'dir'
+
+interface PathResolution {
+  path: string
+  type?: PathType
+  virtual?: boolean
+}
+
+async function _resolvePathType (path: string, opts: ResolvePathOptions = {}, skipFs = false): Promise<PathResolution | undefined> {
+  if (opts?.virtual && existsInVFS(path)) {
+    return {
+      path,
+      type: 'file',
+      virtual: true,
+    }
+  }
+
+  if (skipFs) {
+    return
+  }
+
+  const fd = await fsp.open(path, 'r').catch(() => null)
+  try {
+    const stats = await fd?.stat()
+    if (stats) {
+      return {
+        path,
+        type: stats.isFile() ? 'file' : 'dir',
+        virtual: false,
+      }
+    }
+  } finally {
+    fd?.close()
+  }
+}
+
+function normalizeExtension (ext: string) {
+  return ext.startsWith('.') ? ext : `.${ext}`
+}
+
+async function _resolvePathGranularly (path: string, opts: RequirePicked<ResolvePathOptions, 'type'> = { type: 'file' }): Promise<PathResolution> {
+  // Always normalize input
+  const _path = path
+  path = normalize(path)
+
+  // Fast return if the path exists
+  if (isAbsolute(path)) {
+    const res = await _resolvePathType(path, opts)
+    if (res && res.type === opts.type) {
+      return res
+    }
+  }
+
+  // Use current nuxt options
+  const nuxt = tryUseNuxt()
+  const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
+  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
+  const modulesDir = nuxt ? nuxt.options.modulesDir : []
+
+  // Resolve aliases
+  path = _resolveAlias(path, opts.alias ?? nuxt?.options.alias ?? {})
+
+  // Resolve relative to cwd
+  if (!isAbsolute(path)) {
+    path = resolve(cwd, path)
+  }
+
+  const res = await _resolvePathType(path, opts)
+  if (res && res.type === opts.type) {
+    return res
+  }
+
+  // Check possible extensions
+  if (opts.type === 'file') {
+    for (const ext of extensions) {
+      const normalizedExt = normalizeExtension(ext)
+
+      // path.[ext]
+      const extPath = await _resolvePathType(path + normalizedExt, opts)
+      if (extPath && extPath.type === 'file') {
+        return extPath
+      }
+
+      // path/index.[ext]
+      const indexPath = await _resolvePathType(join(path, 'index' + normalizedExt), opts, res?.type !== 'dir' /* skip checking if parent is not a directory */)
+      if (indexPath && indexPath.type === 'file') {
+        return indexPath
+      }
+    }
+
+    // Try to resolve as module id
+    const resolvedModulePath = resolveModulePath(_path, {
+      try: true,
+      suffixes: ['', 'index'],
+      from: [cwd, ...modulesDir].map(d => directoryToURL(d)),
+    })
+    if (resolvedModulePath) {
+      return {
+        path: resolvedModulePath,
+        type: 'file',
+        virtual: false,
+      }
+    }
+  }
+
+  // Return normalized input
+  return {
+    path,
+  }
+}
+
 async function existsSensitive (path: string) {
-  if (!existsSync(path)) { return false }
-  const dirFiles = await fsp.readdir(dirname(path))
-  return dirFiles.includes(basename(path))
+  const dirFiles = new Set(await fsp.readdir(dirname(path)).catch(() => []))
+  return dirFiles.has(basename(path))
 }
 
-// Usage note: We assume path existence is already ensured
-async function isDirectory (path: string) {
-  return (await fsp.lstat(path)).isDirectory()
+function existsInVFS (path: string, nuxt = tryUseNuxt()) {
+  if (!nuxt) { return false }
+
+  if (path in nuxt.vfs) {
+    return true
+  }
+
+  const templates = nuxt.apps.default?.templates ?? nuxt.options.build.templates
+  return templates.some(template => template.dst === path)
 }
 
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
-  const files = await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })
-  return files.map(p => resolve(path, p)).filter(p => !isIgnored(p)).sort()
+/**
+ * Resolve absolute file paths in the provided directory with respect to `.nuxtignore` and return them sorted.
+ * @param path path to the directory to resolve files in
+ * @param pattern glob pattern or an array of glob patterns to match files
+ * @param opts options for globbing
+ */
+export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}) {
+  const files: string[] = []
+  for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true, ignore: opts.ignore })) {
+    if (!isIgnored(p)) {
+      files.push(p)
+    }
+  }
+  return files.sort()
 }

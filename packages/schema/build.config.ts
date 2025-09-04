@@ -1,58 +1,62 @@
 import { defineBuildConfig } from 'unbuild'
+import { stubOptions } from '../../debug/build-config'
 
 export default defineBuildConfig({
   declaration: true,
   entries: [
-    {
-      input: 'src/config/index',
-      outDir: 'schema',
-      name: 'config',
-      builder: 'untyped',
-      defaults: {
-        rootDir: '/<rootDir>/',
-        vite: {
-          base: '/'
-        }
-      }
-    },
     'src/index',
-    'src/builder-env'
+    'src/builder-env',
   ],
+  stubOptions,
+  rollup: {
+    dts: { respectExternal: false },
+    inlineDependencies: ['untyped', 'knitwork'],
+  },
   externals: [
     // Type imports
-    '#app/components/nuxt-link',
-    'ofetch',
-    'vue-router',
-    '@nuxt/telemetry',
-    'vue-bundle-renderer',
-    '@unhead/schema',
-    'vue',
-    'unctx',
-    'hookable',
-    'nitropack',
-    'webpack',
-    'webpack-bundle-analyzer',
-    'rollup-plugin-visualizer',
-    'vite',
+    '@unhead/vue',
     '@vitejs/plugin-vue',
+    'chokidar',
     '@vitejs/plugin-vue-jsx',
-    'mini-css-extract-plugin',
-    'css-minimizer-webpack-plugin',
-    'webpack-dev-middleware',
-    'h3',
-    'webpack-hot-middleware',
-    'postcss',
+    '@vue/language-core',
+    'autoprefixer',
+    'c12',
+    'compatx',
     'consola',
-    'ignore',
-    'vue-loader',
+    'css-minimizer-webpack-plugin',
+    'cssnano',
+    'esbuild',
     'esbuild-loader',
     'file-loader',
+    'h3',
+    'hookable',
+    'ignore',
+    'mini-css-extract-plugin',
+    'nitro',
+    'nitropack',
+    'nuxt/app',
+    'ofetch',
+    'oxc-transform',
+    'pkg-types',
+    'postcss',
     'pug',
+    'rollup-plugin-visualizer',
     'sass-loader',
-    'c12',
+    'scule',
+    'unctx',
+    'unimport',
+    'vite',
+    'vue',
+    'vue-bundle-renderer',
+    'vue-loader',
+    'vue-router',
+    'webpack',
+    'webpack-bundle-analyzer',
+    'webpack-dev-middleware',
+    'webpack-hot-middleware',
     // Implicit
     '@vue/compiler-core',
+    '@vue/compiler-sfc',
     '@vue/shared',
-    'untyped'
-  ]
+  ],
 })

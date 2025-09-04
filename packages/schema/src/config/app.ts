@@ -1,124 +1,74 @@
-import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
+import { defineResolvers } from '../utils/definition'
 import type { AppHeadMetaObject } from '../types/head'
+import type { NuxtAppConfig } from '../types/config'
 
-export default defineUntypedSchema({
-  /**
-   * Vue.js config
-   */
+export default defineResolvers({
   vue: {
-    /**
-     * Options for the Vue compiler that will be passed at build time.
-     * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
-     * @type {typeof import('@vue/compiler-core').CompilerOptions}
-     */
+    transformAssetUrls: {
+      video: ['src', 'poster'],
+      source: ['src'],
+      img: ['src'],
+      image: ['xlink:href', 'href'],
+      use: ['xlink:href', 'href'],
+    },
     compilerOptions: {},
-
-    /**
-     * Include Vue compiler in runtime bundle.
-     */
     runtimeCompiler: {
-      $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
     },
+    propsDestructure: true,
 
-    /**
-     * Vue Experimental: Enable reactive destructure for `defineProps`
-     * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
-     * @type {boolean}
-     */
-    propsDestructure: false,
-
-    /**
-     * Vue Experimental: Enable macro `defineModel`
-     * @see [Vue RFC#503](https://github.com/vuejs/rfcs/discussions/503)
-     * @type {boolean}
-     */
-    defineModel: false
+    config: {},
   },
-
-  /**
-   * Nuxt App configuration.
-   */
   app: {
-    /**
-     * The base path of your Nuxt application.
-     *
-     * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
-     * @example
-     * ```bash
-     * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
-     * ```
-     */
     baseURL: {
-      $resolve: val => val || process.env.NUXT_APP_BASE_URL || '/'
+      $resolve: (val) => {
+        if (typeof val === 'string') {
+          return val
+        }
+        return process.env.NUXT_APP_BASE_URL || '/'
+      },
     },
-
-    /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
     buildAssetsDir: {
-      $resolve: val => val || process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+      $resolve: (val) => {
+        if (typeof val === 'string') {
+          return val
+        }
+        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+      },
     },
 
-    /**
-     * An absolute URL to serve the public folder from (production-only).
-     *
-     * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
-     * @example
-     * ```bash
-     * NUXT_APP_CDN_URL=https://mycdn.org/ node .output/server/index.mjs
-     * ```
-     */
     cdnURL: {
-      $resolve: async (val, get) => (await get('dev')) ? '' : (process.env.NUXT_APP_CDN_URL ?? val) || ''
+      $resolve: async (val, get) => {
+        if (await get('dev')) {
+          return ''
+        }
+        return process.env.NUXT_APP_CDN_URL || (typeof val === 'string' ? val : '')
+      },
     },
 
-    /**
-     * Set default configuration for `<head>` on every page.
-     * @example
-     * ```js
-     * app: {
-     *   head: {
-     *     meta: [
-     *       // <meta name="viewport" content="width=device-width, initial-scale=1">
-     *       { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-     *     ],
-     *     script: [
-     *       // <script src="https://myawesome-lib.js"></script>
-     *       { src: 'https://awesome-lib.js' }
-     *     ],
-     *     link: [
-     *       // <link rel="stylesheet" href="https://myawesome-lib.css">
-     *       { rel: 'stylesheet', href: 'https://awesome-lib.css' }
-     *     ],
-     *     // please note that this is an area that is likely to change
-     *     style: [
-     *       // <style type="text/css">:root { color: red }</style>
-     *       { children: ':root { color: red }', type: 'text/css' }
-     *     ],
-     *     noscript: [
-     *       // <noscript>JavaScript is required</noscript>
-     *       { children: 'JavaScript is required' }
-     *     ]
-     *   }
-     * }
-     * ```
-     * @type {typeof import('../src/types/config').NuxtAppConfig['head']}
-     */
     head: {
-      $resolve: async (val, get) => {
-        const resolved: Required<AppHeadMetaObject> = defu(val, await get('meta'), {
+      $resolve: (_val) => {
+        const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}
+
+        type NormalizedMetaObject = Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>
+
+        const resolved: NuxtAppConfig['head'] & NormalizedMetaObject = defu(val, {
           meta: [],
           link: [],
           style: [],
           script: [],
-          noscript: []
-        })
+          noscript: [],
+        } satisfies NormalizedMetaObject)
 
         // provides default charset and viewport if not set
-        if (!resolved.meta.find(m => m.charset)?.charset) {
+        if (!resolved.meta.find(m => m?.charset)?.charset) {
           resolved.meta.unshift({ charset: resolved.charset || 'utf-8' })
         }
-        if (!resolved.meta.find(m => m.name === 'viewport')?.content) {
+        if (!resolved.meta.find(m => m?.name === 'viewport')?.content) {
           resolved.meta.unshift({ name: 'viewport', content: resolved.viewport || 'width=device-width, initial-scale=1' })
         }
 
@@ -129,161 +79,90 @@ export default defineUntypedSchema({
         resolved.noscript = resolved.noscript.filter(Boolean)
 
         return resolved
-      }
+      },
     },
-
-    /**
-     * Default values for layout transitions.
-     *
-     * This can be overridden with `definePageMeta` on an individual page.
-     * Only JSON-serializable values are allowed.
-     * @see https://vuejs.org/api/built-in-components.html#transition
-     * @type {typeof import('../src/types/config').NuxtAppConfig['layoutTransition']}
-     */
     layoutTransition: false,
-
-    /**
-     * Default values for page transitions.
-     *
-     * This can be overridden with `definePageMeta` on an individual page.
-     * Only JSON-serializable values are allowed.
-     * @see https://vuejs.org/api/built-in-components.html#transition
-     * @type {typeof import('../src/types/config').NuxtAppConfig['pageTransition']}
-     */
     pageTransition: false,
+    viewTransition: {
+      $resolve: async (val, get) => {
+        if (val === 'always' || typeof val === 'boolean') {
+          return val
+        }
 
-    /**
-     * Default values for KeepAlive configuration between pages.
-     *
-     * This can be overridden with `definePageMeta` on an individual page.
-     * Only JSON-serializable values are allowed.
-     * @see https://vuejs.org/api/built-in-components.html#keepalive
-     * @type {typeof import('../src/types/config').NuxtAppConfig['keepalive']}
-     */
-    keepalive: false,
-
-    /**
-     * Customize Nuxt root element id.
-     * @type {string | false}
-     */
-    rootId: {
-      $resolve: val => val === false ? false : val || '__nuxt'
+        return await get('experimental').then(e => e.viewTransition) ?? false
+      },
     },
-
-    /**
-     * Customize Nuxt root element tag.
-     */
+    keepalive: false,
+    rootId: {
+      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : '__nuxt'),
+    },
     rootTag: {
-      $resolve: val => val || 'div'
-    }
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
+    },
+    rootAttrs: {
+      $resolve: async (val, get) => {
+        const rootId = await get('app.rootId')
+        return {
+          id: rootId === false ? undefined : (rootId || '__nuxt'),
+          ...typeof val === 'object' ? val : {},
+        }
+      },
+    },
+    teleportTag: {
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
+    },
+    teleportId: {
+      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : 'teleports'),
+    },
+    teleportAttrs: {
+      $resolve: async (val, get) => {
+        const teleportId = await get('app.teleportId')
+        return {
+          id: teleportId === false ? undefined : (teleportId || 'teleports'),
+          ...typeof val === 'object' ? val : {},
+        }
+      },
+    },
+    spaLoaderTag: {
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
+    },
+    spaLoaderAttrs: {
+      id: '__nuxt-loader',
+    },
   },
-
-  /**
-   * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page
-   * rendered with `ssr: false`.
-   * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists.
-   * - If it is false, no SPA loading indicator will be loaded.
-   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a
-   *   default Nuxt image will be used.
-   *
-   * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
-   * @example ~/app/spa-loading-template.html
-   * ```html
-   * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
-   * <div class="loader"></div>
-   * <style>
-   * .loader {
-   *   display: block;
-   *   position: fixed;
-   *   z-index: 1031;
-   *   top: 50%;
-   *   left: 50%;
-   *   transform: translate(-50%, -50%);
-   *   width: 18px;
-   *   height: 18px;
-   *   box-sizing: border-box;
-   *   border: solid 2px transparent;
-   *   border-top-color: #000;
-   *   border-left-color: #000;
-   *   border-bottom-color: #efefef;
-   *   border-right-color: #efefef;
-   *   border-radius: 50%;
-   *   -webkit-animation: loader 400ms linear infinite;
-   *   animation: loader 400ms linear infinite;
-   * }
-   *
-   * \@-webkit-keyframes loader {
-   *   0% {
-   *     -webkit-transform: translate(-50%, -50%) rotate(0deg);
-   *   }
-   *   100% {
-   *     -webkit-transform: translate(-50%, -50%) rotate(360deg);
-   *   }
-   * }
-   * \@keyframes loader {
-   *   0% {
-   *     transform: translate(-50%, -50%) rotate(0deg);
-   *   }
-   *   100% {
-   *     transform: translate(-50%, -50%) rotate(360deg);
-   *   }
-   * }
-   * </style>
-   * ```
-   * @type {string | boolean}
-   */
   spaLoadingTemplate: {
-    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : val ?? null
+    $resolve: async (val, get) => {
+      if (typeof val === 'string') {
+        return resolve(await get('srcDir'), val)
+      }
+      if (typeof val === 'boolean') {
+        return val
+      }
+      return null
+    },
   },
-
-  /**
-   * An array of nuxt app plugins.
-   *
-   * Each plugin can be a string (which can be an absolute or relative path to a file).
-   * If it ends with `.client` or `.server` then it will be automatically loaded only
-   * in the appropriate context.
-   *
-   * It can also be an object with `src` and `mode` keys.
-   * @note Plugins are also auto-registered from the `~/plugins` directory
-   * and these plugins do not need to be listed in `nuxt.config` unless you
-   * need to customize their order. All plugins are deduplicated by their src path.
-   * @see https://nuxt.com/docs/guide/directory-structure/plugins
-   * @example
-   * ```js
-   * plugins: [
-   *   '~/plugins/foo.client.js', // only in client side
-   *   '~/plugins/bar.server.js', // only in server side
-   *   '~/plugins/baz.js', // both client & server
-   *   { src: '~/plugins/both-sides.js' },
-   *   { src: '~/plugins/client-only.js', mode: 'client' }, // only on client side
-   *   { src: '~/plugins/server-only.js', mode: 'server' } // only on server side
-   * ]
-   * ```
-   * @type {(typeof import('../src/types/nuxt').NuxtPlugin | string)[]}
-   */
   plugins: [],
-
-  /**
-   * You can define the CSS files/modules/libraries you want to set globally
-   * (included in every page).
-   *
-   * Nuxt will automatically guess the file type by its extension and use the
-   * appropriate pre-processor. You will still need to install the required
-   * loader if you need to use them.
-   * @example
-   * ```js
-   * css: [
-   *   // Load a Node.js module directly (here it's a Sass file).
-   *   'bulma',
-   *   // CSS file in the project
-   *   '~/assets/css/main.css',
-   *   // SCSS file in the project
-   *   '~/assets/css/main.scss'
-   * ]
-   * ```
-   * @type {string[]}
-   */
   css: {
-    $resolve: val => (val ?? []).map((c: any) => c.src || c)
-  }
+    $resolve: (val) => {
+      if (!Array.isArray(val)) {
+        return []
+      }
+      const css: string[] = []
+      for (const item of val) {
+        if (typeof item === 'string') {
+          css.push(item)
+        }
+      }
+      return css
+    },
+  },
+  unhead: {
+    legacy: false,
+    renderSSRHeadOptions: {
+      $resolve: val => ({
+        omitLineBreaks: true,
+        ...typeof val === 'object' ? val : {},
+      }),
+    },
+  },
 })

@@ -1,2 +1,0 @@
-interface MyInterface {}
-export {}

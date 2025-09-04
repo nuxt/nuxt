@@ -8,29 +8,61 @@ links:
     size: xs
 ---
 
+::note
+This is an advanced composable, primarily designed for use within plugins, mostly used by Nuxt modules.
+::
+
+::note
+`useHydration` is designed to **ensure state synchronization and restoration during SSR**. If you need to create a globally reactive state that is SSR-friendly in Nuxt, [`useState`](/docs/api/composables/use-state) is the recommended choice.
+::
+
 `useHydration` is a built-in composable that provides a way to set data on the server side every time a new HTTP request is made and receive that data on the client side. This way `useHydration` allows you to take full control of the hydration cycle.
 
-::callout
-This is an advanced composable and is mostly used internally (`useAsyncData`) or by Nuxt modules.
+The data returned from the `get` function on the server is stored in `nuxtApp.payload` under the unique key provided as the first parameter to `useHydration`. During hydration, this data is then retrieved on the client, preventing redundant computations or API calls.
+
+## Usage
+
+::code-group
+
+```ts [Without useHydration]
+export default defineNuxtPlugin((nuxtApp) => {
+  const myStore = new MyStore()
+
+  if (import.meta.server) {
+    nuxt.hooks.hook('app:rendered', () => {
+      nuxtApp.payload.myStoreState = myStore.getState()
+    })
+  }
+
+  if (import.meta.client) {
+    nuxt.hooks.hook('app:created', () => {
+      myStore.setState(nuxtApp.payload.myStoreState)
+    })
+  }
+})
+```
+
+```ts [With useHydration]
+export default defineNuxtPlugin((nuxtApp) => {
+  const myStore = new MyStore()
+
+  useHydration(
+    'myStoreState', 
+    () => myStore.getState(), 
+    (data) => myStore.setState(data)
+  )
+})
+```
 ::
 
 ## Type
 
 ```ts [signature]
-useHydration <T> (key: string, get: () => T, set: (value: T) => void) => {}
+useHydration <T> (key: string, get: () => T, set: (value: T) => void) => void
 ```
 
-You can use `useHydration()` within composables, plugins and components.
+## Parameters
 
-`useHydration` accepts three parameters:
-
-- `key`: unique key that identifies the data in your Nuxt application
-  - **Type**: `String`
-- `get`: function that returns the value to set the initial data
-  - **Type**: `Function`
-- `set`: function that receives the data on the client-side
-  - **Type**: `Function`
-
-Once the initial data is returned using the `get` function on the server side, you can access that data within `nuxtApp.payload` using the unique key that is passed as the first parameter in `useHydration` composable.
-
-:read-more{to="/docs/getting-started/data-fetching"}
+- `key`: A unique key that identifies the data in your Nuxt application.
+- `get`: A function executed **only on the server** (called when SSR rendering is done) to set the initial value.
+- `set`: A function executed **only on the client** (called when initial vue instance is created) to receive the data.

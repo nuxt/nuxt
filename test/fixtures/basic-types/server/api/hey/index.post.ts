@@ -1,3 +1,3 @@
 export default defineEventHandler(() => ({
-  method: 'post' as const
+  method: 'post' as const,
 }))

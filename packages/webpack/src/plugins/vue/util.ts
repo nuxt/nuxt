@@ -13,8 +13,7 @@ export const validate = (compiler: Compiler) => {
 
   if (!compiler.options.externals) {
     logger.info(
-      'It is recommended to externalize dependencies in the server build for ' +
-      'better build performance.'
+      'It is recommended to externalize dependencies in the server build for better build performance.',
     )
   }
 }
@@ -25,6 +24,8 @@ export const isJS = (file: string) => isJSRegExp.test(file)
 
 export const extractQueryPartJS = (file: string) => isJSRegExp.exec(file)?.[1]
 
-export const isCSS = (file: string) => /\.css(\?[^.]+)?$/.test(file)
+const isCSSRegExp = /\.css(?:\?[^.]+)?$/
+
+export const isCSS = (file: string) => isCSSRegExp.test(file)
 
 export const isHotUpdate = (file: string) => file.includes('hot-update')

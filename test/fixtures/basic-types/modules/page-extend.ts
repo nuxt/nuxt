@@ -2,7 +2,7 @@ import { createResolver, defineNuxtModule, useNuxt } from 'nuxt/kit'
 
 export default defineNuxtModule({
   meta: {
-    name: 'page-extend'
+    name: 'page-extend',
   },
   setup () {
     const nuxt = useNuxt()
@@ -12,8 +12,8 @@ export default defineNuxtModule({
       pages.push({
         name: 'page-extend',
         path: '/page-extend',
-        file: resolver.resolve('./runtime/page.vue')
+        file: resolver.resolve('./runtime/page.vue'),
       })
     })
-  }
+  },
 })

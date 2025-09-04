@@ -1,20 +1,6 @@
-import type { UseHeadInput } from '@unhead/vue'
-import type { HeadAugmentations } from 'nuxt/schema'
-
-/** @deprecated Use `UseHeadInput` from `@unhead/vue` instead. This may be removed in a future minor version. */
-export type MetaObject = UseHeadInput<HeadAugmentations>
-export {
-  /** @deprecated Import `useHead` from `#imports` instead. This may be removed in a future minor version. */
-  useHead,
-  /** @deprecated Import `useSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
-  useSeoMeta,
-  /** @deprecated Import `useServerSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
-  useServerSeoMeta
-} from '@unhead/vue'
-
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
-export type { AsyncDataOptions, AsyncData } from './asyncData'
+export type { AsyncDataOptions, AsyncData, AsyncDataRequestStatus } from './asyncData'
 export { useHydration } from './hydrate'
 export { callOnce } from './once'
 export { useState, clearNuxtState } from './state'
@@ -22,9 +8,9 @@ export { clearError, createError, isNuxtError, showError, useError } from './err
 export type { NuxtError } from './error'
 export { useFetch, useLazyFetch } from './fetch'
 export type { FetchResult, UseFetchOptions } from './fetch'
-export { useCookie } from './cookie'
+export { useCookie, refreshCookie } from './cookie'
 export type { CookieOptions, CookieRef } from './cookie'
-export { prerenderRoutes, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus } from './ssr'
+export { onPrehydrate, prerenderRoutes, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus, useResponseHeader } from './ssr'
 export { onNuxtReady } from './ready'
 export { abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBeforeRouteLeave, onBeforeRouteUpdate, setPageLayout, navigateTo, useRoute, useRouter } from './router'
 export type { AddRouteMiddlewareOptions, RouteMiddleware } from './router'
@@ -35,3 +21,9 @@ export type { NuxtAppManifest, NuxtAppManifestMeta } from './manifest'
 export type { ReloadNuxtAppOptions } from './chunk'
 export { reloadNuxtApp } from './chunk'
 export { useRequestURL } from './url'
+export { usePreviewMode } from './preview'
+export { useId } from './id'
+export { useRouteAnnouncer } from './route-announcer'
+export type { Politeness } from './route-announcer'
+export { useRuntimeHook } from './runtime-hook'
+export { injectHead, useHead, useHeadSafe, useSeoMeta, useServerHead, useServerHeadSafe, useServerSeoMeta } from './head'

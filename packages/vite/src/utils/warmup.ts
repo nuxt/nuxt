@@ -1,4 +1,4 @@
-import { builtinModules } from 'node:module'
+import { isBuiltin } from 'node:module'
 import { logger } from '@nuxt/kit'
 import { join, normalize, relative } from 'pathe'
 import { withoutBase } from 'ufo'
@@ -24,23 +24,17 @@ function normaliseURL (url: string, base: string) {
     url = url.slice('/@id/'.length).replace('__x00__', '\0')
   }
   // strip query
-  url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')
+  url = url.replace(/[?&]import=?(?:&|$)/, '').replace(/[?&]$/, '')
   return url
-}
-
-// TODO: remove when we drop support for node 18
-const builtins = new Set(builtinModules)
-function isBuiltin (id: string) {
-  return id.startsWith('node:') || builtins.has(id)
 }
 
 // TODO: use built-in warmup logic when we update to vite 5
 export async function warmupViteServer (
   server: ViteDevServer,
   entries: string[],
-  isServer: boolean
+  isServer: boolean,
 ) {
-  const warmedUrls = new Set<String>()
+  const warmedUrls = new Set<string>()
 
   const warmup = async (url: string) => {
     try {
@@ -63,7 +57,7 @@ export async function warmupViteServer (
 
     try {
       const mod = await server.moduleGraph.getModuleByUrl(url, isServer)
-      const deps = mod?.ssrTransformResult?.deps /* server */ || Array.from(mod?.importedModules /* client */ || []).map(m => m.url)
+      const deps = mod?.ssrTransformResult?.deps /* server */ || (mod?.importedModules.size ? Array.from(mod?.importedModules /* client */).map(m => m.url) : [])
       await Promise.all(deps.map(m => warmup(m)))
     } catch (e) {
       logger.debug('[warmup] tracking dependencies for %s failed with: %s', url, e)

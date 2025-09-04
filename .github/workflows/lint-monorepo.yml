@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  merge_group:
+  push:
+    paths:
+      - "**/package.json"
+      - "pnpm-lock.yaml"
+    branches:
+      - main
+      - 3.x
+  pull_request:
+    paths:
+      - "**/package.json"
+      - "pnpm-lock.yaml"
+    branches:
+      - main
+      - 3.x
+      - "!v[0-9]*"
+
+permissions:
+  contents: read
+
+jobs:
+  lint-monorepo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint monorepo
+        run: pnpm sherif -r multiple-dependency-versions
+
+      - name: Check engine ranges, peer dependency ranges and installed versions
+        run: pnpm installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground'

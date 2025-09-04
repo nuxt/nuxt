@@ -1,6 +1,6 @@
 ---
 title: 'refreshNuxtData'
-description: refreshNuxtData refetches all data from the server and updates the page.
+description: Refresh all or specific asyncData instances in Nuxt
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -8,8 +8,10 @@ links:
     size: xs
 ---
 
-::callout
-`refreshNuxtData` re-fetches all data from the server and updates the page as well as invalidates the cache of [`useAsyncData`](/docs/api/composables/use-async-data) , `useLazyAsyncData`, [`useFetch`](/docs/api/composables/use-fetch) and `useLazyFetch`.
+`refreshNuxtData` is used to refetch all or specific `asyncData` instances, including those from [`useAsyncData`](/docs/api/composables/use-async-data), [`useLazyAsyncData`](/docs/api/composables/use-lazy-async-data), [`useFetch`](/docs/api/composables/use-fetch), and [`useLazyFetch`](/docs/api/composables/use-lazy-fetch).  
+
+::note
+If your component is cached by `<KeepAlive>` and enters a deactivated state, the `asyncData` inside the component will still be refetched until the component is unmounted.
 ::
 
 ## Type
@@ -18,22 +20,25 @@ links:
 refreshNuxtData(keys?: string | string[])
 ```
 
-**Parameters:**
+## Parameters
 
-* `keys`:
+* `keys`: A single string or an array of strings as `keys` that are used to fetch the data. This parameter is **optional**. All [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) keys are re-fetched when no `keys` are explicitly specified.
 
-    **Type**: `String | String[]`
+## Return Values
 
-    `refreshNuxtData` accepts a single or an array of strings as `keys` that are used to fetch the data. This parameter is **optional**. All [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) are re-fetched when no `keys` are specified.
+`refreshNuxtData` returns a promise, resolving when all or specific `asyncData` instances have been refreshed.
 
-## Refresh All Data
+## Examples
 
-This example below refreshes all data being fetched using [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) on the current page.
+### Refresh All Data
 
-```vue [pages/some-page.vue]
+This example below refreshes all data being fetched using `useAsyncData` and `useFetch` in Nuxt application.
+
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
-const refreshAll = async () => {
+
+async function refreshAll () {
   refreshing.value = true
   try {
     await refreshNuxtData()
@@ -52,22 +57,35 @@ const refreshAll = async () => {
 </template>
 ```
 
-## Refresh Specific Data
+### Refresh Specific Data
 
-This example below refreshes only data where the key matches to `count`.
+This example below refreshes only data where the key matches to `count` and `user`.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
-const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
-const refresh = () => refreshNuxtData('count')
+const refreshing = ref(false)
+
+async function refresh () {
+  refreshing.value = true
+  try {
+    // you could also pass an array of keys to refresh multiple data
+    await refreshNuxtData(['count', 'user'])
+  } finally {
+    refreshing.value = false
+  }
+}
 </script>
 
 <template>
-  <div>
-    {{ pending ? 'Loading' : count }}
+  <div v-if="refreshing">
+    Loading
   </div>
   <button @click="refresh">Refresh</button>
 </template>
 ```
+
+::note
+If you have access to the `asyncData` instance, it is recommended to use its `refresh` or `execute` method as the preferred way to refetch the data.
+::
 
 :read-more{to="/docs/getting-started/data-fetching"}

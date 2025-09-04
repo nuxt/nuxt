@@ -1,9 +1,8 @@
-import { h } from 'vue'
-import type { Component, RendererNode } from 'vue'
+import { Transition, createStaticVNode, h } from 'vue'
+import type { RendererNode, VNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import destr from 'destr'
-import type { RouteLocationNormalized } from '#vue-router'
+import type { RouteLocationNormalized } from 'vue-router'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -11,18 +10,20 @@ import { START_LOCATION } from '#build/pages'
  * Internal utility
  * @private
  */
-export const _wrapIf = (component: Component, props: any, slots: any) => {
-  props = props === true ? {} : props
-  return { default: () => props ? h(component, props, slots) : slots.default?.() }
+export const _wrapInTransition = (props: any, children: any) => {
+  return { default: () => import.meta.client && props ? h(Transition, props === true ? {} : props, children) : children.default?.() }
 }
 
+const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
+const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
+const ROUTE_KEY_NORMAL_RE = /:\w+/g
 // TODO: consider refactoring into single utility
 // See https://github.com/nuxt/nuxt/tree/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
 function generateRouteKey (route: RouteLocationNormalized) {
   const source = route?.meta.key ?? route.path
-    .replace(/(:\w+)\([^)]+\)/g, '$1')
-    .replace(/(:\w+)[?+*]/g, '$1')
-    .replace(/:\w+/g, r => route.params[r.slice(1)]?.toString() || '')
+    .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
+    .replace(ROUTE_KEY_SYMBOLS_RE, '$1')
+    .replace(ROUTE_KEY_NORMAL_RE, r => route.params[r.slice(1)]?.toString() || '')
   return typeof source === 'function' ? source(route) : source
 }
 
@@ -37,7 +38,7 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   if (generateRouteKey(to) !== generateRouteKey(from)) { return true }
 
   const areComponentsSame = to.matched.every((comp, index) =>
-    comp.components && comp.components.default === from.matched[index]?.components?.default
+    comp.components && comp.components.default === from.matched[index]?.components?.default,
   )
   if (areComponentsSame) {
     return false
@@ -45,7 +46,6 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
-// eslint-disable-next-line no-use-before-define
 export type SSRBuffer = SSRBufferItem[] & { hasAsync?: boolean }
 export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 
@@ -72,26 +72,8 @@ export function createBuffer () {
       if (isPromise(item) || (isArray(item) && item.hasAsync)) {
         buffer.hasAsync = true
       }
-    }
+    },
   }
-}
-
-const TRANSLATE_RE = /&(nbsp|amp|quot|lt|gt);/g
-const NUMSTR_RE = /&#(\d+);/gi
-export function decodeHtmlEntities (html: string) {
-  const translateDict = {
-    nbsp: ' ',
-    amp: '&',
-    quot: '"',
-    lt: '<',
-    gt: '>'
-  } as const
-  return html.replace(TRANSLATE_RE, function (_, entity: keyof typeof translateDict) {
-    return translateDict[entity]
-  }).replace(NUMSTR_RE, function (_, numStr: string) {
-    const num = parseInt(numStr, 10)
-    return String.fromCharCode(num)
-  })
 }
 
 /**
@@ -106,7 +88,7 @@ export function vforToArray (source: any): any[] {
     if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
-    const array = []
+    const array: number[] = []
     for (let i = 0; i < source; i++) {
       array[i] = i
     }
@@ -114,13 +96,13 @@ export function vforToArray (source: any): any[] {
   } else if (isObject(source)) {
     if (source[Symbol.iterator as any]) {
       return Array.from(source as Iterable<any>, item =>
-        item
+        item,
       )
     } else {
       const keys = Object.keys(source)
       const array = new Array(keys.length)
       for (let i = 0, l = keys.length; i < l; i++) {
-        const key = keys[i]
+        const key = keys[i]!
         array[i] = source[key]
       }
       return array
@@ -134,21 +116,20 @@ export function vforToArray (source: any): any[] {
  * Handles `<!--[-->` Fragment elements
  * @param element the element to retrieve the HTML
  * @param withoutSlots purge all slots from the HTML string retrieved
- * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
+ * @returns {string[]|undefined} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
  */
-export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | null {
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | undefined {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)
     }
     if (withoutSlots) {
       const clone = element.cloneNode(true)
-      clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n: Element) => { n.innerHTML = '' })
+      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
       return [clone.outerHTML]
     }
     return [element.outerHTML]
   }
-  return null
 }
 
 function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {
@@ -158,7 +139,7 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n) => { n.innerHTML = '' })
+        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
@@ -168,22 +149,24 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
   return blocks
 }
 
-function isStartFragment (element: RendererNode) {
+/**
+ * Return a static vnode from an element
+ * Default to a div if the element is not found and if a fallback is not provided
+ * @param el renderer node retrieved from the component internal instance
+ * @param staticNodeFallback fallback string to use if the element is not found. Must be a valid HTML string
+ */
+export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: string): VNode {
+  const fragment: string[] | undefined = el ? getFragmentHTML(el) : staticNodeFallback ? [staticNodeFallback] : undefined
+  if (fragment) {
+    return createStaticVNode(fragment.join(''), fragment.length)
+  }
+  return h('div')
+}
+
+export function isStartFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 
-function isEndFragment (element: RendererNode) {
+export function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
-}
-const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
-
-export function getSlotProps (html: string) {
-  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
-  const data: Record<string, any> = {}
-  for (const slot of slotsDivs) {
-    const [_, slotName, json] = slot
-    const slotData = destr(decodeHtmlEntities(json))
-    data[slotName] = slotData
-  }
-  return data
 }

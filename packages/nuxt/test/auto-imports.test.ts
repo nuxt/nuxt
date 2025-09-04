@@ -1,27 +1,30 @@
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { join } from 'pathe'
-import { createCommonJS, findExports } from 'mlly'
+import { findExports } from 'mlly'
 import * as VueFunctions from 'vue'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
+import { registry as scriptRegistry } from '@nuxt/scripts/registry'
 import { TransformPlugin } from '../src/imports/transform'
-import { defaultPresets } from '../src/imports/presets'
+import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
     { name: 'ref', as: 'ref', from: 'vue' },
     { name: 'computed', as: 'computed', from: 'bar' },
-    { name: 'foo', as: 'foo', from: 'excluded' }
+    { name: 'foo', as: 'foo', from: 'excluded' },
   ]
 
   const ctx = createUnimport({
-    imports
+    injectAtEnd: true,
+    imports,
   })
 
-  const transformPlugin = TransformPlugin.raw({ ctx, options: { transform: { exclude: [/node_modules/] } } }, { framework: 'rollup' }) as Plugin
+  const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup' }) as Plugin
   const transform = async (source: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, '')
     return typeof result === 'string' ? result : result?.code
   }
@@ -54,12 +57,12 @@ describe('imports:transform', () => {
   })
 })
 
-const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta']
+const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']
 
 describe('imports:nuxt', () => {
   try {
-    const { __dirname } = createCommonJS(import.meta.url)
-    const entrypointContents = readFileSync(join(__dirname, '../src/app/composables/index.ts'), 'utf8')
+    const entrypointPath = fileURLToPath(new URL('../src/app/composables/index.ts', import.meta.url))
+    const entrypointContents = readFileSync(entrypointPath, 'utf8')
 
     const names = findExports(entrypointContents).flatMap(i => i.names || i.name)
     for (let name of names) {
@@ -73,7 +76,6 @@ describe('imports:nuxt', () => {
     }
   } catch (e) {
     it('should import composables', () => {
-      // eslint-disable-next-line no-console
       console.error(e)
       expect(false).toBe(true)
     })
@@ -84,7 +86,10 @@ const excludedVueHelpers = [
   // Already globally registered
   'defineEmits',
   'defineExpose',
+  'defineModel',
+  'defineOptions',
   'defineProps',
+  'defineSlots',
   'withDefaults',
   'stop',
   //
@@ -170,7 +175,6 @@ const excludedVueHelpers = [
   'hydrate',
   'initDirectivesForSSR',
   'render',
-  'useCssVars',
   'vModelCheckbox',
   'vModelDynamic',
   'vModelRadio',
@@ -181,7 +185,15 @@ const excludedVueHelpers = [
   'DeprecationTypes',
   'ErrorCodes',
   'TrackOpTypes',
-  'TriggerOpTypes'
+  'TriggerOpTypes',
+  'useHost',
+  'hydrateOnVisible',
+  'hydrateOnMediaQuery',
+  'hydrateOnInteraction',
+  'hydrateOnIdle',
+  'onWatcherCleanup',
+  'getCurrentWatcher',
+  'module.exports',
 ]
 
 describe('imports:vue', () => {
@@ -193,4 +205,25 @@ describe('imports:vue', () => {
       expect(defaultPresets.find(a => a.from === 'vue')!.imports).toContain(name)
     })
   }
+})
+
+describe('imports:nuxt/scripts', async () => {
+  const scripts = await scriptRegistry().then(r => r.map(s => s.import?.name).filter(Boolean))
+  const globalScripts = new Set([
+    'useScript',
+    'useScriptEventPage',
+    'useScriptTriggerElement',
+    'useScriptTriggerConsent',
+    // registered separately
+    'useScriptGoogleTagManager',
+    'useScriptGoogleAnalytics',
+  ])
+  it.each(scriptsStubsPreset.imports)(`should register %s from @nuxt/scripts`, (name) => {
+    if (globalScripts.has(name)) { return }
+
+    expect(scripts).toContain(name)
+  })
+  it.each(scripts)(`should register %s from @nuxt/scripts`, (name) => {
+    expect(scriptsStubsPreset.imports).toContain(name)
+  })
 })

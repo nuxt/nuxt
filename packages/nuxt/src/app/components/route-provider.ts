@@ -1,21 +1,19 @@
 import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { RouteLocation, RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
 
-export const RouteProvider = defineComponent({
+export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
+  name,
   props: {
-    vnode: {
-      type: Object as () => VNode,
-      required: true
-    },
     route: {
       type: Object as () => RouteLocationNormalizedLoaded,
-      required: true
+      required: true,
     },
+    vnode: Object as () => VNode,
     vnodeRef: Object as () => Ref<any>,
     renderKey: String,
-    trackRootNodes: Boolean
+    trackRootNodes: Boolean,
   },
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -23,10 +21,11 @@ export const RouteProvider = defineComponent({
     const previousRoute = props.route
 
     // Provide a reactive route within the page
-    const route = {} as RouteLocation
+    const route = {} as RouteLocationNormalizedLoaded
     for (const key in props.route) {
       Object.defineProperty(route, key, {
-        get: () => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded]
+        get: () => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded],
+        enumerable: true,
       })
     }
 
@@ -37,7 +36,7 @@ export const RouteProvider = defineComponent({
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            const filename = (vnode?.type as any).__file
+            const filename = (vnode?.type as any)?.__file
             console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
           }
         })
@@ -45,6 +44,9 @@ export const RouteProvider = defineComponent({
     }
 
     return () => {
+      if (!props.vnode) {
+        return props.vnode
+      }
       if (import.meta.dev && import.meta.client) {
         vnode = h(props.vnode, { ref: props.vnodeRef })
         return vnode
@@ -52,5 +54,7 @@ export const RouteProvider = defineComponent({
 
       return h(props.vnode, { ref: props.vnodeRef })
     }
-  }
+  },
 })
+
+export const RouteProvider = defineRouteProvider()

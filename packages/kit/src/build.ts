@@ -1,4 +1,5 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
+import type { RspackPluginInstance } from '@rspack/core'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
 import { toArray } from './utils'
@@ -30,20 +31,13 @@ export interface ExtendConfigOptions {
   prepend?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
 
-/**
- * Extend webpack config
- *
- * The fallback function might be called multiple times
- * when applying to both client and server builds.
- */
-export function extendWebpackConfig (
-  fn: ((config: WebpackConfig) => void),
-  options: ExtendWebpackConfigOptions = {}
-) {
+const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((config: WebpackConfig) => void), options: ExtendWebpackConfigOptions = {}) => {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -53,7 +47,7 @@ export function extendWebpackConfig (
     return
   }
 
-  nuxt.hook('webpack:config', (configs: WebpackConfig[]) => {
+  nuxt.hook(`${builder}:config`, (configs) => {
     if (options.server !== false) {
       const config = configs.find(i => i.name === 'server')
       if (config) {
@@ -70,12 +64,24 @@ export function extendWebpackConfig (
 }
 
 /**
+ * Extend webpack config
+ *
+ * The fallback function might be called multiple times
+ * when applying to both client and server builds.
+ */
+export const extendWebpackConfig = extendWebpackCompatibleConfig('webpack')
+/**
+ * Extend rspack config
+ *
+ * The fallback function might be called multiple times
+ * when applying to both client and server builds.
+ */
+export const extendRspackConfig = extendWebpackCompatibleConfig('rspack')
+
+/**
  * Extend Vite config
  */
-export function extendViteConfig (
-  fn: ((config: ViteConfig) => void),
-  options: ExtendViteConfigOptions = {}
-) {
+export function extendViteConfig (fn: ((config: ViteConfig) => void), options: ExtendViteConfigOptions = {}) {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -108,7 +114,19 @@ export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | Webpac
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
-    config.plugins = config.plugins || []
+    config.plugins ||= []
+    config.plugins[method](...toArray(plugin))
+  }, options)
+}
+/**
+ * Append rspack plugin to the config.
+ */
+export function addRspackPlugin (pluginOrGetter: RspackPluginInstance | RspackPluginInstance[] | (() => RspackPluginInstance | RspackPluginInstance[]), options?: ExtendWebpackConfigOptions) {
+  extendRspackConfig((config) => {
+    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+
+    config.plugins ||= []
     config.plugins[method](...toArray(plugin))
   }, options)
 }
@@ -121,7 +139,7 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
-    config.plugins = config.plugins || []
+    config.plugins ||= []
     config.plugins[method](...toArray(plugin))
   }, options)
 }
@@ -129,6 +147,7 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
 interface AddBuildPluginFactory {
   vite?: () => VitePlugin | VitePlugin[]
   webpack?: () => WebpackPluginInstance | WebpackPluginInstance[]
+  rspack?: () => RspackPluginInstance | RspackPluginInstance[]
 }
 
 export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions) {
@@ -138,5 +157,9 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
 
   if (pluginFactory.webpack) {
     addWebpackPlugin(pluginFactory.webpack, options)
+  }
+
+  if (pluginFactory.rspack) {
+    addRspackPlugin(pluginFactory.rspack, options)
   }
 }

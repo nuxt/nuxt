@@ -8,8 +8,8 @@ links:
     size: xs
 ---
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
-`abortNavigation` is only usable inside a [route middleware handler](/docs/guide/directory-structure/middleware).
+::warning
+`abortNavigation` is only usable inside a [route middleware handler](/docs/guide/directory-structure/app/middleware).
 ::
 
 ## Type
@@ -30,14 +30,14 @@ abortNavigation(err?: Error | string): false
 
 The example below shows how you can use `abortNavigation` in a route middleware to prevent unauthorized route access:
 
-```ts [middleware/auth.ts]
+```ts [app/middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
   const user = useState('user')
 
   if (!user.value.isAuthorized) {
     return abortNavigation()
   }
- 
+
   if (to.path !== '/edit-post') {
     return navigateTo('/edit-post')
   }
@@ -48,7 +48,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 You can pass the error as a string:
 
-```ts [middleware/auth.ts]
+```ts [app/middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
   const user = useState('user')
 
@@ -62,7 +62,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 You can pass the error as an [`Error`](https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Global_Objects/Error) object, e.g. caught by the `catch`-block:
 
-```ts [middleware/auth.ts]
+```ts [app/middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
   try {
     /* code that might throw an error */

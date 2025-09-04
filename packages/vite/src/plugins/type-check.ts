@@ -1,16 +1,25 @@
 import MagicString from 'magic-string'
+import type { Nuxt } from '@nuxt/schema'
 import type { Plugin } from 'vite'
+import { resolveClientEntry } from '../utils/config'
 
 const QUERY_RE = /\?.+$/
 
-export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin {
+export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
   let entry: string
+  let sourcemap: boolean
   return {
     name: 'nuxt:type-check',
+    applyToEnvironment: environment => environment.name === 'client' && !environment.config.isProduction,
+    apply: () => {
+      return !nuxt.options.test && nuxt.options.typescript.typeCheck === true
+    },
     configResolved (config) {
-      const input = config.build.rollupOptions.input
-      if (input && typeof input !== 'string' && !Array.isArray(input)) {
-        entry = input.entry
+      try {
+        entry = resolveClientEntry(config)
+        sourcemap = !!config.build.sourcemap
+      } catch {
+        console.debug('[nuxt:type-check] Could not resolve client entry, type checking will not be applied.')
       }
     },
     transform (code, id) {
@@ -22,8 +31,8 @@ export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin 
 
       return {
         code: s.toString(),
-        map: options.sourcemap ? s.generateMap({ hires: true }) : undefined
+        map: sourcemap ? s.generateMap({ hires: true }) : undefined,
       }
-    }
+    },
   }
 }

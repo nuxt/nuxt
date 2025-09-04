@@ -1,13 +1,12 @@
-import { fileURLToPath } from 'node:url'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { afterAll, describe, expect, it } from 'vitest'
-import { dirname, join, normalize, resolve } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
+import { dirname, join, resolve } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 import { createApp, resolveApp } from '../src/core/app'
 import { loadNuxt } from '../src'
 
-const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
 
 describe('resolveApp', () => {
   afterAll(async () => {
@@ -30,7 +29,7 @@ describe('resolveApp', () => {
           ".vue",
         ],
         "layouts": {},
-        "mainComponent": "@nuxt/ui-templates/dist/templates/welcome.vue",
+        "mainComponent": "<repoRoot>/packages/nuxt/src/app/components/welcome.vue",
         "middleware": [
           {
             "global": true,
@@ -45,6 +44,10 @@ describe('resolveApp', () => {
           },
           {
             "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/navigation-repaint.client.ts",
+          },
+          {
+            "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
           },
           {
@@ -54,6 +57,10 @@ describe('resolveApp', () => {
           {
             "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
+          },
+          {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {
             "filename": "components.plugin.mjs",
@@ -68,10 +75,6 @@ describe('resolveApp', () => {
           {
             "mode": "all",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/router.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
         ],
         "rootComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-root.vue",
@@ -130,8 +133,8 @@ describe('resolveApp', () => {
       'plugins/object-named.ts',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
     // TODO: support overriding named plugins
@@ -167,8 +170,8 @@ describe('resolveApp', () => {
       'middleware/named.ts',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     const fixtureMiddleware = app.middleware.filter(p => p.path.includes('<rootDir>')).map(p => p.path)
     // TODO: fix this
@@ -196,8 +199,8 @@ describe('resolveApp', () => {
       'layouts/default.vue',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     expect(app.layouts).toMatchInlineSnapshot(`
       {
@@ -222,7 +225,7 @@ describe('resolveApp', () => {
       'layouts/thing/thing/thing.vue',
       'layouts/desktop-base/base.vue',
       'layouts/some.vue',
-      'layouts/SomeOther/layout.ts'
+      'layouts/SomeOther/layout.ts',
     ])
     expect(app.layouts).toMatchInlineSnapshot(`
       {
@@ -261,6 +264,40 @@ describe('resolveApp', () => {
       }
     `)
   })
+
+  it('does not allow parallel access to freshly created app components', async () => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(join(rootDir, 'app/layouts'), { recursive: true })
+    await mkdir(join(rootDir, 'app/middleware'), { recursive: true })
+    await mkdir(join(rootDir, 'app/plugins'), { recursive: true })
+
+    await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+    await writeFile(join(rootDir, 'app/layouts/default.vue'), '<template><div>Default Layout</div></template>')
+    await writeFile(join(rootDir, 'app/middleware/global.global.ts'), 'export default defineNuxtRouteMiddleware(() => {})')
+    await writeFile(join(rootDir, 'app/plugins/my-plugin.ts'), 'export default defineNuxtPlugin(() => {})')
+
+    const nuxt = await loadNuxt({ cwd: rootDir })
+    const _app = createApp(nuxt)
+    const app = new Proxy(_app, {
+      get (target, p, receiver) {
+        return Reflect.get(target, p, receiver)
+      },
+      set (target, p, newValue, receiver) {
+        if (p === 'middleware' || p === 'plugins') {
+          expect(newValue).not.toEqual([])
+        }
+        if (p === 'layouts') {
+          expect(newValue).not.toEqual({})
+        }
+        return Reflect.set(target, p, newValue, receiver)
+      },
+    })
+
+    await resolveApp(nuxt, app)
+
+    await nuxt.close()
+    await rm(rootDir, { recursive: true, force: true })
+  })
 })
 
 async function getResolvedApp (files: Array<string | { name: string, contents: string }>) {
@@ -288,13 +325,15 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
   }
   for (const plugin of app.plugins) {
     plugin.src = normaliseToRepo(plugin.src)!
+    // @ts-expect-error untyped symbol
+    delete plugin[Symbol.for('nuxt plugin')]
   }
   for (const mw of app.middleware) {
     mw.path = normaliseToRepo(mw.path)!
   }
 
-  for (const layout in app.layouts) {
-    app.layouts[layout].file = normaliseToRepo(app.layouts[layout].file)!
+  for (const layout of Object.values(app.layouts)) {
+    layout.file = normaliseToRepo(layout.file)!
   }
 
   await nuxt.close()

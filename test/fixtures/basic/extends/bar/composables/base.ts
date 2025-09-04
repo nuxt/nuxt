@@ -1,1 +1,1 @@
-export const useOverrideableComposable = () => 'test from layer'
+export const useOverridableComposable = () => 'test from layer'

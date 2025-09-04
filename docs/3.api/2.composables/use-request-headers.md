@@ -18,7 +18,7 @@ const headers = useRequestHeaders()
 const headers = useRequestHeaders(['cookie'])
 ```
 
-::callout
+::tip
 In the browser, `useRequestHeaders` will return an empty object.
 ::
 
@@ -28,7 +28,7 @@ We can use `useRequestHeaders` to access and proxy the initial request's `author
 
 The example below adds the `authorization` request header to an isomorphic `$fetch` call.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 const { data } = await useFetch('/api/confidential', {
   headers: useRequestHeaders(['authorization'])

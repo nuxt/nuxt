@@ -8,9 +8,9 @@ links:
     size: xs
 ---
 
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/`](/docs/guide/directory-structure/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`app/pages/`](/docs/guide/directory-structure/app/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   layout: 'default'
@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/pages/#page-metadata"}
+:read-more{to="/docs/guide/directory-structure/app/pages#page-metadata"}
 
 ## Type
 
@@ -30,9 +30,11 @@ interface PageMeta {
   redirect?: RouteRecordRedirectOption
   name?: string
   path?: string
+  props?: RouteRecordRaw['props']
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
+  viewTransition?: boolean | 'always'
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
@@ -54,13 +56,19 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a name for this page's route. By default, name is generated based on path inside the [`pages/` directory](/docs/guide/directory-structure/pages).
+    You may define a name for this page's route. By default, name is generated based on path inside the [`app/pages/` directory](/docs/guide/directory-structure/app/pages).
 
   **`path`**
 
   - **Type**: `string`
 
-    You may define a path matcher, if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+
+  **`props`**
+  
+  - **Type**: [`RouteRecordRaw['props']`](https://router.vuejs.org/guide/essentials/passing-props)
+
+    Allows accessing the route `params` as props passed to the page component.
 
   **`alias`**
 
@@ -96,13 +104,21 @@ interface PageMeta {
 
   - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/NavigationGuard.html#navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
 
-    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/guide/directory-structure/middleware).
+    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/guide/directory-structure/app/middleware).
 
   **`pageTransition`**
 
   - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
+
+  **`viewTransition`**
+
+  - **Type**: `boolean | 'always'`
+
+    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
+    Enable/disable View Transitions for the current page.
+    If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
 
   **`redirect`**
 
@@ -120,13 +136,13 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [docs](/docs/guide/directory-structure/pages/#router-options)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-approuteroptions)) for more info.
 
   **`[key: string]`**
 
   - **Type**: `any`
 
-    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/guide/directory-structure/pages/#typing-custom-metadata).
+    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/guide/directory-structure/app/pages/#typing-custom-metadata).
 
 ## Examples
 
@@ -138,7 +154,7 @@ The example below demonstrates:
 - how `keepalive` property makes sure that the `<modal>` component is not cached when switching between multiple components;
 - adding `pageType` as a custom property:
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   key: (route) => route.fullPath,
@@ -154,9 +170,9 @@ definePageMeta({
 
 ### Defining Middleware
 
-The example below shows how the middleware can be defined using a `function` directly within the `definePageMeta` or set as a `string` that matches the middleware file name located in the `middleware/` directory:
+The example below shows how the middleware can be defined using a `function` directly within the `definePageMeta` or set as a `string` that matches the middleware file name located in the `app/middleware/` directory:
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   // define middleware as a function
@@ -183,11 +199,29 @@ definePageMeta({
 </script>
 ```
 
+### Using a Custom Regular Expression
+
+A custom regular expression is a good way to resolve conflicts between overlapping routes, for instance:
+
+The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug].vue` and `[categorySlug].vue` page routes.
+
+To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
+
+```vue [app/pages/[postId\\]-[postSlug\\].vue]
+<script setup lang="ts">
+definePageMeta({
+  path: '/:postId(\\d+)-:postSlug' 
+})
+</script>
+```
+
+For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
+
 ### Defining Layout
 
-You can define the layout that matches the layout's file name located (by default) in the [`layouts/` directory](/docs/guide/directory-structure/layouts). You can also disable the layout by setting the `layout` to `false`:
+You can define the layout that matches the layout's file name located (by default) in the [`app/layouts/` directory](/docs/guide/directory-structure/app/layouts). You can also disable the layout by setting the `layout` to `false`:
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
   // set custom layout

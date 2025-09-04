@@ -1,3 +1,4 @@
+import type { Defu } from 'defu'
 import type { NuxtHooks } from './hooks'
 import type { Nuxt } from './nuxt'
 import type { NuxtCompatibility } from './compatibility'
@@ -20,14 +21,19 @@ export interface ModuleMeta {
    */
   compatibility?: NuxtCompatibility
 
+  /**
+   * Fully resolved path used internally by Nuxt. Do not depend on this value.
+   * @internal
+   */
+  rawPath?: string
+
   [key: string]: unknown
 }
 
 /** The options received.  */
 export type ModuleOptions = Record<string, any>
 
-/** Optional result for nuxt modules */
-export interface ModuleSetupReturn {
+export type ModuleSetupInstallResult = {
   /**
    * Timing information for the initial setup
    */
@@ -39,19 +45,85 @@ export interface ModuleSetupReturn {
 }
 
 type Awaitable<T> = T | Promise<T>
-type _ModuleSetupReturn = Awaitable<void | false | ModuleSetupReturn>
 
-/** Input module passed to defineNuxtModule. */
-export interface ModuleDefinition<T extends ModuleOptions = ModuleOptions> {
-  meta?: ModuleMeta
-  defaults?: T | ((nuxt: Nuxt) => T)
-  schema?: T
-  hooks?: Partial<NuxtHooks>
-  setup?: (this: void, resolvedOptions: T, nuxt: Nuxt) => _ModuleSetupReturn
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {}
+
+export type ModuleSetupReturn = Awaitable<false | void | ModuleSetupInstallResult>
+
+export type ResolvedModuleOptions<
+  TOptions extends ModuleOptions,
+  TOptionsDefaults extends Partial<TOptions>,
+> =
+  Prettify<
+    Defu<
+      Partial<TOptions>,
+      [Partial<TOptions>, TOptionsDefaults]
+    >
+  >
+
+export interface ModuleDependencyMeta<T = Record<string, unknown>> {
+  version?: string
+  overrides?: Partial<T>
+  defaults?: Partial<T>
+  optional?: boolean
 }
 
-export interface NuxtModule<T extends ModuleOptions = ModuleOptions> {
-  (this: void, inlineOptions: T, nuxt: Nuxt): _ModuleSetupReturn
-  getOptions?: (inlineOptions?: T, nuxt?: Nuxt) => Promise<T>
+export interface ModuleDependencies {
+  [key: string]: ModuleDependencyMeta<Record<string, unknown>>
+}
+
+/** Module definition passed to 'defineNuxtModule(...)' or 'defineNuxtModule().with(...)'. */
+export interface ModuleDefinition<
+  TOptions extends ModuleOptions,
+  TOptionsDefaults extends Partial<TOptions>,
+  TWith extends boolean,
+> {
+  meta?: ModuleMeta
+  defaults?: TOptionsDefaults | ((nuxt: Nuxt) => Awaitable<TOptionsDefaults>)
+  schema?: TOptions
+  hooks?: Partial<NuxtHooks>
+  moduleDependencies?: ModuleDependencies | ((nuxt: Nuxt) => ModuleDependencies)
+  onInstall?: (nuxt: Nuxt) => Awaitable<void>
+  onUpgrade?: (nuxt: Nuxt, options: TOptions, previousVersion: string) => Awaitable<void>
+  setup?: (
+    this: void,
+    resolvedOptions: TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions,
+    nuxt: Nuxt
+  ) => ModuleSetupReturn
+}
+
+export interface NuxtModule<
+  TOptions extends ModuleOptions = ModuleOptions,
+  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
+  TWith extends boolean = false,
+> {
+  (
+    this: void,
+    resolvedOptions: TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions,
+    nuxt: Nuxt
+  ): ModuleSetupReturn
+  getOptions?: (
+    inlineOptions?: Partial<TOptions>,
+    nuxt?: Nuxt
+  ) => Promise<
+    TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions
+  >
+  getModuleDependencies?: (nuxt: Nuxt) => ModuleDependencies | undefined
   getMeta?: () => Promise<ModuleMeta>
+  onInstall?: (nuxt: Nuxt) => Awaitable<void>
+  onUpgrade?: (
+    options: TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions,
+    nuxt: Nuxt,
+    previousVersion: string
+  ) => Awaitable<void>
 }

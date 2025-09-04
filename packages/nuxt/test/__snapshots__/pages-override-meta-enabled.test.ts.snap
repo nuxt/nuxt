@@ -1,0 +1,392 @@
+{
+  "pushed route, skips generation from file": [
+    {
+      "alias": "["pushed-route-alias"]",
+      "component": "() => import("pages/route-file.vue")",
+      "meta": "{"someMetaData":true}",
+      "name": ""pushed-route"",
+      "path": ""/"",
+    },
+  ],
+  "route without file": [
+    {
+      "alias": "["sweet-home"]",
+      "meta": "{"hello":"world"}",
+      "name": ""home"",
+      "path": ""/"",
+    },
+  ],
+  "route.meta generated from file": [
+    {
+      "component": "() => import("pages/page-with-meta.vue")",
+      "meta": "{"test":1}",
+      "name": ""page-with-meta"",
+      "path": ""/page-with-meta"",
+    },
+  ],
+  "route.meta props generate by file": [
+    {
+      "component": "() => import("pages/page-with-props.vue")",
+      "name": ""page-with-props"",
+      "path": ""/page-with-props"",
+      "props": "true",
+    },
+  ],
+  "should allow pages with `:` in their path": [
+    {
+      "component": "() => import("pages/test:name.vue")",
+      "name": ""test:name"",
+      "path": ""/test\\:name"",
+    },
+  ],
+  "should correctly merge nested routes": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/param/sibling.vue")",
+          "name": ""param-sibling"",
+          "path": ""sibling"",
+        },
+        {
+          "children": [
+            {
+              "component": "() => import("layer/pages/param/index/sibling.vue")",
+              "name": ""param-index-sibling"",
+              "path": ""sibling"",
+            },
+            {
+              "component": "() => import("pages/param/index/index.vue")",
+              "name": ""param-index"",
+              "path": """",
+            },
+          ],
+          "component": "() => import("layer/pages/param/index.vue")",
+          "name": "mockMeta?.name",
+          "path": """",
+        },
+      ],
+      "component": "() => import("pages/param.vue")",
+      "name": "mockMeta?.name",
+      "path": ""/param"",
+    },
+    {
+      "children": [
+        {
+          "component": "() => import("pages/wrapper-expose/other/sibling.vue")",
+          "name": ""wrapper-expose-other-sibling"",
+          "path": ""sibling"",
+        },
+        {
+          "component": "() => import("layer/pages/wrapper-expose/other/index.vue")",
+          "name": ""wrapper-expose-other"",
+          "path": """",
+        },
+      ],
+      "component": "() => import("pages/wrapper-expose/other.vue")",
+      "name": "mockMeta?.name",
+      "path": ""/wrapper-expose/other"",
+    },
+  ],
+  "should extract serializable values and override fallback when normalized with `overrideMeta: true`": [
+    {
+      "alias": "["sweet-home"]",
+      "component": "() => import("pages/index.vue")",
+      "meta": "mockMeta || {}",
+      "name": ""home"",
+      "path": ""/"",
+      "redirect": ""/"",
+    },
+  ],
+  "should generate correct catch-all route": [
+    {
+      "component": "() => import("pages/index.vue")",
+      "name": ""index"",
+      "path": ""/"",
+    },
+    {
+      "children": [
+        {
+          "component": "() => import("pages/[...slug]/[id].vue")",
+          "name": ""slug-id"",
+          "path": "":id()"",
+        },
+      ],
+      "component": "() => import("pages/[...slug].vue")",
+      "name": ""slug"",
+      "path": ""/:slug(.*)*"",
+    },
+  ],
+  "should generate correct dynamic routes": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/[[foo]]/index.vue")",
+          "name": ""foo"",
+          "path": """",
+        },
+      ],
+      "component": "() => import("pages/[[foo]]")",
+      "name": "mockMeta?.name",
+      "path": ""/:foo?"",
+    },
+    {
+      "component": "() => import("pages/index.vue")",
+      "name": ""index"",
+      "path": ""/"",
+    },
+    {
+      "component": "() => import("pages/[slug].vue")",
+      "name": ""slug"",
+      "path": ""/:slug()"",
+    },
+    {
+      "component": "() => import("pages/[bar]/index.vue")",
+      "name": ""bar"",
+      "path": ""/:bar()"",
+    },
+    {
+      "component": "() => import("pages/opt/[[slug]].vue")",
+      "name": ""opt-slug"",
+      "path": ""/opt/:slug?"",
+    },
+    {
+      "component": "() => import("pages/nonopt/[slug].vue")",
+      "name": ""nonopt-slug"",
+      "path": ""/nonopt/:slug()"",
+    },
+    {
+      "component": "() => import("pages/optional/[[opt]].vue")",
+      "name": ""optional-opt"",
+      "path": ""/optional/:opt?"",
+    },
+    {
+      "component": "() => import("pages/[[sub]]/route-[slug].vue")",
+      "name": ""sub-route-slug"",
+      "path": ""/:sub?/route-:slug()"",
+    },
+    {
+      "component": "() => import("pages/optional/prefix-[[opt]].vue")",
+      "name": ""optional-prefix-opt"",
+      "path": ""/optional/prefix-:opt?"",
+    },
+    {
+      "component": "() => import("pages/optional/[[opt]]-postfix.vue")",
+      "name": ""optional-opt-postfix"",
+      "path": ""/optional/:opt?-postfix"",
+    },
+    {
+      "component": "() => import("pages/optional/prefix-[[opt]]-postfix.vue")",
+      "name": ""optional-prefix-opt-postfix"",
+      "path": ""/optional/prefix-:opt?-postfix"",
+    },
+  ],
+  "should generate correct id for catchall (order 1)": [
+    {
+      "component": "() => import("pages/[...stories].vue")",
+      "name": ""stories"",
+      "path": ""/:stories(.*)*"",
+    },
+    {
+      "component": "() => import("pages/stories/[id].vue")",
+      "name": ""stories-id"",
+      "path": ""/stories/:id()"",
+    },
+  ],
+  "should generate correct id for catchall (order 2)": [
+    {
+      "component": "() => import("pages/[...stories].vue")",
+      "name": ""stories"",
+      "path": ""/:stories(.*)*"",
+    },
+    {
+      "component": "() => import("pages/stories/[id].vue")",
+      "name": ""stories-id"",
+      "path": ""/stories/:id()"",
+    },
+  ],
+  "should generate correct route for kebab-case file": [
+    {
+      "component": "() => import("pages/kebab-case.vue")",
+      "name": ""kebab-case"",
+      "path": ""/kebab-case"",
+    },
+  ],
+  "should generate correct route for snake_case file": [
+    {
+      "component": "() => import("pages/snake_case.vue")",
+      "name": ""snake_case"",
+      "path": ""/snake_case"",
+    },
+  ],
+  "should generate correct routes for index pages": [
+    {
+      "component": "() => import("pages/index.vue")",
+      "name": ""index"",
+      "path": ""/"",
+    },
+    {
+      "component": "() => import("pages/parent/index.vue")",
+      "name": ""parent"",
+      "path": ""/parent"",
+    },
+    {
+      "component": "() => import("pages/parent/child/index.vue")",
+      "name": ""parent-child"",
+      "path": ""/parent/child"",
+    },
+  ],
+  "should generate correct routes for nested pages": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/page1/[id].vue")",
+          "name": ""page1-id"",
+          "path": "":id()"",
+        },
+        {
+          "component": "() => import("pages/page1/index.vue")",
+          "name": ""page1"",
+          "path": """",
+        },
+      ],
+      "component": "() => import("pages/page1.vue")",
+      "name": "mockMeta?.name",
+      "path": ""/page1"",
+    },
+  ],
+  "should generate correct routes for parent/child": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/parent/child.vue")",
+          "name": ""parent-child"",
+          "path": ""child"",
+        },
+      ],
+      "component": "() => import("pages/parent.vue")",
+      "name": ""parent"",
+      "path": ""/parent"",
+    },
+  ],
+  "should handle route groups": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/(bar)/about/index.vue")",
+          "name": ""about"",
+          "path": """",
+        },
+      ],
+      "component": "() => import("pages/(foo)/about.vue")",
+      "name": "mockMeta?.name",
+      "path": ""/about"",
+    },
+    {
+      "component": "() => import("pages/(foo)/index.vue")",
+      "name": ""index"",
+      "path": ""/"",
+    },
+  ],
+  "should handle trailing slashes with index routes": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/index/index/all.vue")",
+          "name": ""index-index-all"",
+          "path": ""all"",
+        },
+      ],
+      "component": "() => import("pages/index/index.vue")",
+      "name": ""index"",
+      "path": ""/"",
+    },
+  ],
+  "should merge route.meta with meta from file": [
+    {
+      "component": "() => import("pages/page-with-meta.vue")",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1,"extracted":{"foo":"foo","bar":"bar"}} }",
+      "name": ""page-with-meta"",
+      "path": ""/page-with-meta"",
+    },
+  ],
+  "should not generate colliding route names when hyphens are in file name": [
+    {
+      "component": "() => import("pages/parent-[child].vue")",
+      "name": ""parent-child"",
+      "path": ""/parent-:child()"",
+    },
+    {
+      "component": "() => import("pages/parent/[child].vue")",
+      "name": ""parent-child"",
+      "path": ""/parent/:child()"",
+    },
+  ],
+  "should not merge required param as a child of optional param": [
+    {
+      "component": "() => import("pages/[foo].vue")",
+      "name": ""foo"",
+      "path": ""/:foo()"",
+    },
+    {
+      "component": "() => import("pages/[[foo]].vue")",
+      "name": ""foo"",
+      "path": ""/:foo?"",
+    },
+  ],
+  "should only allow "_" & "." as special character for dynamic route": [
+    {
+      "component": "() => import("pages/[a1_1a].vue")",
+      "name": ""a1_1a"",
+      "path": ""/:a1_1a()"",
+    },
+    {
+      "component": "() => import("pages/[b2.2b].vue")",
+      "name": ""b2.2b"",
+      "path": ""/:b2.2b()"",
+    },
+    {
+      "component": "() => import("pages/[[c3@3c]].vue")",
+      "name": ""c33c"",
+      "path": ""/:c33c?"",
+    },
+    {
+      "component": "() => import("pages/[[d4-4d]].vue")",
+      "name": ""d44d"",
+      "path": ""/:d44d?"",
+    },
+    {
+      "component": "() => import("pages/[b2]_[2b].vue")",
+      "name": ""b2_2b"",
+      "path": ""/:b2()_:2b()"",
+    },
+  ],
+  "should properly override route name if definePageMeta name override is defined.": [
+    {
+      "component": "() => import("pages/index.vue")",
+      "name": ""home"",
+      "path": ""/"",
+    },
+  ],
+  "should use fallbacks when normalized with `overrideMeta: true`": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/index.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "index"",
+      "path": ""/"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
+  "should use more performant regexp when catchall is used in middle of path": [
+    {
+      "component": "() => import("pages/[...id]/index.vue")",
+      "name": ""id"",
+      "path": ""/:id(.*)*"",
+    },
+    {
+      "component": "() => import("pages/[...id]/suffix.vue")",
+      "name": ""id-suffix"",
+      "path": ""/:id([^/]*)*/suffix"",
+    },
+  ],
+}

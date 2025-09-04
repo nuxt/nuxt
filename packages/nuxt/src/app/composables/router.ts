@@ -1,10 +1,9 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
-// eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -12,13 +11,15 @@ import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 
+/** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
 }
 
+/** @since 3.0.0 */
 export const useRoute: typeof _useRoute = () => {
-  if (import.meta.dev && isProcessingMiddleware()) {
-    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
+  if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
+    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/guide/directory-structure/app/middleware#accessing-route-in-middleware')
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)
@@ -26,6 +27,7 @@ export const useRoute: typeof _useRoute = () => {
   return useNuxtApp()._route
 }
 
+/** @since 3.0.0 */
 export const onBeforeRouteLeave = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach((to, from, next) => {
     if (to === from) { return }
@@ -34,6 +36,7 @@ export const onBeforeRouteLeave = (guard: NavigationGuard) => {
   onScopeDispose(unsubscribe)
 }
 
+/** @since 3.0.0 */
 export const onBeforeRouteUpdate = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach(guard)
   onScopeDispose(unsubscribe)
@@ -43,7 +46,8 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/** @since 3.0.0 */
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
 }
@@ -57,6 +61,7 @@ interface AddRouteMiddleware {
   (middleware: RouteMiddleware): void
 }
 
+/** @since 3.0.0 */
 export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddleware, middleware?: RouteMiddleware, options: AddRouteMiddlewareOptions = {}) => {
   const nuxtApp = useNuxtApp()
   const global = options.global || typeof name !== 'string'
@@ -72,30 +77,30 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
   }
 }
 
+/** @since 3.0.0 */
 const isProcessingMiddleware = () => {
   try {
     if (useNuxtApp()._processingMiddleware) {
       return true
     }
   } catch {
-    // Within an async middleware
-    return true
+    return false
   }
   return false
 }
 
 // Conditional types, either one or other
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
-type XOR<T, U> = (T | U) extends Object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
+type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
 export type OpenWindowFeatures = {
   popup?: boolean
   noopener?: boolean
   noreferrer?: boolean
-} & XOR<{width?: number}, {innerWidth?: number}>
-  & XOR<{height?: number}, {innerHeight?: number}>
-  & XOR<{left?: number}, {screenX?: number}>
-  & XOR<{top?: number}, {screenY?: number}>
+} & XOR<{ width?: number }, { innerWidth?: number }>
+  & XOR<{ height?: number }, { innerHeight?: number }>
+  & XOR<{ left?: number }, { screenX?: number }>
+  & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
   target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
@@ -117,6 +122,8 @@ export interface NavigateToOptions {
   external?: boolean
   open?: OpenOptions
 }
+
+const URL_QUOTE_RE = /"/g
 /**
  * A helper that aids in programmatic navigation within your Nuxt application.
  *
@@ -125,36 +132,33 @@ export interface NavigateToOptions {
  * @default
  * @param {NavigateToOptions} [options] Optional customization for controlling the behavior of the navigation.
  * @see https://nuxt.com/docs/api/utils/navigate-to
+ * @since 3.0.0
  */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
-  if (!to) {
-    to = '/'
-  }
+  to ||= '/'
 
-  const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
+  const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
-  if (options?.open) {
-    if (import.meta.client) {
-      const { target = '_blank', windowFeatures = {} } = options.open
+  if (import.meta.client && options?.open) {
+    const { target = '_blank', windowFeatures = {} } = options.open
 
-      const features = Object.entries(windowFeatures)
-        .filter(([_, value]) => value !== undefined)
-        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
-        .join(', ')
+    const features = Object.entries(windowFeatures)
+      .filter(([_, value]) => value !== undefined)
+      .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
+      .join(', ')
 
-      open(toPath, target, features)
-    }
-
+    open(toPath, target, features)
     return Promise.resolve()
   }
 
-  const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
+  const isExternalHost = hasProtocol(toPath, { acceptRelative: true })
+  const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const protocol = parseURL(toPath).protocol
+    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -164,6 +168,18 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early redirect on client-side
   if (import.meta.client && !isExternal && inMiddleware) {
+    if (options?.replace) {
+      if (typeof to === 'string') {
+        const { pathname, search, hash } = parseURL(to)
+        return {
+          path: pathname,
+          ...(search && { query: parseQuery(search) }),
+          ...(hash && { hash }),
+          replace: true,
+        }
+      }
+      return { ...to, replace: true }
+    }
     return to
   }
 
@@ -179,11 +195,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
-        const encodedLoc = location.replace(/"/g, '%22')
+        const encodedLoc = location.replace(URL_QUOTE_RE, '%22')
+        const encodedHeader = encodeURL(location, isExternalHost)
+
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location }
+          headers: { location: encodedHeader },
         }
         return response
       }
@@ -223,7 +241,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   return options?.replace ? router.replace(to) : router.push(to)
 }
 
-/** This will abort navigation within a Nuxt route middleware handler. */
+/**
+ * This will abort navigation within a Nuxt route middleware handler.
+ * @since 3.0.0
+ */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
     throw new Error('abortNavigation() is only usable inside a route middleware handler.')
@@ -240,6 +261,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   throw err
 }
 
+/** @since 3.0.0 */
 export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
@@ -261,4 +283,25 @@ export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? strin
   if (!inMiddleware) {
     useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
   }
+}
+
+/**
+ * @internal
+ */
+export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+  return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+}
+
+/**
+ * @internal
+ */
+export function encodeURL (location: string, isExternalHost = false) {
+  const url = new URL(location, 'http://localhost')
+  if (!isExternalHost) {
+    return url.pathname + url.search + url.hash
+  }
+  if (location.startsWith('//')) {
+    return url.toString().replace(url.protocol, '')
+  }
+  return url.toString()
 }
