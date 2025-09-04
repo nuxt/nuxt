@@ -19,7 +19,7 @@ import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
-import { globalMiddleware, namedMiddleware } from '#build/middleware'
+import { globalMiddleware, globalMiddlewareNameMap, namedMiddleware } from '#build/middleware'
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -224,7 +224,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
           try {
             if (import.meta.dev) {
-              nuxtApp._processingMiddleware = (typeof entry === 'string' ? entry : middleware.name) || true
+              nuxtApp._processingMiddleware = globalMiddlewareNameMap[globalMiddleware.indexOf(entry)] || (typeof entry === 'string' ? entry : middleware.name) || true
             }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
