@@ -156,6 +156,9 @@ interface _NuxtApp {
   }
 
   /** @internal */
+  _processingMiddleware?: string | boolean
+
+  /** @internal */
   _once: {
     [key: string]: Promise<any>
   }
