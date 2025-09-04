@@ -112,18 +112,11 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
         }
       }
 
-      if (code.includes('#components')) {
-        try {
-          const pkg = await readPackage(id)
+      if (!code.includes('#components')) { return }
 
-          // If package defines a "#components" import mapping, assume is used internally by the package.
-          if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
-            return
-          }
-        } catch {
-          // package.json not found
-        }
-      } else {
+      // If package defines a "#components" import mapping, assume is used internally by the package.
+      const pkg = id.includes('node_modules') ? await readPackage(id, { try: true }) : undefined
+      if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
         return
       }
 
