@@ -1,8 +1,11 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { Nuxt } from '@nuxt/schema'
-import { parseAndWalk } from 'oxc-walker'
+import { stripLiteral } from 'strip-literal'
 import { isVue } from '../../core/utils'
+
+const INJECTION_RE_TEMPLATE = /\b_ctx\.\$route\b/g
+const INJECTION_RE_SCRIPT = /\bthis\.\$route\b/g
 
 const INJECTION_SINGLE_RE = /\bthis\.\$route\b|\b_ctx\.\$route\b/
 
@@ -15,35 +18,36 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
     },
     transform: {
       filter: {
-        code: {
-          include: INJECTION_SINGLE_RE,
-          exclude: [
-            `_ctx._.provides[__nuxt_route_symbol`,
-            'this._.provides[__nuxt_route_symbol',
-          ],
-        },
+        code: { include: INJECTION_SINGLE_RE },
       },
-      handler (code, id) {
+      handler (code) {
+        if (code.includes('_ctx._.provides[__nuxt_route_symbol') || code.includes('this._.provides[__nuxt_route_symbol')) { return }
+
+        let replaced = false
         const s = new MagicString(code)
+        const strippedCode = stripLiteral(code)
 
-        parseAndWalk(code, id, (node) => {
-          if (node.type !== 'MemberExpression') { return }
-
-          // Check for this.$route pattern
-          if (node.object.type === 'ThisExpression' && node.property.type === 'Identifier' && node.property.name === '$route') {
-            s.overwrite(node.start, node.end, '(this._.provides[__nuxt_route_symbol] || this.$route)')
-            return
+        // Local helper function for regex-based replacements using `strippedCode`
+        const replaceMatches = (regExp: RegExp, replacement: string) => {
+          for (const match of strippedCode.matchAll(regExp)) {
+            const start = match.index!
+            const end = start + match[0].length
+            s.overwrite(start, end, replacement)
+            replaced ||= true
           }
+        }
 
-          // Check for _ctx.$route pattern
-          if (node.object.type === 'Identifier' && node.object.name === '_ctx' && node.property.type === 'Identifier' && node.property.name === '$route') {
-            s.overwrite(node.start, node.end, '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)')
-          }
-        })
+        // handles `$route` in template
+        replaceMatches(INJECTION_RE_TEMPLATE, '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)')
+
+        // handles `this.$route` in script
+        replaceMatches(INJECTION_RE_SCRIPT, '(this._.provides[__nuxt_route_symbol] || this.$route)')
+
+        if (replaced) {
+          s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
+        }
 
         if (s.hasChanged()) {
-          s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
-
           return {
             code: s.toString(),
             map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server

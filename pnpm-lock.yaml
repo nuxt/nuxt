@@ -514,6 +514,9 @@ importers:
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
+      strip-literal:
+        specifier: ^3.0.0
+        version: 3.0.0
       tinyglobby:
         specifier: 0.2.14
         version: 0.2.14
