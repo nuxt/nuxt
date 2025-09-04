@@ -88,7 +88,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   ssrContext.head.push(appHead, headEntryOptions)
 
   if (ssrError) {
-    ssrError.status &&= Number.parseInt(ssrError.statusCode as any)
+    ssrError.status &&= Number.parseInt(ssrError.status.toString())
     if (process.env.PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
       try {
         ssrError.data = destr(ssrError.data)

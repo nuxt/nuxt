@@ -2,9 +2,10 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import type { LogObject } from 'consola'
 import { consola } from 'consola'
 import { stringify } from 'devalue'
-import type { H3Event } from 'h3'
 import { withTrailingSlash } from 'ufo'
+import { toRequest } from 'h3'
 import { getContext } from 'unctx'
+import type { ServerRequest } from 'srvx'
 import { captureRawStackTrace, parseRawStackTrace } from 'errx'
 import type { ParsedTrace } from 'errx'
 
@@ -23,15 +24,18 @@ const devReducers: Record<string, (data: any) => any> = {
 
 interface NuxtDevAsyncContext {
   logs: LogObject[]
-  event: H3Event
+  request: ServerRequest
 }
 
 const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
 
 export default (nitroApp: NitroApp) => {
-  const handler = nitroApp.h3App.handler
-  nitroApp.h3App.handler = (event) => {
-    return asyncContext.callAsync({ logs: [], event }, () => handler(event))
+  // TODO: Use nitro asyncContext
+  const originalFetch = nitroApp.fetch
+  nitroApp.fetch = (input: ServerRequest | URL | string, init?: RequestInit, context?: any) => {
+    const req = toRequest(input, init)
+    req.context = { ...req.context, ...context }
+    return asyncContext.callAsync({ logs: [], request: req }, () => originalFetch(req))
   }
 
   onConsoleLog((_log) => {
@@ -69,7 +73,8 @@ export default (nitroApp: NitroApp) => {
   nitroApp.hooks.hook('response', () => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
-    const path = ctx.event.url.pathname + ctx.event.url.search + ctx.event.url.hash
+    const url = new URL(ctx.request.url)
+    const path = url.pathname + url.search + url.hash
     return nitroApp.hooks.callHook('dev:ssr-logs', { logs: ctx.logs, path })
   })
 
@@ -78,7 +83,7 @@ export default (nitroApp: NitroApp) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     try {
-      const reducers = Object.assign(Object.create(null), devReducers, ctx.event.context._payloadReducers)
+      const reducers = Object.assign(Object.create(null), devReducers, ctx.request.context?._payloadReducers)
       htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
     } catch (e) {
       const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''

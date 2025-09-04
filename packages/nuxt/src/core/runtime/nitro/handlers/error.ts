@@ -18,13 +18,18 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // let Nitro handle redirect if appropriate
   const statusCode = error.status || 500
+  // TODO: investigate existing headers
+  const headers = new Headers(error.headers)
   if (statusCode === 404 && defaultRes.status === 302) {
     for (const [header, value] of Object.entries(defaultRes.headers)) {
-      event.res.headers.set(header, value)
+      headers.set(header, value)
     }
-    event.res.status = defaultRes.status
-    event.res.statusText = defaultRes.statusText
-    return JSON.stringify(defaultRes.body, null, 2)
+
+    return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
+      headers,
+      status: defaultRes.status,
+      statusText: defaultRes.statusText,
+    })
   }
 
   if (import.meta.dev && typeof defaultRes.body !== 'string' && Array.isArray(defaultRes.body.stack)) {
@@ -32,6 +37,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     defaultRes.body.stack = defaultRes.body.stack.join('\n')
   }
 
+  // TODO: use Nitro format error object
   const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusText' | 'message' | 'stack'> & { url: string, data: any }
   // remove proto/hostname/port from URL
   const url = new URL(errorObject.url)
@@ -50,7 +56,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       header === 'content-security-policy') {
       continue
     }
-    event.res.headers.set(header, defaultRes.headers[header]!)
+    headers.set(header, defaultRes.headers[header]!)
   }
 
   // Detect to avoid recursion in SSR rendering of errors
@@ -81,21 +87,29 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
-    event.res.headers.set('Content-Type', 'text/html;charset=UTF-8')
-    return template(errorObject)
+    headers.set('Content-Type', 'text/html;charset=UTF-8')
+
+    return new Response(template(errorObject), {
+      headers,
+      status: defaultRes.status,
+      statusText: defaultRes.statusText,
+    })
   }
 
   const html = await res.text()
   for (const [header, value] of res.headers.entries()) {
     if (header === 'set-cookie') {
-      event.res.headers.append(header, value)
+      headers.append(header, value)
       continue
     }
-    event.res.headers.set(header, value)
+    headers.set(header, value)
   }
-  event.res.status = res.status && res.status !== 200 ? res.status : defaultRes.status
-  event.res.statusText = res.statusText || defaultRes.statusText
 
-  event.res.headers.set('Content-Type', 'text/html;charset=UTF-8')
-  return html
+  headers.set('Content-Type', 'text/html;charset=UTF-8')
+
+  return new Response(html, {
+    headers,
+    status: res.status && res.status !== 200 ? res.status : defaultRes.status,
+    statusText: res.statusText || defaultRes.statusText,
+  })
 }

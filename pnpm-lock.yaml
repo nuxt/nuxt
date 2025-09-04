@@ -502,6 +502,9 @@ importers:
       semver:
         specifier: ^7.7.2
         version: 7.7.2
+      srvx:
+        specifier: ^0.8.7
+        version: 0.8.7
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
