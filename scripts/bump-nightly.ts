@@ -1,7 +1,6 @@
 import { execSync } from 'node:child_process'
 import { inc } from 'semver'
-import { consola } from 'consola'
-import { determineBumpType, loadWorkspace } from './_utils'
+import { determineBumpType, loadWorkspace } from './_utils.ts'
 
 const nightlyPackages = {
   // nitro: 'nitro-nightly',
@@ -10,7 +9,7 @@ const nightlyPackages = {
   '@nuxt/cli': '@nuxt/cli-nightly',
 }
 
-async function main () {
+export async function bumpNightly () {
   const workspace = await loadWorkspace(process.cwd())
 
   const commit = execSync('git rev-parse --short HEAD').toString('utf-8').trim().slice(0, 8)
@@ -20,6 +19,10 @@ async function main () {
 
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
     const newVersion = inc(pkg.data.version, bumpType || 'patch')
+    if (!newVersion) {
+      throw new Error(`Failed to increment version for package ${pkg.data.name} with version ${pkg.data.version}`)
+    }
+
     workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`, {
       updateDeps: true,
     })
@@ -34,8 +37,3 @@ async function main () {
 
   await workspace.save()
 }
-
-main().catch((err) => {
-  consola.error(err)
-  process.exit(1)
-})

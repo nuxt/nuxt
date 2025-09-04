@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@3c3833e0f8c1c83d449a7478aa59c036a9165498 # v3.29.11
+        uses: github/codeql-action/init@2d92b76c45b91eb80fc44c74ce3fce0ee94e8f9d # v3.30.0
         with:
           config: |
             paths:
@@ -97,7 +97,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@3c3833e0f8c1c83d449a7478aa59c036a9165498 # v3.29.11
+        uses: github/codeql-action/analyze@2d92b76c45b91eb80fc44c74ce3fce0ee94e8f9d # v3.30.0
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -354,8 +354,10 @@ jobs:
           name: dist
           path: packages
 
-      - name: Release Edge
-        run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
+      - name: Release nightly
+        run: node scripts/release.ts --nightly
+        env:
+          TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
