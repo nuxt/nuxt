@@ -41,7 +41,7 @@ jobs:
       - name: 🛠 Build and release project
         run: node scripts/release.ts
         env:
-          TAG: ${{ startsWith(github.event.pull_request.head.ref, 'v3.') && '3x' || 'latest,4x' }}
+          TAG: ${{ startsWith(github.event.pull_request.head.ref, 'v3.') && '3x' || 'latest' }}
 
       - name: 🏷️ Create tag
         env:
