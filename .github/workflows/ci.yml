@@ -354,8 +354,10 @@ jobs:
           name: dist
           path: packages
 
-      - name: Release Edge
-        run: node scripts/release.ts --nightly ${{ github.ref == 'refs/heads/main' && 'latest,4x' || '3x' }}
+      - name: Release nightly
+        run: node scripts/release.ts --nightly
+        env:
+          TAG: ${{ github.ref == 'refs/heads/main' && 'latest,4x' || '3x' }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
