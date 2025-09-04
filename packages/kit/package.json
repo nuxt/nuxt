@@ -55,7 +55,7 @@
     "@rspack/core": "1.5.2",
     "@types/semver": "7.7.0",
     "hookable": "5.5.3",
-    "nitro": "npm:nitro-nightly@3.0.0-20250813-215004.83c70b01",
+    "nitro": "npm:nitro-nightly@3.0.0-20250902-180946-7e25f691",
     "unbuild": "3.6.1",
     "vite": "7.1.4",
     "vitest": "3.2.4",

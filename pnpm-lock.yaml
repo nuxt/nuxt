@@ -20,10 +20,10 @@ overrides:
   '@vue/shared': 3.5.20
   c12: 3.2.0
   compatx: 0.2.0
-  h3: 2.0.0-beta.2
+  h3: 2.0.0-beta.4
   jiti: 2.5.1
   magic-string: 0.30.18
-  nitro: npm:nitro-nightly@3.0.0-20250819-124400.b8658302
+  nitro: npm:nitro-nightly@3.0.0-20250902-180946-7e25f691
   nuxt: workspace:*
   postcss: 8.5.6
   rollup: 4.50.0
@@ -155,8 +155,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+        specifier: 2.0.0-beta.4
+        version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       happy-dom:
         specifier: 18.0.1
         version: 18.0.1
@@ -182,8 +182,8 @@ importers:
         specifier: 4.38.2
         version: 4.38.2
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250819-124400.b8658302
-        version: nitro-nightly@3.0.0-20250819-124400.b8658302(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
+        specifier: npm:nitro-nightly@3.0.0-20250902-180946-7e25f691
+        version: nitro-nightly@3.0.0-20250902-180946-7e25f691(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -338,8 +338,8 @@ importers:
         specifier: 5.5.3
         version: 5.5.3
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250819-124400.b8658302
-        version: nitro-nightly@3.0.0-20250819-124400.b8658302(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
+        specifier: npm:nitro-nightly@3.0.0-20250902-180946-7e25f691
+        version: nitro-nightly@3.0.0-20250902-180946-7e25f691(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
       unbuild:
         specifier: 3.6.1
         version: 3.6.1(typescript@5.9.2)(vue-sfc-transformer@0.1.16(@vue/compiler-core@3.5.20)(esbuild@0.25.9)(vue@3.5.20(typescript@5.9.2)))(vue-tsc@3.0.6(typescript@5.9.2))(vue@3.5.20(typescript@5.9.2))
@@ -425,8 +425,8 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7
       h3:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+        specifier: 2.0.0-beta.4
+        version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -458,8 +458,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250819-124400.b8658302
-        version: nitro-nightly@3.0.0-20250819-124400.b8658302(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
+        specifier: npm:nitro-nightly@3.0.0-20250902-180946-7e25f691
+        version: nitro-nightly@3.0.0-20250902-180946-7e25f691(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
       nypm:
         specifier: ^0.6.1
         version: 0.6.1
@@ -615,8 +615,8 @@ importers:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.101.3(esbuild@0.25.9))
       h3:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+        specifier: 2.0.0-beta.4
+        version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       jiti:
         specifier: 2.5.1
         version: 2.5.1
@@ -788,8 +788,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.101.3(esbuild@0.25.9))
       h3:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+        specifier: 2.0.0-beta.4
+        version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -800,8 +800,8 @@ importers:
         specifier: 2.9.4
         version: 2.9.4(webpack@5.101.3(esbuild@0.25.9))
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250819-124400.b8658302
-        version: nitro-nightly@3.0.0-20250819-124400.b8658302(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
+        specifier: npm:nitro-nightly@3.0.0-20250902-180946-7e25f691
+        version: nitro-nightly@3.0.0-20250902-180946-7e25f691(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -944,8 +944,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.6))
+        specifier: 2.0.0-beta.4
+        version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.6))
       jiti:
         specifier: 2.5.1
         version: 2.5.1
@@ -1002,8 +1002,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20250819-124400.b8658302
-        version: nitro-nightly@3.0.0-20250819-124400.b8658302(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
+        specifier: npm:nitro-nightly@3.0.0-20250902-180946-7e25f691
+        version: nitro-nightly@3.0.0-20250902-180946-7e25f691(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0))
       rollup:
         specifier: 4.50.0
         version: 4.50.0
@@ -1050,8 +1050,8 @@ importers:
         specifier: ^9.1.0
         version: 9.1.0(typescript@5.9.2)(webpack@5.101.3(esbuild@0.25.9))
       h3:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+        specifier: 2.0.0-beta.4
+        version: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       jiti:
         specifier: 2.5.1
         version: 2.5.1
@@ -2794,8 +2794,8 @@ packages:
   '@shikijs/core@1.29.2':
     resolution: {integrity: sha512-vju0lY9r27jJfOY4Z7+Rt/nIOjzJpZ3y+nYpqtUZInVoXQ/TJZcfGnNOGnKjFdVZb8qexiCuSlZRKcGfhhTTZQ==}
 
-  '@shikijs/core@3.12.1':
-    resolution: {integrity: sha512-j9+UDQ6M50xvaSR/e9lg212H0Fqxy3lYd39Q6YITYQxfrb5VYNUKPLZp4PN9f+YmRcdpyNAm3obn/tIZ2WkUWg==}
+  '@shikijs/core@3.12.2':
+    resolution: {integrity: sha512-L1Safnhra3tX/oJK5kYHaWmLEBJi1irASwewzY3taX5ibyXyMkkSDZlq01qigjryOBwrXSdFgTiZ3ryzSNeu7Q==}
 
   '@shikijs/core@3.8.1':
     resolution: {integrity: sha512-uTSXzUBQ/IgFcUa6gmGShCHr4tMdR3pxUiiWKDm8pd42UKJdYhkAYsAmHX5mTwybQ5VyGDgTjW4qKSsRvGSang==}
@@ -2827,16 +2827,16 @@ packages:
   '@shikijs/transformers@3.8.1':
     resolution: {integrity: sha512-nmTyFfBrhJk6HJi118jes0wuWdfKXeVUq1Nq+hm8h6wbk1KUfvtg+LY/uDfxZD2VDItHO3QoINIs3NtoKBmgxw==}
 
-  '@shikijs/twoslash@3.12.1':
-    resolution: {integrity: sha512-hDELTuDBqOfBgGrltbw0f0DEe65hg5q0HZSMdWpYD4nsWd7WHYSdj+UkGZHqRlWxplgDrwJnLwOH3rf/M/Fmog==}
+  '@shikijs/twoslash@3.12.2':
+    resolution: {integrity: sha512-JthKvEvyE/gbu3u693mhNhEO6GYP1vetrwgEfqTAsT/G9AJ6nf7g7JVqdTSs+axdfilGWzZKeYdjfyanu/v5AA==}
     peerDependencies:
       typescript: 5.9.2
 
   '@shikijs/types@1.29.2':
     resolution: {integrity: sha512-VJjK0eIijTZf0QSTODEXCqinjBn0joAHQ+aPSBzrv4O2d/QSbsMw+ZeSRx03kV34Hy7NzUvV/7NqfYGRLrASmw==}
 
-  '@shikijs/types@3.12.1':
-    resolution: {integrity: sha512-Is/p+1vTss22LIsGCJTmGrxu7ZC1iBL9doJFYLaZ4aI8d0VDXb7Mn0kBzhkc7pdsRpmUbQLQ5HXwNpa3H6F8og==}
+  '@shikijs/types@3.12.2':
+    resolution: {integrity: sha512-K5UIBzxCyv0YoxN3LMrKB9zuhp1bV+LgewxuVwHdl4Gz5oePoUFrr9EfgJlGlDeXCU1b/yhdnXeuRvAnz8HN8Q==}
 
   '@shikijs/types@3.8.1':
     resolution: {integrity: sha512-5C39Q8/8r1I26suLh+5TPk1DTrbY/kn3IdWA5HdizR0FhlhD05zx5nKCqhzSfDHH3p4S0ZefxWd77DLV+8FhGg==}
@@ -3286,8 +3286,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@vercel/nft@0.30.0':
-    resolution: {integrity: sha512-xVye7Z0riD9czsMuEJYpFqm2FR33r3euYaFzuEPCoUtYuDwmus3rJfKtcFU7Df+pgj8p4zs78x5lOWYoLNr+7Q==}
+  '@vercel/nft@0.30.1':
+    resolution: {integrity: sha512-2mgJZv4AYBFkD/nJ4QmiX5Ymxi+AisPLPcS/KPXVqniyQNqKXX+wjieAbDXQP3HcogfEbpHoRMs49Cd4pfkk8g==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4965,8 +4965,8 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  h3@2.0.0-beta.2:
-    resolution: {integrity: sha512-OhNyXpQoYbPVJelgKRGF/6mQxV8I2jyfueN0Q9F0D/j4qBXpu8A4bKp5MPTYH7AwmkP1hUi3o4JvjIxrFmwpDg==}
+  h3@2.0.0-beta.4:
+    resolution: {integrity: sha512-/JdwHUGuHjbBXAVxQN7T7QeI9cVlhsqMKVNFHebZVs9RoEYH85Ogh9O1DEy/1ZiJkmMwa1gNg6bBcGhc1Itjdg==}
     engines: {node: '>=20.11.1'}
     peerDependencies:
       crossws: ^0.4.1
@@ -6033,9 +6033,9 @@ packages:
     resolution: {integrity: sha512-Nc3loyVASW59W+8fLDZT1lncpG7llffyZ2o0UQLx/Fr20i7P8oP+lE7+TEcFvXj9IUWU6LjB9P3BH+iFGyp+mg==}
     engines: {node: ^14.16.0 || >=16.0.0}
 
-  nitro-nightly@3.0.0-20250819-124400.b8658302:
-    resolution: {integrity: sha512-/5nzJNIBJsqmcWq2tj36g/811dc4tntQSsqqcgGCIA4y7i4Y3JdIDb4g07jc+st/PljQ/FOLJjFBHUr76e7omg==}
-    engines: {node: '>=20.11.1'}
+  nitro-nightly@3.0.0-20250902-180946-7e25f691:
+    resolution: {integrity: sha512-w2YyWrhs9xme6JB/GyxCcrJBdtbOJEvTQpge0UXNdi7FXpXpMqHxX3oft8oZ8xU3Coo7/N96HRe1g4qBcQSJ/Q==}
+    engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
       rolldown: '*'
@@ -7573,8 +7573,8 @@ packages:
     resolution: {integrity: sha512-gBLkYIlEnSp8pFbT64yFgGE6UIB9tAkhukC23PmMDCe5Nd+cRqKxSjw5y54MK2AZMgZfJWMaNE4nYUHgi1XEOw==}
     engines: {node: '>=18.17'}
 
-  undici@7.14.0:
-    resolution: {integrity: sha512-Vqs8HTzjpQXZeXdpsfChQTlafcMQaaIwnGwLam1wudSSjlJeQ3bw1j+TLPePgrCnCpUXx7Ba5Pdpf5OBih62NQ==}
+  undici@7.15.0:
+    resolution: {integrity: sha512-7oZJCPvvMvTd0OlqWsIxTuItTpJBpU1tcbVl24FMn3xt3+VSunwUasmfPJRE57oNO1KsZ4PgA1xTdAX4hq8NyQ==}
     engines: {node: '>=20.18.1'}
 
   unenv@2.0.0-rc.19:
@@ -8935,7 +8935,7 @@ snapshots:
       fuse.js: 7.1.0
       get-port-please: 3.2.0
       giget: 2.0.0
-      h3: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+      h3: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       httpxy: 0.1.7
       jiti: 2.5.1
       listhen: 1.9.0
@@ -9070,7 +9070,7 @@ snapshots:
       '@vueuse/core': 13.7.0(vue@3.5.20(typescript@5.9.2))
       consola: 3.4.2
       defu: 6.1.4
-      h3: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+      h3: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       magic-string: 0.30.18
       ofetch: 1.4.1
       ohash: 2.0.11
@@ -9131,7 +9131,7 @@ snapshots:
       estree-walker: 3.0.3
       fake-indexeddb: 6.0.1
       get-port-please: 3.2.0
-      h3: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+      h3: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       local-pkg: 1.1.2
       magic-string: 0.30.18
       node-fetch-native: 1.6.7
@@ -9776,9 +9776,9 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
-  '@shikijs/core@3.12.1':
+  '@shikijs/core@3.12.2':
     dependencies:
-      '@shikijs/types': 3.12.1
+      '@shikijs/types': 3.12.2
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
@@ -9833,10 +9833,10 @@ snapshots:
       '@shikijs/core': 3.8.1
       '@shikijs/types': 3.8.1
 
-  '@shikijs/twoslash@3.12.1(typescript@5.9.2)':
+  '@shikijs/twoslash@3.12.2(typescript@5.9.2)':
     dependencies:
-      '@shikijs/core': 3.12.1
-      '@shikijs/types': 3.12.1
+      '@shikijs/core': 3.12.2
+      '@shikijs/types': 3.12.2
       twoslash: 0.3.4(typescript@5.9.2)
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -9847,7 +9847,7 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
-  '@shikijs/types@3.12.1':
+  '@shikijs/types@3.12.2':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -9859,7 +9859,7 @@ snapshots:
 
   '@shikijs/vitepress-twoslash@1.29.2(@nuxt/kit@packages+kit)(typescript@5.9.2)':
     dependencies:
-      '@shikijs/twoslash': 3.12.1(typescript@5.9.2)
+      '@shikijs/twoslash': 3.12.2(typescript@5.9.2)
       floating-vue: 5.2.2(@nuxt/kit@packages+kit)(vue@3.5.20(typescript@5.9.2))
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.1.0
@@ -10415,7 +10415,7 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
 
-  '@vercel/nft@0.30.0(rollup@4.50.0)':
+  '@vercel/nft@0.30.1(rollup@4.50.0)':
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.0
       '@rollup/pluginutils': 5.2.0(rollup@4.50.0)
@@ -12292,7 +12292,7 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3@2.0.0-beta.2(crossws@0.3.5):
+  h3@2.0.0-beta.4(crossws@0.3.5):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.6
@@ -12301,7 +12301,7 @@ snapshots:
     optionalDependencies:
       crossws: 0.3.5
 
-  h3@2.0.0-beta.2(crossws@0.4.1(srvx@0.8.6)):
+  h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.8.6)):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.6
@@ -12310,7 +12310,7 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.1(srvx@0.8.6)
 
-  h3@2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7)):
+  h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7)):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.6
@@ -12997,7 +12997,7 @@ snapshots:
       crossws: 0.3.5
       defu: 6.1.4
       get-port-please: 3.2.0
-      h3: 2.0.0-beta.2(crossws@0.3.5)
+      h3: 2.0.0-beta.4(crossws@0.3.5)
       http-shutdown: 1.2.2
       jiti: 2.5.1
       mlly: 1.8.0
@@ -13642,7 +13642,7 @@ snapshots:
       qs: 6.14.0
     optional: true
 
-  nitro-nightly@3.0.0-20250819-124400.b8658302(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0)):
+  nitro-nightly@3.0.0-20250902-180946-7e25f691(@netlify/blobs@9.1.2)(vite@7.1.4(@types/node@22.18.0)(jiti@2.5.1)(terser@5.43.1)(yaml@2.8.0)):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.50.0)
       '@rollup/plugin-commonjs': 28.0.6(rollup@4.50.0)
@@ -13652,7 +13652,7 @@ snapshots:
       '@rollup/plugin-replace': 6.0.2(rollup@4.50.0)
       '@rollup/plugin-terser': 0.4.4(rollup@4.50.0)
       '@types/http-proxy': 1.17.16
-      '@vercel/nft': 0.30.0(rollup@4.50.0)
+      '@vercel/nft': 0.30.1(rollup@4.50.0)
       c12: 3.2.0(magicast@0.3.5)
       chokidar: 4.0.3
       citty: 0.1.6
@@ -13674,7 +13674,7 @@ snapshots:
       fs-extra: 11.3.1
       globby: 14.1.0
       gzip-size: 7.0.0
-      h3: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+      h3: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       hookable: 5.5.3
       httpxy: 0.1.7
       ioredis: 5.7.0
@@ -13689,7 +13689,7 @@ snapshots:
       ofetch: 1.4.1
       ohash: 2.0.11
       pathe: 2.0.3
-      perfect-debounce: 1.0.0
+      perfect-debounce: 2.0.0
       pkg-types: 2.3.0
       pretty-bytes: 7.0.1
       rollup: 4.50.0
@@ -13706,10 +13706,10 @@ snapshots:
       ultrahtml: 1.6.0
       uncrypto: 0.1.3
       unctx: 2.4.1
-      undici: 7.14.0
+      undici: 7.15.0
       unenv: 2.0.0-rc.19
       unimport: 5.2.0
-      unplugin-utils: 0.2.5
+      unplugin-utils: 0.3.0
       unstorage: 1.17.0(@netlify/blobs@9.1.2)(crossws@0.4.1(srvx@0.8.7))(db0@0.3.2)(ioredis@5.7.0)
       untyped: 2.0.0
       unwasm: 0.3.11
@@ -15456,7 +15456,7 @@ snapshots:
 
   undici@6.21.3: {}
 
-  undici@7.14.0: {}
+  undici@7.15.0: {}
 
   unenv@2.0.0-rc.19:
     dependencies:
@@ -15637,7 +15637,7 @@ snapshots:
       anymatch: 3.1.3
       chokidar: 4.0.3
       destr: 2.0.5
-      h3: 2.0.0-beta.2(crossws@0.4.1(srvx@0.8.7))
+      h3: 2.0.0-beta.4(crossws@0.4.1(srvx@0.8.7))
       lru-cache: 10.4.3
       node-fetch-native: 1.6.7
       ofetch: 1.4.1
