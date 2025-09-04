@@ -25,7 +25,7 @@ We can use `useRequestHeader` to easily figure out if a user is authorized or no
 
 The example below reads the `authorization` request header to find out if a person can access a restricted resource.
 
-```ts [middleware/authorized-only.ts]
+```ts [app/middleware/authorized-only.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
   if (!useRequestHeader('authorization')) {
     return navigateTo('/not-authorized')

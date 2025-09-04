@@ -42,7 +42,7 @@ export function onPrehydrate(callback: string | ((el: HTMLElement) => void), key
 
 ## Example
 
-```vue twoslash [app.vue]
+```vue twoslash [app/app.vue]
 <script setup lang="ts">
 declare const window: Window
 // ---cut---

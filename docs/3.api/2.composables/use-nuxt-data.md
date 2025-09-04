@@ -34,14 +34,14 @@ To use `useNuxtData`, ensure that the data-fetching composable (`useFetch`, `use
 
 The example below shows how you can use cached data as a placeholder while the most recent data is being fetched from the server.
 
-```vue [pages/posts.vue]
+```vue [app/pages/posts.vue]
 <script setup lang="ts">
 // We can access same data later using 'posts' key
 const { data } = await useFetch('/api/posts', { key: 'posts' })
 </script>
 ```
 
-```vue [pages/posts/[id\\].vue]
+```vue [app/pages/posts/[id\\].vue]
 <script setup lang="ts">
 // Access to the cached value of useFetch in posts.vue (parent route)
 const { data: posts } = useNuxtData('posts')
@@ -64,14 +64,14 @@ The example below shows how implementing Optimistic Updates can be achieved usin
 
 Optimistic Updates is a technique where the user interface is updated immediately, assuming a server operation will succeed. If the operation eventually fails, the UI is rolled back to its previous state.
 
-```vue [pages/todos.vue]
+```vue [app/pages/todos.vue]
 <script setup lang="ts">
 // We can access same data later using 'todos' key
 const { data } = await useAsyncData('todos', () => $fetch('/api/todos'))
 </script>
 ```
 
-```vue [components/NewTodo.vue]
+```vue [app/components/NewTodo.vue]
 <script setup lang="ts">
 const newTodo = ref('')
 let previousTodos = []

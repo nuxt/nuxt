@@ -22,7 +22,7 @@ This is useful for updating the `useCookie` ref when we know the new cookie valu
 
 ## Usage
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const tokenCookie = useCookie('token')
 

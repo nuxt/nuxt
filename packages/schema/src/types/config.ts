@@ -88,7 +88,7 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'd
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
   }
-  _layers: NuxtConfigLayer[]
+  _layers: readonly NuxtConfigLayer[]
   $schema: SchemaDefinition
 }
 

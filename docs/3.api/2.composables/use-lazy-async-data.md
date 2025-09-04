@@ -20,7 +20,7 @@ By default, [`useAsyncData`](/docs/api/composables/use-async-data) blocks naviga
 
 ## Example
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 /* Navigation will occur before fetching is complete.
   Handle 'pending' and 'error' states directly within your component's template

@@ -75,7 +75,7 @@ const { enabled, state } = usePreviewMode({
 
 The example below creates a page where part of a content is rendered only in preview mode.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup>
 const { enabled, state } = usePreviewMode()
 

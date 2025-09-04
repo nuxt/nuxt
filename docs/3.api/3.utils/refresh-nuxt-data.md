@@ -34,7 +34,7 @@ refreshNuxtData(keys?: string | string[])
 
 This example below refreshes all data being fetched using `useAsyncData` and `useFetch` in Nuxt application.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
 
@@ -61,7 +61,7 @@ async function refreshAll () {
 
 This example below refreshes only data where the key matches to `count` and `user`.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
 

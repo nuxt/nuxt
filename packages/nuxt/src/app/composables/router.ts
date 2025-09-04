@@ -10,6 +10,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
+import { getUserTrace } from '../utils'
 
 /** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
@@ -19,7 +20,9 @@ export const useRouter: typeof _useRouter = () => {
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
-    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/guide/directory-structure/app/middleware#accessing-route-in-middleware')
+    const middleware = useNuxtApp()._processingMiddleware
+    const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
+    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/guide/directory-structure/app/middleware#accessing-route-in-middleware` + ('\n' + trace))
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)
@@ -108,14 +111,32 @@ export type OpenOptions = {
 }
 
 export interface NavigateToOptions {
+  /**
+   * Whether or not the given route should replace the current route in the navigation history, rather than push it.
+   */
   replace?: boolean
+  /**
+   * The status code to emit with the navigation. Defaults to `302 Found` when used on server side redirects.
+   */
   redirectCode?: number
+  /**
+   * Whether or not the given route is a website/resource from a different origin. By default, navigating to external resources without setting `external: true` would result in an error.
+   */
   external?: boolean
   open?: OpenOptions
 }
 
 const URL_QUOTE_RE = /"/g
-/** @since 3.0.0 */
+/**
+ * A helper that aids in programmatic navigation within your Nuxt application.
+ *
+ * Can be called on the server and on the client, within pages, route middleware, plugins, and more.
+ * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
+ * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
+ * @returns {Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw} The navigation result, which varies depending on context and options.
+ * @see https://nuxt.com/docs/api/utils/navigate-to
+ * @since 3.0.0
+ */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   to ||= '/'
 

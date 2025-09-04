@@ -47,21 +47,21 @@ npx nuxt add plugin sockets --client
 * Modifier flags: `--mode client|server` or `--client` or `--server`
 
 ```bash [Terminal]
-# Generates `components/TheHeader.vue`
+# Generates `app/components/TheHeader.vue`
 npx nuxt add component TheHeader
 ```
 
 ## `nuxt add composable`
 
 ```bash [Terminal]
-# Generates `composables/foo.ts`
+# Generates `app/composables/foo.ts`
 npx nuxt add composable foo
 ```
 
 ## `nuxt add layout`
 
 ```bash [Terminal]
-# Generates `layouts/custom.vue`
+# Generates `app/layouts/custom.vue`
 npx nuxt add layout custom
 ```
 
@@ -70,19 +70,19 @@ npx nuxt add layout custom
 * Modifier flags: `--mode client|server` or `--client`or `--server`
 
 ```bash [Terminal]
-# Generates `plugins/analytics.ts`
+# Generates `app/plugins/analytics.ts`
 npx nuxt add plugin analytics
 ```
 
 ## `nuxt add page`
 
 ```bash [Terminal]
-# Generates `pages/about.vue`
+# Generates `app/pages/about.vue`
 npx nuxt add page about
 ```
 
 ```bash [Terminal]
-# Generates `pages/category/[id].vue`
+# Generates `app/pages/category/[id].vue`
 npx nuxt add page "category/[id]"
 ```
 
@@ -91,7 +91,7 @@ npx nuxt add page "category/[id]"
 * Modifier flags: `--global`
 
 ```bash [Terminal]
-# Generates `middleware/auth.ts`
+# Generates `app/middleware/auth.ts`
 npx nuxt add middleware auth
 ```
 
