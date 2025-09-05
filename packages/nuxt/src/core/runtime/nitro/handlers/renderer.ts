@@ -31,6 +31,7 @@ import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifes
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { relative } from 'pathe'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -188,10 +189,18 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
-    if (!entryPath) {
-      entryPath = buildAssetsURL(entryFileName)
-      if (!/^(?:\/|\.+\/)/.test(entryPath)) {
-        entryPath = './' + entryPath
+    let path = entryPath
+    if (!path) {
+      path = buildAssetsURL(entryFileName) as string
+      if (/^(?:\/|\.+\/)/.test(path)) {
+        // cache absolute entry path
+        entryPath = path
+      } else {
+        // relativise path
+        path = relative(event.path.replace(/\/[^/]+$/, '/'), joinURL('/', path))
+        if (!/^(?:\/|\.+\/)/.test(path)) {
+          path = `./${path}`
+        }
       }
     }
     ssrContext.head.push({
@@ -199,7 +208,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         tagPosition: 'head',
         tagPriority: -2,
         type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': entryPath } }),
+        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
       }],
     }, headEntryOptions)
   }
