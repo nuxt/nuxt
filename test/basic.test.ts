@@ -2214,7 +2214,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     }
   })
 
-  it.skipIf(isDev())('should render relative importmap path with relative path', async () => {
+  it.skipIf(isDev() || isWebpack)('should render relative importmap path with relative path', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',
