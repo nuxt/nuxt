@@ -18,8 +18,7 @@ describe('extract async data handlers plugin', () => {
       const result = plugin.transform.handler(code, id)
       return result?.code ? clean(result.code) : result?.code
     }
-    Object.assign(fn, { load: (id: string) => clean(plugin.load(id)?.code) || undefined })
-    return fn
+    return Object.assign(fn, { load: (id: string) => clean(plugin.load(id)?.code) || undefined })
   }
 
   describe('basic functionality', () => {
