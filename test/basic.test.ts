@@ -2214,6 +2214,18 @@ describe.skipIf(isDev())('dynamic paths', () => {
     }
   })
 
+  it('should render relative importmap path with relative path', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '',
+        NUXT_APP_BUILD_ASSETS_DIR: 'assets/',
+      },
+    })
+
+    const html = await $fetch<string>('/')
+    expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
+  })
+
   it('restore server', async () => {
     await startServer()
   })
