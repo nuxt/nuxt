@@ -224,7 +224,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
           try {
             if (import.meta.dev) {
-              nuxtApp._processingMiddleware = (typeof entry === 'string' ? entry : middleware.name) || true
+              nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
             }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
