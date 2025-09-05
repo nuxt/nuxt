@@ -1147,9 +1147,7 @@ describe('errors', () => {
     url.host = 'localhost:3000'
     error.url = url.toString()
     expect(error).toMatchObject({
-      message: isDev() ? 'This is a custom error' : 'Server Error',
-      statusCode: 422,
-      statusMessage: 'This is a custom error',
+      message: 'This is a custom error',
       url: 'http://localhost:3000/error',
     })
   })
@@ -1177,8 +1175,8 @@ describe('errors', () => {
       {
         "error": true,
         "message": "Page Not Found: /__nuxt_error",
-        "statusCode": 404,
-        "statusMessage": "Page Not Found: /__nuxt_error",
+        "status": 404,
+        "statusText": "Page Not Found: /__nuxt_error",
         "url": "http://localhost:3000/__nuxt_error",
       }
     `)

@@ -212,6 +212,7 @@ export default createConfigForNuxt({
                   '@unhead',
                   '@vue',
                   '@vue/shared',
+                  'ofetch',
                   'vue/server-renderer',
                   'vue',
                   'vue-router',
