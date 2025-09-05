@@ -196,6 +196,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         // cache absolute entry path
         entryPath = path
       } else {
+        // TODO: provide support for relative paths in assets as well
         // relativise path
         path = relative(event.path.replace(/\/[^/]+$/, '/'), joinURL('/', path))
         if (!/^(?:\/|\.+\/)/.test(path)) {
