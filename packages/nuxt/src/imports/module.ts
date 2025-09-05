@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, resolvePath, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
@@ -10,9 +10,14 @@ import { isDirectory, logger, resolveToAlias } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets } from './presets'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
-import { distDir } from '../dirs.ts'
 
-const NUXT_APP_RE = /^#app\b/
+import { pagesImportPresets, routeRulesPresets } from '../pages/module'
+
+const allNuxtPresets = [
+  ...pagesImportPresets,
+  ...routeRulesPresets,
+  ...defaultPresets,
+]
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
@@ -124,24 +129,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
 
-    const nuxtImportNamesFromPresets = new Set<string>(
-      (await Promise.all(presets.map(
-        async p => (p.type !== true && (NUXT_APP_RE.test(p.from) || await resolvePath(p.from).then(path => path.startsWith(distDir))))
-          ? p.imports.map(i =>
-            typeof i === 'string'
-              ? i
-              : Array.isArray(i)
-                ? i[1] || i[0]
-                : typeof i === 'object' && 'name' in i
-                  ? i.as || i.name
-                  : undefined,
-          )
-            .filter(Boolean) as string[]
-          : [],
-      ))).flat(),
-    )
-
     const isIgnored = createIsIgnored(nuxt)
+    const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
+    const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -160,27 +150,13 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
-
-        const nuxtImportNames = new Set(
-          await Promise.all(imports.map(
-            async i => (NUXT_APP_RE.test(i.from) || (await resolvePath(i.from)).startsWith(distDir))
-              ? i.name
-              : null,
-          )).then(r => r.filter(Boolean)),
-        )
-
         for (const i of imports) {
-          const value = i.as || i.name
-          if (
-            // import name is the same as a nuxt import
-            (nuxtImportNames.has(value) || nuxtImportNamesFromPresets.has(value))
-              // source is outside nuxt
-              && !((await resolvePath(i.from)).startsWith(distDir))
-              // isn't an intentional override (by a module, for example)
-              && (!i.priority || i.priority >= 0 /* default priority */)
-          ) {
-            const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
-            logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
+          if (!nuxtImportSources.has(i.from)) {
+            const value = i.as || i.name
+            if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
+              const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
+              logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
+            }
           }
         }
 

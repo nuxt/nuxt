@@ -20,10 +20,20 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 const runtimeDir = resolve(distDir, 'pages/runtime')
+
+export const pagesImportPresets: InlinePreset[] = [
+  { imports: ['definePageMeta'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['useLink'], from: 'vue-router' },
+]
+
+export const routeRulesPresets: InlinePreset[] = [
+  { imports: ['defineRouteRules'], from: resolve(runtimeDir, 'composables') },
+]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
   const context = {
@@ -418,13 +428,10 @@ export default defineNuxtModule({
       nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
-    nuxt.hook('imports:extend', (imports) => {
-      imports.push(
-        { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
-        { name: 'useLink', as: 'useLink', from: 'vue-router' },
-      )
+    nuxt.hook('imports:sources', (sources) => {
+      sources.push(...pagesImportPresets)
       if (nuxt.options.experimental.inlineRouteRules) {
-        imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
+        sources.push(...routeRulesPresets)
       }
     })
 
