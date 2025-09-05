@@ -6,7 +6,7 @@ import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
-import { filename } from 'pathe/utils'
+import { filename, reverseResolveAlias } from 'pathe/utils'
 import type { Nitro } from 'nitropack'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
@@ -329,14 +329,38 @@ export const layoutTemplate: NuxtTemplate = {
 // Add middleware template
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
-  getContents ({ app }) {
+  getContents ({ app, nuxt }) {
     const globalMiddleware = app.middleware.filter(mw => mw.global)
     const namedMiddleware = app.middleware.filter(mw => !mw.global)
-    const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
+    const alias = nuxt.options.dev ? { ...nuxt?.options.alias || {}, ...strippedAtAliases } : {}
     return [
       ...globalMiddleware.map(mw => genImport(mw.path, genSafeVariableName(mw.name))),
-      `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
-      `export const namedMiddleware = ${namedMiddlewareObject}`,
+      ...!nuxt.options.dev
+        ? [
+            `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
+            `export const namedMiddleware = ${genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))}`,
+          ]
+        : [
+            `const _globalMiddleware = ${genObjectFromRawEntries(globalMiddleware.map(mw => [reverseResolveAlias(mw.path, alias).pop() || mw.path, genSafeVariableName(mw.name)]))}`,
+            `for (const path in _globalMiddleware) {`,
+            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path })`,
+            `}`,
+            `export const globalMiddleware = Object.values(_globalMiddleware)`,
+            `const _namedMiddleware = ${genArrayFromRaw(namedMiddleware.map(mw => ({
+              name: genString(mw.name),
+              path: genString(reverseResolveAlias(mw.path, alias).pop() || mw.path),
+              import: genDynamicImport(mw.path),
+            })))}`,
+            `for (const mw of _namedMiddleware) {`,
+            `  const i = mw.import`,
+            `  mw.import = () => i().then(r => {`,
+            `    Object.defineProperty(r.default || r, '_path', { value: mw.path })`,
+            `    return r`,
+            `  })`,
+            `}`,
+            `export const namedMiddleware = Object.fromEntries(_namedMiddleware.map(mw => [mw.name, mw.import]))`,
+          ],
+
     ].join('\n')
   },
 }
@@ -616,4 +640,9 @@ export const buildTypeTemplate: NuxtTemplate = {
 
     return declarations
   },
+}
+
+const strippedAtAliases = {
+  '@': '',
+  '@@': '',
 }
