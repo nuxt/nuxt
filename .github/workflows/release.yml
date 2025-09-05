@@ -39,7 +39,7 @@ jobs:
         run: pnpm dev:prepare
 
       - name: 🛠 Build and release project
-        run: ./scripts/release.sh
+        run: node scripts/release.ts
         env:
           TAG: ${{ startsWith(github.event.pull_request.head.ref, 'v3.') && '3x' || 'latest' }}
 
