@@ -65,6 +65,8 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
+let entryPath: string
+
 export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
 
@@ -186,12 +188,18 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
+    if (!entryPath) {
+      entryPath = buildAssetsURL(entryFileName)
+      if (!/^(?:\/|\.+\/)/.test(entryPath)) {
+        entryPath = './' + entryPath
+      }
+    }
     ssrContext.head.push({
       script: [{
         tagPosition: 'head',
         tagPriority: -2,
         type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': buildAssetsURL(entryFileName) } }),
+        innerHTML: JSON.stringify({ imports: { '#entry': entryPath } }),
       }],
     }, headEntryOptions)
   }
