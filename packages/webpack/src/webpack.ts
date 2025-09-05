@@ -227,3 +227,9 @@ async function compile (compiler: Compiler) {
     throw error
   }
 }
+
+declare module 'srvx' {
+  interface ServerRequestContext {
+    webpack?: Record<string, unknown>
+  }
+}

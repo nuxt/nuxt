@@ -6,12 +6,12 @@ import {
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitro/types'
-import { HTTPError, getQuery, writeEarlyHints } from 'h3'
+import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'h3'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitro/runtime'
+import { getRouteRules, useNitroApp } from 'nitro/runtime'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -31,6 +31,7 @@ import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifes
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import type { AppConfig } from '@nuxt/schema'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -65,14 +66,15 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
-export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
+export default defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
     : null
-    // TODO: add special case
+
+  // TODO: add special case
   if (ssrError && !!event.runtime /* allow internal fetch */) {
     throw new HTTPError({
       status: 404,
@@ -113,7 +115,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  if (routeOptions.ssr === false) {
+  if (routeOptions?.ssr === false) {
     ssrContext.noSSR = true
   }
 
@@ -178,7 +180,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     await payloadCache!.setItem(withoutTrailingSlash(ssrContext.url), renderPayloadResponse(ssrContext))
   }
 
-  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
+  const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
@@ -260,7 +262,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 6. Scripts
-  if (!routeOptions.noScripts) {
+  if (!routeOptions?.noScripts) {
     const tagPosition = (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head'
 
     ssrContext.head.push({
@@ -325,4 +327,13 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
     `<head>${joinTags(html.head)}</head>` +
     `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` +
     '</html>'
+}
+
+declare module 'srvx' {
+  interface ServerRequestContext {
+    nuxt?: {
+      appConfig?: AppConfig
+      noSSR?: boolean
+    }
+  }
 }

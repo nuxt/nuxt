@@ -4,6 +4,7 @@ import type { NitroErrorHandler } from 'nitro/types'
 import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
+import type { H3Event } from 'h3'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   // TODO: support handled checks
@@ -18,11 +19,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // let Nitro handle redirect if appropriate
   const statusCode = error.status || 500
-  // TODO: investigate existing headers
   const headers = new Headers(error.headers)
   if (statusCode === 404 && defaultRes.status === 302) {
     for (const [header, value] of Object.entries(defaultRes.headers)) {
-      headers.set(header, value)
+      if (!headers.has(header)) {
+        headers.set(header, value)
+      }
     }
 
     return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
@@ -53,29 +55,29 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       // this would be set to application/json
       header === 'content-type' ||
       // this would disable JS execution in the error page
-      header === 'content-security-policy') {
+      header === 'content-security-policy' ||
+      headers.has(header)
+    ) {
       continue
     }
     headers.set(header, defaultRes.headers[header]!)
   }
 
   // Detect to avoid recursion in SSR rendering of errors
-  const isRenderingError = event.url.pathname.startsWith('/__nuxt_error') || !!event.req.headers.get('x-nuxt-error')
+  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!event.req.headers.get('x-nuxt-error')
 
   if (!isRenderingError) {
     event.req.headers.set('x-nuxt-error', 'true')
   }
 
   // HTML response (via SSR)
-  const res = isRenderingError
-    ? null
-    : await useNitroApp().fetch(
-        withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
-        {
-          headers: event.req.headers,
-          redirect: 'manual',
-        },
-      ).catch(() => null)
+  const res = !isRenderingError && await useNitroApp().fetch(
+    withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
+    {
+      headers: event.req.headers,
+      redirect: 'manual',
+    },
+  ).catch(() => null)
 
   // TODO: support handled checks
   // if (event.handled) { return }
@@ -102,7 +104,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       headers.append(header, value)
       continue
     }
-    headers.set(header, value)
+    if (!headers.has(header)) {
+      headers.set(header, value)
+    }
   }
 
   headers.set('Content-Type', 'text/html;charset=UTF-8')
