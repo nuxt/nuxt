@@ -111,7 +111,7 @@ describe('tree-shake', () => {
       "import { onMounted } from '#imports'
        false && /*@__PURE__*/ onMounted(() => console.log('treeshake this'))
       function foo() {
-        onMounted()
+         false && /*@__PURE__*/ onMounted()
         function onMounted() {
           console.log('do not treeshake this')
         }
