@@ -5,7 +5,7 @@ import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake'
 describe('tree-shake', () => {
   const transformPlugin: any = TreeShakeComposablesPlugin({
     sourcemap: false,
-    composables: { 'vue': ['onMounted'] },
+    composables: { 'vue': ['onMounted', 'onUnmounted'] },
   }).raw({}, {} as any)
 
   it('should tree shake composables from source code', () => {
@@ -68,15 +68,39 @@ describe('tree-shake', () => {
     expect(result).toBeUndefined()
   })
 
+  it('should not tree-shake composables within other composables', () => {
+    const code = `
+    import { onUnmounted, onMounted } from '#imports'
+     onMounted(() => {
+       onUnmounted(() => {})
+     })
+
+     onMounted(() => {
+       console.log('Hello World')
+     })
+    `
+
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onUnmounted, onMounted } from '#imports'
+        false && /*@__PURE__*/ onMounted(() => {
+         onUnmounted(() => {})
+       })
+        false && /*@__PURE__*/ onMounted(() => {
+         console.log('Hello World')
+       })"
+    `)
+  })
+
   it('should handle shadowing of outer-scope composables', () => {
     const code = `
       import { onMounted } from '#imports'
-      
+
       onMounted(() => console.log('treeshake this'))
-      
-      function foo() { 
+
+      function foo() {
         onMounted()
-        
+
         function onMounted() {
           console.log('do not treeshake this')
         }
@@ -86,7 +110,7 @@ describe('tree-shake', () => {
     expect(clean(result)).toMatchInlineSnapshot(`
       "import { onMounted } from '#imports'
        false && /*@__PURE__*/ onMounted(() => console.log('treeshake this'))
-      function foo() { 
+      function foo() {
         onMounted()
         function onMounted() {
           console.log('do not treeshake this')
@@ -98,9 +122,9 @@ describe('tree-shake', () => {
   it('should handle variable shadowing', () => {
     const code = `
       import { onMounted } from '#imports'
-      
+
       onMounted()
-      
+
       function test() {
         const onMounted = () => 'local'
         onMounted()
