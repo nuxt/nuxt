@@ -59,7 +59,6 @@
     "nitropack": "2.12.5",
     "ofetch": "1.4.1",
     "oxc-transform": "0.87.0",
-    "pkg-types": "2.3.0",
     "postcss": "8.5.6",
     "rollup-plugin-visualizer": "6.0.3",
     "sass-loader": "16.0.5",
@@ -81,6 +80,7 @@
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "pathe": "^2.0.3",
+    "pkg-types": "^2.3.0",
     "std-env": "^3.9.0",
     "ufo": "1.6.1"
   },
