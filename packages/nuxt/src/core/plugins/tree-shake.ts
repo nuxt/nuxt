@@ -82,8 +82,12 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
               return
             }
 
-            // TODO: validate function name against actual auto-imports registry
-            s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
+            try {
+              // TODO: validate function name against actual auto-imports registry
+              s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
+            } catch {
+              // TODO: fix when we can skip subsequent nodes even with scope tracker
+            }
           },
         })
 

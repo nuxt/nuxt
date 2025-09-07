@@ -34,6 +34,24 @@ describe('tree-shake', () => {
     `)
   })
 
+  it('should not error when tree-shaking composables within other tree-shaken composables', () => {
+    const code = `
+      import { onMounted as _onMounted } from 'vue'
+      _onMounted(() => {
+        onMounted(() => {})
+      })
+      console.log('Hello World')
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted as _onMounted } from 'vue'
+       false && /*@__PURE__*/ _onMounted(() => {
+        onMounted(() => {})
+      })
+      console.log('Hello World')"
+    `)
+  })
+
   it('should tree-shake explicitly-imported composables from #imports', () => {
     const code = `
       import { onMounted } from '#imports'
