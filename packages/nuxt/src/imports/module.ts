@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
@@ -10,6 +10,14 @@ import { isDirectory, logger, resolveToAlias } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets } from './presets'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
+
+import { pagesImportPresets, routeRulesPresets } from '../pages/module'
+
+const allNuxtPresets = [
+  ...pagesImportPresets,
+  ...routeRulesPresets,
+  ...defaultPresets,
+]
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
@@ -114,7 +122,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Transform to inject imports in production mode
     addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
-    const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
+    const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
 
     const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {
@@ -122,8 +130,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     const isIgnored = createIsIgnored(nuxt)
-    const defaultImportSources = new Set(defaultPresets.flatMap(i => i.from))
-    const defaultImports = new Set(presets.flatMap(p => defaultImportSources.has(p.from) ? p.imports : []))
+    const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
+    const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -143,9 +151,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
         for (const i of imports) {
-          if (!defaultImportSources.has(i.from)) {
+          if (!nuxtImportSources.has(i.from)) {
             const value = i.as || i.name
-            if (defaultImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
+            if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
               logger.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues. Please consider renaming \`${value}\` in \`${relativePath}\`.`)
             }

@@ -95,30 +95,6 @@ jobs:
                   console.log('Failed to create thread:', threadResponse.status, threadError);
                 }
                 
-                // Add default reactions for easy feedback
-                const reactions = ['👍', '👎', '🤔', '❤️', '🚀'];
-                
-                for (const emoji of reactions) {
-                  try {
-                    const reactionResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/${messageData.id}/reactions/${encodeURIComponent(emoji)}/@me`, {
-                      method: 'PUT',
-                      headers: {
-                        'Authorization': `Bot ${botToken}`
-                      }
-                    });
-
-                    await new Promise(resolve => setTimeout(resolve, 100)); // Rate limit handling
-                    
-                    if (reactionResponse.ok) {
-                      console.log(`Added reaction: ${emoji}`);
-                    } else {
-                      console.log(`Failed to add reaction ${emoji}:`, reactionResponse.status);
-                    }
-                  } catch (reactionError) {
-                    console.log(`Error adding reaction ${emoji}:`, reactionError.message);
-                  }
-                }
-                
               } else {
                 const errorData = await response.json();
                 console.log('Failed to create Discord message:', response.status, response.statusText);

@@ -14,6 +14,7 @@ import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias } from '../resolve'
 import { logger } from '../logger'
+import { getLayerDirectories } from '../layers'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
@@ -155,10 +156,9 @@ export async function installModule<
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   const localLayerModuleDirs: string[] = []
-  for (const l of nuxt.options._layers) {
-    const srcDir = l.config.srcDir || l.cwd
-    if (!NODE_MODULES_RE.test(srcDir)) {
-      localLayerModuleDirs.push(resolve(srcDir, l.config?.dir?.modules || 'modules').replace(/\/?$/, '/'))
+  for (const dirs of getLayerDirectories(nuxt)) {
+    if (!NODE_MODULES_RE.test(dirs.app)) {
+      localLayerModuleDirs.push(dirs.modules)
     }
   }
 

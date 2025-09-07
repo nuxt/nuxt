@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -19,11 +19,21 @@ import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, norma
 import { globRouteRulesFromPages, removePagesRules } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
-import type { Nuxt, NuxtOptions, NuxtPage } from 'nuxt/schema'
+import type { Nuxt, NuxtPage } from 'nuxt/schema'
+import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 const runtimeDir = resolve(distDir, 'pages/runtime')
+
+export const pagesImportPresets: InlinePreset[] = [
+  { imports: ['definePageMeta'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['useLink'], from: 'vue-router' },
+]
+
+export const routeRulesPresets: InlinePreset[] = [
+  { imports: ['defineRouteRules'], from: resolve(runtimeDir, 'composables') },
+]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
   const context = {
@@ -85,9 +95,7 @@ export default defineNuxtModule({
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
 
-    const pagesDirs = nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config as NuxtOptions).dir?.pages || 'pages'),
-    )
+    const pagesDirs = getLayerDirectories(nuxt).map(dirs => dirs.appPages)
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
     const routerPath = await resolveTypePath('vue-router', '', nuxt.options.modulesDir) || 'vue-router'
@@ -306,14 +314,12 @@ export default defineNuxtModule({
     })
 
     // Regenerate templates when adding or removing pages
-    const updateTemplatePaths = nuxt.options._layers.flatMap((l) => {
-      const dir = l.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : l.config.dir
-      return [
-        resolve(l.config.srcDir || l.cwd, dir?.pages || 'pages') + '/',
-        resolve(l.config.srcDir || l.cwd, dir?.layouts || 'layouts') + '/',
-        resolve(l.config.srcDir || l.cwd, dir?.middleware || 'middleware') + '/',
-      ]
-    })
+    const updateTemplatePaths = getLayerDirectories(nuxt)
+      .flatMap(dirs => [
+        dirs.appPages,
+        dirs.appLayouts,
+        dirs.appMiddleware,
+      ])
 
     function isPage (file: string, pages = nuxt.apps.default?.pages): boolean {
       if (!pages) { return false }
@@ -422,13 +428,10 @@ export default defineNuxtModule({
       nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
-    nuxt.hook('imports:extend', (imports) => {
-      imports.push(
-        { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
-        { name: 'useLink', as: 'useLink', from: 'vue-router' },
-      )
+    nuxt.hook('imports:sources', (sources) => {
+      sources.push(...pagesImportPresets)
       if (nuxt.options.experimental.inlineRouteRules) {
-        imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
+        sources.push(...routeRulesPresets)
       }
     })
 
