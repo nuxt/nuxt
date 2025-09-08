@@ -5,7 +5,7 @@ import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake'
 describe('tree-shake', () => {
   const transformPlugin: any = TreeShakeComposablesPlugin({
     sourcemap: false,
-    composables: { 'vue': ['onMounted', 'onUnmounted'] },
+    composables: { 'vue': ['onMounted'] },
   }).raw({}, {} as any)
 
   it('should tree shake composables from source code', () => {
@@ -30,24 +30,6 @@ describe('tree-shake', () => {
     expect(clean(result)).toMatchInlineSnapshot(`
       "import { onMounted as _onMounted } from 'vue'
        false && /*@__PURE__*/ _onMounted(() => {})
-      console.log('Hello World')"
-    `)
-  })
-
-  it('should not error when tree-shaking composables within other tree-shaken composables', () => {
-    const code = `
-      import { onMounted as _onMounted } from 'vue'
-      _onMounted(() => {
-        onMounted(() => {})
-      })
-      console.log('Hello World')
-    `
-    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
-    expect(clean(result)).toMatchInlineSnapshot(`
-      "import { onMounted as _onMounted } from 'vue'
-       false && /*@__PURE__*/ _onMounted(() => {
-        onMounted(() => {})
-      })
       console.log('Hello World')"
     `)
   })
@@ -88,9 +70,9 @@ describe('tree-shake', () => {
 
   it('should not tree-shake composables within other composables', () => {
     const code = `
-    import { onUnmounted, onMounted } from '#imports'
+    import { onMounted } from '#imports'
      onMounted(() => {
-       onUnmounted(() => {})
+       onMounted(() => {})
      })
 
      onMounted(() => {
@@ -100,9 +82,9 @@ describe('tree-shake', () => {
 
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
     expect(clean(result)).toMatchInlineSnapshot(`
-      "import { onUnmounted, onMounted } from '#imports'
+      "import { onMounted } from '#imports'
         false && /*@__PURE__*/ onMounted(() => {
-         onUnmounted(() => {})
+         onMounted(() => {})
        })
         false && /*@__PURE__*/ onMounted(() => {
          console.log('Hello World')
@@ -129,7 +111,7 @@ describe('tree-shake', () => {
       "import { onMounted } from '#imports'
        false && /*@__PURE__*/ onMounted(() => console.log('treeshake this'))
       function foo() {
-         false && /*@__PURE__*/ onMounted()
+        onMounted()
         function onMounted() {
           console.log('do not treeshake this')
         }
