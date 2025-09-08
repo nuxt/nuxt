@@ -14,10 +14,7 @@ describe('tree-shake', () => {
       console.log('Hello World')
     `
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
-    expect(clean(result)).toMatchInlineSnapshot(`
-      " false && /*@__PURE__*/ onMounted(() => {})
-      console.log('Hello World')"
-    `)
+    expect(clean(result)).toMatchInlineSnapshot(`"console.log('Hello World')"`)
   })
 
   it('should tree-shake explicitly-imported composables', () => {
@@ -29,7 +26,6 @@ describe('tree-shake', () => {
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
     expect(clean(result)).toMatchInlineSnapshot(`
       "import { onMounted as _onMounted } from 'vue'
-       false && /*@__PURE__*/ _onMounted(() => {})
       console.log('Hello World')"
     `)
   })
@@ -43,7 +39,6 @@ describe('tree-shake', () => {
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
     expect(clean(result)).toMatchInlineSnapshot(`
       "import { onMounted } from '#imports'
-       false && /*@__PURE__*/ onMounted(() => {})
       console.log('Hello World')"
     `)
   })
@@ -81,15 +76,7 @@ describe('tree-shake', () => {
     `
 
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
-    expect(clean(result)).toMatchInlineSnapshot(`
-      "import { onMounted } from '#imports'
-        false && /*@__PURE__*/ onMounted(() => {
-         onMounted(() => {})
-       })
-        false && /*@__PURE__*/ onMounted(() => {
-         console.log('Hello World')
-       })"
-    `)
+    expect(clean(result)).toMatchInlineSnapshot(`"import { onMounted } from '#imports'"`)
   })
 
   it('should handle shadowing of outer-scope composables', () => {
@@ -109,7 +96,6 @@ describe('tree-shake', () => {
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
     expect(clean(result)).toMatchInlineSnapshot(`
       "import { onMounted } from '#imports'
-       false && /*@__PURE__*/ onMounted(() => console.log('treeshake this'))
       function foo() {
         onMounted()
         function onMounted() {
@@ -133,7 +119,6 @@ describe('tree-shake', () => {
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
     expect(clean(result)).toMatchInlineSnapshot(`
       "import { onMounted } from '#imports'
-       false && /*@__PURE__*/ onMounted()
       function test() {
         const onMounted = () => 'local'
         onMounted()
