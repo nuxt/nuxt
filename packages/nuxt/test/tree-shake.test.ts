@@ -63,20 +63,19 @@ describe('tree-shake', () => {
     expect(result).toBeUndefined()
   })
 
-  it('should not tree-shake composables within other composables', () => {
+  it('should not error when tree-shaking composables within other tree-shaken composables', () => {
     const code = `
-    import { onMounted } from '#imports'
-     onMounted(() => {
-       onMounted(() => {})
-     })
-
-     onMounted(() => {
-       console.log('Hello World')
-     })
+      import { onMounted as _onMounted } from 'vue'
+      _onMounted(() => {
+        onMounted(() => {})
+      })
+      console.log('Hello World')
     `
-
     const { code: result } = transformPlugin.transform.handler(code, 'test.js')
-    expect(clean(result)).toMatchInlineSnapshot(`"import { onMounted } from '#imports'"`)
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted as _onMounted } from 'vue'
+      console.log('Hello World')"
+    `)
   })
 
   it('should handle shadowing of outer-scope composables', () => {
