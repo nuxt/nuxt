@@ -125,6 +125,65 @@ describe('tree-shake', () => {
       }"
     `)
   })
+
+  it('should handle usage in function parameter', () => {
+    const code = `
+      import { onMounted } from '#imports'
+      test(123, onMounted(), 456)
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from '#imports'
+      test(123, void 0, 456)"
+    `)
+  })
+
+  it('should handle assignments', () => {
+    const code = `
+      import { onMounted } from '#imports'
+
+      let a
+      a = onMounted()
+      b = 3
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from '#imports'
+      let a
+      a = void 0
+      b = 3"
+    `)
+  })
+
+  it('should handle conditional/test/logical contexts', () => {
+    const code = `
+    import { onMounted } from 'vue'
+    if (onMounted()) {}
+    onMounted() && doThing()
+    doThing() || onMounted()
+    const x = cond ? onMounted() : 0
+  `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from 'vue'
+      if (void 0) {}
+      void 0 && doThing()
+      doThing() || void 0
+      const x = cond ? void 0 : 0"
+    `)
+  })
+
+  it('should handle sequence in expression statement', () => {
+    const code = `
+    import { onMounted } from 'vue'
+    (foo(), onMounted(), bar())
+  `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from 'vue'
+      (foo(), void 0, bar())"
+    `)
+  })
 })
 
 function clean (string?: string) {

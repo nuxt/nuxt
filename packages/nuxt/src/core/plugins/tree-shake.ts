@@ -43,7 +43,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
         // Process nodes and check for tree-shaking opportunities
         walk(parseResult.program, {
           scopeTracker,
-          enter (node) {
+          enter (node, parent) {
             if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
               return
             }
@@ -83,7 +83,11 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
             }
 
             // TODO: validate function name against actual auto-imports registry
-            s.remove(node.start, node.end)
+            if (parent?.type === 'ExpressionStatement') {
+              s.remove(node.start, node.end)
+            } else {
+              s.overwrite(node.start, node.end, 'void 0')
+            }
             this.skip()
           },
         })
