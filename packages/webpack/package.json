@@ -58,9 +58,9 @@
     "pug-plain-loader": "^1.1.0",
     "std-env": "^3.9.0",
     "time-fix-plugin": "^2.0.7",
-    "tinyglobby": "^0.2.14",
+    "tinyglobby": "^0.2.15",
     "ufo": "^1.6.1",
-    "unenv": "^2.0.0-rc.19",
+    "unenv": "^2.0.0-rc.21",
     "unplugin": "^2.3.10",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.2",
@@ -76,9 +76,9 @@
     "@rspack/core": "1.5.2",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.10",
-    "rollup": "4.50.0",
+    "rollup": "4.50.1",
     "unbuild": "3.6.1",
-    "vue": "3.5.20"
+    "vue": "3.5.21"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
