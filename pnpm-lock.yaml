@@ -690,8 +690,8 @@ importers:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
-        specifier: ^7.4.2
-        version: 7.4.2(webpack@5.101.3(esbuild@0.25.9))
+        specifier: ^7.4.3
+        version: 7.4.3(webpack@5.101.3(esbuild@0.25.9))
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -854,8 +854,8 @@ importers:
         specifier: 5.101.3
         version: 5.101.3(esbuild@0.25.9)
       webpack-dev-middleware:
-        specifier: 7.4.2
-        version: 7.4.2(webpack@5.101.3(esbuild@0.25.9))
+        specifier: 7.4.3
+        version: 7.4.3(webpack@5.101.3(esbuild@0.25.9))
 
   packages/ui-templates:
     devDependencies:
@@ -1125,8 +1125,8 @@ importers:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
-        specifier: ^7.4.2
-        version: 7.4.2(webpack@5.101.3(esbuild@0.25.9))
+        specifier: ^7.4.3
+        version: 7.4.3(webpack@5.101.3(esbuild@0.25.9))
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -8572,8 +8572,8 @@ packages:
     engines: {node: '>= 10.13.0'}
     hasBin: true
 
-  webpack-dev-middleware@7.4.2:
-    resolution: {integrity: sha512-xOO8n6eggxnwYpy1NlzUKpvrjfJTvae5/D6WOK0S2LSo7vjmo5gCM1DbLUmFqrMTJP+W/0YZNctm7jasWvLuBA==}
+  webpack-dev-middleware@7.4.3:
+    resolution: {integrity: sha512-5kA/PzpZzDz5mNOkcNLmU1UdjGeSSxd7rt1akWpI70jMNHLASiBPRaQZn0hgyhvhawfIwSnnLfDABIxL3ueyFg==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       webpack: 5.101.3
@@ -17070,11 +17070,11 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  webpack-dev-middleware@7.4.2(webpack@5.101.3(esbuild@0.25.9)):
+  webpack-dev-middleware@7.4.3(webpack@5.101.3(esbuild@0.25.9)):
     dependencies:
       colorette: 2.0.20
       memfs: 4.38.2
-      mime-types: 2.1.35
+      mime-types: 3.0.1
       on-finished: 2.4.1
       range-parser: 1.2.1
       schema-utils: 4.3.2
