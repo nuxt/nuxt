@@ -83,11 +83,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
             }
 
             // TODO: validate function name against actual auto-imports registry
-            if (parent?.type === 'ExpressionStatement') {
-              s.remove(node.start, node.end)
-            } else {
-              s.overwrite(node.start, node.end, 'void 0')
-            }
+            s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
             this.skip()
           },
         })
