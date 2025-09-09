@@ -34,6 +34,24 @@ describe('tree-shake', () => {
     `)
   })
 
+  it('should not error when tree-shaking composables within other tree-shaken composables', () => {
+    const code = `
+      import { onMounted } from 'vue'
+      onMounted(() => {
+        onMounted(() => {})
+      })
+      onMounted(() => {})
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from 'vue'
+       false && /*@__PURE__*/ onMounted(() => {
+        onMounted(() => {})
+      })
+       false && /*@__PURE__*/ onMounted(() => {})"
+    `)
+  })
+
   it('should tree-shake explicitly-imported composables from #imports', () => {
     const code = `
       import { onMounted } from '#imports'
@@ -66,24 +84,6 @@ describe('tree-shake', () => {
     `
     const result = transformPlugin.transform.handler(code, 'test.js')
     expect(result).toBeUndefined()
-  })
-
-  it('should not error when tree-shaking composables within other tree-shaken composables', () => {
-    const code = `
-      import { onMounted as _onMounted } from 'vue'
-      _onMounted(() => {
-        onMounted(() => {})
-      })
-      console.log('Hello World')
-    `
-    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
-    expect(clean(result)).toMatchInlineSnapshot(`
-      "import { onMounted as _onMounted } from 'vue'
-       false && /*@__PURE__*/ _onMounted(() => {
-        onMounted(() => {})
-      })
-      console.log('Hello World')"
-    `)
   })
 
   it('should handle shadowing of outer-scope composables', () => {
