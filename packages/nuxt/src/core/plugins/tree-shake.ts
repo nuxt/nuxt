@@ -43,7 +43,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
         // Process nodes and check for tree-shaking opportunities
         walk(parseResult.program, {
           scopeTracker,
-          enter (node, parent) {
+          enter (node) {
             if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
               return
             }
