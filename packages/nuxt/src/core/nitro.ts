@@ -267,9 +267,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         },
       },
       plugins: [],
-      external: [
-        'vue',
-      ],
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)

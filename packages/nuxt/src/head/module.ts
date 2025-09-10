@@ -83,7 +83,6 @@ export default {
     nuxt.hooks.hook('nitro:config', (config) => {
       config.virtual!['#internal/unhead-options.mjs'] = () => nuxt.vfs['#build/unhead-options.mjs'] || ''
       config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs'] || ''
-      config.virtual!['#internal/components.islands.mjs'] = () => nuxt.vfs['#build/components.islands.mjs'] || ''
     })
 
     // Add library-specific plugin

@@ -4,11 +4,7 @@
     <ErrorComponent
       v-else-if="error"
       :error="error"
-    />
-    <IslandRenderer
-      v-else-if="islandContext"
-      :context="islandContext"
-    />
+    /> 
     <component
       :is="SingleRenderer"
       v-else-if="SingleRenderer"
@@ -24,14 +20,8 @@ import { isNuxtError, showError, useError } from '../composables/error'
 import { useRoute, useRouter } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
-import ErrorComponent from '#build/error-component.mjs'
-// @ts-expect-error virtual file
-import { componentIslands } from '#build/nuxt.config.mjs'
-
-const IslandRenderer = import.meta.server && componentIslands
-  ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
-  : () => null
-
+import ErrorComponent from '#build/error-component.mjs' 
+ 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 if (import.meta.client && nuxtApp.isHydrating) {
@@ -70,7 +60,5 @@ onErrorCaptured((err, target, info) => {
     return false // suppress error from breaking render
   }
 })
-
-// Component islands context
-const islandContext = import.meta.server && nuxtApp.ssrContext.islandContext
+ 
 </script>
