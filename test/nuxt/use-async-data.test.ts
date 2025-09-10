@@ -357,6 +357,7 @@ describe('useAsyncData', () => {
   })
 
   it('should watch params deeply in a non synchronous way', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve())
     const foo = ref('foo')
     const baz = ref('baz')
     const locale = ref('en')
