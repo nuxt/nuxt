@@ -506,7 +506,7 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0
       tinyglobby:
-        specifier: 0.2.15
+        specifier: ^0.2.15
         version: 0.2.15
       ufo:
         specifier: 1.6.1
