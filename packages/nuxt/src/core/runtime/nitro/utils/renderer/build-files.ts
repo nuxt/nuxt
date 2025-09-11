@@ -118,7 +118,13 @@ export function getRenderer (ssrContext: NuxtSSRContext) {
 export const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 // for inlined styles
-export const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
-  // @ts-expect-error internal key set by CSS inlining configuration
-  r._globalCSS,
-).map(r => r.src!))
+export const getEntryIds: () => Promise<string[]> = () => getClientManifest().then((r) => {
+  const entryIds: string[] = []
+  for (const entry of Object.values(r)) {
+    // @ts-expect-error internal key set by CSS inlining configuration
+    if (entry._globalCSS) {
+      entryIds.push(entry.src!)
+    }
+  }
+  return entryIds
+})

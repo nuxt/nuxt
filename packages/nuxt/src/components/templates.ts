@@ -65,7 +65,13 @@ export default defineNuxtPlugin({
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
-    return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
+    const componentNames: string[] = []
+    for (const c of app.components) {
+      if (!c.island) {
+        componentNames.push(c.pascalName)
+      }
+    }
+    return `export const componentNames = ${JSON.stringify(componentNames)}`
   },
 }
 
@@ -106,16 +112,19 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 const NON_VUE_RE = /\b\.(?!vue)\w+$/g
 function resolveComponentTypes (app: NuxtApp, baseDir: string) {
   const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
-  const componentTypes = app.components.filter(c => !c.island).map((c) => {
-    const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-      ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
-      : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
-    const isServerOnly = c.mode === 'server' && c.filePath !== serverPlaceholderPath && !app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')
-    return [
-      c.pascalName,
-      isServerOnly ? `IslandComponent<${type}>` : type,
-    ]
-  })
+  const componentTypes: Array<[string, string]> = []
+  for (const c of app.components) {
+    if (!c.island) {
+      const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
+        ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
+        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
+      const isServerOnly = c.mode === 'server' && c.filePath !== serverPlaceholderPath && !app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')
+      componentTypes.push([
+        c.pascalName,
+        isServerOnly ? `IslandComponent<${type}>` : type,
+      ])
+    }
+  }
 
   return componentTypes
 }

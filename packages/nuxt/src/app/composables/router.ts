@@ -146,12 +146,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (import.meta.client && options?.open) {
     const { target = '_blank', windowFeatures = {} } = options.open
 
-    const features = Object.entries(windowFeatures)
-      .filter(([_, value]) => value !== undefined)
-      .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
-      .join(', ')
+    const features: string[] = []
+    for (const [feature, value] of Object.entries(windowFeatures)) {
+      if (value !== undefined) {
+        features.push(`${feature.toLowerCase()}=${value}`)
+      }
+    }
 
-    open(toPath, target, features)
+    open(toPath, target, features.join(', '))
     return Promise.resolve()
   }
 

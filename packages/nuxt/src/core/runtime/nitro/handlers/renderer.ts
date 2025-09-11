@@ -328,7 +328,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 })
 
 function normalizeChunks (chunks: (string | undefined)[]) {
-  return chunks.filter(Boolean).map(i => i!.trim())
+  const result: string[] = []
+  for (const _chunk of chunks) {
+    const chunk = _chunk?.trim()
+    if (chunk) {
+      result.push(chunk)
+    }
+  }
+  return result
 }
 
 function joinTags (tags: Array<string | undefined>) {

@@ -83,7 +83,13 @@ export default class VueSSRClientPlugin {
           continue
         }
         const id = m.identifier!.replace(/\s\w+$/, '') // remove appended hash
-        const filesSet = new Set(chunk.files.map(fileToIndex).filter(i => i !== -1))
+        const filesSet = new Set<number>()
+        for (const file of chunk.files) {
+          const index = fileToIndex(file)
+          if (index !== -1) {
+            filesSet.add(index)
+          }
+        }
 
         for (const chunkName of chunk.names!) {
           if (!entrypoints[chunkName]) {
