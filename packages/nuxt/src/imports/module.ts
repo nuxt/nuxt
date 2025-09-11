@@ -40,7 +40,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     virtualImports: ['#imports'],
     polyfills: true,
   }),
-  async setup (options, nuxt) {
+  setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
 
@@ -48,36 +48,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       presets.push(...appCompatPresets)
     }
 
-    // Allow modules extending sources
-    await nuxt.callHook('imports:sources', presets)
-
-    // Filter disabled sources
-    // options.sources = options.sources.filter(source => source.disabled !== true)
-
-    const { addons: inlineAddons, ...rest } = options
-
-    const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
-
-    // Create a context to share state between module internals
-    const ctx = createUnimport({
-      injectAtEnd: true,
-      ...rest,
-      addons: {
-        addons,
-        vueTemplate: options.autoImport,
-        vueDirectives: options.autoImport === false ? undefined : true,
-        ...addonsOptions,
-      },
-      presets,
-    })
-
-    await nuxt.callHook('imports:context', ctx)
-
-    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
-
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
     if (options.scan) {
+      const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
       for (const layer of nuxt.options._layers) {
         // Layer disabled scanning for itself
         if (layer.config?.imports?.scan === false) {
@@ -92,15 +66,16 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         }
 
         for (const dir of (layer.config.imports?.dirs ?? [])) {
-          if (!dir) {
-            continue
+          if (dir) {
+            composablesDirs.push(resolve(layer.config.srcDir, dir))
           }
-          composablesDirs.push(resolve(layer.config.srcDir, dir))
         }
       }
 
-      await nuxt.callHook('imports:dirs', composablesDirs)
-      composablesDirs = composablesDirs.map(dir => normalize(dir))
+      nuxt.hook('modules:done', async () => {
+        await nuxt.callHook('imports:dirs', composablesDirs)
+        composablesDirs = composablesDirs.map(dir => normalize(dir))
+      })
 
       // Restart nuxt when composable directories are added/removed
       nuxt.hook('builder:watch', (event, relativePath) => {
@@ -114,6 +89,32 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
     }
 
+    let ctx: Unimport
+
+    // initialise unimport only after all modules
+    // have had a chance to register their hooks
+    nuxt.hook('modules:done', async () => {
+      await nuxt.callHook('imports:sources', presets)
+
+      const { addons: inlineAddons, ...rest } = options
+      const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
+
+      // Create a context to share state between module internals
+      ctx = createUnimport({
+        injectAtEnd: true,
+        ...rest,
+        addons: {
+          addons,
+          vueTemplate: options.autoImport,
+          vueDirectives: options.autoImport === false ? undefined : true,
+          ...addonsOptions,
+        },
+        presets,
+      })
+
+      await nuxt.callHook('imports:context', ctx)
+    })
+
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
@@ -122,7 +123,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
     // Transform to inject imports in production mode
-    addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    addBuildPlugin(TransformPlugin({
+      ctx: { injectImports: (code, id, options) => ctx.injectImports(code, id, options) },
+      options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    }))
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
 
@@ -170,10 +174,13 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
     }
 
-    await regenerateImports()
+    nuxt.hook('modules:done', () => regenerateImports())
 
     // Generate types
-    addDeclarationTemplates(ctx, options)
+    addDeclarationTemplates({
+      generateTypeDeclarations: options => ctx.generateTypeDeclarations(options),
+      getImports: () => ctx.getImports(),
+    }, options)
 
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, relativePath) => {
@@ -193,7 +200,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   },
 })
 
-function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions>) {
+function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTypeDeclarations'>, options: Partial<ImportsOptions>) {
   const nuxt = useNuxt()
 
   const resolvedImportPathMap = new Map<string, string>()
