@@ -18,7 +18,7 @@ import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
-const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
+const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 const SLASH_SEPARATOR_RE = /[\\/]/
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
@@ -38,8 +38,8 @@ export default defineNuxtModule<ComponentsOptions>({
   defaults: {
     dirs: [],
   },
-  async setup (componentOptions, nuxt) {
-    let componentDirs: ComponentsDir[] = []
+  async setup (moduleOptions, nuxt) {
+    let componentDirs: ComponentsDir[]
     const context = {
       components: [] as Component[],
     }
@@ -57,27 +57,42 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     // Resolve dirs
-    nuxt.hook('app:resolve', async () => {
+    nuxt.hook('modules:done', async () => {
       // components/ dirs from all layers
-      const allDirs = nuxt.options._layers
-        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
-        .flat()
+      const allDirs: ComponentsDir[] = []
+      for (const layer of nuxt.options._layers) {
+        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 })
+        allDirs.push(...layerDirs)
+      }
 
       await nuxt.callHook('components:dirs', allDirs)
 
-      componentDirs = allDirs.filter(isPureObjectOrString).map((dir) => {
-        const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
+      const userComponentDirs: ComponentsDir[] = []
+      const libraryComponentDirs: ComponentsDir[] = []
+
+      for (const dir of allDirs) {
+        if (!isPureObjectOrString(dir)) {
+          continue
+        }
+
+        const dirOptions = typeof dir === 'object' ? dir : { path: dir }
         const dirPath = resolveAlias(dirOptions.path)
-        const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
         const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(STARTER_DOT_RE, ''))
+        const _transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
+        const transpile = _transpile === 'auto' ? dirPath.includes('node_modules') : _transpile
+        if (transpile) {
+          nuxt.options.build.transpile.push(dirPath)
+        }
 
         const present = isDirectory(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
           logger.warn('Components directory not found: `' + dirPath + '`')
         }
 
-        return {
-          global: componentOptions.global,
+        const dirs = dir.path.includes('node_modules') ? libraryComponentDirs : userComponentDirs
+
+        dirs.push({
+          global: moduleOptions.global,
           ...dirOptions,
           // TODO: https://github.com/nuxt/framework/pull/251
           enabled: true,
@@ -89,16 +104,14 @@ export default defineNuxtModule<ComponentsOptions>({
             '**/*.d.{cts,mts,ts}', // .d.ts files
             ...(dirOptions.ignore || []),
           ],
-          transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile),
-        }
-      }).filter(d => d.enabled)
+          transpile,
+        })
+      }
 
       componentDirs = [
-        ...componentDirs.filter(dir => !dir.path.includes('node_modules')),
-        ...componentDirs.filter(dir => dir.path.includes('node_modules')),
+        ...userComponentDirs,
+        ...libraryComponentDirs,
       ]
-
-      nuxt.options.build!.transpile!.push(...componentDirs.filter(dir => dir.transpile).map(dir => dir.path))
     })
 
     // components.d.ts
@@ -112,7 +125,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // components.islands.mjs
     addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
 
-    if (componentOptions.generateMetadata) {
+    if (moduleOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
     }
 
@@ -246,8 +259,6 @@ export default defineNuxtModule<ComponentsOptions>({
     }
   },
 })
-
-// boolean | Partial<ComponentsOptions> | ComponentsOptions['dirs']
 
 function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
   if (Array.isArray(dir)) {
