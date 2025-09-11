@@ -244,6 +244,7 @@ jobs:
         with:
           run: pnpm vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
+          mode: instrumentation
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
