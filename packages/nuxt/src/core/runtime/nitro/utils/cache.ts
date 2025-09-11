@@ -3,7 +3,7 @@
 import type {} from 'unstorage'
 import { useStorage } from 'nitropack/runtime'
 
-export const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
+export const payloadCache = process.env.NUXT_PAYLOAD_EXTRACTION ? useStorage('internal:nuxt:prerender:payload') : null
 export const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
 export const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
 export const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
