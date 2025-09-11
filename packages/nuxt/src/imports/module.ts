@@ -40,7 +40,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     virtualImports: ['#imports'],
     polyfills: true,
   }),
-  async setup (options, nuxt) {
+  setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
 
