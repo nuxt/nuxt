@@ -85,6 +85,7 @@ export const RenderPlugin = () => {
         }
 
         // Minify HTML
+        // @ts-expect-error types wrong in upstream lib
         html = await htmlnano.process(html, { collapseWhitespace: 'aggressive' }).then(r => r.html)
 
         if (!isCompleteHTML) {
