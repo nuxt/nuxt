@@ -322,7 +322,7 @@ export function useAsyncData<
 
     // setup watchers/instance
     const hasScope = getCurrentScope()
-    const unsubExecute = watch([key, ...(options.watch || [])], ([newKey], [oldKey]) => {
+    const unsubKeyWatcher = watch(key, (newKey, oldKey) => {
       if ((newKey || oldKey) && newKey !== oldKey) {
         const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
         const isRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
@@ -345,14 +345,19 @@ export function useAsyncData<
         if (options.immediate || hasRun || isRunning) {
           nuxtApp._asyncData[newKey].execute(initialFetchOptions)
         }
-      } else {
-        asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
       }
     }, { flush: 'sync' })
 
+    const unsubWatcher = options.watch
+      ? watch(options.watch, () => {
+          asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
+        })
+      : () => {}
+
     if (hasScope) {
       onScopeDispose(() => {
-        unsubExecute()
+        unsubKeyWatcher()
+        unsubWatcher()
         unregister(key.value)
       })
     }
