@@ -190,6 +190,10 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
           root: nuxt.options.srcDir,
           entryPath: resolveServerEntry(ssrServer.config),
           base: ssrServer.config.base || '/_nuxt/',
+          maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
+          baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
+          maxRetryDelay: nuxt.options.vite.viteNode?.maxRetryDelay,
+          requestTimeout: nuxt.options.vite.viteNode?.requestTimeout,
           // TODO: remove baseURL in future
           baseURL: nuxt.options.devServer.url,
         }
@@ -233,9 +237,6 @@ let _node: ViteNodeServer | undefined
 
 function getNode (server: ViteDevServer) {
   return _node ||= new ViteNodeServer(server, {
-    deps: {
-      inline: [/^#/, /\?/],
-    },
     transformMode: {
       ssr: [/.*/],
       web: [],
@@ -492,6 +493,10 @@ export type ViteNodeServerOptions = {
   root: string
   entryPath: string
   base: string
+  maxRetryAttempts?: number
+  baseRetryDelay?: number
+  maxRetryDelay?: number
+  requestTimeout?: number
 }
 
 export async function writeDevServer (nuxt: Nuxt) {

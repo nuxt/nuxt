@@ -2,10 +2,11 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { camelCase, pascalCase } from 'scule'
 
+import { tryUseNuxt } from '@nuxt/kit'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { isVue } from '../../core/utils'
-import { logger } from '../../utils'
+import { logger, resolveToAlias } from '../../utils'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -31,6 +32,7 @@ const LAZY_HYDRATION_PROPS_RE = /\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-v
 export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
+  const nuxt = tryUseNuxt()
 
   return {
     name: 'nuxt:components-loader-pre',
@@ -69,12 +71,9 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
         const s = new MagicString(code)
         try {
           const ast = parse(template)
-          const components = options.getComponents()
+          const components = new Set(options.getComponents().map(c => c.pascalName))
           await walk(ast, (node) => {
             if (node.type !== 1 /* ELEMENT_NODE */) {
-              return
-            }
-            if (!/^(?:Lazy|lazy-)/.test(node.name)) {
               return
             }
 
@@ -82,8 +81,8 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               return
             }
 
-            const pascalName = pascalCase(node.name.slice(4))
-            if (!components.some(c => c.pascalName === pascalName)) {
+            const pascalName = pascalCase(node.name.replace(/^(?:Lazy|lazy-)/, ''))
+            if (!components.has(pascalName)) {
               // not auto-imported
               return
             }
@@ -100,6 +99,15 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
                   strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
                 }
               }
+            }
+
+            if (strategy && !/^(?:Lazy|lazy-)/.test(node.name)) {
+              if (node.name !== 'template' && (nuxt?.options.dev || nuxt?.options.test)) {
+                const relativePath = resolveToAlias(id, nuxt)
+                logger.warn(`Component \`<${node.name}>\` (used in \`${relativePath}\`) has lazy-hydration props but is not declared as a lazy component.\n` +
+                  `Rename it to \`<Lazy${pascalCase(node.name)} />\` or remove the lazy-hydration props to avoid unexpected behavior.`)
+              }
+              return
             }
 
             if (strategy) {

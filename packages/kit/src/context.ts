@@ -29,6 +29,7 @@ export const getNuxtCtx = () => asyncNuxtStorage.tryUse()
  * ```
  */
 export function useNuxt (): Nuxt {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const instance = asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
   if (!instance) {
     throw new Error('Nuxt instance is unavailable!')
@@ -49,6 +50,7 @@ export function useNuxt (): Nuxt {
  * ```
  */
 export function tryUseNuxt (): Nuxt | null {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
 }
 

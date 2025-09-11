@@ -24,7 +24,7 @@ Awaiting `useLazyFetch` in this mode only ensures the call is initialized. On cl
 
 ## Example
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 /* Navigation will occur before fetching is complete.
  * Handle 'pending' and 'error' states directly within your component's template

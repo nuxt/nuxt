@@ -1,11 +1,10 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
-import { captureStackTrace } from 'errx'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
+import { getUserCaller, toArray } from '../utils'
 import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
 import { createError } from './error'
@@ -222,7 +221,7 @@ export function useAsyncData<
 
   // check and warn if different defaults/fetcher are provided
   const currentData = nuxtApp._asyncData[key.value]
-  if (isDev && currentData) {
+  if (import.meta.dev && currentData) {
     const warnings: string[] = []
     const values = createHash(_handler, options)
     if (values.handler !== currentData._hash?.handler) {
@@ -240,9 +239,8 @@ export function useAsyncData<
       warnings.push(`mismatching \`deep\` option`)
     }
     if (warnings.length) {
-      const distURL = import.meta.url.replace(/\/app\/.*$/, '/app')
-      const { source, line, column } = captureStackTrace().find(entry => !entry.source.startsWith(distURL)) ?? {}
-      const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
+      const caller = getUserCaller()
+      const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
       console.warn(`[nuxt] [${functionName}] Incompatible options detected for "${key.value}"${explanation}:\n${warnings.map(w => `- ${w}`).join('\n')}\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`)
     }
   }
@@ -587,8 +585,6 @@ function pick (obj: Record<string, any>, keys: string[]) {
 
 export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
 
-const isDev = import.meta.dev /* and in test */
-
 function createAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
@@ -675,9 +671,8 @@ function createAsyncData<
           }
 
           if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
-            const stack = captureStackTrace()
-            const { source, line, column } = stack[stack.length - 1] ?? {}
-            const explanation = source ? ` (used at ${source.replace(/^file:\/\//, '')}:${line}:${column})` : ''
+            const caller = getUserCaller()
+            const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
             // @ts-expect-error private property
             console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
           }
@@ -712,7 +707,7 @@ function createAsyncData<
     _default: options.default!,
     _deps: 0,
     _init: true,
-    _hash: isDev ? createHash(_handler, options) : undefined,
+    _hash: import.meta.dev ? createHash(_handler, options) : undefined,
     _off: () => {
       unsubRefreshAsyncData()
       if (nuxtApp._asyncData[key]?._init) {

@@ -1,5 +1,5 @@
 import { Script, createContext } from 'node:vm'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
 import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
@@ -72,34 +72,8 @@ export function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, tex
 }
 
 export async function gotoPath (page: Page, path: string, retries = 0) {
-  for (let retry = 0; retry <= retries; retry++) {
-    try {
-      await page.goto(url(path), { timeout: 3000 })
-    } catch (error) {
-      if (retry === retries) {
-        throw error
-      }
-    }
-  }
+  await vi.waitFor(() => page.goto(url(path), { timeout: 3000 }), { timeout: 3000 * retries || 3000 })
   await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
-}
-
-type EqualityVal = string | number | boolean | null | undefined | RegExp
-export async function expectWithPolling (
-  get: () => Promise<EqualityVal> | EqualityVal,
-  expected: EqualityVal,
-  retries = process.env.CI ? 100 : 30,
-  delay = process.env.CI ? 500 : 100,
-) {
-  let result: EqualityVal
-  for (let i = retries; i >= 0; i--) {
-    result = await get()
-    if (result?.toString() === expected?.toString()) {
-      break
-    }
-    await new Promise(resolve => setTimeout(resolve, delay))
-  }
-  expect(result?.toString(), `"${result?.toString()}" did not equal "${expected?.toString()}" in ${retries * delay}ms`).toEqual(expected?.toString())
 }
 
 const revivers = {

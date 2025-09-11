@@ -80,7 +80,7 @@ Returns a Vue `Ref<T>` representing the cookie value. Updating the ref will upda
 
 The example below creates a cookie called `counter`. If the cookie doesn't exist, it is initially set to a random value. Whenever we update the `counter` variable, the cookie will be updated accordingly.
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const counter = useCookie('counter')
 

@@ -43,12 +43,12 @@
 </template>
 
 <script setup lang="ts">
-const LazyVisibleDelayedComponentMacro = defineLazyHydrationComponent('visible', () => import('~/app/components/DelayedComponent.vue'))
-const LazyIdleDelayedComponentMacro = defineLazyHydrationComponent('idle', () => import('~/app/components/DelayedComponent.vue'))
-const LazyInteractionDelayedComponentMacro = defineLazyHydrationComponent('interaction', () => import('~/app/components/DelayedComponent.vue'))
-const LazyMediaQueryDelayedComponentMacro = defineLazyHydrationComponent('mediaQuery', () => import('~/app/components/DelayedComponent.vue'))
-const LazyIfDelayedComponentMacro = defineLazyHydrationComponent('if', () => import('~/app/components/DelayedComponent.vue'))
-const LazyNeverDelayedComponentMacro = defineLazyHydrationComponent('never', () => import('~/app/components/DelayedComponent.vue'))
+const LazyVisibleDelayedComponentMacro = defineLazyHydrationComponent('visible', () => import('~/components/DelayedComponent.vue'))
+const LazyIdleDelayedComponentMacro = defineLazyHydrationComponent('idle', () => import('~/components/DelayedComponent.vue'))
+const LazyInteractionDelayedComponentMacro = defineLazyHydrationComponent('interaction', () => import('~/components/DelayedComponent.vue'))
+const LazyMediaQueryDelayedComponentMacro = defineLazyHydrationComponent('mediaQuery', () => import('~/components/DelayedComponent.vue'))
+const LazyIfDelayedComponentMacro = defineLazyHydrationComponent('if', () => import('~/components/DelayedComponent.vue'))
+const LazyNeverDelayedComponentMacro = defineLazyHydrationComponent('never', () => import('~/components/DelayedComponent.vue'))
 
 const state = ref(0)
 </script>
