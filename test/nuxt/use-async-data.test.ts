@@ -357,49 +357,53 @@ describe('useAsyncData', () => {
   })
 
   it('should watch params deeply in a non synchronous way', async () => {
-    const promiseFn = vi.fn(() => Promise.resolve())
     const foo = ref('foo')
     const baz = ref('baz')
     const locale = ref('en')
-    const params = reactive({ deep: { baz: 'baz' } })
-    const requestHistory = []
+
+    type Params = { deep: { baz: string }, foo?: string, locale?: string }
+    const params = reactive<Params>({ deep: { baz: 'baz' } })
+
     watch(foo, (foo) => {
       params.foo = foo
       params.locale = locale.value
     }, { immediate: true })
+
     watch(baz, (baz) => {
       params.deep.baz = baz
     }, { immediate: true })
+
+    const requestHistory: Array<Record<string, unknown>> = []
+
+    // 1. first request
     await useAsyncData(uniqueKey, async () => {
       requestHistory.push(JSON.parse(JSON.stringify(params)))
-      await promiseFn()
-    }, { watch: params })
+      await Promise.resolve()
+    }, { watch: [params] })
+
+    // 2. second request
     foo.value = 'bar'
     locale.value = 'fr'
     // We need to wait for the debounce 0
-    await (new Promise(resolve => setTimeout(resolve, 5)))
+    await new Promise(resolve => setTimeout(resolve, 5))
+
+    // 3. third request
     baz.value = 'bar'
     await nextTick()
 
     expect(requestHistory).toEqual([
       {
-        deep: {
-          baz: 'baz',
-        },
+        deep: { baz: 'baz' },
         foo: 'foo',
         locale: 'en',
       },
       {
-        deep: {
-          baz: 'baz',
-        },
+        deep: { baz: 'baz' },
         foo: 'bar',
         locale: 'fr',
       },
       {
-        deep: {
-          baz: 'bar',
-        },
+        deep: { baz: 'bar' },
         foo: 'bar',
         locale: 'fr',
       },
