@@ -39,7 +39,7 @@ export default defineNuxtModule<ComponentsOptions>({
     dirs: [],
   },
   async setup (moduleOptions, nuxt) {
-    let componentDirs: ComponentsDir[]
+    let componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[],
     }
@@ -89,7 +89,7 @@ export default defineNuxtModule<ComponentsOptions>({
           logger.warn('Components directory not found: `' + dirPath + '`')
         }
 
-        const dirs = dir.path.includes('node_modules') ? libraryComponentDirs : userComponentDirs
+        const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
 
         dirs.push({
           global: moduleOptions.global,
