@@ -21,6 +21,15 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 const SLASH_SEPARATOR_RE = /[\\/]/
+/**
+ * Compare two directory entries by the number of path segments.
+ *
+ * Returns a sort comparator value based on the count of path segments (split on slashes). Deeper (more segments) paths are ordered before shallower ones.
+ *
+ * @param param0 - First directory object with a `path` string
+ * @param param1 - Second directory object with a `path` string
+ * @returns A negative number if the first directory should come before the second, positive if after, or 0 if equal
+ */
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
   return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
 }
@@ -260,6 +269,22 @@ export default defineNuxtModule<ComponentsOptions>({
   },
 })
 
+/**
+ * Normalize the various user-provided `components.dirs` shapes into a flat array of ComponentsDir entries.
+ *
+ * Handles:
+ * - Arrays (recursively flattened and sorted by path depth),
+ * - `true`/`undefined` (returns default islands, global, and components dirs under `cwd`),
+ * - Strings (resolved against `cwd` and alias resolution),
+ * - Objects (either a single dir shape or an object with a `dirs` array).
+ *
+ * Each resulting entry has its `path` resolved via `resolveAlias` and `cwd`, receives a `priority` from `options.priority` (default 0), and entries without a `path` are skipped. The final list is sorted by path depth (shallowest first).
+ *
+ * @param dir - The raw `dirs` configuration value (single entry, array, true/undefined for defaults, or an options object).
+ * @param cwd - Base directory used to resolve relative `path` values.
+ * @param options - Optional settings; currently supports `priority` to assign a priority to all returned entries.
+ * @returns A normalized, flat, and sorted array of ComponentsDir objects ready for component scanning.
+ */
 function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
   if (Array.isArray(dir)) {
     return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
