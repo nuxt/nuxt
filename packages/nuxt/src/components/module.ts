@@ -50,36 +50,10 @@ export default defineNuxtModule<ComponentsOptions>({
         : context.components
     }
 
+    // TODO: remove in Nuxt v5
     if (nuxt.options.experimental.normalizeComponentNames) {
       addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.client, getComponents }), { server: false })
       addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
-    }
-
-    const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
-      if (Array.isArray(dir)) {
-        return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
-      }
-      if (dir === true || dir === undefined) {
-        return [
-          { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
-          { priority: options?.priority || 0, path: resolve(cwd, 'components/global'), global: true },
-          { priority: options?.priority || 0, path: resolve(cwd, 'components') },
-        ]
-      }
-      if (typeof dir === 'string') {
-        return [
-          { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) },
-        ]
-      }
-      if (!dir) {
-        return []
-      }
-      const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
-      return dirs.map(_dir => ({
-        priority: options?.priority || 0,
-        ..._dir,
-        path: resolve(cwd, resolveAlias(_dir.path)),
-      }))
     }
 
     // Resolve dirs
@@ -272,3 +246,41 @@ export default defineNuxtModule<ComponentsOptions>({
     }
   },
 })
+
+// boolean | Partial<ComponentsOptions> | ComponentsOptions['dirs']
+
+function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
+  if (Array.isArray(dir)) {
+    return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
+  }
+  if (dir === true || dir === undefined) {
+    return [
+      { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
+      { priority: options?.priority || 0, path: resolve(cwd, 'components/global'), global: true },
+      { priority: options?.priority || 0, path: resolve(cwd, 'components') },
+    ]
+  }
+  if (typeof dir === 'string') {
+    return [
+      { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) },
+    ]
+  }
+  if (!dir) {
+    return []
+  }
+
+  const normalizedDirs: ComponentsDir[] = []
+  for (const d of ('dirs' in dir ? dir.dirs || [] : [dir])) {
+    const normalizedDir = typeof d === 'string' ? { path: d } : d
+    if (!normalizedDir.path) {
+      continue
+    }
+    normalizedDirs.push({
+      priority: options?.priority || 0,
+      ...normalizedDir,
+      path: resolve(cwd, resolveAlias(normalizedDir.path)),
+    })
+  }
+
+  return normalizedDirs.sort(compareDirByPathLength)
+}
