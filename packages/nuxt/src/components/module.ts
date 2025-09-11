@@ -57,7 +57,7 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     // Resolve dirs
-    nuxt.hook('modules:done', async () => {
+    nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs: ComponentsDir[] = []
       for (const layer of nuxt.options._layers) {

@@ -245,7 +245,7 @@ export interface NuxtHooks {
 
   // Components
   /**
-   * Called once within `modules:done` allowing to extend the directories that are scanned for auto-importable components.
+   * Called within `app:resolve` allowing to extend the directories that are scanned for auto-importable components.
    * @param dirs The `dirs` option to push new items
    * @returns Promise
    */
