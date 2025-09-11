@@ -27,7 +27,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same destination path
-  filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
+  filterInPlace(nuxt.options.build.templates, p => (p.dst || normalizeTemplate(p).dst) !== template.dst)
 
   try {
     const distDir = distDirURL.toString()
