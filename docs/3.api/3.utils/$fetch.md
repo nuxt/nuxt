@@ -22,7 +22,7 @@ Using `$fetch` in components without wrapping it with [`useAsyncData`](/docs/api
 
 We recommend using [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) + `$fetch` to prevent double data fetching when fetching the component data.
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 // During SSR data is fetched twice, once on the server and once on the client.
 const dataTwice = await $fetch('/api/item')
@@ -39,7 +39,7 @@ const { data } = await useFetch('/api/item')
 
 You can use `$fetch` in any methods that are executed only on client-side.
 
-```vue [pages/contact.vue]
+```vue [app/pages/contact.vue]
 <script setup lang="ts">
 async function contactForm() {
   await $fetch('/api/contact', {
@@ -70,7 +70,7 @@ However, during Server-Side Rendering, due to security risks such as **Server-Si
 
 ::code-group
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 // This will NOT forward headers or cookies during SSR
 const { data } = await useAsyncData(() => $fetch('/api/cookies'))
@@ -87,7 +87,7 @@ export default defineEventHandler((event) => {
 
 If you need to forward headers and cookies on the server, you must manually pass them:
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 // This will forward the user's headers and cookies to `/api/cookies`
 const requestFetch = useRequestFetch()

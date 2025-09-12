@@ -90,7 +90,7 @@ const show = ref(false)
 
 By using the Lazy prefix you can delay loading the component code until the right moment, which can be helpful for optimizing your JavaScript bundle size.
 
-:read-more{title="Lazy loading components" to="/docs/guide/directory-structure/components#dynamic-imports"}
+:read-more{title="Lazy loading components" to="/docs/guide/directory-structure/app/components#dynamic-imports"}
 
 ### Lazy Hydration
 
@@ -106,7 +106,7 @@ It is not always necessary to hydrate (or make interactive) all the components o
 
 To optimize your app, you may want to delay the hydration of some components until they're visible, or until the browser is done with more important tasks.
 
-:read-more{title="Lazy hydration" to="/docs/guide/directory-structure/components#delayed-or-lazy-hydration"}
+:read-more{title="Lazy hydration" to="/docs/guide/directory-structure/app/components#delayed-or-lazy-hydration"}
 
 ### Fetching data
 
