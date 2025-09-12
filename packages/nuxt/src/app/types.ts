@@ -1,4 +1,4 @@
-export type { PageMeta, NuxtPageProps } from '../pages/runtime/index'
+export type { PageMeta, CustomPageMeta, NuxtPageProps } from '../pages/runtime/index'
 
 export interface NuxtAppLiterals {
   [key: string]: string
