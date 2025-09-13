@@ -24,7 +24,7 @@ The [`useFetch`](/docs/api/composables/use-fetch) composable uses `useRequestFet
 
 ::code-group
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 // This will forward the user's headers to the `/api/cookies` event handler
 // Result: { cookies: { foo: 'bar' } }

@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
-import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
@@ -16,6 +15,8 @@ import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
+import { getLayerDirectories } from './layers'
+import type { LayerDirectories } from './layers'
 
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
@@ -27,7 +28,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same destination path
-  filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
+  filterInPlace(nuxt.options.build.templates, p => (p.dst || normalizeTemplate(p).dst) !== template.dst)
 
   try {
     const distDir = distDirURL.toString()
@@ -166,11 +167,11 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-export function resolveLayerPaths (dir: Nuxt['options']['dir'], buildDir: string, rootDir: string, srcDir: string) {
-  const relativeRootDir = relativeWithDot(buildDir, rootDir)
-  const relativeSrcDir = relativeWithDot(buildDir, srcDir)
-  const relativeModulesDir = relativeWithDot(buildDir, resolve(rootDir, dir.modules || 'modules'))
-  const relativeSharedDir = relativeWithDot(buildDir, resolve(rootDir, dir.shared || 'shared'))
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string) {
+  const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
+  const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
+  const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
+  const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
@@ -227,7 +228,9 @@ export async function _generateTypes (nuxt: Nuxt) {
     legacyInclude.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
   }
 
-  const sourceDirs = nuxt.options._layers.map(layer => withTrailingSlash(layer.config.srcDir ?? layer.cwd))
+  const layerDirs = getLayerDirectories(nuxt)
+
+  const sourceDirs = layerDirs.map(layer => layer.app)
 
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
@@ -249,11 +252,10 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
-  for (const layer of nuxt.options._layers) {
-    const srcOrCwd = withTrailingSlash(layer.config.srcDir ?? layer.cwd)
-    if (!srcOrCwd.startsWith(rootDirWithSlash) || layer.cwd === nuxt.options.rootDir || srcOrCwd.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.cwd), '**/*')
-      const paths = resolveLayerPaths(defu(layer.config.dir, nuxt.options.dir), nuxt.options.buildDir, layer.cwd, layer.config.srcDir)
+  for (const dirs of layerDirs) {
+    if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
+      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
+      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)
@@ -655,4 +657,8 @@ function renderAttr (key: string, value?: string) {
 const RELATIVE_WITH_DOT_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
+
+function withTrailingSlash (dir: string) {
+  return dir.replace(/[^/]$/, '$&/')
 }

@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 const router = useRouter()
 </script>
@@ -16,13 +16,13 @@ const router = useRouter()
 
 If you only need the router instance within your template, use `$router`:
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <template>
   <button @click="$router.back()">Back</button>
 </template>
 ```
 
-If you have a `pages/` directory, `useRouter` is identical in behavior to the one provided by `vue-router`.
+If you have a `app/pages/` directory, `useRouter` is identical in behavior to the one provided by `vue-router`.
 
 ::read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/Router.html#Properties-currentRoute" target="_blank"}
 Read `vue-router` documentation about the `Router` interface.
@@ -78,7 +78,7 @@ Read more about the browser's History API.
 
 However, Nuxt has a concept of **route middleware** that simplifies the implementation of navigation guards and provides a better developer experience.
 
-:read-more{to="/docs/guide/directory-structure/middleware"}
+:read-more{to="/docs/guide/directory-structure/app/middleware"}
 
 ## Promise and Error Handling
 
@@ -89,4 +89,4 @@ However, Nuxt has a concept of **route middleware** that simplifies the implemen
 
 ## Universal Router Instance
 
-If you do not have a `pages/` folder, then [`useRouter`](/docs/api/composables/use-router)  will return a universal router instance with similar helper methods, but be aware that not all features may be supported or behave in exactly the same way as with `vue-router`.
+If you do not have a `app/pages/` folder, then [`useRouter`](/docs/api/composables/use-router)  will return a universal router instance with similar helper methods, but be aware that not all features may be supported or behave in exactly the same way as with `vue-router`.
