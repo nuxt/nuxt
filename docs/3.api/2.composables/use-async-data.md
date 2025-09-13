@@ -18,7 +18,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-const { data, status, error, refresh, clear } = await useAsyncData(
+const { data, status /* pending (alias) */, error, refresh, clear } = await useAsyncData(
   'mountains',
   () => $fetch('https://api.nuxtjs.dev/mountains')
 )
@@ -30,7 +30,7 @@ If you're using a custom useAsyncData wrapper, do not await it in the composable
 ::
 
 ::note
-`data`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
+`data`, `status`, `pending` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
 ### Watch Params
@@ -115,7 +115,7 @@ You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `u
 
 ### Shared State and Option Consistency
 
-When using the same key for multiple `useAsyncData` calls, they will share the same `data`, `error` and `status` refs. This ensures consistency across components but requires option consistency.
+When using the same key for multiple `useAsyncData` calls, they will share the same `data`, `error` and `status` refs (and `pending`, as it derives from `status`). This ensures consistency across components but requires option consistency.
 
 The following options **must be consistent** across all calls with the same key:
 - `handler` function
@@ -158,6 +158,8 @@ Keyed state created using `useAsyncData` can be retrieved across your Nuxt appli
   - `pending`: the request is in progress
   - `success`: the request has completed successfully
   - `error`: the request has failed
+- `pending`: a `Ref<boolean>` that is `true` while the request is in progress.
+  This is effectively an alias of `computed(() => status.value === 'pending')`.
 - `clear`: a function that can be used to set `data` to `undefined` (or the value of `options.default()` if provided), set `error` to `undefined`, set `status` to `idle`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
@@ -204,6 +206,8 @@ type AsyncData<DataT, ErrorT> = {
   clear: () => void
   error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
+  /** Alias of computed(() => status.value === 'pending') */
+  pending: Ref<boolean>
 };
 
 interface AsyncDataExecuteOptions {
