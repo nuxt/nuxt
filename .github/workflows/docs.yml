@@ -43,3 +43,12 @@ jobs:
 
       - name: Typecheck (docs)
         run: pnpm typecheck:docs
+
+  typos:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: crate-ci/typos@v1.36.2
+        with:
+          files: .
