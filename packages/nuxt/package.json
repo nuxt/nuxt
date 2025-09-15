@@ -101,14 +101,14 @@
     "mlly": "^1.8.0",
     "mocked-exports": "^0.1.1",
     "nanotar": "^0.2.0",
-    "nitropack": "^2.12.5",
+    "nitropack": "^2.12.6",
     "nypm": "^0.6.1",
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
     "on-change": "^5.0.1",
-    "oxc-minify": "^0.87.0",
-    "oxc-parser": "^0.87.0",
-    "oxc-transform": "^0.87.0",
+    "oxc-minify": "^0.89.0",
+    "oxc-parser": "^0.89.0",
+    "oxc-transform": "^0.89.0",
     "oxc-walker": "^0.5.2",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.0.0",
@@ -142,7 +142,7 @@
     "unbuild": "3.6.1",
     "vite": "7.1.5",
     "vitest": "3.2.4",
-    "vue-sfc-transformer": "0.1.16"
+    "vue-sfc-transformer": "0.1.17"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
