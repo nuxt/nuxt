@@ -80,18 +80,21 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
 
   // Add template to types reference
   if (!context || context.nuxt) {
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: template.dst })
+    nuxt.hook('prepare:types', (payload) => {
+      payload.references ||= []
+      payload.references.push({ path: template.dst })
     })
   }
   if (context?.node) {
-    nuxt.hook('prepare:types', ({ nodeReferences }) => {
-      nodeReferences.push({ path: template.dst })
+    nuxt.hook('prepare:types', (payload) => {
+      payload.nodeReferences ||= []
+      payload.nodeReferences.push({ path: template.dst })
     })
   }
   if (context?.shared) {
-    nuxt.hook('prepare:types', ({ sharedReferences }) => {
-      sharedReferences.push({ path: template.dst })
+    nuxt.hook('prepare:types', (payload) => {
+      payload.sharedReferences ||= []
+      payload.sharedReferences.push({ path: template.dst })
     })
   }
 
@@ -105,8 +108,9 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   }
 
   if (context?.nitro) {
-    nuxt.hook('nitro:prepare:types', ({ references }) => {
-      references.push({ path: template.dst })
+    nuxt.hook('nitro:prepare:types', (payload) => {
+      payload.references ||= []
+      payload.references.push({ path: template.dst })
     })
   }
 
