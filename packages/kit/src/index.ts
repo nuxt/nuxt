@@ -1,6 +1,6 @@
 // Module
 export { defineNuxtModule } from './module/define'
-export { getDirectory, installModule, loadNuxtModuleInstance, normalizeModuleTranspilePath } from './module/install'
+export { getDirectory, installModule, installModules, loadNuxtModuleInstance, normalizeModuleTranspilePath, resolveModuleWithOptions } from './module/install'
 export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './module/compatibility'
 
 // Loader
@@ -9,6 +9,10 @@ export type { LoadNuxtConfigOptions } from './loader/config'
 export { extendNuxtSchema } from './loader/schema'
 export { buildNuxt, loadNuxt } from './loader/nuxt'
 export type { LoadNuxtOptions } from './loader/nuxt'
+
+// Layers
+export { getLayerDirectories } from './layers'
+export type { LayerDirectories } from './layers'
 
 // Utils
 export { addImports, addImportsDir, addImportsSources } from './imports'

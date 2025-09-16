@@ -152,6 +152,9 @@ interface _NuxtApp {
   }
 
   /** @internal */
+  _processingMiddleware?: string | boolean
+
+  /** @internal */
   _once: {
     [key: string]: Promise<any>
   }
@@ -577,7 +580,10 @@ export function defineAppConfig<C extends AppConfigInput> (config: C): C {
 const loggedKeys = new Set<string>()
 function wrappedConfig (runtimeConfig: Record<string, unknown>) {
   if (!import.meta.dev || import.meta.server) { return runtimeConfig }
-  const keys = Object.keys(runtimeConfig).map(key => `\`${key}\``)
+  const keys: string[] = []
+  for (const key in runtimeConfig) {
+    keys.push(`\`${key}\``)
+  }
   const lastKey = keys.pop()
   return new Proxy(runtimeConfig, {
     get (target, p, receiver) {
