@@ -86,6 +86,7 @@ export const RenderPlugin = () => {
         }
 
         // Minify HTML
+        // @ts-expect-error error in htmlnano types: https://github.com/posthtml/htmlnano/issues/376
         html = await htmlnano.process(html, { collapseWhitespace: 'aggressive' }).then(r => r.html)
 
         if (!isCompleteHTML) {
