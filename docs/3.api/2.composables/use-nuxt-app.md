@@ -16,7 +16,7 @@ const nuxtApp = useNuxtApp()
 </script>
 ```
 
-If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
+If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](/docs/4.x/api/composables/use-nuxt-app#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
 
 <!--
 note
@@ -120,7 +120,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   After fetching the value of `count` using [`useAsyncData`](/docs/4.x/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there.
 
-  When accessing the same `payload.data` from [`ssrcontext`](#ssrcontext), you can access the same value on the server side as well.
+  When accessing the same `payload.data` from [`ssrcontext`](/docs/4.x/api/composables/use-nuxt-app#ssrcontext), you can access the same value on the server side as well.
 
 - `state` (object) - When you use [`useState`](/docs/4.x/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
