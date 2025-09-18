@@ -15,6 +15,10 @@ export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
       return !nuxt.options.test && nuxt.options.typescript.typeCheck === true
     },
     configResolved (config) {
+      // TODO: temporary guard before migrating to dev environments
+      if ((config.build.rollupOptions.input as any).server) {
+        return
+      }
       try {
         entry = resolveClientEntry(config)
         sourcemap = !!config.build.sourcemap

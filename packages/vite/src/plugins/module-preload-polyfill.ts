@@ -12,6 +12,10 @@ export function ModulePreloadPolyfillPlugin (): Plugin {
     name: 'nuxt:module-preload-polyfill',
     applyToEnvironment: environment => environment.name === 'client',
     configResolved (config) {
+      // TODO: temporary guard before migrating to dev environments
+      if ((config.build.rollupOptions.input as any).server) {
+        return
+      }
       try {
         isDisabled = config.build.modulePreload === false || config.build.modulePreload.polyfill === false
         sourcemap = !!config.build.sourcemap
