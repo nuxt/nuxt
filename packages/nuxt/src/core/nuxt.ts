@@ -328,8 +328,7 @@ async function initNuxt (nuxt: Nuxt) {
   addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
 
   // add resolver for modules used in virtual files
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { client: false })
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { server: false })
+  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
 
   addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
 
