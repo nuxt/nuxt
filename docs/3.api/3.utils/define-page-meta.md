@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`app/pages/`](/docs/guide/directory-structure/app/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`app/pages/`](/docs/4.x/guide/directory-structure/app/pages) directory (unless [set otherwise](/docs/4.x/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
@@ -56,7 +56,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a name for this page's route. By default, name is generated based on path inside the [`app/pages/` directory](/docs/guide/directory-structure/app/pages).
+    You may define a name for this page's route. By default, name is generated based on path inside the [`app/pages/` directory](/docs/4.x/guide/directory-structure/app/pages).
 
   **`path`**
 
@@ -104,7 +104,7 @@ interface PageMeta {
 
   - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/NavigationGuard.html#navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
 
-    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/guide/directory-structure/app/middleware).
+    Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/4.x/guide/directory-structure/app/middleware).
 
   **`pageTransition`**
 
@@ -116,7 +116,7 @@ interface PageMeta {
 
   - **Type**: `boolean | 'always'`
 
-    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
+    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/4.x/getting-started/transitions#view-transitions-api-experimental)**</br>
     Enable/disable View Transitions for the current page.
     If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
 
@@ -136,13 +136,13 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-approuteroptions)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/4.x/guide/recipes/custom-routing#using-approuteroptions)) for more info.
 
   **`[key: string]`**
 
   - **Type**: `any`
 
-    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/guide/directory-structure/app/pages/#typing-custom-metadata).
+    Apart from the above properties, you can also set **custom** metadata. You may wish to do so in a type-safe way by [augmenting the type of the `meta` object](/docs/4.x/guide/directory-structure/app/pages/#typing-custom-metadata).
 
 ## Examples
 
@@ -219,7 +219,7 @@ For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/gu
 
 ### Defining Layout
 
-You can define the layout that matches the layout's file name located (by default) in the [`app/layouts/` directory](/docs/guide/directory-structure/app/layouts). You can also disable the layout by setting the `layout` to `false`:
+You can define the layout that matches the layout's file name located (by default) in the [`app/layouts/` directory](/docs/4.x/guide/directory-structure/app/layouts). You can also disable the layout by setting the `layout` to `false`:
 
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">

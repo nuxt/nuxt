@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-You can use built-in [`useRequestHeaders`](/docs/api/composables/use-request-headers) composable to access the incoming request headers within your pages, components, and plugins.
+You can use built-in [`useRequestHeaders`](/docs/4.x/api/composables/use-request-headers) composable to access the incoming request headers within your pages, components, and plugins.
 
 ```js
 // Get all request headers

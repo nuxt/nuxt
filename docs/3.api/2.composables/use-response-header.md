@@ -12,7 +12,7 @@ links:
 This composable is available in Nuxt v3.14+.
 ::
 
-You can use the built-in [`useResponseHeader`](/docs/api/composables/use-response-header) composable to set any server response header within your pages, components, and plugins.
+You can use the built-in [`useResponseHeader`](/docs/4.x/api/composables/use-response-header) composable to set any server response header within your pages, components, and plugins.
 
 ```ts
 // Set a custom response header
@@ -37,7 +37,7 @@ header.value = 'my-value';
 </template>
 ```
 
-We can use `useResponseHeader` for example in Nuxt [middleware](/docs/guide/directory-structure/app/middleware) to set a response header for all pages.
+We can use `useResponseHeader` for example in Nuxt [middleware](/docs/4.x/guide/directory-structure/app/middleware) to set a response header for all pages.
 
 ```ts [app/middleware/my-header-middleware.ts]
 export default defineNuxtRouteMiddleware((to, from) => {

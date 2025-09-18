@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/dollarfetch).
+This composable provides a convenient wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) and [`$fetch`](/docs/4.x/api/utils/dollarfetch).
 It automatically generates a key based on URL and fetch options, provides type hints for request url based on server routes, and infers API response type.
 
 ::note
@@ -26,7 +26,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
 ```
 
 ::warning
-If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
+If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/4.x/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
 ::
 
 ::note
@@ -83,7 +83,7 @@ const { data: post } = await useFetch(() => `/api/posts/${id.value}`)
 When using `useFetch` with the same URL and options in multiple components, they will share the same `data`, `error` and `status` refs. This ensures consistency across components.
 
 ::tip
-Keyed state created using `useFetch` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/api/composables/use-nuxt-data).
+Keyed state created using `useFetch` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/4.x/api/composables/use-nuxt-data).
 ::
 
 ::warning
@@ -152,7 +152,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 - `URL` (`string | Request | Ref<string | Request> | () => string | Request`): The URL or request to fetch. Can be a string, a Request object, a Vue ref, or a function returning a string/Request. Supports reactivity for dynamic endpoints.
 
-- `options` (object): Configuration for the fetch request. Extends [unjs/ofetch](https://github.com/unjs/ofetch) options and [`AsyncDataOptions`](/docs/api/composables/use-async-data#params). All options can be a static value, a `ref`, or a computed value.
+- `options` (object): Configuration for the fetch request. Extends [unjs/ofetch](https://github.com/unjs/ofetch) options and [`AsyncDataOptions`](/docs/4.x/api/composables/use-async-data#params). All options can be a static value, a `ref`, or a computed value.
 
 | Option | Type | Default | Description |
 | ---| --- | --- | --- |
