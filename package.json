@@ -69,7 +69,7 @@
     "ufo": "1.6.1",
     "unbuild": "3.6.1",
     "unimport": "5.2.0",
-    "vite": "7.1.5",
+    "vite": "npm:rolldown-vite@latest",
     "vue": "3.5.21",
     "webpack": "5.101.3"
   },
@@ -139,7 +139,7 @@
     "typescript": "5.9.2",
     "ufo": "1.6.1",
     "unbuild": "3.6.1",
-    "vite": "7.1.5",
+    "vite": "npm:rolldown-vite@latest",
     "vitest": "3.2.4",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.21",

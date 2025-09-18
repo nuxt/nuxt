@@ -3,8 +3,6 @@ import * as vite from 'vite'
 import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
-import replace from '@rollup/plugin-replace'
-import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -55,7 +53,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
-  // @ts-expect-error non-public property
   if (vite.rolldownVersion) {
     // esbuild is not used in `rolldown-vite`
     if (viteConfig.esbuild) {
@@ -131,11 +128,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
           },
 
-          // @ts-expect-error non-public property
           watch: (vite.rolldownVersion
             // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
             ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
             : {
+                // @ts-expect-error rollup-specific
                 chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
                 exclude: nuxt.options.ignore,
               }
@@ -214,9 +211,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await nuxt.callHook('vite:extend', ctx)
 
-  nuxt.hook('vite:extendConfig', (config) => {
-    const replaceOptions: RollupReplaceOptions = Object.create(null)
-    replaceOptions.preventAssignment = true
+  nuxt.hook('vite:extendConfig', async (config) => {
+    const replaceOptions = Object.create(null)
 
     for (const key in config.define!) {
       if (key.startsWith('import.meta.')) {
@@ -224,7 +220,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     }
 
-    config.plugins!.push(replace(replaceOptions))
+    if(vite.rolldownVersion) {
+      const { replacePlugin } = await import('rolldown/experimental')
+      config.plugins!.push(replacePlugin(replaceOptions))
+    } else {
+      const { default: replacePlugin} = await import('@rollup/plugin-replace')
+      config.plugins!.push(replacePlugin({ ...replaceOptions, preventAssignment: true }))
+    }
+
   })
 
   if (!nuxt.options.dev) {

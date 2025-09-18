@@ -20,13 +20,14 @@ export function AnalyzePlugin (nuxt: Nuxt): Plugin[] {
           for (const [moduleId, module] of Object.entries(bundle.modules)) {
             minifiedModuleEntryPromises.push(
               transform(module.code || '', { minify: true })
-                .then(result => [moduleId, { ...module, code: result.code }]),
+                .then(result => [moduleId, { ...module, code: result.code } as RenderedModule]),
             )
           }
           bundle.modules = Object.fromEntries(await Promise.all(minifiedModuleEntryPromises))
         }
       },
     },
+    // @ts-expect-error rollup
     visualizer({
       ...analyzeOptions,
       filename: 'filename' in analyzeOptions ? analyzeOptions.filename!.replace('{name}', 'client') : undefined,
