@@ -173,3 +173,36 @@ export default defineEventHandler(event => {
 ```
 
 :link-example{to="/docs/examples/advanced/use-cookie"}
+
+## Handling Authentication with Cookies
+
+You can manage authentication tokens using cookies like this:
+
+```ts [plugins/auth.ts]
+export default defineNuxtPlugin(() => {
+  const nuxtApp = useNuxtApp()
+  const authStore = useAuthStore()
+  const accessToken = useCookie('accessToken', {
+    sameSite: 'strict',
+  })
+
+  return {
+    provide: {
+      getAccessToken() { 
+        return accessToken.value
+      },
+      setAccessToken(accessToken: string) { 
+        accessToken.value = accessToken
+      },
+      loginUser(user: User) {
+        nuxtApp.$setAccessToken(user.accessToken)
+        authStore.setUser(user)
+      },
+      logout() {
+        nuxtApp.$setAccessToken('')
+        authStore.logout()
+      },
+    },
+  }
+})
+```
