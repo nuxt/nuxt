@@ -14,13 +14,8 @@ import { createError, defineEventHandler, handleCors, setHeader } from 'h3'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
 import type { ViteBuildContext } from './vite'
-import { DevStyleSSRPlugin } from './plugins/dev-style-ssr'
-import { RuntimePathsPlugin } from './plugins/runtime-paths'
-import { TypeCheckPlugin } from './plugins/type-check'
-import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
-import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
-import { StableEntryPlugin } from './plugins/stable-entry'
+import { ViteNodePlugin } from './vite-node'
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const nodeCompat = nuxt.options.experimental.clientNodeCompat
@@ -124,17 +119,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       },
     },
     plugins: [
-      DevStyleSSRPlugin({
-        srcDir: nuxt.options.srcDir,
-        buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
-      }),
-      RuntimePathsPlugin(),
       ViteNodePlugin(nuxt),
-      // Type checking client panel
-      TypeCheckPlugin(nuxt),
-      ModulePreloadPolyfillPlugin(),
-      // ensure changes in chunks do not invalidate whole build
-      StableEntryPlugin(nuxt),
     ],
     appType: 'custom',
     server: {
@@ -215,7 +200,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
-    nuxt.hook('close', () => viteServer.close())
     await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
     const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
     viteServer.middlewares.stack.splice(transformHandler, 0, {

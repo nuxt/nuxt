@@ -4,7 +4,7 @@ import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
 import { sanitizeFilePath } from 'mlly'
-import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 
@@ -16,6 +16,13 @@ import { logLevelMap } from './utils/logger'
 import { SSRStylesPlugin } from './plugins/ssr-styles'
 import { PublicDirsPlugin } from './plugins/public-dirs'
 import { distDir } from './dirs'
+import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
+import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
+import { DevStyleSSRPlugin } from './plugins/dev-style-ssr'
+import { RuntimePathsPlugin } from './plugins/runtime-paths'
+import { TypeCheckPlugin } from './plugins/type-check'
+import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
+import { StableEntryPlugin } from './plugins/stable-entry'
 import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker'
 import { AnalyzePlugin } from './plugins/analyze'
@@ -153,6 +160,23 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           }),
           // Add type-checking
           VitePluginCheckerPlugin(nuxt),
+
+          // server-only plugins
+          VueFeatureFlagsPlugin(nuxt),
+          // tell rollup's nitro build about the original sources of the generated vite server build
+          SourcemapPreserverPlugin(nuxt),
+
+          // client-only plugins
+          DevStyleSSRPlugin({
+            srcDir: nuxt.options.srcDir,
+            buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
+          }),
+          RuntimePathsPlugin(),
+          // Type checking client panel
+          TypeCheckPlugin(nuxt),
+          ModulePreloadPolyfillPlugin(),
+          // ensure changes in chunks do not invalidate whole build
+          StableEntryPlugin(nuxt),
           AnalyzePlugin(nuxt),
         ],
         server: {

@@ -12,8 +12,6 @@ import { createViteLogger } from './utils/logger'
 import { writeDevServer } from './vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
-import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
-import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
 
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
@@ -25,11 +23,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     css: {
       devSourcemap: !!nuxt.options.sourcemap.server,
     },
-    plugins: [
-      VueFeatureFlagsPlugin(nuxt),
-      // tell rollup's nitro build about the original sources of the generated vite server build
-      SourcemapPreserverPlugin(nuxt),
-    ],
+    plugins: [],
     define: {
       'process.server': true,
       'process.client': false,
@@ -164,9 +158,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   // Start development server
   const ssrServer = await vite.createServer(serverConfig)
   ctx.ssrServer = ssrServer
-
-  // Close server on exit
-  nuxt.hook('close', () => ssrServer.close())
 
   await nuxt.callHook('vite:serverCreated', ssrServer, { isClient: false, isServer: true })
 
