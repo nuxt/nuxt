@@ -331,7 +331,7 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { client: false })
   addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { server: false })
 
-  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { client: false, prepend: true })
+  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
