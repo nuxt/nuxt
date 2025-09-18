@@ -286,7 +286,8 @@ async function initNuxt (nuxt: Nuxt) {
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
   addBuildPlugin(VirtualFSPlugin(nuxt, {
-    mode: 'client', alias: {
+    mode: 'client',
+    alias: {
       '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),

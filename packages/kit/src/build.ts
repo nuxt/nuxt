@@ -96,11 +96,14 @@ export function extendViteConfig (fn: ((config: ViteConfig) => void), options: E
     return nuxt.hook('vite:extend', ({ config }) => fn(config))
   }
 
+  // TODO: fix
   nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
     if (options.server !== false && isServer) {
+      // @ts-expect-error type is incorrect
       return fn(config)
     }
     if (options.client !== false && isClient) {
+      // @ts-expect-error type is incorrect
       return fn(config)
     }
   })
@@ -134,14 +137,40 @@ export function addRspackPlugin (pluginOrGetter: RspackPluginInstance | RspackPl
 /**
  * Append Vite plugin to the config.
  */
-export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options?: ExtendViteConfigOptions) {
-  extendViteConfig((config) => {
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options: ExtendViteConfigOptions = {}) {
+  const nuxt = useNuxt()
 
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  nuxt.hook('vite:extend', ({ config }) => {
     config.plugins ||= []
-    config.plugins[method](...toArray(plugin))
-  }, options)
+
+    const plugin = toArray(typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter)
+
+    if (options.server !== false && options.client !== false) {
+      const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+      // Call fn() only once
+      config.plugins[method](...plugin)
+      return
+    }
+
+    const environmentName = options.server === false ? 'client' : 'ssr'
+    const pluginName = plugin.map(p => p.name).join('|')
+    config.plugins.push({
+      name: `${pluginName}:wrapper`,
+      enforce: options?.prepend ? 'pre' : 'post',
+      applyToEnvironment (environment) {
+        if (environment.name === environmentName) {
+          return plugin
+        }
+      },
+    })
+  })
 }
 
 interface AddBuildPluginFactory {
