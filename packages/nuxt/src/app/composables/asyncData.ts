@@ -637,18 +637,18 @@ function createAsyncData<
     _waitingReadyHandler: undefined,
     execute: (...args) => {
       const [_opts, newValue = undefined] = args
-      
+
       // If manual refresh, clear any waiting ready handler
       if (_opts?.cause === 'refresh:manual' && asyncData._waitingReadyHandler) {
         asyncData._waitingReadyHandler()
         asyncData._waitingReadyHandler = undefined
       }
-      
+
       // if is not ready, auto fetch is prevented
       if (asyncData._ready.value === false && _opts?.cause !== 'refresh:manual') {
         // wait until asyncData is ready
         if (!asyncData._waitingReadyHandler) {
-          const stopWatch = watch(asyncData._ready, (ready, oldReady) => {
+          const stopWatch = watch(asyncData._ready, (ready) => {
             if (ready) {
               // when it becomes ready, execute the fetch
               nextTick(() => {
