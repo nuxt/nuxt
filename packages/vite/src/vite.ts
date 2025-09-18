@@ -79,124 +79,121 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
 
   const isIgnored = createIsIgnored(nuxt)
-  const ctx: ViteBuildContext = {
-    nuxt,
-    entry,
-    config: vite.mergeConfig(
-      {
-        logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
-        experimental: {
-          renderBuiltUrl: (filename, { type, hostType, ssr }) => {
-            if (hostType !== 'js') {
-              // In CSS we only use relative paths until we craft a clever runtime CSS hack
+  const config = vite.mergeConfig(
+    {
+      logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
+      experimental: {
+        renderBuiltUrl: (filename, { type, hostType, ssr }) => {
+          if (hostType !== 'js') {
+            // In CSS we only use relative paths until we craft a clever runtime CSS hack
+            return { relative: true }
+          }
+          if (!ssr) {
+            if (type === 'asset') {
               return { relative: true }
             }
-            if (!ssr) {
-              if (type === 'asset') {
-                return { relative: true }
-              }
-              return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
-            }
-            if (type === 'public') {
-              return { runtime: `${helper}__publicAssetsURL(${JSON.stringify(filename)})` }
-            }
-            if (type === 'asset') {
-              const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir)), '')
-              return { runtime: `${helper}__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
-            }
-          },
+            return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
+          }
+          if (type === 'public') {
+            return { runtime: `${helper}__publicAssetsURL(${JSON.stringify(filename)})` }
+          }
+          if (type === 'asset') {
+            const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir)), '')
+            return { runtime: `${helper}__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
+          }
         },
-        resolve: {
-          alias: {
-            [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
-            ...nuxt.options.alias,
-            '#app': nuxt.options.appDir,
-            'web-streams-polyfill/ponyfill/es2018': mockEmpty,
-            // Cannot destructure property 'AbortController' of ..
-            'abort-controller': mockEmpty,
-          },
-          dedupe: [
-            'vue',
-          ],
+      },
+      resolve: {
+        alias: {
+          [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
+          ...nuxt.options.alias,
+          '#app': nuxt.options.appDir,
+          'web-streams-polyfill/ponyfill/es2018': mockEmpty,
+          // Cannot destructure property 'AbortController' of ..
+          'abort-controller': mockEmpty,
         },
-        css: await resolveCSSOptions(nuxt),
-        define: {
-          __NUXT_VERSION__: JSON.stringify(nuxt._version),
-          __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext,
-        },
-        build: {
-          copyPublicDir: false,
-          rollupOptions: {
-            output: {
-              sourcemapIgnoreList: (relativeSourcePath) => {
-                return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
-              },
-              sanitizeFileName: sanitizeFilePath,
-              // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
-              assetFileNames: nuxt.options.dev
-                ? undefined
-                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
-            },
-          },
-
-          // @ts-expect-error non-public property
-          watch: (vite.rolldownVersion
-            // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
-            ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
-            : {
-                chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-                exclude: nuxt.options.ignore,
-              }
-          ),
-        },
-        plugins: [
-          ReplacePlugin(),
-          SSRStylesPlugin(nuxt),
-          LayerDepOptimizePlugin(nuxt),
-          // add resolver for files in public assets directories
-          PublicDirsPlugin({
-            dev: nuxt.options.dev,
-            baseURL: nuxt.options.app.baseURL,
-          }),
-          // Add type-checking
-          VitePluginCheckerPlugin(nuxt),
-
-          // server-only plugins
-          VueFeatureFlagsPlugin(nuxt),
-          // tell rollup's nitro build about the original sources of the generated vite server build
-          SourcemapPreserverPlugin(nuxt),
-
-          // client-only plugins
-          DevStyleSSRPlugin({
-            srcDir: nuxt.options.srcDir,
-            buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
-          }),
-          RuntimePathsPlugin(),
-          // Type checking client panel
-          TypeCheckPlugin(nuxt),
-          ModulePreloadPolyfillPlugin(),
-          // ensure changes in chunks do not invalidate whole build
-          StableEntryPlugin(nuxt),
-          AnalyzePlugin(nuxt),
+        dedupe: [
+          'vue',
         ],
-        server: {
-          watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-          fs: {
-            allow: [...new Set(allowDirs)],
+      },
+      css: await resolveCSSOptions(nuxt),
+      define: {
+        __NUXT_VERSION__: JSON.stringify(nuxt._version),
+        __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext,
+      },
+      build: {
+        copyPublicDir: false,
+        rollupOptions: {
+          output: {
+            sourcemapIgnoreList: (relativeSourcePath) => {
+              return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
+            },
+            sanitizeFileName: sanitizeFilePath,
+            // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
+            assetFileNames: nuxt.options.dev
+              ? undefined
+              : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
           },
         },
-      } satisfies ViteConfig,
-      viteConfig,
-    ),
-  }
+
+        // @ts-expect-error non-public property
+        watch: (vite.rolldownVersion
+          // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+          ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
+          : {
+              chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+              exclude: nuxt.options.ignore,
+            }
+        ),
+      },
+      plugins: [
+        ReplacePlugin(),
+        SSRStylesPlugin(nuxt),
+        LayerDepOptimizePlugin(nuxt),
+        // add resolver for files in public assets directories
+        PublicDirsPlugin({
+          dev: nuxt.options.dev,
+          baseURL: nuxt.options.app.baseURL,
+        }),
+        // Add type-checking
+        VitePluginCheckerPlugin(nuxt),
+
+        // server-only plugins
+        VueFeatureFlagsPlugin(nuxt),
+        // tell rollup's nitro build about the original sources of the generated vite server build
+        SourcemapPreserverPlugin(nuxt),
+
+        // client-only plugins
+        DevStyleSSRPlugin({
+          srcDir: nuxt.options.srcDir,
+          buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
+        }),
+        RuntimePathsPlugin(),
+        // Type checking client panel
+        TypeCheckPlugin(nuxt),
+        ModulePreloadPolyfillPlugin(),
+        // ensure changes in chunks do not invalidate whole build
+        StableEntryPlugin(nuxt),
+        AnalyzePlugin(nuxt),
+      ],
+      server: {
+        watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+        fs: {
+          allow: [...new Set(allowDirs)],
+        },
+      },
+    } satisfies ViteConfig,
+    viteConfig,
+  )
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
   if (!nuxt.options.dev) {
-    ctx.config.server!.watch = undefined
-    ctx.config.build!.watch = undefined
+    config.server!.watch = undefined
+    config.build!.watch = undefined
   }
 
+  const ctx: ViteBuildContext = { nuxt, entry, config }
   await nuxt.callHook('vite:extend', ctx)
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
