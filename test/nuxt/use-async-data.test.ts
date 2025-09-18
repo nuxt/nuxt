@@ -801,4 +801,135 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
     vi.useRealTimers()
   })
+
+  // Tests for ready option
+  it('should not execute when ready is false', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { ready: false })
+
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe(undefined)
+    expect(pending.value).toBe(false)
+    expect(status.value).toBe('idle')
+  })
+
+  it('should work with reactive `ready`', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const readyRef = ref(false)
+    const readyComputed = computed(() => readyRef.value)
+    const readyFn = () => readyRef.value
+
+    for (const ready of [readyRef, readyComputed, readyFn]) {
+      promiseFn.mockClear()
+      readyRef.value = false
+
+      const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { ready })
+
+      expect(promiseFn).not.toHaveBeenCalled()
+      expect(data.value).toBe(undefined)
+      expect(pending.value).toBe(false)
+      expect(status.value).toBe('idle')
+
+      readyRef.value = true
+      await flushPromises()
+
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      expect(data.value).toBe('test')
+      expect(pending.value).toBe(false)
+      expect(status.value).toBe('success')
+
+      // Reset for next iteration
+      clearNuxtData(uniqueKey)
+    }
+  })
+
+  it('should use default value when ready is false', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data } = await useAsyncData(uniqueKey, promiseFn, { 
+      ready: false, 
+      default: () => 'default' 
+    })
+
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe('default')
+  })
+
+  it('should allow manual refresh even when ready is false', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data, refresh } = await useAsyncData(uniqueKey, promiseFn, { ready: false })
+
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe(undefined)
+
+    await refresh({ cause: 'refresh:manual' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('test')
+  })
+
+  it('should not create multiple watchers when ready is false', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const ready = ref(false)
+    
+    const asyncData = await useAsyncData(uniqueKey, promiseFn, { ready })
+    
+    // Try to execute multiple times while not ready
+    asyncData.execute()
+    asyncData.execute()
+    asyncData.execute()
+    
+    expect(promiseFn).not.toHaveBeenCalled()
+    
+    ready.value = true
+    await flushPromises()
+    
+    // Should only execute once when ready becomes true
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should clean up ready watcher when component is unmounted', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const ready = ref(false)
+    
+    const component = defineComponent({
+      setup() {
+        const asyncData = useAsyncData(uniqueKey, promiseFn, { ready })
+        return () => h('div', asyncData.data.value)
+      }
+    })
+    
+    const wrapper = await mountSuspended(component)
+    expect(promiseFn).not.toHaveBeenCalled()
+    
+    wrapper.unmount()
+    await nextTick()
+    
+    // After unmount, changing ready should not trigger execution
+    ready.value = true
+    await flushPromises()
+    
+    expect(promiseFn).not.toHaveBeenCalled()
+  })
+
+  it('should work with ready and lazy option together', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const ready = ref(false)
+    
+    const component = defineComponent({
+      setup() {
+        const asyncData = useAsyncData(uniqueKey, promiseFn, { ready, lazy: true })
+        return () => h('div', asyncData.data.value || 'loading')
+      }
+    })
+    
+    const wrapper = await mountSuspended(component)
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(wrapper.text()).toBe('loading')
+    
+    ready.value = true
+    await flushPromises()
+    
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(wrapper.text()).toBe('test')
+  })
 })
