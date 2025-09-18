@@ -845,9 +845,9 @@ describe('useAsyncData', () => {
 
   it('should use default value when ready is false', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    const { data } = await useAsyncData(uniqueKey, promiseFn, { 
-      ready: false, 
-      default: () => 'default' 
+    const { data } = await useAsyncData(uniqueKey, promiseFn, {
+      ready: false,
+      default: () => 'default',
     })
 
     expect(promiseFn).not.toHaveBeenCalled()
@@ -870,19 +870,19 @@ describe('useAsyncData', () => {
   it('should not create multiple watchers when ready is false', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const ready = ref(false)
-    
+
     const asyncData = await useAsyncData(uniqueKey, promiseFn, { ready })
-    
+
     // Try to execute multiple times while not ready
     asyncData.execute()
     asyncData.execute()
     asyncData.execute()
-    
+
     expect(promiseFn).not.toHaveBeenCalled()
-    
+
     ready.value = true
     await flushPromises()
-    
+
     // Should only execute once when ready becomes true
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
@@ -890,45 +890,45 @@ describe('useAsyncData', () => {
   it('should clean up ready watcher when component is unmounted', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const ready = ref(false)
-    
+
     const component = defineComponent({
-      setup() {
+      setup () {
         const asyncData = useAsyncData(uniqueKey, promiseFn, { ready })
         return () => h('div', asyncData.data.value)
-      }
+      },
     })
-    
+
     const wrapper = await mountSuspended(component)
     expect(promiseFn).not.toHaveBeenCalled()
-    
+
     wrapper.unmount()
     await nextTick()
-    
+
     // After unmount, changing ready should not trigger execution
     ready.value = true
     await flushPromises()
-    
+
     expect(promiseFn).not.toHaveBeenCalled()
   })
 
   it('should work with ready and lazy option together', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const ready = ref(false)
-    
+
     const component = defineComponent({
-      setup() {
+      setup () {
         const asyncData = useAsyncData(uniqueKey, promiseFn, { ready, lazy: true })
         return () => h('div', asyncData.data.value || 'loading')
-      }
+      },
     })
-    
+
     const wrapper = await mountSuspended(component)
     expect(promiseFn).not.toHaveBeenCalled()
     expect(wrapper.text()).toBe('loading')
-    
+
     ready.value = true
     await flushPromises()
-    
+
     expect(promiseFn).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toBe('test')
   })
