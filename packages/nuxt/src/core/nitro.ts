@@ -550,9 +550,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     addVitePlugin({
       name: 'nuxt:vue:runtime-compiler',
       applyToEnvironment: environment => environment.name === 'client',
-      resolveId (id) {
+      enforce: 'pre',
+      resolveId (id, importer) {
         if (id === 'vue') {
-          return 'vue/dist/vue.esm-bundler'
+          return this.resolve('vue/dist/vue.esm-bundler', importer, { skipSelf: true })
         }
       },
     })
