@@ -77,4 +77,4 @@ useSeoMeta({
 </script>
 ```
 
-This previously used the [`useServerSeoMeta`](/docs/api/composables/use-server-seo-meta) composable, but it has been deprecated in favor of this approach.
+This previously used the [`useServerSeoMeta`](/docs/4.x/api/composables/use-server-seo-meta) composable, but it has been deprecated in favor of this approach.
