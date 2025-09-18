@@ -1,4 +1,4 @@
-import type { Plugin, ServerOptions } from 'vite'
+import type { Connect, Plugin, ServerOptions } from 'vite'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
 import defu from 'defu'
@@ -66,17 +66,22 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
       await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
-      const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
-      viteServer.middlewares.stack.splice(transformHandler, 0, {
+      const mw: Connect.ServerStackItem = {
         route: '',
         handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-        // 'Skip' the transform middleware
+          // 'Skip' the transform middleware
           if (req._skip_transform) {
             req.url = joinURL('/__skip_vite', req.url!.replace(/\?.*/, ''))
           }
           next()
         },
-      })
+      }
+      const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
+      if (transformHandler === -1) {
+        viteServer.middlewares.stack.push(mw)
+      } else {
+        viteServer.middlewares.stack.splice(transformHandler, 0, mw)
+      }
 
       const staticBases: string[] = []
       for (const folder of nitro.options.publicAssets) {
