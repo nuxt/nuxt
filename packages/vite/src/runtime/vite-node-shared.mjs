@@ -4,9 +4,9 @@ import { Buffer } from 'node:buffer'
 import { isTest } from 'std-env'
 
 /** @typedef {import('node:net').Socket} Socket */
-/** @typedef {import('../vite-node').ViteNodeFetch} ViteNodeFetch */
+/** @typedef {import('../plugins/vite-node').ViteNodeFetch} ViteNodeFetch */
 
-/** @type {import('../vite-node').ViteNodeServerOptions} */
+/** @type {import('../plugins/vite-node').ViteNodeServerOptions} */
 export const viteNodeOptions = JSON.parse(process.env.NUXT_VITE_NODE_OPTIONS || '{}')
 
 /** @type {Map<number, { resolve: (value: any) => void, reject: (reason?: any) => void }>} */
@@ -218,10 +218,10 @@ function connectSocket () {
 
 /**
  * Sends a request over the IPC socket with automatic reconnection.
- * @template {keyof import('../vite-node').ViteNodeRequestMap} T
+ * @template {keyof import('../plugins/vite-node').ViteNodeRequestMap} T
  * @param {T} type - The type of the request.
- * @param {import('../vite-node').ViteNodeRequestMap[T]['request']} [payload] - The payload for the request.
- * @returns {Promise<import('../vite-node').ViteNodeRequestMap[T]['response']>} A promise that resolves with the response data.
+ * @param {import('../plugins/vite-node').ViteNodeRequestMap[T]['request']} [payload] - The payload for the request.
+ * @returns {Promise<import('../plugins/vite-node').ViteNodeRequestMap[T]['response']>} A promise that resolves with the response data.
  */
 async function sendRequest (type, payload) {
   const requestId = requestIdCounter++

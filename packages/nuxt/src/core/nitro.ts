@@ -8,7 +8,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
-import { createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
@@ -547,20 +547,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Enable runtime compiler client side
   if (nuxt.options.vue.runtimeCompiler) {
-    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-      if (isClient) {
-        if (Array.isArray(config.resolve!.alias)) {
-          config.resolve!.alias.push({
-            find: 'vue',
-            replacement: 'vue/dist/vue.esm-bundler',
-          })
-        } else {
-          config.resolve!.alias = {
-            ...config.resolve!.alias,
-            vue: 'vue/dist/vue.esm-bundler',
-          }
+    addVitePlugin({
+      name: 'nuxt:vue:runtime-compiler',
+      applyToEnvironment: environment => environment.name === 'client',
+      resolveId (id) {
+        if (id === 'vue') {
+          return 'vue/dist/vue.esm-bundler'
         }
-      }
+      },
     })
     for (const hook of ['webpack:config', 'rspack:config'] as const) {
       nuxt.hook(hook, (configuration) => {

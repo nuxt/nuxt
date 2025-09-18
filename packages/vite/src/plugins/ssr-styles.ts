@@ -58,10 +58,6 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   return {
     name: 'ssr-styles',
     configResolved (config) {
-      // TODO: temporary guard before migrating to dev environments
-      if ((config.build.rollupOptions.input as any).server) {
-        return
-      }
       entry = resolveClientEntry(config)
     },
     applyToEnvironment (environment) {

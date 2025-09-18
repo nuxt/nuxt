@@ -6,16 +6,9 @@ import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
-
-import {
-  ScopeTracker,
-
-  getUndeclaredIdentifiersInFunction,
-  isBindingIdentifier,
-  parseAndWalk,
-  walk,
-} from 'oxc-walker'
+import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
+
 import { logger } from '../../utils'
 import { isSerializable } from '../utils'
 import type { ParserOptions } from 'oxc-parser'
