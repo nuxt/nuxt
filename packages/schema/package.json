@@ -55,7 +55,7 @@
     "hookable": "5.5.3",
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.9.4",
-    "nitro": "npm:nitro-nightly@3.0.0-20250902-180946-7e25f691",
+    "nitro": "npm:nitro-nightly@3.0.0-20250918-181039-90ec8ffa",
     "ofetch": "1.4.1",
     "oxc-transform": "0.86.0",
     "pkg-types": "2.3.0",
