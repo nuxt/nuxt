@@ -26,7 +26,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
 ```
 
 ::warning
-If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/4.x/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
+If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/4.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata) for more information on how to make a custom async data fetcher.
 ::
 
 ::note
