@@ -61,7 +61,7 @@ await callOnce(async () => {
 :read-more{to="/docs/getting-started/state-management"}
 
 ::warning
-Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch) if you want to do data fetching during SSR.
+Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/docs/4.x/api/composables/use-async-data) or [`useFetch`](/docs/4.x/api/composables/use-fetch) if you want to do data fetching during SSR.
 ::
 
 ::note
