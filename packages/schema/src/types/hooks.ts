@@ -1,7 +1,7 @@
 import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
-import type { ResolvedConfig, ViteDevServer } from 'vite'
+import type { InlineConfig, ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
@@ -10,7 +10,7 @@ import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
-import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
+import type { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
 import type { Component, ComponentsOptions } from './components'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 
@@ -347,21 +347,23 @@ export interface NuxtHooks {
    * @param viteBuildContext The vite build context object
    * @returns Promise
    */
-  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteConfig }) => HookResult
+  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: InlineConfig }) => HookResult
   /**
    * Allows to extend Vite default config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
+   * @deprecated
    */
-  'vite:extendConfig': (viteInlineConfig: Readonly<ResolvedConfig & ResolvedConfig['environments'][string]>, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: Readonly<InlineConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Allows to read the resolved Vite config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
+   * @deprecated
    */
-  'vite:configResolved': (viteInlineConfig: Readonly<ResolvedConfig & ResolvedConfig['environments'][string]>, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:configResolved': (viteInlineConfig: Readonly<InlineConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Called when the Vite server is created.
    * @param viteServer Vite development server

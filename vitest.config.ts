@@ -1,34 +1,35 @@
 import { resolve } from 'pathe'
-// import { defineVitestProject } from '@nuxt/test-utils/config'
-import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
+import { defineVitestProject } from '@nuxt/test-utils/config'
+import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
 import { isCI, isWindows } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
-// import type { NuxtConfig } from 'nuxt/schema'
+import type { NuxtConfig } from 'nuxt/schema'
+import { defu } from 'defu'
 
-// const commonSettings: NuxtConfig = {
-//   pages: true,
-//   routeRules: {
-//     '/specific-prerendered': { prerender: true },
-//     '/pre/test': { redirect: '/' },
-//     '/pre/**': { prerender: true },
-//   },
-//   experimental: {
-//     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-//   },
-//   imports: {
-//     polyfills: false,
-//   },
-// }
+const commonSettings: NuxtConfig = {
+  pages: true,
+  routeRules: {
+    '/specific-prerendered': { prerender: true },
+    '/pre/test': { redirect: '/' },
+    '/pre/**': { prerender: true },
+  },
+  experimental: {
+    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+  },
+  imports: {
+    polyfills: false,
+  },
+}
 
-// const projects: Record<string, NuxtConfig> = {
-//   'nuxt': {},
-//   'nuxt-legacy': {
-//     experimental: {
-//       alwaysRunFetchOnKeyChange: true,
-//     },
-//   },
-// }
+const projects: Record<string, NuxtConfig> = {
+  'nuxt': {},
+  'nuxt-legacy': {
+    experimental: {
+      alwaysRunFetchOnKeyChange: true,
+    },
+  },
+}
 
 export default defineConfig({
   test: {
@@ -85,38 +86,38 @@ export default defineConfig({
           exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
         },
       },
-      // await defineVitestProject({
-      //   test: {
-      //     name: 'nuxt-universal',
-      //     dir: './test/nuxt/universal',
-      //     environment: 'nuxt',
-      //     environmentOptions: {
-      //       nuxt: {
-      //         overrides: { pages: false },
-      //       },
-      //     },
-      //   },
-      // }),
-      // ...await Promise.all(Object.entries(projects).map(([project, config]) => defineVitestProject({
-      //   define: {
-      //     'import.meta.dev': 'globalThis.__TEST_DEV__',
-      //   },
-      //   test: {
-      //     name: project,
-      //     dir: './test/nuxt',
-      //     exclude: [...defaultExclude, '**/universal/**'],
-      //     environment: 'nuxt',
-      //     setupFiles: ['./test/setup-runtime.ts'],
-      //     env: {
-      //       PROJECT: project,
-      //     },
-      //     environmentOptions: {
-      //       nuxt: {
-      //         overrides: defu(config, commonSettings),
-      //       },
-      //     },
-      //   },
-      // }))),
+      await defineVitestProject({
+        test: {
+          name: 'nuxt-universal',
+          dir: './test/nuxt/universal',
+          environment: 'nuxt',
+          environmentOptions: {
+            nuxt: {
+              overrides: { pages: false },
+            },
+          },
+        },
+      }),
+      ...await Promise.all(Object.entries(projects).map(([project, config]) => defineVitestProject({
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
+        test: {
+          name: project,
+          dir: './test/nuxt',
+          exclude: [...defaultExclude, '**/universal/**'],
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          env: {
+            PROJECT: project,
+          },
+          environmentOptions: {
+            nuxt: {
+              overrides: defu(config, commonSettings),
+            },
+          },
+        },
+      }))),
     ],
   },
 })

@@ -3,6 +3,8 @@ import type { RspackPluginInstance } from '@rspack/core'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
 import { toArray } from './utils'
+import { resolveAlias } from './resolve'
+import { getUserCaller, warn } from './internal/trace'
 
 export interface ExtendConfigOptions {
   /**
@@ -34,8 +36,24 @@ export interface ExtendConfigOptions {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
+export interface ExtendViteConfigOptions extends Omit<ExtendConfigOptions, 'server' | 'client'> {
+  /**
+   * Extend server Vite configuration
+   * @default true
+   * @deprecated calling \`extendViteConfig\` with only server/client environment is deprecated.
+   * Nuxt 5+ uses the Vite Environment API which shares a configuration between environments.
+   * You can likely use a Vite plugin to achieve the same result.
+   */
+  server?: boolean
+  /**
+   * Extend client Vite configuration
+   * @default true
+   * @deprecated calling \`extendViteConfig\` with only server/client environment is deprecated.
+   * Nuxt 5+ uses the Vite Environment API which shares a configuration between environments.
+   * You can likely use a Vite plugin to achieve the same result.
+   */
+  client?: boolean
+}
 
 const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((config: WebpackConfig) => void), options: ExtendWebpackConfigOptions = {}) => {
   const nuxt = useNuxt()
@@ -91,22 +109,16 @@ export function extendViteConfig (fn: ((config: ViteConfig) => void), options: E
     return
   }
 
-  if (options.server !== false && options.client !== false) {
-    // Call fn() only once
-    return nuxt.hook('vite:extend', ({ config }) => fn(config))
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  if (options.server === false || options.client === false) {
+    const caller = getUserCaller()
+    const explanation = caller ? ` (used at \`${resolveAlias(caller.source)}:${caller.line}:${caller.column}\`)` : ''
+    const warning = `[@nuxt/kit] calling \`extendViteConfig\` with only server/client environment is deprecated${explanation}. Nuxt 5+ uses the Vite Environment API which shares a configuration between environments. You can likely use a Vite plugin to achieve the same result.`
+    warn(warning)
   }
 
-  // TODO: fix
-  nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
-    if (options.server !== false && isServer) {
-      // @ts-expect-error type is incorrect
-      return fn(config)
-    }
-    if (options.client !== false && isClient) {
-      // @ts-expect-error type is incorrect
-      return fn(config)
-    }
-  })
+  // Call fn() only once
+  return nuxt.hook('vite:extend', ({ config }) => fn(config))
 }
 
 /**

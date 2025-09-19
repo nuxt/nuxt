@@ -29,7 +29,7 @@
     "test:fixtures": "pnpm test:prepare && vitest run --project fixtures",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
-    "test:runtime": "true || vitest run --project nuxt --project nuxt-universal --project nuxt-legacy",
+    "test:runtime": "vitest run --project nuxt --project nuxt-universal --project nuxt-legacy",
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
     "test:unit": "vitest run --project unit",
     "test:attw": "pnpm --filter './packages/**' test:attw",

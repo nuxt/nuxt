@@ -1,9 +1,8 @@
 import { existsSync } from 'node:fs'
-import type { ViteDevServer } from 'vite'
 import { createBuilder, createServer, mergeConfig } from 'vite'
 import * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
-import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
+import type { NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
 import { sanitizeFilePath } from 'mlly'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
@@ -35,14 +34,6 @@ import { DevServerPlugin } from './plugins/dev-server'
 import { EnvironmentsPlugin } from './plugins/environments'
 import { ViteNodePlugin, writeDevServer } from './plugins/vite-node'
 import { ClientManifestPlugin } from './plugins/client-manifest'
-
-export interface ViteBuildContext {
-  nuxt: Nuxt
-  config: ViteConfig
-  entry: string
-  clientServer?: ViteDevServer
-  ssrServer?: ViteDevServer
-}
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -88,7 +79,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const isIgnored = createIsIgnored(nuxt)
   const serverEntry = nuxt.options.ssr ? entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
-  const config = mergeConfig(
+  const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir) : undefined,
       logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
@@ -117,13 +108,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         async buildApp (builder) {
           // run serially to preserve the order of client, server builds
           const environments = Object.values(builder.environments)
-          // TODO: consider whether to drop this hook entirely
-          for (const environment of environments) {
-            await nuxt.hooks.callHook('vite:configResolved', environment.config, {
-              isServer: environment.name === 'ssr',
-              isClient: environment.name === 'client',
-            })
-          }
           for (const environment of environments) {
             logger.restoreAll()
             await builder.build(environment)
@@ -399,14 +383,19 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config.build!.watch = undefined
   }
 
-  const ctx: ViteBuildContext = { nuxt, entry, config }
+  const ctx = { nuxt, entry, config }
   await nuxt.callHook('vite:extend', ctx)
 
   config.customLogger = createViteLogger(config)
   config.configFile = false
 
-  // await nuxt.callHook('vite:extendConfig', config, { isClient: false, isServer: true })
-  // await nuxt.callHook('vite:configResolved', config, { isClient: false, isServer: true })
+  for (const environment of ['client', 'ssr']) {
+    const environments = { [environment]: config.environments![environment]! }
+    const strippedConfig = { ...config, environments }
+    const ctx = { isServer: environment === 'ssr', isClient: environment === 'client' }
+    await nuxt.hooks.callHook('vite:extendConfig', strippedConfig, ctx)
+    await nuxt.hooks.callHook('vite:configResolved', strippedConfig, ctx)
+  }
 
   if (!nuxt.options.dev) {
     const builder = await createBuilder(config)
