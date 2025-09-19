@@ -16,8 +16,8 @@ You can use the built-in [`useResponseHeader`](/docs/4.x/api/composables/use-res
 
 ```ts
 // Set a custom response header
-const header = useResponseHeader('X-My-Header');
-header.value = 'my-value';
+const header = useResponseHeader('X-My-Header')
+header.value = 'my-value'
 ```
 
 ## Example
@@ -27,8 +27,8 @@ We can use `useResponseHeader` to easily set a response header on a per-page bas
 ```vue [app/pages/test.vue]
 <script setup>
 // pages/test.vue
-const header = useResponseHeader('X-My-Header');
-header.value = 'my-value';
+const header = useResponseHeader('X-My-Header')
+header.value = 'my-value'
 </script>
 
 <template>
@@ -41,8 +41,8 @@ We can use `useResponseHeader` for example in Nuxt [middleware](/docs/4.x/guide/
 
 ```ts [app/middleware/my-header-middleware.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
-  const header = useResponseHeader('X-My-Always-Header');
-  header.value = `I'm Always here!`;
-});
+  const header = useResponseHeader('X-My-Always-Header')
+  header.value = `I'm Always here!`
+})
 
 ```

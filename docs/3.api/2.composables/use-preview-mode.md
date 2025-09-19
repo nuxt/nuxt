@@ -30,7 +30,7 @@ export function useMyPreviewMode () {
     shouldEnable: () => {
       return !!route.query.customPreview
     }
-  });
+  })
 }
 ```
 

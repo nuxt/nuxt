@@ -204,7 +204,7 @@ type AsyncData<DataT, ErrorT> = {
   clear: () => void
   error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
-};
+}
 
 interface AsyncDataExecuteOptions {
   dedupe?: 'cancel' | 'defer'
