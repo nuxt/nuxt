@@ -386,8 +386,8 @@ describe('components', () => {
 
   it('correctly includes event types with island components', () => {
     const Comp = defineComponent({
-      __typeProps: {
-        onClick: Function as (foo: string) => any,
+      __typeProps: {} as {
+        onClick: (foo: string) => any
       },
     })
     const IslandComp = Comp as unknown as IslandComponent<typeof Comp>
@@ -405,8 +405,8 @@ describe('components', () => {
 
   it('correctly includes event types with lazy components', () => {
     const Comp = defineComponent({
-      __typeProps: {
-        onClick: Function as (foo: string) => any,
+      __typeProps: {} as {
+        onClick: (foo: string) => any
       },
     })
     const LazyComp = Comp as unknown as LazyComponent<typeof Comp>
