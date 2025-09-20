@@ -128,7 +128,7 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
 
   return componentTypes
 }
-const islandType = 'type IslandComponent<T extends DefineComponent> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
+const islandType = 'type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
 const hydrationTypes = `
 type HydrationStrategies = {
   hydrateOnVisible?: IntersectionObserverInit | true
