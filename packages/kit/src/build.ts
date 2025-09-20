@@ -149,7 +149,7 @@ export function addRspackPlugin (pluginOrGetter: RspackPluginInstance | RspackPl
 /**
  * Append Vite plugin to the config.
  */
-export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options: ExtendViteConfigOptions = {}) {
+export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options: ExtendConfigOptions = {}) {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
