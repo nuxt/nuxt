@@ -128,7 +128,7 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
 
   return componentTypes
 }
-const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+const islandType = 'type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
 const hydrationTypes = `
 type HydrationStrategies = {
   hydrateOnVisible?: IntersectionObserverInit | true
@@ -139,7 +139,7 @@ type HydrationStrategies = {
   hydrateWhen?: boolean
   hydrateNever?: true
 }
-type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>)
+type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 `
 export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
