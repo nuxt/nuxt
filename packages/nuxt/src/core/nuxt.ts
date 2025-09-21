@@ -269,6 +269,11 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  // Add nitro types
+  nuxt.hook('nitro:prepare:types', (opts) => {
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+  })
+
   // Prompt to install `@nuxt/scripts` if user has configured it
   // @ts-expect-error scripts types are not present as the module is not installed
   if (nuxt.options.scripts) {

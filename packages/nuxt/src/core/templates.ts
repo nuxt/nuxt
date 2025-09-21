@@ -399,7 +399,6 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
     return /* typescript */`
 ${lines.join('\n')}
-/// <reference path="./runtime-config.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
