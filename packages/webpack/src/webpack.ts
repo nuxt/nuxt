@@ -118,6 +118,7 @@ async function createDevMiddleware (compiler: Compiler) {
 
   // Register devMiddleware on server
   const devHandler = wdmToH3Handler(devMiddleware, nuxt.options.devServer.cors)
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const hotHandler = fromNodeMiddleware(hotMiddleware as any)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
     const body = await devHandler(event)
@@ -152,15 +153,15 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
     }
     const body = await new Promise((resolve, reject) => {
       // @ts-expect-error handle injected methods
-      res.stream = (stream) => {
+      event.res.stream = (stream) => {
         resolve(stream)
       }
       // @ts-expect-error handle injected methods
-      res.send = (data) => {
+      event.res.send = (data) => {
         resolve(data)
       }
       // @ts-expect-error handle injected methods
-      res.finish = (data) => {
+      event.res.finish = (data) => {
         resolve(data)
       }
       devMiddleware(event.runtime!.node!.req as IncomingMessage, event.runtime!.node!.res as ServerResponse, (err) => {

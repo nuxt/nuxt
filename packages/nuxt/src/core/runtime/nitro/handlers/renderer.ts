@@ -6,12 +6,13 @@ import {
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitro/types'
+import type { H3Event } from 'h3'
 import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'h3'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { getRouteRules, useNitroApp } from 'nitro/runtime'
+import { useNitroApp } from 'nitro/runtime'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -50,13 +51,6 @@ export interface NuxtRenderHTMLContext {
   bodyPrepend: string[]
   body: string[]
   bodyAppend: string[]
-}
-
-export interface NuxtRenderResponse {
-  body: string
-  statusCode: number
-  statusMessage?: string
-  headers: Record<string, string>
 }
 
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
@@ -113,9 +107,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get route options (currently to apply `ssr: false`)
-  const routeOptions = getRouteRules(event)
+  const routeOptions = event.req.context?.routeRules
 
-  if (routeOptions?.ssr === false) {
+  if (!routeOptions?.ssr) {
     ssrContext.noSSR = true
   }
 
@@ -157,7 +151,9 @@ export default defineEventHandler(async (event) => {
 
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
 
-  if (ssrContext._renderResponse) { return ssrContext._renderResponse }
+  if (ssrContext._renderResponse) {
+    return returnResponse(event, ssrContext._renderResponse)
+  }
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
@@ -170,7 +166,8 @@ export default defineEventHandler(async (event) => {
     if (import.meta.prerender) {
       await payloadCache!.setItem(ssrContext.url, response)
     }
-    return response
+
+    return returnResponse(event, response)
   }
 
   if (_PAYLOAD_EXTRACTION) {
@@ -296,16 +293,10 @@ export default defineEventHandler(async (event) => {
   // Allow hooking into the rendered result
   await nitroApp.hooks.callHook('render:html', htmlContext, { event })
 
-  // Construct HTML response
-  return {
-    body: renderHTMLDocument(htmlContext),
-    status: event.res.status || 200,
-    statusText: event.res.statusText || '',
-    headers: {
-      'content-type': 'text/html;charset=utf-8',
-      'x-powered-by': 'Nuxt',
-    },
-  } satisfies RenderResponse
+  event.res.headers.set('content-type', 'text/html;charset=utf-8')
+  event.res.headers.set('x-powered-by', 'Nuxt')
+
+  return renderHTMLDocument(htmlContext)
 })
 
 function normalizeChunks (chunks: (string | undefined)[]) {
@@ -336,4 +327,18 @@ declare module 'srvx' {
       noSSR?: boolean
     }
   }
+}
+
+function returnResponse (event: H3Event, response: Partial<RenderResponse>) {
+  for (const header in response.headers || {}) {
+    event.res.headers.set(header, response.headers![header]!)
+  }
+  if (response.status) {
+    event.res.status = response.status
+  }
+  if (response.statusText) {
+    event.res.statusText = response.statusText
+  }
+
+  return response.body
 }

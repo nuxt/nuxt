@@ -133,6 +133,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
     },
     routeRules: {
+      '/**': { ssr: true },
       '/__nuxt_error': { cache: false },
     },
     typescript: {
