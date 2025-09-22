@@ -24,6 +24,6 @@ clearError()
 clearError({ redirect: '/homepage' })
 ```
 
-Errors are set in state using [`useError()`](/docs/api/composables/use-error). The `clearError` composable will reset this state and calls the `app:error:cleared` hook with the provided options.
+Errors are set in state using [`useError()`](/docs/4.x/api/composables/use-error). The `clearError` composable will reset this state and calls the `app:error:cleared` hook with the provided options.
 
 :read-more{to="/docs/getting-started/error-handling"}
