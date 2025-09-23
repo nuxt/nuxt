@@ -17,7 +17,7 @@ const cookie = useCookie(name, options)
 ```
 
 ::note
-`useCookie` only works in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
+`useCookie` only works in the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
 ::tip
@@ -59,7 +59,7 @@ Most of the options will be directly passed to the [cookie](https://github.com/j
 | `decode` | `(value: string) => T` | `decodeURIComponent` + [destr](https://github.com/unjs/destr). | Custom function to decode the cookie value.  Since the value of a cookie has a limited character set (and must be a simple string), this function can be used to decode a previously encoded cookie value into a JavaScript string or other object. <br/> **Note:** If an error is thrown from this function, the original, non-decoded cookie value will be returned as the cookie's value. |
 | `encode` | `(value: T) => string` | `JSON.stringify` + `encodeURIComponent` | Custom function to encode the cookie value. Since the value of a cookie has a limited character set (and must be a simple string), this function can be used to encode a value into a string suited for a cookie's value. |
 | `default` | `() => T \| Ref<T>` | `undefined` | Function returning the default value if the cookie does not exist.  The function can also return a `Ref`. |
-| `watch` | `boolean \| 'shallow'` | `true`  | Whether to watch for changes and update the cookie. `true` for deep watch, `'shallow'` for shallow watch, i.e. data changes for only top level properties, `false` to disable. <br/> **Note:** Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/docs/api/utils/refresh-cookie). |
+| `watch` | `boolean \| 'shallow'` | `true`  | Whether to watch for changes and update the cookie. `true` for deep watch, `'shallow'` for shallow watch, i.e. data changes for only top level properties, `false` to disable. <br/> **Note:** Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/docs/4.x/api/utils/refresh-cookie). |
 | `readonly` | `boolean` | `false` | If `true`, disables writing to the cookie. |
 | `maxAge` | `number` | `undefined` | Max age in seconds for the cookie, i.e. the value for the [`Max-Age` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.2). The given number will be converted to an integer by rounding down. By default, no maximum age is set. |
 | `expires` | `Date` | `undefined` | Expiration date for the cookie. By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and will delete it on a condition like exiting a web browser application. <br/> **Note:** The [cookie storage model specification](https://tools.ietf.org/html/rfc6265#section-5.3) states that if both `expires` and `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this, so if both are set, they should point to the same date and time! <br/>If neither of `expires` and `maxAge` is set, the cookie will be session-only and removed when the user closes their browser. |

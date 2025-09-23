@@ -23,7 +23,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 ```ts
 defineNuxtPlugin<T extends Record<string, unknown>>(plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T>
 
-type Plugin<T> = (nuxt: [NuxtApp](/docs/guide/going-further/internals#the-nuxtapp-interface)) => Promise<void> | Promise<{ provide?: T }> | void | { provide?: T }
+type Plugin<T> = (nuxt: [NuxtApp](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface)) => Promise<void> | Promise<{ provide?: T }> | void | { provide?: T }
 
 interface ObjectPlugin<T> {
   name?: string
@@ -32,7 +32,7 @@ interface ObjectPlugin<T> {
   order?: number
   parallel?: boolean
   setup?: Plugin<T>
-  hooks?: Partial<[RuntimeNuxtHooks](/docs/api/advanced/hooks#app-hooks-runtime)>
+  hooks?: Partial<[RuntimeNuxtHooks](/docs/4.x/api/advanced/hooks#app-hooks-runtime)>
   env?: {
     islands?: boolean
   }
@@ -42,7 +42,7 @@ interface ObjectPlugin<T> {
 ## Parameters
 
 **plugin**: A plugin can be defined in two ways:
-1. **Function Plugin**: A function that receives the [`NuxtApp`](/docs/guide/going-further/internals#the-nuxtapp-interface) instance and can return a promise with an potential object with a [`provide`](/docs/guide/directory-structure/plugins#providing-helpers) property if you want to provide a helper on [`NuxtApp`](/docs/guide/going-further/internals#the-nuxtapp-interface) instance.
+1. **Function Plugin**: A function that receives the [`NuxtApp`](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface) instance and can return a promise with an potential object with a [`provide`](/docs/4.x/guide/directory-structure/plugins#providing-helpers) property if you want to provide a helper on [`NuxtApp`](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface) instance.
 2. **Object Plugin**: An object that can include various properties to configure the plugin's behavior, such as `name`, `enforce`, `dependsOn`, `order`, `parallel`, `setup`, `hooks`, and `env`.
 
 | Property           | Type                                                                 | Required | Description                                                                                                     |

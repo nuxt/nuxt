@@ -9,7 +9,7 @@ links:
 ---
 
 ::note
-Route middleware are navigation guards stored in the [`app/middleware/`](/docs/guide/directory-structure/app/middleware) directory of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
+Route middleware are navigation guards stored in the [`app/middleware/`](/docs/4.x/guide/directory-structure/app/middleware) directory of your Nuxt application (unless [set otherwise](/docs/4.x/api/nuxt-config#middleware)).
 ::
 
 ## Type
@@ -31,7 +31,7 @@ interface AddRouteMiddlewareOptions {
 
 Can be either a string or a function of type `RouteMiddleware`. Function takes the next route `to` as the first argument and the current route `from` as the second argument, both of which are Vue route objects.
 
-Learn more about available properties of [route objects](/docs/api/composables/use-route).
+Learn more about available properties of [route objects](/docs/4.x/api/composables/use-route).
 
 ### `middleware`
 
