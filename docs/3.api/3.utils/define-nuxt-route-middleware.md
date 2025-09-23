@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-Route middleware are stored in the [`middleware/`](/docs/guide/directory-structure/middleware) of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
+Route middleware are stored in the [`middleware/`](/docs/3.x/guide/directory-structure/middleware) of your Nuxt application (unless [set otherwise](/docs/3.x/api/nuxt-config#middleware)).
 
 ## Type
 
@@ -48,7 +48,7 @@ The above route middleware will redirect a user to the custom error page defined
 
 ### Redirection
 
-Use [`useState`](/docs/api/composables/use-state) in combination with `navigateTo` helper function inside the route middleware to redirect users to different routes based on their authentication status:
+Use [`useState`](/docs/3.x/api/composables/use-state) in combination with `navigateTo` helper function inside the route middleware to redirect users to different routes based on their authentication status:
 
 ```ts [middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
@@ -64,4 +64,4 @@ export default defineNuxtRouteMiddleware((to, from) => {
 })
 ```
 
-Both [navigateTo](/docs/api/utils/navigate-to) and [abortNavigation](/docs/api/utils/abort-navigation) are globally available helper functions that you can use inside `defineNuxtRouteMiddleware`.
+Both [navigateTo](/docs/3.x/api/utils/navigate-to) and [abortNavigation](/docs/3.x/api/utils/abort-navigation) are globally available helper functions that you can use inside `defineNuxtRouteMiddleware`.

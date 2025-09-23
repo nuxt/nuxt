@@ -34,7 +34,7 @@ Option | Default | Description
 <!--/typecheck-opts-->
 
 ::note
-This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a [`.env`](/docs/guide/directory-structure/env) file or as a command-line argument.
+This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a [`.env`](/docs/3.x/guide/directory-structure/env) file or as a command-line argument.
 ::
 
 ::read-more{to="/docs/guide/concepts/typescript#type-checking"}

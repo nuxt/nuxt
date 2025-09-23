@@ -47,7 +47,7 @@ const userTheme = localStorage.getItem('theme') || 'light'
 </script>
 ```
 
-**Solution**: You can use [`useCookie`](/docs/api/composables/use-cookie):
+**Solution**: You can use [`useCookie`](/docs/3.x/api/composables/use-cookie):
 
 ```html
 <template>
@@ -144,7 +144,7 @@ const greeting = hour < 12 ? 'Good morning' : 'Good afternoon'
 </script>
 ```
 
-**Solution**: Use [`NuxtTime`](/docs/api/components/nuxt-time) component or handle it client-side:
+**Solution**: Use [`NuxtTime`](/docs/3.x/api/components/nuxt-time) component or handle it client-side:
 
 ```html
 <template>
@@ -178,8 +178,8 @@ onMounted(() => {
 
 ## In summary
 
-1. **Use SSR-friendly composables**: [`useFetch`](/docs/api/composables/use-fetch), [`useAsyncData`](/docs/api/composables/use-async-data), [`useState`](/docs/api/composables/use-state)
-2. **Wrap client-only code**: Use [`ClientOnly`](/docs/api/components/client-only) component for browser-specific content
+1. **Use SSR-friendly composables**: [`useFetch`](/docs/3.x/api/composables/use-fetch), [`useAsyncData`](/docs/3.x/api/composables/use-async-data), [`useState`](/docs/3.x/api/composables/use-state)
+2. **Wrap client-only code**: Use [`ClientOnly`](/docs/3.x/api/components/client-only) component for browser-specific content
 3. **Consistent data sources**: Ensure server and client uses the same data
 4. **Avoid side effects in setup**: Move browser-dependent code to `onMounted`
 

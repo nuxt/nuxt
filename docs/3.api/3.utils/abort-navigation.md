@@ -9,7 +9,7 @@ links:
 ---
 
 ::warning
-`abortNavigation` is only usable inside a [route middleware handler](/docs/guide/directory-structure/middleware).
+`abortNavigation` is only usable inside a [route middleware handler](/docs/3.x/guide/directory-structure/middleware).
 ::
 
 ## Type

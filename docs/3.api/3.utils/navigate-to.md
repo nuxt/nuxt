@@ -10,7 +10,7 @@ links:
 
 ## Usage
 
-`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
+`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/3.x/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
 
 ::warning
 Make sure to always use `await` or `return` on result of `navigateTo` when calling it.

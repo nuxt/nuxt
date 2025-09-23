@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-You can use the built-in [`useRequestHeader`](/docs/api/composables/use-request-header) composable to access any incoming request header within your pages, components, and plugins.
+You can use the built-in [`useRequestHeader`](/docs/3.x/api/composables/use-request-header) composable to access any incoming request header within your pages, components, and plugins.
 
 ```ts
 // Get the authorization request header

@@ -10,8 +10,8 @@ links:
 
 ## Description
 
-A composable which returns the loading state of the page. Used by [`<NuxtLoadingIndicator>`](/docs/api/components/nuxt-loading-indicator) and controllable.
-It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime) and [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to change its state.
+A composable which returns the loading state of the page. Used by [`<NuxtLoadingIndicator>`](/docs/3.x/api/components/nuxt-loading-indicator) and controllable.
+It hooks into [`page:loading:start`](/docs/3.x/api/advanced/hooks#app-hooks-runtime) and [`page:loading:end`](/docs/3.x/api/advanced/hooks#app-hooks-runtime) to change its state.
 
 ## Parameters
 

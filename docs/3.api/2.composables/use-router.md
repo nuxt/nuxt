@@ -47,7 +47,7 @@ router.resolve({ name: 'home' })
 ```
 
 ::note
-`router.addRoute()` adds route details into an array of routes and it is useful while building [Nuxt plugins](/docs/guide/directory-structure/plugins) while `router.push()` on the other hand, triggers a new navigation immediately and it is useful in pages, Vue components and composable.
+`router.addRoute()` adds route details into an array of routes and it is useful while building [Nuxt plugins](/docs/3.x/guide/directory-structure/plugins) while `router.push()` on the other hand, triggers a new navigation immediately and it is useful in pages, Vue components and composable.
 ::
 
 ## Based on History API
@@ -55,8 +55,8 @@ router.resolve({ name: 'home' })
 - [`back()`](https://router.vuejs.org/api/interfaces/Router.html#back): Go back in history if possible, same as `router.go(-1)`.
 - [`forward()`](https://router.vuejs.org/api/interfaces/Router.html#forward): Go forward in history if possible, same as `router.go(1)`.
 - [`go()`](https://router.vuejs.org/api/interfaces/Router.html#go): Move forward or backward through the history without the hierarchical restrictions enforced in `router.back()` and `router.forward()`.
-- [`push()`](https://router.vuejs.org/api/interfaces/Router.html#push): Programmatically navigate to a new URL by pushing an entry in the history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
-- [`replace()`](https://router.vuejs.org/api/interfaces/Router.html#replace): Programmatically navigate to a new URL by replacing the current entry in the routes history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
+- [`push()`](https://router.vuejs.org/api/interfaces/Router.html#push): Programmatically navigate to a new URL by pushing an entry in the history stack. **It is recommended to use [`navigateTo`](/docs/3.x/api/utils/navigate-to) instead.**
+- [`replace()`](https://router.vuejs.org/api/interfaces/Router.html#replace): Programmatically navigate to a new URL by replacing the current entry in the routes history stack. **It is recommended to use [`navigateTo`](/docs/3.x/api/utils/navigate-to) instead.**
 
 ```ts [Example]
 const router = useRouter()
@@ -89,4 +89,4 @@ However, Nuxt has a concept of **route middleware** that simplifies the implemen
 
 ## Universal Router Instance
 
-If you do not have a `pages/` folder, then [`useRouter`](/docs/api/composables/use-router)  will return a universal router instance with similar helper methods, but be aware that not all features may be supported or behave in exactly the same way as with `vue-router`.
+If you do not have a `pages/` folder, then [`useRouter`](/docs/3.x/api/composables/use-router)  will return a universal router instance with similar helper methods, but be aware that not all features may be supported or behave in exactly the same way as with `vue-router`.

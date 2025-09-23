@@ -8,11 +8,11 @@ links:
     size: xs
 ---
 
-The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/api/composables/use-head) composable that restricts the input to only allow safe values.
+The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/3.x/api/composables/use-head) composable that restricts the input to only allow safe values.
 
 ## Usage
 
-You can pass all the same values as [`useHead`](/docs/api/composables/use-head)
+You can pass all the same values as [`useHead`](/docs/3.x/api/composables/use-head)
 
 ```ts
 useHeadSafe({

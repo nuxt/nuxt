@@ -9,7 +9,7 @@ links:
 ---
 
 ::note
-`useNuxtData` gives you access to the current cached value of [`useAsyncData`](/docs/api/composables/use-async-data) , [`useLazyAsyncData`](/docs/api/composables/use-lazy-async-data), [`useFetch`](/docs/api/composables/use-fetch) and [`useLazyFetch`](/docs/api/composables/use-lazy-fetch) with explicitly provided key.
+`useNuxtData` gives you access to the current cached value of [`useAsyncData`](/docs/3.x/api/composables/use-async-data) , [`useLazyAsyncData`](/docs/3.x/api/composables/use-lazy-async-data), [`useFetch`](/docs/3.x/api/composables/use-fetch) and [`useLazyFetch`](/docs/3.x/api/composables/use-lazy-fetch) with explicitly provided key.
 ::
 
 ## Usage

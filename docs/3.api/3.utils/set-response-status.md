@@ -13,7 +13,7 @@ Nuxt provides composables and utilities for first-class server-side-rendering su
 `setResponseStatus` sets the statusCode (and optionally the statusMessage) of the response.
 
 ::important
-`setResponseStatus` can only be called in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
+`setResponseStatus` can only be called in the [Nuxt context](/docs/3.x/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
 ```js

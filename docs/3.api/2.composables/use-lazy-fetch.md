@@ -10,10 +10,10 @@ links:
 
 ## Description
 
-By default, [`useFetch`](/docs/api/composables/use-fetch) blocks navigation until its async handler is resolved. `useLazyFetch` provides a wrapper around [`useFetch`](/docs/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
+By default, [`useFetch`](/docs/3.x/api/composables/use-fetch) blocks navigation until its async handler is resolved. `useLazyFetch` provides a wrapper around [`useFetch`](/docs/3.x/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
 ::note
-`useLazyFetch` has the same signature as [`useFetch`](/docs/api/composables/use-fetch).
+`useLazyFetch` has the same signature as [`useFetch`](/docs/3.x/api/composables/use-fetch).
 ::
 
 ::note
