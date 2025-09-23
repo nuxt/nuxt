@@ -1,17 +1,17 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import type { JSValue } from 'untyped'
-import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import type { Nitro } from 'nitropack/types'
 
-import { annotatePlugins, checkForCircularDependencies } from './app'
-import { EXTENSION_RE } from './utils'
+import { annotatePlugins, checkForCircularDependencies } from '../app'
+import { EXTENSION_RE } from '../utils'
 import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
+
+export * from './runtime-config'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -179,51 +179,7 @@ export { }
 
 const IMPORT_NAME_RE = /\.\w+$/
 const GIT_RE = /^git\+/
-export const schemaTemplate: NuxtTemplate = {
-  filename: 'types/runtime-config.d.ts',
-  getContents: async ({ nuxt }) => {
-    const privateRuntimeConfig = Object.create(null)
-    for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public') {
-        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
-      }
-    }
-
-    return [
-      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-        {
-          interfaceName: 'SharedRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-        {
-          interfaceName: 'SharedPublicRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      `declare module '@nuxt/schema' {`,
-      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
-      `}`,
-      `declare module 'nuxt/schema' {`,
-      `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
-      '}',
-      `declare module 'vue' {
-        interface ComponentCustomProperties {
-          $config: UserRuntimeConfig
-        }
-      }`,
-    ].join('\n')
-  },
-}
-export const schemaNodeTemplate: NuxtTemplate = {
+export const moduleTemplate: NuxtTemplate = {
   filename: 'types/modules.d.ts',
   getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
