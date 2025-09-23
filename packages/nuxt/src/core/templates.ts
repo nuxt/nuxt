@@ -399,6 +399,7 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
     return /* typescript */`
 ${lines.join('\n')}
+/// <reference path="./app.config.d.ts" />
 /// <reference path="./runtime-config.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
