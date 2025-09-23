@@ -45,12 +45,11 @@ export default defineEventHandler(async (event) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
   })
-  
+
   // Handle errors
   if (ssrContext.payload?.error) {
     throw ssrContext.payload.error
   }
-
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
