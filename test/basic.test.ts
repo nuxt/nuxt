@@ -2536,6 +2536,13 @@ describe('component islands', () => {
     await islandPageRequest
     await page.locator('#server-page').waitFor()
   })
+
+  it('should show error on 404 error for server pages', async () => {
+    const { page } = await renderPage('/')
+    await page.getByText('to 404 server page').click()
+    await page.waitForLoadState('networkidle')
+    expect(page.innerHTML('body')).toContain('This is the error page')
+  })
 })
 
 describe.runIf(isDev() && !isWebpack)('vite plugins', () => {

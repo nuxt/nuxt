@@ -23,6 +23,9 @@
     <NuxtLink to="/">
       Link
     </NuxtLink>
+    <NuxtLink to="/server-components/lost-page">
+      to 404 server page
+    </NuxtLink>
     <NuxtLink
       id="islands"
       to="/islands"
