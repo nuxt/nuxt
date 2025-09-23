@@ -3,6 +3,7 @@ import * as vite from 'vite'
 import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
+import replacePlugin from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -222,14 +223,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }
 
     // @ts-expect-error Rolldown-specific check
-    if(vite.rolldownVersion) {
+    if (vite.rolldownVersion) {
       const { replacePlugin } = await import('rolldown/experimental')
       config.plugins!.push(replacePlugin(replaceOptions))
     } else {
-      const { default: replacePlugin} = await import('@rollup/plugin-replace')
       config.plugins!.push(replacePlugin({ ...replaceOptions, preventAssignment: true }))
     }
-
   })
 
   if (!nuxt.options.dev) {

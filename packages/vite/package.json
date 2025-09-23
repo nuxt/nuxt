@@ -27,6 +27,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "nitropack": "2.12.6",
+    "rolldown": "1.0.0-beta.38",
     "rollup": "4.50.2",
     "unbuild": "3.6.1",
     "vue": "3.5.21"
@@ -53,7 +54,6 @@
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.6",
-    "rolldown": ">=1.0.0-beta.36",
     "rollup-plugin-visualizer": "^6.0.3",
     "std-env": "^3.9.0",
     "ufo": "^1.6.1",
@@ -64,7 +64,13 @@
     "vue-bundle-renderer": "^2.1.2"
   },
   "peerDependencies": {
+    "rolldown": ">=1.0.0-beta.38",
     "vue": "^3.3.4"
+  },
+  "peerDependenciesMeta": {
+    "rolldown": {
+      "optional": true
+    }
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
