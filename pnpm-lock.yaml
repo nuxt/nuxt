@@ -355,6 +355,9 @@ importers:
 
   packages/nuxt:
     dependencies:
+      '@dxup/unimport':
+        specifier: ^0.0.1
+        version: 0.0.1
       '@nuxt/cli':
         specifier: 3.28.0
         version: 3.28.0(magicast@0.3.5)
@@ -1467,6 +1470,9 @@ packages:
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
     engines: {node: '>=10.0.0'}
+
+  '@dxup/unimport@0.0.1':
+    resolution: {integrity: sha512-52a/xqcBVD3u1Cf0pLL9n3H0WWX98tnPq0aWFrobok1H1tXpGn6+Gw6Dha/82r4aYdlnMhMcCrhNKvtWkGvbtQ==}
 
   '@emnapi/core@1.4.5':
     resolution: {integrity: sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q==}
@@ -8715,6 +8721,8 @@ snapshots:
     optional: true
 
   '@discoveryjs/json-ext@0.5.7': {}
+
+  '@dxup/unimport@0.0.1': {}
 
   '@emnapi/core@1.4.5':
     dependencies:
