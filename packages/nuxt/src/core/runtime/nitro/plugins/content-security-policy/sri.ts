@@ -2,6 +2,8 @@ import type { NitroApp } from 'nitropack/types'
 import type { ContentSecurityPolicyConfig, Section } from './types'
 // @ts-expect-error : we are importing from the virtual file system
 import sriHashes from '#sri-hashes'
+// @ts-expect-error : we are importing from the virtual file system
+import contentSecurityPolicyConfig from '#content-security-policy'
 
 const SCRIPT_RE = /<script((?=[^>]+\bsrc="([^"]+)")(?![^>]+\bintegrity="[^"]+")[^>]+)(?:\/>|><\/script>)/g
 const LINK_RE = /<link((?=[^>]+\brel="(?:stylesheet|preload|modulepreload)")(?=[^>]+\bhref="([^"]+)")(?![^>]+\bintegrity="[\w\-+/=]+")[^>]+)>/g
@@ -9,7 +11,9 @@ const LINK_RE = /<link((?=[^>]+\brel="(?:stylesheet|preload|modulepreload)")(?=[
 /**
  * This plugin adds Subresource Integrity (SRI) hashes to script and link tags in the HTML.
  */
-export const generateSubresourceIntegrity = (nitroApp: NitroApp, cspConfig: ContentSecurityPolicyConfig) => {
+export default (nitroApp: NitroApp) => {
+  const cspConfig = contentSecurityPolicyConfig as ContentSecurityPolicyConfig
+
   nitroApp.hooks.hook('render:html', (html) => {
     // Exit if SRI not enabled for this route
     if (!cspConfig.sri) {

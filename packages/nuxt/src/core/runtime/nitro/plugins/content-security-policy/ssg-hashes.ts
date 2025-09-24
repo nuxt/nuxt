@@ -1,6 +1,8 @@
 import type { NitroApp } from 'nitropack/types'
 import type { ContentSecurityPolicyConfig, Section } from './types'
 import { generateHash } from './utils'
+// @ts-expect-error : we are importing from the virtual file system
+import contentSecurityPolicyConfig from '#content-security-policy'
 
 // eslint-disable-next-line regexp/no-contradiction-with-assertion
 const INLINE_SCRIPT_RE = /<script(?![^>]*?\bsrc="[\w:.\-\\/]+")[^>]*>([\s\S]*?)<\/script>/gi
@@ -14,10 +16,12 @@ const LINK_RE = /<link(?=[^>]+\brel="(stylesheet|preload|modulepreload)")(?=[^>]
  * This plugin adds security hashes to the event context for later use in the CSP header.
  * It only runs in SSG mode
  */
-export const generateSSGHashes = (nitroApp: NitroApp, cspConfig: ContentSecurityPolicyConfig) => {
+export default (nitroApp: NitroApp) => {
   if (!import.meta.prerender) {
     return
   }
+
+  const cspConfig = contentSecurityPolicyConfig as ContentSecurityPolicyConfig
 
   nitroApp.hooks.hook('render:html', async (html, { event }) => {
     // Exit if no CSP defined

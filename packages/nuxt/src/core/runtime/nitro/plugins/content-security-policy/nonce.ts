@@ -1,6 +1,8 @@
 import type { NitroApp } from 'nitropack/types'
 import { generateRandomNonce } from './utils'
 import type { ContentSecurityPolicyConfig } from './types'
+// @ts-expect-error : we are importing from the virtual file system
+import contentSecurityPolicyConfig from '#content-security-policy'
 
 const LINK_RE = /<link([^>]*>)/gi
 const NONCE_RE = /nonce="[^"]+"/i
@@ -11,11 +13,13 @@ const STYLE_RE = /<style([^>]*>)/gi
  * This plugin generates a nonce for the current request and adds it to the HTML.
  * It only runs in SSR mode.
  */
-export const generateNonce = (nitroApp: NitroApp, cspConfig: ContentSecurityPolicyConfig) => {
+export default (nitroApp: NitroApp) => {
   // Exit in SSG mode
   if (import.meta.prerender) {
     return
   }
+
+  const cspConfig = contentSecurityPolicyConfig as ContentSecurityPolicyConfig
 
   // Genearate a 16-byte random nonce for each request.
   nitroApp.hooks.hook('request', (event) => {
