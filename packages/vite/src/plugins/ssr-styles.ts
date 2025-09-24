@@ -79,15 +79,26 @@ export function SSRStylesPlugin (options: SSRStylesPluginOptions): Plugin {
 
         const baseDir = dirname(base)
 
-        // prevent duplicate files
-        const uniqueFiles = [...new Set(files.map(css => this.getFileName(css)))]
-        const styleImports = uniqueFiles.map((file, i) => ({ name: `style_${i}`, path: `./${relative(baseDir, file)}` }))
+        const cssImports = new Set<string>()
+        const exportNames = new Set<string>()
+        const importStatements = new Set<string>()
+        let i = 0
+        for (const css of files) {
+          const file = this.getFileName(css)
+          if (cssImports.has(file)) {
+            continue
+          }
+          cssImports.add(file)
+          const name = `style_${i++}`
+          importStatements.add(genImport(`./${relative(baseDir, file)}`, name))
+          exportNames.add(name)
+        }
         emitted[file] = this.emitFile({
           type: 'asset',
           name: `${fileName}-styles.mjs`,
           source: [
-            ...styleImports.map(i => genImport(i.path, i.name)),
-            `export default ${genArrayFromRaw(styleImports.map(i => i.name))}`,
+            ...importStatements,
+            `export default ${genArrayFromRaw([...exportNames])}`,
           ].join('\n'),
         })
       }
