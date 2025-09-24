@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, tryImportModule, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -14,8 +14,6 @@ import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
   nuxt.apps.default = app
-
-  await createTypescriptProgram(nuxt)
 
   const generateApp = debounce(() => _generateApp(nuxt, app), undefined, { leading: true })
   await generateApp()
@@ -79,20 +77,6 @@ export async function build (nuxt: Nuxt) {
   if (!nuxt.options.dev) {
     await nuxt.callHook('close', nuxt)
   }
-}
-
-async function createTypescriptProgram (nuxt: Nuxt) {
-  const ts = await tryImportModule<typeof import('typescript')>('typescript')
-  if (!ts) { return }
-
-  const configDir = resolve(nuxt.options.buildDir, 'tsconfig.node.json')
-  const configFile = ts.readConfigFile(configDir, ts.sys.readFile)
-  const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, dirname(configDir))
-  nuxt._ts = ts
-  nuxt._program = ts.createProgram({
-    rootNames: parsedConfig.fileNames,
-    options: parsedConfig.options,
-  })
 }
 
 const watchEvents: Record<EventType, 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'> = {

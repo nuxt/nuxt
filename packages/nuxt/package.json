@@ -68,6 +68,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
+    "@jridgewell/gen-mapping": "^0.3.13",
     "@nuxt/cli": "^3.28.0",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/devtools": "^2.6.3",

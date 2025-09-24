@@ -6,7 +6,6 @@ import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
 import type { Component } from './components'
 import type { NuxtOptions } from './config'
 import type { NuxtDebugContext } from './debug'
-import type ts from 'typescript'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -96,9 +95,6 @@ export interface Nuxt {
   _debug?: NuxtDebugContext
   /** Async local storage for current running Nuxt module instance. */
   _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
-  /** TypeScript program for node environment */
-  _ts?: typeof ts
-  _program?: ts.Program
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions

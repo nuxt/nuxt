@@ -1,6 +1,9 @@
-import type { Nuxt, NuxtTemplate } from '@nuxt/schema'
+import { tryImportModule } from '@nuxt/kit'
+import type { Nuxt, NuxtTemplate, RuntimeConfig } from '@nuxt/schema'
+import { dirname, resolve } from 'pathe'
 import type ts from 'typescript'
 import { type JSValue, generateTypes, resolveSchema } from 'untyped'
+import { GenMapping, addMapping, toEncodedMap } from '@jridgewell/gen-mapping'
 
 export const runtimeConfigTemplate: NuxtTemplate = {
   filename: 'types/runtime-config.d.ts',
@@ -12,12 +15,13 @@ export const runtimeConfigTemplate: NuxtTemplate = {
       }
     }
 
-    let str: string | undefined
+    let codegen: Generator<Code>
 
-    if (nuxt._ts && nuxt._program) {
-      str = [...generateWithTypeScript(nuxt)].join('')
+    const ts = await tryImportModule<typeof import('typescript')>('typescript')
+    if (ts) {
+      codegen = generate(generateWithTypeScript(nuxt, ts, nuxt.options.runtimeConfig))
     } else {
-      str =
+      const types = [
         generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
           {
             interfaceName: 'SharedRuntimeConfig',
@@ -25,7 +29,8 @@ export const runtimeConfigTemplate: NuxtTemplate = {
             addDefaults: false,
             allowExtraKeys: false,
             indentation: 2,
-          }) + '\n' +
+          }),
+        '\n',
         generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
           {
             interfaceName: 'SharedPublicRuntimeConfig',
@@ -33,36 +38,88 @@ export const runtimeConfigTemplate: NuxtTemplate = {
             addDefaults: false,
             allowExtraKeys: false,
             indentation: 2,
-          })
+          }),
+      ]
+      codegen = generate(types)
     }
 
-    return [
-      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
-      str,
-      `declare module '@nuxt/schema' {`,
-      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
-      `}`,
-      `declare module 'nuxt/schema' {`,
-      `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
-      '}',
-      `declare module 'vue' {
-        interface ComponentCustomProperties {
-          $config: UserRuntimeConfig
+    let contents = ''
+    let line = 1
+    let column = 0
+    const map = new GenMapping({
+      file: 'runtime-config.d.ts',
+    })
+
+    for (const code of codegen) {
+      let str: string
+      if (typeof code === 'object') {
+        const [text, meta] = code
+        for (const range of meta.ranges) {
+          addMapping(map, {
+            generated: {
+              line,
+              column,
+            },
+            source: range.fileName,
+            original: {
+              line: range.start.line + 1,
+              column: range.start.character,
+            },
+            name: text,
+          })
+          addMapping(map, {
+            generated: {
+              line,
+              column: column + text.length,
+            },
+            source: range.fileName,
+            original: {
+              line: range.end.line + 1,
+              column: range.end.character,
+            },
+          })
         }
-      }`,
-    ].join('\n')
+        str = text
+      } else {
+        str = code
+      }
+      contents += str
+      line += str.split('\n').length - 1
+      column = contents.split('\n').pop()?.length ?? 0
+    }
+
+    // TODO: generate it to runtime-config.d.ts.map
+    const encoded = toEncodedMap(map)
+    return contents
   },
+}
+
+type Code = string | [string, Meta]
+
+function* generate (generator: Generator<Code> | Code[]): Generator<Code> {
+  yield `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'\n`
+
+  yield* generator
+
+  yield `declare module '@nuxt/schema' {\n`
+  yield `  interface RuntimeConfig extends UserRuntimeConfig {}\n`
+  yield `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}\n`
+  yield `}\n`
+  yield `declare module 'nuxt/schema' {\n`
+  yield `  interface RuntimeConfig extends SharedRuntimeConfig {}\n`
+  yield `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}\n`
+  yield `}\n`
 }
 
 const MetaSymbol = Symbol('meta')
 
+interface Meta {
+  ranges: Range[]
+  types?: Set<string>
+}
+
 interface Item extends Record<string, Item> {
-  [MetaSymbol]: {
-    ranges: Range[]
-    types?: string[]
-  }
+  [MetaSymbol]: Meta
 }
 
 interface Range {
@@ -71,9 +128,38 @@ interface Range {
   end: ts.LineAndCharacter
 }
 
-function* generateWithTypeScript (nuxt: Nuxt) {
-  const ts = nuxt._ts!
-  const program = nuxt._program!
+function* generateWithTypeScript (
+  nuxt: Nuxt,
+  ts: typeof import('typescript'),
+  runtimeConfig: RuntimeConfig,
+): Generator<Code> {
+  const configDir = resolve(nuxt.options.buildDir, 'tsconfig.node.json')
+  const configFile = ts.readConfigFile(configDir, ts.sys.readFile)
+  const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, dirname(configDir))
+  const host = ts.createCompilerHost(parsedConfig.options)
+
+  const { readFile } = host
+  host.readFile = (fileName: string) => {
+    if (fileName.endsWith('runtime-config.d.ts')) {
+      return ''
+    }
+    const file = readFile?.call(host, fileName)
+    if (fileName === nuxt.options._nuxtConfigFile) {
+      return `${file}
+const __nuxt_runtime_config__ = ${JSON.stringify(runtimeConfig, null, 2)}
+declare function defineNuxtConfig<T>(config: T): T & {
+  runtimeConfig: import('nuxt/schema').RuntimeConfig & typeof __nuxt_runtime_config__
+}
+`
+    }
+    return file
+  }
+
+  const program = ts.createProgram({
+    rootNames: parsedConfig.fileNames,
+    options: parsedConfig.options,
+    host,
+  })
 
   const checker = program.getTypeChecker()
   const sourceFile = program.getSourceFile(nuxt.options._nuxtConfigFile)
@@ -90,7 +176,7 @@ function* generateWithTypeScript (nuxt: Nuxt) {
       const symbol = properties.find(p => p.name === 'runtimeConfig')
       if (symbol) {
         const type = checker.getTypeOfSymbol(symbol)
-        config = accessTypes(type, ['app', 'nitro'])
+        config = accessTypes(type)
       }
     }
   })
@@ -103,34 +189,30 @@ function* generateWithTypeScript (nuxt: Nuxt) {
     yield '\n'
     yield `interface SharedPublicRuntimeConfig `
     yield* generateObject(publicConfig ?? {})
+    yield '\n'
   }
 
-  function accessTypes (type: ts.Type, excluded?: string[]) {
+  function accessTypes (type: ts.Type) {
     const result: Record<string, Item> = {}
 
     for (const property of type.getNonNullableType().getProperties()) {
       for (const declaration of property.getDeclarations() ?? []) {
-        const sourceFile = declaration.getSourceFile()
-        const { fileName } = sourceFile
-        if (fileName.endsWith('types/runtime-config.d.ts')) { continue }
-
         const symbol = (declaration as any).symbol as ts.Symbol | undefined
         if (!symbol || symbol.escapedName === ts.InternalSymbolName.Computed) { continue }
 
         const name = symbol.getName()
-        if (excluded?.includes(name)) { continue }
-
         result[name] ??= {
           [MetaSymbol]: {
             ranges: [],
           },
         }
 
+        const sourceFile = declaration.getSourceFile()
         if (ts.isPropertyAssignment(declaration) || ts.isPropertySignature(declaration)) {
           result[name][MetaSymbol].ranges.push({
             fileName: sourceFile.fileName,
-            start: sourceFile.getLineAndCharacterOfPosition(declaration.getStart()),
-            end: sourceFile.getLineAndCharacterOfPosition(declaration.end),
+            start: sourceFile.getLineAndCharacterOfPosition(declaration.name.getStart()),
+            end: sourceFile.getLineAndCharacterOfPosition(declaration.name.end),
           })
         }
 
@@ -138,8 +220,8 @@ function* generateWithTypeScript (nuxt: Nuxt) {
         if (isObjectLike(propType)) {
           Object.assign(result[name], accessTypes(propType))
         } else {
-          const type = printType(propType)
-          ;(result[name][MetaSymbol].types ??= []).push(type)
+          const type = checker.typeToString(propType, void 0, ts.TypeFormatFlags.InTypeAlias)
+          ;(result[name][MetaSymbol].types ??= new Set()).add(type)
         }
       }
     }
@@ -151,25 +233,19 @@ function* generateWithTypeScript (nuxt: Nuxt) {
     if (type.isUnionOrIntersection()) {
       return type.types.some(isObjectLike)
     }
-    if (type.flags & ts.TypeFlags.Object) {
-      return !type.getProperties().some(p => p.name.startsWith('__@message@'))
-    }
-    return false
-  }
-
-  function printType (type: ts.Type) {
-    const str = checker.typeToString(type, void 0, ts.TypeFormatFlags.InTypeAlias)
-    return str.replace(/ & \{ \[message\]\?:.*?\| undefined; \}$/g, '')
+    return (type.flags & ts.TypeFlags.Object) !== 0
   }
 }
 
-function* generateObject (obj: Record<string, Item>): Generator<string> {
+function* generateObject (obj: Record<string, Item>): Generator<Code> {
   yield `{\n`
   for (const [key, value] of Object.entries(obj)) {
     const meta = value[MetaSymbol]
-    yield `  ${key}: `
+    yield `  `
+    yield [key, meta]
+    yield `: `
     if (meta.types) {
-      yield meta.types.join(' | ')
+      yield [...meta.types].join(' | ')
     } else {
       yield* generateObject(value)
     }
