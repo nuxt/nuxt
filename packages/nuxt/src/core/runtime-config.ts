@@ -138,13 +138,13 @@ declare module 'vue' {
 
 const MetaSymbol = Symbol('meta')
 
+interface Item extends Record<string, Item> {
+  [MetaSymbol]: Meta
+}
+
 interface Meta {
   ranges: Range[]
   types?: Set<string>
-}
-
-interface Item extends Record<string, Item> {
-  [MetaSymbol]: Meta
 }
 
 interface Range {
@@ -242,7 +242,7 @@ declare function defineNuxtConfig<T>(config: T): T & {
         }
 
         const propType = checker.getTypeOfSymbolAtLocation(property, declaration).getNonNullableType()
-        if (isObjectLike(propType)) {
+        if (isObjectLike(propType) && !checker.isArrayLikeType(propType)) {
           Object.assign(result[name], accessTypes(propType))
         } else {
           const type = checker.typeToString(propType, void 0, ts.TypeFormatFlags.InTypeAlias)
