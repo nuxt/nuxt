@@ -129,6 +129,11 @@ function* generate (generator: Generator<Code> | Code[]): Generator<Code> {
   yield `  interface RuntimeConfig extends SharedRuntimeConfig {}\n`
   yield `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}\n`
   yield `}\n`
+  yield `declare module 'vue' {\n`
+  yield `  interface ComponentCustomProperties {\n`
+  yield `    $config: UserRuntimeConfig\n`
+  yield `  }\n`
+  yield `}`
 }
 
 const MetaSymbol = Symbol('meta')
