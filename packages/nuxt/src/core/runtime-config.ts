@@ -27,7 +27,7 @@ export function useRuntimeConfigTemplates () {
       if (ts) {
         codegen = generate(generateWithTypeScript(nuxt, ts, nuxt.options.runtimeConfig))
       } else {
-        const types = [
+        codegen = generate([
           generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
             {
               interfaceName: 'SharedRuntimeConfig',
@@ -45,8 +45,7 @@ export function useRuntimeConfigTemplates () {
               allowExtraKeys: false,
               indentation: 2,
             }),
-        ]
-        codegen = generate(types)
+        ])
       }
 
       let contents = ''
@@ -99,7 +98,7 @@ export function useRuntimeConfigTemplates () {
     },
   }
 
-  const runtimeConfigSourcemapTemplate: NuxtTemplate = {
+  const runtimeConfigMappingTemplate: NuxtTemplate = {
     filename: 'types/runtime-config.d.ts.map',
     write: true,
     getContents: async () => {
@@ -110,7 +109,7 @@ export function useRuntimeConfigTemplates () {
 
   return {
     runtimeConfigTemplate,
-    runtimeConfigSourcemapTemplate,
+    runtimeConfigMappingTemplate,
   }
 }
 
@@ -121,19 +120,20 @@ function* generate (generator: Generator<Code> | Code[]): Generator<Code> {
 
   yield* generator
 
-  yield `declare module '@nuxt/schema' {\n`
-  yield `  interface RuntimeConfig extends UserRuntimeConfig {}\n`
-  yield `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}\n`
-  yield `}\n`
-  yield `declare module 'nuxt/schema' {\n`
-  yield `  interface RuntimeConfig extends SharedRuntimeConfig {}\n`
-  yield `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}\n`
-  yield `}\n`
-  yield `declare module 'vue' {\n`
-  yield `  interface ComponentCustomProperties {\n`
-  yield `    $config: UserRuntimeConfig\n`
-  yield `  }\n`
-  yield `}`
+  yield `
+declare module '@nuxt/schema' {
+  interface RuntimeConfig extends UserRuntimeConfig {}
+  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}
+}
+declare module 'nuxt/schema' {
+  interface RuntimeConfig extends UserRuntimeConfig {}
+  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}
+}
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $config: UserRuntimeConfig
+  }
+}`
 }
 
 const MetaSymbol = Symbol('meta')

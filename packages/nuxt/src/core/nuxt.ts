@@ -847,8 +847,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     },
   })
 
-  const { runtimeConfigTemplate, runtimeConfigSourcemapTemplate } = useRuntimeConfigTemplates()
-  options.build.templates.push(runtimeConfigTemplate, runtimeConfigSourcemapTemplate)
+  const { runtimeConfigTemplate, runtimeConfigMappingTemplate } = useRuntimeConfigTemplates()
+  options.build.templates.push(runtimeConfigTemplate, runtimeConfigMappingTemplate)
 
   const nuxt = createNuxt(options)
 
