@@ -1,6 +1,4 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-void config.foo.bar
 </script>
 
 <template>
