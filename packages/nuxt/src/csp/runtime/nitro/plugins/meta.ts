@@ -1,8 +1,8 @@
 import type { NitroApp } from 'nitropack/types'
-import { headerStringFromObject } from './utils'
 // @ts-expect-error : we are importing from the virtual file system
 import contentSecurityPolicyConfig from '#content-security-policy'
 import type { ContentSecurityPolicyConfig } from '../../../types'
+import { headerStringFromObject } from '../../../utils'
 
 export default (nitroApp: NitroApp) => {
   if (!import.meta.prerender) {
