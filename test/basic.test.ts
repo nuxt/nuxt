@@ -2537,11 +2537,11 @@ describe('component islands', () => {
     await page.locator('#server-page').waitFor()
   })
 
-  it('should show error on 404 error for server pages', async () => {
+  it('should show error on 404 error for server pages during client navigation', async () => {
     const { page } = await renderPage('/')
     await page.getByText('to 404 server page').click()
     await page.waitForLoadState('networkidle')
-    expect(page.innerHTML('body')).toContain('This is the error page')
+    expect(await page.innerHTML('body')).toContain('This is the error page')
   })
 })
 
