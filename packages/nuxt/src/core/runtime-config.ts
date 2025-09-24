@@ -4,6 +4,7 @@ import { dirname, resolve } from 'pathe'
 import type ts from 'typescript'
 import { type JSValue, generateTypes, resolveSchema } from 'untyped'
 import { GenMapping, addMapping, toEncodedMap } from '@jridgewell/gen-mapping'
+import { genObjectKey } from 'knitwork'
 
 export function useRuntimeConfigTemplates () {
   let resolve: (map: GenMapping) => void
@@ -278,7 +279,7 @@ function* generateObject (obj: Record<string, Item>): Generator<Code> {
   for (const [key, value] of Object.entries(obj)) {
     const meta = value[MetaSymbol]
     yield `  `
-    yield [key, meta]
+    yield [genObjectKey(key), meta]
     yield `: `
     if (meta.types) {
       yield [...meta.types].join(' | ')
