@@ -172,7 +172,7 @@ function* generateWithTypeScript (
     const file = readFile?.call(host, fileName)
     if (fileName === nuxt.options._nuxtConfigFile) {
       return `${file}
-const __NUXT_runtime_config = ${JSON.stringify(runtimeConfig, null, 2)}
+const __NUXT_runtimeConfig = ${JSON.stringify(runtimeConfig, null, 2)}
 type __NUXT_DeepMerge<T, D> = T extends object
   ? T extends any[]
     ? T
@@ -180,7 +180,7 @@ type __NUXT_DeepMerge<T, D> = T extends object
     & { [K in Exclude<keyof D, keyof T>]?: D[K] }
   : T
 declare function defineNuxtConfig<T>(config: T): __NUXT_DeepMerge<T, {
-  runtimeConfig: import('nuxt/schema').RuntimeConfig & typeof __NUXT_runtime_config
+  runtimeConfig: typeof __NUXT_runtimeConfig
 }>
 `
     }
@@ -188,7 +188,7 @@ declare function defineNuxtConfig<T>(config: T): __NUXT_DeepMerge<T, {
   }
 
   const program = ts.createProgram({
-    rootNames: parsedConfig.fileNames,
+    rootNames: [nuxt.options._nuxtConfigFile],
     options: parsedConfig.options,
     host,
   })
