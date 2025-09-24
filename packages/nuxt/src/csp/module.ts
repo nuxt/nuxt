@@ -37,24 +37,24 @@ export default defineNuxtModule<Partial<ContentSecurityPolicyConfig>>({
     }
 
     // Set CSP response headers
-    addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy'))
+    addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins'))
 
     if (contentSecurityPolicyConfig.nonce) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/nonce'))
+      addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins/nonce'))
     }
 
     if (contentSecurityPolicyConfig.ssg?.meta) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/meta'))
+      addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins/meta'))
     }
 
     if (contentSecurityPolicyConfig.ssg?.hashScripts || contentSecurityPolicyConfig.ssg?.hashStyles) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/ssg-hashes'))
+      addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins/ssg-hashes'))
     }
 
     if (contentSecurityPolicyConfig.sri) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/sri'))
+      addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins/sri'))
     }
 
-    addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/update-csp'))
+    addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins/update-csp'))
   },
 })
