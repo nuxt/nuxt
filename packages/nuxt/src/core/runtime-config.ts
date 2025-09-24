@@ -206,16 +206,14 @@ declare function defineNuxtConfig<T>(config: T): T & {
     }
   })
 
-  if (config) {
-    const publicConfig = config.public
-    delete config.public
-    yield `interface SharedRuntimeConfig `
-    yield* generateObject(config)
-    yield '\n'
-    yield `interface SharedPublicRuntimeConfig `
-    yield* generateObject(publicConfig ?? {})
-    yield '\n'
-  }
+  const publicConfig = config?.public
+  delete config?.public
+  yield `interface SharedRuntimeConfig `
+  yield* generateObject(config ?? {})
+  yield '\n'
+  yield `interface SharedPublicRuntimeConfig `
+  yield* generateObject(publicConfig ?? {})
+  yield '\n'
 
   function accessTypes (type: ts.Type) {
     const result: Record<string, Item> = {}
