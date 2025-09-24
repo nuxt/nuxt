@@ -1,8 +1,8 @@
 import type { NitroApp } from 'nitropack/types'
 import { generateRandomNonce } from './utils'
-import type { ContentSecurityPolicyConfig } from './types'
 // @ts-expect-error : we are importing from the virtual file system
 import contentSecurityPolicyConfig from '#content-security-policy'
+import type { ContentSecurityPolicyConfig } from '../../../types'
 
 const LINK_RE = /<link([^>]*>)/gi
 const NONCE_RE = /nonce="[^"]+"/i

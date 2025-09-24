@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   compatibilityDate: 'latest',
-  contentSecurityPolicy: {
+  csp: {
     value: {
       'base-uri': ['\'none\''],
       'font-src': ['\'self\'', 'https:', 'data:'],

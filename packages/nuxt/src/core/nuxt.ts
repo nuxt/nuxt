@@ -29,6 +29,7 @@ import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import importsModule from '../imports/module'
+import cspModule from '../csp/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
@@ -50,10 +51,7 @@ import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
-import { defaultCSPConfig, defuReplaceArray } from './runtime/nitro/plugins/content-security-policy/utils'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
-import type { ContentSecurityPolicyConfig } from './runtime/nitro/plugins/content-security-policy/types'
-import { hashBundledAssets } from './utils/csp'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -386,52 +384,6 @@ async function initNuxt (nuxt: Nuxt) {
         '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
       },
     })
-  }
-
-  if (!nuxt.options._modules.includes('nuxt-security') && nuxt.options.contentSecurityPolicy) {
-    const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...nuxt.options.contentSecurityPolicy }, { ...defaultCSPConfig })
-
-    nuxt.options.nitro.virtual = defu(
-      {
-        '#content-security-policy': () => `export default ${JSON.stringify(contentSecurityPolicyConfig)}`,
-      },
-      nuxt.options.nitro.virtual,
-    )
-
-    // Record SRI Hashes in the Virtual File System at build time
-    if (contentSecurityPolicyConfig.sri) {
-      let sriHashes: Record<string, string> = {}
-      nuxt.options.nitro.virtual = defu(
-        {
-          '#sri-hashes': () => `export default ${JSON.stringify(sriHashes)}`,
-        },
-        nuxt.options.nitro.virtual,
-      )
-      nuxt.hook('nitro:build:before', async (nitro) => {
-        sriHashes = await hashBundledAssets(nitro)
-      })
-    }
-
-    // Set CSP response headers
-    addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy'))
-
-    if (contentSecurityPolicyConfig.nonce) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/nonce'))
-    }
-
-    if (contentSecurityPolicyConfig.ssg?.meta) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/meta'))
-    }
-
-    if (contentSecurityPolicyConfig.ssg?.hashScripts || contentSecurityPolicyConfig.ssg?.hashStyles) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/ssg-hashes'))
-    }
-
-    if (contentSecurityPolicyConfig.sri) {
-      addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/sri'))
-    }
-
-    addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/content-security-policy/update-csp'))
   }
 
   // Transform initial composable call within `<script setup>` to preserve context
@@ -828,6 +780,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     },
   }])
   options._modules.push(schemaModule)
+  if (!options._modules.includes('nuxt-security') && options.csp) {
+    options._modules.push(cspModule)
+  }
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push(
