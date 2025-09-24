@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 import { dirname, relative } from 'pathe'
-import { genImport, genObjectFromRawEntries } from 'knitwork'
+import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
 import { parseQuery, parseURL } from 'ufo'
 import type { Component } from '@nuxt/schema'
@@ -79,12 +79,15 @@ export function SSRStylesPlugin (options: SSRStylesPluginOptions): Plugin {
 
         const baseDir = dirname(base)
 
+        // prevent duplicate files
+        const uniqueFiles = [...new Set(files.map(css => this.getFileName(css)))]
+        const styleImports = uniqueFiles.map((file, i) => ({ name: `style_${i}`, path: `./${relative(baseDir, file)}` }))
         emitted[file] = this.emitFile({
           type: 'asset',
           name: `${fileName}-styles.mjs`,
           source: [
-            ...files.map((css, i) => `import style_${i} from './${relative(baseDir, this.getFileName(css))}';`),
-            `export default [${files.map((_, i) => `style_${i}`).join(', ')}]`,
+            ...styleImports.map(i => genImport(i.path, i.name)),
+            `export default ${genArrayFromRaw(styleImports.map(i => i.name))}`,
           ].join('\n'),
         })
       }
