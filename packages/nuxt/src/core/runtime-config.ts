@@ -220,7 +220,7 @@ declare function defineNuxtConfig<T>(config: T): T & {
   function accessTypes (type: ts.Type) {
     const result: Record<string, Item> = {}
 
-    for (const property of type.getNonNullableType().getProperties()) {
+    for (const property of getProperties(type.getNonNullableType())) {
       for (const declaration of property.getDeclarations() ?? []) {
         const symbol = (declaration as any).symbol as ts.Symbol | undefined
         if (!symbol || symbol.escapedName === ts.InternalSymbolName.Computed) { continue }
@@ -260,6 +260,13 @@ declare function defineNuxtConfig<T>(config: T): T & {
     }
     return (type.flags & ts.TypeFlags.Object) !== 0
   }
+}
+
+function getProperties (type: ts.Type): ts.Symbol[] {
+  if (type.isUnionOrIntersection()) {
+    return type.types.flatMap(getProperties)
+  }
+  return type.getProperties()
 }
 
 function* generateObject (obj: Record<string, Item>): Generator<Code> {
