@@ -98,6 +98,32 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 :link-example{to="/docs/examples/features/data-fetching"}
 
+### Reactivite Fetch Options
+
+Most of the fetch options are reactive, any reactive updates will trigger refetches.
+
+If needed, you can opt out of this behavior using `watch: false`:
+
+```ts
+const searchQuery = ref('initial')
+const userId = ref(1)
+
+// Automatically refetches when searchQuery or userId changes
+const { data } = await useFetch('/api/search', {
+  query: { q: searchQuery, user: userId }
+})
+
+// Disables automatic reactivity - won't refetch when reactive options change
+const { data: manualData, execute } = await useFetch('/api/search', {
+  query: { q: searchQuery, user: userId },
+  watch: false, // Disables automatic reactivity
+})
+
+// Manually trigger fetch when needed
+searchQuery.value = 'new search'
+await execute() // Only fetches when manually called
+```
+
 ## Params
 
 - `URL`: The URL to fetch.
@@ -111,9 +137,10 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
   - `timeout`: Milliseconds to automatically abort request
   - `cache`: Handles cache control according to [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/fetch#cache)
     - You can pass boolean to disable the cache or you can pass one of the following values: `default`, `no-store`, `reload`, `no-cache`, `force-cache`, and `only-if-cached`.
+  - `$fetch`: Custom fetch function to use instead of the global `$fetch`. Sdee [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch)
 
 ::note
-All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
+All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated. You can disable this automatic reactivity by setting `watch: false`.
 ::
 
 - `Options` (from [`useAsyncData`](/docs/api/composables/use-async-data)):
@@ -131,7 +158,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
     ```
     Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
-  - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`. (You can [see an example here](/docs/getting-started/data-fetching#watch) of using `watch`.)
+  - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`, which will disable automatic re-fetching when reactive options (like computed `query`, `headers`, etc.) change. Together with `immediate: false`, this allows for a fully-manual `useFetch`. (You can [see an example here](/docs/getting-started/data-fetching#watch) of using `watch`.)
   - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
@@ -176,13 +203,13 @@ function useFetch<DataT, ErrorT>(
 ): Promise<AsyncData<DataT, ErrorT>>
 
 type UseFetchOptions<DataT> = {
-  key?: string
-  method?: string
-  query?: SearchParams
-  params?: SearchParams
-  body?: RequestInit['body'] | Record<string, any>
-  headers?: Record<string, string> | [key: string, value: string][] | Headers
-  baseURL?: string
+  key?: MaybeRefOrGetter<string>
+  method?: MaybeRefOrGetter<string>
+  query?: MaybeRefOrGetter<SearchParams>
+  params?: MaybeRefOrGetter<SearchParams>
+  body?: MaybeRefOrGetter<RequestInit['body'] | Record<string, any>>
+  headers?: MaybeRefOrGetter<Record<string, string> | [key: string, value: string][] | Headers>
+  baseURL?: MaybeRefOrGetter<string>
   server?: boolean
   lazy?: boolean
   immediate?: boolean
@@ -193,6 +220,8 @@ type UseFetchOptions<DataT> = {
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
   watch?: WatchSource[] | false
+  $fetch?: typeof globalThis.$fetch
+  timeout?: MaybeRefOrGetter<number>
 }
 
 type AsyncDataRequestContext = {
