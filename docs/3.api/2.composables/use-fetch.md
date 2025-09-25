@@ -98,30 +98,22 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 :link-example{to="/docs/examples/features/data-fetching"}
 
-### Reactivite Fetch Options
+### Reactive Fetch Options
 
-Most of the fetch options are reactive, any reactive updates will trigger refetches.
+Most of the fetch options can be provided as `computed` or `ref`, reactive updates will trigger refetches.
 
 If needed, you can opt out of this behavior using `watch: false`:
 
 ```ts
 const searchQuery = ref('initial')
-const userId = ref(1)
 
 // Automatically refetches when searchQuery or userId changes
 const { data } = await useFetch('/api/search', {
-  query: { q: searchQuery, user: userId }
+  query: { q: searchQuery }
 })
 
-// Disables automatic reactivity - won't refetch when reactive options change
-const { data: manualData, execute } = await useFetch('/api/search', {
-  query: { q: searchQuery, user: userId },
-  watch: false, // Disables automatic reactivity
-})
-
-// Manually trigger fetch when needed
+// triggers a refetch - unless watch: false is set
 searchQuery.value = 'new search'
-await execute() // Only fetches when manually called
 ```
 
 ## Params
