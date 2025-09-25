@@ -151,7 +151,6 @@ type UseFetchOptions<DataT> = {
   pick?: string[]
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
-  $fetch?: typeof globalThis.$fetch
   timeout?: MaybeRefOrGetter<number>
 }
 
@@ -185,13 +184,13 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | Option | Type | Default | Description |
 | ---| --- | --- | --- |
 | `key` | `MaybeRefOrGetter<string>` | auto-gen | Unique key for de-duplication. If not provided, generated from URL and options. |
-| `method` | `string` | `'GET'` | HTTP request method. |
-| `query` | `object` | - | Query/search params to append to the URL. Alias: `params`. Supports refs/computed. |
-| `params` | `object` | - | Alias for `query`. |
-| `body` | `RequestInit['body'] \| Record<string, any>` | - | Request body. Objects are automatically stringified. Supports refs/computed. |
-| `headers` | `Record<string, string> \| [key, value][] \| Headers` | - | Request headers. |
-| `baseURL` | `string` | - | Base URL for the request. |
-| `timeout` | `number` | - | Timeout in milliseconds to abort the request. |
+| `method` | `MaybeRefOrGetter<string>` | `'GET'` | HTTP request method. |
+| `query` | `MaybeRefOrGetter<SearchParams>` | - | Query/search params to append to the URL. Alias: `params`. |
+| `params` | `MaybeRefOrGetter<SearchParams>` | - | Alias for `query`. |
+| `body` | `MaybeRefOrGetter<RequestInit['body'] \| Record<string, any>>` | - | Request body. Objects are automatically stringified. |
+| `headers` | `MaybeRefOrGetter<Record<string, string> \| [key, value][] \| Headers>` | - | Request headers. |
+| `baseURL` | `MaybeRefOrGetter<string>` | - | Base URL for the request. |
+| `timeout` | `MaybeRefOrGetter<number>` | - | Timeout in milliseconds to abort the request. |
 | `cache` | `boolean \| string` | - | Cache control. Boolean disables cache, or use Fetch API values: `default`, `no-store`, etc. |
 | `server` | `boolean` | `true` | Whether to fetch on the server. |
 | `lazy` | `boolean` | `false` | If true, resolves after route loads (does not block navigation). |
