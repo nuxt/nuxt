@@ -197,11 +197,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     clientConfig.server = defu(clientConfig.server, serverDefaults as ViteConfig['server'])
   }
 
-  // Add analyze plugin if needed
-  if (!nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)) {
-    clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.AnalyzePlugin(nuxt)))
-  }
-
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
   clientConfig.plugins!.unshift(
