@@ -201,7 +201,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `watch` | `MultiWatchSources \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
 | `deep` | `boolean` | `false` | Return data in a deep ref object. |
 | `dedupe` | `'cancel' \| 'defer'` | `'cancel'` | Avoid fetching same key more than once at a time. |
-| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. |
+| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch) |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
