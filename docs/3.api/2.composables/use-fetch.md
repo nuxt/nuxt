@@ -100,19 +100,27 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 ### Reactive Fetch Options
 
-Most of the fetch options can be provided as `computed` or `ref`, reactive updates will trigger refetches.
+Fetch options can be provided as reactive, supporting `computed` and `ref`. When a reactive fetch option is updated it will trigger a refetch
+using the updated resolved reactive value.
+
+```ts
+const searchQuery = ref('initial')
+const { data } = await useFetch('/api/search', {
+  query: { q: searchQuery }
+})
+// triggers a refetch: /api/search?q=new%20search
+searchQuery.value = 'new search'
+```
 
 If needed, you can opt out of this behavior using `watch: false`:
 
 ```ts
 const searchQuery = ref('initial')
-
-// Automatically refetches when searchQuery or userId changes
 const { data } = await useFetch('/api/search', {
-  query: { q: searchQuery }
+  query: { q: searchQuery },
+  watch: false
 })
-
-// triggers a refetch - unless watch: false is set
+// does not trigger a refetch
 searchQuery.value = 'new search'
 ```
 
@@ -129,7 +137,7 @@ searchQuery.value = 'new search'
   - `timeout`: Milliseconds to automatically abort request
   - `cache`: Handles cache control according to [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/fetch#cache)
     - You can pass boolean to disable the cache or you can pass one of the following values: `default`, `no-store`, `reload`, `no-cache`, `force-cache`, and `only-if-cached`.
-  - `$fetch`: Custom fetch function to use instead of the global `$fetch`. Sdee [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch)
+  - `$fetch`: Custom fetch function to use instead of the global `$fetch`. See [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch)
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated. You can disable this automatic reactivity by setting `watch: false`.
