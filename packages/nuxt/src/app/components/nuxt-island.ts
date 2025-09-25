@@ -16,6 +16,7 @@ import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
 import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
+import { createError } from '#app'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
@@ -205,7 +206,12 @@ export default defineComponent({
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
-      }))
+      })).then((response) => {
+        if (!response.ok) {
+          throw createError({ statusCode: response.status, statusMessage: response.statusText})
+        }
+        return response
+      })
       try {
         const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
         // TODO: support passing on more headers
