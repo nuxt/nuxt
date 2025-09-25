@@ -1,60 +1,38 @@
 import { tryImportModule } from '@nuxt/kit'
-import type { Nuxt, NuxtTemplate, RuntimeConfig } from '@nuxt/schema'
+import type { Nuxt, NuxtTemplate } from '@nuxt/schema'
 import { dirname, resolve } from 'pathe'
 import type ts from 'typescript'
 import { type JSValue, generateTypes, resolveSchema } from 'untyped'
 import { GenMapping, addMapping, toEncodedMap } from '@jridgewell/gen-mapping'
 import { genObjectKey } from 'knitwork'
+import type { Program } from 'typescript'
 
 export function useRuntimeConfigTemplates () {
-  let resolve: (map: GenMapping) => void
-  const promise = new Promise<GenMapping>((_resolve) => {
-    resolve = _resolve
-  })
+  const _ts = tryImportModule<typeof import('typescript')>('typescript')
+  let program: Program
+  let mapPromise: Promise<GenMapping>
 
   const runtimeConfigTemplate: NuxtTemplate = {
     filename: 'types/runtime-config.d.ts',
     getContents: async ({ nuxt }) => {
-      const privateRuntimeConfig = Object.create(null)
-      for (const key in nuxt.options.runtimeConfig) {
-        if (key !== 'public') {
-          privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
-        }
-      }
+      let resolve: (map: GenMapping) => void
+      mapPromise = new Promise<GenMapping>((_resolve) => {
+        resolve = _resolve
+      })
 
       let codegen: Generator<Code>
-
-      const ts = await tryImportModule<typeof import('typescript')>('typescript')
+      const ts = await _ts
       if (ts) {
-        codegen = generate(generateWithTypeScript(nuxt, ts, nuxt.options.runtimeConfig))
+        program ||= createProgram(nuxt, ts)
+        codegen = generate(generateWithTypeScript(nuxt, ts, program))
       } else {
-        codegen = generate([
-          generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-            {
-              interfaceName: 'SharedRuntimeConfig',
-              addExport: false,
-              addDefaults: false,
-              allowExtraKeys: false,
-              indentation: 2,
-            }),
-          '\n',
-          generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-            {
-              interfaceName: 'SharedPublicRuntimeConfig',
-              addExport: false,
-              addDefaults: false,
-              allowExtraKeys: false,
-              indentation: 2,
-            }),
-        ])
+        codegen = generate(await generateWithUntyped(nuxt))
       }
 
       let contents = ''
       let line = 1
       let column = 0
-      const map = new GenMapping({
-        file: 'runtime-config.d.ts',
-      })
+      const map = new GenMapping({ file: 'runtime-config.d.ts' })
 
       for (const code of codegen) {
         let str: string
@@ -93,7 +71,7 @@ export function useRuntimeConfigTemplates () {
         line += str.split('\n').length - 1
         column = contents.split('\n').pop()?.length ?? 0
       }
-      resolve(map)
+      resolve!(map)
 
       return contents
     },
@@ -103,7 +81,7 @@ export function useRuntimeConfigTemplates () {
     filename: 'types/runtime-config.d.ts.map',
     write: true,
     getContents: async () => {
-      const map = await promise
+      const map = await mapPromise
       return JSON.stringify(toEncodedMap(map))
     },
   }
@@ -154,11 +132,7 @@ interface Range {
   end: ts.LineAndCharacter
 }
 
-function* generateWithTypeScript (
-  nuxt: Nuxt,
-  ts: typeof import('typescript'),
-  runtimeConfig: RuntimeConfig,
-): Generator<Code> {
+function createProgram (nuxt: Nuxt, ts: typeof import('typescript')) {
   const configDir = resolve(nuxt.options.buildDir, 'tsconfig.node.json')
   const configFile = ts.readConfigFile(configDir, ts.sys.readFile)
   const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, dirname(configDir))
@@ -172,7 +146,7 @@ function* generateWithTypeScript (
     const file = readFile?.call(host, fileName)
     if (fileName === nuxt.options._nuxtConfigFile) {
       return `${file}
-const __NUXT_runtimeConfig = ${JSON.stringify(runtimeConfig, null, 2)}
+const __NUXT_runtimeConfig = ${JSON.stringify(nuxt.options.runtimeConfig, null, 2)}
 type __NUXT_DeepMerge<T, D> = T extends object
   ? T extends any[]
     ? T
@@ -193,12 +167,16 @@ declare function defineNuxtConfig<T>(config: T): __NUXT_DeepMerge<T, {
     host,
   })
 
-  const checker = program.getTypeChecker()
+  return program
+}
+
+function* generateWithTypeScript (nuxt: Nuxt, ts: typeof import('typescript'), program: Program): Generator<Code> {
   const sourceFile = program.getSourceFile(nuxt.options._nuxtConfigFile)
   if (!sourceFile) {
     return
   }
 
+  const checker = program.getTypeChecker()
   let config: Record<string, Item> | undefined
 
   sourceFile.forEachChild((node) => {
@@ -289,4 +267,36 @@ function* generateObject (obj: Record<string, Item>): Generator<Code> {
     yield `\n`
   }
   yield `}`
+}
+
+async function generateWithUntyped (nuxt: Nuxt) {
+  const privateRuntimeConfig = Object.create(null)
+  for (const key in nuxt.options.runtimeConfig) {
+    if (key !== 'public') {
+      privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
+    }
+  }
+
+  const [privateSchema, publicSchema] = await Promise.all([
+    resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
+    resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
+  ])
+
+  return [
+    generateTypes(privateSchema, {
+      interfaceName: 'SharedRuntimeConfig',
+      addExport: false,
+      addDefaults: false,
+      allowExtraKeys: false,
+      indentation: 2,
+    }),
+    '\n',
+    generateTypes(publicSchema, {
+      interfaceName: 'SharedPublicRuntimeConfig',
+      addExport: false,
+      addDefaults: false,
+      allowExtraKeys: false,
+      indentation: 2,
+    }),
+  ]
 }
