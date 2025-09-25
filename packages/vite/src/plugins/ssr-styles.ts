@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 import { dirname, relative } from 'pathe'
-import { genImport, genObjectFromRawEntries } from 'knitwork'
+import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
 import { parseQuery, parseURL } from 'ufo'
 import type { Component } from '@nuxt/schema'
@@ -79,12 +79,26 @@ export function SSRStylesPlugin (options: SSRStylesPluginOptions): Plugin {
 
         const baseDir = dirname(base)
 
+        const cssImports = new Set<string>()
+        const exportNames = new Set<string>()
+        const importStatements = new Set<string>()
+        let i = 0
+        for (const css of files) {
+          const file = this.getFileName(css)
+          if (cssImports.has(file)) {
+            continue
+          }
+          cssImports.add(file)
+          const name = `style_${i++}`
+          importStatements.add(genImport(`./${relative(baseDir, file)}`, name))
+          exportNames.add(name)
+        }
         emitted[file] = this.emitFile({
           type: 'asset',
           name: `${fileName}-styles.mjs`,
           source: [
-            ...files.map((css, i) => `import style_${i} from './${relative(baseDir, this.getFileName(css))}';`),
-            `export default [${files.map((_, i) => `style_${i}`).join(', ')}]`,
+            ...importStatements,
+            `export default ${genArrayFromRaw([...exportNames])}`,
           ].join('\n'),
         })
       }
