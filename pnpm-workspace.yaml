@@ -3,9 +3,19 @@ packages:
   - packages/**
   - '!packages/nuxi'
   - '!packages/test-utils'
+  - '!packages/nuxt/test/package-fixture'
   - playground
   - test/fixtures/*
+
 ignoredBuiltDependencies:
+  - '@parcel/watcher'
   - esbuild
+  - oxc-resolver
   - unrs-resolver
   - vue-demi
+
+publicHoistPattern:
+  - '*-loader'
+  - 'webpack-*'
+
+shellEmulator: true

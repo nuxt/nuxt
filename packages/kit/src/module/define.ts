@@ -75,10 +75,17 @@ function _defineNuxtModule<
     return Promise.resolve(options)
   }
 
+  function getModuleDependencies (nuxt: Nuxt = useNuxt()) {
+    if (typeof module.moduleDependencies === 'function') {
+      return module.moduleDependencies(nuxt)
+    }
+    return module.moduleDependencies
+  }
+
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
-      throw new TypeError('Cannot use module outside of Nuxt context')
+      throw new TypeError(`Cannot use ${module.meta.name || 'module'} outside of Nuxt context`)
     }
 
     // Avoid duplicate installs
@@ -141,6 +148,10 @@ function _defineNuxtModule<
   // Define getters for options and meta
   normalizedModule.getMeta = () => Promise.resolve(module.meta)
   normalizedModule.getOptions = getOptions
+  normalizedModule.getModuleDependencies = getModuleDependencies
+
+  normalizedModule.onInstall = module.onInstall
+  normalizedModule.onUpgrade = module.onUpgrade
 
   return <NuxtModule<TOptions, TOptionsDefaults, TWith>> normalizedModule
 }

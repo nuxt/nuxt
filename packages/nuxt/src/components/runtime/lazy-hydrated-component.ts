@@ -1,4 +1,4 @@
-import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, watch } from 'vue'
+import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps } from 'vue'
 import type { AsyncComponentLoader, ComponentObjectPropsOptions, ExtractPropTypes, HydrationStrategy } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
@@ -32,6 +32,7 @@ export const createLazyVisibleComponent = defineLazyComponent({
   hydrateOnVisible: {
     type: [Object, Boolean] as unknown as () => true | IntersectionObserverInit,
     required: false,
+    default: true,
   },
 },
 props => hydrateOnVisible(props.hydrateOnVisible === true ? undefined : props.hydrateOnVisible),
@@ -41,7 +42,8 @@ props => hydrateOnVisible(props.hydrateOnVisible === true ? undefined : props.hy
 export const createLazyIdleComponent = defineLazyComponent({
   hydrateOnIdle: {
     type: [Number, Boolean] as unknown as () => true | number,
-    required: true,
+    required: false,
+    default: true,
   },
 },
 props => props.hydrateOnIdle === 0
@@ -81,10 +83,7 @@ export const createLazyIfComponent = defineLazyComponent({
 },
 props => props.hydrateWhen
   ? undefined /* hydrate immediately */
-  : (hydrate) => {
-      const unwatch = watch(() => props.hydrateWhen, () => hydrate(), { once: true })
-      return () => unwatch()
-    },
+  : () => {}, /* Vue will trigger the hydration automatically when the prop changes */
 )
 
 /* @__NO_SIDE_EFFECTS__ */
@@ -107,7 +106,8 @@ const hydrateNever = () => {}
 export const createLazyNeverComponent = defineLazyComponent({
   hydrateNever: {
     type: Boolean as () => true,
-    required: true,
+    required: false,
+    default: true,
   },
 },
 () => hydrateNever,

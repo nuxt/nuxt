@@ -26,7 +26,7 @@ This is useful for code that should be executed only once, such as logging an ev
 
 The default mode of `callOnce` is to run code only once. For example, if the code runs on the server it won't run again on the client. It also won't run again if you `callOnce` more than once on the client, for example by navigating back to this page.
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const websiteConfig = useState('config')
 
@@ -39,7 +39,7 @@ await callOnce(async () => {
 
 It is also possible to run on every navigation while still avoiding the initial server/client double load. For this, it is possible to use the `navigation` mode:
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const websiteConfig = useState('config')
 
@@ -61,7 +61,7 @@ await callOnce(async () => {
 :read-more{to="/docs/getting-started/state-management"}
 
 ::warning
-Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch) if you want to do data fetching during SSR.
+Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/docs/4.x/api/composables/use-async-data) or [`useFetch`](/docs/4.x/api/composables/use-fetch) if you want to do data fetching during SSR.
 ::
 
 ::note

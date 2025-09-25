@@ -2,9 +2,13 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
-import { normalize } from 'pathe'
+import { join, normalize } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 
 import { TransformPlugin } from '../src/components/plugins/transform'
+
+const pkgPath = fileURLToPath(new URL('./node_modules/package-fixture', import.meta.url))
+const virtualFilePath = join(pkgPath, 'foo', 'bar', 'baz')
 
 describe('components:transform', () => {
   it('should transform #components imports', async () => {
@@ -20,6 +24,16 @@ describe('components:transform', () => {
       import { Bar } from '/Bar.vue';
       "
     `)
+  })
+
+  it('should ignore #components import mapping inside packages that use it internally', async () => {
+    const transform = createTransformer([
+      createComponent('Foo'),
+      createComponent('Bar', { export: 'Bar' }),
+    ])
+
+    const code = await transform('import { Internal, Private } from \'#components\'', virtualFilePath)
+    expect(code).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should correctly resolve server-only components', async () => {
@@ -80,7 +94,7 @@ describe('components:transform', () => {
   })
 })
 
-const rootDir = fileURLToPath(new URL('../..', import.meta.url))
+const repoRoot = await findWorkspaceDir()
 
 function createTransformer (components: Component[], mode: 'client' | 'server' | 'all' = 'all') {
   const stubNuxt = {
@@ -100,7 +114,7 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)
-    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(rootDir), '<repo>/')
+    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(repoRoot), '<repo>/')
   }
 }
 

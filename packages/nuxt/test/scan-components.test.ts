@@ -16,7 +16,6 @@ vi.mock('@nuxt/kit', () => ({
 const dirs: ComponentsDir[] = [
   {
     path: rFixture('components/islands'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -31,7 +30,6 @@ const dirs: ComponentsDir[] = [
   },
   {
     path: rFixture('components/global'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -46,7 +44,6 @@ const dirs: ComponentsDir[] = [
   },
   {
     path: rFixture('components'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -60,7 +57,6 @@ const dirs: ComponentsDir[] = [
   },
   {
     path: rFixture('components'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -78,7 +74,6 @@ const dirs: ComponentsDir[] = [
       'vue',
     ],
     prefix: 'nuxt',
-    enabled: true,
     pattern: '**/*.{vue,}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
@@ -88,7 +83,6 @@ const dirs: ComponentsDir[] = [
     transpile: false,
   },
 ]
-const dirUnable = dirs.map((d) => { return { ...d, enabled: false } })
 const expectedComponents = [
   {
     chunkName: 'components/isle-server',
@@ -246,9 +240,4 @@ it('components:scanComponents', async () => {
     delete c._scanned
   }
   expect(scannedComponents).deep.eq(expectedComponents)
-})
-
-it('components:scanComponents:unable', async () => {
-  const scannedComponents = await scanComponents(dirUnable, srcDir)
-  expect(scannedComponents).deep.eq([])
 })

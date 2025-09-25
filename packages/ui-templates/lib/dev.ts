@@ -28,7 +28,7 @@ export const DevRenderingPlugin = () => {
 
       const messages = JSON.parse(await fsp.readFile(r(page, 'messages.json'), 'utf-8'))
 
-      const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/g)
+      const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/)
       let templateString = chunks.shift()
       for (const expression of contents.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
         const value = runInNewContext(expression[1]!.trim(), {

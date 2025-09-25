@@ -10,7 +10,7 @@ links:
 
 ## Usage
 
-`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
+`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
 
 ::warning
 Make sure to always use `await` or `return` on result of `navigateTo` when calling it.
@@ -68,7 +68,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 In this case, `navigateTo` will be executed but not returned, which may lead to unexpected behavior.
 
-:read-more{to="/docs/guide/directory-structure/middleware"}
+:read-more{to="/docs/guide/directory-structure/app/middleware"}
 
 ### Navigating to an External URL
 

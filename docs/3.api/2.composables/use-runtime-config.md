@@ -10,7 +10,7 @@ links:
 
 ## Usage
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const config = useRuntimeConfig()
 </script>
@@ -55,7 +55,7 @@ Variables that need to be accessible on the server are added directly inside `ru
 To access runtime config, we can use `useRuntimeConfig()` composable:
 
 ```ts [server/api/test.ts]
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event)
 
   // Access public variables

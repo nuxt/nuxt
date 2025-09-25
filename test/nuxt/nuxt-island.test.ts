@@ -94,6 +94,34 @@ describe('runtime server component', () => {
     await server.close()
   })
 
+  it('expect remote island with baseURL to be rendered', async () => {
+    const port = await getPort({ host: 'localhost', public: false, random: true })
+    let url: string
+    const server = serve({
+      port,
+      fetch (r) {
+        url = r.url
+        return new Response(JSON.stringify({
+          html: '<div>hello world from another server</div>',
+          state: {},
+          head: { link: [], style: [] },
+        }), { headers: { 'Content-Type': 'application/json' } })
+      },
+    })
+
+    await server.ready()
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'Test',
+        source: `http://localhost:${port}/app`,
+      },
+    })
+
+    expect(wrapper.html()).toMatchInlineSnapshot('"<div>hello world from another server</div>"')
+    expect(url!.startsWith(`http://localhost:${port}/app/__nuxt_island`)).toBe(true)
+    await server.close()
+  })
   it('force refresh', async () => {
     let count = 0
     const stubFetch = vi.fn(() => {
@@ -210,9 +238,8 @@ describe('client components', () => {
     })
 
     expect(fetch).toHaveBeenCalledOnce()
-
-    expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="5">hello<div data-island-uid="5" data-island-component="Client-12345">
+    expect(removeDataIslandUid(wrapper.html())).toMatchInlineSnapshot(`
+      "<div>hello<div data-island-component="Client-12345">
           <div>client component</div>
         </div>
       </div>
@@ -237,12 +264,12 @@ describe('client components', () => {
 
     await wrapper.vm.$.exposed!.refresh()
     await nextTick()
-    expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="5">hello<div>
-          <div>fallback</div>
-        </div>
-      </div>"
-    `)
+    expect(removeDataIslandUid(wrapper.html())).toMatchInlineSnapshot(`
+        "<div>hello<div>
+            <div>fallback</div>
+          </div>
+        </div>"
+      `)
 
     vi.mocked(fetch).mockReset()
     expectNoConsoleIssue()
@@ -330,10 +357,10 @@ describe('client components', () => {
       attachTo: 'body',
     })
     expect(fetch).toHaveBeenCalledOnce()
-    expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="7">hello<div data-island-uid="7" data-island-component="ClientWithSlot-12345">
+    expect(removeDataIslandUid(wrapper.html())).toMatchInlineSnapshot(`
+      "<div>hello<div data-island-component="ClientWithSlot-12345">
           <div class="client-component">
-            <div style="display: contents" data-island-uid="" data-island-slot="default">
+            <div style="display: contents" data-island-slot="default">
               <div>slot in client component</div>
             </div>
           </div>
@@ -346,3 +373,7 @@ describe('client components', () => {
     expectNoConsoleIssue()
   })
 })
+
+function removeDataIslandUid (html: string) {
+  return html.replaceAll(/ data-island-uid="[^"]*"/g, '')
+}

@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { join, resolve } from 'pathe'
+import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
@@ -11,45 +11,32 @@ import { defu } from 'defu'
 import { defineEnv } from 'unenv'
 import { resolveModulePath } from 'exsolve'
 import { createError, defineEventHandler, handleCors, setHeader } from 'h3'
-import type { ViteConfig } from '@nuxt/schema'
+import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
 import type { ViteBuildContext } from './vite'
-import { DevStyleSSRPlugin } from './plugins/dev-ssr-css'
-import { RuntimePathsPlugin } from './plugins/paths'
+import { DevStyleSSRPlugin } from './plugins/dev-style-ssr'
+import { RuntimePathsPlugin } from './plugins/runtime-paths'
 import { TypeCheckPlugin } from './plugins/type-check'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
 import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
+import { StableEntryPlugin } from './plugins/stable-entry'
 
-export async function buildClient (ctx: ViteBuildContext) {
-  const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat
+export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
+  const nodeCompat = nuxt.options.experimental.clientNodeCompat
     ? {
-        alias: defineEnv({
-          nodeCompat: true,
-          resolve: true,
-        }).env.alias,
-        define: {
-          global: 'globalThis',
-        },
+        alias: defineEnv({ nodeCompat: true, resolve: true }).env.alias,
+        define: { global: 'globalThis' },
       }
     : { alias: {}, define: {} }
 
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
-    base: ctx.nuxt.options.dev
-      ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
+    base: nuxt.options.dev
+      ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
       : './',
-    experimental: {
-      renderBuiltUrl: (filename, { type, hostType }) => {
-        if (hostType !== 'js' || type === 'asset') {
-          // In CSS we only use relative paths until we craft a clever runtime CSS hack
-          return { relative: true }
-        }
-        return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
-      },
-    },
     css: {
-      devSourcemap: !!ctx.nuxt.options.sourcemap.client,
+      devSourcemap: !!nuxt.options.sourcemap.client,
     },
     define: {
       'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
@@ -119,7 +106,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         // user aliases
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
-        'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
         // TODO: remove in v5
         '#internal/nitro': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
         'nitropack/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
@@ -127,24 +114,27 @@ export async function buildClient (ctx: ViteBuildContext) {
         '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
       },
     },
-    cacheDir: resolve(ctx.nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
+    cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
     build: {
-      sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? ctx.nuxt.options.sourcemap.client : false,
+      sourcemap: nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
       manifest: 'manifest.json',
-      outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
+      outDir: resolve(nuxt.options.buildDir, 'dist/client'),
       rollupOptions: {
         input: { entry: ctx.entry },
       },
     },
     plugins: [
       DevStyleSSRPlugin({
-        srcDir: ctx.nuxt.options.srcDir,
-        buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir),
+        srcDir: nuxt.options.srcDir,
+        buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
       }),
-      RuntimePathsPlugin({
-        sourcemap: !!ctx.nuxt.options.sourcemap.client,
-      }),
-      ViteNodePlugin(ctx),
+      RuntimePathsPlugin(),
+      ViteNodePlugin(nuxt),
+      // Type checking client panel
+      TypeCheckPlugin(nuxt),
+      ModulePreloadPolyfillPlugin(),
+      // ensure changes in chunks do not invalidate whole build
+      StableEntryPlugin(nuxt),
     ],
     appType: 'custom',
     server: {
@@ -153,13 +143,13 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
       middlewareMode: true,
     },
-  } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
+  } satisfies vite.InlineConfig, nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
-  if (!ctx.nuxt.options.dev) {
+  if (!nuxt.options.dev) {
     clientConfig.server!.hmr = false
   }
 
@@ -170,18 +160,28 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // We want to respect users' own rollup output options
-  const fileNames = withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js'))
+  const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
+  const clientOutputDir = join(useNitro().options.output.publicDir, nuxt.options.app.buildAssetsDir)
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
-      chunkFileNames: ctx.nuxt.options.dev ? undefined : fileNames,
-      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : fileNames,
+      chunkFileNames: nuxt.options.dev ? undefined : fileNames,
+      entryFileNames: nuxt.options.dev ? 'entry.js' : fileNames,
+      sourcemapPathTransform (relativeSourcePath, sourcemapPath) {
+        // client build is running in a temporary build directory, like `.nuxt/dist/client`
+        // so we need to transform the sourcemap path to be relative to the final build directory
+        if (!isAbsolute(relativeSourcePath)) {
+          const absoluteSourcePath = resolve(dirname(sourcemapPath), relativeSourcePath)
+          return relative(clientOutputDir, absoluteSourcePath)
+        }
+        return relativeSourcePath
+      },
     } satisfies NonNullable<BuildOptions['rollupOptions']>['output'],
   }) as any
 
   if (clientConfig.server && clientConfig.server.hmr !== false) {
     const serverDefaults: Omit<ServerOptions, 'hmr'> & { hmr: Exclude<ServerOptions['hmr'], boolean> } = {
       hmr: {
-        protocol: ctx.nuxt.options.devServer.https ? 'wss' : undefined,
+        protocol: nuxt.options.devServer.https ? 'wss' : undefined,
       },
     }
     if (typeof clientConfig.server.hmr !== 'object' || !clientConfig.server.hmr.server) {
@@ -191,47 +191,37 @@ export async function buildClient (ctx: ViteBuildContext) {
         ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i),
       })
     }
-    if (ctx.nuxt.options.devServer.https) {
-      serverDefaults.https = ctx.nuxt.options.devServer.https === true ? {} : ctx.nuxt.options.devServer.https
+    if (nuxt.options.devServer.https) {
+      serverDefaults.https = nuxt.options.devServer.https === true ? {} : nuxt.options.devServer.https
     }
     clientConfig.server = defu(clientConfig.server, serverDefaults as ViteConfig['server'])
   }
 
   // Add analyze plugin if needed
-  if (!ctx.nuxt.options.test && ctx.nuxt.options.build.analyze && (ctx.nuxt.options.build.analyze === true || ctx.nuxt.options.build.analyze.enabled)) {
-    clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
+  if (!nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)) {
+    clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.AnalyzePlugin(nuxt)))
   }
 
-  // Add type checking client panel
-  if (!ctx.nuxt.options.test && ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
-    clientConfig.plugins!.push(TypeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
-  }
-
-  clientConfig.plugins!.push(ModulePreloadPolyfillPlugin({
-    sourcemap: !!ctx.nuxt.options.sourcemap.client,
-    entry: ctx.entry,
-  }))
-
-  await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
+  await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
   clientConfig.plugins!.unshift(
     vuePlugin(clientConfig.vue),
     viteJsxPlugin(clientConfig.vueJsx),
   )
 
-  await ctx.nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
+  await nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
 
   // Prioritize `optimizeDeps.exclude`. If same dep is in `include` and `exclude`, remove it from `include`
   const exclude = new Set(clientConfig.optimizeDeps!.exclude)
   clientConfig.optimizeDeps!.include = clientConfig.optimizeDeps!.include!
     .filter(dep => !exclude.has(dep))
 
-  if (ctx.nuxt.options.dev) {
+  if (nuxt.options.dev) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
-    ctx.nuxt.hook('close', () => viteServer.close())
-    await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
+    nuxt.hook('close', () => viteServer.close())
+    await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
     const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
     viteServer.middlewares.stack.splice(transformHandler, 0, {
       route: '',
@@ -244,14 +234,14 @@ export async function buildClient (ctx: ViteBuildContext) {
 
     const staticBases: string[] = []
     for (const folder of useNitro().options.publicAssets) {
-      if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
+      if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
         staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
       }
     }
 
     const devHandlerRegexes: RegExp[] = []
-    for (const handler of ctx.nuxt.options.devServerHandlers) {
-      if (handler.route && handler.route !== '/' && handler.route.startsWith(ctx.nuxt.options.app.buildAssetsDir)) {
+    for (const handler of nuxt.options.devServerHandlers) {
+      if (handler.route && handler.route !== '/' && handler.route.startsWith(nuxt.options.app.buildAssetsDir)) {
         devHandlerRegexes.push(new RegExp(
           `^${handler.route
             .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // escape regex syntax characters
@@ -274,7 +264,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true
       } else if (!useViteCors) {
-        const isPreflight = handleCors(event, ctx.nuxt.options.devServer.cors)
+        const isPreflight = handleCors(event, nuxt.options.devServer.cors)
         if (isPreflight) {
           return null
         }
@@ -291,13 +281,13 @@ export async function buildClient (ctx: ViteBuildContext) {
       })
 
       // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-      if (!event.handled && event.path.startsWith(ctx.nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
+      if (!event.handled && event.path.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
         throw createError({
           statusCode: 404,
         })
       }
     })
-    await ctx.nuxt.callHook('server:devHandler', viteMiddleware)
+    await nuxt.callHook('server:devHandler', viteMiddleware)
   } else {
     // Build
     logger.info('Building client...')
@@ -305,7 +295,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     logger.restoreAll()
     await vite.build(clientConfig)
     logger.wrapAll()
-    await ctx.nuxt.callHook('vite:compiled')
+    await nuxt.callHook('vite:compiled')
     logger.success(`Client built in ${Date.now() - start}ms`)
   }
 }

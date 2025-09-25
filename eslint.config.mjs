@@ -4,6 +4,8 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
 import perfectionist from 'eslint-plugin-perfectionist'
+import { importX } from 'eslint-plugin-import-x'
+import parser from '@typescript-eslint/parser'
 
 import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
 
@@ -13,6 +15,7 @@ export default createConfigForNuxt({
       commaDangle: 'always-multiline',
     },
     tooling: true,
+    typescript: true,
   },
 })
   .prepend(
@@ -93,6 +96,24 @@ export default createConfigForNuxt({
     },
   })
 
+  .append({
+    files: ['packages/**/*.{mjs,js,ts}', '**/*.{spec,test}.{mjs,js,ts}'],
+    ignores: [
+      'packages/nuxt/src/app/types/augments.ts',
+      'test/fixtures/basic/app/plugins/this-should-not-load.spec.js',
+    ],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-deprecated': 'error',
+    },
+  })
+
   .override('nuxt/tooling/unicorn', {
     rules: {
       'unicorn/no-new-array': 'off',
@@ -120,11 +141,15 @@ export default createConfigForNuxt({
 
   // Append local rules
   .append(
+    // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
+      plugins: {
+        'import-x': importX,
+      },
       rules: {
-        'import/no-restricted-paths': [
+        'import-x/no-restricted-paths': [
           'error',
           {
             zones: [
@@ -226,7 +251,6 @@ export default createConfigForNuxt({
       },
     },
     // Sort rule keys in eslint config
-    // @ts-expect-error type issues in eslint
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',

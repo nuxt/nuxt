@@ -6,7 +6,7 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nitro, NitroConfig } from 'nitropack/types'
+import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
@@ -35,6 +35,7 @@ export type NuxtPage = {
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
   middleware?: string[] | string
+  rules?: NitroRouteConfig
   /**
    * Set the render mode.
    *
@@ -306,7 +307,7 @@ export interface NuxtHooks {
    * @param options Objects containing `references`, `declarations`, `tsConfig`
    * @returns Promise
    */
-  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig }) => HookResult
+  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[], sharedTsConfig: TSConfig, sharedReferences: TSReference[] }) => HookResult
   /**
    * Called when the dev server is loading.
    * @param listenerServer The HTTP/HTTPS server object

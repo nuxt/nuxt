@@ -1,11 +1,11 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
+import { findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
 
 import type { PluginMeta } from 'nuxt/app'
 
-import { logger } from '../utils'
+import { logger, resolveToAlias } from '../utils'
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
@@ -135,97 +135,92 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+  // resolve layer
+  const layerDirs = getLayerDirectories(nuxt)
+  const reversedLayerDirs = [...layerDirs].reverse()
+
   // Resolve main (app.vue)
-  app.mainComponent ||= await findPath(
-    nuxt.options._layers.flatMap(layer => [
-      join(layer.config.srcDir, 'App'),
-      join(layer.config.srcDir, 'app'),
-    ]),
-  )
+  app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.app, 'App'), join(d.app, 'app')]))
   app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
   // Resolve root component
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
-  app.errorComponent ||= (await findPath(
-    nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
-  )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
+  app.errorComponent ||= await findPath(layerDirs.map(d => join(d.app, 'error'))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   const extensionGlob = nuxt.options.extensions.join(',')
 
   // Resolve layouts/ from all config layers
-  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
-  const reversedConfigs = layerConfigs.slice().reverse()
-  app.layouts = {}
-  for (const config of layerConfigs) {
-    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.layouts || 'layouts'
-    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${extensionGlob}}`)
+  const layouts: NuxtApp['layouts'] = {}
+  for (const dirs of layerDirs) {
+    const layoutFiles = await resolveFiles(dirs.appLayouts, `**/*{${extensionGlob}}`)
     for (const file of layoutFiles) {
-      const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
+      const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        logger.warn(`No layout name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
+        logger.warn(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
-      app.layouts[name] ||= { name, file }
+      layouts[name] ||= { name, file }
     }
   }
 
   // Resolve middleware/ from all config layers, layers first
-  app.middleware = []
-  for (const config of reversedConfigs) {
-    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.middleware || 'middleware'
-    const middlewareFiles = await resolveFiles(config.srcDir, [
-      `${middlewareDir}/*{${extensionGlob}}`,
-      `${middlewareDir}/*/index{${extensionGlob}}`,
+  let middleware: NuxtApp['middleware'] = []
+  for (const dirs of reversedLayerDirs) {
+    const middlewareFiles = await resolveFiles(dirs.appMiddleware, [
+      `*{${extensionGlob}}`,
+      `*/index{${extensionGlob}}`,
     ])
     for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        logger.warn(`No middleware name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
+        logger.warn(`No middleware name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
         continue
       }
-      app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
+      middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
     }
   }
 
+  const reversedLayers = nuxt.options._layers.slice().reverse()
   // Resolve plugins, first extended layers and then base
-  app.plugins = []
-  for (const config of reversedConfigs) {
-    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.plugins || 'plugins'
-    app.plugins.push(...[
+  let plugins: NuxtApp['plugins'] = []
+  for (let i = 0; i < reversedLayerDirs.length; i++) {
+    const config = reversedLayers[i]!.config
+    const dirs = reversedLayerDirs[i]!
+    plugins.push(...[
       ...(config.plugins || []),
-      ...config.srcDir
-        ? await resolveFiles(config.srcDir, [
-            `${pluginDir}/*{${extensionGlob}}`,
-            `${pluginDir}/*/index{${extensionGlob}}`,
-          ])
-        : [],
+      ...await resolveFiles(dirs.appPlugins, [
+        `*{${extensionGlob}}`,
+        `*/index{${extensionGlob}}`,
+      ]),
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
 
   // Add back plugins not specified in layers or user config
   for (const p of [...nuxt.options.plugins].reverse()) {
     const plugin = normalizePlugin(p)
-    if (!app.plugins.some(p => p.src === plugin.src)) {
-      app.plugins.unshift(plugin)
+    if (!plugins.some(p => p.src === plugin.src)) {
+      plugins.unshift(plugin)
     }
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(nuxt, [...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(nuxt, app.plugins, 'src'), 'src')
+  middleware = uniqueBy(await resolvePaths(nuxt, [...middleware].reverse(), 'path'), 'name').reverse()
+  plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
 
   // Resolve app.config
-  app.configs = []
-  for (const config of layerConfigs) {
-    const appConfigPath = await findPath(resolve(config.srcDir, 'app.config'))
+  const configs: NuxtApp['configs'] = []
+  for (const dirs of layerDirs) {
+    const appConfigPath = await findPath(join(dirs.app, 'app.config'))
     if (appConfigPath) {
-      app.configs.push(appConfigPath)
+      configs.push(appConfigPath)
     }
   }
+
+  Object.assign(app, { middleware, plugins, configs, layouts })
 
   // Extend app
   await nuxt.callHook('app:resolve', app)

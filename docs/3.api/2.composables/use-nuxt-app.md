@@ -8,19 +8,19 @@ links:
     size: xs
 ---
 
-`useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, also known as the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), which is available on both client and server side (but not within Nitro routes). It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
+`useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, also known as the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context), which is available on both client and server side (but not within Nitro routes). It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const nuxtApp = useNuxtApp()
 </script>
 ```
 
-If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
+If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](/docs/4.x/api/composables/use-nuxt-app#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
 
 <!--
 note
-By default, the shared runtime context of Nuxt is namespaced under the [`buildId`](/docs/api/nuxt-config#buildid) option. It allows the support of multiple runtime contexts.
+By default, the shared runtime context of Nuxt is namespaced under the [`buildId`](/docs/4.x/api/nuxt-config#buildid) option. It allows the support of multiple runtime contexts.
 
 ## Params
 
@@ -30,7 +30,7 @@ By default, the shared runtime context of Nuxt is namespaced under the [`buildId
 
 ### `provide (name, value)`
 
-`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/guide/directory-structure/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
+`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/4.x/guide/directory-structure/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
 
 `provide` function accepts `name` and `value` parameters.
 
@@ -46,13 +46,13 @@ As you can see in the example above, `$hello` has become the new and custom part
 
 ### `hook(name, cb)`
 
-Hooks available in `nuxtApp` allows you to customize the runtime aspects of your Nuxt application. You can use runtime hooks in Vue.js composables and [Nuxt plugins](/docs/guide/directory-structure/plugins) to hook into the rendering lifecycle.
+Hooks available in `nuxtApp` allows you to customize the runtime aspects of your Nuxt application. You can use runtime hooks in Vue.js composables and [Nuxt plugins](/docs/4.x/guide/directory-structure/plugins) to hook into the rendering lifecycle.
 
 `hook` function is useful for adding custom logic by hooking into the rendering lifecycle at a specific point. `hook` function is mostly used when creating Nuxt plugins.
 
-See [Runtime Hooks](/docs/api/advanced/hooks#app-hooks-runtime) for available runtime hooks called by Nuxt.
+See [Runtime Hooks](/docs/4.x/api/advanced/hooks#app-hooks-runtime) for available runtime hooks called by Nuxt.
 
-```ts [plugins/test.ts]
+```ts [app/plugins/test.ts]
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook('page:start', () => {
     /* your code goes here */
@@ -84,8 +84,8 @@ await nuxtApp.callHook('my-plugin:init')
 
 Some useful methods:
 - [`component()`](https://vuejs.org/api/application.html#app-component) - Registers a global component if passing both a name string and a component definition, or retrieves an already registered one if only the name is passed.
-- [`directive()`](https://vuejs.org/api/application.html#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/guide/directory-structure/plugins#vue-directives).
-- [`use()`](https://vuejs.org/api/application.html#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins.html)** [(example)](/docs/guide/directory-structure/plugins#vue-plugins).
+- [`directive()`](https://vuejs.org/api/application.html#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/4.x/guide/directory-structure/plugins#vue-directives).
+- [`use()`](https://vuejs.org/api/application.html#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins.html)** [(example)](/docs/4.x/guide/directory-structure/plugins#vue-plugins).
 
 :read-more{icon="i-simple-icons-vuedotjs" to="https://vuejs.org/api/application.html#application-api"}
 
@@ -95,7 +95,7 @@ Some useful methods:
 
 Nuxt exposes the following properties through `ssrContext`:
 - `url` (string) -  Current request url.
-- `event` ([unjs/h3](https://github.com/unjs/h3) request event) - Access the request & response of the current route.
+- `event` ([h3js/h3](https://github.com/h3js/h3) request event) - Access the request & response of the current route.
 - `payload` (object) - NuxtApp payload object.
 
 ### `payload`
@@ -103,10 +103,10 @@ Nuxt exposes the following properties through `ssrContext`:
 `payload` exposes data and state variables from server side to client side. The following keys will be available on the client after they have been passed from the server side:
 
 - `serverRendered` (boolean) - Indicates if response is server-side-rendered.
-- `data` (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/api/composables/use-fetch) or [`useAsyncData`](/docs/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
+- `data` (object) - When you fetch the data from an API endpoint using either [`useFetch`](/docs/4.x/api/composables/use-fetch) or [`useAsyncData`](/docs/4.x/api/composables/use-async-data) , resulting payload can be accessed from the `payload.data`. This data is cached and helps you prevent fetching the same data in case an identical request is made more than once.
 
   ::code-group
-  ```vue [app.vue]
+  ```vue [app/app.vue]
   <script setup lang="ts">
   const { data } = await useAsyncData('count', () => $fetch('/api/count'))
   </script>
@@ -118,13 +118,13 @@ Nuxt exposes the following properties through `ssrContext`:
   ```
   ::
 
-  After fetching the value of `count` using [`useAsyncData`](/docs/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there.
+  After fetching the value of `count` using [`useAsyncData`](/docs/4.x/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there.
 
-  When accessing the same `payload.data` from [`ssrcontext`](#ssrcontext), you can access the same value on the server side as well.
+  When accessing the same `payload.data` from [`ssrcontext`](/docs/4.x/api/composables/use-nuxt-app#ssrcontext), you can access the same value on the server side as well.
 
-- `state` (object) - When you use [`useState`](/docs/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
+- `state` (object) - When you use [`useState`](/docs/4.x/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
-  ```ts [plugins/my-plugin.ts]
+  ```ts [app/plugins/my-plugin.ts]
   export const useColor = () => useState<string>('color', () => 'pink')
 
   export default defineNuxtPlugin((nuxtApp) => {
@@ -142,7 +142,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   In the example below, we define a reducer (or a serializer) and a reviver (or deserializer) for the [Luxon](https://moment.github.io/luxon/#/) DateTime class, using a payload plugin.
 
-  ```ts [plugins/date-time-payload.ts]
+  ```ts [app/plugins/date-time-payload.ts]
   /**
    * This kind of plugin runs very early in the Nuxt lifecycle, before we revive the payload.
    * You will not have access to the router or other Nuxt-injected properties.
@@ -164,7 +164,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
 Use `nuxtApp.isHydrating` (boolean) to check if the Nuxt app is hydrating on the client side.
 
-```ts [components/nuxt-error-boundary.ts]
+```ts [app/components/nuxt-error-boundary.ts]
 export default defineComponent({
   setup (_props, { slots, emit }) {
     const nuxtApp = useNuxtApp()
@@ -185,7 +185,7 @@ You are likely here because you got a "Nuxt instance unavailable" message. Pleas
 
 The `runWithContext` method is meant to be used to call a function and give it an explicit Nuxt context. Typically, the Nuxt context is passed around implicitly and you do not need to worry about this. However, when working with complex `async`/`await` scenarios in middleware/plugins, you can run into instances where the current instance has been unset after an async call.
 
-```ts [middleware/auth.ts]
+```ts [app/middleware/auth.ts]
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const nuxtApp = useNuxtApp()
   let user
