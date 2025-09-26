@@ -44,7 +44,7 @@ You can use `$fetch` in any methods that are executed only on client-side.
 async function contactForm () {
   await $fetch('/api/contact', {
     method: 'POST',
-    body: { hello: 'world ' },
+    body: { hello: 'world' },
   })
 }
 </script>
