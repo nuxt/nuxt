@@ -356,8 +356,8 @@ importers:
   packages/nuxt:
     dependencies:
       '@dxup/nuxt':
-        specifier: ^0.0.2
-        version: 0.0.2
+        specifier: ^0.0.3
+        version: 0.0.3
       '@nuxt/cli':
         specifier: 3.28.0
         version: 3.28.0(magicast@0.3.5)
@@ -1471,8 +1471,8 @@ packages:
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
     engines: {node: '>=10.0.0'}
 
-  '@dxup/nuxt@0.0.2':
-    resolution: {integrity: sha512-kyr47jSVkHUEvkg2FsBqwECu3fhrdjLUb4Vb/Bi9allSZ8yzm+UfyuyODmRVH71A3VMhraQ2LtXEdNFBmZVo5A==}
+  '@dxup/nuxt@0.0.3':
+    resolution: {integrity: sha512-eJyS01REYUh1OXLHztiN4NYkyyM3qXj9N/ZBa4HhKfcPLOMdbEMuX0Ga+ZEzQIofUgX5KZdHANSF59pQOBBMpw==}
 
   '@dxup/unimport@0.0.1':
     resolution: {integrity: sha512-52a/xqcBVD3u1Cf0pLL9n3H0WWX98tnPq0aWFrobok1H1tXpGn6+Gw6Dha/82r4aYdlnMhMcCrhNKvtWkGvbtQ==}
@@ -8725,7 +8725,7 @@ snapshots:
 
   '@discoveryjs/json-ext@0.5.7': {}
 
-  '@dxup/nuxt@0.0.2':
+  '@dxup/nuxt@0.0.3':
     dependencies:
       '@dxup/unimport': 0.0.1
       '@nuxt/kit': link:packages/kit
