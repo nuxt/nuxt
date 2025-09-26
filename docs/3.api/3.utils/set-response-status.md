@@ -33,4 +33,4 @@ if (event) {
 In the browser, `setResponseStatus` will have no effect.
 ::
 
-:read-more{to="/docs/getting-started/error-handling"}
+:read-more{to="/docs/4.x/getting-started/error-handling"}

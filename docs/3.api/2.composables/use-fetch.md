@@ -96,7 +96,32 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 :video-accordion{title="Watch the video from Alexander Lichter to avoid using useFetch the wrong way" videoId="njsGVmcWviY"}
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}
+
+### Reactive Fetch Options
+
+Fetch options can be provided as reactive, supporting `computed`, `ref` and [computed getters](https://vuejs.org/guide/essentials/computed.html). When a reactive fetch option is updated it will trigger a refetch using the updated resolved reactive value.
+
+```ts
+const searchQuery = ref('initial')
+const { data } = await useFetch('/api/search', {
+  query: { q: searchQuery }
+})
+// triggers a refetch: /api/search?q=new%20search
+searchQuery.value = 'new search'
+```
+
+If needed, you can opt out of this behavior using `watch: false`:
+
+```ts
+const searchQuery = ref('initial')
+const { data } = await useFetch('/api/search', {
+  query: { q: searchQuery },
+  watch: false
+})
+// does not trigger a refetch
+searchQuery.value = 'new search'
+```
 
 ## Type
 
@@ -108,12 +133,12 @@ function useFetch<DataT, ErrorT>(
 
 type UseFetchOptions<DataT> = {
   key?: MaybeRefOrGetter<string>
-  method?: string
-  query?: SearchParams
-  params?: SearchParams
-  body?: RequestInit['body'] | Record<string, any>
-  headers?: Record<string, string> | [key: string, value: string][] | Headers
-  baseURL?: string
+  method?: MaybeRefOrGetter<string>
+  query?: MaybeRefOrGetter<SearchParams>
+  params?: MaybeRefOrGetter<SearchParams>
+  body?: MaybeRefOrGetter<RequestInit['body'] | Record<string, any>>
+  headers?: MaybeRefOrGetter<Record<string, string> | [key: string, value: string][] | Headers>
+  baseURL?: MaybeRefOrGetter<string>
   server?: boolean
   lazy?: boolean
   immediate?: boolean
@@ -125,6 +150,7 @@ type UseFetchOptions<DataT> = {
   pick?: string[]
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
+  timeout?: MaybeRefOrGetter<number>
 }
 
 type AsyncDataRequestContext = {
@@ -157,13 +183,13 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | Option | Type | Default | Description |
 | ---| --- | --- | --- |
 | `key` | `MaybeRefOrGetter<string>` | auto-gen | Unique key for de-duplication. If not provided, generated from URL and options. |
-| `method` | `string` | `'GET'` | HTTP request method. |
-| `query` | `object` | - | Query/search params to append to the URL. Alias: `params`. Supports refs/computed. |
-| `params` | `object` | - | Alias for `query`. |
-| `body` | `RequestInit['body'] \| Record<string, any>` | - | Request body. Objects are automatically stringified. Supports refs/computed. |
-| `headers` | `Record<string, string> \| [key, value][] \| Headers` | - | Request headers. |
-| `baseURL` | `string` | - | Base URL for the request. |
-| `timeout` | `number` | - | Timeout in milliseconds to abort the request. |
+| `method` | `MaybeRefOrGetter<string>` | `'GET'` | HTTP request method. |
+| `query` | `MaybeRefOrGetter<SearchParams>` | - | Query/search params to append to the URL. Alias: `params`. |
+| `params` | `MaybeRefOrGetter<SearchParams>` | - | Alias for `query`. |
+| `body` | `MaybeRefOrGetter<RequestInit['body'] \| Record<string, any>>` | - | Request body. Objects are automatically stringified. |
+| `headers` | `MaybeRefOrGetter<Record<string, string> \| [key, value][] \| Headers>` | - | Request headers. |
+| `baseURL` | `MaybeRefOrGetter<string>` | - | Base URL for the request. |
+| `timeout` | `MaybeRefOrGetter<number>` | - | Timeout in milliseconds to abort the request. |
 | `cache` | `boolean \| string` | - | Cache control. Boolean disables cache, or use Fetch API values: `default`, `no-store`, etc. |
 | `server` | `boolean` | `true` | Whether to fetch on the server. |
 | `lazy` | `boolean` | `false` | If true, resolves after route loads (does not block navigation). |
@@ -175,7 +201,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `watch` | `MultiWatchSources \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
 | `deep` | `boolean` | `false` | Return data in a deep ref object. |
 | `dedupe` | `'cancel' \| 'defer'` | `'cancel'` | Avoid fetching same key more than once at a time. |
-| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. |
+| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/4.x/guide/recipes/custom-usefetch) |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -214,6 +240,6 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ### Examples
 
-:link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
+:link-example{to="/docs/4.x/examples/advanced/use-custom-fetch-composable"}
 
-:link-example{to="/docs/examples/features/data-fetching"}
+:link-example{to="/docs/4.x/examples/features/data-fetching"}

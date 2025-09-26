@@ -31,7 +31,7 @@ const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 /**
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
- * @see https://nuxt.com/docs/api/components/nuxt-link
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
  */
 export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<RouterLinkProps, 'to'> {
   custom?: CustomProp
@@ -87,7 +87,7 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
 
 /**
  * Create a NuxtLink component with given options as defaults.
- * @see https://nuxt.com/docs/api/components/nuxt-link
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
  */
 export interface NuxtLinkOptions extends
   Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,

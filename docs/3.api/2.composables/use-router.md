@@ -78,7 +78,7 @@ Read more about the browser's History API.
 
 However, Nuxt has a concept of **route middleware** that simplifies the implementation of navigation guards and provides a better developer experience.
 
-:read-more{to="/docs/guide/directory-structure/app/middleware"}
+:read-more{to="/docs/4.x/guide/directory-structure/app/middleware"}
 
 ## Promise and Error Handling
 

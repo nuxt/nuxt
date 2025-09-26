@@ -35,7 +35,7 @@ const { data } = await useFetch('/api/item')
 </script>
 ```
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}
 
 You can use `$fetch` in any methods that are executed only on client-side.
 

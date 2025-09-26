@@ -54,11 +54,11 @@ await callOnce(async () => {
 `navigation` mode is available since [Nuxt v3.15](/blog/v3-15).
 ::
 
-::tip{to="/docs/getting-started/state-management#usage-with-pinia"}
+::tip{to="/docs/4.x/getting-started/state-management#usage-with-pinia"}
 `callOnce` is useful in combination with the [Pinia module](/modules/pinia) to call store actions.
 ::
 
-:read-more{to="/docs/getting-started/state-management"}
+:read-more{to="/docs/4.x/getting-started/state-management"}
 
 ::warning
 Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/docs/4.x/api/composables/use-async-data) or [`useFetch`](/docs/4.x/api/composables/use-fetch) if you want to do data fetching during SSR.

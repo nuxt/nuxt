@@ -74,7 +74,7 @@ const { data: user } = useAsyncData(
 [`useAsyncData`](/docs/4.x/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
 ::
 
-:read-more{to="/docs/getting-started/data-fetching#useasyncdata"}
+:read-more{to="/docs/4.x/getting-started/data-fetching#useasyncdata"}
 
 ## Params
 
@@ -107,7 +107,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 ::
 
-::read-more{to="/docs/api/composables/use-lazy-async-data"}
+::read-more{to="/docs/4.x/api/composables/use-lazy-async-data"}
 You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `useAsyncData`.
 ::
 
@@ -213,4 +213,4 @@ interface AsyncDataExecuteOptions {
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}

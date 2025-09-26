@@ -268,7 +268,7 @@ Using a new experimental feature, it is possible to enable native async context 
 Native async context support works currently in Bun and Node.
 ::
 
-:read-more{to="/docs/guide/going-further/experimental-features#asynccontext"}
+:read-more{to="/docs/4.x/guide/going-further/experimental-features#asynccontext"}
 
 ## tryUseNuxtApp
 

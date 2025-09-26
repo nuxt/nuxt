@@ -15,7 +15,7 @@ links:
 const count = useState('counter', () => Math.round(Math.random() * 100))
 ```
 
-:read-more{to="/docs/getting-started/state-management"}
+:read-more{to="/docs/4.x/getting-started/state-management"}
 
 ::important
 Because the data inside `useState` will be serialized to JSON, it is important that it does not contain anything that cannot be serialized, such as classes, functions or symbols.

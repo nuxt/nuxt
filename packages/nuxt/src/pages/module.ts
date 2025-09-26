@@ -221,11 +221,11 @@ export default defineNuxtModule({
     }
 
     if (useExperimentalTypedPages) {
-      const declarationFile = './types/typed-router.d.ts'
+      const declarationFile = resolve(nuxt.options.buildDir, 'types/typed-router.d.ts')
 
       const typedRouterOptions: TypedRouterOptions = {
         routesFolder: [],
-        dts: resolve(nuxt.options.buildDir, declarationFile),
+        dts: declarationFile,
         logs: nuxt.options.debug && nuxt.options.debug.router,
         async beforeWriteFiles (rootPage) {
           for (const child of rootPage.children) {
@@ -283,13 +283,12 @@ export default defineNuxtModule({
       })
 
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
-      const dtsFile = resolve(nuxt.options.buildDir, declarationFile)
-      await mkdir(dirname(dtsFile), { recursive: true })
+      await mkdir(dirname(declarationFile), { recursive: true })
       await context.scanPages(false)
 
       if (nuxt.options._prepare || !nuxt.options.dev) {
         // TODO: could we generate this from context instead?
-        const dts = await readFile(dtsFile, 'utf-8')
+        const dts = await readFile(declarationFile, 'utf-8')
         addTemplate({
           filename: 'types/typed-router.d.ts',
           getContents: () => dts,
