@@ -93,13 +93,13 @@ Discover our [list of modules](https://nuxt.com/modules) to supercharge your Nux
 We invite you to contribute and help improve Nuxt 💚
 
 Here are a few ways you can get involved:
-- **Reporting Bugs:** If you come across any bugs or issues, please check out the [reporting bugs guide](https://nuxt.com/docs/community/reporting-bugs) to learn how to submit a bug report.
-- **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/community/contribution) to share your suggestions.
-- **Questions:** If you have questions or need assistance, the [getting help guide](https://nuxt.com/docs/community/getting-help) provides resources to help you out.
+- **Reporting Bugs:** If you come across any bugs or issues, please check out the [reporting bugs guide](https://nuxt.com/docs/4.x/community/reporting-bugs) to learn how to submit a bug report.
+- **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/4.x/community/contribution) to share your suggestions.
+- **Questions:** If you have questions or need assistance, the [getting help guide](https://nuxt.com/docs/4.x/community/getting-help) provides resources to help you out.
 
 ## <a name="local-development">🏠 Local Development</a>
 
-Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#setup) to contribute to the framework and documentation.
+Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/4.x/community/framework-contribution#setup) to contribute to the framework and documentation.
 
 ## <a name="professional-support">🛟 Professional Support</a>
 

@@ -52,4 +52,4 @@ export default eventHandler(() => {
 
 In API routes, using `createError` by passing an object with a short `statusMessage` is recommended because it can be accessed on the client side. Otherwise, a `message` passed to `createError` on an API route will not propagate to the client. Alternatively, you can use the `data` property to pass data back to the client. In any case, always consider avoiding to put dynamic user input to the message to avoid potential security issues.
 
-:read-more{to="/docs/getting-started/error-handling"}
+:read-more{to="/docs/4.x/getting-started/error-handling"}

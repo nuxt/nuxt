@@ -39,7 +39,7 @@ export default defineNuxtConfig({
 })
 ```
 
-:read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
+:read-more{title="NuxtLink" to="/docs/4.x/api/components/nuxt-link"}
 
 ### Hybrid Rendering
 
@@ -68,7 +68,7 @@ export default defineNuxtConfig({
 
 Nuxt server will automatically register corresponding middleware and wrap routes with cache handlers using Nitro caching layer.
 
-:read-more{title="Hybrid rendering" to="/docs/guide/concepts/rendering#hybrid-rendering"}
+:read-more{title="Hybrid rendering" to="/docs/4.x/guide/concepts/rendering#hybrid-rendering"}
 
 ### Lazy Loading Components
 
@@ -90,7 +90,7 @@ const show = ref(false)
 
 By using the Lazy prefix you can delay loading the component code until the right moment, which can be helpful for optimizing your JavaScript bundle size.
 
-:read-more{title="Lazy loading components" to="/docs/guide/directory-structure/app/components#dynamic-imports"}
+:read-more{title="Lazy loading components" to="/docs/4.x/guide/directory-structure/app/components#dynamic-imports"}
 
 ### Lazy Hydration
 
@@ -106,13 +106,13 @@ It is not always necessary to hydrate (or make interactive) all the components o
 
 To optimize your app, you may want to delay the hydration of some components until they're visible, or until the browser is done with more important tasks.
 
-:read-more{title="Lazy hydration" to="/docs/guide/directory-structure/app/components#delayed-or-lazy-hydration"}
+:read-more{title="Lazy hydration" to="/docs/4.x/guide/directory-structure/app/components#delayed-or-lazy-hydration"}
 
 ### Fetching data
 
 To avoid fetching same data twice (once on the server and once on client) Nuxt provides [`useFetch`](/docs/4.x/api/composables/use-fetch) and [`useAsyncData`](/docs/4.x/api/composables/use-async-data). They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
 
-:read-more{title="Data fetching" to="/docs/getting-started/data-fetching"}
+:read-more{title="Data fetching" to="/docs/4.x/getting-started/data-fetching"}
 
 ## Core Nuxt Modules
 

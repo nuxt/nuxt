@@ -172,4 +172,4 @@ export default defineEventHandler(event => {
 })
 ```
 
-:link-example{to="/docs/examples/advanced/use-cookie"}
+:link-example{to="/docs/4.x/examples/advanced/use-cookie"}

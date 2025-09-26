@@ -96,7 +96,7 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 :video-accordion{title="Watch the video from Alexander Lichter to avoid using useFetch the wrong way" videoId="njsGVmcWviY"}
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}
 
 ### Reactive Fetch Options
 
@@ -201,7 +201,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `watch` | `MultiWatchSources \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
 | `deep` | `boolean` | `false` | Return data in a deep ref object. |
 | `dedupe` | `'cancel' \| 'defer'` | `'cancel'` | Avoid fetching same key more than once at a time. |
-| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch) |
+| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/4.x/guide/recipes/custom-usefetch) |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -240,6 +240,6 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ### Examples
 
-:link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
+:link-example{to="/docs/4.x/examples/advanced/use-custom-fetch-composable"}
 
-:link-example{to="/docs/examples/features/data-fetching"}
+:link-example{to="/docs/4.x/examples/features/data-fetching"}

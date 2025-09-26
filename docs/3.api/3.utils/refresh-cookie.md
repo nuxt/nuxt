@@ -35,7 +35,7 @@ const loggedIn = computed(() => !!tokenCookie.value)
 </script>
 ```
 
-::note{to="/docs/guide/going-further/experimental-features#cookiestore"}
+::note{to="/docs/4.x/guide/going-further/experimental-features#cookiestore"}
 You can enable experimental `cookieStore` option to automatically refresh `useCookie` value when cookie changes in the browser.
 ::
 

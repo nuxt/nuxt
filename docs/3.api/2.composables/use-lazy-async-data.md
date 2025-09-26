@@ -16,7 +16,7 @@ By default, [`useAsyncData`](/docs/4.x/api/composables/use-async-data) blocks na
 `useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
 ::
 
-:read-more{to="/docs/api/composables/use-async-data"}
+:read-more{to="/docs/4.x/api/composables/use-async-data"}
 
 ## Example
 
@@ -44,4 +44,4 @@ watch(count, (newCount) => {
 `useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
 ::
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}

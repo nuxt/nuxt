@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/app/pages#page-metadata"}
+:read-more{to="/docs/4.x/guide/directory-structure/app/pages#page-metadata"}
 
 ## Type
 
@@ -62,7 +62,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a [custom regular expression](/docs/api/composables/use-nuxt-app#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](/docs/4.x/api/composables/use-nuxt-app#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
 
   **`props`**
   
