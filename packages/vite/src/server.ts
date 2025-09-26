@@ -89,7 +89,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
           entryFileNames: '[name].mjs',
           format: 'module',
 
-          // @ts-expect-error non-public property
           ...(vite.rolldownVersion
             // Wait for https://github.com/rolldown/rolldown/issues/206
             ? {}
@@ -123,9 +122,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
     serverConfig.build.rollupOptions.output.manualChunks = undefined
 
-    // @ts-expect-error non-public property
     if (vite.rolldownVersion) {
-      // @ts-expect-error rolldown-specific
       serverConfig.build.rollupOptions.output.advancedChunks = undefined
     }
   }

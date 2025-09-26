@@ -212,7 +212,9 @@ async function transform (code: string, filename: string) {
         },
       },
       LazyHydrationTransformPlugin({ getComponents: () => components }).rollup(),
+      // @ts-expect-error rolldown types
       vuePlugin(),
+      // @ts-expect-error rolldown types
       vuePluginJsx(),
       plugin.rollup(),
     ],
