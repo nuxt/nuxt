@@ -134,7 +134,7 @@ const URL_QUOTE_RE = /"/g
  * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
  * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
  * @returns {Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw} The navigation result, which varies depending on context and options.
- * @see https://nuxt.com/docs/api/utils/navigate-to
+ * @see https://nuxt.com/docs/4.x/api/utils/navigate-to
  * @since 3.0.0
  */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {

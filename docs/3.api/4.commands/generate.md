@@ -36,6 +36,6 @@ Option | Default | Description
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
 <!--/generate-opts-->
 
-::read-more{to="/docs/getting-started/deployment#static-hosting"}
+::read-more{to="/docs/4.x/getting-started/deployment#static-hosting"}
 Read more about pre-rendering and static hosting.
 ::

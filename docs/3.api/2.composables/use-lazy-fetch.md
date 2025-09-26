@@ -20,7 +20,7 @@ By default, [`useFetch`](/docs/4.x/api/composables/use-fetch) blocks navigation 
 Awaiting `useLazyFetch` in this mode only ensures the call is initialized. On client-side navigation, data may not be immediately available, and you should make sure to handle the pending state in your app.
 ::
 
-:read-more{to="/docs/api/composables/use-fetch"}
+:read-more{to="/docs/4.x/api/composables/use-fetch"}
 
 ## Example
 
@@ -52,4 +52,4 @@ watch(posts, (newPosts) => {
 `useLazyFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyFetch`.
 ::
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}
