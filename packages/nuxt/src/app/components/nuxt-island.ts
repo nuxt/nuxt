@@ -208,7 +208,7 @@ export default defineComponent({
         props: props.props ? JSON.stringify(props.props) : undefined,
       })).then((response) => {
         if (!response.ok) {
-          throw createError({ statusCode: response.status, statusMessage: response.statusText})
+          throw createError({ statusCode: response.status, statusMessage: response.statusText })
         }
         return response
       })

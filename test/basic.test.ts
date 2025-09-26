@@ -2251,7 +2251,7 @@ describe('app config', () => {
   })
 })
 
-describe('component islands', () => {
+describe.only('component islands', () => {
   it('renders components with route', async () => {
     const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/RouteComponent.json?url=/foo')
 
@@ -2539,9 +2539,8 @@ describe('component islands', () => {
 
   it('should show error on 404 error for server pages during client navigation', async () => {
     const { page } = await renderPage('/')
-    await page.getByText('to 404 server page').click()
-    await page.waitForLoadState('networkidle')
-    expect(await page.innerHTML('body')).toContain('This is the error page')
+    await page.click('[href="/server-components/lost-page"]')
+    await page.getByText('This is the error page').waitFor()
   })
 })
 

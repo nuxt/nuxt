@@ -23,9 +23,6 @@
     <NuxtLink to="/">
       Link
     </NuxtLink>
-    <NuxtLink to="/server-components/lost-page">
-      to 404 server page
-    </NuxtLink>
     <NuxtLink
       id="islands"
       to="/islands"
@@ -99,6 +96,12 @@
     </NuxtLink>
     <NuxtLink to="/page-load-hook">
       to page load hook
+    </NuxtLink>
+    <NuxtLink
+      data-testid="server-page-404"
+      to="/server-components/lost-page"
+    >
+      to 404 server page
     </NuxtLink>
   </div>
 </template>
