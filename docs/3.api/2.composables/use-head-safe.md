@@ -17,11 +17,11 @@ You can pass all the same values as [`useHead`](/docs/4.x/api/composables/use-he
 ```ts
 useHeadSafe({
   script: [
-    { id: 'xss-script', innerHTML: 'alert("xss")' }
+    { id: 'xss-script', innerHTML: 'alert("xss")' },
   ],
   meta: [
-    { 'http-equiv': 'refresh', content: '0;javascript:alert(1)' }
-  ]
+    { 'http-equiv': 'refresh', 'content': '0;javascript:alert(1)' },
+  ],
 })
 // Will safely generate
 // <script id="xss-script"></script>
@@ -34,8 +34,9 @@ Read more on the `Unhead` documentation.
 
 ## Type
 
-```ts
-useHeadSafe(input: MaybeComputedRef<HeadSafe>): void
+```ts twoslash
+import { useHeadSafe } from '#imports'
+//        ^?
 ```
 
 The list of allowed values is:

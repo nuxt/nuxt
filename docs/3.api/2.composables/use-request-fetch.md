@@ -33,7 +33,7 @@ const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'
 
 // This will NOT forward anything
 // Result: { cookies: {} }
-const { data: notForwarded } = await useAsyncData(() => $fetch('/api/cookies')) 
+const { data: notForwarded } = await useAsyncData(() => $fetch('/api/cookies'))
 </script>
 ```
 

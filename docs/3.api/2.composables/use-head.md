@@ -14,8 +14,9 @@ The [`useHead`](/docs/4.x/api/composables/use-head) composable function allows y
 
 ## Type
 
-```ts
-useHead(meta: MaybeComputedRef<MetaObject>): void
+```ts twoslash
+import { useHead } from '#imports'
+//        ^?
 ```
 
 Below are the non-reactive types for [`useHead`](/docs/4.x/api/composables/use-head) .

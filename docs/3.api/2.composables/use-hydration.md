@@ -47,9 +47,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   const myStore = new MyStore()
 
   useHydration(
-    'myStoreState', 
-    () => myStore.getState(), 
-    (data) => myStore.setState(data)
+    'myStoreState',
+    () => myStore.getState(),
+    data => myStore.setState(data),
   )
 })
 ```
@@ -57,8 +57,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ## Type
 
-```ts [signature]
-useHydration <T> (key: string, get: () => T, set: (value: T) => void) => void
+```ts twoslash
+import { useHydration } from '#imports'
+//        ^?
 ```
 
 ## Parameters

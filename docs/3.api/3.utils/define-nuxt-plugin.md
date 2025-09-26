@@ -20,23 +20,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ## Type
 
-```ts
-defineNuxtPlugin<T extends Record<string, unknown>>(plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T>
-
-type Plugin<T> = (nuxt: [NuxtApp](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface)) => Promise<void> | Promise<{ provide?: T }> | void | { provide?: T }
-
-interface ObjectPlugin<T> {
-  name?: string
-  enforce?: 'pre' | 'default' | 'post'
-  dependsOn?: string[]
-  order?: number
-  parallel?: boolean
-  setup?: Plugin<T>
-  hooks?: Partial<[RuntimeNuxtHooks](/docs/4.x/api/advanced/hooks#app-hooks-runtime)>
-  env?: {
-    islands?: boolean
-  }
-}
+```ts twoslash
+import { defineNuxtPlugin } from '#imports'
+//        ^?
 ```
 
 ## Parameters
@@ -69,8 +55,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Add a global method
   return {
     provide: {
-      hello: (name: string) => `Hello ${name}!`
-    }
+      hello: (name: string) => `Hello ${name}!`,
+    },
   }
 })
 ```
@@ -86,17 +72,17 @@ export default defineNuxtPlugin({
   async setup (nuxtApp) {
     // Plugin setup logic
     const data = await $fetch('/api/config')
-    
+
     return {
       provide: {
-        config: data
-      }
+        config: data,
+      },
     }
   },
   hooks: {
-    'app:created'() {
+    'app:created' () {
       console.log('App created!')
-    }
+    },
   },
 })
 ```

@@ -34,8 +34,8 @@ export default defineNuxtConfig({
       nuxtLink: {
         prefetchOn: 'interaction',
       },
-    }
-  }
+    },
+  },
 })
 ```
 
@@ -51,18 +51,18 @@ Hybrid rendering allows different caching rules per route using Route Rules and 
 export default defineNuxtConfig({
   routeRules: {
     '/': {
-      prerender: true
+      prerender: true,
     },
     '/products/**': {
-      swr: 3600
+      swr: 3600,
     },
     '/blog': {
-      isr: 3600
+      isr: 3600,
     },
     '/admin/**': {
-      ssr: false
+      ssr: false,
     },
-  }
+  },
 })
 ```
 
@@ -193,7 +193,7 @@ Nuxt Scripts provides an abstraction layer on top of third-party scripts, provid
 
 ```ts
 const { onLoaded, proxy } = useScriptGoogleAnalytics(
-  { 
+  {
     id: 'G-1234567',
     scriptOptions: {
       trigger: 'manual',

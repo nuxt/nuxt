@@ -14,8 +14,9 @@ This method is useful if you want to invalidate the data fetching for another pa
 
 ## Type
 
-```ts
-clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void
+```ts twoslash
+import { clearNuxtData } from '#imports'
+//        ^?
 ```
 
 ## Parameters

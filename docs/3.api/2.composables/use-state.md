@@ -38,9 +38,9 @@ const state = useState('my-shallow-state', () => shallowRef({ deep: 'not reactiv
 
 ## Type
 
-```ts
-useState<T>(init?: () => T | Ref<T>): Ref<T>
-useState<T>(key: string, init?: () => T | Ref<T>): Ref<T>
+```ts twoslash
+import { useState } from '#imports'
+//        ^?
 ```
 
 - `key`: A unique key ensuring that data fetching is properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file and line number of the instance of [`useState`](/docs/4.x/api/composables/use-state) will be generated for you.

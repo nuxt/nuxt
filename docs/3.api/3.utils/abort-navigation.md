@@ -14,8 +14,9 @@ links:
 
 ## Type
 
-```ts
-abortNavigation(err?: Error | string): false
+```ts twoslash
+import { abortNavigation } from '#imports'
+//        ^?
 ```
 
 ## Parameters

@@ -14,8 +14,9 @@ This method is useful if you want to invalidate the state of `useState`.
 
 ## Type
 
-```ts
-clearNuxtState (keys?: string | string[] | ((key: string) => boolean)): void
+```ts twoslash
+import { clearNuxtState } from '#imports'
+//        ^?
 ```
 
 ## Parameters

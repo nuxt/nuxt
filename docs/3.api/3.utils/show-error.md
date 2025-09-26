@@ -15,10 +15,10 @@ Within the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-contex
 - `error`: `string | Error | Partial<{ cause, data, message, name, stack, statusCode, statusMessage }>`
 
 ```ts
-showError("😱 Oh no, an error has been thrown.")
+showError('😱 Oh no, an error has been thrown.')
 showError({
   statusCode: 404,
-  statusMessage: "Page Not Found"
+  statusMessage: 'Page Not Found',
 })
 ```
 

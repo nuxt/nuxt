@@ -16,8 +16,9 @@ If your component is cached by `<KeepAlive>` and enters a deactivated state, the
 
 ## Type
 
-```ts
-refreshNuxtData(keys?: string | string[])
+```ts twoslash
+import { refreshNuxtData } from '#imports'
+//        ^?
 ```
 
 ## Parameters
@@ -50,7 +51,10 @@ async function refreshAll () {
 
 <template>
   <div>
-    <button :disabled="refreshing" @click="refreshAll">
+    <button
+      :disabled="refreshing"
+      @click="refreshAll"
+    >
       Refetch All Data
     </button>
   </div>
@@ -80,7 +84,9 @@ async function refresh () {
   <div v-if="refreshing">
     Loading
   </div>
-  <button @click="refresh">Refresh</button>
+  <button @click="refresh">
+    Refresh
+  </button>
 </template>
 ```
 
