@@ -10,12 +10,12 @@ links:
 
 You can use built-in [`useRequestHeaders`](/docs/3.x/api/composables/use-request-headers) composable to access the incoming request headers within your pages, components, and plugins.
 
-```js
+```ts
 // Get all request headers
 const headers = useRequestHeaders()
 
 // Get only cookie request header
-const headers = useRequestHeaders(['cookie'])
+const { cookie } = useRequestHeaders(['cookie'])
 ```
 
 ::tip
@@ -31,7 +31,7 @@ The example below adds the `authorization` request header to an isomorphic `$fet
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
 const { data } = await useFetch('/api/confidential', {
-  headers: useRequestHeaders(['authorization'])
+  headers: useRequestHeaders(['authorization']),
 })
 </script>
 ```

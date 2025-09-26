@@ -24,8 +24,8 @@ Call `onPrehydrate` in the setup function of a Vue component (e.g., in `<script 
 ## Type
 
 ```ts [Signature]
-export function onPrehydrate(callback: (el: HTMLElement) => void): void
-export function onPrehydrate(callback: string | ((el: HTMLElement) => void), key?: string): undefined | string
+export function onPrehydrate (callback: (el: HTMLElement) => void): void
+export function onPrehydrate (callback: string | ((el: HTMLElement) => void), key?: string): undefined | string
 ```
 
 ## Parameters

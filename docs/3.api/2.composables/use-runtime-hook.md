@@ -13,7 +13,7 @@ This composable is available in Nuxt v3.14+.
 ::
 
 ```ts [signature]
-function useRuntimeHook<THookName extends keyof RuntimeNuxtHooks>(
+function useRuntimeHook<THookName extends keyof RuntimeNuxtHooks> (
   name: THookName,
   fn: RuntimeNuxtHooks[THookName] extends HookCallback ? RuntimeNuxtHooks[THookName] : never
 ): void

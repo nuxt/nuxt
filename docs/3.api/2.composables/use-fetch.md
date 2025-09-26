@@ -20,7 +20,7 @@ It automatically generates a key based on URL and fetch options, provides type h
 ```vue [pages/modules.vue]
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
-  pick: ['title']
+  pick: ['title'],
 })
 </script>
 ```
@@ -38,7 +38,7 @@ Using the `query` option, you can add search parameters to your query. This opti
 ```ts
 const param1 = ref('value1')
 const { data, status, error, refresh } = await useFetch('/api/modules', {
-  query: { param1, param2: 'value2' }
+  query: { param1, param2: 'value2' },
 })
 ```
 
@@ -48,21 +48,21 @@ You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interce
 
 ```ts
 const { data, status, error, refresh, clear } = await useFetch('/api/auth/login', {
-  onRequest({ request, options }) {
+  onRequest ({ request, options }) {
     // Set the request headers
     // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
     options.headers.set('Authorization', '...')
   },
-  onRequestError({ request, options, error }) {
+  onRequestError ({ request, options, error }) {
     // Handle the request errors
   },
-  onResponse({ request, response, options }) {
+  onResponse ({ request, response, options }) {
     // Process the response data
     localStorage.setItem('token', response._data.token)
   },
-  onResponseError({ request, response, options }) {
+  onResponseError ({ request, response, options }) {
     // Handle the response errors
-  }
+  },
 })
 ```
 
@@ -105,7 +105,7 @@ Fetch options can be provided as reactive, supporting `computed`, `ref` and [com
 ```ts
 const searchQuery = ref('initial')
 const { data } = await useFetch('/api/search', {
-  query: { q: searchQuery }
+  query: { q: searchQuery },
 })
 // triggers a refetch: /api/search?q=new%20search
 searchQuery.value = 'new search'
@@ -117,7 +117,7 @@ If needed, you can opt out of this behavior using `watch: false`:
 const searchQuery = ref('initial')
 const { data } = await useFetch('/api/search', {
   query: { q: searchQuery },
-  watch: false
+  watch: false,
 })
 // does not trigger a refetch
 searchQuery.value = 'new search'
@@ -126,7 +126,7 @@ searchQuery.value = 'new search'
 ## Type
 
 ```ts [Signature]
-function useFetch<DataT, ErrorT>(
+export function useFetch<DataT, ErrorT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
   options?: UseFetchOptions<DataT>
 ): Promise<AsyncData<DataT, ErrorT>>
@@ -210,9 +210,9 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
 **getCachedData default:**
 
 ```ts
-const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating 
- ? nuxtApp.payload.data[key] 
- : nuxtApp.static.data[key]
+const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
+  ? nuxtApp.payload.data[key]
+  : nuxtApp.static.data[key]
 ```
 This only caches data when `experimental.payloadExtraction` in `nuxt.config` is enabled.
 

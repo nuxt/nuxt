@@ -38,9 +38,9 @@ export default defineNuxtConfig({
 
     // Public keys that are exposed to the client
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
-    }
-  }
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
+    },
+  },
 })
 ```
 
@@ -63,11 +63,11 @@ export default defineEventHandler(async (event) => {
     baseURL: config.public.apiBase,
     headers: {
       // Access a private variable (only available on the server)
-      Authorization: `Bearer ${config.apiSecret}`
-    }
+      Authorization: `Bearer ${config.apiSecret}`,
+    },
   })
   return result
-}
+})
 ```
 
 In this example, since `apiBase` is defined within the `public` namespace, it is universally accessible on both server and client-side, while `apiSecret` **is only accessible on the server-side**.

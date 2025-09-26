@@ -14,8 +14,8 @@ links:
 
 ## Type
 
-```ts
-abortNavigation(err?: Error | string): false
+```ts [Signature]
+export function abortNavigation (err?: Error | string): false
 ```
 
 ## Parameters

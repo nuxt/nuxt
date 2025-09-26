@@ -17,7 +17,7 @@ In most instances, the meta doesn't need to be reactive as robots will only scan
 ```vue [app.vue]
 <script setup lang="ts">
 useServerSeoMeta({
-  robots: 'index, follow'
+  robots: 'index, follow',
 })
 </script>
 ```

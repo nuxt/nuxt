@@ -20,7 +20,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
-  () => $fetch('https://api.nuxtjs.dev/mountains')
+  () => $fetch('https://api.nuxtjs.dev/mountains'),
 )
 </script>
 ```
@@ -44,11 +44,11 @@ const { data: posts } = await useAsyncData(
   'posts',
   () => $fetch('https://fakeApi.com/posts', {
     params: {
-      page: page.value
-    }
+      page: page.value,
+    },
   }), {
-    watch: [page]
-  }
+    watch: [page],
+  },
 )
 </script>
 ```
@@ -65,7 +65,7 @@ const userId = computed(() => `user-${route.params.id}`)
 // When the route changes and userId updates, the data will be automatically refetched
 const { data: user } = useAsyncData(
   userId,
-  () => fetchUserById(route.params.id)
+  () => fetchUserById(route.params.id),
 )
 </script>
 ```
@@ -91,8 +91,8 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `transform`: a function that can be used to alter `handler` function result after resolving
   - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
     ```ts
-    const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating 
-      ? nuxtApp.payload.data[key] 
+    const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
+      ? nuxtApp.payload.data[key]
       : nuxtApp.static.data[key]
     ```
     Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
@@ -169,11 +169,11 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Type
 
 ```ts [Signature]
-function useAsyncData<DataT, DataE>(
+export function useAsyncData<DataT, DataE> (
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
-function useAsyncData<DataT, DataE>(
+export function useAsyncData<DataT, DataE> (
   key: MaybeRefOrGetter<string>,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
@@ -204,7 +204,7 @@ type AsyncData<DataT, ErrorT> = {
   clear: () => void
   error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
-};
+}
 
 interface AsyncDataExecuteOptions {
   dedupe?: 'cancel' | 'defer'

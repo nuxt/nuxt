@@ -27,7 +27,7 @@ This is useful for updating the `useCookie` ref when we know the new cookie valu
 const tokenCookie = useCookie('token')
 
 const login = async (username, password) => {
-  const token = await $fetch('/api/token', { ... }) // Sets `token` cookie on response
+  const token = await $fetch('/api/token', { /** ... */ }) // Sets `token` cookie on response
   refreshCookie('token')
 }
 
@@ -41,6 +41,6 @@ You can enable experimental `cookieStore` option to automatically refresh `useCo
 
 ## Type
 
-```ts
-refreshCookie(name: string): void
+```ts [Signature]
+export function refreshCookie (name: string): void
 ```

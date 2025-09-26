@@ -35,8 +35,8 @@ await navigateTo({
   path: '/search',
   query: {
     page: 1,
-    sort: 'asc'
-  }
+    sort: 'asc',
+  },
 })
 </script>
 ```
@@ -92,7 +92,7 @@ await navigateTo('https://nuxt.com')
 
 // will redirect successfully with the 'external' parameter set to 'true'
 await navigateTo('https://nuxt.com', {
-  external: true
+  external: true,
 })
 </script>
 ```
@@ -107,20 +107,20 @@ await navigateTo('https://nuxt.com', {
     target: '_blank',
     windowFeatures: {
       width: 500,
-      height: 500
-    }
-  }
+      height: 500,
+    },
+  },
 })
 </script>
 ```
 
 ## Type
 
-```ts
-function navigateTo(
+```ts [Signature]
+export function navigateTo (
   to: RouteLocationRaw | undefined | null,
   options?: NavigateToOptions
-) => Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw 
+): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw
 
 interface NavigateToOptions {
   replace?: boolean

@@ -16,7 +16,7 @@ Within your pages, components, and plugins, you can use `clearError` to clear al
 
 You can provide an optional path to redirect to (for example, if you want to navigate to a 'safe' page).
 
-```js
+```ts
 // Without redirect
 clearError()
 

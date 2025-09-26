@@ -70,9 +70,9 @@ Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/d
 
 ## Type
 
-```ts
-callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
-callOnce(fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
+```ts [Signature]
+export function callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
+export function callOnce (fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
 
 type CallOnceOptions = {
   /**

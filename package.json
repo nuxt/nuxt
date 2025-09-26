@@ -75,6 +75,7 @@
     "@babel/helper-plugin-utils": "7.27.1",
     "@codspeed/core": "5.0.0",
     "@codspeed/vitest-plugin": "5.0.0",
+    "@eslint/markdown": "7.3.0",
     "@nuxt/cli": "3.28.0",
     "@nuxt/eslint-config": "1.9.0",
     "@nuxt/kit": "workspace:*",

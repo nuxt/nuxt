@@ -42,7 +42,7 @@ Returns a `Ref` containing the current Nuxt error (or `undefined` if there is no
 
 ## Example
 
-```ts
+```vue
 <script setup lang="ts">
 const error = useError()
 
