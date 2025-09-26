@@ -802,10 +802,10 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
-  // Tests for ready option
-  it('should not execute when ready is false', async () => {
+  // Tests for enabled option
+  it('should not execute when enabled is false', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { ready: false })
+    const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { enabled: false })
 
     expect(promiseFn).not.toHaveBeenCalled()
     expect(data.value).toBe(undefined)
@@ -813,25 +813,31 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
   })
 
-  it('should work with reactive `ready`', async () => {
+  it('should work with reactive `enabled`', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    const readyRef = ref(false)
-    const readyComputed = computed(() => readyRef.value)
-    const readyFn = () => readyRef.value
+    const enabledRef = ref(false)
+    const enabledComputed = computed(() => enabledRef.value)
+    const enabledFn = () => enabledRef.value
 
-    for (const ready of [readyRef, readyComputed, readyFn]) {
+    for (const enabled of [enabledRef, enabledComputed, enabledFn]) {
       promiseFn.mockClear()
-      readyRef.value = false
+      enabledRef.value = false
 
-      const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { ready })
+      const { data, pending, status, execute } = await useAsyncData(uniqueKey, promiseFn, { enabled, immediate: false })
 
       expect(promiseFn).not.toHaveBeenCalled()
       expect(data.value).toBe(undefined)
       expect(pending.value).toBe(false)
       expect(status.value).toBe('idle')
 
-      readyRef.value = true
-      await flushPromises()
+      // Try to execute when enabled is false - should be blocked
+      await execute()
+      expect(promiseFn).not.toHaveBeenCalled()
+      expect(data.value).toBe(undefined)
+
+      // Enable and execute - should work
+      enabledRef.value = true
+      await execute()
 
       expect(promiseFn).toHaveBeenCalledTimes(1)
       expect(data.value).toBe('test')
@@ -843,10 +849,10 @@ describe('useAsyncData', () => {
     }
   })
 
-  it('should use default value when ready is false', async () => {
+  it('should use default value when enabled is false', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const { data } = await useAsyncData(uniqueKey, promiseFn, {
-      ready: false,
+      enabled: false,
       default: () => 'default',
     })
 
@@ -854,71 +860,72 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('default')
   })
 
-  it('should allow manual refresh even when ready is false', async () => {
+  it('should be blocked by enabled even on manual refresh', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    const { data, refresh } = await useAsyncData(uniqueKey, promiseFn, { ready: false })
+    const enabled = ref(false)
+    const { data, refresh } = await useAsyncData(uniqueKey, promiseFn, { enabled })
 
     expect(promiseFn).not.toHaveBeenCalled()
     expect(data.value).toBe(undefined)
 
+    // Try to refresh when enabled is false - should be blocked
     await refresh({ cause: 'refresh:manual' })
+    expect(promiseFn).not.toHaveBeenCalled()
+    expect(data.value).toBe(undefined)
 
+    // Enable and refresh - should work
+    enabled.value = true
+    await refresh({ cause: 'refresh:manual' })
     expect(promiseFn).toHaveBeenCalledTimes(1)
     expect(data.value).toBe('test')
   })
 
-  it('should not create multiple watchers when ready is false', async () => {
+  it('should respect enabled barrier in watch triggers', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    const ready = ref(false)
+    const enabled = ref(true)
+    const watchSource = ref(1)
 
-    const asyncData = await useAsyncData(uniqueKey, promiseFn, { ready })
-
-    // Try to execute multiple times while not ready
-    asyncData.execute()
-    asyncData.execute()
-    asyncData.execute()
-
-    expect(promiseFn).not.toHaveBeenCalled()
-
-    ready.value = true
-    await flushPromises()
-
-    // Should only execute once when ready becomes true
-    expect(promiseFn).toHaveBeenCalledTimes(1)
-  })
-
-  it('should clean up ready watcher when component is unmounted', async () => {
-    const promiseFn = vi.fn(() => Promise.resolve('test'))
-    const ready = ref(false)
-
-    const component = defineComponent({
-      setup () {
-        const asyncData = useAsyncData(uniqueKey, promiseFn, { ready })
-        return () => h('div', asyncData.data.value)
-      },
+    // First, test that watch works when enabled is true
+    const { data } = await useAsyncData(uniqueKey, promiseFn, {
+      enabled,
+      watch: [watchSource],
     })
 
-    const wrapper = await mountSuspended(component)
-    expect(promiseFn).not.toHaveBeenCalled()
+    // Initial execution should happen because immediate defaults to true
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('test')
 
-    wrapper.unmount()
+    // Now disable and change watch source - should be blocked
+    enabled.value = false
+    watchSource.value++
     await nextTick()
-
-    // After unmount, changing ready should not trigger execution
-    ready.value = true
     await flushPromises()
 
-    expect(promiseFn).not.toHaveBeenCalled()
+    // Wait a bit more to ensure debounce settles
+    await new Promise(resolve => setTimeout(resolve, 10))
+    expect(promiseFn).toHaveBeenCalledTimes(1) // No additional calls
+
+    // Enable again and change watch source - should trigger
+    enabled.value = true
+    watchSource.value++
+    await nextTick()
+    await flushPromises()
+
+    // Wait for debounced execution
+    await new Promise(resolve => setTimeout(resolve, 10))
+    expect(promiseFn).toHaveBeenCalledTimes(2) // Should be called again
   })
 
-  it('should work with ready and lazy option together', async () => {
+  it('should work with enabled and lazy option together', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
-    const ready = ref(false)
+    const enabled = ref(false)
+
+    let asyncDataRef: ReturnType<typeof useAsyncData>
 
     const component = defineComponent({
       setup () {
-        const asyncData = useAsyncData(uniqueKey, promiseFn, { ready, lazy: true })
-        return () => h('div', asyncData.data.value || 'loading')
+        asyncDataRef = useAsyncData(uniqueKey, promiseFn, { enabled, lazy: true })
+        return () => h('div', asyncDataRef.data.value || 'loading')
       },
     })
 
@@ -926,8 +933,9 @@ describe('useAsyncData', () => {
     expect(promiseFn).not.toHaveBeenCalled()
     expect(wrapper.text()).toBe('loading')
 
-    ready.value = true
-    await flushPromises()
+    // Enable and manually execute - should work
+    enabled.value = true
+    await asyncDataRef!.execute()
 
     expect(promiseFn).toHaveBeenCalledTimes(1)
     expect(wrapper.text()).toBe('test')

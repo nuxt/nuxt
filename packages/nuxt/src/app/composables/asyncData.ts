@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
-import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref, WatchHandle } from 'vue'
+import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
@@ -98,10 +98,10 @@ export interface AsyncDataOptions<
    */
   dedupe?: 'cancel' | 'defer'
   /**
-   * If it is ready to get AsyncData
+   * Controls whether to run the async function
    * @default true
    */
-  ready?: MaybeRefOrGetter<boolean>
+  enabled?: MaybeRefOrGetter<boolean>
 }
 
 export interface AsyncDataExecuteOptions {
@@ -220,7 +220,7 @@ export function useAsyncData<
   options.immediate ??= true
   options.deep ??= asyncDataDefaults.deep
   options.dedupe ??= 'cancel'
-  options.ready ??= true
+  options.enabled ??= true
 
   // @ts-expect-error private property
   const functionName = options._functionName || 'useAsyncData'
@@ -594,7 +594,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _ready: ComputedRef<boolean>, _waitingReadyHandler?: WatchHandle }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void> }
 
 function createAsyncData<
   ResT,
@@ -632,37 +632,11 @@ function createAsyncData<
     pending: pendingWhenIdle ? shallowRef(!hasCachedData) : computed(() => asyncData.status.value === 'pending'),
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: shallowRef('idle'),
-    _ready: computed(() => toValue(options.ready) ?? true),
-    // store if there is already a handler waiting for _ready to avoid multiple watchers
-    _waitingReadyHandler: undefined,
+
     execute: (...args) => {
       const [_opts, newValue = undefined] = args
+      const _enabled = toValue(options.enabled)
 
-      // If manual refresh, clear any waiting ready handler
-      if (_opts?.cause === 'refresh:manual' && asyncData._waitingReadyHandler) {
-        asyncData._waitingReadyHandler()
-        asyncData._waitingReadyHandler = undefined
-      }
-
-      // if is not ready, auto fetch is prevented
-      if (asyncData._ready.value === false && _opts?.cause !== 'refresh:manual') {
-        // wait until asyncData is ready
-        if (!asyncData._waitingReadyHandler) {
-          const stopWatch = watch(asyncData._ready, (ready) => {
-            if (ready) {
-              // when it becomes ready, execute the fetch
-              nextTick(() => {
-                asyncData._waitingReadyHandler = undefined
-                asyncData.execute(...args)
-              })
-            }
-          }, {
-            once: true,
-          })
-          asyncData._waitingReadyHandler = stopWatch
-        }
-        return Promise.resolve()
-      }
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
         // @ts-expect-error private property
@@ -673,7 +647,8 @@ function createAsyncData<
         // Avoid fetching same key more than once at a time
           return nuxtApp._asyncDataPromises[key]!
         }
-        (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+        // Cancel previous request, only if the new request is enabled
+        if (_enabled) { (nuxtApp._asyncDataPromises[key] as any).cancelled = true }
       }
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
@@ -684,6 +659,10 @@ function createAsyncData<
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
         }
+      }
+      // if is not enabled, the fetch is prevented
+      if (toValue(options.enabled) === false) {
+        return Promise.resolve(asyncData.data.value)
       }
       if (pendingWhenIdle) {
         asyncData.pending.value = true
@@ -750,11 +729,6 @@ function createAsyncData<
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
     _off: () => {
       unsubRefreshAsyncData()
-      // Clean up waiting ready handler
-      if (asyncData._waitingReadyHandler) {
-        asyncData._waitingReadyHandler()
-        asyncData._waitingReadyHandler = undefined
-      }
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
       }
