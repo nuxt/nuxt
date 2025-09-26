@@ -57,9 +57,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ## Type
 
-```ts twoslash
-import { useHydration } from '#imports'
-//        ^?
+```ts [Signature]
+export function useHydration<T> (key: string, get: () => T, set: (value: T) => void): void
 ```
 
 ## Parameters

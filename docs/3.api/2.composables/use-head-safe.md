@@ -34,9 +34,8 @@ Read more on the `Unhead` documentation.
 
 ## Type
 
-```ts twoslash
-import { useHeadSafe } from '#imports'
-//        ^?
+```ts [Signature]
+export function useHeadSafe (input: MaybeComputedRef<HeadSafe>): void
 ```
 
 The list of allowed values is:

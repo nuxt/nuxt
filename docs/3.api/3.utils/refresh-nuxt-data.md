@@ -16,9 +16,8 @@ If your component is cached by `<KeepAlive>` and enters a deactivated state, the
 
 ## Type
 
-```ts twoslash
-import { refreshNuxtData } from '#imports'
-//        ^?
+```ts [Signature]
+export function refreshNuxtData (keys?: string | string[])
 ```
 
 ## Parameters

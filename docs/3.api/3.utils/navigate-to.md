@@ -116,9 +116,32 @@ await navigateTo('https://nuxt.com', {
 
 ## Type
 
-```ts twoslash
-import { navigateTo } from '#imports'
-//        ^?
+```ts [Signature]
+export function navigateTo (
+  to: RouteLocationRaw | undefined | null,
+  options?: NavigateToOptions
+): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw
+
+interface NavigateToOptions {
+  replace?: boolean
+  redirectCode?: number
+  external?: boolean
+  open?: OpenOptions
+}
+
+type OpenOptions = {
+  target: string
+  windowFeatures?: OpenWindowFeatures
+}
+
+type OpenWindowFeatures = {
+  popup?: boolean
+  noopener?: boolean
+  noreferrer?: boolean
+} & XOR<{ width?: number }, { innerWidth?: number }>
+  & XOR<{ height?: number }, { innerHeight?: number }>
+  & XOR<{ left?: number }, { screenX?: number }>
+  & XOR<{ top?: number }, { screenY?: number }>
 ```
 
 ## Parameters

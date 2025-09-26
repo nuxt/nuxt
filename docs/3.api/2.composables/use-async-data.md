@@ -169,11 +169,11 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Type
 
 ```ts [Signature]
-function useAsyncData<DataT, DataE> (
+export function useAsyncData<DataT, DataE> (
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
-function useAsyncData<DataT, DataE> (
+export function useAsyncData<DataT, DataE> (
   key: MaybeRefOrGetter<string>,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>

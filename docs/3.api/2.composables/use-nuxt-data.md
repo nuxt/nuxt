@@ -107,7 +107,6 @@ async function addTodo () {
 
 ## Type
 
-```ts twoslash
-import { useNuxtData } from '#imports'
-//        ^?
+```ts [Signature]
+export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
 ```

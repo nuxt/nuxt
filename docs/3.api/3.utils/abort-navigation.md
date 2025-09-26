@@ -14,9 +14,8 @@ links:
 
 ## Type
 
-```ts twoslash
-import { abortNavigation } from '#imports'
-//        ^?
+```ts [Signature]
+export function abortNavigation (err?: Error | string): false
 ```
 
 ## Parameters

@@ -14,9 +14,8 @@ The [`useHead`](/docs/4.x/api/composables/use-head) composable function allows y
 
 ## Type
 
-```ts twoslash
-import { useHead } from '#imports'
-//        ^?
+```ts [Signature]
+export function useHead (meta: MaybeComputedRef<MetaObject>): void
 ```
 
 Below are the non-reactive types for [`useHead`](/docs/4.x/api/composables/use-head) .

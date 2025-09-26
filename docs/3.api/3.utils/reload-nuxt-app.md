@@ -20,9 +20,8 @@ You can enable experimental restoration of this state by enabling the `experimen
 
 ## Type
 
-```ts twoslash
-import { reloadNuxtApp } from '#imports'
-//        ^?
+```ts [Signature]
+export function reloadNuxtApp (options?: ReloadNuxtAppOptions)
 
 interface ReloadNuxtAppOptions {
   ttl?: number

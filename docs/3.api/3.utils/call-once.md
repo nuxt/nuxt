@@ -70,9 +70,17 @@ Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/d
 
 ## Type
 
-```ts twoslash
-import { callOnce } from '#imports'
-//        ^?
+```ts [Signature]
+export function callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
+export function callOnce (fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
+
+type CallOnceOptions = {
+  /**
+   * Execution mode for the callOnce function
+   * @default 'render'
+   */
+  mode?: 'navigation' | 'render'
+}
 ```
 
 ## Parameters

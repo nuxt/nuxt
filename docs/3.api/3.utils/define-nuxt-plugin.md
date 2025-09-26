@@ -20,9 +20,23 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ## Type
 
-```ts twoslash
-import { defineNuxtPlugin } from '#imports'
-//        ^?
+```ts [Signature]
+export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T>
+
+type Plugin<T> = (nuxt: NuxtApp) => Promise<void> | Promise<{ provide?: T }> | void | { provide?: T }
+
+interface ObjectPlugin<T> {
+  name?: string
+  enforce?: 'pre' | 'default' | 'post'
+  dependsOn?: string[]
+  order?: number
+  parallel?: boolean
+  setup?: Plugin<T>
+  hooks?: Partial<RuntimeNuxtHooks>
+  env?: {
+    islands?: boolean
+  }
+}
 ```
 
 ## Parameters

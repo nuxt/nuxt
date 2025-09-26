@@ -41,7 +41,6 @@ You can enable experimental `cookieStore` option to automatically refresh `useCo
 
 ## Type
 
-```ts twoslash
-import { refreshCookie } from '#imports'
-//        ^?
+```ts [Signature]
+export function refreshCookie (name: string): void
 ```
