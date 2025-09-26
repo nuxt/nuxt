@@ -20,8 +20,8 @@ You can enable experimental restoration of this state by enabling the `experimen
 
 ## Type
 
-```ts
-reloadNuxtApp(options?: ReloadNuxtAppOptions)
+```ts [Signature]
+export function reloadNuxtApp (options?: ReloadNuxtAppOptions)
 
 interface ReloadNuxtAppOptions {
   ttl?: number

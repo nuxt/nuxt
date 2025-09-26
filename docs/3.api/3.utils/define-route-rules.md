@@ -17,7 +17,7 @@ This feature is experimental and in order to use it you must enable the `experim
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
 defineRouteRules({
-  prerender: true
+  prerender: true,
 })
 </script>
 
@@ -31,8 +31,8 @@ Will be translated to:
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
   routeRules: {
-    '/': { prerender: true }
-  }
+    '/': { prerender: true },
+  },
 })
 ```
 
