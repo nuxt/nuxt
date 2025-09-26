@@ -342,10 +342,6 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
-  const plugins = [
-    { name: '@dxup/unimport' },
-  ]
-
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -392,7 +388,6 @@ export async function _generateTypes (nuxt: Nuxt) {
       useDefineForClassFields: true, /* implied by target: es2022+ */
       noImplicitThis: true, /* enabled with `strict` */
       allowSyntheticDefaultImports: true,
-      plugins,
     },
     include: [...include],
     exclude: [...exclude],
@@ -427,7 +422,6 @@ export async function _generateTypes (nuxt: Nuxt) {
       useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
       noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
       allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
-      plugins,
     },
     include: [...nodeInclude],
     exclude: [...nodeExclude],
@@ -462,7 +456,6 @@ export async function _generateTypes (nuxt: Nuxt) {
       useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
       noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
       allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
-      plugins,
     },
     include: [...sharedInclude],
     exclude: [...sharedExclude],
