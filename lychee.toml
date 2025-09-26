@@ -40,11 +40,8 @@ exclude = [
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
-  'https://www.npmjs.com/package/(.*)importName(.*)',
-  # TODO: address 404s (non-prerendered files?) from nuxt.com
-  "https://nuxt.com/docs/guide/going-further/modules",
-  "https://nuxt.com/docs/guide/directory-structure/pages",
   # single-quotes are required for regexp
+  'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
   # excluded URLs from test suite
