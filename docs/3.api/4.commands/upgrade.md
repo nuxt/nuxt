@@ -10,7 +10,7 @@ links:
 
 <!--upgrade-cmd-->
 ```bash [Terminal]
-npx nuxt upgrade [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dedupe] [-f, --force] [-ch, --channel=<stable|nightly>]
+npx nuxt upgrade [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dedupe] [-f, --force] [-ch, --channel=<stable|nightly|v3|v4|v4-nightly|v3-nightly>]
 ```
 <!--/upgrade-cmd-->
 
@@ -31,7 +31,7 @@ Option | Default | Description
 --- | --- | ---
 `--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--dedupe` |  | Will deduplicate dependencies but not recreate the lockfile
+`--dedupe` |  | Dedupe dependencies after upgrading
 `-f, --force` |  | Force upgrade to recreate lockfile and node_modules
-`-ch, --channel=<stable\|nightly>` | `stable` | Specify a channel to install from (default: stable)
+`-ch, --channel=<stable\|nightly\|v3\|v4\|v4-nightly\|v3-nightly>` | `stable` | Specify a channel to install from (default: stable)
 <!--/upgrade-opts-->

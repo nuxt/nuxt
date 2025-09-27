@@ -10,7 +10,7 @@ links:
 
 <!--prepare-cmd-->
 ```bash [Terminal]
-npx nuxt prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName]
+npx nuxt prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName] [-e, --extends=<layer-name>]
 ```
 <!--/prepare-cmd-->
 
@@ -33,6 +33,7 @@ Option | Default | Description
 `--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
+`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
 <!--/prepare-opts-->
 
 ::note

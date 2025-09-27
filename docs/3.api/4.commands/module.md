@@ -21,7 +21,7 @@ npx nuxt module add <MODULENAME> [--cwd=<directory>] [--logLevel=<silent|info|ve
 <!--module-add-args-->
 Argument | Description
 --- | ---
-`MODULENAME` | Module name
+`MODULENAME` | Specify one or more modules to install by name, separated by spaces
 <!--/module-add-args-->
 
 <!--module-add-opts-->
@@ -31,7 +31,7 @@ Option | Default | Description
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--skipInstall` |  | Skip npm install
 `--skipConfig` |  | Skip nuxt.config.ts update
-`--dev` |  | Install module as dev dependency
+`--dev` |  | Install modules as dev dependencies
 <!--/module-add-opts-->
 
 The command lets you install [Nuxt modules](/modules) in your application with no manual work.
