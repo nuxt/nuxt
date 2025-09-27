@@ -50,6 +50,7 @@ import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
+import { useRuntimeConfigTemplates } from './runtime-config'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -845,6 +846,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       },
     },
   })
+
+  const { runtimeConfigTemplate, runtimeConfigMappingTemplate } = useRuntimeConfigTemplates()
+  options.build.templates.push(runtimeConfigTemplate, runtimeConfigMappingTemplate)
 
   const nuxt = createNuxt(options)
 
