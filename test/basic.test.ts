@@ -2218,7 +2218,6 @@ describe.skipIf(isDev())('dynamic paths', () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',
-        NUXT_APP_CDN_URL: '',
         NUXT_APP_BUILD_ASSETS_DIR: 'assets/',
       },
     })
