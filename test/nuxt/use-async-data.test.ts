@@ -801,4 +801,94 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
     vi.useRealTimers()
   })
+
+  // Regression tests for https://github.com/nuxt/nuxt/issues/33274
+  // Fixed in PR: https://github.com/nuxt/nuxt/pull/33325
+
+  it('should not execute handler multiple times when external watch is defined before useAsyncData with computed key', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    // Critical: watch must be defined BEFORE useAsyncData to reproduce the bug
+    watch(q, () => {})
+
+    const { data, error } = await useAsyncData(
+      () => `query-${q.value}`, // Computed key triggers the bug
+      () => promiseFn(q.value),
+      {
+        watch: [q], // Simulates useFetch({ query: { q } }) behavior
+        immediate: true,
+      },
+    )
+
+    // Initial execute
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    // First key change
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+
+    // Second key change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+
+    // Without the fix, promiseFn would be called 4 times instead of 3
+    // The extra execute causes overlapping requests and "Request aborted" errors
+    expect(promiseFn).toHaveBeenCalledTimes(3) // initial + 2 changes (NOT 4!)
+
+    expect(promiseFn).toHaveBeenNthCalledWith(1, '') // initial
+    expect(promiseFn).toHaveBeenNthCalledWith(2, 's') // first change
+    expect(promiseFn).toHaveBeenNthCalledWith(3, 'se') // second change
+  })
+
+  it('should automatically re-execute when watched dependency changes (reproducing original useFetch behavior)', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    // External watch before useAsyncData (reproduces the bug context)
+    const externalWatchSpy = vi.fn()
+    watch(q, externalWatchSpy)
+
+    const { data, error } = await useAsyncData(
+      () => `auto-query-${q.value}`,
+      () => promiseFn(q.value),
+      {
+        watch: [q], // Simulates useFetch({ query: { q } }) behavior
+        immediate: true,
+      },
+    )
+
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledWith('')
+
+    // First change triggers automatic request
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+    expect(promiseFn).toHaveBeenCalledWith('s')
+
+    // Second change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+    expect(promiseFn).toHaveBeenCalledWith('se')
+
+    expect(externalWatchSpy).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(3) // initial + 2 changes
+  })
 })
