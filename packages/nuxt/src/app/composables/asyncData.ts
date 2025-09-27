@@ -97,6 +97,11 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
+  /**
+   * Controls whether to run the async function
+   * @default true
+   */
+  enabled?: MaybeRefOrGetter<boolean>
 }
 
 export interface AsyncDataExecuteOptions {
@@ -215,6 +220,7 @@ export function useAsyncData<
   options.immediate ??= true
   options.deep ??= asyncDataDefaults.deep
   options.dedupe ??= 'cancel'
+  options.enabled ??= true
 
   // @ts-expect-error private property
   const functionName = options._functionName || 'useAsyncData'
@@ -626,8 +632,11 @@ function createAsyncData<
     pending: pendingWhenIdle ? shallowRef(!hasCachedData) : computed(() => asyncData.status.value === 'pending'),
     error: toRef(nuxtApp.payload._errors, key) as any,
     status: shallowRef('idle'),
+
     execute: (...args) => {
       const [_opts, newValue = undefined] = args
+      const _enabled = toValue(options.enabled)
+
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
         // @ts-expect-error private property
@@ -638,7 +647,8 @@ function createAsyncData<
         // Avoid fetching same key more than once at a time
           return nuxtApp._asyncDataPromises[key]!
         }
-        (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+        // Cancel previous request, only if the new request is enabled
+        if (_enabled) { (nuxtApp._asyncDataPromises[key] as any).cancelled = true }
       }
       // Avoid fetching same key that is already fetched
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
@@ -649,6 +659,10 @@ function createAsyncData<
           asyncData.status.value = 'success'
           return Promise.resolve(cachedData)
         }
+      }
+      // if is not enabled, the fetch is prevented
+      if (toValue(options.enabled) === false) {
+        return Promise.resolve(asyncData.data.value)
       }
       if (pendingWhenIdle) {
         asyncData.pending.value = true
