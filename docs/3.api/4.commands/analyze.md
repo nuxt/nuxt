@@ -10,7 +10,7 @@ links:
 
 <!--analyze-cmd-->
 ```bash [Terminal]
-npx nuxt analyze [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [--name=<name>] [--no-serve]
+npx nuxt analyze [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [-e, --extends=<layer-name>] [--name=<name>] [--no-serve]
 ```
 <!--/analyze-cmd-->
 
@@ -32,6 +32,7 @@ Option | Default | Description
 `--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory
+`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
 `--name=<name>` | `default` | Name of the analysis
 `--no-serve` |  | Skip serving the analysis results
 <!--/analyze-opts-->
