@@ -192,7 +192,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     let path = entryPath
     if (!path) {
       path = buildAssetsURL(entryFileName) as string
-      if (/^(?:\/|\.+\/)/.test(path) || hasProtocol(path, { acceptRelative: true })) {
+      if (ssrContext.runtimeConfig.app.cdnURL || !/^(?:\/|\.+\/)/.test(path) || hasProtocol(path, { acceptRelative: true })) {
         // cache absolute entry path
         entryPath = path
       } else {
