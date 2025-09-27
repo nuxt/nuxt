@@ -34,3 +34,7 @@ Option | Default | Description
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
 <!--/prepare-opts-->
+
+::note
+This command sets `process.env.NODE_ENV` to `production`.
+::
