@@ -7,7 +7,7 @@ import {
 } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
-import { getQuery as getURLQuery, hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
+import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
@@ -193,7 +193,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     let path = entryPath
     if (!path) {
       path = buildAssetsURL(entryFileName) as string
-      if (/^(?:\/|\.+\/)/.test(path) || hasProtocol(path, { acceptRelative: true })) {
+      if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
         // cache absolute entry path
         entryPath = path
       } else {
