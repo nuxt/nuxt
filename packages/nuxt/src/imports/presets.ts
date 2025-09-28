@@ -220,7 +220,6 @@ const vuePreset = defineUnimportPreset({
     'hasInjectionContext',
     'nextTick',
     'provide',
-    'mergeModels',
     'toValue',
     'useModel',
     'useAttrs',
