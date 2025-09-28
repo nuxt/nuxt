@@ -13,20 +13,20 @@ links:
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
 })
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/app/pages#page-metadata"}
+:read-more{to="/docs/4.x/guide/directory-structure/app/pages#page-metadata"}
 
 ## Type
 
-```ts
-definePageMeta(meta: PageMeta) => void
+```ts [Signature]
+export function definePageMeta (meta: PageMeta): void
 
 interface PageMeta {
-  validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
+  validate?: ((route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>)
   redirect?: RouteRecordRedirectOption
   name?: string
   path?: string
@@ -62,7 +62,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a [custom regular expression](/docs/api/composables/use-nuxt-app#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](/docs/4.x/api/composables/use-nuxt-app#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
 
   **`props`**
   
@@ -157,13 +157,13 @@ The example below demonstrates:
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
-  key: (route) => route.fullPath,
+  key: route => route.fullPath,
 
   keepalive: {
-    exclude: ['modal']
+    exclude: ['modal'],
   },
 
-  pageType: 'Checkout'
+  pageType: 'Checkout',
 })
 </script>
 ```
@@ -181,20 +181,20 @@ definePageMeta({
       const auth = useState('auth')
 
       if (!auth.value.authenticated) {
-          return navigateTo('/login')
+        return navigateTo('/login')
       }
 
       if (to.path !== '/checkout') {
         return navigateTo('/checkout')
       }
-    }
+    },
   ],
 
   // ... or a string
-  middleware: 'auth'
+  middleware: 'auth',
 
   // ... or multiple strings
-  middleware: ['auth', 'another-named-middleware']
+  middleware: ['auth', 'another-named-middleware'],
 })
 </script>
 ```
@@ -210,7 +210,7 @@ To make sure that we are only matching digits (`\d+`) for `postId` in the `[post
 ```vue [app/pages/[postId\\]-[postSlug\\].vue]
 <script setup lang="ts">
 definePageMeta({
-  path: '/:postId(\\d+)-:postSlug' 
+  path: '/:postId(\\d+)-:postSlug',
 })
 </script>
 ```
@@ -225,10 +225,10 @@ You can define the layout that matches the layout's file name located (by defaul
 <script setup lang="ts">
 definePageMeta({
   // set custom layout
-  layout: 'admin'
+  layout: 'admin',
 
   // ... or disable a default layout
-  layout: false
+  layout: false,
 })
 </script>
 ```

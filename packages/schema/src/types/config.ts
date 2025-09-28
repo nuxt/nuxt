@@ -120,7 +120,7 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   /**
    * Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`.
    *
-   * You can read more in <https://nuxt.com/docs/api/nuxt-config#public>.
+   * You can read more in <https://nuxt.com/docs/4.x/api/nuxt-config#public>.
    * @deprecated
    */
   publicDir?: never

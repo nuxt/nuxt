@@ -35,22 +35,24 @@ const { data } = await useFetch('/api/item')
 </script>
 ```
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}
 
 You can use `$fetch` in any methods that are executed only on client-side.
 
 ```vue [app/pages/contact.vue]
 <script setup lang="ts">
-async function contactForm() {
+async function contactForm () {
   await $fetch('/api/contact', {
     method: 'POST',
-    body: { hello: 'world '}
+    body: { hello: 'world' },
   })
 }
 </script>
 
 <template>
-  <button @click="contactForm">Contact</button>
+  <button @click="contactForm">
+    Contact
+  </button>
 </template>
 ```
 

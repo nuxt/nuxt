@@ -12,7 +12,7 @@ Preloading components loads components that your page will need very soon, which
 
 Use `preloadComponents` to manually preload individual components that have been registered globally in your Nuxt app. By default Nuxt registers these as async components. You must use the Pascal-cased version of the component name.
 
-```js
+```ts
 await preloadComponents('MyGlobalComponent')
 
 await preloadComponents(['MyGlobalComponent1', 'MyGlobalComponent2'])

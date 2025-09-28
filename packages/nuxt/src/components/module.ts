@@ -26,8 +26,10 @@ const SLASH_SEPARATOR_RE = /[\\/]/
  *
  * Returns a sort comparator value based on the count of path segments (split on slashes). Deeper (more segments) paths are ordered before shallower ones.
  *
- * @param param0 - First directory object with a `path` string
- * @param param1 - Second directory object with a `path` string
+ * @param dirA - First directory
+ * @param dirA.path - Path string
+ * @param dirB - Second directory
+ * @param dirB.path - Path string
  * @returns A negative number if the first directory should come before the second, positive if after, or 0 if equal
  */
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
@@ -281,6 +283,7 @@ export default defineNuxtModule<ComponentsOptions>({
  * @param dir - The raw `dirs` configuration value (single entry, array, true/undefined for defaults, or an options object).
  * @param cwd - Base directory used to resolve relative `path` values.
  * @param options - Optional settings; currently supports `priority` to assign a priority to all returned entries.
+ * @param options.priority - Priority number to assign to all returned entries (default 0).
  * @returns A normalized, flat, and sorted array of ComponentsDir objects ready for component scanning.
  */
 function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
