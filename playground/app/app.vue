@@ -1,4 +1,8 @@
 <script setup lang="ts">
+throw createError({
+  statusCode: 404,
+  message: 'Whoops',
+})
 </script>
 
 <template>

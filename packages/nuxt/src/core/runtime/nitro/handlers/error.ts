@@ -82,5 +82,64 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
 
-  return send(event, html)
+  // TODO: close button
+  // TODO: accessible label
+  // TODO: fixed aspect ratio? shadow? border radius?
+  const prettyResponse = await defaultHandler(error, event, { json: false })
+  const betterResponse = html.replace('</body>', `
+    <style>${errorCSS}</style>
+    <iframe id="pretty-errors" src="data:text/html;base64,${btoa(prettyResponse.body as string)}"></iframe>
+    <button id="pretty-errors-toggle" onclick="document.querySelector('#pretty-errors').toggleAttribute('inert')"></button>
+  </body>
+  `)
+  return send(event, betterResponse)
 }
+
+const errorCSS = /* css */ `
+#pretty-errors {
+  width: 100%;
+  height: 100%;
+  z-index: 999999;
+}
+#pretty-errors-toggle {
+  background: none;
+  z-index: 999999999;
+}
+#pretty-errors, #pretty-errors-toggle {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+}
+#pretty-errors:not([inert]) {
+  transform: scale(5) translateX(-80%);
+  transform-origin: bottom left;
+}
+#pretty-errors:not([inert]) + #pretty-errors-toggle {
+  left: 0;
+  top: 0;
+}
+#pretty-errors[inert] {
+  z-index: 999999999;
+}
+#pretty-errors[inert], #pretty-errors[inert] + #pretty-errors-toggle {
+  transform: scale(0.2);
+  transform-origin: bottom right;
+  padding: 0;
+}
+#pretty-errors[inert] + #pretty-errors-toggle {
+  width: 100%;
+  height: 100%;
+}
+body:has(#pretty-errors:not([inert])) {
+  width: 100%;
+  position: fixed;
+  transform: scale(0.2);
+  right: 0;
+  bottom: 0;
+  transform-origin: bottom right;
+}
+body > *:not(#pretty-errors):not(#pretty-errors-toggle) {
+  position: relative;
+  z-index: 9999999;
+}
+`
