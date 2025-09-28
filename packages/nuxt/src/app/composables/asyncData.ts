@@ -368,8 +368,12 @@ export function useAsyncData<
     pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending as Ref<boolean>),
     status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
     error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
-    refresh: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
-    execute: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
+    refresh: (...args) => {
+      nuxtApp._asyncData[key.value] ||= createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
+
+      return nuxtApp._asyncData[key.value]!.execute(...args)
+    },
+    execute: (...args) => asyncReturn.refresh(...args),
     clear: () => clearNuxtDataByKey(nuxtApp, key.value),
   }
 
