@@ -168,8 +168,8 @@ import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {
-  ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  '${pascalName}': ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {
