@@ -125,7 +125,7 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
 
     if (c.mode === 'server') {
       if (app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')) {
-        if (c.filePath === serverPlaceholderPath) {
+        if (c.filePath.startsWith(serverPlaceholderPath)) {
           continue
         }
       } else {
