@@ -10,7 +10,7 @@ links:
 
 <!--generate-cmd-->
 ```bash [Terminal]
-npx nuxt generate [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--preset] [--dotenv] [--envName]
+npx nuxt generate [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--preset] [--dotenv] [--envName] [-e, --extends=<layer-name>]
 ```
 <!--/generate-cmd-->
 
@@ -34,6 +34,7 @@ Option | Default | Description
 `--preset` |  | Nitro server preset
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
+`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
 <!--/generate-opts-->
 
 ::read-more{to="/docs/getting-started/deployment#static-hosting"}
