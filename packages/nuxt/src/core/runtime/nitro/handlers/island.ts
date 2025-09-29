@@ -40,8 +40,7 @@ export default defineEventHandler(async (event) => {
   // Render app
   const renderer = await getSSRRenderer()
 
-  const renderResult = await renderer.renderToString(ssrContext).catch(async (error) => {
-    const err = ssrContext.nuxt?.payload?.error || error
+  const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
     throw err
   })
