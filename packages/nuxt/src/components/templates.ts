@@ -114,20 +114,30 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
   const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
   const componentTypes: Array<[string, string]> = []
   for (const c of app.components) {
-    if (!c.island) {
-      const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-        ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
-        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
-      const isServerOnly = c.mode === 'server' && c.filePath !== serverPlaceholderPath && !app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')
-      componentTypes.push([
-        c.pascalName,
-        isServerOnly ? `IslandComponent<${type}>` : type,
-      ])
+    if (c.island) {
+      continue
     }
+    let type = `typeof ${
+      genDynamicImport(isAbsolute(c.filePath)
+        ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
+        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })
+    }['${c.export}']`
+
+    if (c.mode === 'server') {
+      if (app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')) {
+        if (c.filePath.startsWith(serverPlaceholderPath)) {
+          continue
+        }
+      } else {
+        type = `IslandComponent<${type}>`
+      }
+    }
+    componentTypes.push([c.pascalName, type])
   }
 
   return componentTypes
 }
+
 const islandType = 'type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
 const hydrationTypes = `
 type HydrationStrategies = {
