@@ -170,7 +170,7 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Type
 
 ```ts [Signature]
-export function useAsyncData<DataT, DataE>(
+export function useAsyncData<DataT, DataE> (
   handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
