@@ -693,8 +693,8 @@ importers:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
-        specifier: ^7.4.3
-        version: 7.4.3(webpack@5.101.3(esbuild@0.25.9))
+        specifier: ^7.4.5
+        version: 7.4.5(webpack@5.101.3(esbuild@0.25.9))
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -857,8 +857,8 @@ importers:
         specifier: 5.101.3
         version: 5.101.3(esbuild@0.25.9)
       webpack-dev-middleware:
-        specifier: 7.4.3
-        version: 7.4.3(webpack@5.101.3(esbuild@0.25.9))
+        specifier: 7.4.5
+        version: 7.4.5(webpack@5.101.3(esbuild@0.25.9))
 
   packages/ui-templates:
     devDependencies:
@@ -1131,8 +1131,8 @@ importers:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
-        specifier: ^7.4.3
-        version: 7.4.3(webpack@5.101.3(esbuild@0.25.9))
+        specifier: ^7.4.5
+        version: 7.4.5(webpack@5.101.3(esbuild@0.25.9))
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -5874,6 +5874,9 @@ packages:
     resolution: {integrity: sha512-tFRr2IkSXl2B6IAJsxjHIMTOsfLt9W+8+t2uNxCeQcz4tFqgQR8DYk8hlLH2HsucTctLuoHq3U0G08atyBE3yw==}
     engines: {node: '>= 4.0.0'}
 
+  memfs@4.47.0:
+    resolution: {integrity: sha512-Xey8IZA57tfotV/TN4d6BmccQuhFP+CqRiI7TTNdipZdZBzF2WnzUcH//Cudw6X4zJiUbo/LTuU/HPA/iC/pNg==}
+
   memory-fs@0.5.0:
     resolution: {integrity: sha512-jA0rdU5KoQMC0e6ppoNRtpp6vjFq6+NY7r8hywnC7V+1Xj/MtHwGIbB1QaK/dunyjWteJzmkpd7ooeWg10T7GA==}
     engines: {node: '>=4.3.0 <5.0.0 || >=5.10'}
@@ -8107,8 +8110,8 @@ packages:
     engines: {node: '>= 10.13.0'}
     hasBin: true
 
-  webpack-dev-middleware@7.4.3:
-    resolution: {integrity: sha512-5kA/PzpZzDz5mNOkcNLmU1UdjGeSSxd7rt1akWpI70jMNHLASiBPRaQZn0hgyhvhawfIwSnnLfDABIxL3ueyFg==}
+  webpack-dev-middleware@7.4.5:
+    resolution: {integrity: sha512-uxQ6YqGdE4hgDKNf7hUiPXOdtkXvBJXrfEGYSx7P7LC8hnUYGK70X6xQXUvXeNyBDDcsiQXpG2m3G9vxowaEuA==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       webpack: 5.101.3
@@ -13383,6 +13386,15 @@ snapshots:
       tree-dump: 1.1.0(tslib@2.8.1)
       tslib: 2.8.1
 
+  memfs@4.47.0:
+    dependencies:
+      '@jsonjoy.com/json-pack': 1.14.0(tslib@2.8.1)
+      '@jsonjoy.com/util': 1.9.0(tslib@2.8.1)
+      glob-to-regex.js: 1.0.1(tslib@2.8.1)
+      thingies: 2.5.0(tslib@2.8.1)
+      tree-dump: 1.1.0(tslib@2.8.1)
+      tslib: 2.8.1
+
   memory-fs@0.5.0:
     dependencies:
       errno: 0.1.8
@@ -16086,10 +16098,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  webpack-dev-middleware@7.4.3(webpack@5.101.3(esbuild@0.25.9)):
+  webpack-dev-middleware@7.4.5(webpack@5.101.3(esbuild@0.25.9)):
     dependencies:
       colorette: 2.0.20
-      memfs: 4.39.0
+      memfs: 4.47.0
       mime-types: 3.0.1
       on-finished: 2.4.1
       range-parser: 1.2.1
