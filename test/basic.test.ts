@@ -2824,10 +2824,10 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
         style.innerHTML &&=
-            (style.innerHTML as string)
-              .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
-              // Vite 6 enables CSS minify by default for SSR
-              .replace(/blue/, '#00f')
+          (style.innerHTML as string)
+            .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+          // Vite 6 enables CSS minify by default for SSR
+            .replace(/blue/, '#00f')
         style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
       }
     }
