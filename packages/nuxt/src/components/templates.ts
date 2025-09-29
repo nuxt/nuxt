@@ -65,13 +65,13 @@ export default defineNuxtPlugin({
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
-    const componentNames: string[] = []
+    const componentNames = new Set<string>()
     for (const c of app.components) {
       if (!c.island) {
-        componentNames.push(c.pascalName)
+        componentNames.add(c.pascalName)
       }
     }
-    return `export const componentNames = ${JSON.stringify(componentNames)}`
+    return `export const componentNames = ${JSON.stringify([...componentNames])}`
   },
 }
 
