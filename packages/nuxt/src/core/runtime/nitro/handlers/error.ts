@@ -82,17 +82,18 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
 
-  // TODO: close button
-  // TODO: accessible label
-  // TODO: fixed aspect ratio? shadow? border radius?
-  const prettyResponse = await defaultHandler(error, event, { json: false })
-  const betterResponse = html.replace('</body>', `
-    <style>${errorCSS}</style>
-    <iframe id="pretty-errors" src="data:text/html;base64,${btoa(prettyResponse.body as string)}"></iframe>
-    <button id="pretty-errors-toggle" onclick="document.querySelector('#pretty-errors').toggleAttribute('inert')"></button>
-  </body>
-  `)
-  return send(event, betterResponse)
+  if (import.meta.dev) {
+    const prettyResponse = await defaultHandler(error, event, { json: false })
+    const betterResponse = html.replace('</body>', `
+      <style>${errorCSS}</style>
+      <iframe id="pretty-errors" src="data:text/html;base64,${btoa(prettyResponse.body as string)}"></iframe>
+      <button id="pretty-errors-toggle" onclick="document.querySelector('#pretty-errors').toggleAttribute('inert')"></button>
+    </body>
+    `)
+    return send(event, betterResponse)
+  }
+
+  return send(event, html)
 }
 
 const errorCSS = /* css */ `
