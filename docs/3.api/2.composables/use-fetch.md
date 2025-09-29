@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/dollarfetch).
+This composable provides a convenient wrapper around [`useAsyncData`](/docs/4.x/api/composables/use-async-data) and [`$fetch`](/docs/4.x/api/utils/dollarfetch).
 It automatically generates a key based on URL and fetch options, provides type hints for request url based on server routes, and infers API response type.
 
 ::note
@@ -17,16 +17,16 @@ It automatically generates a key based on URL and fetch options, provides type h
 
 ## Usage
 
-```vue [pages/modules.vue]
+```vue [app/pages/modules.vue]
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
-  pick: ['title']
+  pick: ['title'],
 })
 </script>
 ```
 
 ::warning
-If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
+If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/4.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata) for more information on how to make a custom async data fetcher.
 ::
 
 ::note
@@ -38,7 +38,7 @@ Using the `query` option, you can add search parameters to your query. This opti
 ```ts
 const param1 = ref('value1')
 const { data, status, error, refresh } = await useFetch('/api/modules', {
-  query: { param1, param2: 'value2' }
+  query: { param1, param2: 'value2' },
 })
 ```
 
@@ -48,21 +48,21 @@ You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interce
 
 ```ts
 const { data, status, error, refresh, clear } = await useFetch('/api/auth/login', {
-  onRequest({ request, options }) {
+  onRequest ({ request, options }) {
     // Set the request headers
     // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
     options.headers.set('Authorization', '...')
   },
-  onRequestError({ request, options, error }) {
+  onRequestError ({ request, options, error }) {
     // Handle the request errors
   },
-  onResponse({ request, response, options }) {
+  onResponse ({ request, response, options }) {
     // Process the response data
     localStorage.setItem('token', response._data.token)
   },
-  onResponseError({ request, response, options }) {
+  onResponseError ({ request, response, options }) {
     // Handle the response errors
-  }
+  },
 })
 ```
 
@@ -70,7 +70,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 
 You can use a computed ref or a plain ref as the URL, allowing for dynamic data fetching that automatically updates when the URL changes:
 
-```vue [pages/[id\\].vue]
+```vue [app/pages/[id\\].vue]
 <script setup lang="ts">
 const route = useRoute()
 const id = computed(() => route.params.id)
@@ -83,7 +83,7 @@ const { data: post } = await useFetch(() => `/api/posts/${id.value}`)
 When using `useFetch` with the same URL and options in multiple components, they will share the same `data`, `error` and `status` refs. This ensures consistency across components.
 
 ::tip
-Keyed state created using `useFetch` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/api/composables/use-nuxt-data).
+Keyed state created using `useFetch` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/4.x/api/composables/use-nuxt-data).
 ::
 
 ::warning
@@ -96,24 +96,49 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 :video-accordion{title="Watch the video from Alexander Lichter to avoid using useFetch the wrong way" videoId="njsGVmcWviY"}
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}
+
+### Reactive Fetch Options
+
+Fetch options can be provided as reactive, supporting `computed`, `ref` and [computed getters](https://vuejs.org/guide/essentials/computed.html). When a reactive fetch option is updated it will trigger a refetch using the updated resolved reactive value.
+
+```ts
+const searchQuery = ref('initial')
+const { data } = await useFetch('/api/search', {
+  query: { q: searchQuery },
+})
+// triggers a refetch: /api/search?q=new%20search
+searchQuery.value = 'new search'
+```
+
+If needed, you can opt out of this behavior using `watch: false`:
+
+```ts
+const searchQuery = ref('initial')
+const { data } = await useFetch('/api/search', {
+  query: { q: searchQuery },
+  watch: false,
+})
+// does not trigger a refetch
+searchQuery.value = 'new search'
+```
 
 ## Type
 
 ```ts [Signature]
-function useFetch<DataT, ErrorT>(
+export function useFetch<DataT, ErrorT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
   options?: UseFetchOptions<DataT>
 ): Promise<AsyncData<DataT, ErrorT>>
 
 type UseFetchOptions<DataT> = {
   key?: MaybeRefOrGetter<string>
-  method?: string
-  query?: SearchParams
-  params?: SearchParams
-  body?: RequestInit['body'] | Record<string, any>
-  headers?: Record<string, string> | [key: string, value: string][] | Headers
-  baseURL?: string
+  method?: MaybeRefOrGetter<string>
+  query?: MaybeRefOrGetter<SearchParams>
+  params?: MaybeRefOrGetter<SearchParams>
+  body?: MaybeRefOrGetter<RequestInit['body'] | Record<string, any>>
+  headers?: MaybeRefOrGetter<Record<string, string> | [key: string, value: string][] | Headers>
+  baseURL?: MaybeRefOrGetter<string>
   server?: boolean
   lazy?: boolean
   immediate?: boolean
@@ -126,6 +151,7 @@ type UseFetchOptions<DataT> = {
   pick?: string[]
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
+  timeout?: MaybeRefOrGetter<number>
 }
 
 type AsyncDataRequestContext = {
@@ -155,18 +181,18 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 - `URL` (`string | Request | Ref<string | Request> | () => string | Request`): The URL or request to fetch. Can be a string, a Request object, a Vue ref, or a function returning a string/Request. Supports reactivity for dynamic endpoints.
 
-- `options` (object): Configuration for the fetch request. Extends [unjs/ofetch](https://github.com/unjs/ofetch) options and [`AsyncDataOptions`](/docs/api/composables/use-async-data#params). All options can be a static value, a `ref`, or a computed value.
+- `options` (object): Configuration for the fetch request. Extends [unjs/ofetch](https://github.com/unjs/ofetch) options and [`AsyncDataOptions`](/docs/4.x/api/composables/use-async-data#params). All options can be a static value, a `ref`, or a computed value.
 
 | Option | Type | Default | Description |
 | ---| --- | --- | --- |
 | `key` | `MaybeRefOrGetter<string>` | auto-gen | Unique key for de-duplication. If not provided, generated from URL and options. |
-| `method` | `string` | `'GET'` | HTTP request method. |
-| `query` | `object` | - | Query/search params to append to the URL. Alias: `params`. Supports refs/computed. |
-| `params` | `object` | - | Alias for `query`. |
-| `body` | `RequestInit['body'] \| Record<string, any>` | - | Request body. Objects are automatically stringified. Supports refs/computed. |
-| `headers` | `Record<string, string> \| [key, value][] \| Headers` | - | Request headers. |
-| `baseURL` | `string` | - | Base URL for the request. |
-| `timeout` | `number` | - | Timeout in milliseconds to abort the request. |
+| `method` | `MaybeRefOrGetter<string>` | `'GET'` | HTTP request method. |
+| `query` | `MaybeRefOrGetter<SearchParams>` | - | Query/search params to append to the URL. Alias: `params`. |
+| `params` | `MaybeRefOrGetter<SearchParams>` | - | Alias for `query`. |
+| `body` | `MaybeRefOrGetter<RequestInit['body'] \| Record<string, any>>` | - | Request body. Objects are automatically stringified. |
+| `headers` | `MaybeRefOrGetter<Record<string, string> \| [key, value][] \| Headers>` | - | Request headers. |
+| `baseURL` | `MaybeRefOrGetter<string>` | - | Base URL for the request. |
+| `timeout` | `MaybeRefOrGetter<number>` | - | Timeout in milliseconds to abort the request. |
 | `cache` | `boolean \| string` | - | Cache control. Boolean disables cache, or use Fetch API values: `default`, `no-store`, etc. |
 | `server` | `boolean` | `true` | Whether to fetch on the server. |
 | `lazy` | `boolean` | `false` | If true, resolves after route loads (does not block navigation). |
@@ -179,7 +205,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `watch` | `MultiWatchSources \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
 | `deep` | `boolean` | `false` | Return data in a deep ref object. |
 | `dedupe` | `'cancel' \| 'defer'` | `'cancel'` | Avoid fetching same key more than once at a time. |
-| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. |
+| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/4.x/guide/recipes/custom-usefetch) |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -188,9 +214,9 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
 **getCachedData default:**
 
 ```ts
-const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating 
- ? nuxtApp.payload.data[key] 
- : nuxtApp.static.data[key]
+const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
+  ? nuxtApp.payload.data[key]
+  : nuxtApp.static.data[key]
 ```
 This only caches data when `experimental.payloadExtraction` in `nuxt.config` is enabled.
 
@@ -218,6 +244,6 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ### Examples
 
-:link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
+:link-example{to="/docs/4.x/examples/advanced/use-custom-fetch-composable"}
 
-:link-example{to="/docs/examples/features/data-fetching"}
+:link-example{to="/docs/4.x/examples/features/data-fetching"}

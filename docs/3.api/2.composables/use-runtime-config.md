@@ -10,7 +10,7 @@ links:
 
 ## Usage
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const config = useRuntimeConfig()
 </script>
@@ -22,7 +22,7 @@ export default defineEventHandler((event) => {
 })
 ```
 
-:read-more{to="/docs/guide/going-further/runtime-config"}
+:read-more{to="/docs/4.x/guide/going-further/runtime-config"}
 
 ## Define Runtime Config
 
@@ -38,9 +38,9 @@ export default defineNuxtConfig({
 
     // Public keys that are exposed to the client
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
-    }
-  }
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api',
+    },
+  },
 })
 ```
 
@@ -48,7 +48,7 @@ export default defineNuxtConfig({
 Variables that need to be accessible on the server are added directly inside `runtimeConfig`. Variables that need to be accessible on both the client and the server are defined in `runtimeConfig.public`.
 ::
 
-:read-more{to="/docs/guide/going-further/runtime-config"}
+:read-more{to="/docs/4.x/guide/going-further/runtime-config"}
 
 ## Access Runtime Config
 
@@ -63,11 +63,11 @@ export default defineEventHandler(async (event) => {
     baseURL: config.public.apiBase,
     headers: {
       // Access a private variable (only available on the server)
-      Authorization: `Bearer ${config.apiSecret}`
-    }
+      Authorization: `Bearer ${config.apiSecret}`,
+    },
   })
   return result
-}
+})
 ```
 
 In this example, since `apiBase` is defined within the `public` namespace, it is universally accessible on both server and client-side, while `apiSecret` **is only accessible on the server-side**.
@@ -76,7 +76,7 @@ In this example, since `apiBase` is defined within the `public` namespace, it is
 
 It is possible to update runtime config values using a matching environment variable name prefixed with `NUXT_`.
 
-:read-more{to="/docs/guide/going-further/runtime-config"}
+:read-more{to="/docs/4.x/guide/going-further/runtime-config"}
 
 ### Using the `.env` File
 
@@ -95,7 +95,7 @@ Any environment variables set within `.env` file are accessed using `process.env
 In **production runtime**, you should use platform environment variables and `.env` is not used.
 ::
 
-:read-more{to="/docs/guide/directory-structure/env"}
+:read-more{to="/docs/4.x/guide/directory-structure/env"}
 
 ## `app` namespace
 
@@ -139,4 +139,4 @@ export default defineEventHandler((event) => {
 })
 ```
 
-:read-more{to="/docs/guide/going-further/runtime-config"}
+:read-more{to="/docs/4.x/guide/going-further/runtime-config"}

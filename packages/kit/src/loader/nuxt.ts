@@ -23,10 +23,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const resolvedPath = ['nuxt-nightly', 'nuxt']
-    .map(pkg => resolveModulePath(pkg, { try: true, from: [directoryToURL(opts.cwd!)] }))
-    .filter((p): p is NonNullable<typeof p> => !!p)
-    .sort((a, b) => b.length - a.length)[0]
+  const resolvedPath = ['nuxt-nightly', 'nuxt'].reduce((resolvedPath, pkg) => {
+    const path = resolveModulePath(pkg, { try: true, from: [directoryToURL(opts.cwd!)] })
+    return path && path.length > resolvedPath.length ? path : resolvedPath
+  }, '')
 
   if (!resolvedPath) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)

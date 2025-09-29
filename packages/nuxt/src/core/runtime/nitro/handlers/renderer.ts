@@ -31,6 +31,7 @@ import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifes
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { relative } from 'pathe'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -64,6 +65,8 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
+
+let entryPath: string
 
 export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
@@ -186,12 +189,27 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
+    let path = entryPath
+    if (!path) {
+      path = buildAssetsURL(entryFileName) as string
+      if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
+        // cache absolute entry path
+        entryPath = path
+      } else {
+        // TODO: provide support for relative paths in assets as well
+        // relativise path
+        path = relative(event.path.replace(/\/[^/]+$/, '/'), joinURL('/', path))
+        if (!/^(?:\/|\.+\/)/.test(path)) {
+          path = `./${path}`
+        }
+      }
+    }
     ssrContext.head.push({
       script: [{
         tagPosition: 'head',
         tagPriority: -2,
         type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': buildAssetsURL(entryFileName) } }),
+        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
       }],
     }, headEntryOptions)
   }
@@ -308,7 +326,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 })
 
 function normalizeChunks (chunks: (string | undefined)[]) {
-  return chunks.filter(Boolean).map(i => i!.trim())
+  const result: string[] = []
+  for (const _chunk of chunks) {
+    const chunk = _chunk?.trim()
+    if (chunk) {
+      result.push(chunk)
+    }
+  }
+  return result
 }
 
 function joinTags (tags: Array<string | undefined>) {

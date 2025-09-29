@@ -2214,6 +2214,18 @@ describe.skipIf(isDev())('dynamic paths', () => {
     }
   })
 
+  it.skipIf(isDev() || isWebpack)('should render relative importmap path with relative path', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '',
+        NUXT_APP_BUILD_ASSETS_DIR: 'assets/',
+      },
+    })
+
+    const html = await $fetch<string>('/')
+    expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
+  })
+
   it('restore server', async () => {
     await startServer()
   })
@@ -2806,10 +2818,10 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
         style.innerHTML &&=
-            (style.innerHTML as string)
-              .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
-              // Vite 6 enables CSS minify by default for SSR
-              .replace(/blue/, '#00f')
+          (style.innerHTML as string)
+            .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+          // Vite 6 enables CSS minify by default for SSR
+            .replace(/blue/, '#00f')
         style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
       }
     }

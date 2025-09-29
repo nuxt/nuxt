@@ -10,11 +10,11 @@ links:
 
 <!--prepare-cmd-->
 ```bash [Terminal]
-npx nuxt prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName]
+npx nuxt prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName] [-e, --extends=<layer-name>]
 ```
 <!--/prepare-cmd-->
 
-The `prepare` command creates a [`.nuxt`](/docs/guide/directory-structure/nuxt) directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your [`package.json`](/docs/guide/directory-structure/package).
+The `prepare` command creates a [`.nuxt`](/docs/4.x/guide/directory-structure/nuxt) directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your [`package.json`](/docs/4.x/guide/directory-structure/package).
 
 ## Arguments
 
@@ -33,4 +33,9 @@ Option | Default | Description
 `--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
+`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
 <!--/prepare-opts-->
+
+::note
+This command sets `process.env.NODE_ENV` to `production`.
+::

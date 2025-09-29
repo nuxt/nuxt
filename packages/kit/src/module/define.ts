@@ -85,7 +85,7 @@ function _defineNuxtModule<
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
-      throw new TypeError('Cannot use module outside of Nuxt context')
+      throw new TypeError(`Cannot use ${module.meta.name || 'module'} outside of Nuxt context`)
     }
 
     // Avoid duplicate installs

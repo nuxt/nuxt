@@ -368,6 +368,60 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
 
+  it('should watch params deeply in a non synchronous way', async () => {
+    const foo = ref('foo')
+    const baz = ref('baz')
+    const locale = ref('en')
+
+    type Params = { deep: { baz: string }, foo?: string, locale?: string }
+    const params = reactive<Params>({ deep: { baz: 'baz' } })
+
+    watch(foo, (foo) => {
+      params.foo = foo
+      params.locale = locale.value
+    }, { immediate: true })
+
+    watch(baz, (baz) => {
+      params.deep.baz = baz
+    }, { immediate: true })
+
+    const requestHistory: Array<Record<string, unknown>> = []
+
+    // 1. first request
+    await useAsyncData(uniqueKey, async () => {
+      requestHistory.push(JSON.parse(JSON.stringify(params)))
+      await Promise.resolve()
+    }, { watch: [params] })
+
+    // 2. second request
+    foo.value = 'bar'
+    locale.value = 'fr'
+    // We need to wait for the debounce 0
+    await new Promise(resolve => setTimeout(resolve, 5))
+
+    // 3. third request
+    baz.value = 'bar'
+    await nextTick()
+
+    expect(requestHistory).toEqual([
+      {
+        deep: { baz: 'baz' },
+        foo: 'foo',
+        locale: 'en',
+      },
+      {
+        deep: { baz: 'baz' },
+        foo: 'bar',
+        locale: 'fr',
+      },
+      {
+        deep: { baz: 'bar' },
+        foo: 'bar',
+        locale: 'fr',
+      },
+    ])
+  })
+
   it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     useAsyncData(uniqueKey, promiseFn)

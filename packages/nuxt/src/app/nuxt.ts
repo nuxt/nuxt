@@ -154,6 +154,9 @@ interface _NuxtApp {
   }
 
   /** @internal */
+  _processingMiddleware?: string | boolean
+
+  /** @internal */
   _once: {
     [key: string]: Promise<any>
   }
@@ -549,7 +552,7 @@ export function useNuxtApp (id?: string): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/4.x/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
     } else {
       throw new Error('[nuxt] instance unavailable')
     }
@@ -579,14 +582,17 @@ export function defineAppConfig<C extends AppConfigInput> (config: C): C {
 const loggedKeys = new Set<string>()
 function wrappedConfig (runtimeConfig: Record<string, unknown>) {
   if (!import.meta.dev || import.meta.server) { return runtimeConfig }
-  const keys = Object.keys(runtimeConfig).map(key => `\`${key}\``)
+  const keys: string[] = []
+  for (const key in runtimeConfig) {
+    keys.push(`\`${key}\``)
+  }
   const lastKey = keys.pop()
   return new Proxy(runtimeConfig, {
     get (target, p, receiver) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         if (!loggedKeys.has(p)) {
           loggedKeys.add(p)
-          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/guide/going-further/runtime-config for more information.`)
+          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/4.x/guide/going-further/runtime-config for more information.`)
         }
       }
       return Reflect.get(target, p, receiver)
