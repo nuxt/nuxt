@@ -25,6 +25,7 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
+// @ts-expect-error file will be produced after app build
 const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import('#build/dist/server/client.precomputed.mjs')
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData>
