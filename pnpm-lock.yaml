@@ -49,8 +49,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
       '@codspeed/vitest-plugin':
-        specifier: 4.0.1
-        version: 4.0.1(vite@7.1.5(@types/node@22.18.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(happy-dom@18.0.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))
+        specifier: 5.0.0
+        version: 5.0.0(tinybench@2.9.0)(vite@7.1.5(@types/node@22.18.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(happy-dom@18.0.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))
       '@nuxt/cli':
         specifier: 3.28.0
         version: 3.28.0(magicast@0.3.5)
@@ -1465,17 +1465,15 @@ packages:
     resolution: {integrity: sha512-+tv3z+SPp+gqTIcImN9o0hqE9xyfQjI1XD9pL6NuKjua9B1y7mNYv0S9cP+QEbA4ppVgGZEmKOvHX5G5Ei1CVA==}
     engines: {node: '>=18.0.0'}
 
-  '@codspeed/core@4.0.1':
-    resolution: {integrity: sha512-fJ53arfgtzCDZa8DuGJhpTZ3Ll9A1uW5nQ2jSJnfO4Hl5MRD2cP8P4vPvIUAGbdbjwCxR1jat6cW8OloMJkJXw==}
-
   '@codspeed/core@5.0.0':
     resolution: {integrity: sha512-XlxFwMyYqY/7ndmzWouWLTF/zOlciUcjkjVk4GhJ+m47e1A0wTYsLYU9reY1iHc1gPyJBBTfa41oqCjgcdJs8Q==}
 
-  '@codspeed/vitest-plugin@4.0.1':
-    resolution: {integrity: sha512-aqmrPJzX9cD50UWDsOyih5L5WcEYlNQg3u84sJJ9ZuuLApA51w+LGxk6Xbyb8LJF9n/CwM94HKHV/qArfnvDoQ==}
+  '@codspeed/vitest-plugin@5.0.0':
+    resolution: {integrity: sha512-p1ptYHqPOfZE6mBJlagGRk1i8M3SHZw6K+2JH8rcUWIwbLkiNozpI9KyTRRsyvKbTxnx3T28jzGJXeFp8+7itA==}
     peerDependencies:
+      tinybench: ^2.9.0
       vite: 7.1.5
-      vitest: '>=1.2.2'
+      vitest: '>=3.2'
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -4895,10 +4893,6 @@ packages:
     peerDependencies:
       typescript: 5.9.2
       webpack: 5.101.3
-
-  form-data@4.0.2:
-    resolution: {integrity: sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==}
-    engines: {node: '>= 6'}
 
   form-data@4.0.4:
     resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
@@ -8612,15 +8606,6 @@ snapshots:
     dependencies:
       mime: 3.0.0
 
-  '@codspeed/core@4.0.1':
-    dependencies:
-      axios: 1.9.0
-      find-up: 6.3.0
-      form-data: 4.0.2
-      node-gyp-build: 4.8.4
-    transitivePeerDependencies:
-      - debug
-
   '@codspeed/core@5.0.0':
     dependencies:
       axios: 1.9.0
@@ -8630,9 +8615,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@codspeed/vitest-plugin@4.0.1(vite@7.1.5(@types/node@22.18.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(happy-dom@18.0.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))':
+  '@codspeed/vitest-plugin@5.0.0(tinybench@2.9.0)(vite@7.1.5(@types/node@22.18.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(happy-dom@18.0.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0))':
     dependencies:
-      '@codspeed/core': 4.0.1
+      '@codspeed/core': 5.0.0
+      tinybench: 2.9.0
       vite: 7.1.5(@types/node@22.18.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0)
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(happy-dom@18.0.1)(jiti@2.5.1)(terser@5.40.0)(yaml@2.8.0)
     transitivePeerDependencies:
@@ -12334,13 +12320,6 @@ snapshots:
       tapable: 2.2.2
       typescript: 5.9.2
       webpack: 5.101.3(esbuild@0.25.9)
-
-  form-data@4.0.2:
-    dependencies:
-      asynckit: 0.4.0
-      combined-stream: 1.0.8
-      es-set-tostringtag: 2.1.0
-      mime-types: 2.1.35
 
   form-data@4.0.4:
     dependencies:
