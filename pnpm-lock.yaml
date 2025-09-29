@@ -475,8 +475,8 @@ importers:
         specifier: ^2.0.11
         version: 2.0.11
       on-change:
-        specifier: ^5.0.1
-        version: 5.0.1
+        specifier: ^6.0.0
+        version: 6.0.0
       oxc-minify:
         specifier: ^0.87.0
         version: 0.87.0
@@ -6262,9 +6262,9 @@ packages:
   ohash@2.0.11:
     resolution: {integrity: sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ==}
 
-  on-change@5.0.1:
-    resolution: {integrity: sha512-n7THCP7RkyReRSLkJb8kUWoNsxUIBxTkIp3JKno+sEz6o/9AJ3w3P9fzQkITEkMwyTKJjZciF3v/pVoouxZZMg==}
-    engines: {node: '>=18'}
+  on-change@6.0.0:
+    resolution: {integrity: sha512-J7kocOS+ZNyjmW6tUUTtA7jLt8GjQlrOdz9z3yLNTvdsswO+b5lYSdMVzDczWnooyFAkkQiKyap5g/Zba+cFRA==}
+    engines: {node: '>=20'}
 
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -14073,7 +14073,7 @@ snapshots:
 
   ohash@2.0.11: {}
 
-  on-change@5.0.1: {}
+  on-change@6.0.0: {}
 
   on-finished@2.4.1:
     dependencies:
