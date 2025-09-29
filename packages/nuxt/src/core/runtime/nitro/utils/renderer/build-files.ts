@@ -1,7 +1,7 @@
 import {
   createRenderer,
 } from 'vue-bundle-renderer/runtime'
-import type { Manifest as ClientManifest } from 'vue-bundle-renderer'
+import type { Manifest as ClientManifest, PrecomputedData } from 'vue-bundle-renderer'
 import type { Manifest } from 'vite'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
@@ -25,23 +25,27 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
+const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import('#build/dist/server/client.precomputed.mjs')
+  .then(r => r.default || r)
+  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData>
+
 // -- SSR Renderer --
 export const getSSRRenderer = lazyCachedFunction(async () => {
-  // Load client manifest
-  const manifest = await getClientManifest()
-  if (!manifest) { throw new Error('client.manifest is not available') }
-
   // Load server bundle
   const createSSRApp = await getServerEntry()
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
 
-  const options = {
-    manifest,
+  // Load precomputed dependencies
+  const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
+  if (!precomputed && !import.meta.dev) { throw new Error('client.precomputed is not available') }
+
+  // Create renderer
+  const renderer = createRenderer(createSSRApp, {
+    precomputed,
+    manifest: import.meta.dev ? await getClientManifest() : undefined,
     renderToString,
     buildAssetsURL,
-  }
-  // Create renderer
-  const renderer = createRenderer(createSSRApp, options)
+  })
 
   type RenderToStringParams = Parameters<typeof _renderToString>
   async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1]) {
@@ -58,7 +62,7 @@ export const getSSRRenderer = lazyCachedFunction(async () => {
 
 // -- SPA Renderer --
 const getSPARenderer = lazyCachedFunction(async () => {
-  const manifest = await getClientManifest()
+  const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
 
   // @ts-expect-error virtual file
   const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
@@ -74,13 +78,13 @@ const getSPARenderer = lazyCachedFunction(async () => {
       }
     })
 
-  const options = {
-    manifest,
+  // Create SPA renderer and cache the result for all requests
+  const renderer = createRenderer(() => () => {}, {
+    precomputed,
+    manifest: import.meta.dev ? await getClientManifest() : undefined,
     renderToString: () => spaTemplate,
     buildAssetsURL,
-  }
-  // Create SPA renderer and cache the result for all requests
-  const renderer = createRenderer(() => () => {}, options)
+  })
   const result = await renderer.renderToString({})
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
@@ -116,15 +120,3 @@ export function getRenderer (ssrContext: NuxtSSRContext) {
 
 // @ts-expect-error file will be produced after app build
 export const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
-
-// for inlined styles
-export const getEntryIds: () => Promise<string[]> = () => getClientManifest().then((r) => {
-  const entryIds: string[] = []
-  for (const entry of Object.values(r)) {
-    // @ts-expect-error internal key set by CSS inlining configuration
-    if (entry._globalCSS) {
-      entryIds.push(entry.src!)
-    }
-  }
-  return entryIds
-})
