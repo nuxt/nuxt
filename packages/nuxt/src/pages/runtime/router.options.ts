@@ -3,6 +3,7 @@ import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { isChangingPage } from '#app/components/utils'
+import { withoutTrailingSlash } from 'ufo'
 import { useRouter } from '#app/composables/router'
 
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
@@ -15,8 +16,8 @@ export default <RouterConfig> {
     // @ts-expect-error untyped, nuxt-injected option
     const hashScrollBehaviour = useRouter().options?.scrollBehaviorType ?? 'auto'
 
-    // Hash routes on the same page, no page hook is fired so resolve here
-    if (to.path === from.path) {
+    // Hash routes on the same page, no page hook is fired so resolve here, trailing slash agnostic
+    if (withoutTrailingSlash(to.path) === withoutTrailingSlash(from.path)) {
       if (from.hash && !to.hash) {
         return { left: 0, top: 0 }
       }
