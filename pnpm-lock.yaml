@@ -34,7 +34,7 @@ overrides:
   unimport: 5.2.0
   vite: 7.1.5
   vue: 3.5.21
-  webpack: 5.101.3
+  webpack: 5.102.0
 
 importers:
 
@@ -254,8 +254,8 @@ importers:
         specifier: 3.0.7
         version: 3.0.7(typescript@5.9.2)
       webpack:
-        specifier: 5.101.3
-        version: 5.101.3(esbuild@0.25.9)
+        specifier: 5.102.0
+        version: 5.102.0(esbuild@0.25.9)
 
   docs: {}
 
@@ -353,8 +353,8 @@ importers:
         specifier: 3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.4)(happy-dom@19.0.1)(jiti@2.5.1)(terser@5.44.0)(yaml@2.8.1)
       webpack:
-        specifier: 5.101.3
-        version: 5.101.3(esbuild@0.25.9)
+        specifier: 5.102.0
+        version: 5.102.0(esbuild@0.25.9)
 
   packages/nuxt:
     dependencies:
@@ -586,7 +586,7 @@ importers:
     dependencies:
       '@nuxt/friendly-errors-webpack-plugin':
         specifier: ^2.6.0
-        version: 2.6.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 2.6.0(webpack@5.102.0(esbuild@0.25.9))
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -598,10 +598,10 @@ importers:
         version: 10.4.21(postcss@8.5.6)
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.1.2(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9))
       css-minimizer-webpack-plugin:
         specifier: ^7.0.2
-        version: 7.0.2(esbuild@0.25.9)(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.0.2(esbuild@0.25.9)(webpack@5.102.0(esbuild@0.25.9))
       cssnano:
         specifier: ^7.1.1
         version: 7.1.1(postcss@8.5.6)
@@ -610,13 +610,13 @@ importers:
         version: 6.1.4
       esbuild-loader:
         specifier: ^4.3.0
-        version: 4.3.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 4.3.0(webpack@5.102.0(esbuild@0.25.9))
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
       file-loader:
         specifier: ^6.2.0
-        version: 6.2.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 6.2.0(webpack@5.102.0(esbuild@0.25.9))
       h3:
         specifier: 1.15.4
         version: 1.15.4
@@ -652,7 +652,7 @@ importers:
         version: 2.0.0
       postcss-loader:
         specifier: ^8.2.0
-        version: 8.2.0(@rspack/core@1.5.4)(postcss@8.5.6)(typescript@5.9.2)(webpack@5.101.3(esbuild@0.25.9))
+        version: 8.2.0(@rspack/core@1.5.4)(postcss@8.5.6)(typescript@5.9.2)(webpack@5.102.0(esbuild@0.25.9))
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.5.6)
@@ -664,7 +664,7 @@ importers:
         version: 3.9.0
       time-fix-plugin:
         specifier: ^2.0.7
-        version: 2.0.7(webpack@5.101.3(esbuild@0.25.9))
+        version: 2.0.7(webpack@5.102.0(esbuild@0.25.9))
       tinyglobby:
         specifier: ^0.2.15
         version: 0.2.15
@@ -682,25 +682,25 @@ importers:
         version: 2.3.10
       url-loader:
         specifier: ^4.1.1
-        version: 4.1.1(file-loader@6.2.0(webpack@5.101.3(esbuild@0.25.9)))(webpack@5.101.3(esbuild@0.25.9))
+        version: 4.1.1(file-loader@6.2.0(webpack@5.102.0(esbuild@0.25.9)))(webpack@5.102.0(esbuild@0.25.9))
       vue-bundle-renderer:
         specifier: ^2.1.2
         version: 2.1.2
       vue-loader:
         specifier: ^17.4.2
-        version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.101.3(esbuild@0.25.9))
+        version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.102.0(esbuild@0.25.9))
       webpack-bundle-analyzer:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
         specifier: ^7.4.5
-        version: 7.4.5(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.4.5(webpack@5.102.0(esbuild@0.25.9))
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
       webpackbar:
         specifier: ^7.0.0
-        version: 7.0.0(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.0.0(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9))
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -783,16 +783,16 @@ importers:
         version: 0.2.0
       css-minimizer-webpack-plugin:
         specifier: 7.0.2
-        version: 7.0.2(esbuild@0.25.9)(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.0.2(esbuild@0.25.9)(webpack@5.102.0(esbuild@0.25.9))
       esbuild:
         specifier: 0.25.9
         version: 0.25.9
       esbuild-loader:
         specifier: 4.3.0
-        version: 4.3.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 4.3.0(webpack@5.102.0(esbuild@0.25.9))
       file-loader:
         specifier: 6.2.0
-        version: 6.2.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 6.2.0(webpack@5.102.0(esbuild@0.25.9))
       h3:
         specifier: 1.15.4
         version: 1.15.4
@@ -804,7 +804,7 @@ importers:
         version: 7.0.5
       mini-css-extract-plugin:
         specifier: 2.9.4
-        version: 2.9.4(webpack@5.101.3(esbuild@0.25.9))
+        version: 2.9.4(webpack@5.102.0(esbuild@0.25.9))
       nitropack:
         specifier: 2.12.6
         version: 2.12.6(rolldown@1.0.0-beta.38)
@@ -822,7 +822,7 @@ importers:
         version: 6.0.3(rolldown@1.0.0-beta.38)(rollup@4.50.2)
       sass-loader:
         specifier: 16.0.5
-        version: 16.0.5(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9))
+        version: 16.0.5(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9))
       scule:
         specifier: 1.3.0
         version: 1.3.0
@@ -849,16 +849,16 @@ importers:
         version: 2.1.2
       vue-loader:
         specifier: 17.4.2
-        version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.101.3(esbuild@0.25.9))
+        version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.102.0(esbuild@0.25.9))
       vue-router:
         specifier: 4.5.1
         version: 4.5.1(vue@3.5.21(typescript@5.9.2))
       webpack:
-        specifier: 5.101.3
-        version: 5.101.3(esbuild@0.25.9)
+        specifier: 5.102.0
+        version: 5.102.0(esbuild@0.25.9)
       webpack-dev-middleware:
         specifier: 7.4.5
-        version: 7.4.5(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.4.5(webpack@5.102.0(esbuild@0.25.9))
 
   packages/ui-templates:
     devDependencies:
@@ -1021,7 +1021,7 @@ importers:
     dependencies:
       '@nuxt/friendly-errors-webpack-plugin':
         specifier: ^2.6.0
-        version: 2.6.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 2.6.0(webpack@5.102.0(esbuild@0.25.9))
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -1030,10 +1030,10 @@ importers:
         version: 10.4.21(postcss@8.5.6)
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.1.2(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9))
       css-minimizer-webpack-plugin:
         specifier: ^7.0.2
-        version: 7.0.2(esbuild@0.25.9)(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.0.2(esbuild@0.25.9)(webpack@5.102.0(esbuild@0.25.9))
       cssnano:
         specifier: ^7.1.1
         version: 7.1.1(postcss@8.5.6)
@@ -1042,16 +1042,16 @@ importers:
         version: 6.1.4
       esbuild-loader:
         specifier: ^4.3.0
-        version: 4.3.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 4.3.0(webpack@5.102.0(esbuild@0.25.9))
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
       file-loader:
         specifier: ^6.2.0
-        version: 6.2.0(webpack@5.101.3(esbuild@0.25.9))
+        version: 6.2.0(webpack@5.102.0(esbuild@0.25.9))
       fork-ts-checker-webpack-plugin:
         specifier: ^9.1.0
-        version: 9.1.0(typescript@5.9.2)(webpack@5.101.3(esbuild@0.25.9))
+        version: 9.1.0(typescript@5.9.2)(webpack@5.102.0(esbuild@0.25.9))
       h3:
         specifier: 1.15.4
         version: 1.15.4
@@ -1069,7 +1069,7 @@ importers:
         version: 4.39.0
       mini-css-extract-plugin:
         specifier: ^2.9.4
-        version: 2.9.4(webpack@5.101.3(esbuild@0.25.9))
+        version: 2.9.4(webpack@5.102.0(esbuild@0.25.9))
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -1090,7 +1090,7 @@ importers:
         version: 2.0.0
       postcss-loader:
         specifier: ^8.2.0
-        version: 8.2.0(@rspack/core@1.5.4)(postcss@8.5.6)(typescript@5.9.2)(webpack@5.101.3(esbuild@0.25.9))
+        version: 8.2.0(@rspack/core@1.5.4)(postcss@8.5.6)(typescript@5.9.2)(webpack@5.102.0(esbuild@0.25.9))
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.5.6)
@@ -1102,7 +1102,7 @@ importers:
         version: 3.9.0
       time-fix-plugin:
         specifier: ^2.0.7
-        version: 2.0.7(webpack@5.101.3(esbuild@0.25.9))
+        version: 2.0.7(webpack@5.102.0(esbuild@0.25.9))
       tinyglobby:
         specifier: ^0.2.15
         version: 0.2.15
@@ -1117,28 +1117,28 @@ importers:
         version: 2.3.10
       url-loader:
         specifier: ^4.1.1
-        version: 4.1.1(file-loader@6.2.0(webpack@5.101.3(esbuild@0.25.9)))(webpack@5.101.3(esbuild@0.25.9))
+        version: 4.1.1(file-loader@6.2.0(webpack@5.102.0(esbuild@0.25.9)))(webpack@5.102.0(esbuild@0.25.9))
       vue-bundle-renderer:
         specifier: ^2.1.2
         version: 2.1.2
       vue-loader:
         specifier: ^17.4.2
-        version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.101.3(esbuild@0.25.9))
+        version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.102.0(esbuild@0.25.9))
       webpack:
-        specifier: 5.101.3
-        version: 5.101.3(esbuild@0.25.9)
+        specifier: 5.102.0
+        version: 5.102.0(esbuild@0.25.9)
       webpack-bundle-analyzer:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
         specifier: ^7.4.5
-        version: 7.4.5(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.4.5(webpack@5.102.0(esbuild@0.25.9))
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
       webpackbar:
         specifier: ^7.0.0
-        version: 7.0.0(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9))
+        version: 7.0.0(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9))
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -1930,7 +1930,7 @@ packages:
     resolution: {integrity: sha512-3IZj6MXbzlvUxDncAxgBMLQwGPY/JlNhy2i+AGyOHCAReR5HcBxYjVRBvyaKM9R3s5k4OODYKeHAbrToZH/47w==}
     engines: {node: '>=14.18.0', npm: '>=5.0.0'}
     peerDependencies:
-      webpack: 5.101.3
+      webpack: 5.102.0
 
   '@nuxt/scripts@0.11.13':
     resolution: {integrity: sha512-8es3Mt8TxM+77icxI+Gelds0txaYR0ZfLORB9I2bgUC6p6ID0n3F+7aoEhCWiyVKgVd2cI17yCJwXSPABN5xTg==}
@@ -4189,7 +4189,7 @@ packages:
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@rspack/core': 0.x || 1.x
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -4206,7 +4206,7 @@ packages:
       csso: '*'
       esbuild: '*'
       lightningcss: '*'
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       '@parcel/css':
         optional: true
@@ -4568,7 +4568,7 @@ packages:
   esbuild-loader@4.3.0:
     resolution: {integrity: sha512-D7HeJNdkDKKMarPQO/3dlJT6RwN2YJO7ENU6RPlpOz5YxSHnUNi2yvW41Bckvi1EVwctIaLzlb0ni5ag2GINYA==}
     peerDependencies:
-      webpack: 5.101.3
+      webpack: 5.102.0
 
   esbuild@0.25.9:
     resolution: {integrity: sha512-CRbODhYyQx3qp7ZEwzxOk4JBqmD/seJrzPa/cGjY1VtIn5E09Oi9/dB4JwctnfZ8Q8iT7rioVv5k/FNT/uf54g==}
@@ -4832,7 +4832,7 @@ packages:
     resolution: {integrity: sha512-qo3glqyTa61Ytg4u73GultjHGjdRyig3tG6lPtyX/jOEJvHif9uB0/OCI2Kif6ctF3caQTW2G5gym21oAsI4pw==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
-      webpack: 5.101.3
+      webpack: 5.102.0
 
   file-uri-to-path@1.0.0:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
@@ -4903,7 +4903,7 @@ packages:
     engines: {node: '>=14.21.3'}
     peerDependencies:
       typescript: 5.9.2
-      webpack: 5.101.3
+      webpack: 5.102.0
 
   form-data@4.0.4:
     resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
@@ -6028,7 +6028,7 @@ packages:
     resolution: {integrity: sha512-ZWYT7ln73Hptxqxk2DxPU9MmapXRhxkJD6tkSR04dnQxm8BGu2hzgKLugK5yySD97u/8yy7Ma7E76k9ZdvtjkQ==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
-      webpack: 5.101.3
+      webpack: 5.102.0
 
   minimatch@10.0.3:
     resolution: {integrity: sha512-IPZ167aShDZZUMdRk66cyQAW3qr0WzbHkPdMYa8bzZhlHhO3jALbKdxcaak7W9FfT2rZNpQuUu4Od7ILEpXSaw==}
@@ -6549,7 +6549,7 @@ packages:
     peerDependencies:
       '@rspack/core': 0.x || 1.x
       postcss: 8.5.6
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -7088,7 +7088,7 @@ packages:
       node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
       sass: ^1.3.0
       sass-embedded: '*'
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -7461,7 +7461,7 @@ packages:
       '@swc/core': '*'
       esbuild: '*'
       uglify-js: '*'
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       '@swc/core':
         optional: true
@@ -7498,7 +7498,7 @@ packages:
   time-fix-plugin@2.0.7:
     resolution: {integrity: sha512-uVFet1LQToeUX0rTcSiYVYVoGuBpc8gP/2jnlUzuHMHe+gux6XLsNzxLUweabMwiUj5ejhoIMsUI55nVSEa/Vw==}
     peerDependencies:
-      webpack: 5.101.3
+      webpack: 5.102.0
 
   tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
@@ -7850,7 +7850,7 @@ packages:
     engines: {node: '>= 10.13.0'}
     peerDependencies:
       file-loader: '*'
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       file-loader:
         optional: true
@@ -8052,7 +8052,7 @@ packages:
     peerDependencies:
       '@vue/compiler-sfc': '*'
       vue: '*'
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       '@vue/compiler-sfc':
         optional: true
@@ -8114,7 +8114,7 @@ packages:
     resolution: {integrity: sha512-uxQ6YqGdE4hgDKNf7hUiPXOdtkXvBJXrfEGYSx7P7LC8hnUYGK70X6xQXUvXeNyBDDcsiQXpG2m3G9vxowaEuA==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       webpack:
         optional: true
@@ -8132,8 +8132,8 @@ packages:
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
-  webpack@5.101.3:
-    resolution: {integrity: sha512-7b0dTKR3Ed//AD/6kkx/o7duS8H3f1a4w3BYpIriX4BzIhjkn4teo05cptsxvLesHFKK5KObnadmCHBwGc+51A==}
+  webpack@5.102.0:
+    resolution: {integrity: sha512-hUtqAR3ZLVEYDEABdBioQCIqSoguHbFn1K7WlPPWSuXmx0031BD73PSE35jKyftdSh4YLDoQNgK4pqBt5Q82MA==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     peerDependencies:
@@ -8147,7 +8147,7 @@ packages:
     engines: {node: '>=14.21.3'}
     peerDependencies:
       '@rspack/core': '*'
-      webpack: 5.101.3
+      webpack: 5.102.0
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -9125,13 +9125,13 @@ snapshots:
       - supports-color
       - typescript
 
-  '@nuxt/friendly-errors-webpack-plugin@2.6.0(webpack@5.101.3(esbuild@0.25.9))':
+  '@nuxt/friendly-errors-webpack-plugin@2.6.0(webpack@5.102.0(esbuild@0.25.9))':
     dependencies:
       chalk: 2.4.2
       consola: 3.4.2
       error-stack-parser: 2.1.4
       string-width: 4.2.3
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   '@nuxt/scripts@0.11.13(@unhead/vue@2.0.14(vue@3.5.21(typescript@5.9.2)))(db0@0.3.2)(ioredis@5.8.0)(typescript@5.9.2)(vue@3.5.21(typescript@5.9.2))':
     dependencies:
@@ -10133,7 +10133,7 @@ snapshots:
     dependencies:
       '@types/node': 22.18.4
       tapable: 2.2.3
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -10144,7 +10144,7 @@ snapshots:
     dependencies:
       '@types/connect': 3.4.38
       tapable: 2.2.3
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -11468,7 +11468,7 @@ snapshots:
     dependencies:
       postcss: 8.5.6
 
-  css-loader@7.1.2(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9)):
+  css-loader@7.1.2(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.6)
       postcss: 8.5.6
@@ -11480,9 +11480,9 @@ snapshots:
       semver: 7.7.2
     optionalDependencies:
       '@rspack/core': 1.5.4
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
-  css-minimizer-webpack-plugin@7.0.2(esbuild@0.25.9)(webpack@5.101.3(esbuild@0.25.9)):
+  css-minimizer-webpack-plugin@7.0.2(esbuild@0.25.9)(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       cssnano: 7.1.1(postcss@8.5.6)
@@ -11490,7 +11490,7 @@ snapshots:
       postcss: 8.5.6
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
     optionalDependencies:
       esbuild: 0.25.9
 
@@ -11823,12 +11823,12 @@ snapshots:
       has-tostringtag: 1.0.2
       hasown: 2.0.2
 
-  esbuild-loader@4.3.0(webpack@5.101.3(esbuild@0.25.9)):
+  esbuild-loader@4.3.0(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       esbuild: 0.25.9
       get-tsconfig: 4.10.1
       loader-utils: 2.0.4
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
       webpack-sources: 1.4.3
 
   esbuild@0.25.9:
@@ -12155,11 +12155,11 @@ snapshots:
     dependencies:
       flat-cache: 4.0.1
 
-  file-loader@6.2.0(webpack@5.101.3(esbuild@0.25.9)):
+  file-loader@6.2.0(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       loader-utils: 2.0.4
       schema-utils: 3.3.0
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   file-uri-to-path@1.0.0: {}
 
@@ -12215,7 +12215,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.2)(webpack@5.101.3(esbuild@0.25.9)):
+  fork-ts-checker-webpack-plugin@9.1.0(typescript@5.9.2)(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       '@babel/code-frame': 7.27.1
       chalk: 4.1.2
@@ -12230,7 +12230,7 @@ snapshots:
       semver: 7.7.2
       tapable: 2.2.3
       typescript: 5.9.2
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   form-data@4.0.4:
     dependencies:
@@ -13649,11 +13649,11 @@ snapshots:
 
   mimic-fn@4.0.0: {}
 
-  mini-css-extract-plugin@2.9.4(webpack@5.101.3(esbuild@0.25.9)):
+  mini-css-extract-plugin@2.9.4(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       schema-utils: 4.3.2
       tapable: 2.2.3
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   minimatch@10.0.3:
     dependencies:
@@ -14310,7 +14310,7 @@ snapshots:
       read-cache: 1.0.0
       resolve: 1.22.10
 
-  postcss-loader@8.2.0(@rspack/core@1.5.4)(postcss@8.5.6)(typescript@5.9.2)(webpack@5.101.3(esbuild@0.25.9)):
+  postcss-loader@8.2.0(@rspack/core@1.5.4)(postcss@8.5.6)(typescript@5.9.2)(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.9.2)
       jiti: 2.5.1
@@ -14318,7 +14318,7 @@ snapshots:
       semver: 7.7.2
     optionalDependencies:
       '@rspack/core': 1.5.4
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
     transitivePeerDependencies:
       - typescript
 
@@ -14978,12 +14978,12 @@ snapshots:
       es-errors: 1.3.0
       is-regex: 1.2.1
 
-  sass-loader@16.0.5(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9)):
+  sass-loader@16.0.5(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       neo-async: 2.6.2
     optionalDependencies:
       '@rspack/core': 1.5.4
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   sax@1.4.1: {}
 
@@ -15369,14 +15369,14 @@ snapshots:
       minizlib: 3.1.0
       yallist: 5.0.0
 
-  terser-webpack-plugin@5.3.14(esbuild@0.25.9)(webpack@5.101.3(esbuild@0.25.9)):
+  terser-webpack-plugin@5.3.14(esbuild@0.25.9)(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.2
       serialize-javascript: 6.0.2
       terser: 5.44.0
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
     optionalDependencies:
       esbuild: 0.25.9
 
@@ -15411,9 +15411,9 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  time-fix-plugin@2.0.7(webpack@5.101.3(esbuild@0.25.9)):
+  time-fix-plugin@2.0.7(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   tiny-invariant@1.3.3: {}
 
@@ -15811,14 +15811,14 @@ snapshots:
 
   url-join@5.0.0: {}
 
-  url-loader@4.1.1(file-loader@6.2.0(webpack@5.101.3(esbuild@0.25.9)))(webpack@5.101.3(esbuild@0.25.9)):
+  url-loader@4.1.1(file-loader@6.2.0(webpack@5.102.0(esbuild@0.25.9)))(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       loader-utils: 2.0.4
       mime-types: 2.1.35
       schema-utils: 3.3.0
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
     optionalDependencies:
-      file-loader: 6.2.0(webpack@5.101.3(esbuild@0.25.9))
+      file-loader: 6.2.0(webpack@5.102.0(esbuild@0.25.9))
 
   util-deprecate@1.0.2: {}
 
@@ -16027,12 +16027,12 @@ snapshots:
 
   vue-flow-layout@0.2.0: {}
 
-  vue-loader@17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.101.3(esbuild@0.25.9)):
+  vue-loader@17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       chalk: 4.1.2
       hash-sum: 2.0.0
       watchpack: 2.4.4
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.21
       vue: 3.5.21(typescript@5.9.2)
@@ -16098,7 +16098,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  webpack-dev-middleware@7.4.5(webpack@5.101.3(esbuild@0.25.9)):
+  webpack-dev-middleware@7.4.5(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       colorette: 2.0.20
       memfs: 4.47.0
@@ -16107,7 +16107,7 @@ snapshots:
       range-parser: 1.2.1
       schema-utils: 4.3.2
     optionalDependencies:
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   webpack-hot-middleware@2.26.1:
     dependencies:
@@ -16124,7 +16124,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.101.3(esbuild@0.25.9):
+  webpack@5.102.0(esbuild@0.25.9):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.8
@@ -16148,7 +16148,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.2
       tapable: 2.2.3
-      terser-webpack-plugin: 5.3.14(esbuild@0.25.9)(webpack@5.101.3(esbuild@0.25.9))
+      terser-webpack-plugin: 5.3.14(esbuild@0.25.9)(webpack@5.102.0(esbuild@0.25.9))
       watchpack: 2.4.4
       webpack-sources: 3.3.3
     transitivePeerDependencies:
@@ -16156,7 +16156,7 @@ snapshots:
       - esbuild
       - uglify-js
 
-  webpackbar@7.0.0(@rspack/core@1.5.4)(webpack@5.101.3(esbuild@0.25.9)):
+  webpackbar@7.0.0(@rspack/core@1.5.4)(webpack@5.102.0(esbuild@0.25.9)):
     dependencies:
       ansis: 3.17.0
       consola: 3.4.2
@@ -16164,7 +16164,7 @@ snapshots:
       std-env: 3.9.0
     optionalDependencies:
       '@rspack/core': 1.5.4
-      webpack: 5.101.3(esbuild@0.25.9)
+      webpack: 5.102.0(esbuild@0.25.9)
 
   whatwg-mimetype@3.0.0: {}
 
