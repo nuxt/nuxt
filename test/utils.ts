@@ -5,6 +5,7 @@ import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { isCI } from 'std-env'
 
 export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
@@ -71,8 +72,9 @@ export function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, tex
   expect(consoleLogWarnings).toEqual([])
 }
 
+const BASE_TIMEOUT = isCI ? 6_000 : 3_000
 export async function gotoPath (page: Page, path: string, retries = 0) {
-  await vi.waitFor(() => page.goto(url(path), { timeout: 3000 }), { timeout: 3000 * retries || 3000 })
+  await vi.waitFor(() => page.goto(url(path), { timeout: BASE_TIMEOUT }), { timeout: BASE_TIMEOUT * retries || BASE_TIMEOUT })
   await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
 }
 
