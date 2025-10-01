@@ -56,6 +56,21 @@ describe('scrollBehavior of router options with global transition', () => {
     }
   })
 
+  it('should not trigger scrollTo when trailing slash is added/removed', async () => {
+    // Same page as in beforeEach but with trailing slash at the end
+    await navigateTo('//')
+    await flushPromises()
+
+    // Ensure everything is settled
+    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+
+    expect(pageTransitionFinish).toHaveBeenCalled()
+    expect(pageLoadingEnd).toHaveBeenCalled()
+
+    // Scroll decision should be "trailing-slash" agnostic
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
   it('should call scrollTo after page transition is finished with async component', async () => {
     await navigateTo('/transitions/async')
 
