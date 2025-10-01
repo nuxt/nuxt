@@ -31,7 +31,7 @@ overrides:
   typescript: 5.9.2
   ufo: 1.6.1
   unbuild: 3.6.1
-  unimport: 5.2.0
+  unimport: 5.4.1
   vite: 7.1.5
   vue: 3.5.21
   webpack: 5.102.0
@@ -322,8 +322,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       unimport:
-        specifier: 5.2.0
-        version: 5.2.0
+        specifier: 5.4.1
+        version: 5.4.1
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -524,8 +524,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       unimport:
-        specifier: 5.2.0
-        version: 5.2.0
+        specifier: 5.4.1
+        version: 5.4.1
       unplugin:
         specifier: ^2.3.10
         version: 2.3.10
@@ -833,8 +833,8 @@ importers:
         specifier: 2.4.1
         version: 2.4.1
       unimport:
-        specifier: 5.2.0
-        version: 5.2.0
+        specifier: 5.4.1
+        version: 5.4.1
       untyped:
         specifier: 2.0.0
         version: 2.0.0
@@ -7393,6 +7393,9 @@ packages:
   strip-literal@3.0.0:
     resolution: {integrity: sha512-TcccoMhJOM3OebGhSBEmp3UZ2SfDMZUEBdRA/9ynfLi8yYajyWX3JiXArcJt4Umh4vISpspkQIY8ZZoCqjbviA==}
 
+  strip-literal@3.1.0:
+    resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
+
   structured-clone-es@1.0.0:
     resolution: {integrity: sha512-FL8EeKFFyNQv5cMnXI31CIMCsFarSVI2bF0U0ImeNE3g/F1IvJQyqzOXxPBRXiwQfyBTlbNe88jh1jFW0O/jiQ==}
 
@@ -7688,8 +7691,8 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@5.2.0:
-    resolution: {integrity: sha512-bTuAMMOOqIAyjV4i4UH7P07pO+EsVxmhOzQ2YJ290J6mkLUdozNhb5I/YoOEheeNADC03ent3Qj07X0fWfUpmw==}
+  unimport@5.4.1:
+    resolution: {integrity: sha512-wMZ2JKUCleCK2zfRHeWcbrUHKXOC3SVBYkyn/wTGzh0THX6sT4hSjuKXxKANN4/WMbT6ZPM4JzcDcnhD2x9Bpg==}
     engines: {node: '>=18.12.0'}
 
   unist-builder@4.0.0:
@@ -13812,7 +13815,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.4.1
       unenv: 2.0.0-rc.21
-      unimport: 5.2.0
+      unimport: 5.4.1
       unplugin-utils: 0.3.0
       unstorage: 1.17.1(db0@0.3.2)(ioredis@5.8.0)
       untyped: 2.0.0
@@ -15304,6 +15307,10 @@ snapshots:
     dependencies:
       js-tokens: 9.0.1
 
+  strip-literal@3.1.0:
+    dependencies:
+      js-tokens: 9.0.1
+
   structured-clone-es@1.0.0: {}
 
   stylehacks@7.0.6(postcss@8.5.6):
@@ -15614,7 +15621,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@5.2.0:
+  unimport@5.4.1:
     dependencies:
       acorn: 8.15.0
       escape-string-regexp: 5.0.0
@@ -15626,10 +15633,10 @@ snapshots:
       picomatch: 4.0.3
       pkg-types: 2.3.0
       scule: 1.3.0
-      strip-literal: 3.0.0
+      strip-literal: 3.1.0
       tinyglobby: 0.2.15
       unplugin: 2.3.10
-      unplugin-utils: 0.2.5
+      unplugin-utils: 0.3.0
 
   unist-builder@4.0.0:
     dependencies:
