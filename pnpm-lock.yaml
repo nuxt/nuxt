@@ -17,7 +17,6 @@ overrides:
   '@unhead/vue': 2.0.14
   '@vue/compiler-core': 3.5.21
   '@vue/compiler-dom': 3.5.21
-  vue-bundle-renderer: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
   '@vue/shared': 3.5.21
   c12: 3.3.0
   compatx: 0.2.0
@@ -546,8 +545,8 @@ importers:
         specifier: 3.5.21
         version: 3.5.21(typescript@5.9.2)
       vue-bundle-renderer:
-        specifier: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
-        version: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
+        specifier: ^2.2.0
+        version: 2.2.0
       vue-devtools-stub:
         specifier: ^0.1.0
         version: 0.1.0
@@ -691,8 +690,8 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.101.3(esbuild@0.25.9)))(webpack@5.101.3(esbuild@0.25.9))
       vue-bundle-renderer:
-        specifier: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
-        version: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
+        specifier: ^2.2.0
+        version: 2.2.0
       vue-loader:
         specifier: ^17.4.2
         version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.101.3(esbuild@0.25.9))
@@ -852,8 +851,8 @@ importers:
         specifier: 3.5.21
         version: 3.5.21(typescript@5.9.2)
       vue-bundle-renderer:
-        specifier: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
-        version: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
+        specifier: 2.2.0
+        version: 2.2.0
       vue-loader:
         specifier: 17.4.2
         version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.101.3(esbuild@0.25.9))
@@ -1005,8 +1004,8 @@ importers:
         specifier: ^0.10.3
         version: 0.10.3(eslint@9.35.0(jiti@2.5.1))(optionator@0.9.4)(typescript@5.9.2)(vite@7.1.5(@types/node@22.18.4)(jiti@2.5.1)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.0.7(typescript@5.9.2))
       vue-bundle-renderer:
-        specifier: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
-        version: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
+        specifier: ^2.2.0
+        version: 2.2.0
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -1132,8 +1131,8 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.101.3(esbuild@0.25.9)))(webpack@5.101.3(esbuild@0.25.9))
       vue-bundle-renderer:
-        specifier: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
-        version: https://pkg.pr.new/vue-bundle-renderer@be0b2b3
+        specifier: ^2.2.0
+        version: 2.2.0
       vue-loader:
         specifier: ^17.4.2
         version: 17.4.2(@vue/compiler-sfc@3.5.21)(vue@3.5.21(typescript@5.9.2))(webpack@5.101.3(esbuild@0.25.9))
@@ -8046,9 +8045,8 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
-  vue-bundle-renderer@https://pkg.pr.new/vue-bundle-renderer@be0b2b3:
-    resolution: {tarball: https://pkg.pr.new/vue-bundle-renderer@be0b2b3}
-    version: 2.1.2
+  vue-bundle-renderer@2.2.0:
+    resolution: {integrity: sha512-sz/0WEdYH1KfaOm0XaBmRZOWgYTEvUDt6yPYaUzl4E52qzgWLlknaPPTTZmp6benaPTlQAI/hN1x3tAzZygycg==}
 
   vue-component-type-helpers@2.2.12:
     resolution: {integrity: sha512-YbGqHZ5/eW4SnkPNR44mKVc6ZKQoRs/Rux1sxC6rdwXb4qpbOSYfDr9DsTHolOTGmIKgM9j141mZbBeg05R1pw==}
@@ -8544,7 +8542,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.3
-      '@babel/parser': 7.27.7
+      '@babel/parser': 7.28.4
       '@babel/template': 7.27.2
       '@babel/types': 7.28.4
       debug: 4.4.3
@@ -10208,8 +10206,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.44.0(typescript@5.9.2)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.44.0(typescript@5.9.2)
-      '@typescript-eslint/types': 8.44.0
+      '@typescript-eslint/tsconfig-utils': 8.44.1(typescript@5.9.2)
+      '@typescript-eslint/types': 8.44.1
       debug: 4.4.3
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -16025,7 +16023,7 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  vue-bundle-renderer@https://pkg.pr.new/vue-bundle-renderer@be0b2b3:
+  vue-bundle-renderer@2.2.0:
     dependencies:
       ufo: 1.6.1
 
