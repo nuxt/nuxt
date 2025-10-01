@@ -3,7 +3,6 @@ packages:
   - packages/**
   - '!packages/nuxi'
   - '!packages/test-utils'
-  - '!packages/nuxt/test/package-fixture'
   - playground
   - test/fixtures/*
 
