@@ -71,7 +71,7 @@ describe('scrollBehavior of router options with global transition', () => {
     await completeNavigation()
 
     expect(scrollTo).toHaveBeenCalled()
-    scrollTo.mockClear()
+    vi.clearAllMocks()
 
     await navigateTo('/about/')
     await completeNavigation()
