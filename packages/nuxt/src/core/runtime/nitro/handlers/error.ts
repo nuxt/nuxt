@@ -105,6 +105,11 @@ const errorCSS = /* css */ `
 #pretty-errors-toggle {
   background: none;
   z-index: 999999999;
+  border: 15px #ffcdce solid;
+  overflow: hidden;
+  border-radius: 30px;
+  cursor: pointer;
+  opacity: 0.5;
 }
 #pretty-errors, #pretty-errors-toggle {
   position: fixed;
