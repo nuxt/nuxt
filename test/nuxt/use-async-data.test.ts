@@ -802,14 +802,12 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
-  // Regression tests for https://github.com/nuxt/nuxt/issues/33274
-  // Fixed in PR: https://github.com/nuxt/nuxt/pull/33325
-
+  // https://github.com/nuxt/nuxt/issues/33274
   it('should not execute handler multiple times when external watch is defined before useAsyncData with computed key', async () => {
     const q = ref('')
     const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
 
-    // Critical: watch must be defined BEFORE useAsyncData to reproduce the bug
+    // watch must be defined before useAsyncData to reproduce the bug
     watch(q, () => {})
 
     const { data, error } = await useAsyncData(
@@ -824,12 +822,15 @@ describe('useAsyncData', () => {
     // Initial execute
     expect(data.value).toBe('result for: ')
     expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(promiseFn).toHaveBeenNthCalledWith(1, '')
 
     // First key change
     q.value = 's'
     await nextTick()
     await flushPromises()
 
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenNthCalledWith(2, 's')
     expect(error.value).toBe(undefined)
     expect(data.value).toBe('result for: s')
 
@@ -838,16 +839,10 @@ describe('useAsyncData', () => {
     await nextTick()
     await flushPromises()
 
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+    expect(promiseFn).toHaveBeenNthCalledWith(3, 'se')
     expect(error.value).toBe(undefined)
     expect(data.value).toBe('result for: se')
-
-    // Without the fix, promiseFn would be called 4 times instead of 3
-    // The extra execute causes overlapping requests and "Request aborted" errors
-    expect(promiseFn).toHaveBeenCalledTimes(3) // initial + 2 changes (NOT 4!)
-
-    expect(promiseFn).toHaveBeenNthCalledWith(1, '') // initial
-    expect(promiseFn).toHaveBeenNthCalledWith(2, 's') // first change
-    expect(promiseFn).toHaveBeenNthCalledWith(3, 'se') // second change
   })
 
   it('should automatically re-execute when watched dependency changes (reproducing original useFetch behavior)', async () => {
