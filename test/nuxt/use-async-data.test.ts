@@ -811,10 +811,10 @@ describe('useAsyncData', () => {
     watch(q, () => {})
 
     const { data, error } = await useAsyncData(
-      () => `query-${q.value}`, // Computed key triggers the bug
+      () => `query-${q.value}`,
       () => promiseFn(q.value),
       {
-        watch: [q], // Simulates useFetch({ query: { q } }) behavior
+        watch: [q],
         immediate: true,
       },
     )
@@ -845,11 +845,10 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('result for: se')
   })
 
-  it('should automatically re-execute when watched dependency changes (reproducing original useFetch behavior)', async () => {
+  it('should automatically re-execute when watched dependency changes', async () => {
     const q = ref('')
     const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
 
-    // External watch before useAsyncData (reproduces the bug context)
     const externalWatchSpy = vi.fn()
     watch(q, externalWatchSpy)
 
@@ -857,7 +856,7 @@ describe('useAsyncData', () => {
       () => `auto-query-${q.value}`,
       () => promiseFn(q.value),
       {
-        watch: [q], // Simulates useFetch({ query: { q } }) behavior
+        watch: [q],
         immediate: true,
       },
     )
