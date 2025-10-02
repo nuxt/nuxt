@@ -204,14 +204,14 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
   const nuxt = useNuxt()
 
   const resolvedImportPathMap = new Map<string, string>()
-  const r = ({ from }: Import) => resolvedImportPathMap.get(from)
+  const r = (i: Import) => resolvedImportPathMap.get(i.typeFrom || i.from)
 
-  const SUPPORTED_EXTENSION_RE = new RegExp(`\\.(${nuxt.options.extensions.map(i => i.replace('.', '')).join('|')})$`)
+  const SUPPORTED_EXTENSION_RE = new RegExp(`\\.(?:${nuxt.options.extensions.map(i => i.replace('.', '')).join('|')})$`)
 
   const importPaths = nuxt.options.modulesDir.map(dir => directoryToURL(dir))
 
   async function cacheImportPaths (imports: Import[]) {
-    const importSource = Array.from(new Set(imports.map(i => i.from)))
+    const importSource = Array.from(new Set(imports.map(i => i.typeFrom || i.from)))
     // skip relative import paths for node_modules that are explicitly installed
     await Promise.all(importSource.map(async (from) => {
       if (resolvedImportPathMap.has(from) || nuxt._dependencies?.has(from)) {
