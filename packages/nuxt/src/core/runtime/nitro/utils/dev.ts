@@ -1,6 +1,8 @@
 export const iframeStorageBridge = (nonce: string) => /* js */ `
 (function() {
   const memoryStore = {};
+
+  const NONCE = ${JSON.stringify(nonce)}
   
   const mockStorage = {
     getItem: function(key) {
@@ -12,16 +14,16 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
         type: 'storage-set',
         key: key,
         value: String(value),
-        nonce: '${nonce}'
-      }, '*');
+        nonce: NONCE
+      }, window.parent.origin);
     },
     removeItem: function(key) {
       delete memoryStore[key];
       window.parent.postMessage({
         type: 'storage-remove',
         key: key,
-        nonce: '${nonce}'
-      }, '*');
+        nonce: NONCE
+      }, window.parent.origin);
     },
     clear: function() {
       for (const key in memoryStore) {
@@ -29,8 +31,8 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
       }
       window.parent.postMessage({
         type: 'storage-clear',
-        nonce: '${nonce}'
-      }, '*');
+        nonce: NONCE
+      }, window.parent.origin);
     },
     key: function(index) {
       const keys = Object.keys(memoryStore);
@@ -52,10 +54,13 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
   }
   
   window.addEventListener('message', function(event) {
-    if (event.data.type === 'storage-sync-data' && event.data.nonce === '${nonce}') {
+    if (event.source !== iframe.contentWindow) return;
+    if (event.data.type === 'storage-sync-data' && event.data.nonce === NONCE) {
       const data = event.data.data;
       for (const key in data) {
-        memoryStore[key] = data[key];
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+          memoryStore[key] = data[key];
+        }
       }
       if (typeof window.initTheme === 'function') {
         window.initTheme();
@@ -66,8 +71,8 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
   
   window.parent.postMessage({ 
     type: 'storage-sync-request',
-    nonce: '${nonce}'
-  }, '*');
+    nonce: NONCE
+  }, window.parent.origin);
 })();
 `
 
@@ -75,11 +80,14 @@ export const parentStorageBridge = (nonce: string) => /* js */ `
 (function() {
   const iframe = document.getElementById('pretty-errors');
   if (!iframe) return;
+
+  const NONCE = ${JSON.stringify(nonce)}
   
   window.addEventListener('message', function(event) {
+    if (event.source !== iframe.contentWindow) return;
     const data = event.data;
     
-    if (data.nonce !== '${nonce}') return;
+    if (data.nonce !== NONCE) return;
     
     if (data.type === 'storage-set') {
       localStorage.setItem(data.key, data.value);
@@ -96,8 +104,8 @@ export const parentStorageBridge = (nonce: string) => /* js */ `
       iframe.contentWindow.postMessage({
         type: 'storage-sync-data',
         data: allData,
-        nonce: '${nonce}'
-      }, '*');
+        nonce: NONCE
+      }, iframe.contentWindow.origin || iframe.src);
     }
   });
 })();
