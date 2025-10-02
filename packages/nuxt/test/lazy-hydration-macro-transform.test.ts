@@ -300,7 +300,6 @@ async function transform (code: string, filename: string, noComponents?: boolean
         prefetch: false,
         preload: false,
         mode: 'all' as const,
-        shortPath: opts.filePath,
         priority: 0,
         meta: {},
         ...opts,

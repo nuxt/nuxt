@@ -95,7 +95,6 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/islands/Isle.vue',
   },
   {
     chunkName: 'components/glob',
@@ -108,14 +107,12 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/global/Glob.vue',
   },
   {
     mode: 'all',
     pascalName: 'HelloWorld',
     kebabName: 'hello-world',
     chunkName: 'components/hello-world',
-    shortPath: 'components/HelloWorld.vue',
     export: 'default',
     global: undefined,
     island: undefined,
@@ -128,7 +125,6 @@ const expectedComponents = [
     pascalName: 'Nuxt3',
     kebabName: 'nuxt3',
     chunkName: 'components/nuxt3-client',
-    shortPath: 'components/Nuxt3.client.vue',
     export: 'default',
     global: undefined,
     island: undefined,
@@ -141,7 +137,6 @@ const expectedComponents = [
     pascalName: 'Nuxt3',
     kebabName: 'nuxt3',
     chunkName: 'components/nuxt3-server',
-    shortPath: 'components/Nuxt3.server.vue',
     export: 'default',
     global: undefined,
     island: undefined,
@@ -160,7 +155,6 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/client/ComponentWithProps.vue',
   },
   {
     chunkName: 'components/client-with-client-only-setup',
@@ -173,14 +167,12 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/client/WithClientOnlySetup.vue',
   },
   {
     mode: 'server',
     pascalName: 'ParentFolder',
     kebabName: 'parent-folder',
     chunkName: 'components/parent-folder-server',
-    shortPath: 'components/parent-folder/index.server.vue',
     export: 'default',
     global: undefined,
     island: undefined,
@@ -199,7 +191,6 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/same-name/same/Same.vue',
   },
   {
     chunkName: 'components/some-glob',
@@ -212,7 +203,6 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/some-glob.global.vue',
   },
   {
     chunkName: 'components/some-server',
@@ -225,14 +215,11 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/some.island.vue',
   },
 ]
 
-const srcDir = rFixture('.')
-
 it('components:scanComponents', async () => {
-  const scannedComponents = await scanComponents(dirs, srcDir)
+  const scannedComponents = await scanComponents(dirs)
   for (const c of scannedComponents) {
     // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
