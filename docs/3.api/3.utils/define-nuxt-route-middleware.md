@@ -12,8 +12,8 @@ Route middleware are stored in the [`app/middleware/`](/docs/4.x/guide/directory
 
 ## Type
 
-```ts
-defineNuxtRouteMiddleware(middleware: RouteMiddleware) => RouteMiddleware
+```ts [Signature]
+export function defineNuxtRouteMiddleware (middleware: RouteMiddleware): RouteMiddleware
 
 interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>

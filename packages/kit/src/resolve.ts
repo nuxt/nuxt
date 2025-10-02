@@ -273,6 +273,9 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
  * @param path path to the directory to resolve files in
  * @param pattern glob pattern or an array of glob patterns to match files
  * @param opts options for globbing
+ * @param opts.followSymbolicLinks whether to follow symbolic links, default is `true`
+ * @param opts.ignore additional glob patterns to ignore
+ * @returns sorted array of absolute file paths
  */
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}) {
   const files: string[] = []

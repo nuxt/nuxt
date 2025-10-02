@@ -45,7 +45,7 @@ Use `createError` to trigger error handling in server API routes.
 export default eventHandler(() => {
   throw createError({
     statusCode: 404,
-    statusMessage: 'Page Not Found'
+    statusMessage: 'Page Not Found',
   })
 })
 ```
