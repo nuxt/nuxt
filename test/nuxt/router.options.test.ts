@@ -25,6 +25,16 @@ describe('scrollBehavior of router options with global transition', () => {
     children: [{ path: 'async', component: AsyncComponent }, { path: 'sync', component: SyncComponent }],
   })
 
+  async function completeNavigation () {
+    await flushPromises()
+
+    // Ensure everything is settled
+    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+
+    expect(pageTransitionFinish).toHaveBeenCalled()
+    expect(pageLoadingEnd).toHaveBeenCalled()
+  }
+
   beforeAll(async () => {
     cleanups.push(nuxtApp.hook('page:transition:finish', pageTransitionFinish))
     cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
@@ -57,40 +67,30 @@ describe('scrollBehavior of router options with global transition', () => {
   })
 
   it('should not trigger scrollTo when trailing slash is added/removed', async () => {
-    // Same page as in beforeEach but with trailing slash at the end
-    await navigateTo('//')
-    await flushPromises()
+    await navigateTo('/about')
+    await completeNavigation()
 
-    // Ensure everything is settled
-    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+    expect(scrollTo).toHaveBeenCalled()
+    scrollTo.mockClear()
 
-    expect(pageTransitionFinish).toHaveBeenCalled()
-    expect(pageLoadingEnd).toHaveBeenCalled()
+    await navigateTo('/about/')
+    await completeNavigation()
 
-    // Scroll decision should be "trailing-slash" agnostic
     expect(scrollTo).not.toHaveBeenCalled()
   })
 
   it('should call scrollTo after page transition is finished with async component', async () => {
     await navigateTo('/transitions/async')
+    await completeNavigation()
 
-    // Ensure everything is settled
-    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
-
-    expect(pageTransitionFinish).toHaveBeenCalled()
-    expect(pageLoadingEnd).toHaveBeenCalled()
     expect(scrollTo).toHaveBeenCalled()
     expect(pageTransitionFinish).toHaveBeenCalledBefore(scrollTo)
   })
 
   it('should call scrollTo after page transition is finished with sync component', async () => {
     await navigateTo('/transitions/sync')
+    await completeNavigation()
 
-    // Ensure everything is settled
-    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
-
-    expect(pageTransitionFinish).toHaveBeenCalled()
-    expect(pageLoadingEnd).toHaveBeenCalled()
     expect(scrollTo).toHaveBeenCalled()
     expect(pageTransitionFinish).toHaveBeenCalledBefore(scrollTo)
   })
