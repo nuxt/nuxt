@@ -112,10 +112,22 @@ export const parentStorageBridge = (nonce: string) => /* js */ `
 `
 
 export const errorCSS = /* css */ `
+#pretty-errors-toggle .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
 #pretty-errors {
   width: 100%;
   height: 100%;
   z-index: 999999;
+  border: none;
 }
 #pretty-errors-toggle {
   background: none;
@@ -124,7 +136,14 @@ export const errorCSS = /* css */ `
   overflow: hidden;
   border-radius: 30px;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+#pretty-errors-toggle:hover,
+#pretty-errors-toggle:focus {
+  opacity: 1;
+  outline: 2px solid #ff6b6b;
+  outline-offset: 2px;
 }
 #pretty-errors, #pretty-errors-toggle {
   position: fixed;
@@ -141,6 +160,8 @@ export const errorCSS = /* css */ `
 }
 #pretty-errors[inert] {
   z-index: 999999999;
+  overflow: hidden;
+  border-radius: 30px;
 }
 #pretty-errors[inert], #pretty-errors[inert] + #pretty-errors-toggle {
   transform: scale(0.2);

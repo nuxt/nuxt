@@ -87,12 +87,30 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     const prettyResponse = await defaultHandler(error, event, { json: false })
     const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('')
     const prettyHTML = prettyResponse.body.replace('<head>', `<head><script>${iframeStorageBridge(nonce)}</script>`)
+
+    const utf8Bytes = new TextEncoder().encode(prettyHTML)
+    const base64HTML = btoa(String.fromCharCode(...utf8Bytes))
+
     const betterResponse = html
       .replace('</body>', `
         <style>${errorCSS}</style>
         <script>${parentStorageBridge(nonce)}</script>
-        <iframe id="pretty-errors" src="data:text/html;base64,${btoa(prettyHTML)}"></iframe>
-        <button id="pretty-errors-toggle" onclick="document.querySelector('#pretty-errors').toggleAttribute('inert')"></button>
+        <iframe 
+          id="pretty-errors" 
+          src="data:text/html;base64,${base64HTML}"
+          title="Detailed error stack trace"
+          sandbox="allow-scripts allow-same-origin"
+        ></iframe>
+        <button 
+          id="pretty-errors-toggle" 
+          onclick="document.querySelector('#pretty-errors').toggleAttribute('inert')"
+          aria-label="Toggle detailed error view"
+          aria-expanded="false"
+          type="button"
+        >
+          <span aria-hidden="true">⚠</span>
+          <span class="sr-only">Toggle Error Details</span>
+        </button>
       </body>
       `)
     return send(event, betterResponse)
