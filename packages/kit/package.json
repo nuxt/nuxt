@@ -34,7 +34,7 @@
     "errx": "^0.1.0",
     "exsolve": "^1.0.7",
     "ignore": "^7.0.5",
-    "jiti": "^2.5.1",
+    "jiti": "^2.6.1",
     "klona": "^2.0.6",
     "mlly": "^1.8.0",
     "ohash": "^2.0.11",
@@ -52,12 +52,12 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.5.4",
+    "@rspack/core": "1.5.8",
     "@types/semver": "7.7.1",
     "hookable": "5.5.3",
     "nitropack": "2.12.6",
     "unbuild": "3.6.1",
-    "vite": "7.1.5",
+    "vite": "7.1.8",
     "vitest": "3.2.4",
     "webpack": "5.102.0"
   },
