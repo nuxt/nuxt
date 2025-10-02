@@ -343,7 +343,7 @@ export const middlewareTemplate: NuxtTemplate = {
         : [
             `const _globalMiddleware = ${genObjectFromRawEntries(globalMiddleware.map(mw => [reverseResolveAlias(mw.path, alias).pop() || mw.path, genSafeVariableName(mw.name)]))}`,
             `for (const path in _globalMiddleware) {`,
-            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path })`,
+            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path, configurable: true })`,
             `}`,
             `export const globalMiddleware = Object.values(_globalMiddleware)`,
             `const _namedMiddleware = ${genArrayFromRaw(namedMiddleware.map(mw => ({
@@ -354,7 +354,7 @@ export const middlewareTemplate: NuxtTemplate = {
             `for (const mw of _namedMiddleware) {`,
             `  const i = mw.import`,
             `  mw.import = () => i().then(r => {`,
-            `    Object.defineProperty(r.default || r, '_path', { value: mw.path })`,
+            `    Object.defineProperty(r.default || r, '_path', { value: mw.path, configurable: true })`,
             `    return r`,
             `  })`,
             `}`,
