@@ -16,8 +16,8 @@ If your component is cached by `<KeepAlive>` and enters a deactivated state, the
 
 ## Type
 
-```ts
-refreshNuxtData(keys?: string | string[])
+```ts [Signature]
+export function refreshNuxtData (keys?: string | string[])
 ```
 
 ## Parameters
@@ -50,7 +50,10 @@ async function refreshAll () {
 
 <template>
   <div>
-    <button :disabled="refreshing" @click="refreshAll">
+    <button
+      :disabled="refreshing"
+      @click="refreshAll"
+    >
       Refetch All Data
     </button>
   </div>
@@ -80,7 +83,9 @@ async function refresh () {
   <div v-if="refreshing">
     Loading
   </div>
-  <button @click="refresh">Refresh</button>
+  <button @click="refresh">
+    Refresh
+  </button>
 </template>
 ```
 

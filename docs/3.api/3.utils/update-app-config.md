@@ -15,10 +15,11 @@ Updates the [`app.config`](/docs/4.x/guide/directory-structure/app-config) using
 ## Usage
 
 ```js
+import { updateAppConfig, useAppConfig } from '#imports'
+
 const appConfig = useAppConfig() // { foo: 'bar' }
 
 const newAppConfig = { foo: 'baz' }
-
 updateAppConfig(newAppConfig)
 
 console.log(appConfig) // { foo: 'baz' }
