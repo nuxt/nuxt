@@ -17,8 +17,6 @@ const asyncNuxtStorage = createContext<Nuxt>({
 /** Direct access to the Nuxt context with asyncLocalStorage - see https://github.com/unjs/unctx. */
 export const getNuxtCtx = () => asyncNuxtStorage.tryUse()
 
-// TODO: Use use/tryUse from unctx. https://github.com/unjs/unctx/issues/6
-
 /**
  * Get access to Nuxt instance.
  *
