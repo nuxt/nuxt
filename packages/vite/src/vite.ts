@@ -12,7 +12,6 @@ import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
-import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { logLevelMap } from './utils/logger'
 import { SSRStylesPlugin } from './plugins/ssr-styles'
@@ -152,6 +151,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           fs: {
             allow: [...new Set(allowDirs)],
           },
+          warmup: {
+            ssrFiles: [entry],
+            clientFiles: [entry],
+          }
         },
       } satisfies ViteConfig,
       viteConfig,
@@ -275,16 +278,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         }
       }))
     })
-
-    if (nuxt.options.vite.warmupEntry !== false) {
-      // Don't delay nitro build for warmup
-      useNitro().hooks.hookOnce('compiled', () => {
-        const start = Date.now()
-        warmupViteServer(server, [ctx.entry], env.isServer)
-          .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
-          .catch(logger.error)
-      })
-    }
   })
 
   await withLogs(() => buildClient(nuxt, ctx), 'Vite client built', nuxt.options.dev)
