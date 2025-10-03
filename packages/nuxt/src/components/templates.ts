@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport } from 'knitwork'
+import { genDynamicImport, genPropertyAccess } from 'knitwork'
 import { distDir } from '../dirs'
 import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
@@ -121,7 +121,7 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
       genDynamicImport(isAbsolute(c.filePath)
         ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
         : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })
-    }['${c.export}']`
+    }${genPropertyAccess(c.export)}`
 
     if (c.mode === 'server') {
       if (app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')) {
