@@ -64,7 +64,7 @@ describe('server api', () => {
   })
 })
 
-describe.only('route rules', () => {
+describe('route rules', () => {
   it('should enable spa mode', async () => {
     const headHtml = await $fetch<string>('/route-rules/spa')
 
