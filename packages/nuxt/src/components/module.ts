@@ -132,7 +132,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // component-names.mjs
     addTemplate(componentNamesTemplate)
     // components.islands.mjs
-    addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
+    addTemplate(componentsIslandsTemplate)
 
     if (moduleOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
