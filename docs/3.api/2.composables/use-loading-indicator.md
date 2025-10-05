@@ -10,8 +10,8 @@ links:
 
 ## Description
 
-A composable which returns the loading state of the page. Used by [`<NuxtLoadingIndicator>`](/docs/api/components/nuxt-loading-indicator) and controllable.
-It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime) and [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to change its state.
+A composable which returns the loading state of the page. Used by [`<NuxtLoadingIndicator>`](/docs/4.x/api/components/nuxt-loading-indicator) and controllable.
+It hooks into [`page:loading:start`](/docs/4.x/api/advanced/hooks#app-hooks-runtime) and [`page:loading:end`](/docs/4.x/api/advanced/hooks#app-hooks-runtime) to change its state.
 
 ## Parameters
 
@@ -58,20 +58,20 @@ Used by `finish()`. Clear all timers and intervals used by the composable.
 
 ```vue
 <script setup lang="ts">
-  const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
-    duration: 2000,
-    throttle: 200,
-    // This is how progress is calculated by default
-    estimatedProgress: (duration, elapsed) => (2 / Math.PI * 100) * Math.atan(elapsed / duration * 100 / 50)
-  })
+const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
+  duration: 2000,
+  throttle: 200,
+  // This is how progress is calculated by default
+  estimatedProgress: (duration, elapsed) => (2 / Math.PI * 100) * Math.atan(elapsed / duration * 100 / 50),
+})
 </script>
 ```
 
 ```vue
 <script setup lang="ts">
-  const { start, set } = useLoadingIndicator()
-  // same as set(0, { force: true })
-  // set the progress to 0, and show loading immediately
-  start({ force: true })
+const { start, set } = useLoadingIndicator()
+// same as set(0, { force: true })
+// set the progress to 0, and show loading immediately
+start({ force: true })
 </script>
 ```

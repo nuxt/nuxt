@@ -44,6 +44,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
     },
     optimizeDeps: {
       noDiscovery: true,
+      include: undefined,
     },
     resolve: {
       conditions: ((nuxt as any)._nitro as Nitro)?.options.exportConditions,

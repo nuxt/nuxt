@@ -69,16 +69,6 @@ export function vueServerComponentsPlugin (options: Partial<VSCOptions> = {}): {
           }
         }
       },
-      generateBundle (_, bundle) {
-        for (const chunk of Object.values(bundle)) {
-          if (chunk.type === 'chunk') {
-            const list = refs.map(ref => ref.id)
-            if (list.includes(chunk.fileName)) {
-              chunk.isEntry = false
-            }
-          }
-        }
-      },
     }],
 
     server: opts => [

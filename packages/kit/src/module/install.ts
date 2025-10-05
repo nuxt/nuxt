@@ -92,6 +92,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         continue
       }
 
+      // ensure types are recognised for modules that are dependencies of other modules
+      nuxt.options.typescript.hoist.push(name)
+
       if (resolvedModule && !modulesToInstall.has(resolvedModule.module) && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
         // check for config key already registered
         if (typeof resolvedModule.module === 'string' && inlineConfigKeys.has(resolvedModule.module)) {

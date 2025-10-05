@@ -49,6 +49,11 @@ export default defineEventHandler(async (event) => {
 
   const ast = await app.runWithContext(() => serializeApp(app, ssrContext))
 
+  // Handle errors
+  if (ssrContext.payload?.error) {
+    throw ssrContext.payload.error
+  }
+
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })

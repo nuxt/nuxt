@@ -9,7 +9,7 @@ links:
 ---
 
 ::note
-`useNuxtData` gives you access to the current cached value of [`useAsyncData`](/docs/api/composables/use-async-data) , [`useLazyAsyncData`](/docs/api/composables/use-lazy-async-data), [`useFetch`](/docs/api/composables/use-fetch) and [`useLazyFetch`](/docs/api/composables/use-lazy-fetch) with explicitly provided key.
+`useNuxtData` gives you access to the current cached value of [`useAsyncData`](/docs/4.x/api/composables/use-async-data) , [`useLazyAsyncData`](/docs/4.x/api/composables/use-lazy-async-data), [`useFetch`](/docs/4.x/api/composables/use-fetch) and [`useLazyFetch`](/docs/4.x/api/composables/use-lazy-fetch) with explicitly provided key.
 ::
 
 ## Usage
@@ -50,10 +50,10 @@ const route = useRoute()
 
 const { data } = useLazyFetch(`/api/posts/${route.params.id}`, {
   key: `post-${route.params.id}`,
-  default() {
+  default () {
     // Find the individual post from the cache and set it as the default value.
     return posts.value.find(post => post.id === route.params.id)
-  }
+  },
 })
 </script>
 ```
@@ -80,10 +80,10 @@ let previousTodos = []
 const { data: todos } = useNuxtData('todos')
 
 async function addTodo () {
-  return $fetch('/api/addTodo', {
+  await $fetch('/api/addTodo', {
     method: 'post',
     body: {
-      todo: newTodo.value
+      todo: newTodo.value,
     },
     onRequest () {
       // Store the previously cached value to restore if fetch fails.
@@ -99,7 +99,7 @@ async function addTodo () {
     async onResponse () {
       // Invalidate todos in the background if the request succeeded.
       await refreshNuxtData('todos')
-    }
+    },
   })
 }
 </script>
@@ -107,6 +107,6 @@ async function addTodo () {
 
 ## Type
 
-```ts
-useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
+```ts [Signature]
+export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
 ```

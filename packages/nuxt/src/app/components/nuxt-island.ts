@@ -11,6 +11,7 @@ import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
 import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 
@@ -76,8 +77,7 @@ export default defineComponent({
     const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
+    const eventFetch = import.meta.server ? event!.fetch : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -116,8 +116,11 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
+      if (!r.ok) {
+        throw createError({ statusCode: r.status, statusMessage: r.statusText })
+      }
       try {
-        const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+        const result = await r.json()
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')

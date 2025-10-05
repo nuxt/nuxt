@@ -237,9 +237,6 @@ let _node: ViteNodeServer | undefined
 
 function getNode (server: ViteDevServer) {
   return _node ||= new ViteNodeServer(server, {
-    deps: {
-      inline: [/^#/, /\?/],
-    },
     transformMode: {
       ssr: [/.*/],
       web: [],

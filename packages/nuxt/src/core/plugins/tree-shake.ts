@@ -32,10 +32,61 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       },
       handler (code) {
         const s = new MagicString(code)
-        const strippedCode = stripLiteral(code)
-        for (const match of strippedCode.matchAll(COMPOSABLE_RE_GLOBAL)) {
-          s.overwrite(match.index!, match.index! + match[0].length, `${match[1]} false && /*@__PURE__*/ ${match[2]}`)
-        }
+
+        // Parse and collect scope information
+        const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+        const parseResult = parseAndWalk(code, id, {
+          scopeTracker,
+        })
+        scopeTracker.freeze()
+
+        // Process nodes and check for tree-shaking opportunities
+        walk(parseResult.program, {
+          scopeTracker,
+          enter (node) {
+            if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
+              return
+            }
+
+            const functionName = node.callee.name
+            const scopeTrackerNode = scopeTracker.getDeclaration(functionName)
+
+            if (scopeTrackerNode) {
+            // don't tree-shake if there's a local declaration
+              if (scopeTrackerNode.type !== 'Import') {
+                return
+              }
+
+              if (scopeTrackerNode.importNode.type !== 'ImportDeclaration') {
+                return
+              }
+
+              // check if import is from an allowed source and composable
+              const importPath = scopeTrackerNode.importNode.source.value
+
+              const importSpecifier = scopeTrackerNode.node
+              const importedName = importSpecifier.type === 'ImportSpecifier' && importSpecifier.imported.type === 'Identifier'
+                ? importSpecifier.imported.name
+                : importSpecifier.local.name
+
+              const isFromAllowedPath = importPath === '#imports'
+                ? allComposableNames.has(importedName)
+                : options.composables[importPath]?.includes(importedName)
+
+              if (!isFromAllowedPath) {
+                return
+              }
+            }
+
+            if (!scopeTrackerNode && !allComposableNames.has(functionName)) {
+              return
+            }
+
+            // TODO: validate function name against actual auto-imports registry
+            s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
+            this.skip()
+          },
+        })
 
         if (s.hasChanged()) {
           return {

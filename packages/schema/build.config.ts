@@ -37,7 +37,6 @@ export default defineBuildConfig({
     'nuxt/app',
     'ofetch',
     'oxc-transform',
-    'pkg-types',
     'postcss',
     'pug',
     'rollup-plugin-visualizer',
