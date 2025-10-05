@@ -65,18 +65,18 @@ export default defineNuxtPlugin({
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
-    const componentNames: string[] = []
+    const componentNames = new Set<string>()
     for (const c of app.components) {
       if (!c.island) {
-        componentNames.push(c.pascalName)
+        componentNames.add(c.pascalName)
       }
     }
-    return `export const componentNames = ${JSON.stringify(componentNames)}`
+    return `export const componentNames = ${JSON.stringify([...componentNames])}`
   },
 }
 
 export const componentsIslandsTemplate: NuxtTemplate = {
-  // components.islands.mjs'
+  filename: 'components.islands.mjs',
   getContents ({ app, nuxt }) {
     if (!nuxt.options.experimental.componentIslands) {
       return 'export const islandComponents = {}'
@@ -114,21 +114,31 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
   const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
   const componentTypes: Array<[string, string]> = []
   for (const c of app.components) {
-    if (!c.island) {
-      const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-        ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
-        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
-      const isServerOnly = c.mode === 'server' && c.filePath !== serverPlaceholderPath && !app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')
-      componentTypes.push([
-        c.pascalName,
-        isServerOnly ? `IslandComponent<${type}>` : type,
-      ])
+    if (c.island) {
+      continue
     }
+    let type = `typeof ${
+      genDynamicImport(isAbsolute(c.filePath)
+        ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
+        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })
+    }['${c.export}']`
+
+    if (c.mode === 'server') {
+      if (app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')) {
+        if (c.filePath.startsWith(serverPlaceholderPath)) {
+          continue
+        }
+      } else {
+        type = `IslandComponent<${type}>`
+      }
+    }
+    componentTypes.push([c.pascalName, type])
   }
 
   return componentTypes
 }
-const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+
+const islandType = 'type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
 const hydrationTypes = `
 type HydrationStrategies = {
   hydrateOnVisible?: IntersectionObserverInit | true
@@ -139,7 +149,7 @@ type HydrationStrategies = {
   hydrateWhen?: boolean
   hydrateNever?: true
 }
-type LazyComponent<T> = (T & DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>)
+type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 `
 export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
@@ -168,8 +178,8 @@ import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {
-  ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  '${pascalName}': ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {

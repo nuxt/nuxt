@@ -722,13 +722,13 @@ exports[`template > produces correct output for loading template 1`] = `
   position: absolute;
 }
 .triangle-loading > path {
+  animation: nuxt-loading-move 3s linear infinite;
   fill: none;
-  stroke-width: 4px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
   stroke-dasharray: 128;
   stroke-dashoffset: 128;
-  animation: nuxt-loading-move 3s linear infinite;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4px;
 }
 .nuxt-logo:hover .triangle-loading > path {
   animation-play-state: paused;

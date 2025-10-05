@@ -6,7 +6,7 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/kit"
   },
-  "homepage": "https://nuxt.com/docs/api/kit",
+  "homepage": "https://nuxt.com/docs/4.x/api/kit",
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",
@@ -27,7 +27,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^3.2.0",
+    "c12": "^3.3.0",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
@@ -47,19 +47,19 @@
     "tinyglobby": "^0.2.15",
     "ufo": "^1.6.1",
     "unctx": "^2.4.1",
-    "unimport": "^5.2.0",
+    "unimport": "^5.4.1",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.5.3",
+    "@rspack/core": "1.5.4",
     "@types/semver": "7.7.1",
     "hookable": "5.5.3",
-    "nitropack": "2.12.5",
+    "nitropack": "2.12.6",
     "unbuild": "3.6.1",
     "vite": "7.1.5",
     "vitest": "3.2.4",
-    "webpack": "5.101.3"
+    "webpack": "5.102.0"
   },
   "engines": {
     "node": ">=18.12.0"

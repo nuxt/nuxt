@@ -4,13 +4,15 @@ on:
   issue_comment:
     types: [created]
 
-permissions:
-  pull-requests: write
+permissions: {}
 
 jobs:
   trigger:
     runs-on: ubuntu-latest
     if: github.repository == 'nuxt/nuxt' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/ecosystem-ci run')
+    permissions:
+      issues: write # to add reactions and post comments
+      pull-requests: read # to read PR data
     steps:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
@@ -31,7 +33,7 @@ jobs:
             }
 
             if (hasTriagePermission) {
-              console.log('Allowed')
+              console.log('User is allowed. Adding +1 reaction.')
               await github.rest.reactions.createForIssueComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -39,15 +41,16 @@ jobs:
                 content: '+1',
               })
             } else {
-              console.log('Not allowed')
+              console.log('User is not allowed. Adding -1 reaction.')
               await github.rest.reactions.createForIssueComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: context.payload.comment.id,
                 content: '-1',
               })
-              throw new Error('not allowed')
+              throw new Error('User does not have the necessary permissions.')
             }
+
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         id: get-pr-data
         with:
@@ -58,17 +61,52 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number
             })
+
+            const commentCreatedAt = new Date(context.payload.comment.created_at)
+            const commitPushedAt = new Date(pr.head.repo.pushed_at)
+
+            console.log(`Comment created at: ${commentCreatedAt.toISOString()}`)
+            console.log(`PR last pushed at: ${commitPushedAt.toISOString()}`)
+
+            // Check if any commits were pushed after the comment was created
+            if (commitPushedAt > commentCreatedAt) {
+              const errorMsg = [
+                '⚠️ Security warning: PR was updated after the trigger command was posted.',
+                '',
+                `Comment posted at: ${commentCreatedAt.toISOString()}`,
+                `PR last pushed at: ${commitPushedAt.toISOString()}`,
+                '',
+                'This could indicate an attempt to inject code after approval.',
+                'Please review the latest changes and re-run /ecosystem-ci run if they are acceptable.'
+              ].join('\n')
+              
+              core.setFailed(errorMsg)
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: errorMsg
+              })
+              
+              throw new Error('PR was pushed to after comment was created')
+            }
+
+            core.setOutput('head_sha', pr.head.sha)
             return {
               num: context.issue.number,
               branchName: pr.head.ref,
+              commit: pr.head.sha,
               repo: pr.head.repo.full_name
             }
+
       - id: generate-token
         uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
         with:
           app_id: ${{ secrets.ECOSYSTEM_CI_GITHUB_APP_ID }}
           private_key: ${{ secrets.ECOSYSTEM_CI_GITHUB_APP_PRIVATE_KEY }}
           installation_retrieval_payload: "${{ github.repository_owner }}/ecosystem-ci"
+
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         id: trigger
         env:
@@ -91,6 +129,7 @@ jobs:
                 prNumber: '' + prData.num,
                 branchName: prData.branchName,
                 repo: prData.repo,
+                commit: prData.commit,
                 suite: suite === '' ? '-' : suite
               }
             })

@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -127,7 +127,7 @@ export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncDat
 
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
  * @since 3.0.0
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useAsyncData
@@ -154,7 +154,7 @@ export function useAsyncData<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
  * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useAsyncData
@@ -193,6 +193,7 @@ export function useAsyncData<
 
   // eslint-disable-next-line prefer-const
   let [_key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  let keyChanging = false
 
   // Validate arguments
   const key = computed(() => toValue(_key)!)
@@ -280,7 +281,7 @@ export function useAsyncData<
       instance.sp = []
     }
     if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
-      console.warn(`[nuxt] [${functionName}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
+      console.warn(`[nuxt] [${functionName}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/4.x/getting-started/data-fetching`)
     }
     if (instance && !instance._nuxtOnBeforeMountCbs) {
       instance._nuxtOnBeforeMountCbs = []
@@ -322,34 +323,54 @@ export function useAsyncData<
 
     // setup watchers/instance
     const hasScope = getCurrentScope()
+    // Key watcher: react immediately to key changes to remount/migrate the async data container deterministically.
     const unsubKeyWatcher = watch(key, (newKey, oldKey) => {
       if ((newKey || oldKey) && newKey !== oldKey) {
-        const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
-        const isRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
+        keyChanging = true
+
+        const hadData = nuxtApp._asyncData[oldKey]?.data.value !== undefined
+        const wasRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
+
+        const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
+
+        // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
+        if (!nuxtApp._asyncData[newKey]?._init) {
+          let initialValue: NoInfer<DataT> | undefined
+
+          if (oldKey && hadData) {
+            initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
+          } else {
+            initialValue = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+            initialFetchOptions.cachedData = initialValue
+          }
+
+          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialValue)
+        }
+
+        nuxtApp._asyncData[newKey]._deps++
+
+        // Now it's safe to drop the old container.
         if (oldKey) {
           unregister(oldKey)
         }
-        const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
-        if (!nuxtApp._asyncData[newKey]?._init) {
-          let value: NoInfer<DataT> | undefined
-          if (oldKey && hasRun) {
-            value = nuxtApp._asyncData[oldKey]?.data.value as NoInfer<DataT>
-          } else {
-            value = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-            initialFetchOptions.cachedData = value
-          }
-          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, value)
-        }
-        nuxtApp._asyncData[newKey]._deps++
 
-        if (options.immediate || hasRun || isRunning) {
+        // Trigger the fetch for the new key if needed.
+        if (options.immediate || hadData || wasRunning) {
           nuxtApp._asyncData[newKey].execute(initialFetchOptions)
         }
+
+        // Release the guard after the current flush to avoid overlapping executes.
+        queuePostFlushCb(() => {
+          keyChanging = false
+        })
       }
     }, { flush: 'sync' })
 
-    const unsubWatcher = options.watch
+    // Params/deps watcher: keep default (pre) flush to batch multiple mutations into a single execute.
+    // This preserves the "non synchronous" behavior covered by tests.
+    const unsubParamsWatcher = options.watch
       ? watch(options.watch, () => {
+          if (keyChanging) { return } // avoid double execute while the key switch is being processed
           asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
         })
       : () => {}
@@ -357,7 +378,7 @@ export function useAsyncData<
     if (hasScope) {
       onScopeDispose(() => {
         unsubKeyWatcher()
-        unsubWatcher()
+        unsubParamsWatcher()
         unregister(key.value)
       })
     }
@@ -396,7 +417,7 @@ function writableComputedRef<T> (getter: () => Ref<T>) {
 
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-async-data}
+ * See {@link https://nuxt.com/docs/4.x/api/composables/use-lazy-async-data}
  * @since 3.0.0
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useLazyAsyncData
@@ -423,7 +444,7 @@ export function useLazyAsyncData<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-async-data}
+ * See {@link https://nuxt.com/docs/4.x/api/composables/use-lazy-async-data}
  * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useLazyAsyncData
