@@ -511,6 +511,9 @@ importers:
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
+      strip-literal:
+        specifier: ^3.1.0
+        version: 3.1.0
       tinyglobby:
         specifier: ^0.2.15
         version: 0.2.15
@@ -1203,7 +1206,7 @@ importers:
         version: 1.6.1
       unplugin:
         specifier: latest
-        version: 2.3.6
+        version: 2.3.10
       vue:
         specifier: 3.5.21
         version: 3.5.21(typescript@5.9.2)
@@ -8017,10 +8020,6 @@ packages:
 
   unplugin@2.3.10:
     resolution: {integrity: sha512-6NCPkv1ClwH+/BGE9QeoTIl09nuiAt0gS28nn1PvYXsGKRwM2TCbFA2QiilmehPDTXIe684k4rZI1yl3A1PCUw==}
-    engines: {node: '>=18.12.0'}
-
-  unplugin@2.3.6:
-    resolution: {integrity: sha512-+/MdXl8bLTXI2lJF22gUBeCFqZruEpL/oM9f8wxCuKh9+Mw9qeul3gTqgbKpMeOFlusCzc0s7x2Kax2xKW+FQg==}
     engines: {node: '>=18.12.0'}
 
   unrs-resolver@1.11.0:
@@ -16331,13 +16330,6 @@ snapshots:
       - vue
 
   unplugin@2.3.10:
-    dependencies:
-      '@jridgewell/remapping': 2.3.5
-      acorn: 8.15.0
-      picomatch: 4.0.3
-      webpack-virtual-modules: 0.6.2
-
-  unplugin@2.3.6:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       acorn: 8.15.0
