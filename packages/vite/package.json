@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "nitropack": "2.12.6",
+    "nitropack": "2.12.5",
     "rolldown": "1.0.0-beta.38",
     "rollup": "4.50.1",
     "unbuild": "3.6.1",
