@@ -44,14 +44,14 @@
   "resolutions": {
     "@babel/core": "7.28.4",
     "@babel/helper-plugin-utils": "7.27.1",
-    "@nuxt/cli": "3.28.0",
+    "@nuxt/cli": "3.29.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/node": "22.18.8",
-    "@unhead/vue": "2.0.14",
+    "@unhead/vue": "2.0.17",
     "@vue/compiler-core": "3.5.22",
     "@vue/compiler-dom": "3.5.22",
     "@vue/shared": "3.5.22",
@@ -80,7 +80,7 @@
     "@codspeed/core": "5.0.1",
     "@codspeed/vitest-plugin": "5.0.1",
     "@eslint/markdown": "7.3.0",
-    "@nuxt/cli": "3.28.0",
+    "@nuxt/cli": "3.29.0",
     "@nuxt/eslint-config": "1.9.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
@@ -94,7 +94,7 @@
     "@types/node": "22.18.8",
     "@types/semver": "7.7.1",
     "@typescript-eslint/parser": "8.45.0",
-    "@unhead/vue": "2.0.14",
+    "@unhead/vue": "2.0.17",
     "@vitest/coverage-v8": "3.2.4",
     "@vue/test-utils": "2.4.6",
     "acorn": "8.15.0",
@@ -147,6 +147,6 @@
     "vue-tsc": "3.1.0",
     "webpack": "5.102.0"
   },
-  "packageManager": "pnpm@10.18.0",
+  "packageManager": "pnpm@10.18.1",
   "version": ""
 }
