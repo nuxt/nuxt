@@ -102,7 +102,7 @@ describe('route rules', () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')
     await page.getByTestId('route-rules-redirect').click()
-    await vi.waitFor(() => page.url() === url('/#hash'), { timeout: 5_000 })
+    await vi.waitFor(() => page.url() === url('/#hello'), { timeout: 5_000 })
   })
 
   it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
