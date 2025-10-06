@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-`refreshNuxtData` is used to refetch all or specific `asyncData` instances, including those from [`useAsyncData`](/docs/api/composables/use-async-data), [`useLazyAsyncData`](/docs/api/composables/use-lazy-async-data), [`useFetch`](/docs/api/composables/use-fetch), and [`useLazyFetch`](/docs/api/composables/use-lazy-fetch).  
+`refreshNuxtData` is used to refetch all or specific `asyncData` instances, including those from [`useAsyncData`](/docs/4.x/api/composables/use-async-data), [`useLazyAsyncData`](/docs/4.x/api/composables/use-lazy-async-data), [`useFetch`](/docs/4.x/api/composables/use-fetch), and [`useLazyFetch`](/docs/4.x/api/composables/use-lazy-fetch).  
 
 ::note
 If your component is cached by `<KeepAlive>` and enters a deactivated state, the `asyncData` inside the component will still be refetched until the component is unmounted.
@@ -16,13 +16,13 @@ If your component is cached by `<KeepAlive>` and enters a deactivated state, the
 
 ## Type
 
-```ts
-refreshNuxtData(keys?: string | string[])
+```ts [Signature]
+export function refreshNuxtData (keys?: string | string[])
 ```
 
 ## Parameters
 
-* `keys`: A single string or an array of strings as `keys` that are used to fetch the data. This parameter is **optional**. All [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) keys are re-fetched when no `keys` are explicitly specified.
+* `keys`: A single string or an array of strings as `keys` that are used to fetch the data. This parameter is **optional**. All [`useAsyncData`](/docs/4.x/api/composables/use-async-data) and [`useFetch`](/docs/4.x/api/composables/use-fetch) keys are re-fetched when no `keys` are explicitly specified.
 
 ## Return Values
 
@@ -34,7 +34,7 @@ refreshNuxtData(keys?: string | string[])
 
 This example below refreshes all data being fetched using `useAsyncData` and `useFetch` in Nuxt application.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
 
@@ -50,7 +50,10 @@ async function refreshAll () {
 
 <template>
   <div>
-    <button :disabled="refreshing" @click="refreshAll">
+    <button
+      :disabled="refreshing"
+      @click="refreshAll"
+    >
       Refetch All Data
     </button>
   </div>
@@ -61,7 +64,7 @@ async function refreshAll () {
 
 This example below refreshes only data where the key matches to `count` and `user`.
 
-```vue [pages/some-page.vue]
+```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 const refreshing = ref(false)
 
@@ -80,7 +83,9 @@ async function refresh () {
   <div v-if="refreshing">
     Loading
   </div>
-  <button @click="refresh">Refresh</button>
+  <button @click="refresh">
+    Refresh
+  </button>
 </template>
 ```
 
@@ -88,4 +93,4 @@ async function refresh () {
 If you have access to the `asyncData` instance, it is recommended to use its `refresh` or `execute` method as the preferred way to refetch the data.
 ::
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}

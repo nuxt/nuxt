@@ -1,3 +1,4 @@
+import { useRouter } from './router'
 import { useNuxtApp } from '../nuxt'
 
 type CallOnceOptions = {
@@ -9,7 +10,7 @@ type CallOnceOptions = {
  * @param key a unique key ensuring the function can be properly de-duplicated across requests
  * @param fn a function to call
  * @param options Setup the mode, e.g. to re-execute on navigation
- * @see https://nuxt.com/docs/api/utils/call-once
+ * @see https://nuxt.com/docs/4.x/api/utils/call-once
  * @since 3.9.0
  */
 export function callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
@@ -27,9 +28,14 @@ export async function callOnce (...args: any): Promise<void> {
   const nuxtApp = useNuxtApp()
 
   if (options?.mode === 'navigation') {
-    nuxtApp.hooks.hookOnce('page:start', () => {
+    const cleanups: Array<() => void> = []
+    function callback () {
       nuxtApp.payload.once.delete(_key)
-    })
+      for (const cleanup of cleanups) {
+        cleanup()
+      }
+    }
+    cleanups.push(nuxtApp.hooks.hook('page:start', callback), useRouter().beforeResolve(callback))
   }
 
   // If key already ran

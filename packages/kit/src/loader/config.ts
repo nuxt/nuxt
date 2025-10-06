@@ -10,6 +10,7 @@ import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm'
+import { withTrailingSlash } from 'ufo'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -25,8 +26,11 @@ const merger = createDefu((obj, key, value) => {
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  const localLayers = (await glob('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() }))
+  const localLayers = (await glob('layers/*', {
+    onlyDirectories: true, cwd: opts.cwd || process.cwd(),
+  }))
     .map((d: string) => d.endsWith('/') ? d.substring(0, d.length - 1) : d)
+    .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
   const globalSelf = globalThis as any
@@ -53,7 +57,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   if (meta?.name) {
     const alias = `#layers/${meta.name}`
-    nuxtConfig.alias[alias] ||= nuxtConfig.rootDir
+    nuxtConfig.alias[alias] ||= withTrailingSlash(nuxtConfig.rootDir)
   }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
@@ -98,7 +102,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // Add layer alias
     if (layer.meta?.name) {
       const alias = `#layers/${layer.meta.name}`
-      nuxtConfig.alias[alias] ||= layer.config.rootDir || layer.cwd
+      nuxtConfig.alias[alias] ||= withTrailingSlash(layer.config.rootDir || layer.cwd)
     }
     _layers.push(layer)
   }

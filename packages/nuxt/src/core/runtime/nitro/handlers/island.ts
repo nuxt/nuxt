@@ -11,9 +11,10 @@ import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
-import { type NuxtIslandContext, type NuxtIslandResponse, getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+import type { NuxtIslandContext, NuxtIslandResponse } from '../utils/renderer/islands'
 
-const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
+const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
 export default defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
@@ -39,10 +40,15 @@ export default defineEventHandler(async (event) => {
   // Render app
   const renderer = await getSSRRenderer()
 
-  const renderResult = await renderer.renderToString(ssrContext).catch(async (error) => {
-    await ssrContext.nuxt?.hooks.callHook('app:error', error)
-    throw error
+  const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
+    await ssrContext.nuxt?.hooks.callHook('app:error', err)
+    throw err
   })
+
+  // Handle errors
+  if (ssrContext.payload?.error) {
+    throw ssrContext.payload.error
+  }
 
   const inlinedStyles = await renderInlineStyles(ssrContext.modules ?? [])
 
@@ -74,6 +80,7 @@ export default defineEventHandler(async (event) => {
 
   const islandHead: SerializableHead = {}
   for (const entry of ssrContext.head.entries.values()) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
       const currentValue = islandHead[key as keyof SerializableHead]
       if (Array.isArray(currentValue)) {

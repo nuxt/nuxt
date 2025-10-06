@@ -38,9 +38,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -77,10 +77,10 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
+        uses: github/codeql-action/init@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
         with:
           config: |
             paths:
@@ -97,7 +97,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
+        uses: github/codeql-action/analyze@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -114,9 +114,9 @@ jobs:
         # module: ["bundler", "node"]
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -125,7 +125,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: dist
           path: packages
@@ -145,9 +145,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -172,9 +172,9 @@ jobs:
     needs:
       - build
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -185,8 +185,11 @@ jobs:
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Test (unit + runtime test)
-        run: pnpm vitest run --project unit --project nuxt
+      - name: Test (nuxt runtime)
+        run: pnpm test:runtime
+
+      - name: Test (unit)
+        run: pnpm test:unit
 
   test-size:
     runs-on: ubuntu-latest
@@ -194,9 +197,9 @@ jobs:
       - build
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -205,7 +208,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: dist
           path: packages
@@ -219,9 +222,9 @@ jobs:
       - build
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -230,7 +233,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: dist
           path: packages
@@ -239,10 +242,11 @@ jobs:
         run: pnpm test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@0010eb0ca6e89b80c88e8edaaa07cfe5f3e6664d # v3.5.0
+        uses: CodSpeedHQ/action@3959e9e296ef25296e93e32afcc97196f966e57f # v4.1.0
         with:
           run: pnpm vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
+          mode: instrumentation
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
@@ -258,7 +262,7 @@ jobs:
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
         payload: ["json", "js"]
-        node: [20]
+        node: ["lts/-1"]
         exclude:
           - builder: "webpack"
             payload: "js"
@@ -282,9 +286,9 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -296,7 +300,7 @@ jobs:
         run: pnpm playwright-core install chromium
 
       - name: Restore dist cache
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: dist
           path: packages
@@ -312,14 +316,14 @@ jobs:
           SKIP_BUNDLE_SIZE: true
           NITRO_NO_UNIX_SOCKET: ${{ matrix.env == 'dev' && '1' || '' }}
 
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
         if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   release-nightly:
     concurrency:
-      group: release
+      group: release-nightly
     permissions:
       id-token: write
     if: |
@@ -333,43 +337,42 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
-          node-version: lts/*
+          node-version: current
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: dist
           path: packages
 
-      - name: Release Edge
-        run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
+      - name: Release nightly
+        run: node scripts/release.ts --nightly
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
 
-  release-pr:
-    if: github.repository_owner == 'nuxt' && github.event_name != 'push'
+  release-pkg-pr-new:
+    if: github.repository_owner == 'nuxt'
     needs:
       - build
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -378,7 +381,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: dist
           path: packages

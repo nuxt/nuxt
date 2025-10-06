@@ -6,13 +6,13 @@ import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
-import { logger } from '../utils'
+import { logger, resolveToAlias } from '../utils'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
 const GLOBAL_RE = /\.global(?:\.island)?$/
-const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
-const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
+const COMPONENT_MODE_RE = /(?<=\.)(client|server)(?:\.global|\.island)*$/
+const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
@@ -31,9 +31,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   const scannedPaths: string[] = []
 
   for (const dir of dirs) {
-    if (dir.enabled === false) {
-      continue
-    }
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
@@ -48,9 +45,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         for (const sibling of siblings) {
           if (sibling.toLowerCase() === directoryLowerCase) {
             const nuxt = useNuxt()
-            const original = relative(nuxt.options.srcDir, dir.path)
-            const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), sibling))
-            logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
+            const original = resolveToAlias(dir.path, nuxt)
+            const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
+            logger.warn(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`)
             break
           }
         }
@@ -141,7 +138,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        logger.warn(`Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
+        logger.warn(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`)
         continue
       }
 

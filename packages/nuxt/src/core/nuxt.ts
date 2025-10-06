@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -16,13 +16,12 @@ import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
-import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import defu from 'defu'
-import { gt, satisfies } from 'semver'
+import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
-import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -124,10 +123,14 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     })
   }
 
+  // TODO: remove in nuxt v5
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (!nuxtCtx.tryUse()) {
     // backward compatibility with 3.x
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     nuxtCtx.set(nuxt)
     nuxt.hook('close', () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       nuxtCtx.unset()
     })
   }
@@ -137,8 +140,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
-// TODO: update to nitro import
-const fallbackCompatibilityDate = '2024-04-03' as DateString
+const fallbackCompatibilityDate = '2025-07-15' as DateString
 
 const nightlies = {
   'nitropack': 'nitropack-nightly',
@@ -156,6 +158,8 @@ export const keyDependencies = [
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
+  const layerDirs = getLayerDirectories(nuxt)
+
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
@@ -185,7 +189,6 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
-  const coreTypePackages = nuxt.options.typescript.hoist || []
 
   // Disable environment types entirely if `typescript.builder` is false
   if (nuxt.options.typescript.builder !== false) {
@@ -217,40 +220,19 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
-  const NESTED_PKG_RE = /^[^@]+\//
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
-  const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
-    const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
-    const subpath = _subpath ? '/' + _subpath : ''
-
-    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
-
-    // deduplicate types for nightly releases
-    if (_pkg in nightlies) {
-      const nightly = nightlies[_pkg as keyof typeof nightlies]
-      const path = await resolveTypePath(nightly + subpath, subpath, nuxt.options.modulesDir)
-      if (path) {
-        return [[pkg, [path]], [nightly + subpath, [path]]]
-      }
-    }
-
-    const path = await resolveTypePath(_pkg + subpath, subpath, nuxt.options.modulesDir)
-    if (path) {
-      return [[pkg, [path]]]
-    }
-
-    return []
-  })).then(r => r.flat()))
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
-  nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {
-    tsConfig: { compilerOptions: { paths: { ...paths } } },
+  let paths: Record<string, [string]> | undefined
+  nuxt.hook('nitro:config', async (nitroConfig) => {
+    paths ||= await resolveTypescriptPaths(nuxt)
+    nitroConfig.typescript = defu(nitroConfig.typescript, {
+      tsConfig: { compilerOptions: { paths: { ...paths } } },
+    })
   })
 
   // Add nuxt types
-  nuxt.hook('prepare:types', (opts) => {
-    opts.references.push({ types: 'nuxt' })
+  nuxt.hook('prepare:types', async (opts) => {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {
@@ -258,19 +240,39 @@ async function initNuxt (nuxt: Nuxt) {
     }
     // Add shims for `#build/*` imports that do not already have matching types
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
-    // Add module augmentations directly to NuxtConfig
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+    opts.references.push({ types: 'nuxt/app' })
+
+    // Add module augmentations directly to NuxtConfig
+    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/modules.d.ts') })
+    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.nodeReferences.push({ types: 'nuxt' })
+
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
+    paths ||= await resolveTypescriptPaths(nuxt)
     opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
+    opts.nodeTsConfig.compilerOptions = defu(opts.nodeTsConfig.compilerOptions, { paths: { ...paths } })
+    opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
 
-    for (const layer of nuxt.options._layers) {
-      const declaration = join(layer.cwd, 'index.d.ts')
+    for (const dirs of layerDirs) {
+      const declaration = join(dirs.root, 'index.d.ts')
       if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
+        opts.nodeReferences.push({ path: declaration })
+        opts.sharedReferences.push({ path: declaration })
       }
     }
+  })
+
+  // Add nitro types
+  nuxt.hook('nitro:prepare:types', (opts) => {
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
   })
 
   // Prompt to install `@nuxt/scripts` if user has configured it
@@ -379,6 +381,9 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     // Add plugin to check if layouts are defined without NuxtLayout being instantiated
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
+
+    // add plugin to make warnings less verbose in dev mode
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
   }
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
@@ -415,22 +420,30 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.options.build.transpile.push('nuxt/app')
 
   // Transpile layers within node_modules
-  nuxt.options.build.transpile.push(
-    ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
-  )
+  for (const layer of layerDirs) {
+    if (layer.root.includes('node_modules')) {
+      nuxt.options.build.transpile.push(layer.root.replace(/\/$/, ''))
+    }
+  }
 
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
-  const locallyScannedLayersDirs = nuxt.options._layers.map(l => resolve(l.cwd, 'layers').replace(/\/?$/, '/'))
-  nuxt.options.modulesDir.push(...nuxt.options._layers
-    .filter(l => l.cwd !== nuxt.options.rootDir && locallyScannedLayersDirs.every(dir => !l.cwd.startsWith(dir)))
-    .map(l => resolve(l.cwd, 'node_modules')))
+  const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
+  const rootWithTrailingSlash = withTrailingSlash(nuxt.options.rootDir)
+  for (const dirs of layerDirs) {
+    if (dirs.root === rootWithTrailingSlash) {
+      continue
+    }
+    if (locallyScannedLayersDirs.every(dir => !dirs.root.startsWith(dir))) {
+      nuxt.options.modulesDir.push(join(dirs.root, 'node_modules'))
+    }
+  }
 
   // Init user modules
   await nuxt.callHook('modules:before')
 
-  const { paths: modulePaths, modules } = await resolveModules(nuxt)
+  const { paths: watchedModulePaths, resolvedModulePaths, modules } = await resolveModules(nuxt)
 
-  nuxt.options.watch.push(...modulePaths)
+  nuxt.options.watch.push(...watchedModulePaths)
 
   // Add <NuxtWelcome>
   // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
@@ -557,9 +570,7 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
   }
 
-  for (const [key, options] of modules) {
-    await installModule(key, options)
-  }
+  await installModules(modules, resolvedModulePaths, nuxt)
 
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
@@ -672,12 +683,12 @@ export default defineNuxtPlugin({
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
-    if (modulePaths.has(path)) {
+    if (watchedModulePaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
     }
 
     // User provided patterns
-    const layerRelativePaths = new Set(nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path)))
+    const layerRelativePaths = new Set(getLayerDirectories(nuxt).map(l => relative(l.app, path)))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
         // Test (normalized) strings against absolute path and relative path to any layer `srcDir`
@@ -706,10 +717,15 @@ export default defineNuxtPlugin({
     }
   })
 
-  // Normalize windows transpile paths added by modules
-  nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)
+  nuxt.options.build.transpile = nuxt.options.build.transpile.map((t) => {
+    if (typeof t !== 'string') {
+      return t
+    }
+    // Normalize windows transpile paths added by modules
+    return normalize(t).split('node_modules/').pop()!
+  })
 
-  addModuleTranspiles()
+  addModuleTranspiles(nuxt)
 
   // Init nitro
   await initNitro(nuxt)
@@ -730,7 +746,7 @@ export default defineNuxtPlugin({
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
-  if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
     logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
@@ -741,7 +757,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = await loadNuxtConfig(opts)
 
   // Temporary until finding better placement for each
-  options.appDir = options.alias['#app'] = resolve(distDir, 'app')
+  options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
   options._majorVersion = 4
 
   // De-duplicate key arrays
@@ -780,11 +796,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
+  const importIncludes: RegExp[] = []
+  for (const layer of options._layers) {
+    if (layer.cwd && layer.cwd.includes('node_modules')) {
+      importIncludes.push(new RegExp(`(^|\\/)${escapeRE(layer.cwd.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
+    }
+  }
   options._modules.push([importsModule, {
     transform: {
-      include: options._layers
-        .filter(i => i.cwd && i.cwd.includes('node_modules'))
-        .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`)),
+      include: importIncludes,
     },
   }])
   options._modules.push(schemaModule)
@@ -829,15 +849,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nuxt = createNuxt(options)
 
   nuxt.runWithContext(() => {
-    if (nuxt.options.dev && !nuxt.options.test) {
-      nuxt.hooks.hookOnce('build:done', () => {
-        for (const dep of keyDependencies) {
-          checkDependencyVersion(dep, nuxt._version)
-            .catch(e => logger.warn(`Problem checking \`${dep}\` version.`, e))
-        }
-      })
-    }
-
     // We register hooks layer-by-layer so any overrides need to be registered separately
     if (opts.overrides?.hooks) {
       nuxt.hooks.addHooks(opts.overrides.hooks)
@@ -857,17 +868,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   return nuxt
-}
-
-export async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
-  const path = resolveModulePath(name, { try: true })
-
-  if (!path) { return }
-  const { version } = await readPackageJSON(path)
-
-  if (version && gt(nuxtVersion, version)) {
-    console.warn(`[nuxt] Expected \`${name}\` to be at least \`${nuxtVersion}\` but got \`${version}\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
-  }
 }
 
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
@@ -915,38 +915,6 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
   }
 }
 
-function resolveModule (
-  definition: NuxtModule<any> | string | false | undefined | null | [(NuxtModule | string)?, Record<string, any>?],
-  nuxt: Nuxt,
-): { resolvedPath?: string, module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
-  const [module, options = {}] = Array.isArray(definition) ? definition : [definition, {}]
-
-  if (!module) {
-    return
-  }
-
-  if (typeof module !== 'string') {
-    return {
-      module,
-      options,
-    }
-  }
-
-  const modAlias = resolveAlias(module)
-  const modPath = resolveModulePath(modAlias, {
-    try: true,
-    from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-    suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
-  })
-
-  return {
-    module,
-    resolvedPath: modPath || modAlias,
-    options,
-  }
-}
-
 async function resolveModules (nuxt: Nuxt) {
   const modules = new Map<string | NuxtModule, Record<string, any>>()
   const paths = new Set<string>()
@@ -958,10 +926,10 @@ async function resolveModules (nuxt: Nuxt) {
     // First register modules defined in layer's config
     const definedModules = config.modules ?? []
     for (const module of definedModules) {
-      const resolvedModule = resolveModule(module, nuxt)
+      const resolvedModule = resolveModuleWithOptions(module, nuxt)
       if (resolvedModule && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
         modules.set(resolvedModule.module, resolvedModule.options)
-        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
         }
@@ -969,10 +937,10 @@ async function resolveModules (nuxt: Nuxt) {
     }
 
     // Secondly automatically register modules from layer's module directory
-    const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.modules || 'modules'
-    const layerModules = await resolveFiles(config.srcDir, [
-      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
-      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,
+    const modulesDir = resolve(config.srcDir, (config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : config.dir)?.modules || 'modules')
+    const layerModules = await resolveFiles(modulesDir, [
+      `*{${nuxt.options.extensions.join(',')}}`,
+      `*/index{${nuxt.options.extensions.join(',')}}`,
     ])
 
     for (const module of layerModules) {
@@ -988,11 +956,11 @@ async function resolveModules (nuxt: Nuxt) {
   // Lastly register private modules and modules added after loading config
   for (const key of ['modules', '_modules'] as const) {
     for (const module of nuxt.options[key as 'modules']) {
-      const resolvedModule = resolveModule(module, nuxt)
+      const resolvedModule = resolveModuleWithOptions(module, nuxt)
 
       if (resolvedModule && !modules.has(resolvedModule.module) && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
         modules.set(resolvedModule.module, resolvedModule.options)
-        const path = resolvedModule.resolvedPath || typeof resolvedModule.module
+        const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
         }
@@ -1002,6 +970,41 @@ async function resolveModules (nuxt: Nuxt) {
 
   return {
     paths,
+    resolvedModulePaths,
     modules,
   }
+}
+
+const NESTED_PKG_RE = /^[^@]+\//
+async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [string]>> {
+  nuxt.options.typescript.hoist ||= []
+  const paths = Object.fromEntries(await Promise.all(nuxt.options.typescript.hoist.map(async (pkg) => {
+    const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
+    const subpath = _subpath ? '/' + _subpath : ''
+
+    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
+    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
+
+    // deduplicate types for nightly releases
+    if (_pkg in nightlies) {
+      const nightly = nightlies[_pkg as keyof typeof nightlies]
+      const path = await resolveTypePath(nightly + subpath, subpath, nuxt.options.modulesDir)
+      if (path) {
+        return [[pkg, [path]], [nightly + subpath, [path]]]
+      }
+    }
+
+    const path = await resolveTypePath(_pkg + subpath, subpath, nuxt.options.modulesDir)
+    if (path) {
+      return [[pkg, [path]]]
+    }
+
+    return []
+  })).then(r => r.flat()))
+
+  return paths
+}
+
+function withTrailingSlash (dir: string) {
+  return dir.replace(/[^/]$/, '$&/')
 }

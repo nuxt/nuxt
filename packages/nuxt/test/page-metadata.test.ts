@@ -1,4 +1,5 @@
-import { type MockedFunction, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import type { MockedFunction } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
@@ -127,6 +128,32 @@ definePageMeta({ name: 'bar' })
           },
         },
         "name": "some-custom-name",
+        "path": "/some-custom-path",
+        "props": {
+          "foo": "bar",
+        },
+      }
+    `)
+  })
+
+  it('should extract metadata containing TS expressions', () => {
+    const meta = getRouteMeta(`
+    <script setup lang="ts">
+    type PageName = 'name-from-page-meta' | 'whatever';
+
+    definePageMeta({
+      name: 'name-from-page-meta' as PageName,
+      path: ('/some-custom-path') as const,
+      props: <{ foo: string }>{
+        foo: 'bar' satisfies string,
+      },
+    } as const);
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "name": "name-from-page-meta",
         "path": "/some-custom-path",
         "props": {
           "foo": "bar",

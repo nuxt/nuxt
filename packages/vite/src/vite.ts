@@ -2,13 +2,12 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
-import replace from '@rollup/plugin-replace'
-import type { RollupReplaceOptions } from '@rollup/plugin-replace'
+import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
+import replacePlugin from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
-import { withoutLeadingSlash } from 'ufo'
+import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
-import { resolveTSConfig } from 'pkg-types'
+import { readTSConfig, resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
@@ -16,8 +15,8 @@ import { buildServer } from './server'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { logLevelMap } from './utils/logger'
-import { ssrStylesPlugin } from './plugins/ssr-styles'
-import { VitePublicDirsPlugin } from './plugins/public-dirs'
+import { SSRStylesPlugin } from './plugins/ssr-styles'
+import { PublicDirsPlugin } from './plugins/public-dirs'
 import { distDir } from './dirs'
 
 export interface ViteBuildContext {
@@ -38,7 +37,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
-    ...nuxt.options._layers.map(l => l.config.rootDir),
+    ...getLayerDirectories(nuxt).map(d => d.root),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
       ...app.plugins.map(p => dirname(p.src)),
@@ -55,7 +54,20 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  // @ts-expect-error non-public property
+  if (vite.rolldownVersion) {
+    // esbuild is not used in `rolldown-vite`
+    if (viteConfig.esbuild) {
+      delete viteConfig.esbuild
+    }
+    if (viteConfig.optimizeDeps?.esbuildOptions) {
+      delete viteConfig.optimizeDeps.esbuildOptions
+    }
+  }
+
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
+  const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
 
   const isIgnored = createIsIgnored(nuxt)
   const ctx: ViteBuildContext = {
@@ -64,6 +76,27 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config: vite.mergeConfig(
       {
         logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
+        experimental: {
+          renderBuiltUrl: (filename, { type, hostType, ssr }) => {
+            if (hostType !== 'js') {
+              // In CSS we only use relative paths until we craft a clever runtime CSS hack
+              return { relative: true }
+            }
+            if (!ssr) {
+              if (type === 'asset') {
+                return { relative: true }
+              }
+              return { runtime: `globalThis.__publicAssetsURL(${JSON.stringify(filename)})` }
+            }
+            if (type === 'public') {
+              return { runtime: `${helper}__publicAssetsURL(${JSON.stringify(filename)})` }
+            }
+            if (type === 'asset') {
+              const relativeFilename = filename.replace(withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir)), '')
+              return { runtime: `${helper}__buildAssetsURL(${JSON.stringify(relativeFilename)})` }
+            }
+          },
+        },
         resolve: {
           alias: {
             [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
@@ -87,7 +120,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           rollupOptions: {
             output: {
               sourcemapIgnoreList: (relativeSourcePath) => {
-                return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(ctx.nuxt.options.buildDir)
+                return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
               },
               sanitizeFileName: sanitizeFilePath,
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
@@ -96,16 +129,21 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
-          watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-            exclude: nuxt.options.ignore,
-          },
+
+          // @ts-expect-error non-public property
+          watch: (vite.rolldownVersion
+            // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+            ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
+            : {
+                chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+                exclude: nuxt.options.ignore,
+              }
+          ),
         },
         plugins: [
           // add resolver for files in public assets directories
-          VitePublicDirsPlugin.vite({
+          PublicDirsPlugin({
             dev: nuxt.options.dev,
-            sourcemap: !!nuxt.options.sourcemap.server,
             baseURL: nuxt.options.app.baseURL,
           }),
         ],
@@ -132,15 +170,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Identify which layers will need to have an extra resolve step.
     const layerDirs: string[] = []
     const delimitedRootDir = nuxt.options.rootDir + '/'
-    for (const layer of nuxt.options._layers) {
-      if (layer.config.srcDir !== nuxt.options.srcDir && !layer.config.srcDir.startsWith(delimitedRootDir)) {
-        layerDirs.push(layer.config.srcDir + '/')
+    for (const dirs of getLayerDirectories(nuxt)) {
+      if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(delimitedRootDir)) {
+        layerDirs.push(dirs.app)
       }
     }
     if (layerDirs.length > 0) {
       // Reverse so longest/most specific directories are searched first
       layerDirs.sort().reverse()
-      ctx.nuxt.hook('vite:extendConfig', (config) => {
+      nuxt.hook('vite:extendConfig', (config) => {
         const dirs = [...layerDirs]
         config.plugins!.push({
           name: 'nuxt:optimize-layer-deps',
@@ -161,20 +199,22 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   // Add type-checking
-  if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
+  if (!nuxt.options.test && (nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
+    const tsconfigPath = await resolveTSConfig(nuxt.options.rootDir)
+    const supportsProjects = await readTSConfig(tsconfigPath).then(r => !!(r.references?.length))
     const checker = await import('vite-plugin-checker').then(r => r.default)
     addVitePlugin(checker({
       vueTsc: {
-        tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir),
+        tsconfigPath,
+        buildMode: supportsProjects,
       },
     }), { server: nuxt.options.ssr })
   }
 
   await nuxt.callHook('vite:extend', ctx)
 
-  nuxt.hook('vite:extendConfig', (config) => {
-    const replaceOptions: RollupReplaceOptions = Object.create(null)
-    replaceOptions.preventAssignment = true
+  nuxt.hook('vite:extendConfig', async (config) => {
+    const replaceOptions = Object.create(null)
 
     for (const key in config.define!) {
       if (key.startsWith('import.meta.')) {
@@ -182,36 +222,44 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     }
 
-    config.plugins!.push(replace(replaceOptions))
+    // @ts-expect-error Rolldown-specific check
+    if (vite.rolldownVersion) {
+      const { replacePlugin } = await import('rolldown/experimental')
+      config.plugins!.push(replacePlugin(replaceOptions))
+    } else {
+      config.plugins!.push(replacePlugin({ ...replaceOptions, preventAssignment: true }))
+    }
   })
 
-  if (!ctx.nuxt.options.dev) {
+  if (!nuxt.options.dev) {
     const chunksWithInlinedCSS = new Set<string>()
     const clientCSSMap = {}
 
     nuxt.hook('vite:extendConfig', (config, { isServer }) => {
-      config.plugins!.unshift(ssrStylesPlugin({
-        srcDir: ctx.nuxt.options.srcDir,
+      config.plugins!.unshift(SSRStylesPlugin({
+        srcDir: nuxt.options.srcDir,
         clientCSSMap,
         chunksWithInlinedCSS,
-        shouldInline: ctx.nuxt.options.features.inlineStyles,
-        components: ctx.nuxt.apps.default!.components || [],
-        globalCSS: ctx.nuxt.options.css,
+        shouldInline: nuxt.options.features.inlineStyles,
+        components: nuxt.apps.default!.components || [],
+        globalCSS: nuxt.options.css,
         mode: isServer ? 'server' : 'client',
         entry: ctx.entry,
       }))
     })
 
     // Remove CSS entries for files that will have inlined styles
-    ctx.nuxt.hook('build:manifest', (manifest) => {
-      for (const [key, entry] of Object.entries(manifest)) {
-        const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
-        if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
-          // @ts-expect-error internal key
-          entry._globalCSS = true
+    nuxt.hook('build:manifest', (manifest) => {
+      for (const id of chunksWithInlinedCSS) {
+        const chunk = manifest[id]
+        if (!chunk) {
+          continue
         }
-        if (shouldRemoveCSS && entry.css) {
-          entry.css = []
+        if (chunk.isEntry) {
+          // @ts-expect-error internal key
+          chunk._globalCSS = true
+        } else {
+          chunk.css &&= []
         }
       }
     })
@@ -219,7 +267,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
-    ctx.nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+    nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
       await Promise.all(changedTemplates.map(async (template) => {
         for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
           server.moduleGraph.invalidateModule(mod)
@@ -239,8 +287,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }
   })
 
-  await withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
-  await withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
+  await withLogs(() => buildClient(nuxt, ctx), 'Vite client built', nuxt.options.dev)
+  await withLogs(() => buildServer(nuxt, ctx), 'Vite server built', nuxt.options.dev)
 }
 
 async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {

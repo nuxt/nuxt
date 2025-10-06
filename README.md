@@ -44,7 +44,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 Use the following command to create a new starter project. This will create a starter project with all the necessary files and dependencies:
 
 ```bash
-npm create nuxt <my-project>
+npm create nuxt@latest <my-project>
 ```
 
 > [!TIP]
@@ -60,7 +60,7 @@ Example of an `app.vue`:
 <script setup lang="ts">
 useSeoMeta({
   title: 'Meet Nuxt',
-  description: 'The Intuitive Vue Framework.'
+  description: 'The Intuitive Vue Framework.',
 })
 </script>
 
@@ -93,13 +93,13 @@ Discover our [list of modules](https://nuxt.com/modules) to supercharge your Nux
 We invite you to contribute and help improve Nuxt 💚
 
 Here are a few ways you can get involved:
-- **Reporting Bugs:** If you come across any bugs or issues, please check out the [reporting bugs guide](https://nuxt.com/docs/community/reporting-bugs) to learn how to submit a bug report.
-- **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/community/contribution) to share your suggestions.
-- **Questions:** If you have questions or need assistance, the [getting help guide](https://nuxt.com/docs/community/getting-help) provides resources to help you out.
+- **Reporting Bugs:** If you come across any bugs or issues, please check out the [reporting bugs guide](https://nuxt.com/docs/4.x/community/reporting-bugs) to learn how to submit a bug report.
+- **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/4.x/community/contribution) to share your suggestions.
+- **Questions:** If you have questions or need assistance, the [getting help guide](https://nuxt.com/docs/4.x/community/getting-help) provides resources to help you out.
 
 ## <a name="local-development">🏠 Local Development</a>
 
-Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#setup) to contribute to the framework and documentation.
+Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/4.x/community/framework-contribution#setup) to contribute to the framework and documentation.
 
 ## <a name="professional-support">🛟 Professional Support</a>
 
