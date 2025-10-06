@@ -246,16 +246,19 @@ export function useAsyncData<
   }
 
   // Create or use a shared asyncData entity
-  const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
-  if (!nuxtApp._asyncData[key.value]?._init) {
-    initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-    nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
+  function createInitialFetch () {
+    const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
+    if (!nuxtApp._asyncData[key.value]?._init) {
+      initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+      nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
+    }
+    return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
   }
+
+  const initialFetch = createInitialFetch()
   const asyncData = nuxtApp._asyncData[key.value]!
 
   asyncData._deps++
-
-  const initialFetch = () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
 
   const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered
 
@@ -369,8 +372,10 @@ export function useAsyncData<
     status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
     error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
     refresh: (...args) => {
-      nuxtApp._asyncData[key.value] ||= createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
-
+      if (!nuxtApp._asyncData[key.value]?._init) {
+        const initialFetch = createInitialFetch()
+        return initialFetch()
+      }
       return nuxtApp._asyncData[key.value]!.execute(...args)
     },
     execute: (...args) => asyncReturn.refresh(...args),
