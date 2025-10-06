@@ -211,6 +211,11 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    $client: {
+      build: {
+        target: ['chrome107', 'edge107', 'firefox108', 'safari17'],
+      },
+    },
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
@@ -250,9 +255,10 @@ export default defineNuxtConfig({
         }
       }
     },
-    'vite:extendConfig' (config) {
+    'vite:extend' ({ config }) {
       config.plugins!.push({
         name: 'nuxt:server',
+        enforce: 'pre',
         configureServer (server) {
           server.middlewares.use((req, res, next) => {
             if (req.url === '/vite-plugin-without-path') {
