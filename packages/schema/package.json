@@ -43,7 +43,7 @@
     "@vitejs/plugin-vue-jsx": "5.1.1",
     "@vue/compiler-core": "3.5.22",
     "@vue/compiler-sfc": "3.5.22",
-    "@vue/language-core": "3.1.0",
+    "@vue/language-core": "3.1.1",
     "c12": "3.3.0",
     "chokidar": "4.0.3",
     "compatx": "0.2.0",
