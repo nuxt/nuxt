@@ -74,7 +74,7 @@
     "@nuxt/schema": "workspace:*",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.10",
-    "rollup": "4.52.3",
+    "rollup": "4.52.4",
     "unbuild": "3.6.1",
     "vue": "3.5.22"
   },

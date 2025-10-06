@@ -28,7 +28,7 @@
     "@nuxt/schema": "workspace:*",
     "nitropack": "2.12.6",
     "rolldown": "1.0.0-beta.41",
-    "rollup": "4.52.3",
+    "rollup": "4.52.4",
     "unbuild": "3.6.1",
     "vue": "3.5.22"
   },
@@ -58,7 +58,7 @@
     "std-env": "^3.9.0",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.21",
-    "vite": "^7.1.8",
+    "vite": "^7.1.9",
     "vite-node": "^3.2.4",
     "vite-plugin-checker": "^0.11.0",
     "vue-bundle-renderer": "^2.2.0"
