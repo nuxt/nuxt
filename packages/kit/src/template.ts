@@ -3,7 +3,6 @@ import { fileURLToPath } from 'node:url'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
-import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
@@ -16,6 +15,8 @@ import { directoryToURL } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
+import { getLayerDirectories } from './layers'
+import type { LayerDirectories } from './layers'
 
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
@@ -27,7 +28,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same destination path
-  filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
+  filterInPlace(nuxt.options.build.templates, p => (p.dst || normalizeTemplate(p).dst) !== template.dst)
 
   try {
     const distDir = distDirURL.toString()
@@ -79,24 +80,37 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
 
   // Add template to types reference
   if (!context || context.nuxt) {
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: template.dst })
+    nuxt.hook('prepare:types', (payload) => {
+      payload.references ||= []
+      payload.references.push({ path: template.dst })
     })
   }
   if (context?.node) {
-    nuxt.hook('prepare:types', ({ nodeReferences }) => {
-      nodeReferences.push({ path: template.dst })
+    nuxt.hook('prepare:types', (payload) => {
+      payload.nodeReferences ||= []
+      payload.nodeReferences.push({ path: template.dst })
     })
   }
   if (context?.shared) {
-    nuxt.hook('prepare:types', ({ sharedReferences }) => {
-      sharedReferences.push({ path: template.dst })
+    nuxt.hook('prepare:types', (payload) => {
+      payload.sharedReferences ||= []
+      payload.sharedReferences.push({ path: template.dst })
+    })
+  }
+
+  if (!context || context.nuxt || context.shared) {
+    // expose global types to vue compiler
+    nuxt.options.vite.vue = defu(nuxt.options.vite.vue, {
+      script: {
+        globalTypeFiles: [template.dst],
+      },
     })
   }
 
   if (context?.nitro) {
-    nuxt.hook('nitro:prepare:types', ({ references }) => {
-      references.push({ path: template.dst })
+    nuxt.hook('nitro:prepare:types', (payload) => {
+      payload.references ||= []
+      payload.references.push({ path: template.dst })
     })
   }
 
@@ -157,11 +171,11 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-export function resolveLayerPaths (dir: Nuxt['options']['dir'], buildDir: string, rootDir: string, srcDir: string) {
-  const relativeRootDir = relativeWithDot(buildDir, rootDir)
-  const relativeSrcDir = relativeWithDot(buildDir, srcDir)
-  const relativeModulesDir = relativeWithDot(buildDir, resolve(rootDir, dir.modules || 'modules'))
-  const relativeSharedDir = relativeWithDot(buildDir, resolve(rootDir, dir.shared || 'shared'))
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string) {
+  const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
+  const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
+  const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
+  const relativeSharedDir = relativeWithDot(projectBuildDir, dirs.shared)
   return {
     nuxt: [
       join(relativeSrcDir, '**/*'),
@@ -218,9 +232,17 @@ export async function _generateTypes (nuxt: Nuxt) {
     legacyInclude.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
   }
 
+  const layerDirs = getLayerDirectories(nuxt)
+
+  const sourceDirs = layerDirs.map(layer => layer.app)
+
   // node_modules folders
   for (const dir of nuxt.options.modulesDir) {
-    exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    // we only need to exclude node_modules directories if they are
+    // being included automatically by being inside the source directory
+    if (!sourceDirs.some(srcDir => dir.startsWith(srcDir))) {
+      exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+    }
     nodeExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
     legacyExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
   }
@@ -234,11 +256,10 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
-  for (const layer of nuxt.options._layers) {
-    const srcOrCwd = withTrailingSlash(layer.config.srcDir ?? layer.cwd)
-    if (!srcOrCwd.startsWith(rootDirWithSlash) || layer.cwd === nuxt.options.rootDir || srcOrCwd.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, layer.cwd), '**/*')
-      const paths = resolveLayerPaths(defu(layer.config.dir, nuxt.options.dir), nuxt.options.buildDir, layer.cwd, layer.config.srcDir)
+  for (const dirs of layerDirs) {
+    if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
+      const rootGlob = join(relativeWithDot(nuxt.options.buildDir, dirs.root), '**/*')
+      const paths = resolveLayerPaths(dirs, nuxt.options.buildDir)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)
@@ -273,8 +294,9 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const moduleEntryPaths: string[] = []
   for (const m of nuxt.options._installedModules) {
-    if (m.entryPath) {
-      moduleEntryPaths.push(getDirectory(m.entryPath))
+    const path = m.meta?.rawPath || m.entryPath
+    if (path) {
+      moduleEntryPaths.push(getDirectory(path))
     }
   }
 
@@ -282,7 +304,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   for (const path of modulePaths) {
     const relative = relativeWithDot(nuxt.options.buildDir, path)
-    if (!path.includes('node_modules')) {
+    if (!path.includes('node_modules') && path.startsWith(rootDirWithSlash)) {
       include.add(join(relative, 'runtime'))
       include.add(join(relative, 'dist/runtime'))
       nodeInclude.add(join(relative, '*.*'))
@@ -297,6 +319,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
     exclude.add(join(relative, '*.*'))
+    exclude.add(join(relative, 'dist/*.*'))
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
   }
@@ -469,7 +492,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     }
 
     const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
-    if (stats?.isDirectory()) {
+    if (stats?.isDirectory() || aliases[alias]!.endsWith('/')) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
     } else {
@@ -495,11 +518,13 @@ export async function _generateTypes (nuxt: Nuxt) {
       const pkg = await readPackageJSON(id, { parent }).catch(() => null)
       if (pkg) {
         nodeReferences.push(({ types: pkg.name ?? id }))
+        references.push(({ types: pkg.name ?? id }))
         return
       }
     }
 
     nodeReferences.push(({ types: id }))
+    references.push(({ types: id }))
   }))
 
   const declarations: string[] = []
@@ -636,4 +661,8 @@ function renderAttr (key: string, value?: string) {
 const RELATIVE_WITH_DOT_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
+}
+
+function withTrailingSlash (dir: string) {
+  return dir.replace(/[^/]$/, '$&/')
 }

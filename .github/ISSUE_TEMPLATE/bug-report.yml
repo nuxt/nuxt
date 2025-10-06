@@ -6,11 +6,11 @@ body:
     attributes:
       value: |
         Please carefully read the contribution docs before creating a bug report
-        👉 https://nuxt.com/docs/community/reporting-bugs
+        👉 https://nuxt.com/docs/4.x/community/reporting-bugs
 
         Please use a template below to create a minimal reproduction
-        👉 https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz
-        👉 https://codesandbox.io/s/github/nuxt/starter/tree/v3
+        [![Open v4 in Stackblitz](https://img.shields.io/badge/Stackblitz-Nuxt%204-blue?style=flat-square&logo=stackblitz)](https://stackblitz.com/github/nuxt/starter/tree/v4-stackblitz) [![Open v3 in Stackblitz](https://img.shields.io/badge/Stackblitz-Nuxt%203-blue?style=flat-square&logo=stackblitz)](https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz)
+        [![Open v4 in CodeSandbox](https://img.shields.io/badge/CodeSandbox-Nuxt%204-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/nuxt/starter/tree/v4) [![Open v3 in CodeSandbox](https://img.shields.io/badge/CodeSandbox-Nuxt%203-blue?style=flat-square&logo=codesandbox)](https://codesandbox.io/s/github/nuxt/starter/tree/v3)
   - type: textarea
     id: bug-env
     attributes:
@@ -23,7 +23,7 @@ body:
     id: reproduction
     attributes:
       label: Reproduction
-      description: Please provide a link to a repo that can reproduce the problem you ran into. A [**minimal reproduction**](https://nuxt.com/docs/community/reporting-bugs#create-a-minimal-reproduction) is required unless you are absolutely sure that the issue is obvious and the provided information is enough to understand the problem. If a report is vague (e.g. just a generic error message) and has no reproduction, it will receive a "need reproduction" label. If no reproduction is provided we might close it.
+      description: Please provide a link to a repo that can reproduce the problem you ran into. A [**minimal reproduction**](https://nuxt.com/docs/4.x/community/reporting-bugs#create-a-minimal-reproduction) is required unless you are absolutely sure that the issue is obvious and the provided information is enough to understand the problem. If a report is vague (e.g. just a generic error message) and has no reproduction, it will receive a "need reproduction" label. If no reproduction is provided we might close it.
       placeholder: Reproduction
     validations:
       required: true

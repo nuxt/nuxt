@@ -13,7 +13,7 @@ This composable is available in Nuxt v3.14+.
 ::
 
 ```ts [signature]
-function useRuntimeHook<THookName extends keyof RuntimeNuxtHooks>(
+function useRuntimeHook<THookName extends keyof RuntimeNuxtHooks> (
   name: THookName,
   fn: RuntimeNuxtHooks[THookName] extends HookCallback ? RuntimeNuxtHooks[THookName] : never
 ): void
@@ -23,7 +23,7 @@ function useRuntimeHook<THookName extends keyof RuntimeNuxtHooks>(
 
 ### Parameters
 
-- `name`: The name of the runtime hook to register. You can see the full list of [runtime Nuxt hooks here](/docs/api/advanced/hooks#app-hooks-runtime).
+- `name`: The name of the runtime hook to register. You can see the full list of [runtime Nuxt hooks here](/docs/4.x/api/advanced/hooks#app-hooks-runtime).
 - `fn`: The callback function to execute when the hook is triggered. The function signature varies based on the hook name.
 
 ### Returns

@@ -70,6 +70,8 @@ describe('useAsyncData', () => {
   })
 
   it('should capture errors', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
@@ -90,6 +92,7 @@ describe('useAsyncData', () => {
       /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
     ))
     warn.mockRestore()
+    vi.unstubAllGlobals()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -353,6 +356,60 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
 
+  it('should watch params deeply in a non synchronous way', async () => {
+    const foo = ref('foo')
+    const baz = ref('baz')
+    const locale = ref('en')
+
+    type Params = { deep: { baz: string }, foo?: string, locale?: string }
+    const params = reactive<Params>({ deep: { baz: 'baz' } })
+
+    watch(foo, (foo) => {
+      params.foo = foo
+      params.locale = locale.value
+    }, { immediate: true })
+
+    watch(baz, (baz) => {
+      params.deep.baz = baz
+    }, { immediate: true })
+
+    const requestHistory: Array<Record<string, unknown>> = []
+
+    // 1. first request
+    await useAsyncData(uniqueKey, async () => {
+      requestHistory.push(JSON.parse(JSON.stringify(params)))
+      await Promise.resolve()
+    }, { watch: [params] })
+
+    // 2. second request
+    foo.value = 'bar'
+    locale.value = 'fr'
+    // We need to wait for the debounce 0
+    await new Promise(resolve => setTimeout(resolve, 5))
+
+    // 3. third request
+    baz.value = 'bar'
+    await nextTick()
+
+    expect(requestHistory).toEqual([
+      {
+        deep: { baz: 'baz' },
+        foo: 'foo',
+        locale: 'en',
+      },
+      {
+        deep: { baz: 'baz' },
+        foo: 'bar',
+        locale: 'fr',
+      },
+      {
+        deep: { baz: 'bar' },
+        foo: 'bar',
+        locale: 'fr',
+      },
+    ])
+  })
+
   it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     useAsyncData(uniqueKey, promiseFn)
@@ -372,6 +429,7 @@ describe('useAsyncData', () => {
   })
 
   it('should warn if incompatible options are used', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
@@ -407,6 +465,7 @@ describe('useAsyncData', () => {
     ))
 
     warn.mockReset()
+    vi.unstubAllGlobals()
   })
 
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
@@ -741,5 +800,89 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('about')
     expect(promiseFn).toHaveBeenCalledTimes(2)
     vi.useRealTimers()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33274
+  it('should not execute handler multiple times when external watch is defined before useAsyncData with computed key', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    // watch must be defined before useAsyncData to reproduce the bug
+    watch(q, () => {})
+
+    const { data, error } = await useAsyncData(
+      () => `query-${q.value}`,
+      () => promiseFn(q.value),
+      {
+        watch: [q],
+        immediate: true,
+      },
+    )
+
+    // Initial execute
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(promiseFn).toHaveBeenNthCalledWith(1, '')
+
+    // First key change
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenNthCalledWith(2, 's')
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+
+    // Second key change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+    expect(promiseFn).toHaveBeenNthCalledWith(3, 'se')
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+  })
+
+  it('should automatically re-execute when watched dependency changes', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    const externalWatchSpy = vi.fn()
+    watch(q, externalWatchSpy)
+
+    const { data, error } = await useAsyncData(
+      () => `auto-query-${q.value}`,
+      () => promiseFn(q.value),
+      {
+        watch: [q],
+        immediate: true,
+      },
+    )
+
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledWith('')
+
+    // First change triggers automatic request
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+    expect(promiseFn).toHaveBeenCalledWith('s')
+
+    // Second change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+    expect(promiseFn).toHaveBeenCalledWith('se')
+
+    expect(externalWatchSpy).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(3) // initial + 2 changes
   })
 })

@@ -8,7 +8,7 @@ import { useRouter } from '#app/composables/router'
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
 // Default router options
-// https://router.vuejs.org/api/#routeroptions
+// https://router.vuejs.org/api/interfaces/RouterOptions.html
 export default <RouterConfig> {
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
@@ -16,7 +16,7 @@ export default <RouterConfig> {
     const hashScrollBehaviour = useRouter().options?.scrollBehaviorType ?? 'auto'
 
     // Hash routes on the same page, no page hook is fired so resolve here
-    if (to.path === from.path) {
+    if (to.path.replace(/\/$/, '') === from.path.replace(/\/$/, '')) {
       if (from.hash && !to.hash) {
         return { left: 0, top: 0 }
       }

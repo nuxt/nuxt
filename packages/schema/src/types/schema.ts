@@ -13,8 +13,8 @@ import type { H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
 import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
-import type { Options as Options0 } from 'autoprefixer'
-import type { Options as Options1 } from 'cssnano'
+import type { Options as AutoprefixerOptions } from 'autoprefixer'
+import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
 import type { RawVueCompilerOptions } from '@vue/language-core'
 import type { PluginOptions } from 'mini-css-extract-plugin'
@@ -24,7 +24,7 @@ import type { VueLoaderOptions } from 'vue-loader'
 import type { BasePluginOptions, DefinedDefaultMinimizerAndOptions } from 'css-minimizer-webpack-plugin'
 import type { Configuration, WebpackError } from 'webpack'
 import type { ProcessOptions } from 'postcss'
-import type { Options as Options3 } from 'webpack-dev-middleware'
+import type { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
@@ -46,14 +46,14 @@ export interface ConfigSchema {
    *
    * Any components in the directories configured here can be used throughout your pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @see [`components/` directory documentation](https://nuxt.com/docs/guide/directory-structure/components)
+   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/components)
    */
   components: boolean | ComponentsOptions | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/guide/directory-structure/composables)
    */
   imports: ImportsOptions
 
@@ -229,10 +229,10 @@ export interface ConfigSchema {
     /**
      * Default values for view transitions.
      *
-     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental).
+     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental).
      * This can be overridden with `definePageMeta` on an individual page.
      *
-     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental)
+     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental)
      */
     viewTransition: NuxtAppConfig['viewTransition']
 
@@ -285,7 +285,7 @@ export interface ConfigSchema {
     spaLoaderTag: string
 
     /**
-     * Customize Nuxt Nuxt SpaLoader element attributes.
+     * Customize Nuxt SPA loading template element attributes.
      */
     spaLoaderAttrs: SerializableHtmlAttributes
   }
@@ -353,7 +353,7 @@ export interface ConfigSchema {
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
    *
-   * @see [`plugins/` directory documentation](https://nuxt.com/docs/guide/directory-structure/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/plugins)
    *
    * @example
    * ```js
@@ -1443,6 +1443,11 @@ export interface ConfigSchema {
      * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
      */
     pendingWhenIdle: boolean
+
+    /**
+     * Whether to improve chunk stability by using an import map to resolve the entry chunk of the bundle.
+     */
+    entryImportMap: boolean
   }
 
   /**
@@ -1519,9 +1524,9 @@ export interface ConfigSchema {
    * Nitro server handlers.
    *
    * Each handler accepts the following options:
-   * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/unjs/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
+   * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see [`server/` directory documentation](https://nuxt.com/docs/guide/directory-structure/server)
+   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/server)
    *
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    *
@@ -1552,7 +1557,7 @@ export interface ConfigSchema {
      *
      * @see [PostCSS docs](https://postcss.org/)
      */
-    plugins: Record<string, unknown> & { autoprefixer?: Options0, cssnano?: Options1 }
+    plugins: Record<string, unknown> & { autoprefixer?: false | AutoprefixerOptions, cssnano?: false | CssnanoOptions }
   }
 
   router: {
@@ -1600,7 +1605,7 @@ export interface ConfigSchema {
      *
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
      *
-     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/guide/concepts/typescript)
+     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
      */
     typeCheck: boolean | 'build'
 
@@ -1647,7 +1652,17 @@ export interface ConfigSchema {
    * @see [Vite configuration docs](https://vite.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
-  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig }
+  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig } & {
+    viteNode?: {
+      maxRetryAttempts?: number
+      /** in milliseconds */
+      baseRetryDelay?: number
+      /** in milliseconds */
+      maxRetryDelay?: number
+      /** in milliseconds */
+      requestTimeout?: number
+    }
+  }
 
   webpack: {
   /**
@@ -1902,12 +1917,12 @@ export interface ConfigSchema {
     /**
      * Customize PostCSS Loader. same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
      */
-    postcss: { execute?: boolean, postcssOptions: ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: Options0, cssnano?: Options1 } }, sourceMap?: boolean, implementation?: any }
+    postcss: { execute?: boolean, postcssOptions: ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: AutoprefixerOptions, cssnano?: CssnanoOptions } }, sourceMap?: boolean, implementation?: any }
 
     /**
      * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
      */
-    devMiddleware: Options3<IncomingMessage, ServerResponse>
+    devMiddleware: WebpackDevMiddlewareOptions<IncomingMessage, ServerResponse>
 
     /**
      * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.

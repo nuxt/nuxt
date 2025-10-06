@@ -1,5 +1,5 @@
 import { defineComponent, inject, onUnmounted, provide, reactive } from 'vue'
-import type { PropType } from 'vue'
+import type { PropType, VNodeNormalizedChildren } from 'vue'
 import type {
   BodyAttributes,
   HtmlAttributes,
@@ -141,11 +141,16 @@ export const NoScript = defineComponent({
     return () => {
       const noscript = normalizeProps(props) as Noscript
       const slotVnodes = slots.default?.()
-      const textContent = slotVnodes
-        ? slotVnodes.filter(({ children }) => children).map(({ children }) => children).join('')
-        : ''
-      if (textContent) {
-        noscript.innerHTML = textContent
+      const textContent: VNodeNormalizedChildren[] = []
+      if (slotVnodes) {
+        for (const vnode of slotVnodes) {
+          if (vnode.children) {
+            textContent.push(vnode.children)
+          }
+        }
+      }
+      if (textContent.length > 0) {
+        noscript.innerHTML = textContent.join('')
       }
       input.noscript![idx] = noscript
       return null

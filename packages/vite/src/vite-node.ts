@@ -10,6 +10,7 @@ import { join, normalize, resolve } from 'pathe'
 import type { ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
+import { ViteNodeServer } from 'vite-node/server'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
@@ -39,6 +40,16 @@ export interface ViteNodeRequestMap {
     response: FetchResult
   }
 }
+
+type RequestOf = {
+  [K in keyof ViteNodeRequestMap]: {
+    id: number
+    type: K
+    payload: ViteNodeRequestMap[K]['request']
+  }
+}
+
+type ViteNodeRequest = RequestOf[keyof RequestOf]
 
 export interface ViteNodeFetch {
   /**  Gets the client manifest. */
@@ -179,6 +190,10 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
           root: nuxt.options.srcDir,
           entryPath: resolveServerEntry(ssrServer.config),
           base: ssrServer.config.base || '/_nuxt/',
+          maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
+          baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
+          maxRetryDelay: nuxt.options.vite.viteNode?.maxRetryDelay,
+          requestTimeout: nuxt.options.vite.viteNode?.requestTimeout,
           // TODO: remove baseURL in future
           baseURL: nuxt.options.devServer.url,
         }
@@ -218,6 +233,17 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
   }
 }
 
+let _node: ViteNodeServer | undefined
+
+function getNode (server: ViteDevServer) {
+  return _node ||= new ViteNodeServer(server, {
+    transformMode: {
+      ssr: [/.*/],
+      web: [],
+    },
+  })
+}
+
 function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
   const server = net.createServer((socket) => {
     const INITIAL_BUFFER_SIZE = 64 * 1024 // 64kB
@@ -231,40 +257,39 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
     socket.setNoDelay(true)
     socket.setKeepAlive(true, 0)
 
-    const processMessage = async (request: any) => {
-      const { id: requestId, type, payload } = request
-
+    async function processMessage (request: ViteNodeRequest) {
       try {
-        switch (type) {
+        switch (request.type) {
           case 'manifest': {
             const manifestData = getManifest(nuxt, ssrServer, resolveClientEntry(clientServer.config))
-            sendResponse<'manifest'>(socket, requestId, manifestData)
+            sendResponse<typeof request.type>(socket, request.id, manifestData)
             return
           }
           case 'invalidates': {
             const responsePayload = Array.from(invalidates)
             invalidates.clear()
-            sendResponse<'invalidates'>(socket, requestId, responsePayload)
+            sendResponse<typeof request.type>(socket, request.id, responsePayload)
             return
           }
           case 'resolve': {
-            const { id: resolveId, importer } = payload
+            const { id: resolveId, importer } = request.payload
             if (!resolveId || !ssrServer) {
               throw createError({ statusCode: 400, message: 'Missing id for resolve' })
             }
-            const resolvedResult = await ssrServer.pluginContainer.resolveId(resolveId, importer).catch(() => null)
-            sendResponse<'resolve'>(socket, requestId, resolvedResult)
+            const resolvedResult = await getNode(ssrServer).resolveId(resolveId, importer).catch(() => null)
+            sendResponse<typeof request.type>(socket, request.id, resolvedResult)
             return
           }
           case 'module': {
-            if (payload.moduleId === '/' || !ssrServer) {
+            if (request.payload.moduleId === '/' || !ssrServer) {
               throw createError({ statusCode: 400, message: 'Invalid moduleId' })
             }
-            const response = await ssrServer.environments.ssr.fetchModule(payload.moduleId)
+            const node = getNode(ssrServer)
+            const response = await node.fetchModule(request.payload.moduleId)
               .catch(async (err) => {
                 const errorData: Record<string, any> = {
                   code: 'VITE_ERROR',
-                  id: payload.moduleId,
+                  id: request.payload.moduleId,
                   stack: err.stack || '',
                   message: err.message || '',
                 }
@@ -272,7 +297,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
                 if (!errorData.frame && err.code === 'PARSE_ERROR') {
                   try {
-                    errorData.frame = await clientServer.transformRequest(payload.moduleId)
+                    errorData.frame = await node.transformRequest(request.payload.moduleId, 'web')
                       .then(res => `${err.message || ''}\n${res?.code}`).catch(() => undefined)
                   } catch {
                   // Ignore transform errors
@@ -280,14 +305,15 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                 }
                 throw createError({ data: errorData, message: err.message || 'Error fetching module' })
               }) as Exclude<FetchResult, { cache: true }>
-            sendResponse<'module'>(socket, requestId, response)
+            sendResponse<typeof request.type>(socket, request.id, response)
             return
           }
           default:
-            throw createError({ statusCode: 400, message: `Unknown request type: ${type}` })
+            // @ts-expect-error this should never happen
+            throw createError({ statusCode: 400, message: `Unknown request type: ${request.type}` })
         }
       } catch (error: any) {
-        sendError(socket, requestId, error)
+        sendError(socket, request.id, error)
       }
     }
 
@@ -408,7 +434,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
 function sendResponse<T extends keyof ViteNodeRequestMap> (
   socket: net.Socket,
-  id: string,
+  id: number,
   data: ViteNodeRequestMap[T]['response'],
 ): undefined {
   try {
@@ -433,7 +459,7 @@ function sendResponse<T extends keyof ViteNodeRequestMap> (
   }
 }
 
-function sendError (socket: net.Socket, id: string, error: any) {
+function sendError (socket: net.Socket, id: number, error: any) {
   const errorResponse = {
     id,
     type: 'error',
@@ -467,6 +493,10 @@ export type ViteNodeServerOptions = {
   root: string
   entryPath: string
   base: string
+  maxRetryAttempts?: number
+  baseRetryDelay?: number
+  maxRetryDelay?: number
+  requestTimeout?: number
 }
 
 export async function writeDevServer (nuxt: Nuxt) {

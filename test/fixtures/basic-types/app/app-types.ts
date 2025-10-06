@@ -12,6 +12,7 @@ import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
+import type { IslandComponent, LazyComponent } from '#components'
 import { useRouter } from '#imports'
 
 type DefaultAsyncDataErrorValue = undefined
@@ -109,6 +110,16 @@ describe('API routes', () => {
 
     expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
+  })
+
+  it('works with useFetch and generic type', () => {
+    type ApiResponse = { message: string }
+
+    useFetch<ApiResponse>('/api/v1/users', {
+      onResponse ({ response }) {
+        expectTypeOf(response._data).toEqualTypeOf<ApiResponse | undefined>()
+      },
+    })
   })
 })
 
@@ -364,6 +375,7 @@ describe('components', () => {
   it('includes types for NuxtPage', () => {
     expectTypeOf(NuxtPage).not.toBeAny()
   })
+
   it('includes types for other components', () => {
     h(WithTypes)
     // @ts-expect-error wrong prop type for this component
@@ -371,6 +383,45 @@ describe('components', () => {
 
     // TODO: assert typed slots, exposed, generics, etc.
   })
+
+  it('correctly includes event types with island components', () => {
+    const Comp = defineComponent({
+      __typeProps: {} as {
+        onClick: (foo: string) => any
+      },
+    })
+    const IslandComp = Comp as unknown as IslandComponent<typeof Comp>
+    h(IslandComp, {
+      // @ts-expect-error: foo must be string, not number
+      onClick: (foo: number) => foo,
+    })
+    h(IslandComp, {
+      onClick: (foo) => {
+        foo satisfies string
+        return foo
+      },
+    })
+  })
+
+  it('correctly includes event types with lazy components', () => {
+    const Comp = defineComponent({
+      __typeProps: {} as {
+        onClick: (foo: string) => any
+      },
+    })
+    const LazyComp = Comp as unknown as LazyComponent<typeof Comp>
+    h(LazyComp, {
+      // @ts-expect-error: foo must be string, not number
+      onClick: (foo: number) => foo,
+    })
+    h(LazyComp, {
+      onClick: (foo) => {
+        foo satisfies string
+        return foo
+      },
+    })
+  })
+
   it('includes types for lazy hydration', () => {
     h(LazyWithTypes)
     h(LazyWithTypes, { hydrateAfter: 300 })
@@ -379,6 +430,7 @@ describe('components', () => {
     // @ts-expect-error wrong prop type for this hydration strategy
     h(LazyWithTypes, { hydrateAfter: '' })
   })
+
   it('include fallback slot in server components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
   })
