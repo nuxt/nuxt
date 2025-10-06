@@ -20,7 +20,7 @@
     "@unocss/reset": "66.5.2",
     "@vue/shared": "3.5.22",
     "beasties": "0.3.5",
-    "html-validate": "10.0.0",
+    "html-validate": "10.1.0",
     "htmlnano": "2.1.5",
     "jiti": "2.6.1",
     "knitwork": "1.2.0",
