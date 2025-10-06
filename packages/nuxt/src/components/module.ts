@@ -255,7 +255,7 @@ export default defineNuxtModule<ComponentsOptions>({
         },
       }, { server: false })
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false, prepend: true })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
         addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
