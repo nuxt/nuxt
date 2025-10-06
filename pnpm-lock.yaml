@@ -552,8 +552,8 @@ importers:
         version: 4.5.1(vue@3.5.21(typescript@5.9.2))
     devDependencies:
       '@nuxt/scripts':
-        specifier: 0.11.13
-        version: 0.11.13(@unhead/vue@2.0.14(vue@3.5.21(typescript@5.9.2)))(db0@0.3.2)(ioredis@5.8.0)(typescript@5.9.2)(vue@3.5.21(typescript@5.9.2))
+        specifier: 0.12.1
+        version: 0.12.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.14(vue@3.5.21(typescript@5.9.2)))(db0@0.3.2)(ioredis@5.8.0)(typescript@5.9.2)(vue@3.5.21(typescript@5.9.2))
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -875,8 +875,8 @@ importers:
         specifier: 10.0.0
         version: 10.0.0(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.4)(happy-dom@19.0.1)(jiti@2.5.1)(terser@5.44.0)(yaml@2.8.1))
       htmlnano:
-        specifier: 2.1.4
-        version: 2.1.4(cssnano@7.1.1(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.0)(typescript@5.9.2)
+        specifier: 2.1.5
+        version: 2.1.5(cssnano@7.1.1(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.0)(typescript@5.9.2)
       jiti:
         specifier: 2.5.1
         version: 2.5.1
@@ -1715,6 +1715,9 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
+  '@googlemaps/markerclusterer@2.6.2':
+    resolution: {integrity: sha512-U6uVhq8iWhiIckA89sgRu8OK35mjd6/3CuoZKWakKEf0QmRRWpatlsPb3kqXkoWSmbcZkopRiI4dnW6DQSd7bQ==}
+
   '@html-validate/stylish@4.3.0':
     resolution: {integrity: sha512-eUfvKpRJg5TvzSfTf2EovrQoTKjkRnPUOUnXVJ2cQ4GbC/bQw98oxN+DdSf+HxOBK00YOhsP52xWdJPV1o4n5w==}
     engines: {node: '>= 18'}
@@ -1932,15 +1935,19 @@ packages:
     peerDependencies:
       webpack: 5.102.0
 
-  '@nuxt/scripts@0.11.13':
-    resolution: {integrity: sha512-8es3Mt8TxM+77icxI+Gelds0txaYR0ZfLORB9I2bgUC6p6ID0n3F+7aoEhCWiyVKgVd2cI17yCJwXSPABN5xTg==}
+  '@nuxt/scripts@0.12.1':
+    resolution: {integrity: sha512-B6h6pT0tAuScve+6opooJL9Zj45OMxaXspxtG65NhXvoT61qQhA/9Mjx1DedWJT7le6YffIvDcciKVrb6xXYYA==}
     peerDependencies:
+      '@googlemaps/markerclusterer': ^2.6.2
+      '@paypal/paypal-js': ^8.1.2
       '@stripe/stripe-js': ^7.0.0
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
       '@unhead/vue': 2.0.14
     peerDependenciesMeta:
+      '@paypal/paypal-js':
+        optional: true
       '@stripe/stripe-js':
         optional: true
       '@types/google.maps':
@@ -3012,6 +3019,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/geojson@7946.0.16':
+    resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
+
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
@@ -3057,6 +3067,9 @@ packages:
 
   '@types/semver@7.7.1':
     resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
+
+  '@types/supercluster@7.1.3':
+    resolution: {integrity: sha512-Z0pOY34GDFl3Q6hUFYf3HkTwKEE02e7QgtJppBt+beEAxnyOpJua+voGFvxINBHa06GwLFFym7gRPY2SiKIfIA==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -4784,6 +4797,10 @@ packages:
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
+  fast-equals@5.3.2:
+    resolution: {integrity: sha512-6rxyATwPCkaFIL3JLqw8qXqMpIZ942pTX/tbQFkRsDGblS8tNGtlUauA/+mt6RUfqn/4MoEr+WDkYoIQbibWuQ==}
+    engines: {node: '>=6.0.0'}
+
   fast-fifo@1.3.2:
     resolution: {integrity: sha512-/d9sfos4yxzpwkDkuN7k2SqFKtYNmCTzgfEpz82x34IM9/zc8KGxQoXg1liNC/izpRM/MBdt44Nmx41ZWqk+FQ==}
 
@@ -5195,8 +5212,8 @@ packages:
   html-whitespace-sensitive-tag-names@3.0.1:
     resolution: {integrity: sha512-q+310vW8zmymYHALr1da4HyXUQ0zgiIwIicEfotYPWGN0OJVEN/58IJ3A4GBYcEq3LGAZqKb+ugvP0GNB9CEAA==}
 
-  htmlnano@2.1.4:
-    resolution: {integrity: sha512-gPgBuzvYjGOpSIz5MF3lUFDXsGIpPerPDY/QJaJmzI/Pd5Y1DGT2JEU24US6X/sW1ssUvw7OdRPltm8Vqm9IWQ==}
+  htmlnano@2.1.5:
+    resolution: {integrity: sha512-IXffzXq1beGQN2rsr03aIPK/rVU1jR2uwHymlAIEf97Tl5WdpG50IsQ5nWGvSGQJ+x6U7S6yac9rRiFgAg4/xQ==}
     peerDependencies:
       cssnano: ^7.0.0
       postcss: 8.5.6
@@ -5645,6 +5662,9 @@ packages:
   katex@0.16.22:
     resolution: {integrity: sha512-XCHRdUw4lf3SKBaJe4EvgqIuWwkPSo9XoeO8GjQW94Bp7TWv9hNhzZjZ+OH9yf1UmLygb7DIT5GSFQiyt16zYg==}
     hasBin: true
+
+  kdbush@4.0.2:
+    resolution: {integrity: sha512-WbCVYJ27Sz8zi9Q7Q0xHC+05iwkm3Znipc2XTlrnJbsHMYktW4hPhXUE8Ys1engBrvffoSCqbil1JQAa7clRpA==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -7390,9 +7410,6 @@ packages:
     resolution: {integrity: sha512-4X2FR3UwhNUE9G49aIsJW5hRRR3GXGTBTZRMfv568O60ojM8HcWjV/VxAxCDW3SUND33O6ZY66ZuRcdkj73q2g==}
     engines: {node: '>=14.16'}
 
-  strip-literal@3.0.0:
-    resolution: {integrity: sha512-TcccoMhJOM3OebGhSBEmp3UZ2SfDMZUEBdRA/9ynfLi8yYajyWX3JiXArcJt4Umh4vISpspkQIY8ZZoCqjbviA==}
-
   strip-literal@3.1.0:
     resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
 
@@ -7404,6 +7421,9 @@ packages:
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
       postcss: 8.5.6
+
+  supercluster@8.0.1:
+    resolution: {integrity: sha512-IiOea5kJ9iqzD2t7QJq/cREyLHTtSmUT6gQsweojg9WH2sYJqZK9SswTu6jrscO6D1G5v5vYZ9ru/eq85lXeZQ==}
 
   superjson@2.2.2:
     resolution: {integrity: sha512-5JRxVqC8I8NuOUjzBbvVJAKNM8qoVuH0O77h4WInc/qC2q5IreqKxYwgkga3PfA22OayK2ikceb/B26dztPl+Q==}
@@ -8529,7 +8549,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.28.3
-      '@babel/parser': 7.27.7
+      '@babel/parser': 7.28.4
       '@babel/template': 7.27.2
       '@babel/types': 7.28.4
       debug: 4.4.3
@@ -8779,6 +8799,12 @@ snapshots:
       '@floating-ui/core': 1.7.3
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@googlemaps/markerclusterer@2.6.2':
+    dependencies:
+      '@types/supercluster': 7.1.3
+      fast-equals: 5.3.2
+      supercluster: 8.0.1
 
   '@html-validate/stylish@4.3.0':
     dependencies:
@@ -9136,8 +9162,9 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.102.0(esbuild@0.25.9)
 
-  '@nuxt/scripts@0.11.13(@unhead/vue@2.0.14(vue@3.5.21(typescript@5.9.2)))(db0@0.3.2)(ioredis@5.8.0)(typescript@5.9.2)(vue@3.5.21(typescript@5.9.2))':
+  '@nuxt/scripts@0.12.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.14(vue@3.5.21(typescript@5.9.2)))(db0@0.3.2)(ioredis@5.8.0)(typescript@5.9.2)(vue@3.5.21(typescript@5.9.2))':
     dependencies:
+      '@googlemaps/markerclusterer': 2.6.2
       '@nuxt/kit': link:packages/kit
       '@unhead/vue': 2.0.14(vue@3.5.21(typescript@5.9.2))
       '@vueuse/core': 13.9.0(vue@3.5.21(typescript@5.9.2))
@@ -10084,6 +10111,8 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/geojson@7946.0.16': {}
+
   '@types/hast@3.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -10125,6 +10154,10 @@ snapshots:
   '@types/resolve@1.20.2': {}
 
   '@types/semver@7.7.1': {}
+
+  '@types/supercluster@7.1.3':
+    dependencies:
+      '@types/geojson': 7946.0.16
 
   '@types/unist@2.0.11': {}
 
@@ -10193,8 +10226,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.44.0(typescript@5.9.2)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.44.0(typescript@5.9.2)
-      '@typescript-eslint/types': 8.44.0
+      '@typescript-eslint/tsconfig-utils': 8.44.1(typescript@5.9.2)
+      '@typescript-eslint/types': 8.44.1
       debug: 4.4.3
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -10599,7 +10632,7 @@ snapshots:
     dependencies:
       '@vitest/utils': 3.2.4
       pathe: 2.0.3
-      strip-literal: 3.0.0
+      strip-literal: 3.1.0
 
   '@vitest/snapshot@3.2.4':
     dependencies:
@@ -12118,6 +12151,8 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
+  fast-equals@5.3.2: {}
+
   fast-fifo@1.3.2: {}
 
   fast-glob@3.3.3:
@@ -12603,7 +12638,7 @@ snapshots:
 
   html-whitespace-sensitive-tag-names@3.0.1: {}
 
-  htmlnano@2.1.4(cssnano@7.1.1(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.0)(typescript@5.9.2):
+  htmlnano@2.1.5(cssnano@7.1.1(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.0)(typescript@5.9.2):
     dependencies:
       '@types/relateurl': 0.2.33
       cosmiconfig: 9.0.0(typescript@5.9.2)
@@ -13021,6 +13056,8 @@ snapshots:
   katex@0.16.22:
     dependencies:
       commander: 8.3.0
+
+  kdbush@4.0.2: {}
 
   keyv@4.5.4:
     dependencies:
@@ -15303,10 +15340,6 @@ snapshots:
 
   strip-json-comments@5.0.2: {}
 
-  strip-literal@3.0.0:
-    dependencies:
-      js-tokens: 9.0.1
-
   strip-literal@3.1.0:
     dependencies:
       js-tokens: 9.0.1
@@ -15318,6 +15351,10 @@ snapshots:
       browserslist: 4.26.2
       postcss: 8.5.6
       postcss-selector-parser: 7.1.0
+
+  supercluster@8.0.1:
+    dependencies:
+      kdbush: 4.0.2
 
   superjson@2.2.2:
     dependencies:
