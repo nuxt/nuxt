@@ -1,6 +1,6 @@
 <script setup lang="ts">
 throw createError({
-  statusCode: 404,
+  statusCode: 500,
   message: 'Whoops',
 })
 </script>

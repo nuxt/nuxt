@@ -1,8 +1,5 @@
 src/app/components/error-404.vue
 src/app/components/error-500.vue
-src/app/components/error-dev.vue
 src/app/components/welcome.vue
 src/core/runtime/nitro/handlers/error-500.ts
-src/core/runtime/nitro/handlers/error-dev.ts
 src/core/runtime/nitro/templates/error-500.ts
-src/core/runtime/nitro/templates/error-dev.ts

@@ -64,7 +64,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // Fallback to static rendered error page
   if (!res) {
-    const { template } = import.meta.dev ? await import('../templates/error-dev') : await import('../templates/error-500')
+    const { template } = await import('../templates/error-500')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
@@ -95,14 +95,14 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       .replace('</body>', `
         <style>${errorCSS}</style>
         <script>${parentStorageBridge(nonce)}</script>
-        <iframe 
-          id="pretty-errors" 
+        <iframe
+          id="pretty-errors"
           src="data:text/html;base64,${base64HTML}"
           title="Detailed error stack trace"
           sandbox="allow-scripts allow-same-origin"
         ></iframe>
-        <button 
-          id="pretty-errors-toggle" 
+        <button
+          id="pretty-errors-toggle"
           onclick="document.querySelector('#pretty-errors').toggleAttribute('inert')"
           aria-label="Toggle detailed error view"
           aria-expanded="false"
