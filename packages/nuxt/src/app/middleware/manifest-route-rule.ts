@@ -6,12 +6,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server || import.meta.test) { return }
   const rules = await getRouteRules({ path: to.path })
   if (rules.redirect) {
-    const hash = to.hash
-    const redirectHasHash = rules.redirect.includes('#')
-    if (hasProtocol(rules.redirect, { acceptRelative: true })) {
-      window.location.href = rules.redirect + (redirectHasHash ? '' : hash)
+    const path = rules.redirect.includes('#') ? rules.redirect : (rules.redirect + to.hash)
+    if (hasProtocol(path, { acceptRelative: true })) {
+      window.location.href = path
       return false
     }
-    return rules.redirect + (redirectHasHash ? '' : hash)
+    return path
   }
 })
