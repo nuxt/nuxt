@@ -10,7 +10,7 @@ links:
 
 <!--dev-cmd-->
 ```bash [Terminal]
-npx nuxt dev [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [--envName] [--no-clear] [--no-fork] [-p, --port] [-h, --host] [--clipboard] [-o, --open] [--https] [--publicURL] [--qr] [--public] [--tunnel] [--sslCert] [--sslKey]
+npx nuxt dev [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [--envName] [-e, --extends=<layer-name>] [--clear] [--no-f, --no-fork] [-p, --port] [-h, --host] [--clipboard] [-o, --open] [--https] [--publicURL] [--qr] [--public] [--tunnel] [--sslCert] [--sslKey]
 ```
 <!--/dev-cmd-->
 
@@ -33,10 +33,11 @@ Option | Default | Description
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
-`--no-clear` |  | Disable clear console on restart
-`--no-fork` |  | Disable forked mode
+`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
+`--clear` | `false` | Clear console on restart
+`--no-f, --no-fork` |  | Disable forked mode
 `-p, --port` |  | Port to listen on (default: `NUXT_PORT \|\| NITRO_PORT \|\| PORT \|\| nuxtOptions.devServer.port`)
-`-h, --host` |  | Host to listen on (default: `NUXT_HOST \|\| NITRO_HOST \|\| HOST \|\| nuxtOptions._layers?.[0]?.devServer?.host`)
+`-h, --host` |  | Host to listen on (default: `NUXT_HOST \|\| NITRO_HOST \|\| HOST \|\| nuxtOptions.devServer?.host`)
 `--clipboard` | `false` | Copy the URL to the clipboard
 `-o, --open` | `false` | Open the URL in the browser
 `--https` |  | Enable HTTPS
