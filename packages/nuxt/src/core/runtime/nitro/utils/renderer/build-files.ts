@@ -1,8 +1,7 @@
 import {
   createRenderer,
 } from 'vue-bundle-renderer/runtime'
-import type { Manifest as ClientManifest, PrecomputedData } from 'vue-bundle-renderer'
-import type { Manifest } from 'vite'
+import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
 import { useRuntimeConfig } from 'nitropack/runtime'
@@ -23,7 +22,7 @@ const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r
 // @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
   .then(r => r.default || r)
-  .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
+  .then(r => typeof r === 'function' ? r() : r) as Promise<Manifest>
 
 // @ts-expect-error file will be produced after app build
 const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import('#build/dist/server/client.precomputed.mjs')
