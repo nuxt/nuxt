@@ -135,3 +135,16 @@ export function useScriptSnapchatPixel (...args: unknown[]) {
 export function useScriptRybbitAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptRybbitAnalytics')
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptDatabuddyAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptDatabuddyAnalytics')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptRedditPixel (...args: unknown[]) {
+  renderStubMessage('useScriptRedditPixel')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptPayPal (...args: unknown[]) {
+  renderStubMessage('useScriptPayPal')
+}

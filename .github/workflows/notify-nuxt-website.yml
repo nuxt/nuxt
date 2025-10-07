@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: trigger nuxt website deployment
-        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
+        uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f # v4.0.0
         with:
           token: ${{ secrets.NUXT_WEBSITE_GITHUB_TOKEN }}
           repository: ${{ matrix.repo }}

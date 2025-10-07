@@ -7,7 +7,7 @@ import {
 } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack/types'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
-import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
+import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
@@ -15,7 +15,7 @@ import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runti
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
-import { getEntryIds, getRenderer } from '../utils/renderer/build-files'
+import { getRenderer } from '../utils/renderer/build-files'
 import { payloadCache } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/renderer/payload'
@@ -27,6 +27,8 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
@@ -137,7 +139,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   if (process.env.NUXT_INLINE_STYLES) {
-    for (const id of await getEntryIds()) {
+    for (const id of entryIds) {
       ssrContext.modules!.add(id)
     }
   }
@@ -179,7 +181,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     // Hint nitro to prerender payload for this route
     appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(withoutTrailingSlash(ssrContext.url), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem(ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
