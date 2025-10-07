@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
@@ -97,6 +97,13 @@ describe('route rules', () => {
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
     expect(html).not.toContain('<script')
+  })
+
+  it('client-side navigation should redirect if hash included', async () => {
+    const { page } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.getByTestId('route-rules-redirect').click()
+    await vi.waitFor(() => page.url() === url('/#hello'), { timeout: 5_000 })
   })
 
   it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
