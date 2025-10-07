@@ -22,6 +22,12 @@ export interface Component {
    */
   priority?: number
   /**
+   * Path to component's declaration file
+   * Used for type generation when different from filePath
+   * @default filePath
+   */
+  declarationPath?: string
+  /**
    * Allow bypassing client/server transforms for internal Nuxt components like
    * ServerPlaceholder and NuxtClientFallback.
    *
@@ -53,10 +59,6 @@ export interface ScanDir {
    */
   pathPrefix?: boolean
   /**
-   * Ignore scanning this directory if set to `false`
-   */
-  enabled?: boolean
-  /**
    * These properties (prefetch/preload) are used in production to configure how components with Lazy prefix are handled by webpack via its magic comments.
    * Learn more on webpack documentation: https://webpack.js.org/api/module-methods/#magic-comments
    */
@@ -70,7 +72,11 @@ export interface ScanDir {
    * This flag indicates, component should be loaded async (with a separate chunk) regardless of using Lazy prefix or not.
    */
   isAsync?: boolean
-
+  /**
+   * Path to component's declaration file
+   * Used for type generation when different from filePath
+   */
+  declarationPath?: string
   extendComponent?: (component: Component) => Promise<Component | void> | (Component | void)
   /**
    * If enabled, registers components to be globally available.

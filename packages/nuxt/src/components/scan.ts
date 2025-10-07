@@ -31,9 +31,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   const scannedPaths: string[] = []
 
   for (const dir of dirs) {
-    if (dir.enabled === false) {
-      continue
-    }
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
@@ -124,6 +121,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         preload: Boolean(dir.preload),
         // specific to the file
         filePath,
+        // Use declarationPath from directory config if available, otherwise default to filePath
+        declarationPath: dir.declarationPath || filePath,
         pascalName,
         kebabName,
         chunkName,

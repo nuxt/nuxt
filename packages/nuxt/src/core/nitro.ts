@@ -8,7 +8,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
-import { createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
@@ -34,10 +34,25 @@ const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
-  const excludePaths = layerDirs.flatMap(dirs => [
-    dirs.root.match(NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
-    dirs.root.match(PNPM_NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
-  ].filter((dir): dir is string => Boolean(dir)).map(dir => escapeRE(dir)))
+  const excludePaths: string[] = []
+  for (const dirs of layerDirs) {
+    const paths = [
+      dirs.root.match(NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
+      dirs.root.match(PNPM_NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
+    ]
+    for (const dir of paths) {
+      if (dir) {
+        excludePaths.push(escapeRE(dir))
+      }
+    }
+  }
+
+  const layerPublicAssetsDirs: Array<{ dir: string }> = []
+  for (const dirs of layerDirs) {
+    if (existsSync(dirs.public)) {
+      layerPublicAssetsDirs.push({ dir: dirs.public })
+    }
+  }
 
   const excludePattern = excludePaths.length
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
@@ -155,7 +170,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
               join(moduleDir, 'dist/runtime/server'),
             ]
           }),
-          ...getLayerDirectories(nuxt).map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
+          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
@@ -172,9 +187,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir,
           },
-      ...getLayerDirectories(nuxt)
-        .filter(dirs => existsSync(dirs.public))
-        .map(dirs => ({ dir: dirs.public })),
+      ...layerPublicAssetsDirs,
     ],
     prerender: {
       ignoreUnprefixedPublicAssets: true,
@@ -200,7 +213,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt-nightly/dist',
         distDir,
         // Ensure app config files have auto-imports injected even if they are pure .js files
-        ...getLayerDirectories(nuxt).map(dirs => join(dirs.app, 'app.config')),
+        ...layerDirs.map(dirs => join(dirs.app, 'app.config')),
       ],
       traceInclude: [
         // force include files used in generated code from the runtime-compiler
@@ -534,20 +547,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Enable runtime compiler client side
   if (nuxt.options.vue.runtimeCompiler) {
-    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-      if (isClient) {
-        if (Array.isArray(config.resolve!.alias)) {
-          config.resolve!.alias.push({
-            find: 'vue',
-            replacement: 'vue/dist/vue.esm-bundler',
-          })
-        } else {
-          config.resolve!.alias = {
-            ...config.resolve!.alias,
-            vue: 'vue/dist/vue.esm-bundler',
-          }
+    addVitePlugin({
+      name: 'nuxt:vue:runtime-compiler',
+      applyToEnvironment: environment => environment.name === 'client',
+      enforce: 'pre',
+      resolveId (id, importer) {
+        if (id === 'vue') {
+          return this.resolve('vue/dist/vue.esm-bundler', importer, { skipSelf: true })
         }
-      }
+      },
     })
     for (const hook of ['webpack:config', 'rspack:config'] as const) {
       nuxt.hook(hook, (configuration) => {

@@ -1,4 +1,4 @@
-import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, watch } from 'vue'
+import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps } from 'vue'
 import type { AsyncComponentLoader, ComponentObjectPropsOptions, ExtractPropTypes, HydrationStrategy } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
@@ -83,10 +83,7 @@ export const createLazyIfComponent = defineLazyComponent({
 },
 props => props.hydrateWhen
   ? undefined /* hydrate immediately */
-  : (hydrate) => {
-      const unwatch = watch(() => props.hydrateWhen, () => hydrate(), { once: true })
-      return () => unwatch()
-    },
+  : () => {}, /* Vue will trigger the hydration automatically when the prop changes */
 )
 
 /* @__NO_SIDE_EFFECTS__ */

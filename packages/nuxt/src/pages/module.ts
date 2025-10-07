@@ -221,14 +221,16 @@ export default defineNuxtModule({
     }
 
     if (useExperimentalTypedPages) {
-      const declarationFile = './types/typed-router.d.ts'
+      const declarationFile = resolve(nuxt.options.buildDir, 'types/typed-router.d.ts')
 
       const typedRouterOptions: TypedRouterOptions = {
         routesFolder: [],
-        dts: resolve(nuxt.options.buildDir, declarationFile),
+        dts: declarationFile,
         logs: nuxt.options.debug && nuxt.options.debug.router,
         async beforeWriteFiles (rootPage) {
-          rootPage.children.forEach(child => child.delete())
+          for (const child of rootPage.children) {
+            child.delete()
+          }
           const pages = nuxt.apps.default?.pages || await resolvePagesRoutes(options.pattern, nuxt)
           if (nuxt.apps.default) {
             nuxt.apps.default.pages = pages
@@ -262,7 +264,9 @@ export default defineNuxtModule({
             // TODO: implement redirect support
             // if (page.redirect) {}
             if (page.children) {
-              page.children.forEach(child => addPage(route, child, absolutePagePath))
+              for (const child of page.children) {
+                addPage(route, child, absolutePagePath)
+              }
             }
           }
 
@@ -279,13 +283,12 @@ export default defineNuxtModule({
       })
 
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
-      const dtsFile = resolve(nuxt.options.buildDir, declarationFile)
-      await mkdir(dirname(dtsFile), { recursive: true })
+      await mkdir(dirname(declarationFile), { recursive: true })
       await context.scanPages(false)
 
       if (nuxt.options._prepare || !nuxt.options.dev) {
         // TODO: could we generate this from context instead?
-        const dts = await readFile(dtsFile, 'utf-8')
+        const dts = await readFile(declarationFile, 'utf-8')
         addTemplate({
           filename: 'types/typed-router.d.ts',
           getContents: () => dts,
@@ -554,10 +557,21 @@ export default defineNuxtModule({
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))
 
+        const hashModes: string[] = []
+        for (let index = 0; index < routerOptionsFiles.length; index++) {
+          const file = routerOptionsFiles[index]!
+          if (file.path !== builtInRouterOptions) {
+            hashModes.unshift(`routerOptions${index}.hashMode`)
+          }
+        }
+
         return [
           ...routerOptionsFiles.map((file, index) => genImport(file.path, `routerOptions${index}`)),
           `const configRouterOptions = ${configRouterOptions}`,
-          `export const hashMode = ${[...routerOptionsFiles.filter(o => o.path !== builtInRouterOptions).map((_, index) => `routerOptions${index}.hashMode`).reverse(), nuxt.options.router.options.hashMode].join(' ?? ')}`,
+          `export const hashMode = ${[
+            ...hashModes,
+            nuxt.options.router.options.hashMode,
+          ].join(' ?? ')}`,
           'export default {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),

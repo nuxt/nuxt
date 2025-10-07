@@ -64,7 +64,7 @@ async function createdStyleRule (lang: string, test: RegExp, processorLoader: an
 
   ctx.userConfig.loaders.css.importLoaders =
     ctx.userConfig.loaders.cssModules.importLoaders =
-    styleLoaders.length
+      styleLoaders.length
 
   const cssLoaders = createCssLoadersRule(ctx, ctx.userConfig.loaders.css)
   const cssModuleLoaders = createCssLoadersRule(ctx, ctx.userConfig.loaders.cssModules)
