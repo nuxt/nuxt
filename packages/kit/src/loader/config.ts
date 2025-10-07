@@ -134,19 +134,22 @@ async function loadNuxtSchema (cwd: string) {
   return await import(schemaPath).then(r => r.NuxtConfigSchema)
 }
 
-let count = 0
 async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
+  const key = 'defineNuxtConfig'
+  const countKey = `_${key}Count`
   const globalSelf = globalThis as any
-  if (count === 0) {
-    globalSelf.defineNuxtConfig = (c: any) => c
+
+  if (!globalSelf[countKey]) {
+    globalSelf[countKey] = 0
+    globalSelf[key] = (c: any) => c
   }
-  count++
+  globalSelf[countKey]++
   try {
     return await fn()
   } finally {
-    count--
-    if (count === 0) {
-      delete globalSelf.defineNuxtConfig
+    globalSelf[countKey]--
+    if (!globalSelf[countKey]) {
+      delete globalSelf[key]
     }
   }
 }
