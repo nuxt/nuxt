@@ -193,12 +193,12 @@ export default defineNuxtModule({
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
         getContents: () => [
-          'declare module \'nitropack/types\' {',
+          'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
           '}',
-          'declare module \'nitropack\' {',
+          'declare module \'nitro\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
@@ -602,12 +602,12 @@ export default defineNuxtModule({
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          'declare module \'nitropack/types\' {',
+          'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}',
-          'declare module \'nitropack\' {',
+          'declare module \'nitro\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
