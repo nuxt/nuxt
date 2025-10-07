@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "4.1.2",
+  "version": "4.1.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -37,13 +37,13 @@
   "devDependencies": {
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",
-    "@types/webpack-hot-middleware": "2.25.10",
+    "@types/webpack-hot-middleware": "2.25.11",
     "@unhead/vue": "2.0.14",
     "@vitejs/plugin-vue": "6.0.1",
     "@vitejs/plugin-vue-jsx": "5.1.1",
     "@vue/compiler-core": "3.5.22",
     "@vue/compiler-sfc": "3.5.22",
-    "@vue/language-core": "3.1.0",
+    "@vue/language-core": "3.1.1",
     "c12": "3.3.0",
     "chokidar": "4.0.3",
     "compatx": "0.2.0",

@@ -187,6 +187,7 @@ export default defineNuxtConfig({
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
+      '/route-rules/redirect': { redirect: '/' },
     },
     prerender: {
       routes: [
