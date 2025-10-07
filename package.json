@@ -132,7 +132,7 @@
         "rollup": "4.52.4",
         "semver": "7.7.2",
         "sherif": "1.6.1",
-        "srvx": "0.8.10",
+        "srvx": "0.8.13",
         "std-env": "3.9.0",
         "tinyexec": "1.0.1",
         "tinyglobby": "0.2.15",

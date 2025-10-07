@@ -60,7 +60,7 @@ importers:
         version: 7.4.0
       '@nuxt/cli':
         specifier: 3.29.0
-        version: 3.29.0(crossws@0.4.1(srvx@0.8.10))(magicast@0.3.5)
+        version: 3.29.0(crossws@0.4.1(srvx@0.8.13))(magicast@0.3.5)
       '@nuxt/eslint-config':
         specifier: 1.9.0
         version: 1.9.0(@typescript-eslint/utils@8.44.1(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.22)(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
@@ -72,7 +72,7 @@ importers:
         version: link:packages/rspack
       '@nuxt/test-utils':
         specifier: 3.19.2
-        version: 3.19.2(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.10))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+        version: 3.19.2(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.13))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -159,7 +159,7 @@ importers:
         version: 3.2.0
       h3:
         specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       happy-dom:
         specifier: 19.0.2
         version: 19.0.2
@@ -215,8 +215,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       srvx:
-        specifier: 0.8.10
-        version: 0.8.10
+        specifier: 0.8.13
+        version: 0.8.13
       std-env:
         specifier: 3.9.0
         version: 3.9.0
@@ -246,7 +246,7 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
       vitest-environment-nuxt:
         specifier: 1.0.1
-        version: 1.0.1(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.10))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+        version: 1.0.1(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.13))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       vue:
         specifier: 3.5.22
         version: 3.5.22(typescript@5.9.3)
@@ -360,7 +360,7 @@ importers:
     dependencies:
       '@nuxt/cli':
         specifier: 3.29.0
-        version: 3.29.0(crossws@0.4.1(srvx@0.8.10))(magicast@0.3.5)
+        version: 3.29.0(crossws@0.4.1(srvx@0.8.13))(magicast@0.3.5)
       '@nuxt/devalue':
         specifier: ^2.0.2
         version: 2.0.2
@@ -429,7 +429,7 @@ importers:
         version: 1.0.7
       h3:
         specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -506,8 +506,8 @@ importers:
         specifier: ^7.7.2
         version: 7.7.2
       srvx:
-        specifier: ^0.8.10
-        version: 0.8.10
+        specifier: ^0.8.13
+        version: 0.8.13
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
@@ -537,7 +537,7 @@ importers:
         version: 0.15.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       unstorage:
         specifier: ^1.17.1
-        version: 1.17.1(crossws@0.4.1(srvx@0.8.10))(db0@0.3.4)(ioredis@5.8.0)
+        version: 1.17.1(crossws@0.4.1(srvx@0.8.13))(db0@0.3.4)(ioredis@5.8.0)
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -556,7 +556,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.12.1
-        version: 0.12.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.14(vue@3.5.22(typescript@5.9.3)))(crossws@0.4.1(srvx@0.8.10))(db0@0.3.4)(ioredis@5.8.0)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))
+        version: 0.12.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.14(vue@3.5.22(typescript@5.9.3)))(crossws@0.4.1(srvx@0.8.13))(db0@0.3.4)(ioredis@5.8.0)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -622,7 +622,7 @@ importers:
         version: 6.2.0(webpack@5.102.0(esbuild@0.25.10))
       h3:
         specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       jiti:
         specifier: 2.6.1
         version: 2.6.1
@@ -798,7 +798,7 @@ importers:
         version: 6.2.0(webpack@5.102.0(esbuild@0.25.10))
       h3:
         specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -951,7 +951,7 @@ importers:
         version: 3.2.0
       h3:
         specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       jiti:
         specifier: 2.6.1
         version: 2.6.1
@@ -980,8 +980,8 @@ importers:
         specifier: ^6.0.4
         version: 6.0.4(rolldown@1.0.0-beta.42)(rollup@4.52.4)
       srvx:
-        specifier: 0.8.10
-        version: 0.8.10
+        specifier: 0.8.13
+        version: 0.8.13
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
@@ -1060,7 +1060,7 @@ importers:
         version: 9.1.0(typescript@5.9.3)(webpack@5.102.0(esbuild@0.25.10))
       h3:
         specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       jiti:
         specifier: 2.6.1
         version: 2.6.1
@@ -7138,8 +7138,8 @@ packages:
     resolution: {integrity: sha512-qxQJTx2ryR0Dw0ITYyekNQWpz6f8dGd7vffGNflQQ3Iqj9NJ6qiZ7ELpZsJ/QBhIVAiDfXdag3+Gp8RvWa62AA==}
     engines: {node: '>=12'}
 
-  srvx@0.8.10:
-    resolution: {integrity: sha512-Vcsvl/+DC057ALEuc8MJE0Fj10OsSEt47uyb+X98qFV7SsLx8dRksWYqqVI8r5HjAAZVmv6aDlUOl0nDiIW/iA==}
+  srvx@0.8.13:
+    resolution: {integrity: sha512-ny3X0dm5GsLeeUOsLwfY3mLu/UhM8QkCrc5/rWKt75mx74udHUDlTsUxC5YRArgiMX/knsbRSwJcNo2aPUeN5A==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -8788,7 +8788,7 @@ snapshots:
 
   '@npmcli/name-from-folder@2.0.0': {}
 
-  '@nuxt/cli@3.29.0(crossws@0.4.1(srvx@0.8.10))(magicast@0.3.5)':
+  '@nuxt/cli@3.29.0(crossws@0.4.1(srvx@0.8.13))(magicast@0.3.5)':
     dependencies:
       c12: 3.3.0(magicast@0.3.5)
       citty: 0.1.6
@@ -8800,7 +8800,7 @@ snapshots:
       fuse.js: 7.1.0
       get-port-please: 3.2.0
       giget: 2.0.0
-      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       jiti: 2.6.1
       listhen: 1.9.0
       nypm: 0.6.2
@@ -8811,7 +8811,7 @@ snapshots:
       pkg-types: 2.3.0
       scule: 1.3.0
       semver: 7.7.2
-      srvx: 0.8.10
+      srvx: 0.8.13
       std-env: 3.9.0
       tinyexec: 1.0.1
       ufo: 1.6.1
@@ -8929,7 +8929,7 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.102.0(esbuild@0.25.10)
 
-  '@nuxt/scripts@0.12.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.14(vue@3.5.22(typescript@5.9.3)))(crossws@0.4.1(srvx@0.8.10))(db0@0.3.4)(ioredis@5.8.0)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))':
+  '@nuxt/scripts@0.12.1(@googlemaps/markerclusterer@2.6.2)(@unhead/vue@2.0.14(vue@3.5.22(typescript@5.9.3)))(crossws@0.4.1(srvx@0.8.13))(db0@0.3.4)(ioredis@5.8.0)(typescript@5.9.3)(vue@3.5.22(typescript@5.9.3))':
     dependencies:
       '@googlemaps/markerclusterer': 2.6.2
       '@nuxt/kit': link:packages/kit
@@ -8937,7 +8937,7 @@ snapshots:
       '@vueuse/core': 13.9.0(vue@3.5.22(typescript@5.9.3))
       consola: 3.4.2
       defu: 6.1.4
-      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       magic-string: 0.30.19
       ofetch: 1.4.1
       ohash: 2.0.11
@@ -8947,7 +8947,7 @@ snapshots:
       std-env: 3.9.0
       ufo: 1.6.1
       unplugin: 2.3.10
-      unstorage: 1.17.1(crossws@0.4.1(srvx@0.8.10))(db0@0.3.4)(ioredis@5.8.0)
+      unstorage: 1.17.1(crossws@0.4.1(srvx@0.8.13))(db0@0.3.4)(ioredis@5.8.0)
       valibot: 1.1.0(typescript@5.9.3)
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -8988,7 +8988,7 @@ snapshots:
       rc9: 2.1.2
       std-env: 3.9.0
 
-  '@nuxt/test-utils@3.19.2(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.10))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))':
+  '@nuxt/test-utils@3.19.2(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.13))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))':
     dependencies:
       '@nuxt/kit': link:packages/kit
       c12: 3.3.0(magicast@0.3.5)
@@ -8998,7 +8998,7 @@ snapshots:
       estree-walker: 3.0.3
       fake-indexeddb: 6.2.2
       get-port-please: 3.2.0
-      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       local-pkg: 1.1.2
       magic-string: 0.30.19
       node-fetch-native: 1.6.7
@@ -9012,7 +9012,7 @@ snapshots:
       tinyexec: 1.0.1
       ufo: 1.6.1
       unplugin: 2.3.10
-      vitest-environment-nuxt: 1.0.1(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.10))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+      vitest-environment-nuxt: 1.0.1(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.13))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       vue: 3.5.22(typescript@5.9.3)
     optionalDependencies:
       '@playwright/test': 1.56.0
@@ -11170,9 +11170,9 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  crossws@0.4.1(srvx@0.8.10):
+  crossws@0.4.1(srvx@0.8.13):
     optionalDependencies:
-      srvx: 0.8.10
+      srvx: 0.8.13
 
   css-declaration-sorter@7.3.0(postcss@8.5.6):
     dependencies:
@@ -12092,18 +12092,18 @@ snapshots:
       cookie-es: 2.0.0
       fetchdts: 0.1.7
       rou3: 0.7.7
-      srvx: 0.8.10
+      srvx: 0.8.13
     optionalDependencies:
       crossws: 0.3.5
 
-  h3@2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10)):
+  h3@2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13)):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.7
       rou3: 0.7.7
-      srvx: 0.8.10
+      srvx: 0.8.13
     optionalDependencies:
-      crossws: 0.4.1(srvx@0.8.10)
+      crossws: 0.4.1(srvx@0.8.13)
 
   happy-dom@19.0.2:
     dependencies:
@@ -13422,14 +13422,14 @@ snapshots:
       consola: 3.4.2
       cookie-es: 2.0.0
       croner: 9.1.0
-      crossws: 0.4.1(srvx@0.8.10)
+      crossws: 0.4.1(srvx@0.8.13)
       db0: 0.3.4
       defu: 6.1.4
       destr: 2.0.5
       esbuild: 0.25.10
       fetchdts: 0.1.7
       get-port-please: 3.2.0
-      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       hookable: 5.5.3
       jiti: 2.6.1
       klona: 2.0.6
@@ -13441,14 +13441,14 @@ snapshots:
       rou3: 0.7.7
       scule: 1.3.0
       source-map: 0.7.6
-      srvx: 0.8.10
+      srvx: 0.8.13
       std-env: 3.9.0
       tinyglobby: 0.2.15
       ufo: 1.6.1
       unctx: 2.4.1
       undici: 7.16.0
       unenv: 2.0.0-rc.21
-      unstorage: 1.17.1(crossws@0.4.1(srvx@0.8.10))(db0@0.3.4)(ioredis@5.8.0)
+      unstorage: 1.17.1(crossws@0.4.1(srvx@0.8.13))(db0@0.3.4)(ioredis@5.8.0)
       youch: 4.1.0-beta.11
       youch-core: 0.3.3
     optionalDependencies:
@@ -14804,7 +14804,7 @@ snapshots:
 
   split-on-first@3.0.0: {}
 
-  srvx@0.8.10:
+  srvx@0.8.13:
     dependencies:
       cookie-es: 2.0.0
 
@@ -15307,12 +15307,12 @@ snapshots:
       '@unrs/resolver-binding-win32-ia32-msvc': 1.11.1
       '@unrs/resolver-binding-win32-x64-msvc': 1.11.1
 
-  unstorage@1.17.1(crossws@0.4.1(srvx@0.8.10))(db0@0.3.4)(ioredis@5.8.0):
+  unstorage@1.17.1(crossws@0.4.1(srvx@0.8.13))(db0@0.3.4)(ioredis@5.8.0):
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
       destr: 2.0.5
-      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.10))
+      h3: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.13))
       lru-cache: 10.4.3
       node-fetch-native: 1.6.7
       ofetch: 1.4.1
@@ -15489,9 +15489,9 @@ snapshots:
       terser: 5.44.0
       yaml: 2.8.1
 
-  vitest-environment-nuxt@1.0.1(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.10))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)):
+  vitest-environment-nuxt@1.0.1(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.13))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)):
     dependencies:
-      '@nuxt/test-utils': 3.19.2(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.10))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+      '@nuxt/test-utils': 3.19.2(@playwright/test@1.56.0)(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.22)(vue@3.5.22(typescript@5.9.3)))(@vue/test-utils@2.4.6)(crossws@0.4.1(srvx@0.8.13))(happy-dom@19.0.2)(magicast@0.3.5)(playwright-core@1.56.0)(typescript@5.9.3)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
     transitivePeerDependencies:
       - '@cucumber/cucumber'
       - '@jest/globals'
