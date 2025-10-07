@@ -21,6 +21,18 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
   headers: Object.fromEntries(event.headers.entries()),
 })))
 
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ method: event.method, headers: Object.fromEntries(event.headers.entries()) })
+    }, 100)
+  })
+}))
+
+beforeEach(() => {
+  vi.unstubAllGlobals()
+})
+
 describe('useFetch', () => {
   beforeEach(() => {
     clearNuxtData()
@@ -255,5 +267,24 @@ describe('useFetch', () => {
       expect(data.value.method).toEqual('GET')
     }
     expect(status.value).toBe('success')
+  })
+
+  it('should cancel fetch request on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    const { clear } = useLazyFetch('/api/sleep')
+    expect(aborted).toBe(false)
+    clear()
+    expect(aborted).toBe(true)
   })
 })

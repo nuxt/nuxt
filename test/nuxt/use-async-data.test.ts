@@ -17,6 +17,18 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
   headers: Object.fromEntries(event.headers.entries()),
 })))
 
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ method: event.method, headers: Object.fromEntries(event.headers.entries()) })
+    }, 100)
+  })
+}))
+
+beforeEach(() => {
+  vi.unstubAllGlobals()
+})
+
 describe('useAsyncData', () => {
   let uniqueKey: string
   let counter = 0
@@ -889,5 +901,259 @@ describe('useAsyncData', () => {
 
     expect(externalWatchSpy).toHaveBeenCalledTimes(2)
     expect(promiseFn).toHaveBeenCalledTimes(3) // initial + 2 changes
+  })
+
+  it('should trigger AbortController on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    const { promise, resolve } = Promise.withResolvers<boolean>()
+    const { clear } = useAsyncData('', () => promise)
+    expect(aborted).toBe(false)
+    clear()
+    resolve(true)
+    expect(aborted).toBe(true)
+  })
+
+  it('should be externally cancellable when executing', async () => {
+    vi.useFakeTimers()
+    const controller = new AbortController()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { execute, status } = useAsyncData(() => 'index', promiseFn)
+    vi.advanceTimersToNextTimer()
+    await flushPromises()
+    expect(status.value).toBe('success')
+    execute({ signal: controller.signal })
+    vi.advanceTimersByTime(100)
+    expect(status.value).toBe('pending')
+    controller.abort('test abort')
+    await flushPromises()
+    expect(status.value).toBe('idle')
+    vi.useRealTimers()
+  })
+
+  it('should be cancellable via abort', async () => {
+    vi.useFakeTimers()
+    let count = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(count++), 1000)))
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(status.value).toBe('idle')
+    expect(count).toBe(0)
+    vi.useRealTimers()
+  })
+
+  it('should abort handler signal', async () => {
+    vi.useFakeTimers()
+    let _signal: AbortController['signal']
+    const promiseFn = vi.fn((_, { signal }) => {
+      _signal = signal
+      return new Promise(resolve => setTimeout(() => resolve('index'), 1000))
+    })
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(_signal!.aborted).toBe(true)
+    vi.useRealTimers()
+  })
+
+  it('should accept timeout', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { status } = useAsyncData(promiseFn, { timeout: 1 })
+    expect(status.value).toBe('pending')
+    await vi.waitFor(() => { // todo: advanceTimersToNextTimer is not working here (?)
+      expect(status.value).toBe('error')
+    })
+    vi.useRealTimers()
+  })
+
+  it('should handle already-aborted signal', async () => {
+    const controller = new AbortController()
+    controller.abort(new DOMException('Already aborted', 'AbortError'))
+
+    const promiseFn = vi.fn(() => {
+      return new Promise(resolve => setTimeout(() => resolve('test'), 100))
+    })
+
+    const { execute, status } = useAsyncData('already-aborted-test', promiseFn, {
+      immediate: false,
+    })
+
+    execute({ signal: controller.signal })
+    await flushPromises()
+
+    // When signal is already aborted, the handler execution is aborted
+    // so handler might not be called, and status is immediately set to idle
+    expect(status.value).toBe('idle')
+  })
+
+  it('should merge multiple abort signals', async () => {
+    vi.useFakeTimers()
+    const controller1 = new AbortController()
+
+    let receivedSignal: AbortSignal | undefined
+    const promiseFn = vi.fn((_, { signal }) => {
+      receivedSignal = signal
+      return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
+    })
+
+    const { execute, status, error } = useAsyncData('test-merge', promiseFn, { immediate: false })
+
+    execute({ signal: controller1.signal })
+    expect(status.value).toBe('pending')
+
+    // Abort via first controller
+    controller1.abort(new Error('Aborted by controller1'))
+    await flushPromises()
+
+    // External abort results in error state (not idle), with AbortError
+    expect(status.value).toBe('error')
+    expect(error.value).toBeTruthy()
+    expect(receivedSignal?.aborted).toBe(true)
+
+    vi.useRealTimers()
+  })
+
+  it('should work when AbortSignal.reason is unavailable (older browsers)', async () => {
+    vi.useFakeTimers()
+
+    // Mock older AbortController without .reason property
+    class OldAbortController {
+      signal: any = {
+        aborted: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }
+
+      abort () {
+        this.signal.aborted = true
+        // No reason property in old browsers
+      }
+    }
+
+    vi.stubGlobal('AbortController', OldAbortController)
+
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 1000)))
+
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+
+    clear()
+    await flushPromises()
+
+    expect(status.value).toBe('idle')
+
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  it('should handle abort during dedupe:defer', async () => {
+    vi.useFakeTimers()
+    let callCount = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(++callCount), 1000)))
+
+    const { execute, clear, status } = useAsyncData(promiseFn, { dedupe: 'defer', immediate: false })
+
+    execute()
+    expect(status.value).toBe('pending')
+
+    execute() // Should defer to existing request
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    clear() // Abort both
+    await flushPromises()
+
+    expect(status.value).toBe('idle')
+    expect(callCount).toBe(0)
+
+    vi.useRealTimers()
+  })
+
+  it('should handle abort during dedupe:cancel', async () => {
+    vi.useFakeTimers()
+    let abortedCount = 0
+    const promiseFn = vi.fn((_, { signal }) => {
+      signal.addEventListener('abort', () => abortedCount++)
+      return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
+    })
+
+    const { execute, status } = useAsyncData(promiseFn, { dedupe: 'cancel', immediate: false })
+
+    execute()
+    expect(status.value).toBe('pending')
+
+    execute() // Should cancel previous and start new
+    await flushPromises()
+
+    expect(abortedCount).toBe(1) // First request was aborted
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    vi.useRealTimers()
+  })
+
+  it('should accept signal in refresh()', async () => {
+    const controller = new AbortController()
+
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+
+    const { refresh, status } = await useAsyncData('refresh-signal-test', promiseFn)
+    expect(status.value).toBe('success')
+
+    refresh({ signal: controller.signal })
+    // Abort with DOMException to get idle state
+    controller.abort(new DOMException('Aborted', 'AbortError'))
+    await flushPromises()
+
+    // AbortError causes idle state (not error)
+    expect(status.value).toBe('idle')
+  })
+
+  it('should clear error when clearing after error', async () => {
+    const { data, error, status, clear } = await useAsyncData(() => Promise.reject(new Error('test error')))
+
+    expect(status.value).toBe('error')
+    expect(error.value).toBeTruthy()
+
+    clear()
+
+    expect(data.value).toBeUndefined()
+    expect(error.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+  })
+
+  it('should abort ongoing request when clearing', async () => {
+    vi.useFakeTimers()
+    let aborted = false
+
+    const promiseFn = vi.fn((_, { signal }) => {
+      signal.addEventListener('abort', () => { aborted = true })
+      return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
+    })
+
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+
+    clear()
+    await flushPromises()
+
+    expect(aborted).toBe(true)
+    expect(status.value).toBe('idle')
+
+    vi.useRealTimers()
   })
 })

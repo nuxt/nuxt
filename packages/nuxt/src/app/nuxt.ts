@@ -142,6 +142,8 @@ interface _NuxtApp {
     _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _hash?: Record<string, string | undefined>
+    /** @internal */
+    _abortController?: AbortController
   } | undefined>
 
   /** @internal */

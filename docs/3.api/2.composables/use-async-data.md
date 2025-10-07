@@ -102,6 +102,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
+  - `timeout` - a number in milliseconds to wait before timing out the request (defaults to `undefined`, which means no timeout)
 
 ::note
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
@@ -170,12 +171,12 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ```ts [Signature]
 export function useAsyncData<DataT, DataE> (
-  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
+  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
 export function useAsyncData<DataT, DataE> (
   key: MaybeRefOrGetter<string>,
-  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
+  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): Promise<AsyncData<DataT, DataE>>
 
@@ -190,6 +191,7 @@ type AsyncDataOptions<DataT> = {
   pick?: string[]
   watch?: MultiWatchSources | false
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
+  timeout?: number
 }
 
 type AsyncDataRequestContext = {
@@ -208,6 +210,8 @@ type AsyncData<DataT, ErrorT> = {
 
 interface AsyncDataExecuteOptions {
   dedupe?: 'cancel' | 'defer'
+  timeout?: number
+  signal?: AbortSignal
 }
 
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
