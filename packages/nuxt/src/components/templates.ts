@@ -117,10 +117,12 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
     if (c.island) {
       continue
     }
+    // Use declarationPath if provided, otherwise fall back to filePath
+    const filePath = c.declarationPath || c.filePath
     let type = `typeof ${
-      genDynamicImport(isAbsolute(c.filePath)
-        ? relative(baseDir, c.filePath).replace(NON_VUE_RE, '')
-        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })
+      genDynamicImport(isAbsolute(filePath)
+        ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
+        : filePath.replace(NON_VUE_RE, ''), { wrapper: false })
     }['${c.export}']`
 
     if (c.mode === 'server') {
