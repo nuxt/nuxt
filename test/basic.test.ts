@@ -2212,6 +2212,18 @@ describe.skipIf(isDev())('dynamic paths', () => {
     }
   })
 
+  it.skipIf(isDev() || isWebpack)('should render relative importmap path with relative path', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '',
+        NUXT_APP_BUILD_ASSETS_DIR: 'assets/',
+      },
+    })
+
+    const html = await $fetch<string>('/')
+    expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
+  })
+
   it('restore server', async () => {
     await startServer()
   })
@@ -2522,6 +2534,12 @@ describe('component islands', () => {
     await islandPageRequest
     await page.locator('#server-page').waitFor()
   })
+
+  it('should show error on 404 error for server pages during client navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.click('[href="/server-components/lost-page"]')
+    await page.getByText('This is the error page').waitFor()
+  })
 })
 
 describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
@@ -2804,10 +2822,10 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
         style.innerHTML &&=
-            (style.innerHTML as string)
-              .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
-              // Vite 6 enables CSS minify by default for SSR
-              .replace(/blue/, '#00f')
+          (style.innerHTML as string)
+            .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+          // Vite 6 enables CSS minify by default for SSR
+            .replace(/blue/, '#00f')
         style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
       }
     }

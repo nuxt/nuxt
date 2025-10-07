@@ -6,6 +6,7 @@ import typegen from 'eslint-typegen'
 import perfectionist from 'eslint-plugin-perfectionist'
 import { importX } from 'eslint-plugin-import-x'
 import parser from '@typescript-eslint/parser'
+import markdown from '@eslint/markdown'
 
 import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
 
@@ -266,6 +267,29 @@ export default createConfigForNuxt({
       files: ['packages/nuxt/src/app/components/welcome.vue'],
       rules: {
         'vue/multi-word-component-names': 'off',
+      },
+    },
+    {
+      files: ['**/*.md'],
+      language: 'markdown/commonmark',
+      name: 'local/docs-markdown',
+      plugins: {
+        markdown,
+      },
+      processor: 'markdown/markdown',
+    },
+    {
+      // targets code-blocks in markdown files
+      files: ['**/*.md/**/*'],
+      rules: {
+        '@stylistic/keyword-spacing': 'off',
+        '@typescript-eslint/no-empty-object-type': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        'import/first': 'off',
+        'no-console': 'off',
+        'no-unused-vars': 'off',
+        'vue/no-unused-vars': 'off',
+        'vue/require-v-for-key': 'off',
       },
     },
   )

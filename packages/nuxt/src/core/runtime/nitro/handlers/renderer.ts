@@ -8,11 +8,12 @@ import {
 import type { RenderResponse } from 'nitro/types'
 import type { H3Event } from 'h3'
 import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'h3'
-import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
+import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
 import { useNitroApp } from 'nitro/runtime'
+import { relative } from 'pathe'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
@@ -59,6 +60,8 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
+
+let entryPath: string
 
 export default defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
@@ -174,7 +177,7 @@ export default defineEventHandler(async (event) => {
     // Hint nitro to prerender payload for this route
     event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(withoutTrailingSlash(ssrContext.url), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem(ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
@@ -184,12 +187,27 @@ export default defineEventHandler(async (event) => {
 
   // 0. Add import map for stable chunk hashes
   if (entryFileName && !NO_SCRIPTS) {
+    let path = entryPath
+    if (!path) {
+      path = buildAssetsURL(entryFileName) as string
+      if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
+        // cache absolute entry path
+        entryPath = path
+      } else {
+        // TODO: provide support for relative paths in assets as well
+        // relativise path
+        path = relative(event.path.replace(/\/[^/]+$/, '/'), joinURL('/', path))
+        if (!/^(?:\/|\.+\/)/.test(path)) {
+          path = `./${path}`
+        }
+      }
+    }
     ssrContext.head.push({
       script: [{
         tagPosition: 'head',
         tagPriority: -2,
         type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': buildAssetsURL(entryFileName) } }),
+        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
       }],
     }, headEntryOptions)
   }
@@ -300,7 +318,14 @@ export default defineEventHandler(async (event) => {
 })
 
 function normalizeChunks (chunks: (string | undefined)[]) {
-  return chunks.filter(Boolean).map(i => i!.trim())
+  const result: string[] = []
+  for (const _chunk of chunks) {
+    const chunk = _chunk?.trim()
+    if (chunk) {
+      result.push(chunk)
+    }
+  }
+  return result
 }
 
 function joinTags (tags: Array<string | undefined>) {

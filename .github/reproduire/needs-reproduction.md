@@ -1,4 +1,4 @@
-Would you be able to provide a **minimal** [reproduction](https://nuxt.com/docs/community/reporting-bugs/#create-a-minimal-reproduction)? 🙏
+Would you be able to provide a **minimal** [reproduction](https://nuxt.com/docs/4.x/community/reporting-bugs/#create-a-minimal-reproduction)? 🙏
 
 <details>
 <summary>More info</summary>
@@ -23,7 +23,7 @@ Please use a template below to create a minimal reproduction
 
 A public GitHub repository is also perfect. 👌
 
-Please ensure that the reproduction is as **minimal** as possible. See more details [in our guide](https://nuxt.com/docs/community/reporting-bugs/#create-a-minimal-reproduction).
+Please ensure that the reproduction is as **minimal** as possible. See more details [in our guide](https://nuxt.com/docs/4.x/community/reporting-bugs/#create-a-minimal-reproduction).
 
 You might also find these other articles interesting and/or helpful:
 

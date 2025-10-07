@@ -268,7 +268,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
           for (const middleware of middlewareEntries) {
             if (import.meta.dev) {
-              nuxtApp._processingMiddleware = middleware.name || true
+              nuxtApp._processingMiddleware = (middleware as any)._path || true
             }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server) {

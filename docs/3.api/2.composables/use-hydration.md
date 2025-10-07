@@ -13,7 +13,7 @@ This is an advanced composable, primarily designed for use within plugins, mostl
 ::
 
 ::note
-`useHydration` is designed to **ensure state synchronization and restoration during SSR**. If you need to create a globally reactive state that is SSR-friendly in Nuxt, [`useState`](/docs/api/composables/use-state) is the recommended choice.
+`useHydration` is designed to **ensure state synchronization and restoration during SSR**. If you need to create a globally reactive state that is SSR-friendly in Nuxt, [`useState`](/docs/4.x/api/composables/use-state) is the recommended choice.
 ::
 
 `useHydration` is a built-in composable that provides a way to set data on the server side every time a new HTTP request is made and receive that data on the client side. This way `useHydration` allows you to take full control of the hydration cycle.
@@ -47,9 +47,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   const myStore = new MyStore()
 
   useHydration(
-    'myStoreState', 
-    () => myStore.getState(), 
-    (data) => myStore.setState(data)
+    'myStoreState',
+    () => myStore.getState(),
+    data => myStore.setState(data),
   )
 })
 ```
@@ -57,8 +57,8 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ## Type
 
-```ts [signature]
-useHydration <T> (key: string, get: () => T, set: (value: T) => void) => void
+```ts [Signature]
+export function useHydration<T> (key: string, get: () => T, set: (value: T) => void): void
 ```
 
 ## Parameters

@@ -5,10 +5,10 @@ import { hash } from 'ohash'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
-import type { FetchResponse } from 'ofetch'
 
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
@@ -92,9 +92,7 @@ export default defineComponent({
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    // TODO: fix type assertions
-    const eventFetch = import.meta.server ? event!.app!.fetch as typeof global.fetch : (import.meta.dev ? $fetch.raw : globalThis.fetch)
+    const eventFetch = import.meta.server ? event!.app!.fetch as typeof global.fetch : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -206,8 +204,11 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
+      if (!r.ok) {
+        throw createError({ statusCode: r.status, statusMessage: r.statusText })
+      }
       try {
-        const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+        const result = await r.json()
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')

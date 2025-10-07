@@ -31,7 +31,7 @@ export default defineResolvers({
     publicDir: {
       $resolve: (val) => {
         if (val) {
-          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
+          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.')
         }
         // this is missing from our `vite` types deliberately, so users do not configure it
         return false as never

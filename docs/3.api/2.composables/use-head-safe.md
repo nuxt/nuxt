@@ -8,20 +8,20 @@ links:
     size: xs
 ---
 
-The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/api/composables/use-head) composable that restricts the input to only allow safe values.
+The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/4.x/api/composables/use-head) composable that restricts the input to only allow safe values.
 
 ## Usage
 
-You can pass all the same values as [`useHead`](/docs/api/composables/use-head)
+You can pass all the same values as [`useHead`](/docs/4.x/api/composables/use-head)
 
 ```ts
 useHeadSafe({
   script: [
-    { id: 'xss-script', innerHTML: 'alert("xss")' }
+    { id: 'xss-script', innerHTML: 'alert("xss")' },
   ],
   meta: [
-    { 'http-equiv': 'refresh', content: '0;javascript:alert(1)' }
-  ]
+    { 'http-equiv': 'refresh', 'content': '0;javascript:alert(1)' },
+  ],
 })
 // Will safely generate
 // <script id="xss-script"></script>
@@ -34,8 +34,8 @@ Read more on the `Unhead` documentation.
 
 ## Type
 
-```ts
-useHeadSafe(input: MaybeComputedRef<HeadSafe>): void
+```ts [Signature]
+export function useHeadSafe (input: MaybeComputedRef<HeadSafe>): void
 ```
 
 The list of allowed values is:

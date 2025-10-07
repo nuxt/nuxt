@@ -8,6 +8,7 @@ import { useRouter } from './router'
 export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 
 /** @since 3.0.0 */
+/* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
 type Writable<T> = {
@@ -29,10 +30,10 @@ export const showError = <DataT = unknown>(
   const nuxtError = createError<DataT>(error)
 
   try {
-    const nuxtApp = useNuxtApp()
     const error = useError()
 
     if (import.meta.client) {
+      const nuxtApp = useNuxtApp()
       nuxtApp.hooks.callHook('app:error', nuxtError)
     }
 
