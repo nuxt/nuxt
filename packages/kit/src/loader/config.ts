@@ -136,20 +136,18 @@ async function loadNuxtSchema (cwd: string) {
 
 async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
   const key = 'defineNuxtConfig'
-  const countKey = `_${key}Count`
   const globalSelf = globalThis as any
 
-  if (!globalSelf[countKey]) {
-    globalSelf[countKey] = 0
+  if (!globalSelf[key]?.count) {
     globalSelf[key] = (c: any) => c
+    globalSelf[key].count = 0
   }
-  globalSelf[countKey]++
+  globalSelf[key].count++
   try {
     return await fn()
   } finally {
-    globalSelf[countKey]--
-    if (!globalSelf[countKey]) {
-      delete globalSelf[countKey]
+    globalSelf[key].count--
+    if (!globalSelf[key].count) {
       delete globalSelf[key]
     }
   }
