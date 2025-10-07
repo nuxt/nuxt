@@ -250,19 +250,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     })
 
     // Remove CSS entries for files that will have inlined styles
+    const nitro = useNitro()
     nuxt.hook('build:manifest', (manifest) => {
+      const entryIds = new Set<string>()
       for (const id of chunksWithInlinedCSS) {
         const chunk = manifest[id]
         if (!chunk) {
           continue
         }
-        if (chunk.isEntry) {
-          // @ts-expect-error internal key
-          chunk._globalCSS = true
+        if (chunk.isEntry && chunk.src) {
+          entryIds.add(chunk.src)
         } else {
           chunk.css &&= []
         }
       }
+
+      nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
+      nitro.options._config.virtual ||= {}
+      nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
     })
   }
 

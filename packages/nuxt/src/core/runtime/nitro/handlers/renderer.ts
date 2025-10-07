@@ -14,7 +14,7 @@ import destr from 'destr'
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
-import { getEntryIds, getRenderer } from '../utils/renderer/build-files'
+import { getRenderer } from '../utils/renderer/build-files'
 import { payloadCache } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/renderer/payload'
@@ -28,6 +28,8 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
@@ -138,7 +140,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   if (process.env.NUXT_INLINE_STYLES) {
-    for (const id of await getEntryIds()) {
+    for (const id of entryIds) {
       ssrContext.modules!.add(id)
     }
   }

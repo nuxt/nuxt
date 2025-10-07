@@ -4,9 +4,10 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
-import { normalizeViteManifest } from 'vue-bundle-renderer'
+import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-renderer'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Manifest as ViteClientManifest } from 'vite'
+import { serialize } from 'seroval'
 import type { ViteBuildContext } from './vite'
 
 export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) {
@@ -65,9 +66,9 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
 
   const manifest = normalizeViteManifest(clientManifest)
   await nuxt.callHook('build:manifest', manifest)
-  const stringifiedManifest = JSON.stringify(manifest, null, 2)
-  await writeFile(resolve(serverDist, 'client.manifest.json'), stringifiedManifest, 'utf8')
-  await writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + stringifiedManifest, 'utf8')
+  const precomputed = precomputeDependencies(manifest)
+  await writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + serialize(manifest), 'utf8')
+  await writeFile(resolve(serverDist, 'client.precomputed.mjs'), 'export default ' + serialize(precomputed), 'utf8')
 
   if (!nuxt.options.dev) {
     await rm(manifestFile, { force: true })
