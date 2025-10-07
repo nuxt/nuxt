@@ -5,7 +5,7 @@ import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setRe
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
-import { errorCSS, iframeStorageBridge, parentStorageBridge } from '../utils/dev'
+import { iframeStorageBridge, parentStorageBridge, webComponentScript } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (event.handled || isJsonRequest(event)) {
@@ -93,24 +93,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
     const betterResponse = html
       .replace('</body>', `
-        <style>${errorCSS}</style>
         <script>${parentStorageBridge(nonce)}</script>
-        <iframe
-          id="pretty-errors"
-          src="data:text/html;base64,${base64HTML}"
-          title="Detailed error stack trace"
-          sandbox="allow-scripts allow-same-origin"
-        ></iframe>
-        <button
-          id="pretty-errors-toggle"
-          onclick="document.querySelector('#pretty-errors').toggleAttribute('inert')"
-          aria-label="Toggle detailed error view"
-          aria-expanded="false"
-          type="button"
-        >
-          <span aria-hidden="true">⚠</span>
-          <span class="sr-only">Toggle Error Details</span>
-        </button>
+        <nuxt-error-overlay></nuxt-error-overlay>
+        <script>${webComponentScript(base64HTML)}</script>
       </body>
       `)
     return send(event, betterResponse)

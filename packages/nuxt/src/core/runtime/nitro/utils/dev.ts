@@ -15,7 +15,7 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
         key: key,
         value: String(value),
         nonce: NONCE
-      }, window.parent.origin);
+      }, '*');
     },
     removeItem: function(key) {
       delete memoryStore[key];
@@ -23,7 +23,7 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
         type: 'storage-remove',
         key: key,
         nonce: NONCE
-      }, window.parent.origin);
+      }, '*');
     },
     clear: function() {
       for (const key in memoryStore) {
@@ -32,7 +32,7 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
       window.parent.postMessage({
         type: 'storage-clear',
         nonce: NONCE
-      }, window.parent.origin);
+      }, '*');
     },
     key: function(index) {
       const keys = Object.keys(memoryStore);
@@ -54,7 +54,6 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
   }
   
   window.addEventListener('message', function(event) {
-    if (event.source !== iframe.contentWindow) return;
     if (event.data.type === 'storage-sync-data' && event.data.nonce === NONCE) {
       const data = event.data.data;
       for (const key in data) {
@@ -72,47 +71,60 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
   window.parent.postMessage({ 
     type: 'storage-sync-request',
     nonce: NONCE
-  }, window.parent.origin);
+  }, '*');
 })();
 `
 
 export const parentStorageBridge = (nonce: string) => /* js */ `
 (function() {
-  const iframe = document.getElementById('pretty-errors');
-  if (!iframe) return;
-
-  const NONCE = ${JSON.stringify(nonce)}
+  const host = document.querySelector('nuxt-error-overlay');
+  if (!host) return;
   
-  window.addEventListener('message', function(event) {
-    if (event.source !== iframe.contentWindow) return;
-    const data = event.data;
-    
-    if (data.nonce !== NONCE) return;
-    
-    if (data.type === 'storage-set') {
-      localStorage.setItem(data.key, data.value);
-    } else if (data.type === 'storage-remove') {
-      localStorage.removeItem(data.key);
-    } else if (data.type === 'storage-clear') {
-      localStorage.clear();
-    } else if (data.type === 'storage-sync-request') {
-      const allData = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        allData[key] = localStorage.getItem(key);
-      }
-      iframe.contentWindow.postMessage({
-        type: 'storage-sync-data',
-        data: allData,
-        nonce: NONCE
-      }, iframe.contentWindow.origin || iframe.src);
+  // Wait for shadow root to be attached
+  const checkShadow = setInterval(function() {
+    if (host.shadowRoot) {
+      clearInterval(checkShadow);
+      const iframe = host.shadowRoot.getElementById('pretty-errors');
+      if (!iframe) return;
+
+      const NONCE = ${JSON.stringify(nonce)}
+      
+      window.addEventListener('message', function(event) {
+        if (!event.data || event.data.nonce !== NONCE) return;
+        
+        const data = event.data;
+        
+        if (data.type === 'storage-set') {
+          localStorage.setItem(data.key, data.value);
+        } else if (data.type === 'storage-remove') {
+          localStorage.removeItem(data.key);
+        } else if (data.type === 'storage-clear') {
+          localStorage.clear();
+        } else if (data.type === 'storage-sync-request') {
+          const allData = {};
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            allData[key] = localStorage.getItem(key);
+          }
+          iframe.contentWindow.postMessage({
+            type: 'storage-sync-data',
+            data: allData,
+            nonce: NONCE
+          }, '*');
+        }
+      });
     }
-  });
+  }, 10);
 })();
 `
 
 export const errorCSS = /* css */ `
-#pretty-errors-toggle .sr-only {
+:host {
+  all: initial;
+  display: contents;
+}
+#pretty-errors-toggle .sr-only,
+div[role="status"] {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -126,24 +138,32 @@ export const errorCSS = /* css */ `
 #pretty-errors {
   width: 100%;
   height: 100%;
-  z-index: 999999;
   border: none;
+  pointer-events: auto;
+}
+#pretty-errors:not([inert]) {
+  z-index: -1;
 }
 #pretty-errors-toggle {
   background: none;
-  z-index: 999999999;
   border: 15px #ffcdce solid;
   overflow: hidden;
   border-radius: 30px;
   cursor: pointer;
   opacity: 0.8;
   transition: opacity 0.2s;
+  pointer-events: auto;
+  z-index: 999999999;
 }
 #pretty-errors-toggle:hover,
 #pretty-errors-toggle:focus {
   opacity: 1;
   outline: 2px solid #ff6b6b;
   outline-offset: 2px;
+}
+#pretty-errors-toggle:focus-visible {
+  outline: 3px solid #ff6b6b;
+  outline-offset: 3px;
 }
 #pretty-errors, #pretty-errors-toggle {
   position: fixed;
@@ -154,34 +174,164 @@ export const errorCSS = /* css */ `
   transform: scale(5) translateX(-80%);
   transform-origin: bottom left;
 }
-#pretty-errors:not([inert]) + #pretty-errors-toggle {
+#pretty-errors:not([inert]) ~ #pretty-errors-toggle {
   left: 0;
   top: 0;
 }
 #pretty-errors[inert] {
-  z-index: 999999999;
   overflow: hidden;
   border-radius: 30px;
-}
-#pretty-errors[inert], #pretty-errors[inert] + #pretty-errors-toggle {
   transform: scale(0.2);
   transform-origin: bottom right;
   padding: 0;
 }
-#pretty-errors[inert] + #pretty-errors-toggle {
+#pretty-errors[inert] ~ #pretty-errors-toggle {
+  transform: scale(0.2);
+  transform-origin: bottom right;
+  padding: 0;
   width: 100%;
   height: 100%;
+  z-index: 1000000000;
 }
-body:has(#pretty-errors:not([inert])) {
-  width: 100%;
-  position: fixed;
-  transform: scale(0.2);
-  right: 0;
-  bottom: 0;
-  transform-origin: bottom right;
-}
-body > *:not(#pretty-errors):not(#pretty-errors-toggle) {
-  position: relative;
-  z-index: 9999999;
+@media (prefers-reduced-motion: reduce) {
+  #pretty-errors-toggle {
+    transition: none;
+  }
 }
 `
+
+export function webComponentScript (base64HTML: string) {
+  return /* js */ `
+  (function() {
+    try {
+      const host = document.querySelector('nuxt-error-overlay');
+      if (!host) return;
+      
+      const shadow = host.attachShadow({ mode: 'open' });
+      
+      const style = document.createElement('style');
+      style.textContent = ${JSON.stringify(errorCSS)};
+      
+      const iframe = document.createElement('iframe');
+      iframe.id = 'pretty-errors';
+      iframe.src = 'data:text/html;base64,${base64HTML}';
+      iframe.title = 'Detailed error stack trace';
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      
+      const button = document.createElement('button');
+      button.id = 'pretty-errors-toggle';
+      button.setAttribute('aria-label', 'Toggle detailed error view');
+      button.setAttribute('aria-expanded', 'true');
+      button.setAttribute('type', 'button');
+      button.innerHTML = '<span aria-hidden="true">⚠</span><span class="sr-only">Toggle Error Details</span>';
+      
+      // Create a live region for screen reader announcements
+      const liveRegion = document.createElement('div');
+      liveRegion.setAttribute('role', 'status');
+      liveRegion.setAttribute('aria-live', 'polite');
+      liveRegion.className = 'sr-only';
+      
+      // Store original body styles to restore them later
+      const originalBodyStyles = {
+        position: document.body.style.position,
+        transform: document.body.style.transform,
+        transformOrigin: document.body.style.transformOrigin,
+        right: document.body.style.right,
+        bottom: document.body.style.bottom,
+        width: document.body.style.width,
+        height: document.body.style.height,
+        overflow: document.body.style.overflow
+      };
+      
+      const SCALE_DOWN = 0.2;
+      const SCALE_UP = 1 / SCALE_DOWN;
+      const BODY_WIDTH = 1200; // Fixed width for minimized body
+      const BODY_HEIGHT = 900; // Fixed height for minimized body
+      
+      function scaleBodyContent(shouldScale) {
+        if (shouldScale) {
+          // Set fixed dimensions before scaling down
+          document.body.style.position = 'fixed';
+          document.body.style.width = BODY_WIDTH + 'px';
+          document.body.style.height = BODY_HEIGHT + 'px';
+          document.body.style.transform = 'scale(' + SCALE_DOWN + ')';
+          document.body.style.transformOrigin = 'bottom right';
+          document.body.style.right = '0';
+          document.body.style.bottom = '0';
+          document.body.style.overflow = 'hidden';
+          
+          // Make iframe fill viewport when maximized
+          iframe.style.width = '100vw';
+          iframe.style.height = '100vh';
+          
+          // Counter-scale the overlay to keep it at normal size
+          host.style.transform = 'scale(' + SCALE_UP + ')';
+          host.style.transformOrigin = 'bottom right';
+        } else {
+          // Restore original body styles
+          document.body.style.position = originalBodyStyles.position;
+          document.body.style.transform = originalBodyStyles.transform;
+          document.body.style.transformOrigin = originalBodyStyles.transformOrigin;
+          document.body.style.right = originalBodyStyles.right;
+          document.body.style.bottom = originalBodyStyles.bottom;
+          document.body.style.width = originalBodyStyles.width;
+          document.body.style.height = originalBodyStyles.height;
+          document.body.style.overflow = originalBodyStyles.overflow;
+          
+          // Reset iframe to default size
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          
+          // Reset overlay
+          host.style.transform = '';
+          host.style.transformOrigin = '';
+        }
+      }
+      
+      function toggleView() {
+        const isInert = iframe.hasAttribute('inert');
+        iframe.toggleAttribute('inert');
+        button.setAttribute('aria-expanded', isInert);
+        scaleBodyContent(isInert);
+        
+        liveRegion.textContent = isInert 
+          ? 'Showing detailed error view' 
+          : 'Showing error page';
+        
+        if (isInert) {
+          setTimeout(function() {
+            if (iframe.contentWindow) {
+              try {
+                iframe.contentWindow.focus();
+              } catch {}
+            }
+          }, 100);
+        } else {
+          button.focus();
+        }
+      }
+      
+      button.onclick = toggleView;
+      
+      // Add keyboard support
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+          toggleView();
+        }
+      });
+      
+      shadow.appendChild(style);
+      shadow.appendChild(liveRegion);
+      shadow.appendChild(iframe);
+      shadow.appendChild(button);
+      
+      // Start with iframe maximized, body scaled down
+      scaleBodyContent(true);
+    } catch (error) {
+      // Silently fail if Shadow DOM or any setup fails
+      // The user will still see their own error page
+      console.error('Failed to initialize Nuxt error overlay:', error);
+    }
+  })();
+  `
+}
