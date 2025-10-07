@@ -86,6 +86,7 @@ const dirs: ComponentsDir[] = [
 const expectedComponents = [
   {
     chunkName: 'components/isle-server',
+    declarationPath: rFixture('components/islands/Isle.vue'),
     export: 'default',
     global: undefined,
     island: true,
@@ -98,6 +99,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/glob',
+    declarationPath: rFixture('components/global/Glob.vue'),
     export: 'default',
     global: true,
     island: undefined,
@@ -113,6 +115,7 @@ const expectedComponents = [
     pascalName: 'HelloWorld',
     kebabName: 'hello-world',
     chunkName: 'components/hello-world',
+    declarationPath: rFixture('components/HelloWorld.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -125,6 +128,7 @@ const expectedComponents = [
     pascalName: 'Nuxt3',
     kebabName: 'nuxt3',
     chunkName: 'components/nuxt3-client',
+    declarationPath: rFixture('components/Nuxt3.client.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -137,6 +141,7 @@ const expectedComponents = [
     pascalName: 'Nuxt3',
     kebabName: 'nuxt3',
     chunkName: 'components/nuxt3-server',
+    declarationPath: rFixture('components/Nuxt3.server.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -146,6 +151,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/client-component-with-props',
+    declarationPath: rFixture('components/client/ComponentWithProps.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -158,6 +164,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/client-with-client-only-setup',
+    declarationPath: rFixture('components/client/WithClientOnlySetup.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -173,6 +180,7 @@ const expectedComponents = [
     pascalName: 'ParentFolder',
     kebabName: 'parent-folder',
     chunkName: 'components/parent-folder-server',
+    declarationPath: rFixture('components/parent-folder/index.server.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -182,6 +190,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/same-name-same',
+    declarationPath: rFixture('components/same-name/same/Same.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -194,6 +203,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/some-glob',
+    declarationPath: rFixture('components/some-glob.global.vue'),
     export: 'default',
     global: true,
     island: undefined,
@@ -206,6 +216,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/some-server',
+    declarationPath: rFixture('components/some.island.vue'),
     export: 'default',
     global: undefined,
     island: true,
