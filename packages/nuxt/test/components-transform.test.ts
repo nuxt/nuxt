@@ -128,7 +128,6 @@ function createComponent (pascalName: string, options: Partial<Component> = {}) 
     mode: 'all',
     prefetch: false,
     preload: false,
-    shortPath: `components/${pascalName}.vue`,
     ...options,
   } satisfies Component
 }
