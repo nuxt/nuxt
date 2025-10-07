@@ -801,4 +801,88 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
     vi.useRealTimers()
   })
+
+  // https://github.com/nuxt/nuxt/issues/33274
+  it('should not execute handler multiple times when external watch is defined before useAsyncData with computed key', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    // watch must be defined before useAsyncData to reproduce the bug
+    watch(q, () => {})
+
+    const { data, error } = await useAsyncData(
+      () => `query-${q.value}`,
+      () => promiseFn(q.value),
+      {
+        watch: [q],
+        immediate: true,
+      },
+    )
+
+    // Initial execute
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(promiseFn).toHaveBeenNthCalledWith(1, '')
+
+    // First key change
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenNthCalledWith(2, 's')
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+
+    // Second key change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+    expect(promiseFn).toHaveBeenNthCalledWith(3, 'se')
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+  })
+
+  it('should automatically re-execute when watched dependency changes', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    const externalWatchSpy = vi.fn()
+    watch(q, externalWatchSpy)
+
+    const { data, error } = await useAsyncData(
+      () => `auto-query-${q.value}`,
+      () => promiseFn(q.value),
+      {
+        watch: [q],
+        immediate: true,
+      },
+    )
+
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledWith('')
+
+    // First change triggers automatic request
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+    expect(promiseFn).toHaveBeenCalledWith('s')
+
+    // Second change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+    expect(promiseFn).toHaveBeenCalledWith('se')
+
+    expect(externalWatchSpy).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(3) // initial + 2 changes
+  })
 })
