@@ -16,10 +16,6 @@ export interface Component {
   meta?: ComponentMeta
   mode?: 'client' | 'server' | 'all'
   /**
-   * Path to component's declaration file
-   */
-  declarationPath?: string
-  /**
    * This number allows configuring the behavior of overriding Nuxt components.
    * If multiple components are provided with the same name, then higher priority
    * components will be used instead of lower priority components.
