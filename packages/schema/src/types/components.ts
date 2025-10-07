@@ -7,7 +7,6 @@ export interface Component {
   kebabName: string
   export: string
   filePath: string
-  shortPath: string
   chunkName: string
   prefetch: boolean
   preload: boolean
