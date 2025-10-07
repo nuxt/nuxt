@@ -503,16 +503,13 @@ export async function writeDevServer (nuxt: Nuxt) {
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
   const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
 
-  await mkdir(join(nuxt.options.buildDir, 'dist/server'), { recursive: true })
+  const serverDist = join(nuxt.options.buildDir, 'dist/server')
+
+  await mkdir(serverDist, { recursive: true })
 
   await Promise.all([
-    writeFile(
-      resolve(nuxt.options.buildDir, 'dist/server/server.mjs'),
-      `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
-    ),
-    writeFile(
-      resolve(nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
-      `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
-    ),
+    writeFile(join(serverDist, 'server.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
+    writeFile(join(serverDist, 'client.precomputed.mjs'), `export default undefined`),
+    writeFile(join(serverDist, 'client.manifest.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`),
   ])
 }
