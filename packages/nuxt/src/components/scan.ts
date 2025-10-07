@@ -121,6 +121,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         preload: Boolean(dir.preload),
         // specific to the file
         filePath,
+        // Use declarationPath from directory config if available, otherwise default to filePath
+        declarationPath: dir.declarationPath || filePath,
         pascalName,
         kebabName,
         chunkName,
