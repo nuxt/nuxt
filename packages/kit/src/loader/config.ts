@@ -34,7 +34,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
   const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
-    loadConfig<NuxtConfig>({
+    () => loadConfig<NuxtConfig>({
       name: 'nuxt',
       configFile: 'nuxt.config',
       rcFile: '.nuxtrc',
@@ -135,16 +135,18 @@ async function loadNuxtSchema (cwd: string) {
 }
 
 let count = 0
-async function withDefineNuxtConfig<T> (fn: Promise<T>) {
+async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
   const globalSelf = globalThis as any
   if (count === 0) {
     globalSelf.defineNuxtConfig = (c: any) => c
   }
   count++
-  const returns = await fn
-  count--
-  if (count === 0) {
-    delete globalSelf.defineNuxtConfig
+  try {
+    return await fn()
+  } finally {
+    count--
+    if (count === 0) {
+      delete globalSelf.defineNuxtConfig
+    }
   }
-  return returns
 }
