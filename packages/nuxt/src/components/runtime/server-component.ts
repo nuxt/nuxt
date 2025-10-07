@@ -61,9 +61,8 @@ export const createIslandPage = (name: string) => {
             onError: (e) => {
               if (e.cause && e.cause instanceof Response) {
                 throw createError({
-                  statusCode: e.cause.status,
-                  statusText: e.cause.statusText,
                   status: e.cause.status,
+                  statusText: e.cause.statusText,
                 })
               }
               nuxtApp.runWithContext(() => showError(e))

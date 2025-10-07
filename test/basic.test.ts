@@ -207,7 +207,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it('validates routes with custom statusCode and statusMessage', async () => {
+  it('validates routes with custom status and statusText', async () => {
     const CUSTOM_ERROR_CODE = 401
     const CUSTOM_ERROR_MESSAGE = 'Custom error message'
     const ERROR_PAGE_TEXT = 'This is the error page'

@@ -18,9 +18,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const defaultRes = await defaultHandler(error, event, { json: true })
 
   // let Nitro handle redirect if appropriate
-  const statusCode = error.status || 500
+  const status = error.status || 500
   const headers = new Headers(error.headers)
-  if (statusCode === 404 && defaultRes.status === 302) {
+  if (status === 404 && defaultRes.status === 302) {
     for (const [header, value] of Object.entries(defaultRes.headers)) {
       if (!headers.has(header)) {
         headers.set(header, value)
@@ -40,7 +40,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   // TODO: use Nitro format error object
-  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusText' | 'message' | 'stack'> & { url: string, data: any }
+  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'status' | 'statusText' | 'message' | 'stack'> & { url: string, data: any }
   // remove proto/hostname/port from URL
   const url = new URL(errorObject.url)
   errorObject.url = withoutBase(url.pathname, useRuntimeConfig(event).app.baseURL) + url.search + url.hash

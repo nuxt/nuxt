@@ -5,8 +5,8 @@
 <script setup lang="ts">
 definePageMeta({
   validate: to => ({
-    statusCode: 401,
-    statusMessage: 'Custom error message',
+    status: 401,
+    statusText: 'Custom error message',
   }),
 })
 </script>

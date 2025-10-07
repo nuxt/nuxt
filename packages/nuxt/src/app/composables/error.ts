@@ -67,12 +67,7 @@ export const isNuxtError = <DataT = unknown>(
 }
 
 /** @since 3.0.0 */
-export const createError = <DataT = unknown>(
-  error: string | Error | (Partial<NuxtError<DataT>> & {
-    status?: number
-    statusText?: string
-  }),
-) => {
+export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
   const nuxtError: NuxtError<DataT> = typeof error === 'string' ? new HTTPError<DataT>(error) : new HTTPError<DataT>(error.message || '', error)
 
   Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {

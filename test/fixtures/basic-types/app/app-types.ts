@@ -187,8 +187,8 @@ describe('middleware', () => {
         // eslint-disable-next-line no-constant-condition
         if (0) {
           return createError({
-            statusCode: 404,
-            statusMessage: 'resource-type-not-found',
+            status: 404,
+            statusText: 'resource-type-not-found',
           })
         }
         return true

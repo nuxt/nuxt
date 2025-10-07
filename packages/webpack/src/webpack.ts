@@ -142,7 +142,7 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
 
     // disallow cross-site requests in no-cors mode
     if (event.req.headers.get('sec-fetch-mode') === 'no-cors' && event.req.headers.get('sec-fetch-site') === 'cross-site') {
-      throw new HTTPError({ statusCode: 403 })
+      throw new HTTPError({ status: 403 })
     }
 
     event.res.headers.set('Vary', 'Origin')

@@ -274,7 +274,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           case 'resolve': {
             const { id: resolveId, importer } = request.payload
             if (!resolveId || !ssrServer) {
-              throw new HTTPError({ statusCode: 400, message: 'Missing id for resolve' })
+              throw new HTTPError({ status: 400, message: 'Missing id for resolve' })
             }
             const resolvedResult = await getNode(ssrServer).resolveId(resolveId, importer).catch(() => null)
             sendResponse<typeof request.type>(socket, request.id, resolvedResult)
@@ -282,7 +282,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           }
           case 'module': {
             if (request.payload.moduleId === '/' || !ssrServer) {
-              throw new HTTPError({ statusCode: 400, message: 'Invalid moduleId' })
+              throw new HTTPError({ status: 400, message: 'Invalid moduleId' })
             }
             const node = getNode(ssrServer)
             const response = await node.fetchModule(request.payload.moduleId)
@@ -310,7 +310,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           }
           default:
             // @ts-expect-error this should never happen
-            throw new HTTPError({ statusCode: 400, message: `Unknown request type: ${request.type}` })
+            throw new HTTPError({ status: 400, message: `Unknown request type: ${request.type}` })
         }
       } catch (error: any) {
         sendError(socket, request.id, error)
@@ -466,8 +466,8 @@ function sendError (socket: net.Socket, id: number, error: any) {
     error: {
       message: error.message,
       stack: error.stack,
-      statusCode: error.statusCode,
-      statusMessage: error.statusMessage,
+      status: error.status,
+      statusText: error.statusText,
       data: error.data,
     },
   }

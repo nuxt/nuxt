@@ -143,13 +143,11 @@ function connectSocket () {
               if (requestHandlers) {
                 const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
                 if (response.type === 'error') {
+                  /** @type {Error & { stack?: string; data?: unknown; status?: number }} */
                   const err = new Error(response.error.message)
-                  // @ts-ignore We are augmenting the error object
                   err.stack = response.error.stack
-                  // @ts-ignore
                   err.data = response.error.data
-                  // @ts-ignore
-                  err.statusCode = response.error.statusCode
+                  err.status = response.error.status
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)

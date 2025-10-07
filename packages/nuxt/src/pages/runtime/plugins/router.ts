@@ -230,8 +230,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`,
+                  status: 404,
+                  statusText: `Page Not Found: ${initialURL}`,
                 })
                 await nuxtApp.runWithContext(() => showError(error))
                 return false
@@ -267,9 +267,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     router.afterEach((to) => {
       if (to.matched.length === 0) {
         return nuxtApp.runWithContext(() => showError(createError({
-          statusCode: 404,
+          status: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`,
+          statusText: `Page not found: ${to.fullPath}`,
           data: {
             path: to.fullPath,
           },
