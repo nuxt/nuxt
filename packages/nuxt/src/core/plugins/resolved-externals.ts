@@ -18,8 +18,8 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
       }
 
       const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
-          url: new URL(import.meta.url),
-        }) || {}
+        url: new URL(import.meta.url),
+      }) || {}
 
       external = new Set([
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build

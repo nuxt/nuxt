@@ -196,7 +196,7 @@ export default defineEventHandler(async (event) => {
       } else {
         // TODO: provide support for relative paths in assets as well
         // relativise path
-        path = relative(event.path.replace(/\/[^/]+$/, '/'), joinURL('/', path))
+        path = relative(event.url.pathname.replace(/\/[^/]+$/, '/'), joinURL('/', path))
         if (!/^(?:\/|\.+\/)/.test(path)) {
           path = `./${path}`
         }
