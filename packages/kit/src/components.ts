@@ -23,8 +23,7 @@ export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean 
   nuxt.hook('components:dirs', (dirs) => { dirs[opts.prepend ? 'unshift' : 'push'](dir) })
 }
 
-export type AddComponentOptions = { name: string, filePath: string } & Partial<Exclude<Component,
-'shortPath' | 'async' | 'level' | 'import' | 'asyncImport'
+export type AddComponentOptions = { name: string, filePath: string } & Partial<Exclude<Component, 'async' | 'level' | 'import' | 'asyncImport'
 >>
 
 /**
@@ -103,7 +102,6 @@ function normalizeComponent (opts: AddComponentOptions) {
     prefetch: false,
     preload: false,
     mode: 'all',
-    shortPath: opts.filePath,
     priority: 0,
     meta: {},
     ...opts,
