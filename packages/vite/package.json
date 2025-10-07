@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "nitro": "npm:nitro-nightly@3.0.0-20250918-181039-90ec8ffa",
+    "nitro": "npm:nitro-nightly@3.0.0-20251007-081449-7d8113f6",
     "rolldown": "1.0.0-beta.42",
     "rollup": "4.52.4",
     "unbuild": "3.6.1",
@@ -45,7 +45,7 @@
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.7",
     "get-port-please": "^3.2.0",
-    "h3": "^2.0.0-beta.4",
+    "h3": "^2.0.0-beta.5",
     "jiti": "^2.6.1",
     "knitwork": "^1.2.0",
     "magic-string": "^0.30.19",
