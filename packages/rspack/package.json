@@ -73,7 +73,7 @@
     "@nuxt/schema": "workspace:*",
     "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
-    "@types/webpack-hot-middleware": "2.25.10",
+    "@types/webpack-hot-middleware": "2.25.11",
     "rollup": "4.52.4",
     "unbuild": "3.6.1",
     "vue": "3.5.22"
