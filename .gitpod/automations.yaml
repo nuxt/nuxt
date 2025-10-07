@@ -1,10 +1,7 @@
 tasks:
-  install-and-dev:
-    name: Install dependencies and start dev
-    command: |
-      pnpm install
-      pnpm dev:prepare
-      pnpm play
+  play:
+    name: Start playground
+    command: pnpm play
     triggeredBy:
       - postDevcontainerStart
       - manual
