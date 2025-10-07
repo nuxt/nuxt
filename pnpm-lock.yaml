@@ -709,8 +709,8 @@ importers:
         specifier: 4.7.0
         version: 4.7.0(esbuild@0.25.10)
       '@types/webpack-hot-middleware':
-        specifier: 2.25.10
-        version: 2.25.10(esbuild@0.25.10)
+        specifier: 2.25.11
+        version: 2.25.11(esbuild@0.25.10)
       rollup:
         specifier: 4.52.4
         version: 4.52.4
@@ -752,8 +752,8 @@ importers:
         specifier: 4.7.0
         version: 4.7.0(esbuild@0.25.10)
       '@types/webpack-hot-middleware':
-        specifier: 2.25.10
-        version: 2.25.10(esbuild@0.25.10)
+        specifier: 2.25.11
+        version: 2.25.11(esbuild@0.25.10)
       '@unhead/vue':
         specifier: 2.0.14
         version: 2.0.14(vue@3.5.22(typescript@5.9.3))
@@ -1150,8 +1150,8 @@ importers:
         specifier: 4.7.0
         version: 4.7.0(esbuild@0.25.10)
       '@types/webpack-hot-middleware':
-        specifier: 2.25.10
-        version: 2.25.10(esbuild@0.25.10)
+        specifier: 2.25.11
+        version: 2.25.11(esbuild@0.25.10)
       rollup:
         specifier: 4.52.4
         version: 4.52.4
@@ -3098,8 +3098,8 @@ packages:
   '@types/webpack-bundle-analyzer@4.7.0':
     resolution: {integrity: sha512-c5i2ThslSNSG8W891BRvOd/RoCjI2zwph8maD22b1adtSns20j+0azDDMCK06DiVrzTgnwiDl5Ntmu1YRJw8Sg==}
 
-  '@types/webpack-hot-middleware@2.25.10':
-    resolution: {integrity: sha512-MpUbBgM2b3Sfh9lB/S6aZP0mIPXunBNBAV+eod39fdzHWTCIrtbRfUvfPXNixi0cEIR9G3S2j0mCWNH06cFlmw==}
+  '@types/webpack-hot-middleware@2.25.11':
+    resolution: {integrity: sha512-jNj2XFWGDGAv/xt1BQT7Yk6Wb94/l4gu2H4BVnEGoVKxuxR3lgvlYGxFdj4kcQJm3JgiQLF6R+LBv5CUvOpyXQ==}
 
   '@types/whatwg-mimetype@3.0.2':
     resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
@@ -10277,7 +10277,7 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@types/webpack-hot-middleware@2.25.10(esbuild@0.25.10)':
+  '@types/webpack-hot-middleware@2.25.11(esbuild@0.25.10)':
     dependencies:
       '@types/connect': 3.4.38
       tapable: 2.2.3
