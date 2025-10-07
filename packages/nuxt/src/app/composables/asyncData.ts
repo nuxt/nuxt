@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -203,6 +203,7 @@ export function useAsyncData<
 
   // eslint-disable-next-line prefer-const
   let [_key, _handler, options = {}] = args as [string, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  let keyChanging = false
 
   // Validate arguments
   const key = computed(() => toValue(_key)!)
@@ -256,16 +257,19 @@ export function useAsyncData<
   }
 
   // Create or use a shared asyncData entity
-  const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
-  if (!nuxtApp._asyncData[key.value]?._init) {
-    initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-    nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
+  function createInitialFetch () {
+    const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
+    if (!nuxtApp._asyncData[key.value]?._init) {
+      initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+      nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
+    }
+    return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
   }
+
+  const initialFetch = createInitialFetch()
   const asyncData = nuxtApp._asyncData[key.value]!
 
   asyncData._deps++
-
-  const initialFetch = () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
 
   const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered
 
@@ -332,34 +336,54 @@ export function useAsyncData<
 
     // setup watchers/instance
     const hasScope = getCurrentScope()
+    // Key watcher: react immediately to key changes to remount/migrate the async data container deterministically.
     const unsubKeyWatcher = watch(key, (newKey, oldKey) => {
       if ((newKey || oldKey) && newKey !== oldKey) {
-        const hasRun = nuxtApp._asyncData[oldKey]?.data.value !== undefined
-        const isRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
+        keyChanging = true
+
+        const hadData = nuxtApp._asyncData[oldKey]?.data.value !== undefined
+        const wasRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
+
+        const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
+
+        // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
+        if (!nuxtApp._asyncData[newKey]?._init) {
+          let initialValue: NoInfer<DataT> | undefined
+
+          if (oldKey && hadData) {
+            initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
+          } else {
+            initialValue = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+            initialFetchOptions.cachedData = initialValue
+          }
+
+          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, initialValue)
+        }
+
+        nuxtApp._asyncData[newKey]._deps++
+
+        // Now it's safe to drop the old container.
         if (oldKey) {
           unregister(oldKey)
         }
-        const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
-        if (!nuxtApp._asyncData[newKey]?._init) {
-          let value: NoInfer<DataT> | undefined
-          if (oldKey && hasRun) {
-            value = nuxtApp._asyncData[oldKey]?.data.value as NoInfer<DataT>
-          } else {
-            value = options.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
-            initialFetchOptions.cachedData = value
-          }
-          nuxtApp._asyncData[newKey] = createAsyncData(nuxtApp, newKey, _handler, options, value)
-        }
-        nuxtApp._asyncData[newKey]._deps++
 
-        if (options.immediate || hasRun || isRunning) {
+        // Trigger the fetch for the new key if needed.
+        if (options.immediate || hadData || wasRunning) {
           nuxtApp._asyncData[newKey].execute(initialFetchOptions)
         }
+
+        // Release the guard after the current flush to avoid overlapping executes.
+        queuePostFlushCb(() => {
+          keyChanging = false
+        })
       }
     }, { flush: 'sync' })
 
-    const unsubWatcher = options.watch
+    // Params/deps watcher: keep default (pre) flush to batch multiple mutations into a single execute.
+    // This preserves the "non synchronous" behavior covered by tests.
+    const unsubParamsWatcher = options.watch
       ? watch(options.watch, () => {
+          if (keyChanging) { return } // avoid double execute while the key switch is being processed
           asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
         })
       : () => {}
@@ -367,7 +391,7 @@ export function useAsyncData<
     if (hasScope) {
       onScopeDispose(() => {
         unsubKeyWatcher()
-        unsubWatcher()
+        unsubParamsWatcher()
         unregister(key.value)
       })
     }
@@ -378,8 +402,14 @@ export function useAsyncData<
     pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending as Ref<boolean>),
     status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
     error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
-    refresh: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
-    execute: (...args) => nuxtApp._asyncData[key.value]!.execute(...args),
+    refresh: (...args) => {
+      if (!nuxtApp._asyncData[key.value]?._init) {
+        const initialFetch = createInitialFetch()
+        return initialFetch()
+      }
+      return nuxtApp._asyncData[key.value]!.execute(...args)
+    },
+    execute: (...args) => asyncReturn.refresh(...args),
     clear: () => {
       if (nuxtApp._asyncDataPromises[key.value]) {
         if (nuxtApp._asyncData[key.value]?._abortController) {
