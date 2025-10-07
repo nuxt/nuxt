@@ -831,8 +831,8 @@ describe('useAsyncData', () => {
     const { clear } = useAsyncData('', () => promise)
     expect(aborted).toBe(false)
     clear()
-    expect(aborted).toBe(true)
     resolve(true)
+    expect(aborted).toBe(true)
   })
 
   it('should be externally cancellable when executing', async () => {

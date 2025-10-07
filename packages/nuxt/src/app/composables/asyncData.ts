@@ -704,11 +704,16 @@ function createAsyncData<
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = AbortSignal.any([asyncData._abortController?.signal, opts?.signal, typeof timeout === 'number' ? AbortSignal.timeout(timeout) : undefined].filter((s): s is NonNullable<typeof s> => Boolean(s)))
-            mergedSignal.addEventListener('abort', (event) => {
-              const reason = (event.target as any)?.reason ?? mergedSignal.reason
-              reject(reason instanceof Error ? reason : new DOMException(reason, 'AbortError'))
-            })
+            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], timeout)
+            if (mergedSignal.aborted) {
+              const reason = mergedSignal.reason
+              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
+              return
+            }
+            mergedSignal.addEventListener('abort', () => {
+              const reason = mergedSignal.reason
+              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
+            }, { once: true })
 
             return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
@@ -812,4 +817,47 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     pick: options.pick ? hash(options.pick) : undefined,
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
   }
+}
+function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, timeout?: number): AbortSignal {
+  const list = signals.filter(s => !!s)
+  if (typeof timeout === 'number' && timeout >= 0) {
+    const timeoutSignal = AbortSignal.timeout?.(timeout)
+    if (timeoutSignal) { list.push(timeoutSignal) }
+  }
+
+  // Use native if available
+  if (AbortSignal.any) {
+    return AbortSignal.any(list)
+  }
+
+  // Polyfill
+  const controller = new AbortController()
+
+  for (const sig of list) {
+    if (sig.aborted) {
+      const reason = sig.reason ?? new DOMException('Aborted', 'AbortError')
+      try {
+        controller.abort(reason)
+      } catch {
+        controller.abort()
+      }
+      return controller.signal
+    }
+  }
+
+  const onAbort = () => {
+    const abortedSignal = list.find(s => s.aborted)
+    const reason = abortedSignal?.reason ?? new DOMException('Aborted', 'AbortError')
+    try {
+      controller.abort(reason)
+    } catch {
+      controller.abort()
+    }
+  }
+
+  for (const sig of list) {
+    sig.addEventListener?.('abort', onAbort, { once: true })
+  }
+
+  return controller.signal
 }
