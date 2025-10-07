@@ -136,7 +136,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       : false,
     scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: {
-      entry: resolve(distDir, 'core/runtime/nitro/handlers/renderer')
+      entry: resolve(distDir, 'core/runtime/nitro/handlers/renderer'),
     },
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers: nuxt.options.serverHandlers,
@@ -576,7 +576,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Setup handlers
   const devMiddlewareHandler = dynamicEventHandler()
-  nitro.options.devHandlers.unshift({ route: '/**', handler: devMiddlewareHandler })
+  nitro.options.devHandlers.unshift({ route: '', handler: devMiddlewareHandler })
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers)
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
@@ -716,6 +716,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 
+    // TODO: remove this
     nuxt.hook('server:devHandler', (h) => { devMiddlewareHandler.set(h) })
     const devServer = createDevServer(nitro)
     nuxt.server = {
