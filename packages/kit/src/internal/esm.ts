@@ -7,6 +7,8 @@ export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */
   paths?: string | string[]
   url?: URL | URL[]
+  /** @default ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'] */
+  extensions?: string[]
 }
 
 export function directoryToURL (dir: string): URL {
@@ -34,7 +36,7 @@ export function resolveModule (id: string, options?: ResolveModuleOptions) {
   return resolveModulePath(id, {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     from: options?.url ?? options?.paths ?? [import.meta.url],
-    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    extensions: options?.extensions ?? ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
   })
 }
 
