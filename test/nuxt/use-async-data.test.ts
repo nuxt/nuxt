@@ -828,7 +828,7 @@ describe('useAsyncData', () => {
       Mock,
     )
     const { promise, resolve } = Promise.withResolvers<boolean>()
-    const { clear } = useAsyncData('', () => promise, { abortController: new AbortController() })
+    const { clear } = useAsyncData('', () => promise)
     expect(aborted).toBe(false)
     clear()
     expect(aborted).toBe(true)
