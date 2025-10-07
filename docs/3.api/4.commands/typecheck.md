@@ -10,7 +10,7 @@ links:
 
 <!--typecheck-cmd-->
 ```bash [Terminal]
-npx nuxt typecheck [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>]
+npx nuxt typecheck [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--dotenv] [-e, --extends=<layer-name>]
 ```
 <!--/typecheck-cmd-->
 
@@ -31,12 +31,14 @@ Option | Default | Description
 --- | --- | ---
 `--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--dotenv` |  | Path to `.env` file to load, relative to the root directory
+`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
 <!--/typecheck-opts-->
 
 ::note
 This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a [`.env`](/docs/4.x/guide/directory-structure/env) file or as a command-line argument.
 ::
 
-::read-more{to="/docs/guide/concepts/typescript#type-checking"}
+::read-more{to="/docs/4.x/guide/concepts/typescript#type-checking"}
 Read more on how to enable type-checking at build or development time.
 ::

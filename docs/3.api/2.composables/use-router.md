@@ -18,7 +18,9 @@ If you only need the router instance within your template, use `$router`:
 
 ```vue [app/pages/index.vue]
 <template>
-  <button @click="$router.back()">Back</button>
+  <button @click="$router.back()">
+    Back
+  </button>
 </template>
 ```
 
@@ -64,8 +66,8 @@ const router = useRouter()
 router.back()
 router.forward()
 router.go(3)
-router.push({ path: "/home" })
-router.replace({ hash: "#bio" })
+router.push({ path: '/home' })
+router.replace({ hash: '#bio' })
 ```
 
 ::read-more{icon="i-simple-icons-mdnwebdocs" to="https://developer.mozilla.org/en-US/docs/Web/API/History" target="_blank"}
@@ -78,7 +80,7 @@ Read more about the browser's History API.
 
 However, Nuxt has a concept of **route middleware** that simplifies the implementation of navigation guards and provides a better developer experience.
 
-:read-more{to="/docs/guide/directory-structure/app/middleware"}
+:read-more{to="/docs/4.x/guide/directory-structure/app/middleware"}
 
 ## Promise and Error Handling
 

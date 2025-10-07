@@ -31,7 +31,6 @@ max_retries = 6
 exclude = [
   "https://twitter.nuxt.dev/",
   "https://www.webpagetest.org/",
-  "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
   # dummy example URLs
@@ -40,11 +39,8 @@ exclude = [
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
-  'https://www.npmjs.com/package/(.*)importName(.*)',
-  # TODO: address 404s (non-prerendered files?) from nuxt.com
-  "https://nuxt.com/docs/guide/going-further/modules",
-  "https://nuxt.com/docs/guide/directory-structure/pages",
   # single-quotes are required for regexp
+  'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
   # excluded URLs from test suite

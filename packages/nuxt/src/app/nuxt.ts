@@ -138,6 +138,8 @@ interface _NuxtApp {
     _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _hash?: Record<string, string | undefined>
+    /** @internal */
+    _abortController?: AbortController
   } | undefined>
 
   /** @internal */
@@ -550,7 +552,7 @@ export function useNuxtApp (id?: string): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/4.x/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
     } else {
       throw new Error('[nuxt] instance unavailable')
     }
@@ -590,7 +592,7 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         if (!loggedKeys.has(p)) {
           loggedKeys.add(p)
-          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/guide/going-further/runtime-config for more information.`)
+          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/4.x/guide/going-further/runtime-config for more information.`)
         }
       }
       return Reflect.get(target, p, receiver)

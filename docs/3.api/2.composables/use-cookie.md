@@ -40,7 +40,7 @@ export interface CookieOptions<T = any> extends Omit<CookieSerializeOptions & Co
 
 export interface CookieRef<T> extends Ref<T> {}
 
-export function useCookie<T = string | null | undefined>(
+export function useCookie<T = string | null | undefined> (
   name: string,
   options?: CookieOptions<T>
 ): CookieRef<T>
@@ -84,15 +84,21 @@ The example below creates a cookie called `counter`. If the cookie doesn't exist
 <script setup lang="ts">
 const counter = useCookie('counter')
 
-counter.value = counter.value || Math.round(Math.random() * 1000)
+counter.value ||= Math.round(Math.random() * 1000)
 </script>
 
 <template>
   <div>
     <h1>Counter: {{ counter || '-' }}</h1>
-    <button @click="counter = null">reset</button>
-    <button @click="counter--">-</button>
-    <button @click="counter++">+</button>
+    <button @click="counter = null">
+      reset
+    </button>
+    <button @click="counter--">
+      -
+    </button>
+    <button @click="counter++">
+      +
+    </button>
   </div>
 </template>
 ```
@@ -105,8 +111,8 @@ const user = useCookie(
   'userInfo',
   {
     default: () => ({ score: -1 }),
-    watch: false
-  }
+    watch: false,
+  },
 )
 
 if (user.value) {
@@ -128,20 +134,18 @@ const list = useCookie(
   'list',
   {
     default: () => [],
-    watch: 'shallow'
-  }
+    watch: 'shallow',
+  },
 )
 
-function add() {
+function add () {
   list.value?.push(Math.round(Math.random() * 1000))
   // list cookie won't be updated with this change
 }
 
-function save() {
-  if (list.value) {
-    // the actual `list` cookie will be updated
-    list.value = [...list.value]
-  }
+function save () {
+  // the actual `list` cookie will be updated
+  list.value &&= [...list.value]
 }
 </script>
 
@@ -149,8 +153,12 @@ function save() {
   <div>
     <h1>List</h1>
     <pre>{{ list }}</pre>
-    <button @click="add">Add</button>
-    <button @click="save">Save</button>
+    <button @click="add">
+      Add
+    </button>
+    <button @click="save">
+      Save
+    </button>
   </div>
 </template>
 ```
@@ -160,7 +168,7 @@ function save() {
 You can use `getCookie` and `setCookie` from [`h3`](https://github.com/h3js/h3) package to set cookies in server API routes.
 
 ```ts [server/api/counter.ts]
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   // Read counter cookie
   let counter = getCookie(event, 'counter') || 0
 
@@ -172,4 +180,4 @@ export default defineEventHandler(event => {
 })
 ```
 
-:link-example{to="/docs/examples/advanced/use-cookie"}
+:link-example{to="/docs/4.x/examples/advanced/use-cookie"}

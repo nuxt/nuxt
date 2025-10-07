@@ -8,7 +8,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
-import { createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
@@ -146,6 +146,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
       // this will be overridden in vite plugin
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
+      '#internal/nuxt/entry-ids.mjs': () => `export default []`,
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
@@ -547,20 +548,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Enable runtime compiler client side
   if (nuxt.options.vue.runtimeCompiler) {
-    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-      if (isClient) {
-        if (Array.isArray(config.resolve!.alias)) {
-          config.resolve!.alias.push({
-            find: 'vue',
-            replacement: 'vue/dist/vue.esm-bundler',
-          })
-        } else {
-          config.resolve!.alias = {
-            ...config.resolve!.alias,
-            vue: 'vue/dist/vue.esm-bundler',
-          }
+    addVitePlugin({
+      name: 'nuxt:vue:runtime-compiler',
+      applyToEnvironment: environment => environment.name === 'client',
+      enforce: 'pre',
+      resolveId (id, importer) {
+        if (id === 'vue') {
+          return this.resolve('vue/dist/vue.esm-bundler', importer, { skipSelf: true })
         }
-      }
+      },
     })
     for (const hook of ['webpack:config', 'rspack:config'] as const) {
       nuxt.hook(hook, (configuration) => {

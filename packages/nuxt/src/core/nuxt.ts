@@ -286,7 +286,8 @@ async function initNuxt (nuxt: Nuxt) {
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
   addBuildPlugin(VirtualFSPlugin(nuxt, {
-    mode: 'client', alias: {
+    mode: 'client',
+    alias: {
       '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
@@ -327,10 +328,9 @@ async function initNuxt (nuxt: Nuxt) {
   addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
 
   // add resolver for modules used in virtual files
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { client: false })
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { server: false })
+  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
 
-  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { client: false, prepend: true })
+  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))

@@ -20,7 +20,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
-  () => $fetch('https://api.nuxtjs.dev/mountains')
+  () => $fetch('https://api.nuxtjs.dev/mountains'),
 )
 </script>
 ```
@@ -44,11 +44,11 @@ const { data: posts } = await useAsyncData(
   'posts',
   () => $fetch('https://fakeApi.com/posts', {
     params: {
-      page: page.value
-    }
+      page: page.value,
+    },
   }), {
-    watch: [page]
-  }
+    watch: [page],
+  },
 )
 </script>
 ```
@@ -65,7 +65,7 @@ const userId = computed(() => `user-${route.params.id}`)
 // When the route changes and userId updates, the data will be automatically refetched
 const { data: user } = useAsyncData(
   userId,
-  () => fetchUserById(route.params.id)
+  () => fetchUserById(route.params.id),
 )
 </script>
 ```
@@ -74,7 +74,7 @@ const { data: user } = useAsyncData(
 [`useAsyncData`](/docs/4.x/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
 ::
 
-:read-more{to="/docs/getting-started/data-fetching#useasyncdata"}
+:read-more{to="/docs/4.x/getting-started/data-fetching#useasyncdata"}
 
 ## Params
 
@@ -91,8 +91,8 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `transform`: a function that can be used to alter `handler` function result after resolving
   - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
     ```ts
-    const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating 
-      ? nuxtApp.payload.data[key] 
+    const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
+      ? nuxtApp.payload.data[key]
       : nuxtApp.static.data[key]
     ```
     Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
@@ -102,12 +102,13 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
+  - `timeout` - a number in milliseconds to wait before timing out the request (defaults to `undefined`, which means no timeout)
 
 ::note
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 ::
 
-::read-more{to="/docs/api/composables/use-lazy-async-data"}
+::read-more{to="/docs/4.x/api/composables/use-lazy-async-data"}
 You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `useAsyncData`.
 ::
 
@@ -169,13 +170,13 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Type
 
 ```ts [Signature]
-function useAsyncData<DataT, DataE>(
-  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
+export function useAsyncData<DataT, DataE> (
+  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
-function useAsyncData<DataT, DataE>(
+export function useAsyncData<DataT, DataE> (
   key: MaybeRefOrGetter<string>,
-  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
+  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
 ): Promise<AsyncData<DataT, DataE>>
 
@@ -190,6 +191,7 @@ type AsyncDataOptions<DataT> = {
   pick?: string[]
   watch?: MultiWatchSources | false
   getCachedData?: (key: string, nuxtApp: NuxtApp, ctx: AsyncDataRequestContext) => DataT | undefined
+  timeout?: number
 }
 
 type AsyncDataRequestContext = {
@@ -204,13 +206,15 @@ type AsyncData<DataT, ErrorT> = {
   clear: () => void
   error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
-};
+}
 
 interface AsyncDataExecuteOptions {
   dedupe?: 'cancel' | 'defer'
+  timeout?: number
+  signal?: AbortSignal
 }
 
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/4.x/getting-started/data-fetching"}

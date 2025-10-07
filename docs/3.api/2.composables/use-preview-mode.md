@@ -14,7 +14,7 @@ Preview mode allows you to see how your changes would be displayed on a live sit
 
 You can use the built-in `usePreviewMode` composable to access and control preview state in Nuxt. If the composable detects preview mode it will automatically force any updates necessary for [`useAsyncData`](/docs/4.x/api/composables/use-async-data) and [`useFetch`](/docs/4.x/api/composables/use-fetch) to rerender preview content.
 
-```js
+```ts
 const { enabled, state } = usePreviewMode()
 ```
 
@@ -24,13 +24,14 @@ const { enabled, state } = usePreviewMode()
 
 You can specify a custom way to enable preview mode. By default the `usePreviewMode` composable will enable preview mode if there is a `preview` param in url that is equal to `true` (for example, `http://localhost:3000?preview=true`). You can wrap the `usePreviewMode` into custom composable, to keep options consistent across usages and prevent any errors.
 
-```js
+```ts
 export function useMyPreviewMode () {
+  const route = useRoute()
   return usePreviewMode({
     shouldEnable: () => {
       return !!route.query.customPreview
-    }
-  });
+    },
+  })
 }
 ```
 
@@ -38,13 +39,13 @@ export function useMyPreviewMode () {
 
 `usePreviewMode` will try to store the value of a `token` param from url in state. You can modify this state and it will be available for all [`usePreviewMode`](/docs/4.x/api/composables/use-preview-mode) calls.
 
-```js
+```ts
 const data1 = ref('data1')
 
 const { enabled, state } = usePreviewMode({
   getState: (currentState) => {
     return { data1, data2: 'data2' }
-  }
+  },
 })
 ```
 
@@ -60,14 +61,14 @@ When preview mode is disabled, the composable will attach a callback to call `re
 
 You can specify custom callbacks to be triggered by providing your own functions for the `onEnable` and `onDisable` options.
 
-```js
+```ts
 const { enabled, state } = usePreviewMode({
   onEnable: () => {
     console.log('preview mode has been enabled')
   },
   onDisable: () => {
     console.log('preview mode has been disabled')
-  }
+  },
 })
 ```
 
@@ -81,8 +82,8 @@ const { enabled, state } = usePreviewMode()
 
 const { data } = await useFetch('/api/preview', {
   query: {
-    apiKey: state.token
-  }
+    apiKey: state.token,
+  },
 })
 </script>
 
@@ -107,11 +108,7 @@ npx nuxt generate
 npx nuxt preview
 ```
 
-Then you can see your preview page by adding the query param `preview` to the end of the page you want to see once:
-
-```js
-?preview=true
-```
+Then you can see your preview page by adding the query param `preview` to the end of the page you want to see once, for example `http://localhost:3000/?preview=true`.
 
 ::note
 `usePreviewMode` should be tested locally with `nuxt generate` and then `nuxt preview` rather than `nuxt dev`. (The [preview command](/docs/4.x/api/commands/preview) is not related to preview mode.)

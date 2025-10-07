@@ -42,7 +42,7 @@ Returns a `Ref` containing the current Nuxt error (or `undefined` if there is no
 
 ## Example
 
-```ts
+```vue
 <script setup lang="ts">
 const error = useError()
 
@@ -52,4 +52,4 @@ if (error.value) {
 </script>
 ```
 
-:read-more{to="/docs/getting-started/error-handling"}
+:read-more{to="/docs/4.x/getting-started/error-handling"}
