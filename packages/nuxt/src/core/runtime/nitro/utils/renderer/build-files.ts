@@ -38,7 +38,6 @@ export const getSSRRenderer = lazyCachedFunction(async () => {
 
   // Load precomputed dependencies
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
-  if (!precomputed && !import.meta.dev) { throw new Error('client.precomputed is not available') }
 
   // Create renderer
   const renderer = createRenderer(createSSRApp, {
