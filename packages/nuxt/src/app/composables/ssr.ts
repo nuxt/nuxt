@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { toRequest } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import { createFetch } from 'ofetch'
 
@@ -49,8 +50,17 @@ export function useRequestFetch (): typeof global.$fetch {
     return globalThis.$fetch
   }
   const event = useRequestEvent()!
-  // TODO: fix type assertions
-  const $fetch = createFetch({ fetch: event.app!.fetch as typeof global.fetch, defaults: { headers: event.req.headers } }) as typeof global.$fetch
+  const $fetch = createFetch({
+    fetch: (input, init) => {
+      if (!input.toString().startsWith('/')) {
+        return globalThis.fetch(input, init)
+      }
+      const req = toRequest(input, init)
+      return Promise.resolve(event.app!.fetch(req))
+    },
+    defaults: { headers: event.req.headers },
+  }) as typeof global.$fetch
+
   return $fetch || globalThis.$fetch
 }
 
