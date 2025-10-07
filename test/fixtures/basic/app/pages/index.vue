@@ -103,6 +103,13 @@
     >
       to 404 server page
     </NuxtLink>
+
+    <NuxtLink
+      data-testid="route-rules-redirect"
+      to="/route-rules/redirect#hello"
+    >
+      to redirect page with hash
+    </NuxtLink>
   </div>
 </template>
 
