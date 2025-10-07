@@ -149,6 +149,7 @@ async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
   } finally {
     globalSelf[countKey]--
     if (!globalSelf[countKey]) {
+      delete globalSelf[countKey]
       delete globalSelf[key]
     }
   }
