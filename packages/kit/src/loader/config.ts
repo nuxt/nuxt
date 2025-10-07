@@ -138,7 +138,7 @@ async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
   const key = 'defineNuxtConfig'
   const globalSelf = globalThis as any
 
-  if (!globalSelf[key]?.count) {
+  if (!globalSelf[key]) {
     globalSelf[key] = (c: any) => c
     globalSelf[key].count = 0
   }
