@@ -162,6 +162,9 @@ importers:
       installed-check:
         specifier: 9.3.0
         version: 9.3.0
+      jiti:
+        specifier: 2.6.1
+        version: 2.6.1
       knip:
         specifier: 5.64.2
         version: 5.64.2(@types/node@22.18.8)(typescript@5.9.3)
