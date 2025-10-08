@@ -819,7 +819,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
   }
-  if (options.experimental.dxup) {
+  if (options.experimental.typescriptPlugin) {
     options._modules.push('@dxup/nuxt')
   }
 

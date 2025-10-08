@@ -1450,9 +1450,11 @@ export interface ConfigSchema {
     entryImportMap: boolean
 
     /**
-     * TODO:
+     * Whether to enable `@dxup/nuxt` module for better TypeScript DX.
+     *
+     * @see [@dxup/nuxt](https://github.com/KazariEX/dxup)
      */
-    dxup: boolean
+    typescriptPlugin: boolean
   }
 
   /**
