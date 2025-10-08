@@ -84,7 +84,7 @@ const parentStorageBridge = (nonce: string) => /* js */ `
   const checkShadow = setInterval(function() {
     if (host.shadowRoot) {
       clearInterval(checkShadow);
-      const iframe = host.shadowRoot.getElementById('pretty-errors');
+      const iframe = host.shadowRoot.getElementById('frame');
       if (!iframe) return;
 
       const NONCE = ${JSON.stringify(nonce)}
@@ -123,7 +123,7 @@ const errorCSS = /* css */ `
   all: initial;
   display: contents;
 }
-#pretty-errors-toggle .sr-only,
+#toggle .sr-only,
 div[role="status"] {
   position: absolute;
   width: 1px;
@@ -135,16 +135,18 @@ div[role="status"] {
   white-space: nowrap;
   border-width: 0;
 }
-#pretty-errors {
+#frame {
   width: 100%;
   height: 100%;
   border: none;
   pointer-events: auto;
+  will-change: transform;
+  contain: layout style paint;
 }
-#pretty-errors:not([inert]) {
+#frame:not([inert]) {
   z-index: -1;
 }
-#pretty-errors-toggle {
+#toggle {
   background: none;
   border: 15px #ffcdce solid;
   overflow: hidden;
@@ -154,38 +156,39 @@ div[role="status"] {
   transition: opacity 0.2s;
   pointer-events: auto;
   z-index: 999999999;
+  will-change: transform, opacity;
 }
-#pretty-errors-toggle:hover,
-#pretty-errors-toggle:focus {
+#toggle:hover,
+#toggle:focus {
   opacity: 1;
   outline: 2px solid #ff6b6b;
   outline-offset: 2px;
 }
-#pretty-errors-toggle:focus-visible {
+#toggle:focus-visible {
   outline: 3px solid #ff6b6b;
   outline-offset: 3px;
 }
-#pretty-errors, #pretty-errors-toggle {
+#frame, #toggle {
   position: fixed;
   right: 0;
   bottom: 0;
 }
-#pretty-errors:not([inert]) {
+#frame:not([inert]) {
   transform: scale(5) translateX(-80%);
   transform-origin: bottom left;
 }
-#pretty-errors:not([inert]) ~ #pretty-errors-toggle {
+#frame:not([inert]) ~ #toggle {
   left: 0;
   top: 0;
 }
-#pretty-errors[inert] {
+#frame[inert] {
   overflow: hidden;
   border-radius: 30px;
   transform: scale(0.2);
   transform-origin: bottom right;
   padding: 0;
 }
-#pretty-errors[inert] ~ #pretty-errors-toggle {
+#frame[inert] ~ #toggle {
   transform: scale(0.2);
   transform-origin: bottom right;
   padding: 0;
@@ -194,7 +197,7 @@ div[role="status"] {
   z-index: 1000000000;
 }
 @media (prefers-reduced-motion: reduce) {
-  #pretty-errors-toggle {
+  #toggle {
     transition: none;
   }
 }
@@ -213,17 +216,16 @@ function webComponentScript (base64HTML: string) {
       style.textContent = ${JSON.stringify(errorCSS)};
       
       const iframe = document.createElement('iframe');
-      iframe.id = 'pretty-errors';
+      iframe.id = 'frame';
       iframe.src = 'data:text/html;base64,${base64HTML}';
       iframe.title = 'Detailed error stack trace';
       iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
       
       const button = document.createElement('button');
-      button.id = 'pretty-errors-toggle';
-      button.setAttribute('aria-label', 'Toggle detailed error view');
+      button.id = 'toggle';
       button.setAttribute('aria-expanded', 'true');
       button.setAttribute('type', 'button');
-      button.innerHTML = '<span aria-hidden="true">⚠</span><span class="sr-only">Toggle Error Details</span>';
+      button.innerHTML = '<span class="sr-only">Toggle detailed error view</span>';
       
       // Create a live region for screen reader announcements
       const liveRegion = document.createElement('div');
@@ -245,8 +247,8 @@ function webComponentScript (base64HTML: string) {
       
       const SCALE_DOWN = 0.2;
       const SCALE_UP = 1 / SCALE_DOWN;
-      const BODY_WIDTH = 1200; // Fixed width for minimized body
-      const BODY_HEIGHT = 900; // Fixed height for minimized body
+      const BODY_WIDTH = 1200;
+      const BODY_HEIGHT = 900;
       
       function scaleBodyContent(shouldScale) {
         if (shouldScale) {
@@ -264,6 +266,10 @@ function webComponentScript (base64HTML: string) {
           iframe.style.width = '100vw';
           iframe.style.height = '100vh';
           
+          // Set button to match body dimensions
+          button.style.width = BODY_WIDTH + 'px';
+          button.style.height = BODY_HEIGHT + 'px';
+          
           // Counter-scale the overlay to keep it at normal size
           host.style.transform = 'scale(' + SCALE_UP + ')';
           host.style.transformOrigin = 'bottom right';
@@ -278,9 +284,13 @@ function webComponentScript (base64HTML: string) {
           document.body.style.height = originalBodyStyles.height;
           document.body.style.overflow = originalBodyStyles.overflow;
           
-          // Reset iframe to default size
-          iframe.style.width = '100%';
-          iframe.style.height = '100%';
+          // Set iframe to match body dimensions for consistent aspect ratio when minimized
+          iframe.style.width = BODY_WIDTH + 'px';
+          iframe.style.height = BODY_HEIGHT + 'px';
+          
+          // Set button to match body dimensions for consistent aspect ratio when minimized
+          button.style.width = BODY_WIDTH + 'px';
+          button.style.height = BODY_HEIGHT + 'px';
           
           // Reset overlay
           host.style.transform = '';
