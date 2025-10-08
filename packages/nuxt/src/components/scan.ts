@@ -17,10 +17,9 @@ const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
  * Scan the components inside different components folders
  * and return a unique list of components
  * @param dirs all folders where components are defined
- * @param srcDir src path of your app
  * @returns {Promise} Component found promise
  */
-export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Promise<Component[]> {
+export async function scanComponents (dirs: ComponentsDir[]): Promise<Component[]> {
   // All scanned components
   const components: Component[] = []
 
@@ -109,7 +108,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       resolvedNames.set(pascalName + suffix, filePath)
 
       const kebabName = kebabCase(componentNameSegments)
-      const shortPath = relative(srcDir, filePath)
       const chunkName = 'components/' + kebabName + suffix
 
       let component: Component = {
@@ -121,10 +119,11 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         preload: Boolean(dir.preload),
         // specific to the file
         filePath,
+        // Use declarationPath from directory config if available, otherwise default to filePath
+        declarationPath: dir.declarationPath || filePath,
         pascalName,
         kebabName,
         chunkName,
-        shortPath,
         export: 'default',
         // by default, give priority to scanned components
         priority: dir.priority ?? 1,

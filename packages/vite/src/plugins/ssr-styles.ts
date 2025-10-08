@@ -10,6 +10,7 @@ import { findStaticImports } from 'mlly'
 
 import { isCSS, isVue } from '../utils'
 import { resolveClientEntry } from '../utils/config'
+import { useNitro } from '@nuxt/kit'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 
@@ -20,19 +21,24 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const clientCSSMap: Record<string, Set<string>> = {}
 
   // Remove CSS entries for files that will have inlined styles
+  const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
+    const entryIds = new Set<string>()
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
       if (!chunk) {
         continue
       }
-      if (chunk.isEntry) {
-        // @ts-expect-error internal key
-        chunk._globalCSS = true
+      if (chunk.isEntry && chunk.src) {
+        entryIds.add(chunk.src)
       } else {
         chunk.css &&= []
       }
     }
+
+    nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
+    nitro.options._config.virtual ||= {}
+    nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
   })
 
   const cssMap: Record<string, { files: string[], inBundle?: boolean }> = {}

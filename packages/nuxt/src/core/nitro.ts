@@ -146,6 +146,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
       // this will be overridden in vite plugin
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
+      '#internal/nuxt/entry-ids.mjs': () => `export default []`,
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
