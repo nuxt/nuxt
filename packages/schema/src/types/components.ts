@@ -7,7 +7,6 @@ export interface Component {
   kebabName: string
   export: string
   filePath: string
-  shortPath: string
   chunkName: string
   prefetch: boolean
   preload: boolean
@@ -21,6 +20,12 @@ export interface Component {
    * components will be used instead of lower priority components.
    */
   priority?: number
+  /**
+   * Path to component's declaration file
+   * Used for type generation when different from filePath
+   * @default filePath
+   */
+  declarationPath?: string
   /**
    * Allow bypassing client/server transforms for internal Nuxt components like
    * ServerPlaceholder and NuxtClientFallback.
@@ -66,7 +71,11 @@ export interface ScanDir {
    * This flag indicates, component should be loaded async (with a separate chunk) regardless of using Lazy prefix or not.
    */
   isAsync?: boolean
-
+  /**
+   * Path to component's declaration file
+   * Used for type generation when different from filePath
+   */
+  declarationPath?: string
   extendComponent?: (component: Component) => Promise<Component | void> | (Component | void)
   /**
    * If enabled, registers components to be globally available.

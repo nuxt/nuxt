@@ -1,5 +1,5 @@
 import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
@@ -35,7 +35,7 @@ export interface UseFetchOptions<
   DefaultT = undefined,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M, DataT> {
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
@@ -109,6 +109,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     ...fetchOptions
   } = opts
 
@@ -128,6 +129,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
   }
 
@@ -164,8 +166,7 @@ export function useFetch<
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
-    let _$fetch: typeof global.$fetch = opts.$fetch || globalThis.$fetch
-
+    let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
     // Use fetch with request context and headers for server direct API calls
     if (import.meta.server && !opts.$fetch) {
       const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
@@ -174,7 +175,7 @@ export function useFetch<
       }
     }
 
-    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
+    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
