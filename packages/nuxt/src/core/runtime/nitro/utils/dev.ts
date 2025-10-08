@@ -1,4 +1,4 @@
-export const iframeStorageBridge = (nonce: string) => /* js */ `
+const iframeStorageBridge = (nonce: string) => /* js */ `
 (function() {
   const memoryStore = {};
 
@@ -75,7 +75,7 @@ export const iframeStorageBridge = (nonce: string) => /* js */ `
 })();
 `
 
-export const parentStorageBridge = (nonce: string) => /* js */ `
+const parentStorageBridge = (nonce: string) => /* js */ `
 (function() {
   const host = document.querySelector('nuxt-error-overlay');
   if (!host) return;
@@ -118,7 +118,7 @@ export const parentStorageBridge = (nonce: string) => /* js */ `
 })();
 `
 
-export const errorCSS = /* css */ `
+const errorCSS = /* css */ `
 :host {
   all: initial;
   display: contents;
@@ -200,7 +200,7 @@ div[role="status"] {
 }
 `
 
-export function webComponentScript (base64HTML: string) {
+function webComponentScript (base64HTML: string) {
   return /* js */ `
   (function() {
     try {
@@ -333,5 +333,16 @@ export function webComponentScript (base64HTML: string) {
       console.error('Failed to initialize Nuxt error overlay:', error);
     }
   })();
+  `
+}
+
+export function generateErrorOverlayHTML (html: string) {
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('')
+  const errorPage = html.replace('<head>', `<head><script>${iframeStorageBridge(nonce)}</script>`)
+  const base64HTML = Buffer.from(errorPage, 'utf8').toString('base64')
+  return `
+    <script>${parentStorageBridge(nonce)}</script>
+    <nuxt-error-overlay></nuxt-error-overlay>
+    <script>${webComponentScript(base64HTML)}</script>
   `
 }

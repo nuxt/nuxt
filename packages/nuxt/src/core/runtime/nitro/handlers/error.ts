@@ -5,7 +5,7 @@ import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setRe
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
-import { iframeStorageBridge, parentStorageBridge, webComponentScript } from '../utils/dev'
+import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (event.handled || isJsonRequest(event)) {
@@ -85,20 +85,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   if (import.meta.dev) {
     const prettyResponse = await defaultHandler(error, event, { json: false })
-    const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('')
-    const prettyHTML = prettyResponse.body.replace('<head>', `<head><script>${iframeStorageBridge(nonce)}</script>`)
-
-    const utf8Bytes = new TextEncoder().encode(prettyHTML)
-    const base64HTML = btoa(String.fromCharCode(...utf8Bytes))
-
-    const betterResponse = html
-      .replace('</body>', `
-        <script>${parentStorageBridge(nonce)}</script>
-        <nuxt-error-overlay></nuxt-error-overlay>
-        <script>${webComponentScript(base64HTML)}</script>
-      </body>
-      `)
-    return send(event, betterResponse)
+    return send(event, html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body as string)}</body>`))
   }
 
   return send(event, html)
