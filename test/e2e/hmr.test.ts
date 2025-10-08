@@ -152,7 +152,7 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       await expect(button).toHaveText('1')
 
       writeFileSync(
-        join(pagePath),
+        pagePath,
         pageContents.replace('#hmr-template', '#hmr-template updated'),
       )
       const consoleLogs: Array<{ type: string, text: string }> = []
