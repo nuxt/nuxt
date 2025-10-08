@@ -134,6 +134,9 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   publicDir?: never
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ViteOptions extends ViteConfig {}
+
 // App Config
 export interface CustomAppConfig {
   [key: string]: unknown

@@ -68,6 +68,7 @@
     "vue-bundle-renderer": "^2.2.0"
   },
   "peerDependencies": {
+    "nuxt": "workspace:*",
     "rolldown": "^1.0.0-beta.38",
     "vue": "^3.3.4"
   },
