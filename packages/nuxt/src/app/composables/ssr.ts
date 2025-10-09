@@ -1,7 +1,6 @@
 import type { H3Event } from 'h3'
-import { toRequest } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import { $fetch, createFetch } from 'ofetch'
+import { $fetch } from 'ofetch'
 import type { $Fetch } from 'nitro/types'
 
 import type { NuxtApp } from '../nuxt'
@@ -47,22 +46,7 @@ export function useRequestHeader (header: string) {
 
 /** @since 3.2.0 */
 export function useRequestFetch (): $Fetch {
-  if (import.meta.client) {
-    return $fetch as $Fetch
-  }
-  const event = useRequestEvent()!
-  const _fetch = createFetch({
-    fetch: (input, init) => {
-      if (!input.toString().startsWith('/')) {
-        return fetch(input, init)
-      }
-      const req = toRequest(input, init)
-      return fetch(req)
-    },
-    defaults: { headers: event.req.headers },
-  }) as $Fetch
-
-  return _fetch || $fetch
+  return $fetch as $Fetch
 }
 
 /** @since 3.0.0 */
