@@ -36,7 +36,7 @@ import type { ModuleMeta, NuxtModule } from './module'
 import type { NuxtDebugOptions } from './debug'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt'
 import type { SerializableHtmlAttributes } from './head'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteConfig } from './config'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
 import type { ImportsOptions } from './imports'
 import type { ComponentsOptions } from './components'
 
@@ -1242,6 +1242,11 @@ export interface ConfigSchema {
     cookieStore: boolean
 
     /**
+     * Enable experimental Vite Environment API
+     */
+    viteEnvironmentApi: boolean
+
+    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the `app/` directory.
@@ -1659,17 +1664,7 @@ export interface ConfigSchema {
    * @see [Vite configuration docs](https://vite.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
-  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig } & {
-    viteNode?: {
-      maxRetryAttempts?: number
-      /** in milliseconds */
-      baseRetryDelay?: number
-      /** in milliseconds */
-      maxRetryDelay?: number
-      /** in milliseconds */
-      requestTimeout?: number
-    }
-  }
+  vite: ViteOptions
 
   webpack: {
   /**

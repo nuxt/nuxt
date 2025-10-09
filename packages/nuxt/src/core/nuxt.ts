@@ -22,6 +22,7 @@ import defu from 'defu'
 import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
+import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -238,6 +239,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (nuxt.options.typescript.shim) {
       opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/vue-shim.d.ts') })
     }
+
     // Add shims for `#build/*` imports that do not already have matching types
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
@@ -249,6 +251,10 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
+    opts.nodeReferences.push({ types: relative(nuxt.options.buildDir, resolveModulePath('@nuxt/vite-builder', { from: import.meta.url })) })
+    if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
+      opts.nodeReferences.push({ types: nuxt.options.builder })
+    }
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
