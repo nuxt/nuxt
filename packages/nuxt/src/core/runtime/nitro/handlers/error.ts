@@ -5,6 +5,7 @@ import { useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
 import type { H3Event } from 'h3'
+import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (isJsonRequest(event)) {
@@ -78,7 +79,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // Fallback to static rendered error page
   if (!res) {
-    const { template } = import.meta.dev ? await import('../templates/error-dev') : await import('../templates/error-500')
+    const { template } = await import('../templates/error-500')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
@@ -94,7 +95,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   const html = await res.text()
 
-  return new Response(html, {
+  const responseHtml = import.meta.dev
+    ? html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string)}</body>`)
+    : html
+
+  return new Response(responseHtml, {
     headers: res.headers,
     status: res.status && res.status !== 200 ? res.status : defaultRes.status,
     statusText: res.statusText || defaultRes.statusText,
