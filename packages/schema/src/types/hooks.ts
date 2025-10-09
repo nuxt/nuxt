@@ -354,13 +354,15 @@ export interface NuxtHooks {
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
+   * @deprecated
    */
-  'vite:extendConfig': (viteInlineConfig: ViteConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Allows to read the resolved Vite config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
+   * @deprecated
    */
   'vite:configResolved': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
