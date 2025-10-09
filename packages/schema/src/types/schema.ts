@@ -1463,6 +1463,13 @@ export interface ConfigSchema {
      * @experimental This is an experimental feature and API may change in the future.
      */
     extractAsyncDataHandlers: boolean
+
+    /**
+     * Whether to enable `@dxup/nuxt` module for better TypeScript DX.
+     *
+     * @see https://github.com/KazariEX/dxup
+     */
+    typescriptPlugin: boolean
   }
 
   /**
