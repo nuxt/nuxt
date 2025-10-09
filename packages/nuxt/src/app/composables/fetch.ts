@@ -1,6 +1,7 @@
 import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { $Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
+import { $fetch } from 'ofetch'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
@@ -37,7 +38,7 @@ export interface UseFetchOptions<
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
-  $fetch?: typeof globalThis.$fetch
+  $fetch?: $Fetch
   watch?: MultiWatchSources | false
 }
 
@@ -166,7 +167,7 @@ export function useFetch<
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
-    let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
+    let _$fetch: $Fetch<unknown, NitroFetchRequest> = opts.$fetch || $fetch as $Fetch<unknown, NitroFetchRequest>
     // Use fetch with request context and headers for server direct API calls
     if (import.meta.server && !opts.$fetch) {
       const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')

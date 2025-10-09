@@ -26,6 +26,7 @@ export default defineResolvers({
           'nitropack/types',
           'nitropack/runtime',
           'nitropack',
+          'srvx',
           'defu',
           'h3',
           'consola',
