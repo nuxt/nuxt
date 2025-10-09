@@ -53,10 +53,10 @@ export function useRequestFetch (): typeof global.$fetch {
   const $fetch = createFetch({
     fetch: (input, init) => {
       if (!input.toString().startsWith('/')) {
-        return globalThis.fetch(input, init)
+        return fetch(input, init)
       }
       const req = toRequest(input, init)
-      return Promise.resolve(event.app!.fetch(req))
+      return fetch(req)
     },
     defaults: { headers: event.req.headers },
   }) as typeof global.$fetch
