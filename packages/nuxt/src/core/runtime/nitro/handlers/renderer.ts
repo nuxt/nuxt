@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
     ssrContext.url = url
 
     if (import.meta.prerender && await payloadCache!.hasItem(url)) {
-      return payloadCache!.getItem(url) as Promise<Partial<RenderResponse>>
+      return returnResponse(event, await payloadCache!.getItem(url) as Partial<RenderResponse>)
     }
   }
 
