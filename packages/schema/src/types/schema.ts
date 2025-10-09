@@ -1453,6 +1453,13 @@ export interface ConfigSchema {
      * Whether to improve chunk stability by using an import map to resolve the entry chunk of the bundle.
      */
     entryImportMap: boolean
+
+    /**
+     * Whether to enable `@dxup/nuxt` module for better TypeScript DX.
+     *
+     * @see https://github.com/KazariEX/dxup
+     */
+    typescriptPlugin: boolean
   }
 
   /**

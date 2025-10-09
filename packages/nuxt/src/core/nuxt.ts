@@ -825,6 +825,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
   }
+  if (options.experimental.typescriptPlugin) {
+    options._modules.push('@dxup/nuxt')
+  }
 
   // warn if user is using reserved namespaces
   const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
