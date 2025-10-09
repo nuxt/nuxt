@@ -120,11 +120,15 @@ const parentStorageBridge = (nonce: string) => /* js */ `
 
 const errorCSS = /* css */ `
 :host {
+  --preview-width: 240px;
+  --preview-height: 180px;
+  --base-width: 1200px;
+  --base-height: 900px;
+  --z-base: 999999998;
   all: initial;
   display: contents;
 }
-#toggle .sr-only,
-div[role="status"] {
+.sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -136,65 +140,64 @@ div[role="status"] {
   border-width: 0;
 }
 #frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  pointer-events: auto;
-  will-change: transform;
-  contain: layout style paint;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: var(--z-base);
 }
-#frame:not([inert]) {
-  z-index: -1;
+#frame[inert] {
+  right: 5px;
+  bottom: 5px;
+  left: auto;
+  top: auto;
+  width: var(--base-width);
+  height: var(--base-height);
+  transform: scale(calc(240 / 1200));
+  transform-origin: bottom right;
+  overflow: hidden;
+  border-radius: calc(1200 * 8px / 240);
+}
+#preview {
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
+  width: var(--preview-width);
+  height: var(--preview-height);
+  overflow: hidden;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: var(--z-base);
+  background: white;
+  display: none;
+}
+#frame:not([inert]) + #preview {
+  display: block;
 }
 #toggle {
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
+  width: var(--preview-width);
+  height: var(--preview-height);
   background: none;
-  border: 15px #ffcdce solid;
-  overflow: hidden;
-  border-radius: 30px;
+  border: 3px solid #00DC82;
+  border-radius: 8px;
   cursor: pointer;
   opacity: 0.8;
-  transition: opacity 0.2s;
-  pointer-events: auto;
-  z-index: 999999999;
-  will-change: transform, opacity;
+  transition: opacity 0.2s, box-shadow 0.2s;
+  z-index: calc(var(--z-base) + 1);
 }
 #toggle:hover,
 #toggle:focus {
   opacity: 1;
-  outline: 2px solid #ff6b6b;
-  outline-offset: 2px;
+  box-shadow: 0 0 20px rgba(0, 220, 130, 0.6);
 }
 #toggle:focus-visible {
-  outline: 3px solid #ff6b6b;
+  outline: 3px solid #00DC82;
   outline-offset: 3px;
-}
-#frame, #toggle {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-}
-#frame:not([inert]) {
-  transform: scale(5) translateX(-80%);
-  transform-origin: bottom left;
-}
-#frame:not([inert]) ~ #toggle {
-  left: 0;
-  top: 0;
-}
-#frame[inert] {
-  overflow: hidden;
-  border-radius: 30px;
-  transform: scale(0.2);
-  transform-origin: bottom right;
-  padding: 0;
-}
-#frame[inert] ~ #toggle {
-  transform: scale(0.2);
-  transform-origin: bottom right;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1000000000;
+  box-shadow: 0 0 24px rgba(0, 220, 130, 0.8);
 }
 @media (prefers-reduced-motion: reduce) {
   #toggle {
@@ -212,6 +215,7 @@ function webComponentScript (base64HTML: string) {
       
       const shadow = host.attachShadow({ mode: 'open' });
       
+      // Create elements
       const style = document.createElement('style');
       style.textContent = ${JSON.stringify(errorCSS)};
       
@@ -221,125 +225,83 @@ function webComponentScript (base64HTML: string) {
       iframe.title = 'Detailed error stack trace';
       iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
       
+      const preview = document.createElement('div');
+      preview.id = 'preview';
+      
       const button = document.createElement('button');
       button.id = 'toggle';
       button.setAttribute('aria-expanded', 'true');
       button.setAttribute('type', 'button');
       button.innerHTML = '<span class="sr-only">Toggle detailed error view</span>';
       
-      // Create a live region for screen reader announcements
       const liveRegion = document.createElement('div');
       liveRegion.setAttribute('role', 'status');
       liveRegion.setAttribute('aria-live', 'polite');
       liveRegion.className = 'sr-only';
       
-      // Store original body styles to restore them later
-      const originalBodyStyles = {
-        position: document.body.style.position,
-        transform: document.body.style.transform,
-        transformOrigin: document.body.style.transformOrigin,
-        right: document.body.style.right,
-        bottom: document.body.style.bottom,
-        width: document.body.style.width,
-        height: document.body.style.height,
-        overflow: document.body.style.overflow
-      };
-      
-      const SCALE_DOWN = 0.2;
-      const SCALE_UP = 1 / SCALE_DOWN;
-      const BODY_WIDTH = 1200;
-      const BODY_HEIGHT = 900;
-      
-      function scaleBodyContent(shouldScale) {
-        if (shouldScale) {
-          // Set fixed dimensions before scaling down
-          document.body.style.position = 'fixed';
-          document.body.style.width = BODY_WIDTH + 'px';
-          document.body.style.height = BODY_HEIGHT + 'px';
-          document.body.style.transform = 'scale(' + SCALE_DOWN + ')';
-          document.body.style.transformOrigin = 'bottom right';
-          document.body.style.right = '0';
-          document.body.style.bottom = '0';
-          document.body.style.overflow = 'hidden';
+      // Update preview snapshot
+      function updatePreview() {
+        try {
+          let previewIframe = preview.querySelector('iframe');
+          if (!previewIframe) {
+            previewIframe = document.createElement('iframe');
+            previewIframe.style.cssText = 'width: 1200px; height: 900px; transform: scale(0.2); transform-origin: top left; border: none;';
+            previewIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+            preview.appendChild(previewIframe);
+          }
           
-          // Make iframe fill viewport when maximized
-          iframe.style.width = '100vw';
-          iframe.style.height = '100vh';
+          const doctype = document.doctype ? '<!DOCTYPE ' + document.doctype.name + '>' : '';
+          const cleanedHTML = document.documentElement.outerHTML
+            .replace(/<nuxt-error-overlay[^>]*>.*?<\\/nuxt-error-overlay>/gs, '')
+            .replace(/<script[^>]*>.*?<\\/script>/gs, '');
           
-          // Set button to match body dimensions
-          button.style.width = BODY_WIDTH + 'px';
-          button.style.height = BODY_HEIGHT + 'px';
-          
-          // Counter-scale the overlay to keep it at normal size
-          host.style.transform = 'scale(' + SCALE_UP + ')';
-          host.style.transformOrigin = 'bottom right';
-        } else {
-          // Restore original body styles
-          document.body.style.position = originalBodyStyles.position;
-          document.body.style.transform = originalBodyStyles.transform;
-          document.body.style.transformOrigin = originalBodyStyles.transformOrigin;
-          document.body.style.right = originalBodyStyles.right;
-          document.body.style.bottom = originalBodyStyles.bottom;
-          document.body.style.width = originalBodyStyles.width;
-          document.body.style.height = originalBodyStyles.height;
-          document.body.style.overflow = originalBodyStyles.overflow;
-          
-          // Set iframe to match body dimensions for consistent aspect ratio when minimized
-          iframe.style.width = BODY_WIDTH + 'px';
-          iframe.style.height = BODY_HEIGHT + 'px';
-          
-          // Set button to match body dimensions for consistent aspect ratio when minimized
-          button.style.width = BODY_WIDTH + 'px';
-          button.style.height = BODY_HEIGHT + 'px';
-          
-          // Reset overlay
-          host.style.transform = '';
-          host.style.transformOrigin = '';
+          const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+          iframeDoc.open();
+          iframeDoc.write(doctype + cleanedHTML);
+          iframeDoc.close();
+        } catch (error) {
+          console.error('Failed to update preview:', error);
         }
       }
       
       function toggleView() {
-        const isInert = iframe.hasAttribute('inert');
-        iframe.toggleAttribute('inert');
-        button.setAttribute('aria-expanded', isInert);
-        scaleBodyContent(isInert);
+        const isMinimized = iframe.hasAttribute('inert');
         
-        liveRegion.textContent = isInert 
-          ? 'Showing detailed error view' 
-          : 'Showing error page';
-        
-        if (isInert) {
+        if (isMinimized) {
+          updatePreview();
+          iframe.removeAttribute('inert');
+          button.setAttribute('aria-expanded', 'true');
+          liveRegion.textContent = 'Showing detailed error view';
           setTimeout(function() {
-            if (iframe.contentWindow) {
-              try {
-                iframe.contentWindow.focus();
-              } catch {}
-            }
+            try { iframe.contentWindow.focus(); } catch {}
           }, 100);
         } else {
+          iframe.setAttribute('inert', '');
+          button.setAttribute('aria-expanded', 'false');
+          liveRegion.textContent = 'Showing error page';
           button.focus();
         }
       }
       
       button.onclick = toggleView;
       
-      // Add keyboard support
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' || e.key === 'Esc') {
+        if ((e.key === 'Escape' || e.key === 'Esc') && !iframe.hasAttribute('inert')) {
           toggleView();
         }
       });
       
+      // Append to shadow DOM
       shadow.appendChild(style);
       shadow.appendChild(liveRegion);
       shadow.appendChild(iframe);
+      shadow.appendChild(preview);
       shadow.appendChild(button);
       
-      // Start with iframe maximized, body scaled down
-      scaleBodyContent(true);
+      // Initialize preview
+      setTimeout(updatePreview, 100);
+      
     } catch (error) {
-      // Silently fail if Shadow DOM or any setup fails
-      // The user will still see their own error page
       console.error('Failed to initialize Nuxt error overlay:', error);
     }
   })();
