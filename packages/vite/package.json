@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "nitro": "npm:nitro-nightly@3.0.0-20251008-144234-6dd6bf4b",
+    "nitro": "npm:nitro-nightly@3.0.0-20251009-080107-6c7fe3cc",
     "rolldown": "1.0.0-beta.42",
     "rollup": "4.52.4",
     "unbuild": "3.6.1",
