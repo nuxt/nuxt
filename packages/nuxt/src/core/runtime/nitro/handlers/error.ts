@@ -43,7 +43,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'status' | 'statusText' | 'message' | 'stack'> & { url: string, data: any }
   // remove proto/hostname/port from URL
   const url = new URL(errorObject.url)
-  errorObject.url = withoutBase(url.pathname, useRuntimeConfig(event).app.baseURL) + url.search + url.hash
+  errorObject.url = withoutBase(url.pathname, useRuntimeConfig().app.baseURL) + url.search + url.hash
   // add default server message
   errorObject.message ||= 'Server Error'
   // we will be rendering this error internally so we can pass along the error.data safely
@@ -72,7 +72,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // HTML response (via SSR)
   const res = !isRenderingError && await useNitroApp().fetch(
-    withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
+    withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject),
     {
       headers: event.req.headers,
       redirect: 'manual',

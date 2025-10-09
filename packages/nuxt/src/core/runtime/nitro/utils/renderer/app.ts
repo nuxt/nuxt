@@ -14,7 +14,7 @@ export function createSSRContext (event: H3Event): NuxtSSRContext {
   const ssrContext: NuxtSSRContext = {
     url,
     event,
-    runtimeConfig: useRuntimeConfig(event) as NuxtSSRContext['runtimeConfig'],
+    runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
     noSSR: !!(process.env.NUXT_NO_SSR) || event.context.nuxt?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     head: createHead(unheadOptions),
     error: false,
