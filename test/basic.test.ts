@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
@@ -96,6 +96,13 @@ describe('route rules', () => {
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
     expect(html).not.toContain('<script')
+  })
+
+  it('client-side navigation should redirect if hash included', async () => {
+    const { page } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.getByTestId('route-rules-redirect').click()
+    await vi.waitFor(() => page.url() === url('/#hello'), { timeout: 5_000 })
   })
 
   it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
@@ -2214,6 +2221,18 @@ describe.skipIf(isDev())('dynamic paths', () => {
     }
   })
 
+  it.skipIf(isDev() || isWebpack)('should render relative importmap path with relative path', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '',
+        NUXT_APP_BUILD_ASSETS_DIR: 'assets/',
+      },
+    })
+
+    const html = await $fetch<string>('/')
+    expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
+  })
+
   it('restore server', async () => {
     await startServer()
   })
@@ -2524,6 +2543,12 @@ describe('component islands', () => {
     await islandPageRequest
     await page.locator('#server-page').waitFor()
   })
+
+  it('should show error on 404 error for server pages during client navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.click('[href="/server-components/lost-page"]')
+    await page.getByText('This is the error page').waitFor()
+  })
 })
 
 describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
@@ -2806,10 +2831,10 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
         style.innerHTML &&=
-            (style.innerHTML as string)
-              .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
-              // Vite 6 enables CSS minify by default for SSR
-              .replace(/blue/, '#00f')
+          (style.innerHTML as string)
+            .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+          // Vite 6 enables CSS minify by default for SSR
+            .replace(/blue/, '#00f')
         style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
       }
     }

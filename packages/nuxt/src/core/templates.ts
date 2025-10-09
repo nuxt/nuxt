@@ -345,7 +345,7 @@ export const middlewareTemplate: NuxtTemplate = {
         : [
             `const _globalMiddleware = ${genObjectFromRawEntries(globalMiddleware.map(mw => [reverseResolveAlias(mw.path, alias).pop() || mw.path, genSafeVariableName(mw.name)]))}`,
             `for (const path in _globalMiddleware) {`,
-            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path })`,
+            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path, configurable: true })`,
             `}`,
             `export const globalMiddleware = Object.values(_globalMiddleware)`,
             `const _namedMiddleware = ${genArrayFromRaw(namedMiddleware.map(mw => ({
@@ -356,7 +356,7 @@ export const middlewareTemplate: NuxtTemplate = {
             `for (const mw of _namedMiddleware) {`,
             `  const i = mw.import`,
             `  mw.import = () => i().then(r => {`,
-            `    Object.defineProperty(r.default || r, '_path', { value: mw.path })`,
+            `    Object.defineProperty(r.default || r, '_path', { value: mw.path, configurable: true })`,
             `    return r`,
             `  })`,
             `}`,
@@ -399,7 +399,6 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
     return /* typescript */`
 ${lines.join('\n')}
-/// <reference path="./runtime-config.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
@@ -626,11 +625,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify({
-        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
-        errorValue: undefined,
-        value: undefined,
-      })}`,
+      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,

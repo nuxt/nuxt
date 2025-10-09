@@ -10,7 +10,7 @@ links:
 
 ## Usage
 
-`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
+`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
 
 ::warning
 Make sure to always use `await` or `return` on result of `navigateTo` when calling it.
@@ -35,8 +35,8 @@ await navigateTo({
   path: '/search',
   query: {
     page: 1,
-    sort: 'asc'
-  }
+    sort: 'asc',
+  },
 })
 </script>
 ```
@@ -68,7 +68,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 In this case, `navigateTo` will be executed but not returned, which may lead to unexpected behavior.
 
-:read-more{to="/docs/guide/directory-structure/app/middleware"}
+:read-more{to="/docs/4.x/guide/directory-structure/app/middleware"}
 
 ### Navigating to an External URL
 
@@ -92,7 +92,7 @@ await navigateTo('https://nuxt.com')
 
 // will redirect successfully with the 'external' parameter set to 'true'
 await navigateTo('https://nuxt.com', {
-  external: true
+  external: true,
 })
 </script>
 ```
@@ -107,20 +107,20 @@ await navigateTo('https://nuxt.com', {
     target: '_blank',
     windowFeatures: {
       width: 500,
-      height: 500
-    }
-  }
+      height: 500,
+    },
+  },
 })
 </script>
 ```
 
 ## Type
 
-```ts
-function navigateTo(
+```ts [Signature]
+export function navigateTo (
   to: RouteLocationRaw | undefined | null,
   options?: NavigateToOptions
-) => Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw 
+): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw
 
 interface NavigateToOptions {
   replace?: boolean

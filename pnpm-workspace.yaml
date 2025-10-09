@@ -13,3 +13,9 @@ ignoredBuiltDependencies:
   - oxc-resolver
   - unrs-resolver
   - vue-demi
+
+publicHoistPattern:
+  - '*-loader'
+  - 'webpack-*'
+
+shellEmulator: true

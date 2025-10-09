@@ -22,6 +22,7 @@ import defu from 'defu'
 import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
+import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -239,6 +240,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (nuxt.options.typescript.shim) {
       opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/vue-shim.d.ts') })
     }
+
     // Add shims for `#build/*` imports that do not already have matching types
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
@@ -250,6 +252,10 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
+    opts.nodeReferences.push({ types: relative(nuxt.options.buildDir, resolveModulePath('@nuxt/vite-builder', { from: import.meta.url })) })
+    if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
+      opts.nodeReferences.push({ types: nuxt.options.builder })
+    }
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
@@ -270,6 +276,12 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  // Add nitro types
+  nuxt.hook('nitro:prepare:types', (opts) => {
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+  })
+
   // Prompt to install `@nuxt/scripts` if user has configured it
   // @ts-expect-error scripts types are not present as the module is not installed
   if (nuxt.options.scripts) {
@@ -281,7 +293,8 @@ async function initNuxt (nuxt: Nuxt) {
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
   addBuildPlugin(VirtualFSPlugin(nuxt, {
-    mode: 'client', alias: {
+    mode: 'client',
+    alias: {
       '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
@@ -322,10 +335,9 @@ async function initNuxt (nuxt: Nuxt) {
   addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
 
   // add resolver for modules used in virtual files
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { client: false })
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt), { server: false })
+  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
 
-  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { client: false, prepend: true })
+  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
@@ -423,9 +435,11 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.options.build.transpile.push('nuxt/app')
 
   // Transpile layers within node_modules
-  nuxt.options.build.transpile.push(
-    ...layerDirs.filter(i => i.root.includes('node_modules')).map(i => i.root.replace(/\/$/, '')),
-  )
+  for (const layer of layerDirs) {
+    if (layer.root.includes('node_modules')) {
+      nuxt.options.build.transpile.push(layer.root.replace(/\/$/, ''))
+    }
+  }
 
   // Ensure we can resolve dependencies within layers - filtering out local `~~/layers` directories
   const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
@@ -718,10 +732,15 @@ export default defineNuxtPlugin({
     }
   })
 
-  // Normalize windows transpile paths added by modules
-  nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)
+  nuxt.options.build.transpile = nuxt.options.build.transpile.map((t) => {
+    if (typeof t !== 'string') {
+      return t
+    }
+    // Normalize windows transpile paths added by modules
+    return normalize(t).split('node_modules/').pop()!
+  })
 
-  addModuleTranspiles()
+  addModuleTranspiles(nuxt)
 
   // Init nitro
   await initNitro(nuxt)
@@ -792,11 +811,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
+  const importIncludes: RegExp[] = []
+  for (const layer of options._layers) {
+    if (layer.cwd && layer.cwd.includes('node_modules')) {
+      importIncludes.push(new RegExp(`(^|\\/)${escapeRE(layer.cwd.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
+    }
+  }
   options._modules.push([importsModule, {
     transform: {
-      include: options._layers
-        .filter(i => i.cwd && i.cwd.includes('node_modules'))
-        .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`)),
+      include: importIncludes,
     },
   }])
   options._modules.push(schemaModule)

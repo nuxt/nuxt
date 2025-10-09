@@ -11,14 +11,14 @@ links:
 When prerendering, you can hint to Nitro to prerender additional paths, even if their URLs do not show up in the HTML of the generated page.
 
 ::important
-`prerenderRoutes` can only be called within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
+`prerenderRoutes` can only be called within the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
 ::note
 `prerenderRoutes` has to be executed during prerendering. If the `prerenderRoutes` is used in dynamic pages/routes which are not prerendered, then it will not be executed.
 ::
 
-```js
+```ts
 const route = useRoute()
 
 prerenderRoutes('/')
@@ -31,7 +31,7 @@ In the browser, or if called outside prerendering, `prerenderRoutes` will have n
 
 You can even prerender API routes which is particularly useful for full statically generated sites (SSG) because you can then `$fetch` data as if you have an available server!
 
-```js
+```ts
 prerenderRoutes('/api/content/article/name-of-article')
 
 // Somewhere later in App

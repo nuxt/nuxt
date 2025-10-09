@@ -3,8 +3,7 @@ import * as vite from 'vite'
 import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
-import replace from '@rollup/plugin-replace'
-import type { RollupReplaceOptions } from '@rollup/plugin-replace'
+import replacePlugin from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -214,9 +213,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await nuxt.callHook('vite:extend', ctx)
 
-  nuxt.hook('vite:extendConfig', (config) => {
-    const replaceOptions: RollupReplaceOptions = Object.create(null)
-    replaceOptions.preventAssignment = true
+  nuxt.hook('vite:extendConfig', async (config) => {
+    const replaceOptions = Object.create(null)
 
     for (const key in config.define!) {
       if (key.startsWith('import.meta.')) {
@@ -224,7 +222,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     }
 
-    config.plugins!.push(replace(replaceOptions))
+    // @ts-expect-error Rolldown-specific check
+    if (vite.rolldownVersion) {
+      const { replacePlugin } = await import('rolldown/experimental')
+      config.plugins!.push(replacePlugin(replaceOptions))
+    } else {
+      config.plugins!.push(replacePlugin({ ...replaceOptions, preventAssignment: true }))
+    }
   })
 
   if (!nuxt.options.dev) {
@@ -245,19 +249,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     })
 
     // Remove CSS entries for files that will have inlined styles
+    const nitro = useNitro()
     nuxt.hook('build:manifest', (manifest) => {
+      const entryIds = new Set<string>()
       for (const id of chunksWithInlinedCSS) {
         const chunk = manifest[id]
         if (!chunk) {
           continue
         }
-        if (chunk.isEntry) {
-          // @ts-expect-error internal key
-          chunk._globalCSS = true
+        if (chunk.isEntry && chunk.src) {
+          entryIds.add(chunk.src)
         } else {
           chunk.css &&= []
         }
       }
+
+      nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
+      nitro.options._config.virtual ||= {}
+      nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
     })
   }
 

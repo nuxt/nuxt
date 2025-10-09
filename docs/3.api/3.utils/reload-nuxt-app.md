@@ -14,14 +14,14 @@ links:
 
 By default, it will also save the current `state` of your app (that is, any state you could access with `useState`).
 
-::read-more{to="/docs/guide/going-further/experimental-features#restorestate" icon="i-lucide-star"}
+::read-more{to="/docs/4.x/guide/going-further/experimental-features#restorestate" icon="i-lucide-star"}
 You can enable experimental restoration of this state by enabling the `experimental.restoreState` option in your `nuxt.config` file.
 ::
 
 ## Type
 
-```ts
-reloadNuxtApp(options?: ReloadNuxtAppOptions)
+```ts [Signature]
+export function reloadNuxtApp (options?: ReloadNuxtAppOptions)
 
 interface ReloadNuxtAppOptions {
   ttl?: number

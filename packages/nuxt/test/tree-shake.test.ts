@@ -35,6 +35,24 @@ describe('tree-shake', () => {
     `)
   })
 
+  it('should not error when tree-shaking composables within other tree-shaken composables', () => {
+    const code = `
+      import { onMounted } from 'vue'
+      onMounted(() => {
+        onMounted(() => {})
+      })
+      onMounted(() => {})
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from 'vue'
+       false && /*@__PURE__*/ onMounted(() => {
+        onMounted(() => {})
+      })
+       false && /*@__PURE__*/ onMounted(() => {})"
+    `)
+  })
+
   it('should tree-shake explicitly-imported composables from #imports', () => {
     const code = `
       import { onMounted } from '#imports'
@@ -72,12 +90,12 @@ describe('tree-shake', () => {
   it('should handle shadowing of outer-scope composables', () => {
     const code = `
       import { onMounted } from '#imports'
-      
+
       onMounted(() => console.log('treeshake this'))
-      
-      function foo() { 
+
+      function foo() {
         onMounted()
-        
+
         function onMounted() {
           console.log('do not treeshake this')
         }
@@ -87,7 +105,7 @@ describe('tree-shake', () => {
     expect(clean(result)).toMatchInlineSnapshot(`
       "import { onMounted } from '#imports'
        false && /*@__PURE__*/ onMounted(() => console.log('treeshake this'))
-      function foo() { 
+      function foo() {
         onMounted()
         function onMounted() {
           console.log('do not treeshake this')
@@ -99,9 +117,9 @@ describe('tree-shake', () => {
   it('should handle variable shadowing', () => {
     const code = `
       import { onMounted } from '#imports'
-      
+
       onMounted()
-      
+
       function test() {
         const onMounted = () => 'local'
         onMounted()
@@ -115,6 +133,65 @@ describe('tree-shake', () => {
         const onMounted = () => 'local'
         onMounted()
       }"
+    `)
+  })
+
+  it('should handle usage in function parameter', () => {
+    const code = `
+      import { onMounted } from '#imports'
+      test(123, onMounted(), 456)
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from '#imports'
+      test(123,  false && /*@__PURE__*/ onMounted(), 456)"
+    `)
+  })
+
+  it('should handle assignments', () => {
+    const code = `
+      import { onMounted } from '#imports'
+
+      let a
+      a = onMounted()
+      b = 3
+    `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from '#imports'
+      let a
+      a =  false && /*@__PURE__*/ onMounted()
+      b = 3"
+    `)
+  })
+
+  it('should handle conditional/test/logical contexts', () => {
+    const code = `
+    import { onMounted } from 'vue'
+    if (onMounted()) {}
+    onMounted() && doThing()
+    doThing() || onMounted()
+    const x = cond ? onMounted() : 0
+  `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from 'vue'
+      if ( false && /*@__PURE__*/ onMounted()) {}
+       false && /*@__PURE__*/ onMounted() && doThing()
+      doThing() ||  false && /*@__PURE__*/ onMounted()
+      const x = cond ?  false && /*@__PURE__*/ onMounted() : 0"
+    `)
+  })
+
+  it('should handle sequence in expression statement', () => {
+    const code = `
+    import { onMounted } from 'vue'
+    (foo(), onMounted(), bar())
+  `
+    const { code: result } = transformPlugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onMounted } from 'vue'
+      (foo(),  false && /*@__PURE__*/ onMounted(), bar())"
     `)
   })
 })

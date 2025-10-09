@@ -55,7 +55,7 @@ export default class VueSSRServerPlugin {
           maps: {} as Record<string, string>,
         }
 
-        stats.assets!.forEach((asset: any) => {
+        for (const asset of stats.assets!) {
           if (isJS(asset.name)) {
             const queryPart = extractQueryPartJS(asset.name)
             if (queryPart !== undefined) {
@@ -69,7 +69,7 @@ export default class VueSSRServerPlugin {
             // Do not emit non-js assets for server
             delete assets[asset.name]
           }
-        })
+        }
 
         const src = JSON.stringify(bundle, null, 2)
 
