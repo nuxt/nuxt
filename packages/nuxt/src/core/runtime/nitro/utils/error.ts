@@ -6,7 +6,7 @@ import type { HTTPEvent } from 'h3'
 
 export function isJsonRequest (event: HTTPEvent) {
   // If the client specifically requests HTML, then avoid classifying as JSON.
-  if (event.req.headers.get('accept') === 'text/html') {
+  if (event.req.headers.get('accept')?.includes('text/html')) {
     return false
   }
   return (

@@ -1,15 +1,12 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 
-import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
+import { useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
 import type { NuxtPayload } from '#app/nuxt'
 import type { H3Event } from 'h3'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
-  // TODO: support handled checks
-  // if (event.handled) { return }
-
   if (isJsonRequest(event)) {
     // let Nitro handle JSON errors
     return
@@ -71,16 +68,13 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   // HTML response (via SSR)
-  const res = !isRenderingError && await useNitroApp().fetch(
+  const res = !isRenderingError && await fetch(
     withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject),
     {
       headers: event.req.headers,
       redirect: 'manual',
     },
   ).catch(() => null)
-
-  // TODO: support handled checks
-  // if (event.handled) { return }
 
   // Fallback to static rendered error page
   if (!res) {
@@ -99,20 +93,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   const html = await res.text()
-  for (const [header, value] of res.headers.entries()) {
-    if (header === 'set-cookie') {
-      headers.append(header, value)
-      continue
-    }
-    if (!headers.has(header)) {
-      headers.set(header, value)
-    }
-  }
-
-  headers.set('Content-Type', 'text/html;charset=UTF-8')
 
   return new Response(html, {
-    headers,
+    headers: res.headers,
     status: res.status && res.status !== 200 ? res.status : defaultRes.status,
     statusText: res.statusText || defaultRes.statusText,
   })
