@@ -2,9 +2,8 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
-import replace from '@rollup/plugin-replace'
-import type { RollupReplaceOptions } from '@rollup/plugin-replace'
+import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
+import replacePlugin from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -38,7 +37,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
-    ...nuxt.options._layers.map(l => l.config.rootDir),
+    ...getLayerDirectories(nuxt).map(d => d.root),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
       ...app.plugins.map(p => dirname(p.src)),
@@ -54,6 +53,17 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
+
+  // @ts-expect-error non-public property
+  if (vite.rolldownVersion) {
+    // esbuild is not used in `rolldown-vite`
+    if (viteConfig.esbuild) {
+      delete viteConfig.esbuild
+    }
+    if (viteConfig.optimizeDeps?.esbuildOptions) {
+      delete viteConfig.optimizeDeps.esbuildOptions
+    }
+  }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
@@ -119,10 +129,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
-          watch: {
-            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-            exclude: nuxt.options.ignore,
-          },
+
+          // @ts-expect-error non-public property
+          watch: (vite.rolldownVersion
+            // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+            ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
+            : {
+                chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
+                exclude: nuxt.options.ignore,
+              }
+          ),
         },
         plugins: [
           // add resolver for files in public assets directories
@@ -154,9 +170,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Identify which layers will need to have an extra resolve step.
     const layerDirs: string[] = []
     const delimitedRootDir = nuxt.options.rootDir + '/'
-    for (const layer of nuxt.options._layers) {
-      if (layer.config.srcDir !== nuxt.options.srcDir && !layer.config.srcDir.startsWith(delimitedRootDir)) {
-        layerDirs.push(layer.config.srcDir + '/')
+    for (const dirs of getLayerDirectories(nuxt)) {
+      if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(delimitedRootDir)) {
+        layerDirs.push(dirs.app)
       }
     }
     if (layerDirs.length > 0) {
@@ -197,9 +213,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await nuxt.callHook('vite:extend', ctx)
 
-  nuxt.hook('vite:extendConfig', (config) => {
-    const replaceOptions: RollupReplaceOptions = Object.create(null)
-    replaceOptions.preventAssignment = true
+  nuxt.hook('vite:extendConfig', async (config) => {
+    const replaceOptions = Object.create(null)
 
     for (const key in config.define!) {
       if (key.startsWith('import.meta.')) {
@@ -207,7 +222,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     }
 
-    config.plugins!.push(replace(replaceOptions))
+    // @ts-expect-error Rolldown-specific check
+    if (vite.rolldownVersion) {
+      const { replacePlugin } = await import('rolldown/experimental')
+      config.plugins!.push(replacePlugin(replaceOptions))
+    } else {
+      config.plugins!.push(replacePlugin({ ...replaceOptions, preventAssignment: true }))
+    }
   })
 
   if (!nuxt.options.dev) {
@@ -228,17 +249,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     })
 
     // Remove CSS entries for files that will have inlined styles
+    const nitro = useNitro()
     nuxt.hook('build:manifest', (manifest) => {
-      for (const [key, entry] of Object.entries(manifest)) {
-        const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
-        if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
-          // @ts-expect-error internal key
-          entry._globalCSS = true
+      const entryIds = new Set<string>()
+      for (const id of chunksWithInlinedCSS) {
+        const chunk = manifest[id]
+        if (!chunk) {
+          continue
         }
-        if (shouldRemoveCSS && entry.css) {
-          entry.css = []
+        if (chunk.isEntry && chunk.src) {
+          entryIds.add(chunk.src)
+        } else {
+          chunk.css &&= []
         }
       }
+
+      nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
+      nitro.options._config.virtual ||= {}
+      nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
     })
   }
 

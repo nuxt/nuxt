@@ -6,7 +6,7 @@ import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
-import { filename } from 'pathe/utils'
+import { filename, reverseResolveAlias } from 'pathe/utils'
 import type { Nitro } from 'nitropack/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
@@ -58,7 +58,7 @@ export const cssTemplate: NuxtTemplate = {
   getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n'),
 }
 
-const PLUGIN_TEMPLATE_RE = /_(45|46|47)/g
+const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
   async getContents (ctx) {
@@ -274,15 +274,22 @@ export const schemaNodeTemplate: NuxtTemplate = {
           `     * Configuration for \`${importName}\``,
           ...options.addJSDocTags && link ? [`     * @see ${link}`] : [],
           `     */`,
-          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
+          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O, unknown, boolean> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
         ]
       }),
       modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
+    const moduleDependencies = modules.flatMap(([_configKey, importName]) => [
+      `    [${genString(importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? O : Record<string, unknown>>`,
+    ]).join('\n')
+
     return [
-      'import { NuxtModule } from \'@nuxt/schema\'',
+      'import { NuxtModule, ModuleDependencyMeta } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
+      '  interface ModuleDependencies {',
+      moduleDependencies,
+      '  }',
       '  interface NuxtOptions {',
       ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
       '  }',
@@ -293,6 +300,9 @@ export const schemaNodeTemplate: NuxtTemplate = {
       '  }',
       '}',
       'declare module \'nuxt/schema\' {',
+      '  interface ModuleDependencies {',
+      moduleDependencies,
+      '  }',
       '  interface NuxtOptions {',
       ...moduleOptionsInterface({ addJSDocTags: true, unresolved: false }),
       '  }',
@@ -321,14 +331,38 @@ export const layoutTemplate: NuxtTemplate = {
 // Add middleware template
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
-  getContents ({ app }) {
+  getContents ({ app, nuxt }) {
     const globalMiddleware = app.middleware.filter(mw => mw.global)
     const namedMiddleware = app.middleware.filter(mw => !mw.global)
-    const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
+    const alias = nuxt.options.dev ? { ...nuxt?.options.alias || {}, ...strippedAtAliases } : {}
     return [
       ...globalMiddleware.map(mw => genImport(mw.path, genSafeVariableName(mw.name))),
-      `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
-      `export const namedMiddleware = ${namedMiddlewareObject}`,
+      ...!nuxt.options.dev
+        ? [
+            `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
+            `export const namedMiddleware = ${genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))}`,
+          ]
+        : [
+            `const _globalMiddleware = ${genObjectFromRawEntries(globalMiddleware.map(mw => [reverseResolveAlias(mw.path, alias).pop() || mw.path, genSafeVariableName(mw.name)]))}`,
+            `for (const path in _globalMiddleware) {`,
+            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path, configurable: true })`,
+            `}`,
+            `export const globalMiddleware = Object.values(_globalMiddleware)`,
+            `const _namedMiddleware = ${genArrayFromRaw(namedMiddleware.map(mw => ({
+              name: genString(mw.name),
+              path: genString(reverseResolveAlias(mw.path, alias).pop() || mw.path),
+              import: genDynamicImport(mw.path),
+            })))}`,
+            `for (const mw of _namedMiddleware) {`,
+            `  const i = mw.import`,
+            `  mw.import = () => i().then(r => {`,
+            `    Object.defineProperty(r.default || r, '_path', { value: mw.path, configurable: true })`,
+            `    return r`,
+            `  })`,
+            `}`,
+            `export const namedMiddleware = Object.fromEntries(_namedMiddleware.map(mw => [mw.name, mw.import]))`,
+          ],
+
     ].join('\n')
   },
 }
@@ -365,7 +399,6 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
     return /* typescript */`
 ${lines.join('\n')}
-/// <reference path="./runtime-config.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
@@ -592,11 +625,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify({
-        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
-        errorValue: undefined,
-        value: undefined,
-      })}`,
+      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
@@ -638,4 +667,9 @@ export const buildTypeTemplate: NuxtTemplate = {
 
     return declarations
   },
+}
+
+const strippedAtAliases = {
+  '@': '',
+  '@@': '',
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { injectHead } from '#unhead/composables'
@@ -33,6 +33,7 @@ describe('<NuxtTime>', () => {
           h(NuxtTime, {
             datetime,
             relative: true,
+            locale: 'en-GB',
           }),
       }),
     )
@@ -50,6 +51,7 @@ describe('<NuxtTime>', () => {
             datetime,
             relative: true,
             title: true,
+            locale: 'en-GB',
           }),
       }),
     )
@@ -67,6 +69,7 @@ describe('<NuxtTime>', () => {
             datetime,
             relative: true,
             title: 'test',
+            locale: 'en-GB',
           }),
       }),
     )
@@ -93,6 +96,7 @@ describe('<NuxtTime>', () => {
             datetime,
             relative: true,
             title: 'test',
+            locale: 'en-GB',
           }),
       }),
     )
@@ -100,17 +104,15 @@ describe('<NuxtTime>', () => {
     const html = thing.html()
     const id = html.match(/data-prehydrate-id="([^"]+)"/)?.[1]
     expect(thing.html()).toEqual(
-      `<time data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
+      `<time data-locale="en-GB" data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
-    const oldQuerySelector = document.querySelectorAll
 
-    // @ts-expect-error ignoring types here
-    document.querySelectorAll = (selector) => {
+    vi.spyOn(document, 'querySelectorAll').mockImplementation((selector) => {
       if (selector === `[data-prehydrate-id*="${id}"]`) {
-        return [thing.element]
+        return [thing.element] as any
       }
-      return oldQuerySelector.call(document, selector)
-    }
+      return []
+    })
 
     const head = injectHead()
     // @ts-expect-error craziness
@@ -121,9 +123,9 @@ describe('<NuxtTime>', () => {
     expect(window._nuxtTimeNow).toBeDefined()
 
     expect(thing.html()).toEqual(
-      `<time data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
+      `<time data-locale="en-GB" data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
 
-    document.querySelectorAll = oldQuerySelector
+    vi.restoreAllMocks()
   })
 })

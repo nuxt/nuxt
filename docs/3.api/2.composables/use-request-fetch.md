@@ -19,12 +19,12 @@ Headers that are **not meant to be forwarded** will **not be included** in the r
 ::
 
 ::tip
-The [`useFetch`](/docs/api/composables/use-fetch) composable uses `useRequestFetch` under the hood to automatically forward the request context and headers.
+The [`useFetch`](/docs/4.x/api/composables/use-fetch) composable uses `useRequestFetch` under the hood to automatically forward the request context and headers.
 ::
 
 ::code-group
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script setup lang="ts">
 // This will forward the user's headers to the `/api/cookies` event handler
 // Result: { cookies: { foo: 'bar' } }
@@ -33,7 +33,7 @@ const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'
 
 // This will NOT forward anything
 // Result: { cookies: {} }
-const { data: notForwarded } = await useAsyncData(() => $fetch('/api/cookies')) 
+const { data: notForwarded } = await useAsyncData(() => $fetch('/api/cookies'))
 </script>
 ```
 
@@ -48,5 +48,5 @@ export default defineEventHandler((event) => {
 ::
 
 ::tip
-In the browser during client-side navigation, `useRequestFetch` will behave just like regular [`$fetch`](/docs/api/utils/dollarfetch).
+In the browser during client-side navigation, `useRequestFetch` will behave just like regular [`$fetch`](/docs/4.x/api/utils/dollarfetch).
 ::

@@ -14,11 +14,11 @@ This helps you avoid common mistakes, such as using `name` instead of `property`
 This is the recommended way to add meta tags to your site as it is XSS safe and has full TypeScript support.
 ::
 
-:read-more{to="/docs/getting-started/seo-meta"}
+:read-more{to="/docs/4.x/getting-started/seo-meta"}
 
 ## Usage
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 useSeoMeta({
   title: 'My Amazing Site',
@@ -33,13 +33,13 @@ useSeoMeta({
 
 When inserting tags that are reactive, you should use the computed getter syntax (`() => value`):
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const title = ref('My title')
 
 useSeoMeta({
   title,
-  description: () => `This is a description for the ${title.value} page`
+  description: () => `This is a description for the ${title.value} page`,
 })
 </script>
 ```
@@ -48,7 +48,7 @@ useSeoMeta({
 
 There are over 100 parameters. See the [full list of parameters in the source code](https://github.com/harlan-zw/zhead/blob/main/packages/zhead/src/metaFlat.ts#L1035).
 
-:read-more{to="/docs/getting-started/seo-meta"}
+:read-more{to="/docs/4.x/getting-started/seo-meta"}
 
 ## Performance
 
@@ -56,7 +56,7 @@ In most instances, SEO meta tags don't need to be reactive as search engine robo
 
 For better performance, you can wrap your `useSeoMeta` calls in a server-only condition when the meta tags don't need to be reactive:
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 if (import.meta.server) {
   // These meta tags will only be added during server-side rendering
@@ -77,4 +77,4 @@ useSeoMeta({
 </script>
 ```
 
-This previously used the [`useServerSeoMeta`](/docs/api/composables/use-server-seo-meta) composable, but it has been deprecated in favor of this approach.
+This previously used the [`useServerSeoMeta`](/docs/4.x/api/composables/use-server-seo-meta) composable, but it has been deprecated in favor of this approach.

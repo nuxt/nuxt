@@ -163,7 +163,6 @@ export default defineNuxtConfig({
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
-    headNext: true,
     inlineRouteRules: true,
   },
   compatibilityDate: 'latest',
@@ -188,6 +187,7 @@ export default defineNuxtConfig({
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
+      '/route-rules/redirect': { redirect: '/' },
     },
     prerender: {
       routes: [
@@ -199,6 +199,11 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    $client: {
+      build: {
+        target: ['chrome107', 'edge107', 'firefox108', 'safari17'],
+      },
+    },
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
@@ -238,9 +243,10 @@ export default defineNuxtConfig({
         }
       }
     },
-    'vite:extendConfig' (config) {
+    'vite:extend' ({ config }) {
       config.plugins!.push({
         name: 'nuxt:server',
+        enforce: 'pre',
         configureServer (server) {
           server.middlewares.use((req, res, next) => {
             if (req.url === '/vite-plugin-without-path') {

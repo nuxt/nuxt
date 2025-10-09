@@ -20,7 +20,7 @@ that rely on the route metadata, for example.
 
 ## Example
 
-In the following example, we call an API via [`useFetch`](/docs/api/composables/use-fetch) using a dynamic page parameter - `slug` - as part of the URL.
+In the following example, we call an API via [`useFetch`](/docs/4.x/api/composables/use-fetch) using a dynamic page parameter - `slug` - as part of the URL.
 
 ```html [~/pages/[slug\\].vue]
 <script setup lang="ts">

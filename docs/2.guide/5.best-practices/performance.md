@@ -12,7 +12,7 @@ Nuxt offers several built-in features that help you optimize performance of your
 
 ### Links
 
-[`<NuxtLink>`](/docs/api/components/nuxt-link) is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag. It intelligently determines whether the link is internal or external and renders it accordingly with available optimizations (prefetching, default attributes, etc.)
+[`<NuxtLink>`](/docs/4.x/api/components/nuxt-link) is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag. It intelligently determines whether the link is internal or external and renders it accordingly with available optimizations (prefetching, default attributes, etc.)
 
 ```html
 <template>
@@ -34,12 +34,12 @@ export default defineNuxtConfig({
       nuxtLink: {
         prefetchOn: 'interaction',
       },
-    }
-  }
+    },
+  },
 })
 ```
 
-:read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
+:read-more{title="NuxtLink" to="/docs/4.x/api/components/nuxt-link"}
 
 ### Hybrid Rendering
 
@@ -51,24 +51,24 @@ Hybrid rendering allows different caching rules per route using Route Rules and 
 export default defineNuxtConfig({
   routeRules: {
     '/': {
-      prerender: true
+      prerender: true,
     },
     '/products/**': {
-      swr: 3600
+      swr: 3600,
     },
     '/blog': {
-      isr: 3600
+      isr: 3600,
     },
     '/admin/**': {
-      ssr: false
+      ssr: false,
     },
-  }
+  },
 })
 ```
 
 Nuxt server will automatically register corresponding middleware and wrap routes with cache handlers using Nitro caching layer.
 
-:read-more{title="Hybrid rendering" to="/docs/guide/concepts/rendering#hybrid-rendering"}
+:read-more{title="Hybrid rendering" to="/docs/4.x/guide/concepts/rendering#hybrid-rendering"}
 
 ### Lazy Loading Components
 
@@ -90,7 +90,7 @@ const show = ref(false)
 
 By using the Lazy prefix you can delay loading the component code until the right moment, which can be helpful for optimizing your JavaScript bundle size.
 
-:read-more{title="Lazy loading components" to="/docs/guide/directory-structure/components#dynamic-imports"}
+:read-more{title="Lazy loading components" to="/docs/4.x/guide/directory-structure/app/components#dynamic-imports"}
 
 ### Lazy Hydration
 
@@ -106,13 +106,13 @@ It is not always necessary to hydrate (or make interactive) all the components o
 
 To optimize your app, you may want to delay the hydration of some components until they're visible, or until the browser is done with more important tasks.
 
-:read-more{title="Lazy hydration" to="/docs/guide/directory-structure/components#delayed-or-lazy-hydration"}
+:read-more{title="Lazy hydration" to="/docs/4.x/guide/directory-structure/app/components#delayed-or-lazy-hydration"}
 
 ### Fetching data
 
-To avoid fetching same data twice (once on the server and once on client) Nuxt provides [`useFetch`](/docs/api/composables/use-fetch) and [`useAsyncData`](/docs/api/composables/use-async-data). They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
+To avoid fetching same data twice (once on the server and once on client) Nuxt provides [`useFetch`](/docs/4.x/api/composables/use-fetch) and [`useAsyncData`](/docs/4.x/api/composables/use-async-data). They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
 
-:read-more{title="Data fetching" to="/docs/getting-started/data-fetching"}
+:read-more{title="Data fetching" to="/docs/4.x/getting-started/data-fetching"}
 
 ## Core Nuxt Modules
 
@@ -126,7 +126,7 @@ In Nuxt we can use [Nuxt Image](https://image.nuxt.com/) module that is a plug-a
 
 :video-accordion{title="Watch the video by LearnVue about Nuxt Image" videoId="_UBff2eqGY0"}
 
-[`<NuxtImg>`](/docs/api/components/nuxt-img) is a drop-in replacement for the native `<img>` tag that comes with following enhancements:
+[`<NuxtImg>`](/docs/4.x/api/components/nuxt-img) is a drop-in replacement for the native `<img>` tag that comes with following enhancements:
 
 * Uses built-in provider to optimize local and remote images
 * Converts `src` to provider optimized URLs with modern formats such as WebP or Avif
@@ -193,7 +193,7 @@ Nuxt Scripts provides an abstraction layer on top of third-party scripts, provid
 
 ```ts
 const { onLoaded, proxy } = useScriptGoogleAnalytics(
-  { 
+  {
     id: 'G-1234567',
     scriptOptions: {
       trigger: 'manual',
@@ -216,7 +216,7 @@ To improve performance, we need to first know how to measure it, starting with m
 
 ### Nuxi Analyze
 
-[This](/docs/api/commands/analyze) command of `nuxi` allows to analyze the production bundle or your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
+[This](/docs/4.x/api/commands/analyze) command of `nuxi` allows to analyze the production bundle or your Nuxt application. It leverages `vite-bundle-visualizer` (similar to `webpack-bundle-analyzer`) to generate a visual representation of your application's bundle, making it easier to identify which components take up the most space.
 
 When you see a large block in the visualization, it often signals an opportunity for optimization—whether by splitting it into smaller parts, implementing lazy loading, or replacing it with a more efficient alternative, especially for third-party libraries.
 

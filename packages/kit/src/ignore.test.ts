@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { isIgnored, resolveGroupSyntax, resolveIgnorePatterns } from './ignore.js'
 import * as context from './context.js'
 
 describe('isIgnored', () => {
   it('should populate _ignore', () => {
-    const mockNuxt = { options: { ignore: ['my-dir'] } as NuxtOptions } as Nuxt
+    const mockNuxt = { options: { ignore: ['my-dir'], _layers: [] } as NuxtConfig } as Nuxt
     vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
 
     expect(isIgnored('my-dir/my-file.ts')).toBe(true)

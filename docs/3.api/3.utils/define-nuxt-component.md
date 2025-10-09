@@ -22,14 +22,14 @@ Using `<script setup lang="ts">` is the recommended way of declaring Vue compone
 
 If you choose not to use `setup()` in your app, you can use the `asyncData()` method within your component definition:
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script lang="ts">
 export default defineNuxtComponent({
-  async asyncData() {
+  asyncData () {
     return {
       data: {
-        greetings: 'hello world!'
-      }
+        greetings: 'hello world!',
+      },
     }
   },
 })
@@ -40,12 +40,12 @@ export default defineNuxtComponent({
 
 If you choose not to use `setup()` in your app, you can use the `head()` method within your component definition:
 
-```vue [pages/index.vue]
+```vue [app/pages/index.vue]
 <script lang="ts">
 export default defineNuxtComponent({
-  head(nuxtApp) {
+  head (nuxtApp) {
     return {
-      title: 'My site'
+      title: 'My site',
     }
   },
 })

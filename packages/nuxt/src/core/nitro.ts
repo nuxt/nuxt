@@ -8,7 +8,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
-import { createIsIgnored, findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
@@ -33,13 +33,27 @@ const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
-  const excludePaths = nuxt.options._layers
-    .flatMap(l => [
-      l.cwd.match(NODE_MODULES_RE)?.[1],
-      l.cwd.match(PNPM_NODE_MODULES_RE)?.[1],
-    ])
-    .filter((dir): dir is string => Boolean(dir))
-    .map(dir => escapeRE(dir))
+  const layerDirs = getLayerDirectories(nuxt)
+  const excludePaths: string[] = []
+  for (const dirs of layerDirs) {
+    const paths = [
+      dirs.root.match(NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
+      dirs.root.match(PNPM_NODE_MODULES_RE)?.[1]?.replace(/\/$/, ''),
+    ]
+    for (const dir of paths) {
+      if (dir) {
+        excludePaths.push(escapeRE(dir))
+      }
+    }
+  }
+
+  const layerPublicAssetsDirs: Array<{ dir: string }> = []
+  for (const dirs of layerDirs) {
+    if (existsSync(dirs.public)) {
+      layerPublicAssetsDirs.push({ dir: dirs.public })
+    }
+  }
+
   const excludePattern = excludePaths.length
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
@@ -120,7 +134,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           filename: join(nuxt.options.analyzeDir, '{name}.html'),
         }
       : false,
-    scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
+    scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: resolve(distDir, 'core/runtime/nitro/handlers/renderer'),
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers: nuxt.options.serverHandlers,
@@ -130,14 +144,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
+      // this will be overridden in vite plugin
+      '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
+      '#internal/nuxt/entry-ids.mjs': () => `export default []`,
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
     },
     appConfig: nuxt.options.appConfig,
-    appConfigFiles: nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, 'app.config'),
-    ),
+    appConfigFiles: layerDirs.map(dirs => join(dirs.app, 'app.config')),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -156,12 +171,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
               join(moduleDir, 'dist/runtime/server'),
             ]
           }),
-          ...nuxt.options._layers.map(layer =>
-            relativeWithDot(
-              nuxt.options.buildDir,
-              resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', '**/*.d.ts'),
-            ),
-          ),
+          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
@@ -178,10 +188,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir,
           },
-      ...nuxt.options._layers
-        .map(layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options.dir : layer.config.dir)?.public || 'public'))
-        .filter(dir => existsSync(dir))
-        .map(dir => ({ dir })),
+      ...layerPublicAssetsDirs,
     ],
     prerender: {
       ignoreUnprefixedPublicAssets: true,
@@ -207,7 +214,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt-nightly/dist',
         distDir,
         // Ensure app config files have auto-imports injected even if they are pure .js files
-        ...nuxt.options._layers.map(layer => resolve(layer.config.srcDir, 'app.config')),
+        ...layerDirs.map(dirs => join(dirs.app, 'app.config')),
       ],
       traceInclude: [
         // force include files used in generated code from the runtime-compiler
@@ -264,6 +271,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig && nitroConfig.imports) {
     nitroConfig.imports.imports ||= []
     nitroConfig.imports.imports.push({
@@ -540,20 +548,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Enable runtime compiler client side
   if (nuxt.options.vue.runtimeCompiler) {
-    nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-      if (isClient) {
-        if (Array.isArray(config.resolve!.alias)) {
-          config.resolve!.alias.push({
-            find: 'vue',
-            replacement: 'vue/dist/vue.esm-bundler',
-          })
-        } else {
-          config.resolve!.alias = {
-            ...config.resolve!.alias,
-            vue: 'vue/dist/vue.esm-bundler',
-          }
+    addVitePlugin({
+      name: 'nuxt:vue:runtime-compiler',
+      applyToEnvironment: environment => environment.name === 'client',
+      enforce: 'pre',
+      resolveId (id, importer) {
+        if (id === 'vue') {
+          return this.resolve('vue/dist/vue.esm-bundler', importer, { skipSelf: true })
         }
-      }
+      },
     })
     for (const hook of ['webpack:config', 'rspack:config'] as const) {
       nuxt.hook(hook, (configuration) => {

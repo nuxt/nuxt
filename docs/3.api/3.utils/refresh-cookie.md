@@ -22,12 +22,12 @@ This is useful for updating the `useCookie` ref when we know the new cookie valu
 
 ## Usage
 
-```vue [app.vue]
+```vue [app/app.vue]
 <script setup lang="ts">
 const tokenCookie = useCookie('token')
 
 const login = async (username, password) => {
-  const token = await $fetch('/api/token', { ... }) // Sets `token` cookie on response
+  const token = await $fetch('/api/token', { /** ... */ }) // Sets `token` cookie on response
   refreshCookie('token')
 }
 
@@ -35,12 +35,12 @@ const loggedIn = computed(() => !!tokenCookie.value)
 </script>
 ```
 
-::note{to="/docs/guide/going-further/experimental-features#cookiestore"}
+::note{to="/docs/4.x/guide/going-further/experimental-features#cookiestore"}
 You can enable experimental `cookieStore` option to automatically refresh `useCookie` value when cookie changes in the browser.
 ::
 
 ## Type
 
-```ts
-refreshCookie(name: string): void
+```ts [Signature]
+export function refreshCookie (name: string): void
 ```

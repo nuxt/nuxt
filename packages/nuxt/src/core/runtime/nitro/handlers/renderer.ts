@@ -7,7 +7,7 @@ import {
 } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack/types'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
-import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
+import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
@@ -15,7 +15,7 @@ import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runti
 
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
-import { getEntryIds, getRenderer } from '../utils/renderer/build-files'
+import { getRenderer } from '../utils/renderer/build-files'
 import { payloadCache } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/renderer/payload'
@@ -28,7 +28,12 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
+import entryIds from '#internal/nuxt/entry-ids.mjs'
+// @ts-expect-error virtual file
+import { entryFileName } from '#internal/entry-chunk.mjs'
+// @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { relative } from 'pathe'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -62,6 +67,8 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
+
+let entryPath: string
 
 export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
@@ -132,7 +139,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   if (process.env.NUXT_INLINE_STYLES) {
-    for (const id of await getEntryIds()) {
+    for (const id of entryIds) {
       ssrContext.modules!.add(id)
     }
   }
@@ -174,13 +181,40 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     // Hint nitro to prerender payload for this route
     appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(withoutTrailingSlash(ssrContext.url), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem(ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
+
+  // 0. Add import map for stable chunk hashes
+  if (entryFileName && !NO_SCRIPTS) {
+    let path = entryPath
+    if (!path) {
+      path = buildAssetsURL(entryFileName) as string
+      if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
+        // cache absolute entry path
+        entryPath = path
+      } else {
+        // TODO: provide support for relative paths in assets as well
+        // relativise path
+        path = relative(event.path.replace(/\/[^/]+$/, '/'), joinURL('/', path))
+        if (!/^(?:\/|\.+\/)/.test(path)) {
+          path = `./${path}`
+        }
+      }
+    }
+    ssrContext.head.push({
+      script: [{
+        tagPosition: 'head',
+        tagPriority: -2,
+        type: 'importmap',
+        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
+      }],
+    }, headEntryOptions)
+  }
   // 1. Preload payloads and app manifest
   if (_PAYLOAD_EXTRACTION && !NO_SCRIPTS) {
     ssrContext.head.push({
@@ -294,7 +328,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 })
 
 function normalizeChunks (chunks: (string | undefined)[]) {
-  return chunks.filter(Boolean).map(i => i!.trim())
+  const result: string[] = []
+  for (const _chunk of chunks) {
+    const chunk = _chunk?.trim()
+    if (chunk) {
+      result.push(chunk)
+    }
+  }
+  return result
 }
 
 function joinTags (tags: Array<string | undefined>) {

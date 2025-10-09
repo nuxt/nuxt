@@ -1,4 +1,3 @@
-import { resolve } from 'pathe'
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import VueSSRServerPlugin from '../plugins/vue/server'
@@ -17,10 +16,7 @@ export function vue (ctx: WebpackConfigContext) {
   })
 
   if (ctx.isClient) {
-    ctx.config.plugins!.push(new VueSSRClientPlugin({
-      filename: resolve(ctx.options.buildDir, 'dist/server', `${ctx.name}.manifest.json`),
-      nuxt: ctx.nuxt,
-    }))
+    ctx.config.plugins!.push(new VueSSRClientPlugin({ nuxt: ctx.nuxt }))
   } else {
     ctx.config.plugins!.push(new VueSSRServerPlugin({
       filename: `${ctx.name}.manifest.json`,

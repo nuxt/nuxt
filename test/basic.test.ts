@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
@@ -8,7 +8,7 @@ import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestConte
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
+import { expectNoClientErrors, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
 
@@ -96,6 +96,13 @@ describe('route rules', () => {
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
     expect(html).not.toContain('<script')
+  })
+
+  it('client-side navigation should redirect if hash included', async () => {
+    const { page } = await renderPage('/')
+    await page.waitForLoadState('networkidle')
+    await page.getByTestId('route-rules-redirect').click()
+    await vi.waitFor(() => page.url() === url('/#hello'), { timeout: 5_000 })
   })
 
   it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
@@ -884,7 +891,7 @@ describe('nuxt links', () => {
 
   it('respects external links in edge cases', async () => {
     const html = await $fetch<string>('/nuxt-link/custom-external')
-    const hrefs = html.match(/<a[^>]*href="([^"]+)"/g)
+    const hrefs = html.match(/<a[^>]*href="[^"]+"/g)
     expect(hrefs).toMatchInlineSnapshot(`
       [
         "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
@@ -1664,7 +1671,7 @@ describe('nested suspense', () => {
     expect(text).toContain('Async parent: 1')
 
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
-    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+    const last = nav.match(/\/suspense\/(?<parentType>a?sync)-\d\//)!.groups!
 
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, nav)
 
@@ -1701,7 +1708,7 @@ describe('nested suspense', () => {
     // const text = await parent.innerText()
     expect(text).toContain('Async parent: 1')
 
-    const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+    const first = start.match(/\/suspense\/(?<parentType>a?sync)-\d\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
 
     expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
@@ -2005,7 +2012,7 @@ describe('server components/islands', () => {
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
 
-    const text = (await page.innerText('pre')).replaceAll(/ data-island-uid="([^"]*)"/g, '').replace(/data-island-component="([^"]*)"/g, 'data-island-component')
+    const text = (await page.innerText('pre')).replaceAll(/ data-island-uid="[^"]*"/g, '').replace(/data-island-component="[^"]*"/g, 'data-island-component')
 
     if (isWebpack) {
       expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <div class="sugar-counter" nuxt-client=""> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
@@ -2090,12 +2097,8 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
   it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
-    await expectWithPolling(
-      () => consoleLogs
-        .map(w => w.text).join('\n')
-        .includes('does not have a single root node and will cause errors when navigating between routes'),
-      true,
-    )
+    await expect.poll(() => consoleLogs.map(w => w.text).join('\n'))
+      .toContain('does not have a single root node and will cause errors when navigating between routes')
 
     await page.close()
   })
@@ -2136,8 +2139,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
   it('should work with no overrides', async () => {
     const html: string = await $fetch<string>('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]!
+    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
+      const url = match[1] || match[2]!
       expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
   })
@@ -2167,8 +2170,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch<string>('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]!
+    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
+      const url = match[1] || match[2]!
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
@@ -2183,8 +2186,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch<string>('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]!
+    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
+      const url = match[1] || match[2]!
       expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -2212,10 +2215,22 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch<string>('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]!
+    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
+      const url = match[1] || match[2]!
       expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
     }
+  })
+
+  it.skipIf(isDev() || isWebpack)('should render relative importmap path with relative path', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '',
+        NUXT_APP_BUILD_ASSETS_DIR: 'assets/',
+      },
+    })
+
+    const html = await $fetch<string>('/')
+    expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
   })
 
   it('restore server', async () => {
@@ -2279,7 +2294,7 @@ describe('component islands', () => {
 
     result.head.link ||= []
     result.head.style ||= []
-    result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
+    result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
@@ -2343,7 +2358,7 @@ describe('component islands', () => {
     result.props = {}
     result.components = {}
     result.slots = {}
-    result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
+    result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -2372,7 +2387,7 @@ describe('component islands', () => {
       const { components } = result
       result.components = {}
       result.slots = {}
-      result.html = result.html.replace(/data-island-component="([^"]*)"/g, 'data-island-component')
+      result.html = result.html.replace(/data-island-component="[^"]*"/g, 'data-island-component')
 
       const teleportsEntries = Object.entries(components || {})
 
@@ -2409,7 +2424,7 @@ describe('component islands', () => {
         obj: { foo: 42, bar: false, me: 'hi' },
       }),
     }))
-    result.html = result.html.replace(/ data-island-uid="([^"]*)"/g, '')
+    result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
 
     if (isDev()) {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
@@ -2528,6 +2543,12 @@ describe('component islands', () => {
     await islandPageRequest
     await page.locator('#server-page').waitFor()
   })
+
+  it('should show error on 404 error for server pages during client navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.click('[href="/server-components/lost-page"]')
+    await page.getByText('This is the error page').waitFor()
+  })
 })
 
 describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
@@ -2555,7 +2576,8 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     })
   })
 
-  it('does not fetch a prefetched payload', async () => {
+  // TODO: looks like this test is flaky
+  it('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
@@ -2594,8 +2616,6 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(isDev() ? 1 : 0)
 
     await page.close()
-  }, {
-    retry: 3, // looks like this test is flaky
   })
 
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
@@ -2811,10 +2831,10 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
         style.innerHTML &&=
-            (style.innerHTML as string)
-              .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
-              // Vite 6 enables CSS minify by default for SSR
-              .replace(/blue/, '#00f')
+          (style.innerHTML as string)
+            .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+          // Vite 6 enables CSS minify by default for SSR
+            .replace(/blue/, '#00f')
         style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
       }
     }
@@ -3064,7 +3084,7 @@ describe('namespace access to useNuxtApp', () => {
 describe('nuxt-time', () => {
   it('ssr', async () => {
     const html = await $fetch<string>('/components/nuxt-time')
-    const snap = html.match(/<time[^>]*data-testid="fixed"[^>]*>([^<]*)<\/time>/)?.[0].replace(/ data-prehydrate-id="[^"]*"/g, '')
+    const snap = html.match(/<time[^>]*data-testid="fixed"[^>]*>[^<]*<\/time>/)?.[0].replace(/ data-prehydrate-id="[^"]*"/g, '')
     expect(snap).toContain(
       '<time data-month="long" data-day="numeric" datetime="2023-02-11T08:24:08.396Z" data-testid="fixed">',
     )
