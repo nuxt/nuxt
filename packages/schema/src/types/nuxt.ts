@@ -8,6 +8,7 @@ import type { NuxtOptions } from './config'
 import type { NuxtDebugContext } from './debug'
 import type { Awaitable, MaybeArray } from '../utils/definition.ts'
 import type { parseAndWalk } from 'oxc-walker'
+import type { ParsedStaticImport } from 'mlly'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -81,19 +82,33 @@ export interface ScanPluginHandlerContext {
   /**
    * The string contents of the file being scanned.
    */
-  input: string
+  code: string
   /**
    * The global Nuxt instance.
    */
   nuxt: Nuxt
+  /**
+   * A map of auto-imported identifiers to their source module.
+   * The source paths DO NOT have aliases resolved.
+   */
+  autoImportsToSources: Map<string, string>
 }
 
+/**
+ * A context object scoped to the current file, shared across all plugins that scan it.
+ */
 interface ScanPluginHandlerThisContext {
   /**
    * A shared walk function from `oxc-walker` that re-uses the same AST in all plugins for the same file.
    * Only the first invocation of this function will parse the file.
    */
   walkParsed: (options: Parameters<typeof parseAndWalk>[2]) => ReturnType<typeof parseAndWalk>
+  /**
+   * A shared utility to get the parsed static imports from `mlly` that re-uses the same result in all plugins
+   * for the same file.
+   * Only the first invocation of this function will parse the file.
+   */
+  getParsedStaticImports: () => ParsedStaticImport[]
 }
 
 type ScanPluginHandler = (this: ScanPluginHandlerThisContext, ctx: ScanPluginHandlerContext) => Awaitable<void>

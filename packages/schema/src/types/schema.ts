@@ -39,7 +39,7 @@ import type { SerializableHtmlAttributes } from './head'
 import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteConfig } from './config'
 import type { ImportsOptions } from './imports'
 import type { ComponentsOptions } from './components'
-import type { KeyedComposable, NuxtCompilerOptions } from './compiler.ts'
+import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
 
 export interface ConfigSchema {
   /**
@@ -502,14 +502,20 @@ export interface ConfigSchema {
    * Build time optimization configuration.
    */
   optimization: {
-  /**
-   * Functions to inject a key for.
-   *
-   * As long as the number of arguments passed to the function is less than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. You will need to take steps to handle this additional key.
-   * The key will be unique based on the location of the function being invoked within the file.
-   *
-   */
-    keyedComposables: KeyedComposable[]
+    /**
+     * Functions to inject a key for.
+     *
+     * As long as the number of arguments passed to the function is lower than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. You will need to take steps to handle this additional key.
+     * The key will be unique based on the location of the function being invoked within the file.
+     *
+     */
+    keyedComposables: KeyedFunction[]
+    /**
+     * Factories for functions that should be registered for automatic key injection.
+     *
+     * @see keyedComposables
+     */
+    keyedComposableFactories: KeyedFunctionFactory[]
 
     /**
      * Tree shake code from specific builds.

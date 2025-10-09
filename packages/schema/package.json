@@ -84,7 +84,8 @@
     "ufo": "1.6.1"
   },
   "peerDependencies": {
-    "oxc-walker": "^0.4.0"
+    "oxc-walker": "^0.5.2",
+    "mlly": "^1.7.4"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

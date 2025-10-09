@@ -230,6 +230,14 @@ export interface NuxtHooks {
    */
   'imports:extend': (imports: Import[]) => HookResult
   /**
+   * Called every time after all imports are generated and deduplicated.
+   * @remarks
+   * - Do NOT modify the `imports` array in this hook. Modifying it has no effect.
+   * @param imports Array containing the generated and deduplicated imports provided by unimport
+   * @returns Promise
+   */
+  'imports:generated': (imports: Import[]) => HookResult
+  /**
    * Called when the [unimport](https://github.com/unjs/unimport) context is created.
    * @param context The Unimport context
    * @returns Promise

@@ -31,8 +31,15 @@ export function normalizeExtension (input: string) {
   return input.replace(LEADING_DOT_RE, '')
 }
 
-export function isJavascriptExtension (ext: string) {
-  return JS_EXTENSIONS.includes(ext)
+export function isWhitespace (char: number | string | undefined | null): boolean {
+  const c = typeof char === 'string' ? char.charCodeAt(0) : char
+  // ' ' (32), '\t' (9), '\n' (10), '\r' (13), '\f' (12)
+  return c === 32 || c === 9 || c === 10 || c === 13 || c === 12
+}
+
+export function isJavascriptExtension (path: string) {
+  if (!path) { return false }
+  return JS_EXTENSIONS.some(ext => path.endsWith(`.${ext}`))
 }
 
 export const JS_EXTENSIONS = ['js', 'ts', 'tsx', 'jsx', 'mjs', 'cjs', 'mts', 'cts']

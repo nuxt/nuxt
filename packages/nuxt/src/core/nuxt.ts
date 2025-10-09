@@ -46,7 +46,6 @@ import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
-import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
@@ -548,18 +547,6 @@ async function initNuxt (nuxt: Nuxt) {
     await installModule(key, options)
   }
 
-  // Add keys for useFetch, useAsyncData, etc.
-
-  const normalizedKeyedComposables = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
-    ...rest,
-    source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
-  })))
-
-  addBuildPlugin(ComposableKeysPlugin({
-    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    composables: normalizedKeyedComposables,
-  }))
-
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
@@ -779,6 +766,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
+  options._modules.push(compilerModule)
   options._modules.push([importsModule, {
     transform: {
       include: options._layers
@@ -795,9 +783,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
-
-  // add the compiler module as the last one so that all previous ones can hook into it
-  options._modules.push(compilerModule)
 
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')

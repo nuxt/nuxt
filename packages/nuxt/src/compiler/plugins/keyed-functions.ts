@@ -1,0 +1,301 @@
+import { pathToFileURL } from 'node:url'
+import { createUnplugin } from 'unplugin'
+import MagicString from 'magic-string'
+import { hash } from 'ohash'
+import { parseQuery, parseURL } from 'ufo'
+import { parse } from 'pathe'
+import { camelCase } from 'scule'
+import escapeRE from 'escape-string-regexp'
+import { findStaticImports, parseStaticImport } from 'mlly'
+import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
+import { resolveAlias } from '@nuxt/kit'
+import type { KeyedFunction } from '@nuxt/schema'
+import { isWhitespace, logger } from '../../utils.ts'
+import type { Node } from 'oxc-parser'
+
+import {
+  type FunctionCallMetadata,
+  parseStaticExportIdentifiers,
+  parseStaticFunctionCall,
+  processImports,
+} from '../parse-utils.ts'
+
+interface KeyedFunctionsOptions {
+  sourcemap: boolean
+  keyedFunctions: KeyedFunction[]
+}
+
+const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
+const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
+const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
+const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
+
+export function shouldTransformFile (id: string, extensions: RegExp | readonly string[]) {
+  const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  return !NUXT_LIB_RE.test(pathname)
+    && (
+      extensions instanceof RegExp
+        ? extensions.test(pathname)
+        : new RegExp(`\\.(${extensions.join('|')})$`).test(pathname)
+    )
+    && parseQuery(search).type !== 'style' && !parseQuery(search).macro
+}
+
+export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
+  // DO NOT USE IN TRANSFORM - this is a global copy that doesn't include local import names
+  // - the `source`s have resolved aliases
+  const namesToFunctionMeta = new Map<string, KeyedFunction>()
+
+  for (const f of options.keyedFunctions) {
+    let functionName = f.name
+
+    if (f.name === 'default') {
+      // TODO: remove this check & warning when `source` is required
+      if (!f.source) {
+        if (import.meta.dev) {
+          logger.warn(`[nuxt:compiler] [keyed-functions] Function with name \`default\` is missing a \`source\`. Skipping it.`)
+        }
+        continue
+      }
+
+      functionName = camelCase(parse(f.source).name)
+    }
+
+    if (import.meta.dev) {
+      const existingEntry = namesToFunctionMeta.get(functionName)
+      if (existingEntry?.source && existingEntry.source === f.source) {
+        logger.warn(`[nuxt:compiler] [keyed-functions] Duplicate function name \`${functionName}\`${functionName !== f.name ? ` defined as \`${f.name}\`` : ''} with the same source \`${f.source}\` found. Overwriting the existing entry.`)
+      }
+    }
+
+    namesToFunctionMeta.set(functionName, {
+      ...f,
+      // TODO: make `source` required
+      source: typeof f.source === 'string' ? resolveAlias(f.source) : undefined,
+    })
+  }
+
+  // resolved paths of all the sources
+  const sources = new Set<string>()
+  for (const f of namesToFunctionMeta.values()) {
+    // TODO: remove check when `source` is required
+    if (f.source && typeof f.source === 'string') {
+      sources.add(f.source)
+    }
+  }
+
+  const KEYED_FUNCTIONS_RE = new RegExp(`\\b(${[...namesToFunctionMeta.keys()].map(f => escapeRE(f)).join('|')})\\b`)
+
+  return {
+    name: 'nuxt:compiler:keyed-functions',
+    enforce: 'post',
+    transformInclude: id => shouldTransformFile(id, SUPPORTED_EXT_RE),
+    transform: {
+      filter: {
+        code: { include: KEYED_FUNCTIONS_RE },
+      },
+      handler (code, id) {
+        const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
+
+        const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)))
+
+        // consider exports when processing a file that exports a keyed function
+        const shouldConsiderExports = sources.has(id)
+
+        // all local names that refer to a keyed function
+        // mapped to their exported names
+        const localFunctionNameToExportedName = new Map<string, string>()
+
+        const localFunctionNames = new Set<string>(namesToFunctionMeta.keys())
+        for (const [localName, directImport] of directImports) {
+          // add import names that refer to keyed functions
+          if (namesToFunctionMeta.has(directImport.originalName)) {
+            localFunctionNames.add(localName)
+          }
+        }
+
+        function getFunctionMetaByLocalName (localName: string | undefined) {
+          if (!localName) { return }
+          // check exports (higher priority)
+          const exportedName = localFunctionNameToExportedName.get(localName)
+          if (exportedName) {
+            return namesToFunctionMeta.get(exportedName)
+          }
+          // check static direct imports
+          const directImport = directImports.get(localName)
+          if (directImport) {
+            return namesToFunctionMeta.get(directImport.originalName)
+          }
+
+          // check local names
+          return namesToFunctionMeta.get(localName)
+        }
+
+        const s = new MagicString(code)
+        let count = 0
+
+        const scopeTracker = new ScopeTracker({
+          preserveExitedScopes: true,
+        })
+
+        // pre-pass to collect hoisted identifiers & exports
+        const { program } = parseAndWalk(code, id, {
+          scopeTracker,
+          enter (node) {
+            if (!shouldConsiderExports) { return }
+            if (node.type !== 'ExportNamedDeclaration' && node.type !== 'ExportDefaultDeclaration') { return }
+
+            const result = parseStaticExportIdentifiers(node, KEYED_FUNCTIONS_RE)
+            for (const exportMeta of result) {
+              const { localName, exportedName } = exportMeta
+              // TODO: handle `default` export
+              // the function cannot handle local identifier names from exports yet,
+              // so we need to use the `exportedName` instead
+              const fnMeta = getFunctionMetaByLocalName(exportedName)
+              if (!fnMeta || fnMeta.source !== id || fnMeta.name !== exportedName) { continue }
+              localFunctionNameToExportedName.set(localName, fnMeta.name)
+            }
+          },
+        })
+
+        scopeTracker.freeze()
+
+        // add exported local identifiers that refer to keyed functions
+        for (const localName of localFunctionNameToExportedName.keys()) {
+          localFunctionNames.add(localName)
+        }
+
+        const LOCAL_FUNCTION_NAMES_RE = new RegExp(`\\b(${[...localFunctionNames].map(f => escapeRE(f)).join('|')})\\b`)
+
+        function processKeyedFunction (
+          walkContext: ThisParameterType<NonNullable<Parameters<typeof walk>[1]['enter']>>, // TODO: export type from `oxc-walker`
+          node: Node,
+          handler: (ctx: { parsedCall: FunctionCallMetadata, fnMeta: KeyedFunction }) => void,
+        ) {
+          if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') { return false }
+          const parsedCall = parseStaticFunctionCall(node, LOCAL_FUNCTION_NAMES_RE)
+          if (!parsedCall) { return false }
+          const fnMeta = getFunctionMetaByLocalName(parsedCall.name)
+          if (!fnMeta) {
+            logger.error(`[nuxt:compiler] [keyed-functions] No function found for \`${parsedCall.name}\` in file \`${id}\`. This is a Nuxt bug.`)
+            return
+          }
+
+          const functionScopeTrackerNode = scopeTracker.getDeclaration(parsedCall.name)
+
+          // TODO
+          const autoImportedSource: string | undefined = undefined
+          const resolvedSource = fnMeta.source
+          // TODO: remove ternary when `source` is required
+          const namespacedImportMeta = resolvedSource ? namespaces.get(resolvedSource) : undefined
+
+          // skip if there are more arguments than allowed
+          if (
+            parsedCall.callExpression.arguments.length >= fnMeta.argumentLength
+            && !parsedCall.callExpression.arguments.some(a => a.type === 'SpreadElement')
+          ) {
+            return
+          }
+
+          // the function is called directly
+          // `useKeyed()`
+          if (!parsedCall.namespace && (
+            // and the function is imported directly
+            ((
+              functionScopeTrackerNode?.type === 'Import'
+              && functionScopeTrackerNode.importNode.importKind !== 'type'
+              && (
+                // import { useKeyed } from '...'
+                (
+                  functionScopeTrackerNode.node.type === 'ImportSpecifier'
+                  && functionScopeTrackerNode.node.importKind !== 'type'
+                )
+                // import useKeyed from '...'
+                || (
+                  functionScopeTrackerNode.node.type === 'ImportDefaultSpecifier'
+                  && fnMeta.name === 'default'
+                )
+              )
+            ) && resolvedSource && (resolveAlias(functionScopeTrackerNode.importNode.source.value) === resolvedSource))
+            // or the function is auto-imported from a supported source
+            || (!functionScopeTrackerNode && autoImportedSource && resolveAlias(autoImportedSource) === resolvedSource)
+            // or the function is defined in the same file, and we're considering the root level scope declaration
+            || (localFunctionNameToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
+          )) {
+            handler({ parsedCall, fnMeta })
+            walkContext.skip()
+            return
+          }
+
+          const namespaceScopeTrackerNode = parsedCall.namespace ? scopeTracker.getDeclaration(parsedCall.namespace) : null
+
+          // the function is called as a member of a namespace import
+          // `namespace.useKeyed()`
+          if (
+            parsedCall.namespace && namespacedImportMeta && namespacedImportMeta.namespaces.has(parsedCall.namespace)
+            // the namespace is not shadowed
+            && namespaceScopeTrackerNode?.type === 'Import' && namespaceScopeTrackerNode.node.type === 'ImportNamespaceSpecifier'
+          ) {
+            handler({ parsedCall, fnMeta })
+            // prevent descending into CallExpression of a ChainExpression
+            walkContext.skip()
+            return
+          }
+        }
+
+        walk(program, {
+          scopeTracker,
+          enter (node) {
+            processKeyedFunction(this, node, ({ parsedCall, fnMeta }) => {
+              // skip key injection for Nuxt internal composables when they already have a key
+              switch (parsedCall.name) {
+                case 'useState':
+                  if (
+                    stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
+                    && fnMeta.source === resolveAlias('#app/composables/state')
+                  ) { return }
+                  break
+                case 'useFetch':
+                case 'useLazyFetch':
+                  if (
+                    stringTypes.includes(parsedCall.callExpression.arguments[1]?.type)
+                    && fnMeta.source === resolveAlias('#app/composables/fetch')
+                  ) { return }
+                  break
+
+                case 'useAsyncData':
+                case 'useLazyAsyncData':
+                  if (
+                    stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
+                    && fnMeta.source === resolveAlias('#app/composables/asyncData')
+                  ) { return }
+                  break
+              }
+
+              // inject a key to the function call
+              let i = codeIndex + parsedCall.callExpression.end - 2 // char before the closing `)`
+              while (i >= codeIndex + parsedCall.callExpression.start && isWhitespace(code[i])) {
+                i--
+              }
+              const endsWithComma = code[i] === ','
+
+              s.appendLeft(
+                codeIndex + parsedCall.callExpression.end - 1,
+                (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${id}-${++count}`).slice(0, 10) + '\'',
+              )
+            })
+          },
+        })
+
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
+          }
+        }
+      },
+    },
+  }
+})
