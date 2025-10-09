@@ -180,6 +180,7 @@ const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.v
   prefetch: false,
   preload: false,
   mode: 'all' as const,
+  shortPath: opts.filePath,
   priority: 0,
   meta: {},
   ...opts,

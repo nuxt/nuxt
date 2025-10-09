@@ -35,6 +35,7 @@ describe('addComponentExports', () => {
     await mockHooks.callHook('components:extend', components)
     for (const c of components) {
       c.filePath = relative(resolver.resolve('./components-fixture'), c.filePath)
+      c.shortPath = relative(resolver.resolve('./components-fixture'), c.shortPath)
     }
     expect(components).toMatchInlineSnapshot(`
       [
@@ -52,6 +53,7 @@ describe('addComponentExports', () => {
           "prefix": "test",
           "preload": false,
           "priority": 0,
+          "shortPath": "Named",
         },
         {
           "chunkName": "components/test",
@@ -67,6 +69,7 @@ describe('addComponentExports', () => {
           "prefix": "test",
           "preload": false,
           "priority": 0,
+          "shortPath": "Named",
         },
       ]
     `)

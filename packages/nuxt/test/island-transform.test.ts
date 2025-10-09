@@ -11,6 +11,7 @@ const getComponents = () => [{
   kebabName: 'hello-world',
   chunkName: 'components/hello-world',
   export: 'default',
+  shortPath: '',
   prefetch: false,
   preload: false,
 }] as Component[]
