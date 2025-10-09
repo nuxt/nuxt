@@ -150,11 +150,11 @@ describe('extract async data handlers plugin', () => {
       `
       const result = await transform(code)
 
-      expect(result).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)(data)))"`)
+      expect(result).toMatchInlineSnapshot(`"const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`)
 
       expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(
         `
-        "export default async function (data) { 
+        "export default async function () { 
                   const response = await $fetch('/api/data')
                   return response.data
                  }"
@@ -273,6 +273,33 @@ describe('extract async data handlers plugin', () => {
   })
 
   describe('variable scope handling', () => {
+    it('should not capture property names as variables (regression test for TDZ errors)', async () => {
+      const transform = createTransform()
+      // This test case previously caused TDZ ReferenceError because property names
+      // like "data" in "response.data" or "foo" in "{ foo: 42 }" were incorrectly
+      // treated as variable references and captured as parameters
+      const code = `
+        const { data } = await useAsyncData('test', async () => {
+          const response = await $fetch('/api')
+          const obj = { foo: response.data.bar }
+          return obj.foo
+        })
+      `
+      const result = await transform(code)
+
+      // Should not capture any parameters (no external variable references)
+      expect(result).toMatchInlineSnapshot(
+        `"const { data } = await useAsyncData('test', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))"`,
+      )
+      expect(transform.load('/app/async-data-chunk-0.js')).toMatchInlineSnapshot(`
+        "export default async function () { 
+                  const response = await $fetch('/api')
+                  const obj = { foo: response.data.bar }
+                  return obj.foo
+                 }"
+      `)
+    })
+
     it('should capture variables from outer scope', async () => {
       const transform = createTransform()
       const code = `

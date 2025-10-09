@@ -78,9 +78,29 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
             // Walk the function body to find all identifiers
             walk(fetcherFunction.body, {
               scopeTracker,
-              enter (innerNode) {
+              enter (innerNode, parent) {
                 if (innerNode.type !== 'Identifier') {
                   return
+                }
+
+                // Skip identifiers that are property keys (not variable references)
+                if (parent) {
+                  // Skip non-computed member expression properties (e.g., the "data" in response.data)
+                  if (parent.type === 'MemberExpression' && parent.property === innerNode && parent.computed === false) {
+                    return
+                  }
+                  // Skip non-computed object property keys (e.g., { data: value })
+                  if (parent.type === 'Property' && parent.key === innerNode && parent.computed === false) {
+                    return
+                  }
+                  // Skip non-computed class method keys
+                  if (parent.type === 'MethodDefinition' && parent.key === innerNode && parent.computed === false) {
+                    return
+                  }
+                  // Skip non-computed property definition keys
+                  if (parent.type === 'PropertyDefinition' && parent.key === innerNode && parent.computed === false) {
+                    return
+                  }
                 }
 
                 const declaration = scopeTracker.getDeclaration(innerNode.name)
