@@ -363,6 +363,9 @@ importers:
 
   packages/nuxt:
     dependencies:
+      '@dxup/nuxt':
+        specifier: ^0.0.5
+        version: 0.0.5
       '@nuxt/cli':
         specifier: 3.29.0
         version: 3.29.0(magicast@0.3.5)
@@ -1506,6 +1509,12 @@ packages:
   '@discoveryjs/json-ext@0.5.7':
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
     engines: {node: '>=10.0.0'}
+
+  '@dxup/nuxt@0.0.5':
+    resolution: {integrity: sha512-0wPPanf1h7ds1LmH9T+JIPE+wvJRTQ2aM0Hm6W+EsGs+XknRvdkGozQtZcN7DmEo4Y4lrg6oIDy5vvckA121CQ==}
+
+  '@dxup/unimport@0.0.1':
+    resolution: {integrity: sha512-52a/xqcBVD3u1Cf0pLL9n3H0WWX98tnPq0aWFrobok1H1tXpGn6+Gw6Dha/82r4aYdlnMhMcCrhNKvtWkGvbtQ==}
 
   '@emnapi/core@1.5.0':
     resolution: {integrity: sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg==}
@@ -8870,6 +8879,15 @@ snapshots:
     optional: true
 
   '@discoveryjs/json-ext@0.5.7': {}
+
+  '@dxup/nuxt@0.0.5':
+    dependencies:
+      '@dxup/unimport': 0.0.1
+      '@nuxt/kit': link:packages/kit
+      chokidar: 4.0.3
+      pathe: 2.0.3
+
+  '@dxup/unimport@0.0.1': {}
 
   '@emnapi/core@1.5.0':
     dependencies:
