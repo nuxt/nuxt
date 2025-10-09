@@ -741,6 +741,12 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
+      mlly:
+        specifier: ^1.7.4
+        version: 1.8.0
+      oxc-walker:
+        specifier: ^0.5.2
+        version: 0.5.2(oxc-parser@0.94.0)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3

@@ -2,10 +2,9 @@ import { addBuildPlugin, addCompilerScanPlugin, defineNuxtModule, resolveFiles, 
 import type { CompilerScanDir, NuxtCompilerOptions, ScanPlugin, ScanPluginFilter } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils'
-import { matchWithStringOrRegex } from './utils'
+import { createScanPluginContext, matchWithStringOrRegex } from './utils'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin } from './plugins/keyed-function-factories'
-import { createScanPluginContext } from './parse-utils'
 import { distDir } from '../dirs.ts'
 import type { Import } from 'unimport'
 import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
@@ -62,7 +61,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       // the normalized scan directories, which include only valid directories and have unique paths
       let scanDirs: Required<CompilerScanDir>[] = []
       // the scan dirs that are accessible though hooks and have not been normalized yet + may contain duplicates
-      const _scanDirs: NonNullable<NuxtCompilerOptions['dirs']> = []
+      const _scanDirs: NonNullable<NuxtCompilerOptions['dirs']> = _options.dirs || []
 
       function addScanDir (resolvedPath: string, additionalData?: Omit<CompilerScanDir, 'path'>) {
         _scanDirs.push({ ...additionalData, path: resolvedPath })
