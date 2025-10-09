@@ -127,13 +127,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     esbuild: {
       options: { exclude: excludePattern },
     },
-    analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
-      ? {
-          template: 'treemap',
-          projectRoot: nuxt.options.rootDir,
-          filename: join(nuxt.options.analyzeDir, '{name}.html'),
-        }
-      : false,
+    // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
     scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: {
       entry: resolve(distDir, 'core/runtime/nitro/handlers/renderer'),
