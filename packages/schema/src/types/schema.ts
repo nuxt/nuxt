@@ -29,7 +29,6 @@ import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
-import type { EnvironmentOptions } from 'vite'
 
 import type { RouterConfigSerializable } from './router'
 import type { NuxtHooks } from './hooks'
