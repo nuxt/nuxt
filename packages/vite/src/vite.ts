@@ -3,7 +3,6 @@ import * as vite from 'vite'
 import { basename, dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
-import replacePlugin from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -17,6 +16,7 @@ import { resolveCSSOptions } from './css'
 import { logLevelMap } from './utils/logger'
 import { SSRStylesPlugin } from './plugins/ssr-styles'
 import { PublicDirsPlugin } from './plugins/public-dirs'
+import { ReplacePlugin } from './plugins/replace'
 import { distDir } from './dirs'
 
 export interface ViteBuildContext {
@@ -146,6 +146,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             dev: nuxt.options.dev,
             baseURL: nuxt.options.app.baseURL,
           }),
+          ReplacePlugin(),
         ],
         server: {
           watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
@@ -212,24 +213,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   await nuxt.callHook('vite:extend', ctx)
-
-  nuxt.hook('vite:extendConfig', async (config) => {
-    const replaceOptions = Object.create(null)
-
-    for (const key in config.define!) {
-      if (key.startsWith('import.meta.')) {
-        replaceOptions[key] = config.define![key]
-      }
-    }
-
-    // @ts-expect-error Rolldown-specific check
-    if (vite.rolldownVersion) {
-      const { replacePlugin } = await import('rolldown/experimental')
-      config.plugins!.push(replacePlugin(replaceOptions))
-    } else {
-      config.plugins!.push(replacePlugin({ ...replaceOptions, preventAssignment: true }))
-    }
-  })
 
   if (!nuxt.options.dev) {
     const chunksWithInlinedCSS = new Set<string>()
