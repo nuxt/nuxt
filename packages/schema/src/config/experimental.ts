@@ -807,5 +807,10 @@ export default defineResolvers({
       },
     },
     entryImportMap: true,
+    extractAsyncDataHandlers: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
   },
 })

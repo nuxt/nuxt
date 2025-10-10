@@ -49,9 +49,9 @@ import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
+import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers'
 import { VirtualFSPlugin } from './plugins/virtual'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
-import { resolveModulePath } from 'exsolve'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -364,6 +364,14 @@ async function initNuxt (nuxt: Nuxt) {
     addBuildPlugin(DevOnlyPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
     }))
+
+    // Extract async data handlers into separate chunks for better performance
+    if (nuxt.options.experimental.extractAsyncDataHandlers) {
+      addBuildPlugin(ExtractAsyncDataHandlersPlugin({
+        sourcemap: !!nuxt.options.sourcemap.client,
+        rootDir: nuxt.options.rootDir,
+      }), { server: false })
+    }
   }
 
   if (nuxt.options.dev) {
