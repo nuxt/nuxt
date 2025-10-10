@@ -118,6 +118,24 @@ export default defineResolvers({
           },
         },
       },
+      warmup: {
+        ssrFiles: {
+          $resolve: async (val, get) => {
+            if (val) {
+              return val
+            }
+            return (await get('vite.warmupEntry')) ? [await get('vite.entry')] : []
+          },
+        },
+        clientFiles: {
+          $resolve: async (val, get) => {
+            if (val) {
+              return val
+            }
+            return (await get('vite.warmupEntry')) ? [await get('vite.entry')] : []
+          },
+        },
+      },
     },
     cacheDir: {
       $resolve: async (val, get) => typeof val === 'string' ? val : resolve(await get('rootDir'), 'node_modules/.cache/vite'),
