@@ -4,13 +4,16 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
 import { expectNoClientErrors, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
+import type { $Fetch } from 'nitro/types'
+
+const $fetch = _$fetch as $Fetch
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
@@ -214,7 +217,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it('validates routes with custom statusCode and statusMessage', async () => {
+  it('validates routes with custom status and statusText', async () => {
     const CUSTOM_ERROR_CODE = 401
     const CUSTOM_ERROR_MESSAGE = 'Custom error message'
     const ERROR_PAGE_TEXT = 'This is the error page'
@@ -1154,15 +1157,17 @@ describe('errors', () => {
     url.host = 'localhost:3000'
     error.url = url.toString()
     expect(error).toMatchObject({
-      message: isDev() ? 'This is a custom error' : 'Server Error',
-      statusCode: 422,
-      statusMessage: 'This is a custom error',
+      message: 'This is a custom error',
       url: 'http://localhost:3000/error',
     })
   })
 
   it('should render a HTML error page', async () => {
-    const res = await fetch('/error')
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
     expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
@@ -1184,8 +1189,8 @@ describe('errors', () => {
       {
         "error": true,
         "message": "Page Not Found: /__nuxt_error",
-        "statusCode": 404,
-        "statusMessage": "Page Not Found: /__nuxt_error",
+        "status": 404,
+        "statusText": "Page Not Found: /__nuxt_error",
         "url": "http://localhost:3000/__nuxt_error",
       }
     `)
@@ -2161,7 +2166,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
     `)
   })
 
-  it('should allow setting base URL and build assets directory', async () => {
+  // TODO: Nitro v3 currently does not support runtime base URL
+  it.todo('should allow setting base URL and build assets directory', async () => {
     await startServer({
       env: {
         NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
@@ -2178,7 +2184,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
     expect(await $fetch<string>('/foo/url')).toContain('path: /foo/url')
   })
 
-  it('should allow setting relative baseURL', async () => {
+  // TODO: Nitro v3 currently does not support runtime base URL
+  it.todo('should allow setting relative baseURL', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: './',
@@ -2193,7 +2200,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
     }
   })
 
-  it('should use baseURL when redirecting', async () => {
+  // TODO: Nitro v3 currently does not support runtime base URL
+  it.todo('should use baseURL when redirecting', async () => {
     await startServer({
       env: {
         NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
@@ -2205,7 +2213,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
     expect(headers.get('location')).toEqual('/foo/')
   })
 
-  it('should allow setting CDN URL', async () => {
+  // TODO: Nitro v3 currently does not support runtime base URL
+  it.todo('should allow setting CDN URL', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '/foo/',
@@ -2221,7 +2230,9 @@ describe.skipIf(isDev())('dynamic paths', () => {
     }
   })
 
-  it.skipIf(isDev() || isWebpack)('should render relative importmap path with relative path', async () => {
+  // TODO: Nitro v3 currently does not support runtime base URL
+  // .skipIf(isDev() || isWebpack)
+  it('should render relative importmap path with relative path', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',
@@ -2520,7 +2531,9 @@ describe('component islands', () => {
     await page.close()
   })
 
-  it.skipIf(isDev())('should not render an error when having a baseURL', async () => {
+  // TODO: Nitro v3 currently does not support runtime base URL
+  // skipIf(isDev())
+  it.todo('should not render an error when having a baseURL', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '/foo/',

@@ -2,7 +2,8 @@ import type { MatcherExport, RouteMatcher } from 'radix3'
 import { createMatcherFromExport, createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
 import type { H3Event } from 'h3'
-import type { NitroRouteRules } from 'nitropack/types'
+import { $fetch } from 'ofetch'
+import type { NitroRouteRules } from 'nitro/types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -59,7 +60,7 @@ export async function getRouteRules (options: { path: string }): Promise<Record<
 /** @deprecated use `getRouteRules({ path })` instead */
 export async function getRouteRules (url: string): Promise<Record<string, any>>
 export async function getRouteRules (arg: string | H3Event | { path: string }) {
-  const path = typeof arg === 'string' ? arg : arg.path
+  const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   if (import.meta.server) {
     useNuxtApp().ssrContext!._preloadManifest = true
     const _routeRulesMatcher = toRouteMatcher(
