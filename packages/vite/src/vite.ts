@@ -2,11 +2,10 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
+import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
 import { sanitizeFilePath } from 'mlly'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
-import { readTSConfig, resolveTSConfig } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 
 import { buildClient } from './client'
@@ -167,19 +166,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   if (!nuxt.options.dev) {
     ctx.config.server!.watch = undefined
     ctx.config.build!.watch = undefined
-  }
-
-  // Add type-checking
-  if (!nuxt.options.test && (nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
-    const tsconfigPath = await resolveTSConfig(nuxt.options.rootDir)
-    const supportsProjects = await readTSConfig(tsconfigPath).then(r => !!(r.references?.length))
-    const checker = await import('vite-plugin-checker').then(r => r.default)
-    addVitePlugin(checker({
-      vueTsc: {
-        tsconfigPath,
-        buildMode: supportsProjects,
-      },
-    }), { server: nuxt.options.ssr })
   }
 
   await nuxt.callHook('vite:extend', ctx)

@@ -20,6 +20,7 @@ import { createViteLogger } from './utils/logger'
 import { StableEntryPlugin } from './plugins/stable-entry'
 import { AnalyzePlugin } from './plugins/analyze'
 import { DevServerPlugin } from './plugins/dev-server'
+import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker'
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const nodeCompat = nuxt.options.experimental.clientNodeCompat
@@ -136,6 +137,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       StableEntryPlugin(nuxt),
       AnalyzePlugin(nuxt),
       DevServerPlugin(nuxt),
+      VitePluginCheckerPlugin(nuxt, 'client'),
     ],
     appType: 'custom',
     server: {

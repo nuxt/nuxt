@@ -14,6 +14,7 @@ import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
 import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
+import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker'
 
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
@@ -29,6 +30,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       VueFeatureFlagsPlugin(nuxt),
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
+      VitePluginCheckerPlugin(nuxt, 'ssr'),
     ],
     define: {
       'process.server': true,
