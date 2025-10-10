@@ -169,6 +169,16 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   await nuxt.callHook('vite:serverCreated', ssrServer, { isClient: false, isServer: true })
 
+  // Invalidate virtual modules when templates are re-generated
+  nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+    await Promise.all(changedTemplates.map(async (template) => {
+      for (const mod of ssrServer.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
+        ssrServer.moduleGraph.invalidateModule(mod)
+        await ssrServer.reloadModule(mod)
+      }
+    }))
+  })
+
   // Initialize plugins
   await ssrServer.pluginContainer.buildStart({})
 
