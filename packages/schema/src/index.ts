@@ -1,6 +1,7 @@
 // Types
 export type { NuxtCompatibility, NuxtCompatibilityIssue, NuxtCompatibilityIssues } from './types/compatibility'
 export type { Component, ComponentMeta, ComponentsDir, ComponentsOptions, ScanDir } from './types/components'
+export type { KeyedFunction } from './types/compiler'
 export type { AppConfig, AppConfigInput, CustomAppConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigLayer, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeValue, SchemaDefinition, UpperSnakeCase, ViteConfig, ViteOptions } from './types/config'
 export type { GenerateAppOptions, HookResult, ImportPresetWithDeprecation, NuxtAnalyzeMeta, NuxtHookName, NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, TSReference, VueTSConfig, WatchEvent } from './types/hooks'
 export type { ImportsOptions } from './types/imports'

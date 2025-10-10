@@ -1,10 +1,10 @@
-import { existsSync, statSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
-import { logger } from '../utils'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils'
 import { lazyHydrationMacroPreset } from '../imports/presets'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
@@ -19,7 +19,6 @@ import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macr
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 const SLASH_SEPARATOR_RE = /[\\/]/
 /**
  * Compare two directory entries by the number of path segments.
@@ -95,7 +94,7 @@ export default defineNuxtModule<ComponentsOptions>({
           nuxt.options.build.transpile.push(dirPath)
         }
 
-        const present = isDirectory(dirPath)
+        const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
           logger.warn('Components directory not found: `' + dirPath + '`')
         }
@@ -110,7 +109,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || (extensions.length > 1 ? `**/*.{${extensions.join(',')}}` : `**/*.${extensions[0] || '*'}`),
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.{cts,mts,ts}', // .d.ts files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // .d.ts files
             ...(dirOptions.ignore || []),
           ],
           transpile,

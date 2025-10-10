@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -45,12 +45,12 @@ import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
-import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
+import { KeyedFunctionsPlugin } from '../compiler/plugins/keyed-functions'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -302,13 +302,6 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
-
-  // Add keys for useFetch, useAsyncData, etc.
-  addBuildPlugin(ComposableKeysPlugin({
-    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    rootDir: nuxt.options.rootDir,
-    composables: nuxt.options.optimization.keyedComposables,
-  }))
 
   // shared folder import protection
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
@@ -581,6 +574,18 @@ async function initNuxt (nuxt: Nuxt) {
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
+
+  // Add keys for useFetch, useAsyncData, etc.
+  const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
+    ...rest,
+    source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
+  })))
+
+  addBuildPlugin(KeyedFunctionsPlugin({
+    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    keyedFunctions: normalizedKeyedFunctions,
+    alias: nuxt.options.alias,
+  }))
 
   await nuxt.callHook('modules:done')
 
