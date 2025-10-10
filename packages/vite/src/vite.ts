@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { basename, dirname, join, normalize, resolve } from 'pathe'
+import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
 import { sanitizeFilePath } from 'mlly'
@@ -18,6 +18,7 @@ import { SSRStylesPlugin } from './plugins/ssr-styles'
 import { PublicDirsPlugin } from './plugins/public-dirs'
 import { ReplacePlugin } from './plugins/replace'
 import { distDir } from './dirs'
+import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -147,6 +148,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             baseURL: nuxt.options.app.baseURL,
           }),
           ReplacePlugin(),
+          LayerDepOptimizePlugin(nuxt),
         ],
         server: {
           watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
@@ -164,39 +166,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   if (!nuxt.options.dev) {
     ctx.config.server!.watch = undefined
     ctx.config.build!.watch = undefined
-  }
-
-  // TODO: this may no longer be needed with most recent vite version
-  if (nuxt.options.dev) {
-    // Identify which layers will need to have an extra resolve step.
-    const layerDirs: string[] = []
-    const delimitedRootDir = nuxt.options.rootDir + '/'
-    for (const dirs of getLayerDirectories(nuxt)) {
-      if (dirs.app !== nuxt.options.srcDir && !dirs.app.startsWith(delimitedRootDir)) {
-        layerDirs.push(dirs.app)
-      }
-    }
-    if (layerDirs.length > 0) {
-      // Reverse so longest/most specific directories are searched first
-      layerDirs.sort().reverse()
-      nuxt.hook('vite:extendConfig', (config) => {
-        const dirs = [...layerDirs]
-        config.plugins!.push({
-          name: 'nuxt:optimize-layer-deps',
-          enforce: 'pre',
-          async resolveId (source, _importer) {
-            if (!_importer || !dirs.length) { return }
-            const importer = normalize(_importer)
-            const layerIndex = dirs.findIndex(dir => importer.startsWith(dir))
-            // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
-            if (layerIndex !== -1) {
-              dirs.splice(layerIndex, 1)
-              await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
-            }
-          },
-        })
-      })
-    }
   }
 
   // Add type-checking
