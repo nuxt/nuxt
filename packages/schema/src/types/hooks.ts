@@ -10,7 +10,7 @@ import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
-import type { NuxtCompatibility, NuxtCompatibilityIssues } from '..'
+import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Component, ComponentsOptions } from './components'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 
@@ -355,7 +355,7 @@ export interface NuxtHooks {
    * @returns Promise
    * @deprecated
    */
-  'vite:extendConfig': (viteInlineConfig: Readonly<InlineConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Allows to read the resolved Vite config.
    * @param viteInlineConfig The vite inline config object

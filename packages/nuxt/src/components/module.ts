@@ -177,7 +177,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
-      const newComponents = await scanComponents(componentDirs)
+      const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
       // add server placeholder for .client components server side. issue: #7085
       for (const component of newComponents) {

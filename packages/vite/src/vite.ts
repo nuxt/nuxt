@@ -383,7 +383,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config.build!.watch = undefined
   }
 
-  const ctx = { nuxt, entry, config }
+  const ctx = { nuxt, entry, config: config as ViteConfig }
   await nuxt.callHook('vite:extend', ctx)
 
   config.customLogger = createViteLogger(config)
@@ -391,7 +391,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   for (const environment of ['client', 'ssr']) {
     const environments = { [environment]: config.environments![environment]! }
-    const strippedConfig = { ...config, environments }
+    const strippedConfig = { ...config, environments } as ViteConfig
     const ctx = { isServer: environment === 'ssr', isClient: environment === 'client' }
     await nuxt.hooks.callHook('vite:extendConfig', strippedConfig, ctx)
     await nuxt.hooks.callHook('vite:configResolved', strippedConfig, ctx)
