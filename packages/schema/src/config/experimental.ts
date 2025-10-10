@@ -4,7 +4,7 @@ export default defineResolvers({
   future: {
     compatibilityVersion: {
       // force resolution to `4` no matter what users pass
-      $resolve: () => 4,
+      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 4,
     },
     multiApp: false,
     typescriptBundlerResolution: {

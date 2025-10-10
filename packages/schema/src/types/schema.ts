@@ -992,7 +992,7 @@ export interface ConfigSchema {
    * Enable early access to future features or flags.
    *
    */
-    compatibilityVersion: 4
+    compatibilityVersion: 4 | 5
 
     /**
      * This enables early access to the experimental multi-app support.
