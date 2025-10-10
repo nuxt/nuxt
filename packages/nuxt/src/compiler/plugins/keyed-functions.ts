@@ -3,7 +3,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
 import { parseQuery, parseURL } from 'ufo'
-import { parse } from 'pathe'
+import { isAbsolute, join, parse } from 'pathe'
 import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
@@ -18,7 +18,7 @@ import {
   parseStaticExportIdentifiers,
   parseStaticFunctionCall,
   processImports,
-} from '../parse-utils.ts'
+} from '../parse-utils'
 
 interface KeyedFunctionsOptions {
   sourcemap: boolean
@@ -46,6 +46,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   // DO NOT USE IN TRANSFORM - this is a global copy that doesn't include local import names
   // - the `source`s have resolved aliases
   const namesToFunctionMeta = new Map<string, KeyedFunction>()
+  const defaultExportSources = new Set<string>()
 
   for (const f of options.keyedFunctions) {
     let functionName = f.name
@@ -59,7 +60,9 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         continue
       }
 
-      functionName = camelCase(parse(f.source).name)
+      const parsedSource = parse(f.source)
+      defaultExportSources.add(parsedSource.name)
+      functionName = camelCase(parsedSource.name)
     }
 
     if (import.meta.dev) {
@@ -72,7 +75,8 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
     namesToFunctionMeta.set(functionName, {
       ...f,
       // TODO: make `source` required
-      source: typeof f.source === 'string' ? stripExtension(resolveAlias(f.source, options.alias)) : undefined,
+      // `source` is already resolved in `options.keyedFunctions`
+      source: typeof f.source === 'string' ? stripExtension(f.source) : undefined,
     })
   }
 
@@ -85,7 +89,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
     }
   }
 
-  const KEYED_FUNCTIONS_RE = new RegExp(`\\b(${[...namesToFunctionMeta.keys()].map(f => escapeRE(f)).join('|')})\\b`)
+  const KEYED_FUNCTIONS_RE = new RegExp(`\\b(${[...namesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
 
   return {
     name: 'nuxt:compiler:keyed-functions',
@@ -130,6 +134,21 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
           // check local names
           return namesToFunctionMeta.get(localName)
+        }
+
+        // TODO: use async walker or create sync version of `resolvePath` from kit
+        function _resolvePath (path: string) {
+          let p = path
+          if (isAbsolute(p)) {
+            return p
+          }
+
+          p = resolveAlias(p, options.alias)
+          if (isAbsolute(p)) {
+            return p
+          }
+
+          return join(parse(id).dir, p)
         }
 
         const s = new MagicString(code)
@@ -215,7 +234,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   && fnMeta.name === 'default'
                 )
               )
-            ) && resolvedSource && (stripExtension(resolveAlias(functionScopeTrackerNode.importNode.source.value, options.alias)) === resolvedSource))
+            ) && resolvedSource && (stripExtension(_resolvePath(functionScopeTrackerNode.importNode.source.value)) === resolvedSource))
             // or the function is defined in the same file, and we're considering the root level scope declaration
             || (localFunctionNameToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
           )) {
