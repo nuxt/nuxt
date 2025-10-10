@@ -17,8 +17,8 @@ import { logLevelMap } from './utils/logger'
 import { SSRStylesPlugin } from './plugins/ssr-styles'
 import { PublicDirsPlugin } from './plugins/public-dirs'
 import { ReplacePlugin } from './plugins/replace'
-import { distDir } from './dirs'
 import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize'
+import { distDir } from './dirs'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -223,16 +223,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
-    // Invalidate virtual modules when templates are re-generated
-    nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
-      await Promise.all(changedTemplates.map(async (template) => {
-        for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
-          server.moduleGraph.invalidateModule(mod)
-          await server.reloadModule(mod)
-        }
-      }))
-    })
-
     if (nuxt.options.vite.warmupEntry !== false) {
       // Don't delay nitro build for warmup
       useNitro().hooks.hookOnce('compiled', () => {
