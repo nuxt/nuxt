@@ -1,13 +1,10 @@
-import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import type { BuildOptions } from 'vite'
-import { logger, useNitro } from '@nuxt/kit'
-import { joinURL, withoutLeadingSlash } from 'ufo'
-import { defu } from 'defu'
+import { logger } from '@nuxt/kit'
+import { joinURL } from 'ufo'
 import { defineEnv } from 'unenv'
-import { resolveModulePath } from 'exsolve'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
 import type { ViteBuildContext } from './vite'
@@ -101,19 +98,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
         '#app-manifest',
       ],
     },
-    resolve: {
-      alias: {
-        // user aliases
-        ...nodeCompat.alias,
-        ...ctx.config.resolve?.alias,
-        'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
-        // TODO: remove in v5
-        '#internal/nitro': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
-        'nitropack/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
-        // work around vite optimizer bug
-        '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
-      },
-    },
     cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
     build: {
       sourcemap: nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
@@ -149,25 +133,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
-
-  // We want to respect users' own rollup output options
-  const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
-  const clientOutputDir = join(useNitro().options.output.publicDir, nuxt.options.app.buildAssetsDir)
-  clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
-    output: {
-      chunkFileNames: nuxt.options.dev ? undefined : fileNames,
-      entryFileNames: nuxt.options.dev ? 'entry.js' : fileNames,
-      sourcemapPathTransform (relativeSourcePath, sourcemapPath) {
-        // client build is running in a temporary build directory, like `.nuxt/dist/client`
-        // so we need to transform the sourcemap path to be relative to the final build directory
-        if (!isAbsolute(relativeSourcePath)) {
-          const absoluteSourcePath = resolve(dirname(sourcemapPath), relativeSourcePath)
-          return relative(clientOutputDir, absoluteSourcePath)
-        }
-        return relativeSourcePath
-      },
-    } satisfies NonNullable<BuildOptions['rollupOptions']>['output'],
-  }) as any
 
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
