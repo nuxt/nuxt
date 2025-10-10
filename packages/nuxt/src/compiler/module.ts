@@ -41,6 +41,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       addBuildPlugin(KeyedFunctionsPlugin({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         keyedFunctions: normalizedKeyedFunctions,
+        alias: nuxt.options.alias,
       }))
     })
 

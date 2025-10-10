@@ -10,7 +10,7 @@ import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
 import type { KeyedFunction } from '@nuxt/schema'
-import { isWhitespace, logger } from '../../utils.ts'
+import { isWhitespace, logger, stripExtension } from '../../utils.ts'
 import type { Node } from 'oxc-parser'
 
 import {
@@ -23,6 +23,7 @@ import {
 interface KeyedFunctionsOptions {
   sourcemap: boolean
   keyedFunctions: KeyedFunction[]
+  alias: Record<string, string>
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
@@ -71,7 +72,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
     namesToFunctionMeta.set(functionName, {
       ...f,
       // TODO: make `source` required
-      source: typeof f.source === 'string' ? resolveAlias(f.source) : undefined,
+      source: typeof f.source === 'string' ? stripExtension(resolveAlias(f.source, options.alias)) : undefined,
     })
   }
 
@@ -216,9 +217,9 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   && fnMeta.name === 'default'
                 )
               )
-            ) && resolvedSource && (resolveAlias(functionScopeTrackerNode.importNode.source.value) === resolvedSource))
+            ) && resolvedSource && (stripExtension(resolveAlias(functionScopeTrackerNode.importNode.source.value, options.alias)) === resolvedSource))
             // or the function is auto-imported from a supported source
-            || (!functionScopeTrackerNode && autoImportedSource && resolveAlias(autoImportedSource) === resolvedSource)
+            || (!functionScopeTrackerNode && autoImportedSource && stripExtension(resolveAlias(autoImportedSource, options.alias)) === resolvedSource)
             // or the function is defined in the same file, and we're considering the root level scope declaration
             || (localFunctionNameToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
           )) {
@@ -252,14 +253,14 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 case 'useState':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
-                    && fnMeta.source === resolveAlias('#app/composables/state')
+                    && fnMeta.source === stripExtension(resolveAlias('#app/composables/state', options.alias))
                   ) { return }
                   break
                 case 'useFetch':
                 case 'useLazyFetch':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[1]?.type)
-                    && fnMeta.source === resolveAlias('#app/composables/fetch')
+                    && fnMeta.source === stripExtension(resolveAlias('#app/composables/fetch', options.alias))
                   ) { return }
                   break
 
@@ -267,7 +268,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 case 'useLazyAsyncData':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
-                    && fnMeta.source === resolveAlias('#app/composables/asyncData')
+                    && fnMeta.source === stripExtension(resolveAlias('#app/composables/asyncData', options.alias))
                   ) { return }
                   break
               }

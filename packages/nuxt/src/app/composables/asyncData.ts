@@ -143,9 +143,9 @@ export const createAsyncData = defineKeyedFunctionFactory({
     FDataT = FResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
-  >(options?:
+  >(options:
     Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
-    | ((currentOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>),
+    | ((currentOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
   ) {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -232,19 +232,19 @@ export const createAsyncData = defineKeyedFunctionFactory({
       const nuxtApp = useNuxtApp()
 
       const asyncDataOptions = {
-        ...({
-          server: true,
-          default: getDefault as () => DefaultT,
-          getCachedData: getDefaultCachedData,
-          lazy: false,
-          immediate: true,
-          deep: asyncDataDefaults.deep,
-          dedupe: 'cancel',
-        } as const),
         ...(typeof options === 'function' ? {} : factoryOptions),
         ...opts,
         ...(typeof options === 'function' ? factoryOptions : {}),
       }
+
+      asyncDataOptions.server ??= true
+      asyncDataOptions.default ??= getDefault as () => DefaultT
+      asyncDataOptions.getCachedData ??= getDefaultCachedData
+
+      asyncDataOptions.lazy ??= false
+      asyncDataOptions.immediate ??= true
+      asyncDataOptions.deep ??= asyncDataDefaults.deep
+      asyncDataOptions.dedupe ??= 'cancel'
 
       // @ts-expect-error private property
       const functionName = factoryOptions._functionName || 'useAsyncData'
@@ -455,6 +455,12 @@ export const createAsyncData = defineKeyedFunctionFactory({
 
 export const useAsyncData = (createAsyncData as unknown as { __nuxt_factory: typeof createAsyncData }).__nuxt_factory()
 
+export const useLazyAsyncData = (createAsyncData as unknown as { __nuxt_factory: typeof createAsyncData }).__nuxt_factory({
+  lazy: true,
+  // @ts-expect-error private property
+  _functionName: 'useLazyAsyncData',
+})
+
 function writableComputedRef<T> (getter: () => Ref<T>) {
   return computed({
     get () {
@@ -467,83 +473,6 @@ function writableComputedRef<T> (getter: () => Ref<T>) {
       }
     },
   })
-}
-
-/**
- * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/4.x/api/composables/use-lazy-async-data}
- * @since 3.0.0
- * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
- * @param options customize the behavior of useLazyAsyncData
- */
-export function useLazyAsyncData<
-  ResT,
-  NuxtErrorDataT = unknown,
-  DataT = ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
-> (
-  handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
-export function useLazyAsyncData<
-  ResT,
-  NuxtErrorDataT = unknown,
-  DataT = ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DataT,
-> (
-  handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
-/**
- * Provides access to data that resolves asynchronously in an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/4.x/api/composables/use-lazy-async-data}
- * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
- * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
- * @param options customize the behavior of useLazyAsyncData
- */
-export function useLazyAsyncData<
-  ResT,
-  NuxtErrorDataT = unknown,
-  DataT = ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
-> (
-  key: MaybeRefOrGetter<string>,
-  handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
-export function useLazyAsyncData<
-  ResT,
-  NuxtErrorDataT = unknown,
-  DataT = ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DataT,
-> (
-  key: MaybeRefOrGetter<string>,
-  handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
-
-export function useLazyAsyncData<
-  ResT,
-  NuxtErrorDataT = unknown,
-  DataT = ResT,
-  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
-> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
-  const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-  if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
-  const [key, handler, options = {}] = args as [string, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
-
-  if (import.meta.dev) {
-    // @ts-expect-error private property
-    options._functionName ||= 'useLazyAsyncData'
-  }
-
-  // @ts-expect-error we pass an extra argument to prevent a key being injected
-  return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
 function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: () => any): boolean {

@@ -31,6 +31,10 @@ export function normalizeExtension (input: string) {
   return input.replace(LEADING_DOT_RE, '')
 }
 
+export function stripExtension (path: string) {
+  return path.replace(/\.[^./\\]+$/, '')
+}
+
 export function isWhitespace (char: number | string | undefined | null): boolean {
   const c = typeof char === 'string' ? char.charCodeAt(0) : char
   // ' ' (32), '\t' (9), '\n' (10), '\r' (13), '\f' (12)
