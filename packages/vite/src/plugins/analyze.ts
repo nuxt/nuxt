@@ -42,7 +42,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
         },
         visualizer({
           ...analyzeOptions,
-          filename: 'filename' in analyzeOptions ? analyzeOptions.filename!.replace('{name}', 'client') : undefined,
+          filename: 'filename' in analyzeOptions && analyzeOptions.filename ? analyzeOptions.filename.replace('{name}', 'client') : undefined,
           title: 'Client bundle stats',
           gzipSize: true,
           brotliSize: true,

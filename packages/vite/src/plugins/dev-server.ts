@@ -18,7 +18,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         if (!item) {
           continue
         }
-        const exclude = new Set(item.exclude)
+        const exclude = new Set(item.exclude ?? [])
         item.include = item.include?.filter(dep => !exclude.has(dep))
       }
 
@@ -31,7 +31,8 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       // Inject an h3-based CORS handler in preference to vite's
       useViteCors = config.server?.cors !== undefined
       if (!useViteCors) {
-        config.server!.cors = false
+        config.server ??= {}
+        config.server.cors = false
       }
 
       if (config.server && config.server.hmr !== false) {
@@ -41,8 +42,9 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           },
         }
         if (typeof config.server.hmr !== 'object' || !config.server.hmr.server) {
+          serverDefaults.hmr ??= {}
           const hmrPortDefault = 24678 // Vite's default HMR port
-          serverDefaults.hmr!.port = await getPort({
+          serverDefaults.hmr.port = await getPort({
             port: hmrPortDefault,
             ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i),
           })
@@ -68,8 +70,8 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         route: '',
         handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
           // 'Skip' the transform middleware
-          if (req._skip_transform) {
-            req.url = joinURL('/__skip_vite', req.url!.replace(/\?.*/, ''))
+          if (req._skip_transform && req.url) {
+            req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
           }
           next()
         },
@@ -130,7 +132,8 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         })
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-        if (!event.handled && event.path.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
+        const ended = event.node.res.writableEnded || event.handled
+        if (!ended && event.path.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
           throw createError({ statusCode: 404 })
         }
       })
