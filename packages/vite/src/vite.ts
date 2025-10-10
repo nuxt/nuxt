@@ -149,6 +149,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           }),
           ReplacePlugin(),
           LayerDepOptimizePlugin(nuxt),
+          SSRStylesPlugin(nuxt),
         ],
         server: {
           watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
@@ -182,45 +183,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   await nuxt.callHook('vite:extend', ctx)
-
-  if (!nuxt.options.dev) {
-    const chunksWithInlinedCSS = new Set<string>()
-    const clientCSSMap = {}
-
-    nuxt.hook('vite:extendConfig', (config, { isServer }) => {
-      config.plugins!.unshift(SSRStylesPlugin({
-        srcDir: nuxt.options.srcDir,
-        clientCSSMap,
-        chunksWithInlinedCSS,
-        shouldInline: nuxt.options.features.inlineStyles,
-        components: nuxt.apps.default!.components || [],
-        globalCSS: nuxt.options.css,
-        mode: isServer ? 'server' : 'client',
-        entry: ctx.entry,
-      }))
-    })
-
-    // Remove CSS entries for files that will have inlined styles
-    const nitro = useNitro()
-    nuxt.hook('build:manifest', (manifest) => {
-      const entryIds = new Set<string>()
-      for (const id of chunksWithInlinedCSS) {
-        const chunk = manifest[id]
-        if (!chunk) {
-          continue
-        }
-        if (chunk.isEntry && chunk.src) {
-          entryIds.add(chunk.src)
-        } else {
-          chunk.css &&= []
-        }
-      }
-
-      nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
-      nitro.options._config.virtual ||= {}
-      nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
-    })
-  }
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     if (nuxt.options.vite.warmupEntry !== false) {
