@@ -31,7 +31,6 @@ max_retries = 6
 exclude = [
   "https://twitter.nuxt.dev/",
   "https://www.webpagetest.org/",
-  "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
   # dummy example URLs

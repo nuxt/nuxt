@@ -8,11 +8,12 @@ import type { Nitro } from 'nitropack/types'
 import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
-import { writeDevServer } from './vite-node'
+import { writeDevServer } from './plugins/vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
 import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
+import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker'
 
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
@@ -28,6 +29,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
       VueFeatureFlagsPlugin(nuxt),
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
+      VitePluginCheckerPlugin(nuxt, 'ssr'),
     ],
     define: {
       'process.server': true,
@@ -45,6 +47,13 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
     optimizeDeps: {
       noDiscovery: true,
       include: undefined,
+    },
+    environments: {
+      ssr: {
+        resolve: {
+          conditions: ((nuxt as any)._nitro as Nitro)?.options.exportConditions,
+        },
+      },
     },
     resolve: {
       conditions: ((nuxt as any)._nitro as Nitro)?.options.exportConditions,
@@ -121,16 +130,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
     },
   } satisfies vite.InlineConfig, nuxt.options.vite.$server || {}))
 
-  if (serverConfig.build?.rollupOptions?.output && !Array.isArray(serverConfig.build.rollupOptions.output)) {
-    serverConfig.build.rollupOptions.output.manualChunks = undefined
-
-    // @ts-expect-error non-public property
-    if (vite.rolldownVersion) {
-      // @ts-expect-error rolldown-specific
-      serverConfig.build.rollupOptions.output.advancedChunks = undefined
-    }
-  }
-
   serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev })
 
   await nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
@@ -170,6 +169,16 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext, vue: any) 
   nuxt.hook('close', () => ssrServer.close())
 
   await nuxt.callHook('vite:serverCreated', ssrServer, { isClient: false, isServer: true })
+
+  // Invalidate virtual modules when templates are re-generated
+  nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+    await Promise.all(changedTemplates.map(async (template) => {
+      for (const mod of ssrServer.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
+        ssrServer.moduleGraph.invalidateModule(mod)
+        await ssrServer.reloadModule(mod)
+      }
+    }))
+  })
 
   // Initialize plugins
   await ssrServer.pluginContainer.buildStart({})

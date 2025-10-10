@@ -1,13 +1,16 @@
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 import { interopDefault } from 'mlly'
 import { resolveModulePath } from 'exsolve'
 import { createJiti } from 'jiti'
-import { captureStackTrace } from 'errx'
+import { getUserCaller, warn } from './trace'
+import { resolveAlias } from '../resolve'
 
 export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */
   paths?: string | string[]
   url?: URL | URL[]
+  /** @default ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'] */
+  extensions?: string[]
 }
 
 export function directoryToURL (dir: string): URL {
@@ -35,7 +38,7 @@ export function resolveModule (id: string, options?: ResolveModuleOptions) {
   return resolveModulePath(id, {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     from: options?.url ?? options?.paths ?? [import.meta.url],
-    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    extensions: options?.extensions ?? ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
   })
 }
 
@@ -57,19 +60,14 @@ export function tryImportModule<T = unknown> (id: string, opts?: ImportModuleOpt
   }
 }
 
-const warnings = new Set<string>()
-
 /**
  * @deprecated Please use `importModule` instead.
  */
 export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
-  const { source, line, column } = captureStackTrace().find(entry => entry.source !== import.meta.url) ?? {}
-  const explanation = source ? ` (used at \`${fileURLToPath(source)}:${line}:${column}\`)` : ''
+  const caller = getUserCaller()
+  const explanation = caller ? ` (used at \`${resolveAlias(caller.source)}:${caller.line}:${caller.column}\`)` : ''
   const warning = `[@nuxt/kit] \`requireModule\` is deprecated${explanation}. Please use \`importModule\` instead.`
-  if (!warnings.has(warning)) {
-    console.warn(warning)
-    warnings.add(warning)
-  }
+  warn(warning)
   const resolvedPath = resolveModule(id, opts)
   const jiti = createJiti(import.meta.url, {
     interopDefault: opts?.interopDefault !== false,

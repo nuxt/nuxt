@@ -41,9 +41,7 @@ const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktra
 
 // TODO: Investigate side-effect issue with imports
 const _Error404 = defineAsyncComponent(() => import('./error-404.vue'))
-const _Error = import.meta.dev
-  ? defineAsyncComponent(() => import('./error-dev.vue'))
-  : defineAsyncComponent(() => import('./error-500.vue'))
+const _Error = defineAsyncComponent(() => import('./error-500.vue'))
 
 const ErrorTemplate = is404 ? _Error404 : _Error
 </script>

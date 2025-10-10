@@ -138,6 +138,7 @@ const excludedVueHelpers = [
   'isRuntimeOnly',
   'isVNode',
   'mergeDefaults',
+  'mergeModels',
   'mergeProps',
   'openBlock',
   'popScopeId',
