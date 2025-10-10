@@ -18,6 +18,7 @@ import { PublicDirsPlugin } from './plugins/public-dirs'
 import { ReplacePlugin } from './plugins/replace'
 import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize'
 import { distDir } from './dirs'
+import { EnvironmentsPlugin } from './plugins/environments'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -149,6 +150,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           ReplacePlugin(),
           LayerDepOptimizePlugin(nuxt),
           SSRStylesPlugin(nuxt),
+          EnvironmentsPlugin(nuxt),
         ],
         server: {
           watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
