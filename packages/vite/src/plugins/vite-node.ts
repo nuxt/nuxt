@@ -16,9 +16,9 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
 import { provider } from 'std-env'
 
-import { distDir } from './dirs'
-import { isCSS } from './utils'
-import { resolveClientEntry, resolveServerEntry } from './utils/config'
+import { distDir } from '../dirs'
+import { isCSS } from '../utils'
+import { resolveClientEntry, resolveServerEntry } from '../utils/config'
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
