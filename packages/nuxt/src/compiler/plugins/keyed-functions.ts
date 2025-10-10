@@ -101,7 +101,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)))
 
         // consider exports when processing a file that exports a keyed function
-        const shouldConsiderExports = sources.has(id)
+        const shouldConsiderExports = sources.has(stripExtension(id))
 
         // all local names that refer to a keyed function
         // mapped to their exported names
@@ -153,7 +153,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
               // the function cannot handle local identifier names from exports yet,
               // so we need to use the `exportedName` instead
               const fnMeta = getFunctionMetaByLocalName(exportedName)
-              if (!fnMeta || fnMeta.source !== id || fnMeta.name !== exportedName) { continue }
+              if (!fnMeta || fnMeta.source !== stripExtension(id) || fnMeta.name !== exportedName) { continue }
               localFunctionNameToExportedName.set(localName, fnMeta.name)
             }
           },
@@ -193,6 +193,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           // skip if there are more arguments than allowed
           if (
             parsedCall.callExpression.arguments.length >= fnMeta.argumentLength
+            // do not skip when there is a spread element (we don't know how many arguments there are)
             && !parsedCall.callExpression.arguments.some(a => a.type === 'SpreadElement')
           ) {
             return

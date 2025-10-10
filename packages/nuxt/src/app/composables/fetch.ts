@@ -242,5 +242,3 @@ export const useLazyFetch = (createUseFetch as unknown as { __nuxt_factory: type
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',
 }) as ReturnType<typeof createUseFetch>
-
-// TODO: //     _functionName: 'useLazyFetch', // TODO: handle differently

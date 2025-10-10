@@ -10,6 +10,7 @@ import type { NuxtError } from './error'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
 import { defineKeyedFunctionFactory } from '../../compiler'
+import defu from 'defu'
 
 // @ts-expect-error virtual file
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData } from '#build/nuxt.config.mjs'
@@ -226,25 +227,37 @@ export const createAsyncData = defineKeyedFunctionFactory({
         throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
       }
 
-      const factoryOptions = (typeof options === 'function' ? options(opts as any) : options) as typeof opts
+      const shouldFactoryOptionsOverride = typeof options === 'function'
+      // const factoryOptions = (shouldFactoryOptionsOverride ? options(opts as any) : defu(opts, options)) as typeof opts
 
       // Setup nuxt instance payload
       const nuxtApp = useNuxtApp()
 
-      const asyncDataOptions = {
-        ...(typeof options === 'function' ? {} : factoryOptions),
-        ...opts,
-        ...(typeof options === 'function' ? factoryOptions : {}),
+      const factoryOptions = shouldFactoryOptionsOverride ? options(opts as any) : options
+      // assign factory defaults
+      if (!shouldFactoryOptionsOverride) {
+        for (const key in factoryOptions) {
+          if (factoryOptions[key as keyof typeof factoryOptions] === undefined) { continue }
+          opts[key as keyof typeof opts] = factoryOptions[key as keyof typeof factoryOptions] as any
+        }
       }
 
-      asyncDataOptions.server ??= true
-      asyncDataOptions.default ??= getDefault as () => DefaultT
-      asyncDataOptions.getCachedData ??= getDefaultCachedData
+      opts.server ??= true
+      opts.default ??= getDefault as () => DefaultT
+      opts.getCachedData ??= getDefaultCachedData
 
-      asyncDataOptions.lazy ??= false
-      asyncDataOptions.immediate ??= true
-      asyncDataOptions.deep ??= asyncDataDefaults.deep
-      asyncDataOptions.dedupe ??= 'cancel'
+      opts.lazy ??= false
+      opts.immediate ??= true
+      opts.deep ??= asyncDataDefaults.deep
+      opts.dedupe ??= 'cancel'
+
+      // assign overrides from factory
+      if (shouldFactoryOptionsOverride) {
+        for (const key in factoryOptions) {
+          if (factoryOptions[key as keyof typeof factoryOptions] === undefined) { continue }
+          opts[key as keyof typeof opts] = factoryOptions[key as keyof typeof factoryOptions] as any
+        }
+      }
 
       // @ts-expect-error private property
       const functionName = factoryOptions._functionName || 'useAsyncData'
@@ -253,7 +266,7 @@ export const createAsyncData = defineKeyedFunctionFactory({
       const currentData = nuxtApp._asyncData[key.value]
       if (import.meta.dev && currentData) {
         const warnings: string[] = []
-        const values = createHash(_handler, asyncDataOptions)
+        const values = createHash(_handler, opts)
         if (values.handler !== currentData._hash?.handler) {
           warnings.push(`different handler`)
         }
@@ -262,10 +275,10 @@ export const createAsyncData = defineKeyedFunctionFactory({
             warnings.push(`different \`${opt}\` option`)
           }
         }
-        if (currentData._default.toString() !== asyncDataOptions.default.toString()) {
+        if (currentData._default.toString() !== opts.default.toString()) {
           warnings.push(`different \`default\` value`)
         }
-        if (asyncDataOptions.deep && isShallow(currentData.data)) {
+        if (opts.deep && isShallow(currentData.data)) {
           warnings.push(`mismatching \`deep\` option`)
         }
         if (warnings.length) {
@@ -277,10 +290,10 @@ export const createAsyncData = defineKeyedFunctionFactory({
 
       // Create or use a shared asyncData entity
       function createInitialFetch () {
-        const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: asyncDataOptions.dedupe }
+        const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
         if (!nuxtApp._asyncData[key.value]?._init) {
-          initialFetchOptions.cachedData = asyncDataOptions.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-          nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, asyncDataOptions, initialFetchOptions.cachedData)
+          initialFetchOptions.cachedData = opts.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+          nuxtApp._asyncData[key.value] = buildAsyncData(nuxtApp, key.value, _handler, opts, initialFetchOptions.cachedData)
         }
         return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
       }
@@ -290,10 +303,10 @@ export const createAsyncData = defineKeyedFunctionFactory({
 
       asyncData._deps++
 
-      const fetchOnServer = asyncDataOptions.server !== false && nuxtApp.payload.serverRendered
+      const fetchOnServer = opts.server !== false && nuxtApp.payload.serverRendered
 
       // Server side
-      if (import.meta.server && fetchOnServer && asyncDataOptions.immediate) {
+      if (import.meta.server && fetchOnServer && opts.immediate) {
         const promise = initialFetch()
         if (getCurrentInstance()) {
           onServerPrefetch(() => promise)
@@ -308,7 +321,7 @@ export const createAsyncData = defineKeyedFunctionFactory({
         const instance = getCurrentInstance()
 
         // @ts-expect-error - instance.sp is an internal vue property
-        if (instance && fetchOnServer && asyncDataOptions.immediate && !instance.sp) {
+        if (instance && fetchOnServer && opts.immediate && !instance.sp) {
           // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
           instance.sp = []
         }
@@ -333,11 +346,11 @@ export const createAsyncData = defineKeyedFunctionFactory({
             asyncData.pending.value = false
           }
           asyncData.status.value = asyncData.error.value ? 'error' : 'success'
-        } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || asyncDataOptions.lazy) && asyncDataOptions.immediate) {
+        } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
           // 2. Initial load (server: false): fetch on mounted
           // 3. Initial load or navigation (lazy: true): fetch on mounted
           instance._nuxtOnBeforeMountCbs.push(initialFetch)
-        } else if (asyncDataOptions.immediate && asyncData.status.value !== 'success') {
+        } else if (opts.immediate && asyncData.status.value !== 'success') {
           // 4. Navigation (lazy: false) - or plugin usage: await fetch
           initialFetch()
         }
@@ -363,7 +376,7 @@ export const createAsyncData = defineKeyedFunctionFactory({
             const hadData = nuxtApp._asyncData[oldKey]?.data.value !== undefined
             const wasRunning = nuxtApp._asyncDataPromises[oldKey] !== undefined
 
-            const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: asyncDataOptions.dedupe }
+            const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
 
             // Ensure destination container exists; read/migrate value BEFORE unregistering the old key.
             if (!nuxtApp._asyncData[newKey]?._init) {
@@ -372,11 +385,11 @@ export const createAsyncData = defineKeyedFunctionFactory({
               if (oldKey && hadData) {
                 initialValue = nuxtApp._asyncData[oldKey]!.data.value as NoInfer<DataT>
               } else {
-                initialValue = asyncDataOptions.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
+                initialValue = opts.getCachedData!(newKey, nuxtApp, { cause: 'initial' })
                 initialFetchOptions.cachedData = initialValue
               }
 
-              nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, asyncDataOptions, initialValue)
+              nuxtApp._asyncData[newKey] = buildAsyncData(nuxtApp, newKey, _handler, opts, initialValue)
             }
 
             nuxtApp._asyncData[newKey]._deps++
@@ -387,7 +400,7 @@ export const createAsyncData = defineKeyedFunctionFactory({
             }
 
             // Trigger the fetch for the new key if needed.
-            if (asyncDataOptions.immediate || hadData || wasRunning) {
+            if (opts.immediate || hadData || wasRunning) {
               nuxtApp._asyncData[newKey].execute(initialFetchOptions)
             }
 
@@ -400,10 +413,10 @@ export const createAsyncData = defineKeyedFunctionFactory({
 
         // Params/deps watcher: keep default (pre) flush to batch multiple mutations into a single execute.
         // This preserves the "non synchronous" behavior covered by tests.
-        const unsubParamsWatcher = asyncDataOptions.watch
-          ? watch(asyncDataOptions.watch, () => {
+        const unsubParamsWatcher = opts.watch
+          ? watch(opts.watch, () => {
               if (keyChanging) { return } // avoid double execute while the key switch is being processed
-              asyncData._execute({ cause: 'watch', dedupe: asyncDataOptions.dedupe })
+              asyncData._execute({ cause: 'watch', dedupe: opts.dedupe })
             })
           : () => {}
 

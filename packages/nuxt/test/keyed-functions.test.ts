@@ -1,5 +1,5 @@
 import type { KeyedFunction } from '@nuxt/schema'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions.ts'
 
 describe('keyed functions plugin', () => {
@@ -30,7 +30,7 @@ describe('keyed functions plugin', () => {
       argumentLength: 1,
     },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should add keyed hash when there is none already provided', async () => {
     const code = `
@@ -684,7 +684,7 @@ describe('core keyed functions', () => {
     { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
     { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should detect string type keys and not add a hash', async () => {
     const code = `
