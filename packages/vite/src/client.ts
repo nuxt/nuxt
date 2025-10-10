@@ -21,6 +21,7 @@ import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
 import { ViteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 import { StableEntryPlugin } from './plugins/stable-entry'
+import { AnalyzePlugin } from './plugins/analyze'
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const nodeCompat = nuxt.options.experimental.clientNodeCompat
@@ -135,6 +136,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       ModulePreloadPolyfillPlugin(),
       // ensure changes in chunks do not invalidate whole build
       StableEntryPlugin(nuxt),
+      AnalyzePlugin(nuxt),
     ],
     appType: 'custom',
     server: {
@@ -195,11 +197,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       serverDefaults.https = nuxt.options.devServer.https === true ? {} : nuxt.options.devServer.https
     }
     clientConfig.server = defu(clientConfig.server, serverDefaults as ViteConfig['server'])
-  }
-
-  // Add analyze plugin if needed
-  if (!nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)) {
-    clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.AnalyzePlugin(nuxt)))
   }
 
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
