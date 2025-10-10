@@ -23,7 +23,7 @@ overrides:
   h3: 2.0.1-rc.1
   jiti: 2.6.1
   magic-string: 0.30.19
-  nitro: npm:nitro-nightly@3.0.0-20251009-155627-a7e0f55d
+  nitro: 3.0.1-alpha.0
   nuxt: workspace:*
   postcss: 8.5.6
   rollup: 4.52.4
@@ -186,8 +186,8 @@ importers:
         specifier: 4.49.0
         version: 4.49.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20251009-155627-a7e0f55d
-        version: nitro-nightly@3.0.0-20251009-155627-a7e0f55d(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+        specifier: 3.0.1-alpha.0
+        version: 3.0.1-alpha.0(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -342,8 +342,8 @@ importers:
         specifier: 5.5.3
         version: 5.5.3
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20251009-155627-a7e0f55d
-        version: nitro-nightly@3.0.0-20251009-155627-a7e0f55d(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+        specifier: 3.0.1-alpha.0
+        version: 3.0.1-alpha.0(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       unbuild:
         specifier: 3.6.1
         version: 3.6.1(typescript@5.9.3)(vue-sfc-transformer@0.1.17(@vue/compiler-core@3.5.22)(esbuild@0.25.10)(vue@3.5.22(typescript@5.9.3)))(vue-tsc@3.1.1(typescript@5.9.3))(vue@3.5.22(typescript@5.9.3))
@@ -462,8 +462,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20251009-155627-a7e0f55d
-        version: nitro-nightly@3.0.0-20251009-155627-a7e0f55d(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+        specifier: 3.0.1-alpha.0
+        version: 3.0.1-alpha.0(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       nypm:
         specifier: ^0.6.2
         version: 0.6.2
@@ -816,8 +816,8 @@ importers:
         specifier: 2.9.4
         version: 2.9.4(webpack@5.102.0(esbuild@0.25.10))
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20251009-155627-a7e0f55d
-        version: nitro-nightly@3.0.0-20251009-155627-a7e0f55d(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+        specifier: 3.0.1-alpha.0
+        version: 3.0.1-alpha.0(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -1021,8 +1021,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-20251009-155627-a7e0f55d
-        version: nitro-nightly@3.0.0-20251009-155627-a7e0f55d(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
+        specifier: 3.0.1-alpha.0
+        version: 3.0.1-alpha.0(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       rolldown:
         specifier: 1.0.0-beta.42
         version: 1.0.0-beta.42
@@ -6024,8 +6024,8 @@ packages:
   nf3@0.1.1:
     resolution: {integrity: sha512-iJfiw84oKzsOOM+zqr0fycjgLx2wLw1RrGLHd9qxUPwMtut6GjBalDS9TRPZJXMAZjUv9ghLgtDrhzqcFJ8eTQ==}
 
-  nitro-nightly@3.0.0-20251009-155627-a7e0f55d:
-    resolution: {integrity: sha512-urCJBLpqIKU0I9IgjpEYEZqHJCNur8o3fTkqlFTMzvpraZ3F8EPehqs/GBnCdRkuMJvm7qibD8YUXdvmIg8ulw==}
+  nitro@3.0.1-alpha.0:
+    resolution: {integrity: sha512-lR3RplfXBOZXNlFQf9AJkqFVFhg5/CNbpBijM0dSYhGymb+FthJSdL6crmXVg518h2NVOd40rehhGZaf9ijW9w==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -13509,7 +13509,7 @@ snapshots:
 
   nf3@0.1.1: {}
 
-  nitro-nightly@3.0.0-20251009-155627-a7e0f55d(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)):
+  nitro@3.0.1-alpha.0(chokidar@4.0.3)(ioredis@5.8.0)(lru-cache@11.2.2)(rolldown@1.0.0-beta.42)(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)):
     dependencies:
       consola: 3.4.2
       cookie-es: 2.0.0
