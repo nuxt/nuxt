@@ -55,7 +55,7 @@
     "hookable": "5.5.3",
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.9.4",
-    "nitropack": "2.12.6",
+    "nitropack": "2.12.7",
     "ofetch": "1.4.1",
     "oxc-transform": "0.94.0",
     "postcss": "8.5.6",
