@@ -1,7 +1,7 @@
 import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
-import type { ViteDevServer } from 'vite'
+import type { InlineConfig, ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
@@ -347,7 +347,7 @@ export interface NuxtHooks {
    * @param viteBuildContext The vite build context object
    * @returns Promise
    */
-  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteConfig }) => HookResult
+  'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: InlineConfig }) => HookResult
   /**
    * Allows to extend Vite default config.
    * @param viteInlineConfig The vite inline config object
@@ -363,7 +363,7 @@ export interface NuxtHooks {
    * @returns Promise
    * @deprecated
    */
-  'vite:configResolved': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:configResolved': (viteInlineConfig: Readonly<InlineConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Called when the Vite server is created.
    * @param viteServer Vite development server
