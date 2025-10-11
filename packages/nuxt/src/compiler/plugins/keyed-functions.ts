@@ -7,7 +7,7 @@ import { isAbsolute, join, parse } from 'pathe'
 import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
+import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
 import type { KeyedFunction } from '@nuxt/schema'
 import { isWhitespace, logger, stripExtension } from '../../utils'
@@ -44,12 +44,14 @@ export function shouldTransformFile (id: string, extensions: RegExp | readonly s
 
 export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
   // DO NOT USE IN TRANSFORM - this is a global copy that doesn't include local import names
-  // - the `source`s have resolved aliases
-  const namesToFunctionMeta = new Map<string, KeyedFunction>()
+  // - the `source`s have resolved aliases and are without extensions
+  const namesToSourcesToFunctionMeta = new Map<string, Map<string, KeyedFunction>>()
+  // filenames (without extension) of files that have a `default` keyed function export
   const defaultExportSources = new Set<string>()
 
   for (const f of options.keyedFunctions) {
     let functionName = f.name
+    const fnSource = typeof f.source === 'string' ? stripExtension(f.source) : ''
 
     if (f.name === 'default') {
       // TODO: remove this check & warning when `source` is required
@@ -66,30 +68,39 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
     }
 
     if (import.meta.dev) {
-      const existingEntry = namesToFunctionMeta.get(functionName)
-      if (existingEntry?.source && existingEntry.source === f.source) {
-        logger.warn(`[nuxt:compiler] [keyed-functions] Duplicate function name \`${functionName}\`${functionName !== f.name ? ` defined as \`${f.name}\`` : ''} with the same source \`${f.source}\` found. Overwriting the existing entry.`)
+      const sourcesToFunctionMeta = namesToSourcesToFunctionMeta.get(functionName)
+      const existingEntry = sourcesToFunctionMeta?.get(fnSource)
+      if (existingEntry?.source && existingEntry.source === fnSource) {
+        logger.warn(`[nuxt:compiler] [keyed-functions] Duplicate function name \`${functionName}\`${functionName !== f.name ? ` defined as \`${f.name}\`` : ''} with ${f.source ? `the same source \`${f.source}\`` : 'no source'} found. Overwriting the existing entry.`)
       }
     }
 
-    namesToFunctionMeta.set(functionName, {
+    let sourcesToFunctionMeta = namesToSourcesToFunctionMeta.get(functionName)
+    if (!sourcesToFunctionMeta) {
+      sourcesToFunctionMeta = new Map<string, KeyedFunction>()
+      namesToSourcesToFunctionMeta.set(functionName, sourcesToFunctionMeta)
+    }
+
+    sourcesToFunctionMeta.set(fnSource, {
       ...f,
       // TODO: make `source` required
-      // `source` is already resolved in `options.keyedFunctions`
-      source: typeof f.source === 'string' ? stripExtension(f.source) : undefined,
+      source: fnSource,
     })
   }
 
-  // resolved paths of all the sources
+  // resolved paths of all the sources WITHOUT EXTENSIONS
   const sources = new Set<string>()
-  for (const f of namesToFunctionMeta.values()) {
-    // TODO: remove check when `source` is required
-    if (f.source && typeof f.source === 'string') {
-      sources.add(f.source)
+  for (const sourcesToFunctionMeta of namesToSourcesToFunctionMeta.values()) {
+    for (const f of sourcesToFunctionMeta.values()) {
+      // TODO: remove check when `source` is required
+      if (f.source && typeof f.source === 'string') {
+        sources.add(f.source)
+      }
     }
   }
 
-  const KEYED_FUNCTIONS_RE = new RegExp(`\\b(${[...namesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
+  // TODO: come up with a better way to include files importing a `default` export (imported name can be arbitrary)
+  const CODE_INCLUDE_RE = new RegExp(`\\b(${[...namesToSourcesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
 
   return {
     name: 'nuxt:compiler:keyed-functions',
@@ -97,57 +108,62 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
     transformInclude: id => shouldTransformFile(id, SUPPORTED_EXT_RE),
     transform: {
       filter: {
-        code: { include: KEYED_FUNCTIONS_RE },
+        code: { include: CODE_INCLUDE_RE },
       },
-      handler (code, id) {
+      handler (code, _id) {
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
+        const id = stripExtension(_id)
 
         const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)))
 
         // consider exports when processing a file that exports a keyed function
-        const shouldConsiderExports = sources.has(stripExtension(id))
+        const shouldConsiderExports = sources.has(id)
 
         // all local names that refer to a keyed function
         // mapped to their exported names
-        const localFunctionNameToExportedName = new Map<string, string>()
+        const localNamesToExportedName = new Map<string, string>()
 
-        const localFunctionNames = new Set<string>(namesToFunctionMeta.keys())
+        const possibleLocalFunctionNames = new Set<string>(namesToSourcesToFunctionMeta.keys())
         for (const [localName, directImport] of directImports) {
           // add import names that refer to keyed functions
-          if (namesToFunctionMeta.has(directImport.originalName)) {
-            localFunctionNames.add(localName)
+          const functionName = directImport.originalName === 'default'
+            ? camelCase(parse(directImport.source).name)
+            : directImport.originalName
+          if (namesToSourcesToFunctionMeta.has(functionName)) {
+            possibleLocalFunctionNames.add(localName)
           }
         }
 
-        function getFunctionMetaByLocalName (localName: string | undefined) {
+        /**
+         * @param localName the local name of the function to get the meta for
+         * @param source the source of the function to get the meta for (needs to be WITHOUT EXTENSION)
+         */
+        function getFunctionMetaByLocalName (localName: string, source: string): KeyedFunction | undefined {
           if (!localName) { return }
           // check exports (higher priority)
-          const exportedName = localFunctionNameToExportedName.get(localName)
+          const exportedName = localNamesToExportedName.get(localName)
           if (exportedName) {
-            return namesToFunctionMeta.get(exportedName)
+            return namesToSourcesToFunctionMeta.get(exportedName)?.get(source)
           }
           // check static direct imports
           const directImport = directImports.get(localName)
           if (directImport) {
-            return namesToFunctionMeta.get(directImport.originalName)
+            const functionName = directImport.originalName === 'default'
+              ? camelCase(parse(directImport.source).name)
+              : directImport.originalName
+            return namesToSourcesToFunctionMeta.get(functionName)?.get(source)
           }
 
           // check local names
-          return namesToFunctionMeta.get(localName)
+          return namesToSourcesToFunctionMeta.get(localName)?.get(source)
         }
 
         // TODO: use async walker or create sync version of `resolvePath` from kit
         function _resolvePath (path: string) {
           let p = path
-          if (isAbsolute(p)) {
-            return p
-          }
-
+          if (isAbsolute(p)) { return p }
           p = resolveAlias(p, options.alias)
-          if (isAbsolute(p)) {
-            return p
-          }
-
+          if (isAbsolute(p)) { return p }
           return join(parse(id).dir, p)
         }
 
@@ -165,14 +181,17 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             if (!shouldConsiderExports) { return }
             if (node.type !== 'ExportNamedDeclaration' && node.type !== 'ExportDefaultDeclaration') { return }
 
-            const result = parseStaticExportIdentifiers(node, KEYED_FUNCTIONS_RE)
+            const result = parseStaticExportIdentifiers(node)
             for (const exportMeta of result) {
               const { localName, exportedName } = exportMeta
-              // the function cannot handle local identifier names from exports yet,
-              // so we need to use the `exportedName` instead
-              const fnMeta = getFunctionMetaByLocalName(exportedName)
-              if (!fnMeta || fnMeta.source !== stripExtension(id) || fnMeta.name !== exportedName) { continue }
-              localFunctionNameToExportedName.set(localName, fnMeta.name)
+              // the function cannot look up function meta by local names yet,
+              // so we need to use the `exportedName` instead because that is the one
+              // that's used in the keyed functions definition
+              const functionName = exportedName === 'default'
+                ? camelCase(parse(id).name)
+                : getFunctionMetaByLocalName(exportedName, id)?.name
+              if (!functionName) { continue }
+              localNamesToExportedName.set(localName, functionName)
             }
           },
         })
@@ -180,79 +199,105 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         scopeTracker.freeze()
 
         // add exported local identifiers that refer to keyed functions
-        for (const localName of localFunctionNameToExportedName.keys()) {
-          localFunctionNames.add(localName)
+        for (const localName of localNamesToExportedName.keys()) {
+          possibleLocalFunctionNames.add(localName)
         }
 
-        const LOCAL_FUNCTION_NAMES_RE = new RegExp(`\\b(${[...localFunctionNames].map(f => escapeRE(f)).join('|')})\\b`)
+        const LOCAL_FUNCTION_NAMES_RE = new RegExp(`\\b(${[...possibleLocalFunctionNames].map(f => escapeRE(f)).join('|')})\\b`)
 
         function processKeyedFunction (
           walkContext: ThisParameterType<NonNullable<Parameters<typeof walk>[1]['enter']>>, // TODO: export type from `oxc-walker`
           node: Node,
           handler: (ctx: { parsedCall: FunctionCallMetadata, fnMeta: KeyedFunction }) => void,
         ) {
-          if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') { return false }
+          if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') { return }
           const parsedCall = parseStaticFunctionCall(node, LOCAL_FUNCTION_NAMES_RE)
-          if (!parsedCall) { return false }
-          const fnMeta = getFunctionMetaByLocalName(parsedCall.name)
-          if (!fnMeta) {
-            logger.error(`[nuxt:compiler] [keyed-functions] No function found for \`${parsedCall.name}\` in file \`${id}\`. This is a Nuxt bug.`)
+          if (!parsedCall) { return }
+
+          const functionScopeTrackerNode = scopeTracker.getDeclaration(!parsedCall.namespace ? parsedCall.name : parsedCall.namespace)
+
+          function isKeyedFunctionImport (node: ScopeTrackerNode | null): node is ScopeTrackerNode & { type: 'Import' } {
+            return node?.type === 'Import' && node.importNode.importKind !== 'type'
+          }
+
+          let importSourceResolved: string | undefined
+
+          // check for exports with a higher priority
+          if (localNamesToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') { // TODO: add support for checking root scope in `oxc-walker`
+            importSourceResolved = id
+          } else if (isKeyedFunctionImport(functionScopeTrackerNode)) {
+            importSourceResolved = stripExtension(_resolvePath(functionScopeTrackerNode.importNode.source.value))
+          }
+
+          if (!importSourceResolved) {
+            walkContext.skip()
             return
           }
 
-          const functionScopeTrackerNode = scopeTracker.getDeclaration(parsedCall.name)
+          const fnMeta = getFunctionMetaByLocalName(parsedCall.name, importSourceResolved)
 
-          const resolvedSource = fnMeta.source
-          // TODO: remove ternary when `source` is required
-          const namespacedImportMeta = resolvedSource ? namespaces.get(resolvedSource) : undefined
-
-          // skip if there are more arguments than allowed
-          if (
-            parsedCall.callExpression.arguments.length >= fnMeta.argumentLength
-            // do not skip when there is a spread element (we don't know how many arguments there are)
-            && !parsedCall.callExpression.arguments.some(a => a.type === 'SpreadElement')
-          ) {
+          if (!fnMeta) {
+            walkContext.skip()
             return
           }
 
           // the function is called directly
           // `useKeyed()`
-          if (!parsedCall.namespace && (
-            // and the function is imported directly
-            ((
-              functionScopeTrackerNode?.type === 'Import'
-              && functionScopeTrackerNode.importNode.importKind !== 'type'
-              && (
-                // import { useKeyed } from '...'
-                (
-                  functionScopeTrackerNode.node.type === 'ImportSpecifier'
-                  && functionScopeTrackerNode.node.importKind !== 'type'
+          if (!parsedCall.namespace) {
+            // skip if there are more arguments than allowed
+            if (
+              parsedCall.callExpression.arguments.length >= fnMeta.argumentLength
+              // do not skip when there is a spread element (we don't know how many arguments there are)
+              && !parsedCall.callExpression.arguments.some(a => a.type === 'SpreadElement')
+            ) {
+              walkContext.skip()
+              return
+            }
+
+            if (
+              // the function is imported
+              (
+                isKeyedFunctionImport(functionScopeTrackerNode) && (
+                  // import { useKeyed } from '...'
+                  (
+                    functionScopeTrackerNode.node.type === 'ImportSpecifier'
+                    && functionScopeTrackerNode.node.importKind !== 'type'
+                  )
+                  // import useKeyed from '...'
+                  || (
+                    functionScopeTrackerNode.node.type === 'ImportDefaultSpecifier'
+                    && fnMeta.name === 'default'
+                  )
                 )
-                // import useKeyed from '...'
-                || (
-                  functionScopeTrackerNode.node.type === 'ImportDefaultSpecifier'
-                  && fnMeta.name === 'default'
-                )
+                // TODO: remove `!fnMeta.source` check when `source` is required
+                // TODO: make it work for functions without `source` imported from `#imports`
+                // the function is imported from the correct source
+                && (fnMeta.source && stripExtension(fnMeta.source) === importSourceResolved)
               )
-            ) && resolvedSource && (stripExtension(_resolvePath(functionScopeTrackerNode.importNode.source.value)) === resolvedSource))
-            // or the function is defined in the same file, and we're considering the root level scope declaration
-            || (localFunctionNameToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
-          )) {
-            handler({ parsedCall, fnMeta })
+              // or the function is defined in the current file, and we're considering the root level scope declaration
+              || (localNamesToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
+            ) {
+              handler({ parsedCall, fnMeta })
+            }
+
             walkContext.skip()
             return
           }
 
-          const namespaceScopeTrackerNode = parsedCall.namespace ? scopeTracker.getDeclaration(parsedCall.namespace) : null
-
           // the function is called as a member of a namespace import
           // `namespace.useKeyed()`
-          if (
-            parsedCall.namespace && namespacedImportMeta && namespacedImportMeta.namespaces.has(parsedCall.namespace)
-            // the namespace is not shadowed
-            && namespaceScopeTrackerNode?.type === 'Import' && namespaceScopeTrackerNode.node.type === 'ImportNamespaceSpecifier'
-          ) {
-            handler({ parsedCall, fnMeta })
+          if (parsedCall.namespace) {
+            const namespacedImportMeta = namespaces.get(importSourceResolved)
+            const namespaceScopeTrackerNode = scopeTracker.getDeclaration(parsedCall.namespace)
+
+            if (
+              namespacedImportMeta && namespacedImportMeta.namespaces.has(parsedCall.namespace)
+              // the namespace is not shadowed
+              && namespaceScopeTrackerNode?.type === 'Import' && namespaceScopeTrackerNode.node.type === 'ImportNamespaceSpecifier'
+            ) {
+              handler({ parsedCall, fnMeta })
+            }
+
             // prevent descending into CallExpression of a ChainExpression
             walkContext.skip()
             return
@@ -268,14 +313,14 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 case 'useState':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
-                    && fnMeta.source === stripExtension(resolveAlias('#app/composables/state', options.alias))
+                    && fnMeta.source && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/state', options.alias))
                   ) { return }
                   break
                 case 'useFetch':
                 case 'useLazyFetch':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[1]?.type)
-                    && fnMeta.source === stripExtension(resolveAlias('#app/composables/fetch', options.alias))
+                    && fnMeta.source && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/fetch', options.alias))
                   ) { return }
                   break
 
@@ -283,7 +328,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 case 'useLazyAsyncData':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
-                    && fnMeta.source === stripExtension(resolveAlias('#app/composables/asyncData', options.alias))
+                    && fnMeta.source && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/asyncData', options.alias))
                   ) { return }
                   break
               }
@@ -297,7 +342,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
               s.appendLeft(
                 codeIndex + parsedCall.callExpression.end - 1,
-                (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${id}-${++count}`).slice(0, 10) + '\'',
+                (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${_id}-${++count}`).slice(0, 10) + '\'',
               )
             })
           },

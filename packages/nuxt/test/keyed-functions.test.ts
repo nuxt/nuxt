@@ -1,6 +1,7 @@
 import type { KeyedFunction } from '@nuxt/schema'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions'
+import { logger } from '../src/utils'
 
 describe('keyed functions plugin', () => {
   const keyedFunctions: KeyedFunction[] = [
@@ -10,7 +11,17 @@ describe('keyed functions plugin', () => {
       argumentLength: 1,
     },
     {
+      name: 'useKey',
+      source: '#app/useKeyTwo',
+      argumentLength: 2,
+    },
+    {
       name: 'useKeyTwo',
+      source: '#app',
+      argumentLength: 2,
+    },
+    {
+      name: 'useKeyTwo', // duplicate entry
       source: '#app',
       argumentLength: 2,
     },
@@ -21,7 +32,7 @@ describe('keyed functions plugin', () => {
     },
     {
       name: 'default',
-      source: '#app/default',
+      source: '#app/defaultExport',
       argumentLength: 1,
     },
     {
@@ -32,7 +43,7 @@ describe('keyed functions plugin', () => {
   ]
   const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
-  it('should add keyed hash when there is none already provided', async () => {
+  it('should add hash when there is none already provided', async () => {
     const code = `
 import { useKey, useKeyTwo } from '#app'
 useKey()
@@ -65,6 +76,65 @@ useKey('$existingKey')
 useKeyTwo(() => {}, '$existingKey')
 `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it('should add add hash to function from default import', async () => {
+    const code = `
+import useDefaultKey from 'composables/use-default-key.ts'
+useDefaultKey()`
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+      "import useDefaultKey from 'composables/use-default-key.ts'
+      useDefaultKey('$HJiaryoL2y')"
+    `)
+  })
+
+  it('should add hash to function from default import with different name', async () => {
+    const code = `
+    import useRenamedFunctionThatIsNotInKeyedFunctions from 'composables/use-default-key.ts'
+    useRenamedFunctionThatIsNotInKeyedFunctions()`
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+      "import useRenamedFunctionThatIsNotInKeyedFunctions from 'composables/use-default-key.ts'
+          useRenamedFunctionThatIsNotInKeyedFunctions('$HJiaryoL2y')"
+    `)
+  })
+
+  it('should add hash to function from default import when renamed', async () => {
+    const code = `
+import { default as useRenamedDefault } from '#app/defaultExport'
+useRenamedDefault()`
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+      "import { default as useRenamedDefault } from '#app/defaultExport'
+      useRenamedDefault('$HJiaryoL2y')"
+    `)
+  })
+
+  it('should correctly identify same-name functions from different sources', async () => {
+    const code = `
+    import { useKey as useKeyOne } from '#app'
+    import { useKey as useKeyTwo } from '#app/useKeyTwo'
+    useKeyOne()
+    useKeyTwo('first')
+    `
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+      "import { useKey as useKeyOne } from '#app'
+          import { useKey as useKeyTwo } from '#app/useKeyTwo'
+          useKeyOne('$HJiaryoL2y')
+          useKeyTwo('first', '$yysMIARJHe')"
+    `)
+  })
+
+  it('should warn if there are duplicate entries in keyed functions', () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+
+    KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any)
+
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(
+      /\[nuxt:compiler\] \[keyed-functions\] Duplicate function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./
+    ))
+    warn.mockRestore()
+    vi.unstubAllGlobals()
   })
 
   it('should handle multi-line parameters', async () => {
@@ -391,8 +461,8 @@ useFoo()
 function useFoo(arg) {}
 export default useFoo
     `
-    expect((await transformPlugin.transform.handler(code, '#app/default'))?.code.trim()).toMatchInlineSnapshot(`
-      "useFoo('$XSV3Rp0HnX')
+    expect((await transformPlugin.transform.handler(code, '#app/defaultExport'))?.code.trim()).toMatchInlineSnapshot(`
+      "useFoo('$gvnasIOzix')
       function useFoo(arg) {}
       export default useFoo"
     `)
@@ -404,9 +474,9 @@ const useFoo = (arg) => {}
 useFoo()
 export default useFoo
     `
-    expect((await transformPlugin.transform.handler(code, '#app/default'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, '#app/defaultExport'))?.code.trim()).toMatchInlineSnapshot(`
       "const useFoo = (arg) => {}
-      useFoo('$XSV3Rp0HnX')
+      useFoo('$gvnasIOzix')
       export default useFoo"
     `)
   })
@@ -416,8 +486,8 @@ export default useFoo
 useFoo()
 export default function useFoo(arg) {}
     `
-    expect((await transformPlugin.transform.handler(code, '#app/default'))?.code.trim()).toMatchInlineSnapshot(`
-      "useFoo('$XSV3Rp0HnX')
+    expect((await transformPlugin.transform.handler(code, '#app/defaultExport'))?.code.trim()).toMatchInlineSnapshot(`
+      "useFoo('$gvnasIOzix')
       export default function useFoo(arg) {}"
     `)
   })
@@ -452,22 +522,22 @@ useKeyTwo()
 
   it('should add hash for default import', async () => {
     const code = `
-import useDefault from '#app/default'
+import useDefault from '#app/defaultExport'
 useDefault()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
-      "import useDefault from '#app/default'
+      "import useDefault from '#app/defaultExport'
       useDefault('$HJiaryoL2y')"
     `)
   })
 
   it('should add hash for renamed default import', async () => {
     const code = `
-import { default as useRenamedDefault } from '#app/default'
+import { default as useRenamedDefault } from '#app/defaultExport'
 useRenamedDefault()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
-      "import { default as useRenamedDefault } from '#app/default'
+      "import { default as useRenamedDefault } from '#app/defaultExport'
       useRenamedDefault('$HJiaryoL2y')"
     `)
   })
@@ -586,7 +656,7 @@ useKey()
   it('should handle mixed imports', async () => {
     const code = `
 import useDefault, { useKey as useRenamedKey, useKeyTwo } from '#app'
-import useDefaultKey from '#app/default'
+import useDefaultKey from '#app/defaultExport'
 useDefault()
 useDefaultKey()
 useRenamedKey()
@@ -594,7 +664,7 @@ useKeyTwo(() => {})
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import useDefault, { useKey as useRenamedKey, useKeyTwo } from '#app'
-      import useDefaultKey from '#app/default'
+      import useDefaultKey from '#app/defaultExport'
       useDefault()
       useDefaultKey('$HJiaryoL2y')
       useRenamedKey('$yysMIARJHe')
