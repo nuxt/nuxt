@@ -47,7 +47,7 @@ describe('pages:generateRoutesFromFiles', () => {
           result = generateRoutesFromFiles(files).map((route, index) => {
             return {
               ...route,
-              meta: test.files![index]!.meta,
+              meta: test.files![index]!.meta ?? route.meta,
             }
           })
 
@@ -937,26 +937,34 @@ export const pageTests: Array<{
       { path: `${pagesDir}/(foo)/index.vue` },
       { path: `${pagesDir}/(foo)/about.vue` },
       { path: `${pagesDir}/(bar)/about/index.vue` },
+      { path: `${pagesDir}/(bar)/about/(foo)/index.vue` },
     ],
     output: [
       {
         name: 'index',
         path: '/',
         file: `${pagesDir}/(foo)/index.vue`,
-        meta: undefined,
+        meta: { group: 'foo' },
         children: [],
       },
       {
         path: '/about',
         file: `${pagesDir}/(foo)/about.vue`,
-        meta: undefined,
+        meta: { group: 'foo' },
         children: [
-
           {
-            name: 'about',
             path: '',
             file: `${pagesDir}/(bar)/about/index.vue`,
-            children: [],
+            meta: { group: 'bar' },
+            children: [
+              {
+                name: 'about',
+                path: '',
+                file: `${pagesDir}/(bar)/about/(foo)/index.vue`,
+                meta: { group: ['bar', 'foo'] },
+                children: [],
+              },
+            ],
           },
         ],
       },

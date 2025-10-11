@@ -272,17 +272,28 @@
     {
       "children": [
         {
+          "children": [
+            {
+              "component": "() => import("pages/(bar)/about/(foo)/index.vue")",
+              "meta": "{"group":["bar","foo"]}",
+              "name": ""about"",
+              "path": """",
+            },
+          ],
           "component": "() => import("pages/(bar)/about/index.vue")",
-          "name": ""about"",
+          "meta": "{"group":"bar"}",
+          "name": "mockMeta?.name",
           "path": """",
         },
       ],
       "component": "() => import("pages/(foo)/about.vue")",
+      "meta": "{"group":"foo"}",
       "name": "mockMeta?.name",
       "path": ""/about"",
     },
     {
       "component": "() => import("pages/(foo)/index.vue")",
+      "meta": "{"group":"foo"}",
       "name": ""index"",
       "path": ""/"",
     },
