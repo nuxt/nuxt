@@ -131,7 +131,7 @@ useRenamedDefault()`
     KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[nuxt:compiler\] \[keyed-functions\] Duplicate function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./
+      /\[nuxt:compiler\] \[keyed-functions\] Duplicate function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./,
     ))
     warn.mockRestore()
     vi.unstubAllGlobals()
