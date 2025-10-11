@@ -944,18 +944,18 @@ export const pageTests: Array<{
         name: 'index',
         path: '/',
         file: `${pagesDir}/(foo)/index.vue`,
-        meta: { group: 'foo' },
+        meta: { group: ['foo'] },
         children: [],
       },
       {
         path: '/about',
         file: `${pagesDir}/(foo)/about.vue`,
-        meta: { group: 'foo' },
+        meta: { group: ['foo'] },
         children: [
           {
             path: '',
             file: `${pagesDir}/(bar)/about/index.vue`,
-            meta: { group: 'bar' },
+            meta: { group: ['bar'] },
             children: [
               {
                 name: 'about',
