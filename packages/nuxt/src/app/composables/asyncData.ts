@@ -10,7 +10,6 @@ import type { NuxtError } from './error'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
 import { defineKeyedFunctionFactory } from '../../compiler'
-import defu from 'defu'
 
 // @ts-expect-error virtual file
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData } from '#build/nuxt.config.mjs'
