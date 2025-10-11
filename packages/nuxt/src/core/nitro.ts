@@ -578,6 +578,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const devMiddlewareHandler = dynamicEventHandler()
   nitro.options.devHandlers.unshift({ handler: devMiddlewareHandler })
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers)
+  if (nuxt.options.dev) {
+    nitro.options.handlers.unshift({
+      middleware: true,
+      handler: resolve(distDir, 'core/runtime/nitro/middleware/dev-no-ssr'),
+    })
+  }
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
     lazy: true,
