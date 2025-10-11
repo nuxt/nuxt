@@ -39,7 +39,7 @@ import type { SerializableHtmlAttributes } from './head'
 import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
 import type { ImportsOptions } from './imports'
 import type { ComponentsOptions } from './components'
-import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
+import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler'
 
 export interface ConfigSchema {
   /**

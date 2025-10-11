@@ -4,7 +4,7 @@ import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addT
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension } from '../utils'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils'
 import { lazyHydrationMacroPreset } from '../imports/presets'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
@@ -19,7 +19,6 @@ import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macr
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 const SLASH_SEPARATOR_RE = /[\\/]/
 /**
  * Compare two directory entries by the number of path segments.
@@ -95,7 +94,7 @@ export default defineNuxtModule<ComponentsOptions>({
           nuxt.options.build.transpile.push(dirPath)
         }
 
-        const present = isDirectory(dirPath)
+        const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
           logger.warn('Components directory not found: `' + dirPath + '`')
         }
