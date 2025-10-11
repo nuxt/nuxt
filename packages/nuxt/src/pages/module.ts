@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addImportsSources, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -20,20 +20,9 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
-import type { InlinePreset } from 'unimport'
+import { inlineRouteRulesPresets, pagesImportPresets } from '../imports/presets'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
-
-const runtimeDir = resolve(distDir, 'pages/runtime')
-
-export const pagesImportPresets: InlinePreset[] = [
-  { imports: ['definePageMeta'], from: resolve(runtimeDir, 'composables') },
-  { imports: ['useLink'], from: 'vue-router' },
-]
-
-export const routeRulesPresets: InlinePreset[] = [
-  { imports: ['defineRouteRules'], from: resolve(runtimeDir, 'composables') },
-]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
   const context = {
@@ -62,6 +51,8 @@ export default defineNuxtModule({
     pattern: `**/*{${nuxt.options.extensions.join(',')}}` as string | string[],
   }),
   async setup (_options, nuxt) {
+    const runtimeDir = resolve(distDir, 'pages/runtime')
+
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
@@ -431,12 +422,10 @@ export default defineNuxtModule({
       nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
-    nuxt.hook('imports:sources', (sources) => {
-      sources.push(...pagesImportPresets)
-      if (nuxt.options.experimental.inlineRouteRules) {
-        sources.push(...routeRulesPresets)
-      }
-    })
+    addImportsSources(pagesImportPresets)
+    if (nuxt.options.experimental.inlineRouteRules) {
+      addImportsSources(inlineRouteRulesPresets)
+    }
 
     const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
     if (nuxt.options.test && nuxt.options.dev) {

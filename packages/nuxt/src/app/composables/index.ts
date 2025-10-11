@@ -31,3 +31,5 @@ export type { Politeness } from './route-announcer'
 export { useRuntimeHook } from './runtime-hook'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { injectHead, useHead, useHeadSafe, useSeoMeta, useServerHead, useServerHeadSafe, useServerSeoMeta } from './head'
+export type { PageMeta } from './pages'
+export { definePageMeta } from './pages'

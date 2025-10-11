@@ -51,6 +51,10 @@
     "#unhead/composables": {
       "types": "./dist/head/runtime/composables.d.ts",
       "import": "./dist/head/runtime/composables.js"
+    },
+    "#pages/composables": {
+      "types": "./dist/pages/runtime/composables.d.ts",
+      "import": "./dist/pages/runtime/composables.js"
     }
   },
   "files": [

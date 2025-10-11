@@ -8,15 +8,12 @@ import escapeRE from 'escape-string-regexp'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory, logger, resolveToAlias } from '../utils'
 import { TransformPlugin } from './transform'
-import { appCompatPresets, defaultPresets } from './presets'
+import { appCompatPresets, defaultPresets, experimentalPresets } from './presets'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
-import { pagesImportPresets, routeRulesPresets } from '../pages/module'
-
 const allNuxtPresets = [
-  ...pagesImportPresets,
-  ...routeRulesPresets,
   ...defaultPresets,
+  ...experimentalPresets,
 ]
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
