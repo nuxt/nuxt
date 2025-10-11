@@ -1,4 +1,3 @@
-import { consola } from 'consola'
 import defu from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
@@ -38,7 +37,7 @@ export default defineResolvers({
     publicDir: {
       $resolve: (val) => {
         if (val) {
-          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
+          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
         }
         // this is missing from our `vite` types deliberately, so users do not configure it
         return false as never

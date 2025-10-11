@@ -36,7 +36,6 @@ export default defineBuildConfig({
     'autoprefixer',
     'c12',
     'compatx',
-    'consola',
     'css-minimizer-webpack-plugin',
     'cssnano',
     'esbuild',
@@ -70,6 +69,5 @@ export default defineBuildConfig({
     // Implicit
     '@vue/compiler-core',
     '@vue/compiler-sfc',
-    '@vue/shared',
   ],
 })

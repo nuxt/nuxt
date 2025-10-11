@@ -77,12 +77,10 @@
   },
   "dependencies": {
     "@vue/shared": "^3.5.22",
-    "consola": "^3.4.2",
     "defu": "^6.1.4",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
-    "std-env": "^3.9.0",
-    "ufo": "1.6.1"
+    "std-env": "^3.9.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
