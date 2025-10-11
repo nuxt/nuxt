@@ -184,11 +184,11 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             const result = parseStaticExportIdentifiers(node)
             for (const exportMeta of result) {
               const { localName, exportedName } = exportMeta
-              // the function cannot look up function meta by local names yet,
-              // so we need to use the `exportedName` instead because that is the one
-              // that's used in the keyed functions definition
               const functionName = exportedName === 'default'
                 ? camelCase(parse(id).name)
+                // the function cannot look up function meta by local names yet,
+                // so we need to use the `exportedName` instead because that is the one
+                // that's used in the keyed functions definition
                 : getFunctionMetaByLocalName(exportedName, id)?.name
               if (!functionName) { continue }
               localNamesToExportedName.set(localName, functionName)
