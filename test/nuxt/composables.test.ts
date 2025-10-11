@@ -99,7 +99,6 @@ describe('composables', () => {
       'defineNuxtComponent',
       'useRuntimeHook',
       'definePageMeta',
-      'defineRouteRules',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
