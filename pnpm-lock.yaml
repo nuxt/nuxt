@@ -309,9 +309,6 @@ importers:
       semver:
         specifier: ^7.7.3
         version: 7.7.3
-      std-env:
-        specifier: ^3.9.0
-        version: 3.9.0
       tinyglobby:
         specifier: ^0.2.15
         version: 0.2.15
@@ -321,9 +318,6 @@ importers:
       unctx:
         specifier: ^2.4.1
         version: 2.4.1
-      unimport:
-        specifier: 5.4.1
-        version: 5.4.1
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -346,6 +340,9 @@ importers:
       unbuild:
         specifier: 3.6.1
         version: 3.6.1(typescript@5.9.3)(vue-sfc-transformer@0.1.17(@vue/compiler-core@3.5.22)(esbuild@0.25.10)(vue@3.5.22(typescript@5.9.3)))(vue-tsc@3.1.1(typescript@5.9.3))(vue@3.5.22(typescript@5.9.3))
+      unimport:
+        specifier: 5.4.1
+        version: 5.4.1
       vite:
         specifier: 7.1.9
         version: 7.1.9(@types/node@22.18.9)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
@@ -735,9 +732,6 @@ importers:
       '@vue/shared':
         specifier: 3.5.22
         version: 3.5.22
-      consola:
-        specifier: ^3.4.2
-        version: 3.4.2
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -750,9 +744,6 @@ importers:
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
-      ufo:
-        specifier: 1.6.1
-        version: 1.6.1
     devDependencies:
       '@types/pug':
         specifier: 2.0.10
