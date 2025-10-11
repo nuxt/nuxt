@@ -93,7 +93,7 @@ export function useRouteQuery<
 
         if (import.meta.server) {
           const navigateToPath = withQuery(route.fullPath, {
-            [name]: query || undefined,
+            [name]: query,
           })
 
           return await navigateTo(
