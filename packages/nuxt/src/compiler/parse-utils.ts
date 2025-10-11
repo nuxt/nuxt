@@ -10,6 +10,7 @@ import type {
 } from 'oxc-parser'
 import type { ParsedStaticImport } from 'mlly'
 import { resolveAlias } from '@nuxt/kit'
+import { stripExtension } from '../utils'
 
 export function processImports (imports: ParsedStaticImport[]) {
   /**
@@ -18,20 +19,20 @@ export function processImports (imports: ParsedStaticImport[]) {
   const directImports = new Map<string, {
     originalName: string
     /**
-     * import source with aliases resolved
+     * import source with aliases resolved and without extension
      */
     source: string
   }>()
 
   /**
-   * import source with aliases resolved -> set of namespaces from that source
+   * import source with aliases resolved and without extension -> set of namespaces from that source
    */
   const namespaces = new Map<string, {
     namespaces: Set<string>
   }>()
 
   for (const i of imports) {
-    const resolvedSpecifier = resolveAlias(i.specifier)
+    const resolvedSpecifier = stripExtension(resolveAlias(i.specifier))
 
     // handle named imports
     const namedImports = i.namedImports ?? {}
