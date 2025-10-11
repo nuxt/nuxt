@@ -121,6 +121,9 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
+    // Array for collecting route groups
+    const routeGroups: string[] = []
+
     const lastSegment = segments[segments.length - 1]!
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
@@ -137,8 +140,12 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 
       const tokens = parseSegment(segment!, file.absolutePath)
 
-      // Skip group segments
+      // Skip group segments after adding to meta
       if (tokens.every(token => token.type === SegmentTokenType.group)) {
+        const groupNames = tokens.map(t => t.value)
+
+        routeGroups.push(...groupNames)
+
         continue
       }
 
@@ -160,6 +167,11 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       } else if (segmentName !== 'index') {
         route.path += routePath
       }
+    }
+
+    if (routeGroups.length > 0) {
+      route.meta ||= {}
+      route.meta.group = routeGroups
     }
 
     parent.push(route)
