@@ -10,7 +10,7 @@ import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
-import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
+import type { CompilerScanDir, NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Component, ComponentsOptions } from './components'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 
@@ -231,6 +231,14 @@ export interface NuxtHooks {
    */
   'imports:extend': (imports: Import[]) => HookResult
   /**
+   * Called every time after all imports are generated and deduplicated.
+   * @remarks
+   * - Do NOT modify the `imports` array in this hook. Modifying it has no effect.
+   * @param imports Array containing the generated and deduplicated imports provided by unimport
+   * @returns Promise
+   */
+  'imports:generated': (imports: Import[]) => HookResult
+  /**
    * Called when the [unimport](https://github.com/unjs/unimport) context is created.
    * @param context The Unimport context
    * @returns Promise
@@ -256,6 +264,19 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'components:extend': (components: Component[]) => HookResult
+
+  // Nuxt Compiler
+  /**
+   * Allows extending the directories scanned by the Nuxt Compiler.
+   * @param dirs The `dirs` option to push new items
+   * @returns Promise
+   */
+  'compiler:dirs': (dirs: (string | CompilerScanDir)[]) => HookResult
+  /**
+   * Allows extending the files scanned by the Nuxt Compiler.
+   * @param files The resolved absolute paths to the files to be scanned by the Nuxt Compiler.
+   */
+  'compiler:files': (files: string[]) => HookResult
 
   // Nitropack
   /**
