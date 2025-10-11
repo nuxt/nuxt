@@ -1,6 +1,14 @@
 import { defineResolvers } from '../utils/definition'
 
 export default defineResolvers({
+  server: {
+    builder: {
+      $resolve: (val) => {
+        if (typeof val === 'string') { return val }
+        return '@nuxt/nitro-server'
+      },
+    },
+  },
   nitro: {
     runtimeConfig: {
       $resolve: async (val, get) => {

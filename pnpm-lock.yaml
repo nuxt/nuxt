@@ -9,6 +9,7 @@ overrides:
   '@babel/helper-plugin-utils': 7.27.1
   '@nuxt/cli': 3.29.3
   '@nuxt/kit': workspace:*
+  '@nuxt/nitro-server': workspace:*
   '@nuxt/rspack-builder': workspace:*
   '@nuxt/schema': workspace:*
   '@nuxt/vite-builder': workspace:*
@@ -353,6 +354,100 @@ importers:
         specifier: 5.102.0
         version: 5.102.0(esbuild@0.25.10)
 
+  packages/nitro-server:
+    dependencies:
+      '@nuxt/devalue':
+        specifier: ^2.0.2
+        version: 2.0.2
+      '@nuxt/kit':
+        specifier: workspace:*
+        version: link:../kit
+      '@unhead/vue':
+        specifier: 2.0.14
+        version: 2.0.14(vue@3.5.22(typescript@5.9.3))
+      '@vue/shared':
+        specifier: 3.5.22
+        version: 3.5.22
+      consola:
+        specifier: ^3.4.2
+        version: 3.4.2
+      defu:
+        specifier: ^6.1.4
+        version: 6.1.4
+      destr:
+        specifier: ^2.0.5
+        version: 2.0.5
+      devalue:
+        specifier: ^5.3.2
+        version: 5.3.2
+      errx:
+        specifier: ^0.1.0
+        version: 0.1.0
+      escape-string-regexp:
+        specifier: ^5.0.0
+        version: 5.0.0
+      exsolve:
+        specifier: ^1.0.7
+        version: 1.0.7
+      h3:
+        specifier: 1.15.4
+        version: 1.15.4
+      impound:
+        specifier: ^1.0.0
+        version: 1.0.0
+      klona:
+        specifier: ^2.0.6
+        version: 2.0.6
+      mocked-exports:
+        specifier: ^0.1.1
+        version: 0.1.1
+      nitropack:
+        specifier: 2.12.7
+        version: 2.12.7(rolldown@1.0.0-beta.42)
+      pathe:
+        specifier: ^2.0.3
+        version: 2.0.3
+      pkg-types:
+        specifier: ^2.3.0
+        version: 2.3.0
+      radix3:
+        specifier: ^1.1.2
+        version: 1.1.2
+      std-env:
+        specifier: ^3.9.0
+        version: 3.9.0
+      ufo:
+        specifier: 1.6.1
+        version: 1.6.1
+      unctx:
+        specifier: ^2.4.1
+        version: 2.4.1
+      unstorage:
+        specifier: ^1.17.1
+        version: 1.17.1(db0@0.3.4)(ioredis@5.8.1)
+      vue:
+        specifier: 3.5.22
+        version: 3.5.22(typescript@5.9.3)
+      vue-bundle-renderer:
+        specifier: ^2.2.0
+        version: 2.2.0
+      vue-devtools-stub:
+        specifier: ^0.1.0
+        version: 0.1.0
+    devDependencies:
+      '@nuxt/schema':
+        specifier: workspace:*
+        version: link:../schema
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
+      unbuild:
+        specifier: 3.6.1
+        version: 3.6.1(typescript@5.9.3)(vue-sfc-transformer@0.1.17(@vue/compiler-core@3.5.22)(esbuild@0.25.10)(vue@3.5.22(typescript@5.9.3)))(vue-tsc@3.1.1(typescript@5.9.3))(vue@3.5.22(typescript@5.9.3))
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.9)(happy-dom@20.0.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
+
   packages/nuxt:
     dependencies:
       '@dxup/nuxt':
@@ -361,15 +456,15 @@ importers:
       '@nuxt/cli':
         specifier: 3.29.3
         version: 3.29.3(magicast@0.3.5)
-      '@nuxt/devalue':
-        specifier: ^2.0.2
-        version: 2.0.2
       '@nuxt/devtools':
         specifier: ^2.6.5
         version: 2.6.5(vite@7.1.9(@types/node@22.18.9)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
+      '@nuxt/nitro-server':
+        specifier: workspace:*
+        version: link:../nitro-server
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
@@ -415,15 +510,9 @@ importers:
       errx:
         specifier: ^0.1.0
         version: 0.1.0
-      esbuild:
-        specifier: ^0.25.10
-        version: 0.25.10
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
-      estree-walker:
-        specifier: ^3.0.3
-        version: 3.0.3
       exsolve:
         specifier: ^1.0.7
         version: 1.0.7
@@ -454,15 +543,9 @@ importers:
       mlly:
         specifier: ^1.8.0
         version: 1.8.0
-      mocked-exports:
-        specifier: ^0.1.1
-        version: 0.1.1
       nanotar:
         specifier: ^0.2.0
         version: 0.2.0
-      nitropack:
-        specifier: 2.12.7
-        version: 2.12.7(rolldown@1.0.0-beta.42)
       nypm:
         specifier: ^0.6.2
         version: 0.6.2
@@ -505,9 +588,6 @@ importers:
       semver:
         specifier: ^7.7.3
         version: 7.7.3
-      seroval:
-        specifier: ^1.3.2
-        version: 1.3.2
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
@@ -535,21 +615,12 @@ importers:
       unplugin-vue-router:
         specifier: ^0.15.0
         version: 0.15.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
-      unstorage:
-        specifier: ^1.17.1
-        version: 1.17.1(db0@0.3.4)(ioredis@5.8.1)
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
       vue:
         specifier: 3.5.22
         version: 3.5.22(typescript@5.9.3)
-      vue-bundle-renderer:
-        specifier: ^2.2.0
-        version: 2.2.0
-      vue-devtools-stub:
-        specifier: ^0.1.0
-        version: 0.1.0
       vue-router:
         specifier: ^4.5.1
         version: 4.5.1(vue@3.5.22(typescript@5.9.3))
@@ -581,6 +652,9 @@ importers:
       vitest:
         specifier: 3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.9)(happy-dom@20.0.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
+      vue-bundle-renderer:
+        specifier: 2.2.0
+        version: 2.2.0
       vue-sfc-transformer:
         specifier: 0.1.17
         version: 0.1.17(@vue/compiler-core@3.5.22)(esbuild@0.25.10)(vue@3.5.22(typescript@5.9.3))
@@ -2682,15 +2756,6 @@ packages:
 
   '@rollup/plugin-json@6.1.0':
     resolution: {integrity: sha512-EGI2te5ENk1coGeADSIwZ7G2Q8CJS2sF120T7jLw4xFw9n7wIOXHo+kIYRAoVpJAN+kmqZSoO3Fp4JtoNF4ReA==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: 4.52.4
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
-  '@rollup/plugin-node-resolve@16.0.1':
-    resolution: {integrity: sha512-tk5YCxJWIG81umIvNkSod2qK5KyQW19qcBF/B78n1bjtOON6gzKoVeSzAE8yHCZEDmqkHKkxplExA8KzdJLJpA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: 4.52.4
@@ -7843,10 +7908,6 @@ packages:
     resolution: {integrity: sha512-gwXJnPRewT4rT7sBi/IvxKTjsms7jX7QIDLOClApuZwR49SXbrB1z2NLUZ+vDHyqCj/n58OzRRqaW+B8OZi8vg==}
     engines: {node: '>=18.12.0'}
 
-  unplugin-utils@0.3.0:
-    resolution: {integrity: sha512-JLoggz+PvLVMJo+jZt97hdIIIZ2yTzGgft9e9q8iMrC4ewufl62ekeW7mixBghonn2gVb/ICjyvlmOCUBnJLQg==}
-    engines: {node: '>=20.19.0'}
-
   unplugin-utils@0.3.1:
     resolution: {integrity: sha512-5lWVjgi6vuHhJ526bI4nlCOmkCIF3nnfXkCMDeMJrtdvxTs6ZFCM8oNufGTsDbKv/tJ/xj8RpvXjRuPBZJuJog==}
     engines: {node: '>=20.19.0'}
@@ -9868,16 +9929,6 @@ snapshots:
     optionalDependencies:
       rollup: 4.52.4
 
-  '@rollup/plugin-node-resolve@16.0.1(rollup@4.52.4)':
-    dependencies:
-      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
-      '@types/resolve': 1.20.2
-      deepmerge: 4.3.1
-      is-module: 1.0.0
-      resolve: 1.22.10
-    optionalDependencies:
-      rollup: 4.52.4
-
   '@rollup/plugin-node-resolve@16.0.2(rollup@4.52.4)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
@@ -10486,7 +10537,7 @@ snapshots:
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       tinyglobby: 0.2.15
-      unplugin-utils: 0.3.0
+      unplugin-utils: 0.3.1
 
   '@unocss/config@66.5.3':
     dependencies:
@@ -10610,7 +10661,7 @@ snapshots:
       magic-string: 0.30.19
       pathe: 2.0.3
       tinyglobby: 0.2.15
-      unplugin-utils: 0.3.0
+      unplugin-utils: 0.3.1
       vite: 7.1.9(@types/node@22.18.9)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
@@ -15742,7 +15793,7 @@ snapshots:
       '@rollup/plugin-alias': 5.1.1(rollup@4.52.4)
       '@rollup/plugin-commonjs': 28.0.6(rollup@4.52.4)
       '@rollup/plugin-json': 6.1.0(rollup@4.52.4)
-      '@rollup/plugin-node-resolve': 16.0.1(rollup@4.52.4)
+      '@rollup/plugin-node-resolve': 16.0.2(rollup@4.52.4)
       '@rollup/plugin-replace': 6.0.2(rollup@4.52.4)
       '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
       citty: 0.1.6
@@ -15840,7 +15891,7 @@ snapshots:
       strip-literal: 3.1.0
       tinyglobby: 0.2.15
       unplugin: 2.3.10
-      unplugin-utils: 0.3.0
+      unplugin-utils: 0.3.1
 
   unist-builder@4.0.0:
     dependencies:
@@ -15906,11 +15957,6 @@ snapshots:
       - supports-color
 
   unplugin-utils@0.2.5:
-    dependencies:
-      pathe: 2.0.3
-      picomatch: 4.0.3
-
-  unplugin-utils@0.3.0:
     dependencies:
       pathe: 2.0.3
       picomatch: 4.0.3
@@ -16123,7 +16169,7 @@ snapshots:
       open: 10.2.0
       perfect-debounce: 2.0.0
       sirv: 3.0.2
-      unplugin-utils: 0.3.0
+      unplugin-utils: 0.3.1
       vite: 7.1.9(@types/node@22.18.9)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
       vite-dev-rpc: 1.1.0(vite@7.1.9(@types/node@22.18.9)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
     optionalDependencies:
