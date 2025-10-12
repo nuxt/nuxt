@@ -1,6 +1,9 @@
 export interface KeyedFunction {
   /**
    * The name of the function.
+   *
+   * Use 'default' to target a module's default export. In that case, the callable name
+   * is derived from the filename (camel-cased) for matching during analysis.
    */
   name: string
   /**
