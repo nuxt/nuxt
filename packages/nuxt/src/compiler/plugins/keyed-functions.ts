@@ -38,7 +38,7 @@ export function shouldTransformFile (id: string, extensions: RegExp | readonly s
     && (
       extensions instanceof RegExp
         ? extensions.test(pathname)
-        : new RegExp(`\\.(${extensions.join('|')})$`).test(pathname)
+        : new RegExp(`\\.(${extensions.map(e => escapeRE(e)).join('|')})$`).test(pathname)
     )
     && parseQuery(search).type !== 'style' && !parseQuery(search).macro
 }
@@ -262,7 +262,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   )
                 )
                 // the function is imported from the correct source
-                && (stripExtension(fnMeta.source) === importSourceResolved)
+                && fnMeta.source && (stripExtension(fnMeta.source) === importSourceResolved)
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration
               || (localNamesToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
