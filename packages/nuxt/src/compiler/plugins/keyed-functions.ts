@@ -54,14 +54,6 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
     const fnSource = typeof f.source === 'string' ? stripExtension(f.source) : ''
 
     if (f.name === 'default') {
-      // TODO: remove this check & warning when `source` is required
-      if (!f.source) {
-        if (import.meta.dev) {
-          logger.warn(`[nuxt:compiler] [keyed-functions] Function with name \`default\` is missing a \`source\`. Skipping it.`)
-        }
-        continue
-      }
-
       const parsedSource = parse(f.source)
       defaultExportSources.add(parsedSource.name)
       functionName = camelCase(parsedSource.name)
@@ -83,7 +75,6 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
     sourcesToFunctionMeta.set(fnSource, {
       ...f,
-      // TODO: make `source` required
       source: fnSource,
     })
   }
@@ -92,7 +83,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   const sources = new Set<string>()
   for (const sourcesToFunctionMeta of namesToSourcesToFunctionMeta.values()) {
     for (const f of sourcesToFunctionMeta.values()) {
-      // TODO: remove check when `source` is required
+      // TODO: remove check in Nuxt 5 (keeping it at the moment for the case when there is a RegExp in `source`)
       if (f.source && typeof f.source === 'string') {
         sources.add(f.source)
       }
@@ -269,10 +260,8 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                     && fnMeta.name === 'default'
                   )
                 )
-                // TODO: remove `!fnMeta.source` check when `source` is required
-                // TODO: make it work for functions without `source` imported from `#imports`
                 // the function is imported from the correct source
-                && (fnMeta.source && stripExtension(fnMeta.source) === importSourceResolved)
+                && (stripExtension(fnMeta.source) === importSourceResolved)
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration
               || (localNamesToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
