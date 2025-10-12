@@ -789,12 +789,12 @@ describe('core keyed functions', () => {
 
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useState } from '#app/composables/state'
-          useState('some' + 'key', '$HJiaryoL2y')
-          useState(someVariable, '$yysMIARJHe')
-          useState(getKey(), '$Cy7hQH5X5O')
-          useState(obj.prop, '$Fl_F5LB-IM')
-          useState(obj['prop'], '$1GDT7saTf0')
-          useState(obj.met(), '$8YFL1gGJy8')"
+          useState('some' + 'key', '$HJiaryoL2y' /* nuxt-injected */)
+          useState(someVariable, '$yysMIARJHe' /* nuxt-injected */)
+          useState(getKey(), '$Cy7hQH5X5O' /* nuxt-injected */)
+          useState(obj.prop, '$Fl_F5LB-IM' /* nuxt-injected */)
+          useState(obj['prop'], '$1GDT7saTf0' /* nuxt-injected */)
+          useState(obj.met(), '$8YFL1gGJy8' /* nuxt-injected */)"
     `)
   })
 
@@ -807,7 +807,7 @@ useState(() => 1)
       `
       expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
         "import { useState } from '#app/composables/state'
-        useState(() => 1, '$HJiaryoL2y')"
+        useState(() => 1, '$HJiaryoL2y' /* nuxt-injected */)"
       `)
     })
 
@@ -844,19 +844,19 @@ useLazyFetch(url, options)
 
       expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
         "import { useFetch, useLazyFetch } from '#app/composables/fetch'
-        useFetch('/api/data', '$HJiaryoL2y')
-        useFetch(() => '/api/data', '$yysMIARJHe')
-        useFetch(url, '$Cy7hQH5X5O')
-        useFetch('/api/data', { method: 'POST' }, '$Fl_F5LB-IM')
-        useFetch(() => '/api/data', { method: 'POST' }, '$1GDT7saTf0')
-        useFetch(url, options, '$8YFL1gGJy8')
+        useFetch('/api/data', '$HJiaryoL2y' /* nuxt-injected */)
+        useFetch(() => '/api/data', '$yysMIARJHe' /* nuxt-injected */)
+        useFetch(url, '$Cy7hQH5X5O' /* nuxt-injected */)
+        useFetch('/api/data', { method: 'POST' }, '$Fl_F5LB-IM' /* nuxt-injected */)
+        useFetch(() => '/api/data', { method: 'POST' }, '$1GDT7saTf0' /* nuxt-injected */)
+        useFetch(url, options, '$8YFL1gGJy8' /* nuxt-injected */)
 
-        useLazyFetch('/api/data', '$-6Jq0e1X0N')
-        useLazyFetch(() => '/api/data', '$PysQIWKhwV')
-        useLazyFetch(url, '$wjhr0zrAT4')
-        useLazyFetch('/api/data', { method: 'POST' }, '$H_jcqrI1sJ')
-        useLazyFetch(() => '/api/data', { method: 'POST' }, '$_jtliZGAeJ')
-        useLazyFetch(url, options, '$TtqJmekP-n')"
+        useLazyFetch('/api/data', '$-6Jq0e1X0N' /* nuxt-injected */)
+        useLazyFetch(() => '/api/data', '$PysQIWKhwV' /* nuxt-injected */)
+        useLazyFetch(url, '$wjhr0zrAT4' /* nuxt-injected */)
+        useLazyFetch('/api/data', { method: 'POST' }, '$H_jcqrI1sJ' /* nuxt-injected */)
+        useLazyFetch(() => '/api/data', { method: 'POST' }, '$_jtliZGAeJ' /* nuxt-injected */)
+        useLazyFetch(url, options, '$TtqJmekP-n' /* nuxt-injected */)"
       `)
     })
   })
@@ -872,8 +872,8 @@ useAsyncData(() => $fetch('/api/data'), { server: false })
 
       expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
         "import { useAsyncData, useLazyAsyncData } from '#app/composables/asyncData'
-        useAsyncData(() => $fetch('/api/data'), '$HJiaryoL2y')
-        useAsyncData(() => $fetch('/api/data'), { server: false }, '$yysMIARJHe')"
+        useAsyncData(() => $fetch('/api/data'), '$HJiaryoL2y' /* nuxt-injected */)
+        useAsyncData(() => $fetch('/api/data'), { server: false }, '$yysMIARJHe' /* nuxt-injected */)"
       `)
     })
 
