@@ -196,7 +196,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         })
 
         // pre-pass to collect hoisted identifiers & exports
-        const { program } = parseAndWalk(code, id, {
+        const { program } = parseAndWalk(code, _id, {
           scopeTracker,
           enter (node) {
             if (!shouldConsiderExports) { return }
