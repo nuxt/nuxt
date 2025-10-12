@@ -12,7 +12,7 @@ import type { ParsedStaticImport } from 'mlly'
 import { resolveAlias } from '@nuxt/kit'
 import { stripExtension } from '../utils'
 
-export function processImports (imports: ParsedStaticImport[]) {
+export function processImports (imports: ParsedStaticImport[], alias: Record<string, string>) {
   /**
    * import alias -> original name; source with aliases resolved and without extension
    */
@@ -32,7 +32,7 @@ export function processImports (imports: ParsedStaticImport[]) {
   }>()
 
   for (const i of imports) {
-    const resolvedSpecifier = stripExtension(resolveAlias(i.specifier))
+    const resolvedSpecifier = stripExtension(resolveAlias(i.specifier, alias))
 
     // handle named imports
     const namedImports = i.namedImports ?? {}

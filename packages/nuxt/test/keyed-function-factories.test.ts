@@ -12,6 +12,10 @@ import type { DeepPartial } from '#app/config.ts'
 function createMockNuxt (): Nuxt {
   return ({
     options: {
+      alias: {
+        '@': '/app',
+        '#app': '/nuxt/app',
+      },
       optimization: {
         keyedComposables: [],
       },
@@ -31,6 +35,11 @@ describe('keyed function factories scan plugin', () => {
       source: '#app/composables/async-data',
       argumentLength: 2,
     },
+    {
+      name: 'createUseKey',
+      source: '~/composables/useKey.ts', // deliberately using an extension here
+      argumentLength: 1,
+    },
   ]
 
   const autoImportsToSources = new Map<string, string>([
@@ -40,7 +49,7 @@ describe('keyed function factories scan plugin', () => {
   async function callScanPlugin (id: string, code: string, nuxt: Nuxt, overrides?: {
     autoImportsToSources?: Map<string, string>
   }) {
-    const plugin = KeyedFunctionFactoriesScanPlugin({ factories })
+    const plugin = KeyedFunctionFactoriesScanPlugin({ factories, alias: nuxt.options.alias })
     const context = createScanPluginContext(code, id)
     await plugin.scan.call(context, {
       id,
@@ -67,19 +76,19 @@ describe('keyed function factories scan plugin', () => {
       export const useAnotherFetch = createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
         {
           "argumentLength": 3,
           "name": "useAnotherFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -98,46 +107,8 @@ describe('keyed function factories scan plugin', () => {
       [
         {
           "argumentLength": 3,
-          "name": "useMyApi",
+          "name": "default",
           "source": "@/composables/use-my-api.ts",
-        },
-      ]
-    `)
-  })
-
-  it('should keep camel case in default export', async () => {
-    const code = `
-        import { createUseFetch } from '#app/composables/fetch'
-        export default createUseFetch()
-      `
-
-    await callScanPlugin('@/composables/useMyApi.ts', code, mockNuxt)
-
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
-      [
-        {
-          "argumentLength": 3,
-          "name": "useMyApi",
-          "source": "@/composables/useMyApi.ts",
-        },
-      ]
-    `)
-  })
-
-  it('should convert to camel case in default export from snake case file name', async () => {
-    const code = `
-        import { createUseFetch } from '#app/composables/fetch'
-        export default createUseFetch()
-      `
-
-    await callScanPlugin('@/composables/use_my_api.ts', code, mockNuxt)
-
-    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
-      [
-        {
-          "argumentLength": 3,
-          "name": "useMyApi",
-          "source": "@/composables/use_my_api.ts",
         },
       ]
     `)
@@ -179,14 +150,14 @@ describe('keyed function factories scan plugin', () => {
       }
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useExportedFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -223,7 +194,7 @@ describe('keyed function factories scan plugin', () => {
         export const useFetch = createUseFetch()
       `
 
-    await callScanPlugin('#app/some-other-place', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
   })
@@ -234,14 +205,14 @@ describe('keyed function factories scan plugin', () => {
         export const useFetch = renamedCreateUseFetch()
       `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -252,14 +223,14 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch = createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -275,7 +246,7 @@ describe('keyed function factories scan plugin', () => {
       ['createUseFetch', '#app/some-other-place'],
     ])
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt, { autoImportsToSources })
+    await callScanPlugin('fetch.ts', code, mockNuxt, { autoImportsToSources })
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
   })
@@ -285,9 +256,34 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch = createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt, { autoImportsToSources: new Map() })
+    await callScanPlugin('fetch.ts', code, mockNuxt, { autoImportsToSources: new Map() })
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
+  })
+
+  it('should collect functions when factory is imported with or without an extension', async () => {
+    const code = `
+    import { createUseFetch } from '#app/composables/fetch.ts'
+    import { createUseKey } from '~/composables/useKey'
+    export const useFetch = createUseFetch()
+    export const useKey = createUseKey()
+    `
+
+    await callScanPlugin('file.ts', code, mockNuxt)
+    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
+      [
+        {
+          "argumentLength": 3,
+          "name": "useFetch",
+          "source": "file.ts",
+        },
+        {
+          "argumentLength": 1,
+          "name": "useKey",
+          "source": "file.ts",
+        },
+      ]
+    `)
   })
 
   it('should collect functions from factories imported through a namespace', async () => {
@@ -296,14 +292,14 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch = factories.createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -314,13 +310,13 @@ describe('keyed function factories scan plugin', () => {
     import * as factories from '#app/composables/fetch'
     export const useFetch = factories['createUseFetch']()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -335,33 +331,33 @@ describe('keyed function factories scan plugin', () => {
     export const useFourthFetch = factories.createUseFetch?.()
     export const useFifthFetch = factories['createUseFetch']?.()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
         {
           "argumentLength": 3,
           "name": "useSecondFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
         {
           "argumentLength": 3,
           "name": "useThirdFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
         {
           "argumentLength": 3,
           "name": "useFourthFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
         {
           "argumentLength": 3,
           "name": "useFifthFetch",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -374,7 +370,7 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch = wrongNamespace.createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
   })
@@ -387,19 +383,19 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch2 = anotherNamespace.createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch1",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
         {
           "argumentLength": 3,
           "name": "useFetch2",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -412,7 +408,7 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch = somewhereElse.createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
   })
@@ -425,19 +421,19 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch2 = factories.createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
 
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`
       [
         {
           "argumentLength": 3,
           "name": "useFetch1",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
         {
           "argumentLength": 3,
           "name": "useFetch2",
-          "source": "#app/composables/fetch",
+          "source": "fetch.ts",
         },
       ]
     `)
@@ -449,7 +445,7 @@ describe('keyed function factories scan plugin', () => {
       export const useFetch = createUseFetch()
     `
 
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt, {
+    await callScanPlugin('fetch.ts', code, mockNuxt, {
       // no auto-imports to prevent `createUseFetch()` from being recognized
       autoImportsToSources: new Map(),
     })
@@ -459,7 +455,7 @@ describe('keyed function factories scan plugin', () => {
 
   it('should collect functions from default export of factories accessed via a namespace', async () => {
     const code = `
-      import everything from '#app/composables/fetch'
+      import * as everything from '#app/composables/fetch'
       export default everything.createUseFetch()
     `
 
@@ -469,7 +465,7 @@ describe('keyed function factories scan plugin', () => {
       [
         {
           "argumentLength": 3,
-          "name": "useFetch",
+          "name": "default",
           "source": "useFetch.ts",
         },
       ]
@@ -483,7 +479,7 @@ describe('keyed function factories scan plugin', () => {
     function createUseFetch() { return () => {} }
     export const useFetch2 = createUseFetch()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
   })
 
@@ -493,7 +489,7 @@ describe('keyed function factories scan plugin', () => {
     const { createUseFetch } = factories
     export const useFetch = createUseFetch()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
   })
 
@@ -503,7 +499,7 @@ describe('keyed function factories scan plugin', () => {
     const mk = createUseFetch
     export const useFetch = mk()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot('[]')
   })
 
@@ -513,7 +509,7 @@ describe('keyed function factories scan plugin', () => {
     // @ts-expect-error: createUseFetch is a type-only import, cannot be called
     export const useFetch = createUseFetch()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
+    await callScanPlugin('fetch.ts', code, mockNuxt)
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
   })
 
@@ -523,8 +519,8 @@ describe('keyed function factories scan plugin', () => {
     // @ts-expect-error: type-only import
     export const useFetch = createUseFetch()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toEqual([])
+    await callScanPlugin('fetch.ts', code, mockNuxt)
+    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
   })
 
   it('should ignore type-only namespace import', async () => {
@@ -533,8 +529,8 @@ describe('keyed function factories scan plugin', () => {
     // @ts-expect-error: factories is type-only
     export const useFetch = factories.createUseFetch()
   `
-    await callScanPlugin('#app/composables/fetch', code, mockNuxt)
-    expect(mockNuxt.options.optimization.keyedComposables).toEqual([])
+    await callScanPlugin('fetch.ts', code, mockNuxt)
+    expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
   })
 })
 
@@ -547,9 +543,14 @@ describe('keyed function factories plugin', () => {
       source: '#app/composables/fetch',
       argumentLength: 3,
     },
+    {
+      name: 'createUseKey',
+      source: '~/composables/useKey.ts', // deliberately using an extension here
+      argumentLength: 1,
+    },
   ]
 
-  const transformPlugin = KeyedFunctionFactoriesPlugin({ sourcemap: false, factories }).raw({}, {} as any) as {
+  const transformPlugin = KeyedFunctionFactoriesPlugin({ sourcemap: false, factories, alias: {} }).raw({}, {} as any) as {
     transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
   }
 
@@ -559,7 +560,7 @@ describe('keyed function factories plugin', () => {
      export const useFetch = createUseFetch()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch } from '#app/composables/fetch'
            export const useFetch = createUseFetch.__nuxt_factory()"
     `)
@@ -571,7 +572,7 @@ describe('keyed function factories plugin', () => {
      export const useFetch = createUseFetch(), another = createUseFetch()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch } from '#app/composables/fetch'
            export const useFetch = createUseFetch.__nuxt_factory(), another = createUseFetch.__nuxt_factory()"
     `)
@@ -583,7 +584,23 @@ describe('keyed function factories plugin', () => {
      export const useFetch = createUseFetch()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
+  })
+
+  it('should transform factories when imported with or without an extension', async () => {
+    const code = `
+    import { createUseFetch } from '#app/composables/fetch.ts'
+    import { createUseKey } from '~/composables/useKey'
+    export const useFetch = createUseFetch()
+    export const useKey = createUseKey()
+    `
+
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
+      "import { createUseFetch } from '#app/composables/fetch.ts'
+          import { createUseKey } from '~/composables/useKey'
+          export const useFetch = createUseFetch.__nuxt_factory()
+          export const useKey = createUseKey.__nuxt_factory()"
+    `)
   })
 
   it('should transform factories renamed in import', async () => {
@@ -592,7 +609,7 @@ describe('keyed function factories plugin', () => {
      export const useFetch = renamedCreateUseFetch()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch as renamedCreateUseFetch } from '#app/composables/fetch'
            export const useFetch = renamedCreateUseFetch.__nuxt_factory()"
     `)
@@ -605,40 +622,7 @@ describe('keyed function factories plugin', () => {
      export const useFetch = createUseFetch()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
-  })
-
-  it('should transform factory accessed through named default import', async () => {
-    const code = `
-     import everything from '#app/composables/fetch'
-     export const useFetch = everything.createUseFetch()
-    `
-
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
-      "import everything from '#app/composables/fetch'
-           export const useFetch = everything.createUseFetch.__nuxt_factory()"
-    `)
-  })
-
-  it('should transform factory accessed through bracket notation on a named default import', async () => {
-    const code = `
-     import everything from '#app/composables/fetch'
-     export const useFetch = everything['createUseFetch']()
-    `
-
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
-      "import everything from '#app/composables/fetch'
-           export const useFetch = everything['createUseFetch'].__nuxt_factory()"
-    `)
-  })
-
-  it('should not transform factory when not accessed through named default import', async () => {
-    const code = `
-     import everything from '#app/composables/fetch'
-     export const useFetch = createUseFetch()
-    `
-
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
   })
 
   it('should transform factory accessed through namespaced import', async () => {
@@ -647,7 +631,7 @@ describe('keyed function factories plugin', () => {
     export const useFetch = factories.createUseFetch()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import * as factories from '#app/composables/fetch'
           export const useFetch = factories.createUseFetch.__nuxt_factory()"
     `)
@@ -659,7 +643,7 @@ describe('keyed function factories plugin', () => {
     export const useFetch = factories['createUseFetch']()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import * as factories from '#app/composables/fetch'
           export const useFetch = factories['createUseFetch'].__nuxt_factory()"
     `)
@@ -672,7 +656,7 @@ describe('keyed function factories plugin', () => {
       export const x = a()
       export const y = b()
     `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch as a } from '#app/composables/fetch'
             import { createUseFetch as b } from '#app/other'
             export const x = a.__nuxt_factory()
@@ -693,7 +677,7 @@ describe('keyed function factories plugin', () => {
     export const h = (factories['createUseFetch'])?.()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import * as factories from '#app/composables/fetch'
           export const a = factories.createUseFetch?.__nuxt_factory()
           export const b = factories?.createUseFetch.__nuxt_factory()
@@ -713,7 +697,7 @@ describe('keyed function factories plugin', () => {
     export const useOptionalFetch = factories?.someOtherFunction?.()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
   })
 
   it('should transform local factories with separate declaration and export', async () => {
@@ -726,7 +710,7 @@ describe('keyed function factories plugin', () => {
      export { useFetch, useAnother }
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch } from '#app/composables/fetch'
            const useFetch = createUseFetch.__nuxt_factory()
            const useAnother = createUseFetch.__nuxt_factory()
@@ -744,7 +728,7 @@ describe('keyed function factories plugin', () => {
      export { useFetch as renamedUseFetch }
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch } from '#app/composables/fetch'
            const useFetch = createUseFetch.__nuxt_factory()
 
@@ -758,7 +742,7 @@ describe('keyed function factories plugin', () => {
      const useFetch = createUseFetch()
     `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
   })
 
   it('should not transform factories in non-top level', async () => {
@@ -774,7 +758,7 @@ describe('keyed function factories plugin', () => {
       }
       `
 
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should not transform when local variable shadows the factory', async () => {
@@ -783,7 +767,7 @@ describe('keyed function factories plugin', () => {
     const createUseFetch = () => () => {}
     export const useFetch = createUseFetch()
   `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code).toBeUndefined()
   })
 
   it('should transform when only an inner-scope binding shadows the name', async () => {
@@ -792,7 +776,7 @@ describe('keyed function factories plugin', () => {
       { const createUseFetch = () => () => {} }
       export const useFetch = createUseFetch()
     `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch } from '#app/composables/fetch'
             { const createUseFetch = () => () => {} }
             export const useFetch = createUseFetch.__nuxt_factory()"
@@ -805,7 +789,7 @@ describe('keyed function factories plugin', () => {
     const key = 'createUseFetch'
     export const useFetch = factories[key]()
   `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
   })
 
   it('should not transform when property is computed via template literal', async () => {
@@ -813,7 +797,7 @@ describe('keyed function factories plugin', () => {
     import * as factories from '#app/composables/fetch'
     export const useFetch = factories[\`createUseFetch\`]()
   `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
   })
 
   it('should transform default export', async () => {
@@ -821,7 +805,7 @@ describe('keyed function factories plugin', () => {
     import { createUseFetch } from '#app/composables/fetch'
     export default createUseFetch()
   `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { createUseFetch } from '#app/composables/fetch'
           export default createUseFetch.__nuxt_factory()"
     `)
@@ -831,7 +815,7 @@ describe('keyed function factories plugin', () => {
     const code = `
     export { createUseFetch } from '#app/composables/fetch'
     `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
   })
 
   it('should not transform dynamic import', async () => {
@@ -841,6 +825,6 @@ describe('keyed function factories plugin', () => {
       return m.createUseFetch()
     }
     `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toBeUndefined()
+    expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
   })
 })

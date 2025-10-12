@@ -231,12 +231,6 @@ export interface NuxtHooks {
    */
   'imports:extend': (imports: Import[]) => HookResult
   /**
-   * Called every time after all imports are generated and deduplicated. Modifying the `imports` array here has no effect.
-   * @param imports Array containing the generated and deduplicated imports provided by unimport
-   * @returns Promise
-   */
-  'imports:generated': (imports: Import[]) => HookResult
-  /**
    * Called when the [unimport](https://github.com/unjs/unimport) context is created.
    * @param context The Unimport context
    * @returns Promise
@@ -264,6 +258,11 @@ export interface NuxtHooks {
   'components:extend': (components: Component[]) => HookResult
 
   // Nuxt Compiler
+  /**
+   * Called when the Nuxt compiler is ready to be used.
+   * @returns Promise
+   */
+  'compiler:ready': () => HookResult
   /**
    * Allows extending the directories scanned by the Nuxt Compiler.
    * @param dirs The `dirs` option to push new items

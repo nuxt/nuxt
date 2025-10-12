@@ -165,8 +165,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           }
         }
 
-        await nuxt.callHook('imports:generated', await ctx.getImports())
-
         return imports
       })
 

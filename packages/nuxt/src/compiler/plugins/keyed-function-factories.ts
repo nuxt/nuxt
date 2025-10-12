@@ -1,6 +1,6 @@
 import { createCompilerScanPlugin, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
-import { JS_EXTENSIONS, isJavascriptExtension, logger } from '../../utils'
+import { JS_EXTENSIONS, isJavascriptExtension, logger, stripExtension } from '../../utils'
 import type {
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
@@ -9,12 +9,11 @@ import type {
   ParenthesizedExpression,
   VariableDeclarator,
 } from 'oxc-parser'
-import { parse } from 'pathe'
-import { camelCase } from 'scule'
+import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import { shouldTransformFile } from './keyed-functions'
 import MagicString from 'magic-string'
-import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
+import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../parse-utils'
@@ -30,7 +29,7 @@ interface ParsedKeyedFunctionFactory {
  * Check if the node is a named export of a keyed function factory, and if so,
  * return its VariableDeclarator node.
  */
-export function parseKeyedFunctionFactory (node: ExportNamedDeclaration | ExportDefaultDeclaration, filter: RegExp, filePath: string, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
+export function parseKeyedFunctionFactory (node: ExportNamedDeclaration | ExportDefaultDeclaration, filter: RegExp, scopeTracker: ScopeTracker): ParsedKeyedFunctionFactory[] {
   if (node.type === 'ExportNamedDeclaration') {
     const parsed: ParsedKeyedFunctionFactory[] = []
 
@@ -74,7 +73,7 @@ export function parseKeyedFunctionFactory (node: ExportNamedDeclaration | Export
       return [{
         factoryName: functionCallMeta.name,
         factoryNode: functionCallMeta.node,
-        functionName: camelCase(parse(filePath).name),
+        functionName: 'default',
         namespace: functionCallMeta.namespace,
       }]
     }
@@ -87,9 +86,10 @@ export function parseKeyedFunctionFactory (node: ExportNamedDeclaration | Export
 /**
  * @param filePath
  * @param scopeTracker
- * @param namesToFactoryMeta - map of factory function names to their metadata; it is expected that the `source`s have had their aliases resolved
+ * @param namesToFactoryMeta - map of factory function names to their metadata; it is expected that the `source`s have had their aliases resolved and are without extensions
  * @param imports
  * @param autoImportsToSources
+ * @param alias
  */
 function createFactoryProcessor (
   filePath: string,
@@ -97,8 +97,9 @@ function createFactoryProcessor (
   namesToFactoryMeta: Map<string, KeyedFunctionFactory>,
   imports: ParsedStaticImport[],
   autoImportsToSources: Map<string, string> | undefined,
+  alias: Record<string, string>,
 ) {
-  const { directImports, namespaces } = processImports(imports)
+  const { directImports, namespaces } = processImports(imports, alias)
 
   const localFactoryNames = new Set<string>(namesToFactoryMeta.keys())
   for (const [localName, directImport] of directImports) {
@@ -107,6 +108,15 @@ function createFactoryProcessor (
     }
   }
   const LOCAL_FACTORY_NAMES_RE = new RegExp(`\\b(${[...localFactoryNames].map(f => escapeRE(f)).join('|')})\\b`)
+
+  // TODO: use async walker or create sync version of `resolvePath` from kit
+  function _resolvePath (path: string) {
+    let p = path
+    if (isAbsolute(p)) { return p }
+    p = resolveAlias(p, alias)
+    if (isAbsolute(p)) { return p }
+    return join(parse(filePath).dir, p)
+  }
 
   function getFactoryByLocalName (localName: string | undefined) {
     if (!localName) { return undefined }
@@ -118,51 +128,95 @@ function createFactoryProcessor (
   }
 
   function processFactory (
+    walkContext: ThisParameterType<NonNullable<Parameters<typeof walk>[1]['enter']>>, // TODO: export type from `oxc-walker`
     node: ExportNamedDeclaration | ExportDefaultDeclaration,
     handler: (ctx: { parseFactoryResult: ParsedKeyedFunctionFactory, factory: KeyedFunctionFactory }) => void,
   ) {
-    const parseFactoryResults = parseKeyedFunctionFactory(node, LOCAL_FACTORY_NAMES_RE, filePath, scopeTracker)
-    if (!parseFactoryResults.length) {
-      return
-    }
+    const parsedFactoryCalls = parseKeyedFunctionFactory(node, LOCAL_FACTORY_NAMES_RE, scopeTracker)
+    if (!parsedFactoryCalls.length) { return }
 
-    for (const parseFactoryResult of parseFactoryResults) {
-      const factoryMeta = getFactoryByLocalName(parseFactoryResult.factoryName)
+    for (const parsedFactoryCall of parsedFactoryCalls) {
+      const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
-        logger.error(`[nuxt:compiler] No factory function found for \`${parseFactoryResult.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`)
+        logger.error(`[nuxt:compiler] No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`)
         return
       }
 
-      const factoryScopeTrackerNode = scopeTracker.getDeclaration(parseFactoryResult.factoryName)
+      const scopeTrackerNode = scopeTracker.getDeclaration(!parsedFactoryCall.namespace ? parsedFactoryCall.factoryName : parsedFactoryCall.namespace)
 
-      // we don't always need to check for auto-imports (in transformed code, all imports have already been added)
-      const autoImportedSource = autoImportsToSources?.get(factoryMeta.name)
+      function isFactoryImport (node: ScopeTrackerNode | null): node is ScopeTrackerNode & { type: 'Import' } {
+        return node?.type === 'Import' && node.importNode.importKind !== 'type'
+      }
+
+      // import source WITHOUT EXTENSION and with resolved alias
+      let importSourceResolved: string | undefined
+
+      if (isFactoryImport(scopeTrackerNode)) {
+        importSourceResolved = stripExtension(_resolvePath(scopeTrackerNode.importNode.source.value))
+      } else if (!scopeTrackerNode) {
+        const autoImportedSource = autoImportsToSources?.get(factoryMeta.name)
+        if (autoImportedSource) {
+          importSourceResolved = stripExtension(_resolvePath(autoImportedSource))
+        }
+      }
+
+      if (!importSourceResolved) {
+        continue
+      }
+
+      // resolved source WITHOUT an extension
       const resolvedFactorySource = factoryMeta.source
-      const namespacedImportMeta = namespaces.get(resolvedFactorySource)
 
       // the factory is called directly
       // `createUseFetch()`
-      if (!parseFactoryResult.namespace && (
-      // and the factory is imported directly
-        (factoryScopeTrackerNode?.type === 'Import' && resolveAlias(factoryScopeTrackerNode.importNode.source.value) === resolvedFactorySource)
-      // or the factory is auto-imported
-      || (!factoryScopeTrackerNode && autoImportedSource && resolveAlias(autoImportedSource) === resolvedFactorySource)
-      )
+      if (
+        !parsedFactoryCall.namespace && (
+          // and the factory is imported directly
+          (
+            isFactoryImport(scopeTrackerNode) && (
+              (
+                // import { createUseFetch } from '...'
+                scopeTrackerNode.node.type === 'ImportSpecifier'
+                && scopeTrackerNode.node.importKind !== 'type'
+              )
+              // import createUseFetch from '...'
+              || (
+                scopeTrackerNode.node.type === 'ImportDefaultSpecifier'
+                && factoryMeta.name === 'default'
+              )
+            )
+            // from the correct source
+            && importSourceResolved === resolvedFactorySource
+          )
+          // or the factory is auto-imported
+          || (!scopeTrackerNode && importSourceResolved === resolvedFactorySource)
+          // we deliberately do not support scanning for factories used in the same file they are defined in
+        )
       ) {
-        handler({ parseFactoryResult, factory: factoryMeta })
+        handler({ parseFactoryResult: parsedFactoryCall, factory: factoryMeta })
+        walkContext.skip()
         continue
       }
 
       // the function is called as a member of a namespace import
       // `namespace.createUseFetch()`
-      if (
-        parseFactoryResult.namespace && namespacedImportMeta && namespacedImportMeta.namespaces.has(parseFactoryResult.namespace)
-      ) {
-        handler({ parseFactoryResult, factory: factoryMeta })
+      if (parsedFactoryCall.namespace) {
+        const namespacedImportMeta = namespaces.get(resolvedFactorySource)
+        const namespaceScopeTrackerNode = scopeTracker.getDeclaration(parsedFactoryCall.namespace)
+
+        if (namespacedImportMeta && namespacedImportMeta.namespaces.has(parsedFactoryCall.namespace)
+          // the namespace is not shadowed
+          && namespaceScopeTrackerNode?.type === 'Import' && namespaceScopeTrackerNode.node.type === 'ImportNamespaceSpecifier'
+        ) {
+          handler({ parseFactoryResult: parsedFactoryCall, factory: factoryMeta })
+        }
+
+        // prevent descending into CallExpression of a ChainExpression
+        walkContext.skip()
         continue
       }
 
-      logger.debug(`[nuxt:compiler] The factory function \`${factoryMeta.name}\` used to create \`${parseFactoryResult.functionName}\` in file \`${filePath}\` is not imported and is not in auto-imports. Skipping processing.`)
+      logger.debug(`[nuxt:compiler] The factory function \`${factoryMeta.name}\` used to create \`${parsedFactoryCall.functionName}\` in file \`${filePath}\` is not imported and is not in auto-imports. Skipping processing.`)
     }
   }
 
@@ -179,6 +233,7 @@ interface KeyedFunctionFactoriesScanPluginOptions {
    * Aliases in `source` have not been resolved yet.
    */
   factories: KeyedFunctionFactory[]
+  alias: Record<string, string>
 }
 
 /**
@@ -192,7 +247,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
   // - the `source`s have resolved aliases
   const namesToFactoryMeta = new Map<string, KeyedFunctionFactory>(options.factories.map(f => [f.name, {
     ...f,
-    source: resolveAlias(f.source),
+    source: stripExtension(resolveAlias(f.source, options.alias)),
   }]))
 
   // TODO: support default import, which won't have the factory name
@@ -208,7 +263,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
       const scopeTracker = new ScopeTracker({
         preserveExitedScopes: true,
       })
-      const { processFactory } = createFactoryProcessor(id, scopeTracker, namesToFactoryMeta, this.getParsedStaticImports(), autoImportsToSources)
+      const { processFactory } = createFactoryProcessor(id, scopeTracker, namesToFactoryMeta, this.getParsedStaticImports(), autoImportsToSources, options.alias)
 
       this.walkParsed({
         scopeTracker,
@@ -232,7 +287,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
           }
           isWalkingSupportedSubtree = true
 
-          processFactory(node, ({ parseFactoryResult, factory }) => {
+          processFactory(this, node, ({ parseFactoryResult, factory }) => {
             keyedFunctionsCreatedByFactories.push({
               name: parseFactoryResult.functionName,
               source: id,
@@ -258,6 +313,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
 interface KeyedFunctionFactoriesPluginOptions {
   sourcemap: boolean
   factories: KeyedFunctionFactory[]
+  alias: Record<string, string>
 }
 
 /**
@@ -272,7 +328,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
   // - the `source`s have resolved aliases
   const namesToFactoryMeta = new Map<string, KeyedFunctionFactory>(options.factories.map(f => [f.name, {
     ...f,
-    source: resolveAlias(f.source),
+    source: stripExtension(resolveAlias(f.source, options.alias)),
   }]))
 
   // TODO: support default import, which won't have the factory name
@@ -297,6 +353,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           namesToFactoryMeta,
           findStaticImports(code).map(i => parseStaticImport(i)),
           undefined, // TODO: add auto-imports
+          options.alias,
         )
 
         function rewriteFactoryMacro (node: IdentifierReference | MemberExpression | ParenthesizedExpression) {
@@ -340,7 +397,7 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
             if (node.type !== 'ExportNamedDeclaration' && node.type !== 'ExportDefaultDeclaration') {
               return
             }
-            processFactory(node, ({ parseFactoryResult }) => {
+            processFactory(this, node, ({ parseFactoryResult }) => {
               rewriteFactoryMacro(parseFactoryResult.factoryNode)
             })
           },

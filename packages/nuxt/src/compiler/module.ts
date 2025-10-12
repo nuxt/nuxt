@@ -6,7 +6,7 @@ import { createScanPluginContext, matchWithStringOrRegex } from './utils'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin } from './plugins/keyed-function-factories'
 import { distDir } from '../dirs.ts'
-import type { Import } from 'unimport'
+import type { Unimport } from 'unimport'
 import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
 
 const runtimeDir = resolve(distDir, 'compiler/runtime')
@@ -20,17 +20,26 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
     scan: true,
   },
   setup (_options, nuxt) {
-    nuxt.hook('modules:done', async () => {
+    let unimport: Unimport | undefined
+    nuxt.hook('imports:context', (ctx) => {
+      unimport = ctx
+    })
+
+    nuxt.hook('compiler:ready', async () => {
       // scan raw source files for keyed function factories to register their created functions for key injection
       addCompilerScanPlugin(KeyedFunctionFactoriesScanPlugin({
         factories: nuxt.options.optimization.keyedComposableFactories,
+        alias: nuxt.options.alias,
       }))
 
-      // replace keyed function factory compiler macro placeholders with actual factories
+      // replace keyed function factory compiler macro placeholders with actual factories (createUseFetch -> createUseFetch.__nuxt_factory)
       addBuildPlugin(KeyedFunctionFactoriesPlugin({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         factories: nuxt.options.optimization.keyedComposableFactories,
+        alias: nuxt.options.alias,
       }))
+
+      await runScanPlugins()
 
       // Add keys for useFetch, useAsyncData, etc.
       const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
@@ -42,6 +51,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         keyedFunctions: normalizedKeyedFunctions,
         alias: nuxt.options.alias,
+        getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
       }))
     })
 
@@ -51,13 +61,10 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       )
     })
 
-    let unhookOldBuilderWatcher: (() => void) | undefined
-
-    async function runScanPlugins (autoImports: Import[]) {
+    async function runScanPlugins () {
+      const autoImports = await unimport?.getImports() || []
       // sources do not have aliases resolved
       const autoImportsToSources = new Map<string, string>(autoImports.map(i => [i.as || i.name, i.from]))
-
-      unhookOldBuilderWatcher?.()
 
       // the normalized scan directories, which include only valid directories and have unique paths
       let scanDirs: Required<CompilerScanDir>[] = []
@@ -192,22 +199,9 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
           logger.error(`[nuxt:compiler] Error in \`afterScan\` hook of plugin \`${plugin.name}\``, e)
         }
       }))
-
-      // watch for changes in scan directories
-      unhookOldBuilderWatcher = nuxt.hook('builder:watch', (_, relativePath) => {
-        const path = resolve(nuxt.options.srcDir, relativePath)
-        if (!scanDirs.some(dir => dir.path === path)) {
-          return
-        }
-
-        // TODO: can we handle this more gracefully without restarting the whole Nuxt instance?
-        return nuxt.callHook('restart')
-      })
     }
 
-    nuxt.hook('imports:generated', (imports) => {
-      return runScanPlugins(imports)
-    })
+    // TODO: add support for HMR
   },
 })
 
