@@ -4,14 +4,16 @@ import type { ScanPlugin } from './nuxt.ts'
 export interface KeyedFunction {
   /**
    * The name of the function.
+   *
+   * Use 'default' to target a module's default export. In that case, the callable name
+   * is derived from the filename (camel-cased) for matching during analysis.
    */
   name: string
-  // TODO: make required in Nuxt 5
   /**
    * The path to the file where the function is defined.
    * You can use Nuxt aliases (~ or @) to refer to directories inside the project or directly use an npm package path similar to require.
    */
-  source?: string
+  source: string
   /**
    * The maximum number of arguments the function can accept.
    * In the case that the function is called with fewer arguments than this number,

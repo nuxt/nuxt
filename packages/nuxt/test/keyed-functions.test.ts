@@ -2,6 +2,7 @@ import type { KeyedFunction } from '@nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
 import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions'
 import { logger } from '../src/utils'
+import type { Import } from 'unimport'
 
 describe('keyed functions plugin', () => {
   const keyedFunctions: KeyedFunction[] = [
@@ -40,8 +41,29 @@ describe('keyed functions plugin', () => {
       source: 'composables/use-default-key.ts',
       argumentLength: 1,
     },
+    // TODO: remove entries without source in Nuxt 5
+    // @ts-expect-error - `source` wasn't required before
+    {
+      name: 'useAutoImported',
+      argumentLength: 1,
+    },
+    {
+      name: 'useRegexKey',
+      argumentLength: 1,
+      // @ts-expect-error - regex was supported before
+      source: /regex/,
+    },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+
+  const autoImports: Import[] = [
+    {
+      from: '#app',
+      name: 'useAutoImported',
+      as: 'useAutoImported',
+    },
+  ]
+
+  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports) }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should add hash when there is none already provided', async () => {
     const code = `
@@ -51,8 +73,8 @@ useKeyTwo(() => {})
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey, useKeyTwo } from '#app'
-      useKey('$HJiaryoL2y')
-      useKeyTwo(() => {}, '$yysMIARJHe')"
+      useKey('$HJiaryoL2y' /* nuxt-injected */)
+      useKeyTwo(() => {}, '$yysMIARJHe' /* nuxt-injected */)"
     `)
   })
 
@@ -64,8 +86,8 @@ useKey()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey } from '#app'
-      useKey('$HJiaryoL2y')
-      useKey('$yysMIARJHe')"
+      useKey('$HJiaryoL2y' /* nuxt-injected */)
+      useKey('$yysMIARJHe' /* nuxt-injected */)"
     `)
   })
 
@@ -84,7 +106,7 @@ import useDefaultKey from 'composables/use-default-key.ts'
 useDefaultKey()`
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import useDefaultKey from 'composables/use-default-key.ts'
-      useDefaultKey('$HJiaryoL2y')"
+      useDefaultKey('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -94,7 +116,7 @@ useDefaultKey()`
     useRenamedFunctionThatIsNotInKeyedFunctions()`
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import useRenamedFunctionThatIsNotInKeyedFunctions from 'composables/use-default-key.ts'
-          useRenamedFunctionThatIsNotInKeyedFunctions('$HJiaryoL2y')"
+          useRenamedFunctionThatIsNotInKeyedFunctions('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -104,7 +126,7 @@ import { default as useRenamedDefault } from '#app/defaultExport'
 useRenamedDefault()`
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { default as useRenamedDefault } from '#app/defaultExport'
-      useRenamedDefault('$HJiaryoL2y')"
+      useRenamedDefault('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -118,8 +140,8 @@ useRenamedDefault()`
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey as useKeyOne } from '#app'
           import { useKey as useKeyTwo } from '#app/useKeyTwo'
-          useKeyOne('$HJiaryoL2y')
-          useKeyTwo('first', '$yysMIARJHe')"
+          useKeyOne('$HJiaryoL2y' /* nuxt-injected */)
+          useKeyTwo('first', '$yysMIARJHe' /* nuxt-injected */)"
     `)
   })
 
@@ -128,7 +150,7 @@ useRenamedDefault()`
 
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
 
-    KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any)
+    KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports) }).raw({}, {} as any)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
       /\[nuxt:compiler\] \[keyed-functions\] Duplicate function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./,
@@ -159,20 +181,20 @@ useKeyTwo(
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey, useKeyTwo } from '#app'
       useKey(
-      '$HJiaryoL2y')
+      '$HJiaryoL2y' /* nuxt-injected */)
       useKeyTwo(
         () => {}
-      , '$yysMIARJHe')
+      , '$yysMIARJHe' /* nuxt-injected */)
 
       useKeyTwo(
 
 
         () => {}
-      , '$Cy7hQH5X5O')
+      , '$Cy7hQH5X5O' /* nuxt-injected */)
 
       useKeyTwo(
         () => {
-        }, '$Fl_F5LB-IM')"
+        }, '$Fl_F5LB-IM' /* nuxt-injected */)"
     `)
   })
 
@@ -198,18 +220,18 @@ useKeyTwo(
       "import { useKeyTwo } from '#app'
       useKeyTwo(
         () => {},
-      '$HJiaryoL2y')
+      '$HJiaryoL2y' /* nuxt-injected */)
 
       useKeyTwo(
         () => {}
-        ,'$yysMIARJHe')
+        ,'$yysMIARJHe' /* nuxt-injected */)
 
       useKeyTwo(
 
         () => {}
 
         ,
-        '$Cy7hQH5X5O')"
+        '$Cy7hQH5X5O' /* nuxt-injected */)"
     `)
   })
 
@@ -235,10 +257,10 @@ function foo() {
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey } from '#app'
       function foo() {
-        useKey('$HJiaryoL2y')
+        useKey('$HJiaryoL2y' /* nuxt-injected */)
 
         if (true) {
-          useKey('$yysMIARJHe')
+          useKey('$yysMIARJHe' /* nuxt-injected */)
         }
       }"
     `)
@@ -263,7 +285,7 @@ useKey()
         function useKey() { return 'local' }
       }
 
-      useKey('$HJiaryoL2y')"
+      useKey('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -286,7 +308,7 @@ useKey()
         useKey()
       }
 
-      useKey('$HJiaryoL2y')"
+      useKey('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -311,7 +333,7 @@ useKey()
 
       const bar = useKey => useKey()
 
-      useKey('$HJiaryoL2y')"
+      useKey('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -323,9 +345,9 @@ useKey()
 export function useKeyTwo(arg1, arg2) {}
     `
     expect((await transformPlugin.transform.handler(code, '#app'))?.code.trim()).toMatchInlineSnapshot(`
-      "useKeyTwo('$QQV3F06xQZ')
+      "useKeyTwo('$QQV3F06xQZ' /* nuxt-injected */)
       export const useKey = (arg1) => {}
-      useKey('$Bil3ev-zNC')
+      useKey('$Bil3ev-zNC' /* nuxt-injected */)
       export function useKeyTwo(arg1, arg2) {}"
     `)
   })
@@ -347,7 +369,7 @@ function useKey(arg) {}
 export { useKey }
 `
     expect((await transformPlugin.transform.handler(code, '#app'))?.code.trim()).toMatchInlineSnapshot(`
-      "useKey('$QQV3F06xQZ')
+      "useKey('$QQV3F06xQZ' /* nuxt-injected */)
       function useKey(arg) {}
       export { useKey }"
     `)
@@ -380,14 +402,14 @@ export { useKey as useRenamedKey }
     `
 
     expect((await transformPlugin.transform.handler(code, '#app'))?.code.trim()).toMatchInlineSnapshot(`
-      "foo('$QQV3F06xQZ')
+      "foo('$QQV3F06xQZ' /* nuxt-injected */)
           function foo(arg) {}
           function bar() {
             const foo = () => 'local'
             // still respects shadowing
             foo()
           }
-          foo('$Bil3ev-zNC')
+          foo('$Bil3ev-zNC' /* nuxt-injected */)
           export { foo as useKey }"
     `)
   })
@@ -400,7 +422,7 @@ export { useKey as useKeyTwoRenamed }
     `
     expect((await transformPlugin.transform.handler(code, 'renamed.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey } from '#app'
-      useKey('add-key-after', '$Ja9NP0cDY0')
+      useKey('add-key-after', '$Ja9NP0cDY0' /* nuxt-injected */)
       export { useKey as useKeyTwoRenamed }"
     `)
   })
@@ -422,7 +444,7 @@ useKey()
 export { useKey }
     `
     expect((await transformPlugin.transform.handler(code, '#app'))?.code.trim()).toMatchInlineSnapshot(`
-      "useKey('$QQV3F06xQZ')
+      "useKey('$QQV3F06xQZ' /* nuxt-injected */)
       function useKey(arg) {}
       function foo() {
         useKey()
@@ -433,7 +455,7 @@ export { useKey }
         const useKey = () => 'local'
         useKey()
       }
-      useKey('$Bil3ev-zNC')
+      useKey('$Bil3ev-zNC' /* nuxt-injected */)
       export { useKey }"
     `)
   })
@@ -462,7 +484,7 @@ function useFoo(arg) {}
 export default useFoo
     `
     expect((await transformPlugin.transform.handler(code, '#app/defaultExport'))?.code.trim()).toMatchInlineSnapshot(`
-      "useFoo('$gvnasIOzix')
+      "useFoo('$gvnasIOzix' /* nuxt-injected */)
       function useFoo(arg) {}
       export default useFoo"
     `)
@@ -476,7 +498,7 @@ export default useFoo
     `
     expect((await transformPlugin.transform.handler(code, '#app/defaultExport'))?.code.trim()).toMatchInlineSnapshot(`
       "const useFoo = (arg) => {}
-      useFoo('$gvnasIOzix')
+      useFoo('$gvnasIOzix' /* nuxt-injected */)
       export default useFoo"
     `)
   })
@@ -487,7 +509,7 @@ useFoo()
 export default function useFoo(arg) {}
     `
     expect((await transformPlugin.transform.handler(code, '#app/defaultExport'))?.code.trim()).toMatchInlineSnapshot(`
-      "useFoo('$gvnasIOzix')
+      "useFoo('$gvnasIOzix' /* nuxt-injected */)
       export default function useFoo(arg) {}"
     `)
   })
@@ -515,7 +537,7 @@ useKeyTwo()
       "import { useKey as useRenamedKey } from '#app'
           import { useKeyTwo as shouldNotAddHash } from './somewhere-else'
 
-          useRenamedKey('$HJiaryoL2y')
+          useRenamedKey('$HJiaryoL2y' /* nuxt-injected */)
           shouldNotAddHash()"
     `)
   })
@@ -527,7 +549,7 @@ useDefault()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import useDefault from '#app/defaultExport'
-      useDefault('$HJiaryoL2y')"
+      useDefault('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -538,7 +560,7 @@ useRenamedDefault()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { default as useRenamedDefault } from '#app/defaultExport'
-      useRenamedDefault('$HJiaryoL2y')"
+      useRenamedDefault('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -558,7 +580,7 @@ useKey()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import * as app from '#app'
-      app.useKey('$HJiaryoL2y')
+      app.useKey('$HJiaryoL2y' /* nuxt-injected */)
       useKey()"
     `)
   })
@@ -578,7 +600,7 @@ app.useKey()
         const app = { useKey: () => 'local' }
         app.useKey()
       }
-      app.useKey('$HJiaryoL2y')"
+      app.useKey('$HJiaryoL2y' /* nuxt-injected */)"
     `)
   })
 
@@ -598,7 +620,7 @@ useKey()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import * as app from '#app'
-      app['useKey']('$HJiaryoL2y')
+      app['useKey']('$HJiaryoL2y' /* nuxt-injected */)
       useKey()"
     `)
   })
@@ -613,7 +635,7 @@ app['use' + 'Key']()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import * as app from '#app'
-      app['useKey']('$HJiaryoL2y') // has key
+      app['useKey']('$HJiaryoL2y' /* nuxt-injected */) // has key
       const keyName = 'useKey'
       app[keyName]()
       app['use' + 'Key']()"
@@ -666,9 +688,9 @@ useKeyTwo(() => {})
       "import useDefault, { useKey as useRenamedKey, useKeyTwo } from '#app'
       import useDefaultKey from '#app/defaultExport'
       useDefault()
-      useDefaultKey('$HJiaryoL2y')
-      useRenamedKey('$yysMIARJHe')
-      useKeyTwo(() => {}, '$Cy7hQH5X5O')"
+      useDefaultKey('$HJiaryoL2y' /* nuxt-injected */)
+      useRenamedKey('$yysMIARJHe' /* nuxt-injected */)
+      useKeyTwo(() => {}, '$Cy7hQH5X5O' /* nuxt-injected */)"
     `)
   })
 
@@ -682,7 +704,7 @@ useOtherKey()
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey } from '#app'
       import { useKey as useOtherKey } from 'some-other-source'
-      useKey('$HJiaryoL2y')
+      useKey('$HJiaryoL2y' /* nuxt-injected */)
       useOtherKey()"
     `)
   })
@@ -704,7 +726,7 @@ Math.random() > 0.5 ? useKey() : null
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey } from '#app'
       (Math.random() > 0.5 ? useKey : () => {})()
-      Math.random() > 0.5 ? useKey('$HJiaryoL2y') : null"
+      Math.random() > 0.5 ? useKey('$HJiaryoL2y' /* nuxt-injected */) : null"
     `)
   })
 
@@ -725,8 +747,8 @@ useKeyTwo(...args)
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useKey, useKeyTwo } from '#app'
-      useKey(...args, '$HJiaryoL2y')
-      useKeyTwo(...args, '$yysMIARJHe')"
+      useKey(...args, '$HJiaryoL2y' /* nuxt-injected */)
+      useKeyTwo(...args, '$yysMIARJHe' /* nuxt-injected */)"
     `)
   })
 
@@ -738,6 +760,40 @@ const pkg = { app }
 pkg.app.useKey()
     `
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it('should not add key when processing the same file multiple times (webpack problem)', async () => {
+    const code = `
+    import { useKeyTwo } from '#app'
+    useKeyTwo('$HJiaryoL2y' /* nuxt-injected */)
+    `
+
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
+  })
+
+  // backwards compatibility
+  it('should inject keys for auto-imported functions', async () => {
+    const code = `
+    import { useAutoImported } from '#app'
+    useAutoImported()
+    `
+
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+      "import { useAutoImported } from '#app'
+          useAutoImported('$HJiaryoL2y' /* nuxt-injected */)"
+    `)
+  })
+
+  it('should inject keys for regex-matched function sources', async () => {
+    const code = `
+    import { useRegexKey } from 'some-regex-matched-source'
+    useRegexKey()
+    `
+
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
+      "import { useRegexKey } from 'some-regex-matched-source'
+          useRegexKey('$HJiaryoL2y' /* nuxt-injected */)"
+    `)
   })
 })
 
@@ -754,7 +810,7 @@ describe('core keyed functions', () => {
     { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
     { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {} }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]) }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should detect string type keys and not add a hash', async () => {
     const code = `
@@ -780,12 +836,12 @@ describe('core keyed functions', () => {
 
     expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
       "import { useState } from '#app/composables/state'
-          useState('some' + 'key', '$HJiaryoL2y')
-          useState(someVariable, '$yysMIARJHe')
-          useState(getKey(), '$Cy7hQH5X5O')
-          useState(obj.prop, '$Fl_F5LB-IM')
-          useState(obj['prop'], '$1GDT7saTf0')
-          useState(obj.met(), '$8YFL1gGJy8')"
+          useState('some' + 'key', '$HJiaryoL2y' /* nuxt-injected */)
+          useState(someVariable, '$yysMIARJHe' /* nuxt-injected */)
+          useState(getKey(), '$Cy7hQH5X5O' /* nuxt-injected */)
+          useState(obj.prop, '$Fl_F5LB-IM' /* nuxt-injected */)
+          useState(obj['prop'], '$1GDT7saTf0' /* nuxt-injected */)
+          useState(obj.met(), '$8YFL1gGJy8' /* nuxt-injected */)"
     `)
   })
 
@@ -798,7 +854,7 @@ useState(() => 1)
       `
       expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
         "import { useState } from '#app/composables/state'
-        useState(() => 1, '$HJiaryoL2y')"
+        useState(() => 1, '$HJiaryoL2y' /* nuxt-injected */)"
       `)
     })
 
@@ -835,19 +891,19 @@ useLazyFetch(url, options)
 
       expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
         "import { useFetch, useLazyFetch } from '#app/composables/fetch'
-        useFetch('/api/data', '$HJiaryoL2y')
-        useFetch(() => '/api/data', '$yysMIARJHe')
-        useFetch(url, '$Cy7hQH5X5O')
-        useFetch('/api/data', { method: 'POST' }, '$Fl_F5LB-IM')
-        useFetch(() => '/api/data', { method: 'POST' }, '$1GDT7saTf0')
-        useFetch(url, options, '$8YFL1gGJy8')
+        useFetch('/api/data', '$HJiaryoL2y' /* nuxt-injected */)
+        useFetch(() => '/api/data', '$yysMIARJHe' /* nuxt-injected */)
+        useFetch(url, '$Cy7hQH5X5O' /* nuxt-injected */)
+        useFetch('/api/data', { method: 'POST' }, '$Fl_F5LB-IM' /* nuxt-injected */)
+        useFetch(() => '/api/data', { method: 'POST' }, '$1GDT7saTf0' /* nuxt-injected */)
+        useFetch(url, options, '$8YFL1gGJy8' /* nuxt-injected */)
 
-        useLazyFetch('/api/data', '$-6Jq0e1X0N')
-        useLazyFetch(() => '/api/data', '$PysQIWKhwV')
-        useLazyFetch(url, '$wjhr0zrAT4')
-        useLazyFetch('/api/data', { method: 'POST' }, '$H_jcqrI1sJ')
-        useLazyFetch(() => '/api/data', { method: 'POST' }, '$_jtliZGAeJ')
-        useLazyFetch(url, options, '$TtqJmekP-n')"
+        useLazyFetch('/api/data', '$-6Jq0e1X0N' /* nuxt-injected */)
+        useLazyFetch(() => '/api/data', '$PysQIWKhwV' /* nuxt-injected */)
+        useLazyFetch(url, '$wjhr0zrAT4' /* nuxt-injected */)
+        useLazyFetch('/api/data', { method: 'POST' }, '$H_jcqrI1sJ' /* nuxt-injected */)
+        useLazyFetch(() => '/api/data', { method: 'POST' }, '$_jtliZGAeJ' /* nuxt-injected */)
+        useLazyFetch(url, options, '$TtqJmekP-n' /* nuxt-injected */)"
       `)
     })
   })
@@ -863,8 +919,8 @@ useAsyncData(() => $fetch('/api/data'), { server: false })
 
       expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
         "import { useAsyncData, useLazyAsyncData } from '#app/composables/asyncData'
-        useAsyncData(() => $fetch('/api/data'), '$HJiaryoL2y')
-        useAsyncData(() => $fetch('/api/data'), { server: false }, '$yysMIARJHe')"
+        useAsyncData(() => $fetch('/api/data'), '$HJiaryoL2y' /* nuxt-injected */)
+        useAsyncData(() => $fetch('/api/data'), { server: false }, '$yysMIARJHe' /* nuxt-injected */)"
       `)
     })
 

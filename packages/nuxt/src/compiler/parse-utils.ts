@@ -14,7 +14,7 @@ import { stripExtension } from '../utils'
 
 export function processImports (imports: ParsedStaticImport[]) {
   /**
-   * import alias -> original name; source with aliases resolved
+   * import alias -> original name; source with aliases resolved and without extension
    */
   const directImports = new Map<string, {
     originalName: string
