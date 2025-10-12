@@ -2624,6 +2624,28 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
   })
+
+  it('should render payload for ISR routes', async () => {
+    // First request to trigger ISR caching
+    await $fetch<string>('/isr')
+    // Then fetch the payload
+    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['isr-data']).toBeDefined()
+    expect(Array.isArray(data.data['isr-data'])).toBe(true)
+  })
+
+  it('should render payload for SWR routes', async () => {
+    // First request to trigger SWR caching
+    await $fetch<string>('/swr')
+    // Then fetch the payload
+    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['swr-data']).toBeDefined()
+    expect(Array.isArray(data.data['swr-data'])).toBe(true)
+  })
 })
 
 describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
