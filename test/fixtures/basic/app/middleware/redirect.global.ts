@@ -19,6 +19,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === '/navigate-to-false') {
     return false
   }
+  if (to.path === '/navigate-to-encoded-query') {
+    return navigateTo('/redirect-target?callback=https://example.com', { redirectCode: 302 })
+  }
   const pluginPath = nuxtApp.$path()
   if (import.meta.server && !/redirect|navigate/.test(pluginPath) && to.path !== pluginPath) {
     throw new Error('plugin did not run before middleware')

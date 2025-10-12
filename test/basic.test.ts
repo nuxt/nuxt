@@ -1121,6 +1121,13 @@ describe('navigate', () => {
     expect(status).toEqual(302)
     expect(headers.get('location') || '').toEqual(encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com'))
   })
+
+  it('should redirect from middleware with query params', async () => {
+    const { status, headers } = await fetch('/navigate-to-encoded-query', { redirect: 'manual' })
+
+    expect(status).toEqual(302)
+    expect(headers.get('location')).toEqual('/redirect-target?callback=https://example.com')
+  })
 })
 
 describe('preserves current instance', () => {

@@ -12,7 +12,7 @@ import { toArray } from '../utils'
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
-import { navigateTo } from '#app/composables/router'
+import { encodeURL, navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -152,7 +152,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           return
         }
 
-        if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+        if (import.meta.server && to.redirectedFrom && encodeURL(to.fullPath) !== encodeURL(initialURL)) {
           await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
         }
       })
@@ -168,7 +168,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
-    const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
+    const resolvedInitialRoute = import.meta.client && encodeURL(initialURL) !== encodeURL(router.currentRoute.value.fullPath)
       ? router.resolve(initialURL)
       : router.currentRoute.value
     syncCurrentRoute()
