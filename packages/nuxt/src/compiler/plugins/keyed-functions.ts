@@ -12,6 +12,7 @@ import { resolveAlias } from '@nuxt/kit'
 import type { KeyedFunction } from '@nuxt/schema'
 import { isWhitespace, logger, stripExtension } from '../../utils'
 import type { Node } from 'oxc-parser'
+import type { Import } from 'unimport'
 
 import {
   type FunctionCallMetadata,
@@ -24,6 +25,8 @@ interface KeyedFunctionsOptions {
   sourcemap: boolean
   keyedFunctions: KeyedFunction[]
   alias: Record<string, string>
+  // TODO: remove in Nuxt 5
+  getAutoImports: () => Promise<Import[]>
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
@@ -43,10 +46,13 @@ export function shouldTransformFile (id: string, extensions: RegExp | readonly s
     && parseQuery(search).type !== 'style' && !parseQuery(search).macro
 }
 
+// TODO: remove in Nuxt 5
+type BackwardsCompatibleKeyedFunction = Omit<KeyedFunction, 'source'> & { source?: KeyedFunction['source'] | RegExp }
+
 export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
   // DO NOT USE IN TRANSFORM - this is a global copy that doesn't include local import names
   // - the `source`s have resolved aliases and are without extensions
-  const namesToSourcesToFunctionMeta = new Map<string, Map<string, KeyedFunction>>()
+  const namesToSourcesToFunctionMeta = new Map<string, Map<string, BackwardsCompatibleKeyedFunction>>()
   // filenames (without extension) of files that have a `default` keyed function export
   const defaultExportSources = new Set<string>()
 
@@ -76,7 +82,8 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
     sourcesToFunctionMeta.set(fnSource, {
       ...f,
-      source: fnSource,
+      // TODO: use only `fnSource` in Nuxt 5
+      source: typeof f.source === 'string' ? fnSource : f.source,
     })
   }
 
@@ -102,7 +109,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
       filter: {
         code: { include: CODE_INCLUDE_RE },
       },
-      handler (code, _id) {
+      async handler (code, _id) {
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
         const id = stripExtension(_id)
 
@@ -126,11 +133,15 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           }
         }
 
+        const autoImports = await options.getAutoImports()
+        // auto-imported name -> source (without alias resolution and with extension)
+        const autoImportsToSources = new Map<string, string>(autoImports.map(i => [i.as || i.name, i.from]))
+
         /**
          * @param localName the local name of the function to get the meta for
-         * @param source the source of the function to get the meta for (needs to be WITHOUT EXTENSION)
+         * @param source the resolved source of the function to get the meta for (needs to be WITHOUT EXTENSION)
          */
-        function getFunctionMetaByLocalName (localName: string, source: string): KeyedFunction | undefined {
+        function getFunctionMetaByLocalName (localName: string, source: string): BackwardsCompatibleKeyedFunction | undefined {
           if (!localName) { return }
           // check exports (higher priority)
           const exportedName = localNamesToExportedName.get(localName)
@@ -143,7 +154,25 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             const functionName = directImport.originalName === 'default'
               ? camelCase(parse(directImport.source).name)
               : directImport.originalName
-            return namesToSourcesToFunctionMeta.get(functionName)?.get(source)
+
+            // TODO: remove auto-import checks in Nuxt 5
+            const sourcesToMetas = namesToSourcesToFunctionMeta.get(functionName)
+            if (!sourcesToMetas) { return }
+
+            const fnMeta = sourcesToMetas.get(source)
+            if (fnMeta) { return fnMeta }
+
+            const backwardsCompatibleFnMeta = sourcesToMetas.get('') // functions without a source or with a regex fall under ''
+            if (backwardsCompatibleFnMeta?.source === undefined) {
+              const autoImportResolvedSource = stripExtension(resolveAlias(autoImportsToSources.get(localName) ?? ''))
+              if (autoImportResolvedSource === source) {
+                return backwardsCompatibleFnMeta
+              }
+            } else if (backwardsCompatibleFnMeta.source instanceof RegExp && backwardsCompatibleFnMeta.source.test(source)) {
+              return backwardsCompatibleFnMeta
+            }
+
+            return
           }
 
           // check local names
@@ -200,7 +229,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         function processKeyedFunction (
           walkContext: ThisParameterType<NonNullable<Parameters<typeof walk>[1]['enter']>>, // TODO: export type from `oxc-walker`
           node: Node,
-          handler: (ctx: { parsedCall: FunctionCallMetadata, fnMeta: KeyedFunction }) => void,
+          handler: (ctx: { parsedCall: FunctionCallMetadata, fnMeta: BackwardsCompatibleKeyedFunction }) => void,
         ) {
           if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') { return }
           const parsedCall = parseStaticFunctionCall(node, LOCAL_FUNCTION_NAMES_RE)
@@ -212,6 +241,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             return node?.type === 'Import' && node.importNode.importKind !== 'type'
           }
 
+          // import source WITHOUT EXTENSION and with resolved aliases
           let importSourceResolved: string | undefined
 
           // check for exports with a higher priority
@@ -261,8 +291,15 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                     && fnMeta.name === 'default'
                   )
                 )
-                // the function is imported from the correct source
-                && fnMeta.source && (stripExtension(fnMeta.source) === importSourceResolved)
+                && (
+                  // the function is imported from the correct source when `source` is specified
+                  (typeof fnMeta.source === 'string' && (stripExtension(fnMeta.source) === importSourceResolved))
+                  // TODO: remove the checks below in Nuxt 5
+                  // or the function is auto-imported when there is no source specified
+                  || (!fnMeta.source && stripExtension(_resolvePath(autoImportsToSources.get(parsedCall.name) ?? '')) === importSourceResolved)
+                  // or the specified function's source RegExp matches the import source
+                  || (fnMeta.source instanceof RegExp && fnMeta.source.test(importSourceResolved))
+                )
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration
               || (localNamesToExportedName.has(parsedCall.name) && functionScopeTrackerNode?.scope === '') // TODO: add support for checking root scope in `oxc-walker`
@@ -322,14 +359,14 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 case 'useState':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
-                    && fnMeta.source && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/state', options.alias))
+                    && typeof fnMeta.source === 'string' && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/state', options.alias))
                   ) { return }
                   break
                 case 'useFetch':
                 case 'useLazyFetch':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[1]?.type)
-                    && fnMeta.source && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/fetch', options.alias))
+                    && typeof fnMeta.source === 'string' && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/fetch', options.alias))
                   ) { return }
                   break
 
@@ -337,7 +374,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 case 'useLazyAsyncData':
                   if (
                     stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
-                    && fnMeta.source && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/asyncData', options.alias))
+                    && typeof fnMeta.source === 'string' && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/asyncData', options.alias))
                   ) { return }
                   break
               }

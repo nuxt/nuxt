@@ -51,6 +51,7 @@ import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import { KeyedFunctionsPlugin } from '../compiler/plugins/keyed-functions'
+import type { Unimport } from 'unimport'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -575,6 +576,14 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
 
+  // will be assigned after `modules:done`
+  let unimport: Unimport | undefined
+  nuxt.hook('imports:context', (ctx) => {
+    unimport = ctx
+  })
+
+  await nuxt.callHook('modules:done')
+
   // Add keys for useFetch, useAsyncData, etc.
   const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
     ...rest,
@@ -585,9 +594,8 @@ async function initNuxt (nuxt: Nuxt) {
     sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
     keyedFunctions: normalizedKeyedFunctions,
     alias: nuxt.options.alias,
+    getAutoImports: unimport!.getImports,
   }))
-
-  await nuxt.callHook('modules:done')
 
   // remove duplicate css after modules are done
   nuxt.options.css = nuxt.options.css
