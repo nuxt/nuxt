@@ -30,6 +30,7 @@ const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
 const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
 const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
+const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
 
 export function shouldTransformFile (id: string, extensions: RegExp | readonly string[]) {
   const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
@@ -297,6 +298,25 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           scopeTracker,
           enter (node) {
             processKeyedFunction(this, node, ({ parsedCall, fnMeta }) => {
+              // (workaround for webpack calling the build plugin multiple times on the same file in some cases)
+              // skip key injection if we already injected one
+              const lastArgument = parsedCall.callExpression.arguments[parsedCall.callExpression.arguments.length - 1]
+              if (
+                lastArgument?.type === 'Literal' && typeof lastArgument.value === 'string'
+                // there is a magic comment with a space before it after the last string argument
+                && lastArgument.end + NUXT_INJECTED_MARKER.length + 1 < parsedCall.callExpression.end
+              ) {
+                let wasKeyInjected = true
+                for (let i = 0; i < NUXT_INJECTED_MARKER.length; i++) {
+                  // the magic comment does not match, we have not injected a key yet
+                  if (code[codeIndex + lastArgument.end + 1 + i] !== NUXT_INJECTED_MARKER[i]) {
+                    wasKeyInjected = false
+                    break
+                  }
+                }
+                if (wasKeyInjected) { return }
+              }
+
               // skip key injection for Nuxt internal composables when they already have a key
               switch (parsedCall.name) {
                 case 'useState':
@@ -331,7 +351,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
               s.appendLeft(
                 codeIndex + parsedCall.callExpression.end - 1,
-                (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${_id}-${++count}`).slice(0, 10) + '\'',
+                (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${_id}-${++count}`).slice(0, 10) + `' ${NUXT_INJECTED_MARKER}`,
               )
             })
           },
