@@ -11,8 +11,7 @@ import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-
-import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
+import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
 
 import { getRenderer } from '../utils/renderer/build-files'
 import { payloadCache } from '../utils/cache'
@@ -44,15 +43,6 @@ globalThis.__publicAssetsURL = publicAssetsURL
 // Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
 if (process.env.NUXT_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
   (globalThis as any).AsyncLocalStorage = AsyncLocalStorage
-}
-
-export interface NuxtRenderHTMLContext {
-  htmlAttrs: string[]
-  head: string[]
-  bodyAttrs: string[]
-  bodyPrepend: string[]
-  body: string[]
-  bodyAppend: string[]
 }
 
 export interface NuxtRenderResponse {

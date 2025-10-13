@@ -1,9 +1,8 @@
 import type { H3Event } from 'h3'
 import { createHead } from '@unhead/vue/server'
+import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 import { sharedPrerenderCache } from '../cache'
 import { useRuntimeConfig } from '#internal/nitro'
-import type { NuxtSSRContext } from '#app'
-import type { NuxtPayload } from '#app/nuxt'
 // @ts-expect-error virtual file
 import unheadOptions from '#internal/unhead-options.mjs'
 

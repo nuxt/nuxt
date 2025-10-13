@@ -1873,6 +1873,13 @@ export interface ConfigSchema {
   _modules: Array<any>
 
   /**
+   * Configuration for Nuxt's server builder.
+   */
+  server: {
+    builder?: '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+  }
+
+  /**
    * Configuration for Nitro.
    *
    * @see [Nitro configuration docs](https://nitro.build/config)

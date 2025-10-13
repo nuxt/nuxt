@@ -3,25 +3,28 @@ import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { join, relative, resolve } from 'pathe'
+import { readPackageJSON } from 'pkg-types'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
-import { addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
+import './augments'
 
-import { version as nuxtVersion } from '../../package.json'
-import { distDir } from '../dirs'
-import { toArray } from '../utils'
-import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
-import { createImportProtectionPatterns } from './plugins/import-protection'
-import type { Nuxt, NuxtOptions } from 'nuxt/schema'
+import { version as nitroBuilderVersion } from '../package.json'
+import { distDir, toArray } from './utils'
+import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon'
+// TODO: figure out a good way to share this
+import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection'
+import { nitroSchemaTemplate } from './templates'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -31,7 +34,7 @@ const logLevelMapReverse = {
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
-export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
+export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
   const excludePaths: string[] = []
@@ -70,6 +73,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   const modules = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
 
+  addTemplate(nitroSchemaTemplate)
+
   const sharedDirs = new Set<string>()
   const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
   if (isNuxtV4 && (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false)) {
@@ -84,7 +89,45 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
+  // Resolve aliases in user-provided input - so `~/server/test` will work
+  nuxt.options.nitro.plugins ||= []
+  nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
+
+  if (nuxt.options.dev && nuxt.options.features.devLogs) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
+    nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
+    nuxt.options.nitro.externals = defu(nuxt.options.nitro.externals, {
+      inline: [/#internal\/dev-server-logs-options/],
+    })
+    nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
+      '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
+    })
+  }
+
+  if (nuxt.options.experimental.componentIslands) {
+    // sync conditions with /packages/nuxt/src/core/templates.ts#L539
+    nuxt.options.nitro.virtual ||= {}
+    nuxt.options.nitro.virtual['#internal/nuxt/island-renderer.mjs'] = () => {
+      if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
+        return `export { default } from '${resolve(distDir, 'runtime/handlers/island')}'`
+      }
+      return `import { defineEventHandler } from 'h3'; export default defineEventHandler(() => {});`
+    }
+    nuxt.options.nitro.handlers ||= []
+    nuxt.options.nitro.handlers.push({
+      route: '/__nuxt_island/**',
+      handler: '#internal/nuxt/island-renderer.mjs',
+    })
+
+    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
+      nuxt.options.ssr = true
+      nuxt.options.nitro.routeRules ||= {}
+      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
+    }
+  }
+
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
+  const { version: nuxtVersion } = await readPackageJSON('nuxt', { from: import.meta.url })
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
@@ -99,7 +142,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     framework: {
       name: 'nuxt',
-      version: nuxtVersion,
+      version: nuxtVersion || nitroBuilderVersion,
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
@@ -108,18 +151,18 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         {
           as: '__buildAssetsURL',
           name: 'buildAssetsURL',
-          from: resolve(distDir, 'core/runtime/nitro/utils/paths'),
+          from: resolve(distDir, 'runtime/utils/paths'),
         },
         {
           as: '__publicAssetsURL',
           name: 'publicAssetsURL',
-          from: resolve(distDir, 'core/runtime/nitro/utils/paths'),
+          from: resolve(distDir, 'runtime/utils/paths'),
         },
         {
           // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
           as: 'defineAppConfig',
           name: 'defineAppConfig',
-          from: resolve(distDir, 'core/runtime/nitro/utils/config'),
+          from: resolve(distDir, 'runtime/utils/config'),
           priority: -1,
         },
       ],
@@ -136,8 +179,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         }
       : false,
     scanDirs: layerDirs.map(dirs => dirs.server),
-    renderer: resolve(distDir, 'core/runtime/nitro/handlers/renderer'),
-    errorHandler: resolve(distDir, 'core/runtime/nitro/handlers/error'),
+    renderer: resolve(distDir, 'runtime/handlers/renderer'),
+    errorHandler: resolve(distDir, 'runtime/handlers/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers: nuxt.options.serverHandlers,
     devHandlers: [],
@@ -244,7 +287,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.alias,
 
       // Paths
-      '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/utils/paths'),
+      '#internal/nuxt/paths': resolve(distDir, 'runtime/utils/paths'),
     },
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
@@ -276,9 +319,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ...resolveIgnorePatterns(nitroConfig.srcDir),
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
-
-  // Resolve aliases in user-provided input - so `~/server/test` will work
-  nitroConfig.plugins = nitroConfig.plugins?.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
 
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
@@ -439,7 +479,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.experimental.respectNoSSRHeader) {
     nitroConfig.handlers ||= []
     nitroConfig.handlers.push({
-      handler: resolve(distDir, 'core/runtime/nitro/middleware/no-ssr'),
+      handler: resolve(distDir, 'runtime/middleware/no-ssr'),
       middleware: true,
     })
   }
@@ -460,7 +500,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
-      exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|core[\\/]runtime[\\/]nitro[\\/](?:handlers|utils)/, ...sharedPatterns],
+      exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
     }),
   )
 
@@ -530,7 +570,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   })
 
   const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
-  const cacheDriverPath = join(distDir, 'core/runtime/nitro/utils/cache-driver.js')
+  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
   await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
@@ -588,7 +628,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
     lazy: true,
-    handler: resolve(distDir, 'core/runtime/nitro/handlers/renderer'),
+    handler: resolve(distDir, 'runtime/handlers/renderer'),
   })
 
   // TODO: refactor into a module when this is more full-featured
