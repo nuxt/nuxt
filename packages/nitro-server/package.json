@@ -49,6 +49,9 @@
     "vue-bundle-renderer": "^2.2.0",
     "vue-devtools-stub": "^0.1.0"
   },
+  "peerDependencies": {
+    "nuxt": "workspace:^"
+  },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "nuxt": "workspace:*",
