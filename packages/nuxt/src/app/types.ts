@@ -23,7 +23,7 @@ export interface NuxtIslandContext {
   name: string
   props?: Record<string, any>
   url: string
-  slots: Record<string, Omit<NuxtIslandSlotResponse, 'html' | 'fallback'>>
+  slots: Record<string, Omit<NuxtIslandSlotResponse, 'fallback'>>
   components: Record<string, Omit<NuxtIslandClientResponse, 'html'>>
 }
 
