@@ -4,7 +4,12 @@ export default defineResolvers({
   server: {
     builder: {
       $resolve: (val) => {
-        if (typeof val === 'string') { return val }
+        if (typeof val === 'string') {
+          return val
+        }
+        if (val && typeof val === 'object' && 'bundle' in val) {
+          return val
+        }
         return '@nuxt/nitro-server'
       },
     },
