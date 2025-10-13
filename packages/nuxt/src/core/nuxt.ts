@@ -233,6 +233,12 @@ async function initNuxt (nuxt: Nuxt) {
     })
   })
 
+  const serverBuilderTypePath = typeof nuxt.options.server.builder === 'string'
+    ? nuxt.options.server.builder === '@nuxt/nitro-server'
+      ? resolveModulePath(nuxt.options.server.builder, { from: import.meta.url })
+      : nuxt.options.server.builder
+    : undefined
+
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
@@ -255,6 +261,11 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ types: relative(nuxt.options.buildDir, resolveModulePath('@nuxt/vite-builder', { from: import.meta.url })) })
     if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
       opts.nodeReferences.push({ types: nuxt.options.builder })
+    }
+
+    if (serverBuilderTypePath) {
+      opts.references.push({ types: serverBuilderTypePath })
+      opts.nodeReferences.push({ types: serverBuilderTypePath })
     }
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
@@ -280,6 +291,10 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('nitro:prepare:types', (opts) => {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+
+    if (serverBuilderTypePath) {
+      opts.references.push({ types: serverBuilderTypePath })
+    }
   })
 
   // Prompt to install `@nuxt/scripts` if user has configured it

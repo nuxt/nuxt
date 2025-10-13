@@ -1,4 +1,4 @@
-/// <reference types="nitropack/types" />
+import 'nitropack/types'
 
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
