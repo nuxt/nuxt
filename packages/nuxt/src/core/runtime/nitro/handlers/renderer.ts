@@ -181,7 +181,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     // Hint nitro to prerender payload for this route
     appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(ssrContext.url.replace(/(?<=.)\/$/, ''), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.noScripts
