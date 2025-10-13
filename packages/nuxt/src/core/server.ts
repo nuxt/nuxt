@@ -12,10 +12,6 @@ export async function bundleServer (nuxt: Nuxt) {
   } catch (error: any) {
     await nuxt.callHook('build:error', error)
 
-    if (error.toString().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.')
-    }
-
     throw error
   }
 }
