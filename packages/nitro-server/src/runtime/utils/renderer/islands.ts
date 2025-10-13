@@ -1,5 +1,4 @@
-import type { SerializableHead } from '@unhead/vue/types'
-import type { NuxtSSRContext } from '#app/nuxt'
+import type { NuxtIslandResponse, NuxtSSRContext } from 'nuxt/app'
 // @ts-expect-error virtual file
 import { appRootTag } from '#internal/nuxt.config.mjs'
 
@@ -84,34 +83,4 @@ export function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string
     }
   }
   return html
-}
-
-export interface NuxtIslandSlotResponse {
-  props: Array<unknown>
-  fallback?: string
-}
-
-export interface NuxtIslandContext {
-  id?: string
-  name: string
-  props?: Record<string, any>
-  url: string
-  slots: Record<string, Omit<NuxtIslandSlotResponse, 'html' | 'fallback'>>
-  components: Record<string, Omit<NuxtIslandClientResponse, 'html'>>
-}
-
-export interface NuxtIslandResponse {
-  id?: string
-  html: string
-  head: SerializableHead
-  props?: Record<string, Record<string, any>>
-  components?: Record<string, NuxtIslandClientResponse>
-  slots?: Record<string, NuxtIslandSlotResponse>
-}
-
-export interface NuxtIslandClientResponse {
-  html: string
-  props: unknown
-  chunk: string
-  slots?: Record<string, string>
 }
