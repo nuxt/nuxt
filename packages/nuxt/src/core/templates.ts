@@ -423,6 +423,8 @@ declare module 'nitropack' {
     /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
+    isr?: number | boolean
+    swr?: number | boolean
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
@@ -448,6 +450,8 @@ declare module 'nitropack/types' {
     /** @deprecated Use \`noScripts\` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
+    isr?: number | boolean
+    swr?: number | boolean
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>

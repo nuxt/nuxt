@@ -123,8 +123,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     ssrContext.noSSR = true
   }
 
-  // Whether we are prerendering route
-  const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
+  // Whether we are prerendering route or using ISR/SWR caching
+  const _PAYLOAD_EXTRACTION = process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && (import.meta.prerender || routeOptions.isr !== undefined || routeOptions.swr !== undefined)
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
 
   // Render app
@@ -178,8 +178,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   if (_PAYLOAD_EXTRACTION) {
-    // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    if (import.meta.prerender) {
+      // Hint nitro to prerender payload for this route
+      appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    }
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }

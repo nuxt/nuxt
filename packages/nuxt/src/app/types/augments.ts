@@ -12,6 +12,8 @@ declare module 'nitropack' {
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
+    isr?: number | boolean
+    swr?: number | boolean
   }
 }
 declare module 'nitropack/types' {
@@ -25,6 +27,8 @@ declare module 'nitropack/types' {
     /** @deprecated Use `noScripts` instead */
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
+    isr?: number | boolean
+    swr?: number | boolean
   }
 }
 
