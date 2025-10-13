@@ -1,13 +1,10 @@
-import { cloneVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
+import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import ServerPlaceholder from './server-placeholder'
-import { elToStaticVNode } from './utils'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
-
-const STATIC_DIV = '<div></div>'
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -77,13 +74,13 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
           ? cloneVNode(res)
           : h(res)
       }
-      return elToStaticVNode(ctx._.vnode.el, STATIC_DIV)
+      return createCommentVNode('placeholder')
     }
   } else {
     // handle runtime-compiler template
     clone.template &&= `
       <template v-if="mounted$">${component.template}</template>
-      <template v-else>${STATIC_DIV}</template>
+      <template v-else><!--placeholder--></template>
     `
   }
 
@@ -126,7 +123,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
               ? cloneVNode(res)
               : h(res)
           }
-          return elToStaticVNode(instance?.vnode.el, STATIC_DIV)
+          return createCommentVNode('placeholder')
         }
       })
     } else {
@@ -140,7 +137,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
               ? cloneVNode(res, attrs)
               : h(res, attrs)
           }
-          return elToStaticVNode(instance?.vnode.el, STATIC_DIV)
+          return createCommentVNode('placeholder')
         }
       }
       return Object.assign(setupState, { mounted$ })
