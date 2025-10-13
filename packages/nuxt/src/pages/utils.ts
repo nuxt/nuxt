@@ -171,7 +171,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 
     if (routeGroups.length > 0) {
       route.meta ||= {}
-      route.meta.group = routeGroups
+      route.meta.groups = routeGroups
     }
 
     parent.push(route)

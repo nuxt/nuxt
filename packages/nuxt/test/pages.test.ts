@@ -944,24 +944,24 @@ export const pageTests: Array<{
         name: 'index',
         path: '/',
         file: `${pagesDir}/(foo)/index.vue`,
-        meta: { group: ['foo'] },
+        meta: { groups: ['foo'] },
         children: [],
       },
       {
         path: '/about',
         file: `${pagesDir}/(foo)/about.vue`,
-        meta: { group: ['foo'] },
+        meta: { groups: ['foo'] },
         children: [
           {
             path: '',
             file: `${pagesDir}/(bar)/about/index.vue`,
-            meta: { group: ['bar'] },
+            meta: { groups: ['bar'] },
             children: [
               {
                 name: 'about',
                 path: '',
                 file: `${pagesDir}/(bar)/about/(foo)/index.vue`,
-                meta: { group: ['bar', 'foo'] },
+                meta: { groups: ['bar', 'foo'] },
                 children: [],
               },
             ],

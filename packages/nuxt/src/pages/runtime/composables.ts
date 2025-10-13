@@ -37,8 +37,8 @@ export interface PageMeta {
   name?: string
   /** You may define a path matcher, if you have a more complex pattern than can be expressed with the file name. */
   path?: string
-  /** Route group based on the file path, like `/(protected)/users/profile` -> 'protected' */
-  group?: string[]
+  /** Route groups based on the file path, like `/(protected)/users/profile` -> ['protected'] */
+  groups?: string[]
   /**
    * Allows accessing the route `params` as props passed to the page component.
    * @see https://router.vuejs.org/guide/essentials/passing-props
