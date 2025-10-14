@@ -993,7 +993,7 @@ export interface ConfigSchema {
    * Enable early access to future features or flags.
    *
    */
-    compatibilityVersion: 4
+    compatibilityVersion: 4 | 5
 
     /**
      * This enables early access to the experimental multi-app support.
@@ -1456,6 +1456,16 @@ export interface ConfigSchema {
     entryImportMap: boolean
 
     /**
+     * Extract async data handler functions into separate chunks for better performance and caching.
+     *
+     * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
+     * into separate chunks and dynamically imported, allowing for better code splitting and caching.
+     *
+     * @experimental This is an experimental feature and API may change in the future.
+     */
+    extractAsyncDataHandlers: boolean
+
+    /**
      * Whether to enable `@dxup/nuxt` module for better TypeScript DX.
      *
      * @see https://github.com/KazariEX/dxup
@@ -1516,6 +1526,13 @@ export interface ConfigSchema {
    * @private
    */
   _modules: Array<any>
+
+  /**
+   * Configuration for Nuxt's server builder.
+   */
+  server: {
+    builder?: '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+  }
 
   /**
    * Configuration for Nitro.
