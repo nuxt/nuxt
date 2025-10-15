@@ -282,6 +282,10 @@ jobs:
             builder: "webpack"
           - manifest: "manifest-off"
             builder: "webpack"
+          - manifest: "manifest-off"
+            builder: "vite-env-api"
+          - payload: "js"
+            builder: "vite-env-api"
 
     timeout-minutes: 15
 
