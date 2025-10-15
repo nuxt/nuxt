@@ -3,8 +3,9 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
+import { withMatrix } from '../../matrix'
 
-export default defineNuxtConfig({
+export default withMatrix({
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
@@ -130,7 +131,6 @@ export default defineNuxtConfig({
       needsFallback: undefined,
     },
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   build: {
     transpile: [
       (ctx) => {
@@ -160,12 +160,8 @@ export default defineNuxtConfig({
     componentIslands: {
       selectiveClient: 'deep',
     },
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     inlineRouteRules: true,
   },
-  compatibilityDate: 'latest',
   nitro: {
     publicAssets: [
       {
