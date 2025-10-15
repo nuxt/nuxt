@@ -19,8 +19,7 @@ export function ReplacePlugin (): Plugin {
         }
       }
 
-      // @ts-expect-error Rolldown-specific check
-      if (vite.rolldownVersion) {
+      if ((vite as any).rolldownVersion) {
         const { replacePlugin } = await import('rolldown/experimental')
         return replacePlugin(replaceOptions)
       } else {
