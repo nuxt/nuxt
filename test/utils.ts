@@ -6,8 +6,7 @@ import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { isCI } from 'std-env'
-
-export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
+import { isRenderingJson } from './matrix'
 
 export async function renderPage (path = '/', opts?: { retries?: number }) {
   const ctx = useTestContext()
