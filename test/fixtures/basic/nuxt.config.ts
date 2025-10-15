@@ -33,7 +33,8 @@ export default withMatrix({
     './modules/test',
     '~~/modules/example',
     function (_, nuxt) {
-      if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
+      // Virtual CSS modules only work with Vite, not with webpack/rspack
+      if (typeof nuxt.options.builder === 'string' && (nuxt.options.builder.includes('webpack') || nuxt.options.builder.includes('rspack'))) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')
