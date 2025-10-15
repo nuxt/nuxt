@@ -46,6 +46,7 @@
     "@babel/helper-plugin-utils": "7.27.1",
     "@nuxt/cli": "3.29.3",
     "@nuxt/kit": "workspace:*",
+    "@nuxt/nitro-server": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",

@@ -1,11 +1,8 @@
-import {
-  createRenderer,
-} from 'vue-bundle-renderer/runtime'
+import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
 import { useRuntimeConfig } from 'nitropack/runtime'
-
 import type { NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
