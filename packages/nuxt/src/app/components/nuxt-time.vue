@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeUnmount, ref, useAttrs } from 'vue'
+import { computed, onBeforeUnmount, ref, useAttrs } from 'vue'
 import { onPrehydrate } from '../composables/ssr'
 import { useNuxtApp } from '../nuxt'
 
