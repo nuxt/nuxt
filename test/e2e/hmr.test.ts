@@ -4,8 +4,7 @@ import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { expect, test } from './test-utils'
-
-const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
+import { isBuilt, isWebpack } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
@@ -18,12 +17,11 @@ test.use({
     env: { TEST: '1' },
     nuxtConfig: {
       test: true,
-      builder: isWebpack ? 'webpack' : 'vite',
     },
   },
 })
 
-if (process.env.TEST_ENV === 'built' || isWindows) {
+if (isBuilt || isWindows) {
   test.skip('Skipped: HMR tests are skipped on Windows or in built mode', () => {})
 } else {
   test.describe.configure({ mode: 'serial' })
