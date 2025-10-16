@@ -5,6 +5,7 @@ export default defineBuildConfig({
   declaration: true,
   entries: [
     'src/index',
+    { input: 'src/runtime/', outDir: 'dist/runtime', ext: 'js' },
   ],
   stubOptions,
   hooks: {
@@ -13,13 +14,8 @@ export default defineBuildConfig({
     },
   },
   externals: [
-    '@rspack/core',
     '@nuxt/schema',
+    'nuxt',
     'nitropack',
-    'nitro',
-    'webpack',
-    'vite',
-    'h3',
-    'unimport',
   ],
 })

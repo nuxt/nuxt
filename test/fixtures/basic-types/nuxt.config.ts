@@ -1,8 +1,9 @@
 /// <reference path="./config-types.ts" />
 
 import { addTypeTemplate, installModule } from 'nuxt/kit'
+import { typescriptBundlerResolution, withMatrix } from '../../matrix'
 
-export default defineNuxtConfig({
+export default withMatrix({
   extends: [
     './extends/node_modules/foo',
   ],
@@ -78,20 +79,18 @@ export default defineNuxtConfig({
       testConfig: 123,
     },
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   routeRules: {
     '/param': {
       redirect: '/param/1',
     },
   },
   future: {
-    typescriptBundlerResolution: process.env.MODULE_RESOLUTION !== 'node',
+    typescriptBundlerResolution,
   },
   experimental: {
     typedPages: true,
     appManifest: true,
   },
-  compatibilityDate: 'latest',
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {
