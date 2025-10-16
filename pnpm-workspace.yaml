@@ -12,7 +12,6 @@ ignoredBuiltDependencies:
   - esbuild
   - oxc-resolver
   - unrs-resolver
-  - vue-demi
 
 publicHoistPattern:
   - '*-loader'
