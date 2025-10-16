@@ -1,0 +1,26 @@
+{
+  "name": "nuxt",
+  "owner": {
+    "name": "Nuxt Team",
+    "email": "hello@nuxtlabs.com"
+  },
+  "metadata": {
+    "description": "Nuxt - The Intuitive Vue Framework",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "nuxt",
+      "description": "Nuxt - The Intuitive Vue Framework for building modern web applications",
+      "source": "./"
+    },
+    {
+      "name": "nuxt-ui",
+      "description": "Nuxt UI component library with comprehensive documentation, templates, and examples via MCP server",
+      "source": {
+        "source": "github",
+        "repo": "nuxt/ui"
+      }
+    }
+  ]
+}
