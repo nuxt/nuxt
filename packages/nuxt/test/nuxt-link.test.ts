@@ -42,7 +42,6 @@ vi.mock('../src/app/composables/router', () => ({
       }
     },
   }),
-  getRouterHashMode: () => false,
 }))
 
 // Helpers for test visibility
