@@ -12,7 +12,7 @@
     {
       "name": "nuxt",
       "description": "Nuxt - The Intuitive Vue Framework for building modern web applications",
-      "source": "./"
+      "source": "./plugins/nuxt"
     },
     {
       "name": "nuxt-ui",
