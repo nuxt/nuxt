@@ -1199,6 +1199,7 @@ describe('errors', () => {
   })
 
   // TODO: need to create test for webpack
+  // TODO: need to fix this test for rspack
   it.runIf(!isDev && builder !== 'rspack')('should handle chunk loading errors', async () => {
     const { page, consoleLogs } = await renderPage()
     await page.route(/\.css/, route => route.abort('timedout')) // verify CSS link preload failure doesn't break the page
