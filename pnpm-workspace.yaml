@@ -7,12 +7,11 @@ packages:
   - playground
   - test/fixtures/*
 
-ignoredBuiltDependencies:
+onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - oxc-resolver
   - unrs-resolver
-  - vue-demi
 
 publicHoistPattern:
   - '*-loader'
