@@ -218,7 +218,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-          // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
           relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
         ],
       },
