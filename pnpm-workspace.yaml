@@ -7,7 +7,7 @@ packages:
   - playground
   - test/fixtures/*
 
-onlyBuiltDependencies:
+ignoredBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - oxc-resolver
