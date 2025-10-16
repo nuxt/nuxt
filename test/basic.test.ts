@@ -9,7 +9,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
-import { asyncContext, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
+import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 await setup({
@@ -1199,7 +1199,7 @@ describe('errors', () => {
   })
 
   // TODO: need to create test for webpack
-  it.runIf(!isDev)('should handle chunk loading errors', async () => {
+  it.runIf(!isDev && builder !== 'rspack')('should handle chunk loading errors', async () => {
     const { page, consoleLogs } = await renderPage()
     await page.route(/\.css/, route => route.abort('timedout')) // verify CSS link preload failure doesn't break the page
     await page.goto(url('/'))
