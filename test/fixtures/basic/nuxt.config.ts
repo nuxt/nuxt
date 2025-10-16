@@ -3,6 +3,7 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
+import { withMatrix } from '../../matrix'
 
 // (defined in nuxt/src/core/nitro.ts)
 declare module 'nitropack' {
@@ -11,7 +12,7 @@ declare module 'nitropack' {
   }
 }
 
-export default defineNuxtConfig({
+export default withMatrix({
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
@@ -39,7 +40,8 @@ export default defineNuxtConfig({
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {
-      if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
+      // Virtual CSS modules only work with Vite, not with webpack/rspack
+      if (typeof nuxt.options.builder === 'string' && (nuxt.options.builder.includes('webpack') || nuxt.options.builder.includes('rspack'))) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')
@@ -137,8 +139,6 @@ export default defineNuxtConfig({
       needsFallback: undefined,
     },
   },
-  buildDir: process.env.NITRO_BUILD_DIR,
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   build: {
     transpile: [
       (ctx) => {
@@ -172,13 +172,9 @@ export default defineNuxtConfig({
       selectiveClient: 'deep',
     },
     treeshakeClientOnly: true,
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     headNext: true,
     inlineRouteRules: true,
   },
-  compatibilityDate: 'latest',
   nitro: {
     publicAssets: [
       {
