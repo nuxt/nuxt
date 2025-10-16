@@ -36,14 +36,13 @@ const props = withDefaults(defineProps<NuxtTimeProps>(), {
 })
 
 const attrs = useAttrs()
-const renderedDate = attrs.datetime as string | undefined
 const _locale = attrs['data-locale'] as string | undefined
 
 const nuxtApp = useNuxtApp()
 
 const date = computed(() => {
   const date = props.datetime
-  if (renderedDate && nuxtApp.isHydrating) { return new Date(renderedDate) }
+  if (props.datetime && nuxtApp.isHydrating) { return new Date(props.datetime) }
   if (!props.datetime) { return new Date() }
   return new Date(date)
 })
