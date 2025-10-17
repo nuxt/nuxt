@@ -21,7 +21,10 @@ interface LoaderOptions {
   experimentalComponentIslands?: boolean
 }
 
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)/g
+// Match both:
+// 1. _resolveComponent("ComponentName") - Vue's component resolution
+// 2. h(ComponentName, ...) - JSX h() calls with PascalCase component identifiers
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
 
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -49,7 +52,10 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const s = new MagicString(code)
       // replace `_resolveComponent("...")` to direct import
       s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
-        const { lazy, modifier, name } = args.pop()
+        const groups = args.pop()
+        const lazy = groups.hLazy || groups.lazy
+        const modifier = groups.hModifier || groups.modifier
+        const name = groups.hName || groups.name
         const normalComponent = findComponent(components, name, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
@@ -67,7 +73,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           map.set(component, identifier)
 
           const isServerOnly = !component._raw && component.mode === 'server' &&
-            !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
+          !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
             imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
