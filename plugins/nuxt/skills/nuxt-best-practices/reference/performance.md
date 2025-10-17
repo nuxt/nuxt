@@ -3,6 +3,7 @@
 Comprehensive guide to optimizing Nuxt application performance.
 
 ## Table of Contents
+
 - [Built-in Optimizations](#built-in-optimizations)
 - [Component Optimization](#component-optimization)
 - [Image Optimization](#image-optimization)
@@ -466,6 +467,7 @@ Focus metrics:
 ## Performance Checklist
 
 ### Images
+
 - [ ] Use NuxtImg/NuxtPicture for all images
 - [ ] Set width/height to prevent layout shift
 - [ ] Use `loading="lazy"` for below-fold images
@@ -473,30 +475,35 @@ Focus metrics:
 - [ ] Convert to WebP/Avif format
 
 ### Fonts
+
 - [ ] Use @nuxt/fonts module for auto-optimization
 - [ ] Limit font variants (weights, styles)
 - [ ] Preload critical fonts
 - [ ] Use system fonts as fallbacks
 
 ### Code Splitting
+
 - [ ] Lazy load heavy components with `Lazy` prefix
 - [ ] Use lazy hydration for non-critical components
 - [ ] Dynamic import large libraries
 - [ ] Split vendor bundles
 
 ### Caching
+
 - [ ] Set appropriate route rules (prerender, ISR, SWR)
 - [ ] Cache API responses with `defineCachedEventHandler`
 - [ ] Configure CDN cache headers
 - [ ] Use client-side caching for repeated requests
 
 ### Third-Party Scripts
+
 - [ ] Defer non-critical scripts
 - [ ] Use @nuxt/scripts module
 - [ ] Load scripts on interaction when possible
 - [ ] Audit script necessity
 
 ### Monitoring
+
 - [ ] Run Lighthouse regularly
 - [ ] Monitor Core Web Vitals
 - [ ] Use Nuxt DevTools for profiling

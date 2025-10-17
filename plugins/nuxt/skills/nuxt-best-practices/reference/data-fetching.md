@@ -3,6 +3,7 @@
 Complete guide to data fetching strategies in Nuxt 4 using `useFetch`, `useAsyncData`, and `$fetch`.
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Nuxt 4 Changes](#nuxt-4-changes)
 - [useFetch](#usefetch)
@@ -27,19 +28,23 @@ Nuxt provides three primary methods for data fetching:
 Nuxt 4 introduces significant improvements to data fetching:
 
 ### Singleton Data Fetching Layer
+
 - **Shared refs**: All calls with the same key share `data`, `error`, and `status` refs
 - **Consistent options**: Calls with the same key must have consistent `deep`, `transform`, `pick`, `getCachedData`, and `default` options
 - **Memory management**: Data is automatically cleaned up when the last component unmounts
 
 ### Shallow Reactivity
+
 - **Performance**: `data` is now a `shallowRef` by default for better performance with deeply nested objects
 - **Opt-in deep**: Use `deep: true` option when you need deep reactivity
 
 ### Default Values
+
 - **Undefined defaults**: `data` and `error` now default to `undefined` instead of `null`
 - **Type safety**: Better TypeScript inference with proper undefined handling
 
 ### Reactive Keys
+
 - **Dynamic keys**: Support for computed refs, plain refs, and getter functions as keys
 - **Automatic refetch**: Data automatically refetches when reactive keys change
 
@@ -48,6 +53,7 @@ Nuxt 4 introduces significant improvements to data fetching:
 Best for straightforward API calls with automatic SSR support.
 
 ### Basic Usage
+
 ```typescript
 // ✅ Simplest form - auto-generated key
 const { data, error, pending } = await useFetch('/api/users')
@@ -65,6 +71,7 @@ const { data } = await useFetch('/api/users', {
 ```
 
 ### Reactive Parameters
+
 Parameters automatically trigger refetch when changed.
 
 ```typescript
@@ -81,6 +88,7 @@ page.value = 2  // Automatically fetches page 2
 ```
 
 ### Data Transformation
+
 ```typescript
 // ✅ Transform response data
 const { data } = await useFetch('/api/users', {
@@ -98,6 +106,7 @@ const { data } = await useFetch('/api/user/profile', {
 ```
 
 ### TypeScript Support
+
 ```typescript
 interface User {
   id: string
@@ -117,6 +126,7 @@ const { data } = await useFetch<User[], string[]>('/api/users', {
 ```
 
 ### Options Reference
+
 ```typescript
 const { data, error, pending, refresh } = await useFetch('/api/users', {
   // Request options
@@ -153,6 +163,7 @@ const { data, error, pending, refresh } = await useFetch('/api/users', {
 For custom fetching logic or multiple data sources.
 
 ### Basic Usage
+
 ```typescript
 // ✅ Custom fetcher with explicit key
 const { data } = await useAsyncData('users', async () => {
@@ -173,6 +184,7 @@ const { data } = await useAsyncData('dashboard', async () => {
 ```
 
 ### With Custom Logic
+
 ```typescript
 // ✅ Complex data processing
 const { data } = await useAsyncData('user-analytics', async () => {
@@ -191,6 +203,7 @@ const { data } = await useAsyncData('user-analytics', async () => {
 ```
 
 ### Conditional Fetching
+
 ```typescript
 const userId = ref<string | null>(null)
 
@@ -213,6 +226,7 @@ watch(userId, (newId) => {
 ```
 
 ### TypeScript Support
+
 ```typescript
 interface DashboardData {
   users: User[]
@@ -239,6 +253,7 @@ const { data } = await useAsyncData<DashboardData>(
 For client-side only requests or manual control.
 
 ### Basic Usage
+
 ```typescript
 // ✅ Simple GET
 const users = await $fetch('/api/users')
@@ -258,6 +273,7 @@ const data = await $fetch('/api/protected', {
 ```
 
 ### Event Handlers
+
 ```typescript
 const handleSubmit = async () => {
   loading.value = true
@@ -280,6 +296,7 @@ const handleSubmit = async () => {
 ```
 
 ### TypeScript Support
+
 ```typescript
 interface ApiResponse<T> {
   data: T
@@ -294,6 +311,7 @@ const response = await $fetch<ApiResponse<User>>('/api/user/profile')
 ## Error Handling
 
 ### useFetch Error Handling
+
 ```typescript
 const { data, error } = await useFetch('/api/users')
 
@@ -309,6 +327,7 @@ const errorMessage = computed(() => error.value?.message || 'Unknown error')
 ```
 
 ### Global Error Handling
+
 ```typescript
 const { data } = await useFetch('/api/users', {
   onResponseError({ response }) {
@@ -325,6 +344,7 @@ const { data } = await useFetch('/api/users', {
 ```
 
 ### Try-Catch with $fetch
+
 ```typescript
 const fetchUsers = async () => {
   try {
@@ -343,6 +363,7 @@ const fetchUsers = async () => {
 ```
 
 ### Custom Error Composable
+
 ```typescript
 export const useApiError = () => {
   const error = ref<string | null>(null)
@@ -384,6 +405,7 @@ watch(fetchError, (err) => {
 ## Caching & Refetching
 
 ### Manual Refresh
+
 ```typescript
 const { data, refresh } = await useFetch('/api/users')
 
@@ -395,6 +417,7 @@ const handleRefresh = async () => {
 ```
 
 ### Cache Management
+
 ```typescript
 // Clear cached data
 const clearCache = () => {
@@ -410,6 +433,7 @@ const getCached = () => {
 ```
 
 ### Dedupe Requests
+
 ```typescript
 // Multiple calls with same key share the same request
 const { data: data1 } = await useFetch('/api/users', { key: 'users' })
@@ -418,6 +442,7 @@ const { data: data2 } = await useFetch('/api/users', { key: 'users' })
 ```
 
 ### Custom Cache Strategy
+
 ```typescript
 const { data } = await useFetch('/api/users', {
   key: 'users',
@@ -435,6 +460,7 @@ const { data } = await useFetch('/api/users', {
 ## Advanced Patterns
 
 ### Lazy Loading
+
 ```typescript
 // ✅ Don't block navigation, fetch in background
 const { data, pending } = await useLazyFetch('/api/heavy-data')
@@ -445,6 +471,7 @@ const { data, pending } = await useLazyFetch('/api/heavy-data')
 ```
 
 ### Optimistic Updates
+
 ```typescript
 const { data, refresh } = await useFetch('/api/todos')
 
@@ -473,6 +500,7 @@ const addTodo = async (todo: Todo) => {
 ```
 
 ### Polling
+
 ```typescript
 const { data, refresh } = await useFetch('/api/status')
 
@@ -488,6 +516,7 @@ onUnmounted(() => {
 ```
 
 ### Pagination
+
 ```typescript
 const page = ref(1)
 const limit = ref(10)
@@ -514,6 +543,7 @@ const prevPage = () => {
 ```
 
 ### Infinite Scroll
+
 ```typescript
 const page = ref(1)
 const allUsers = ref<User[]>([])

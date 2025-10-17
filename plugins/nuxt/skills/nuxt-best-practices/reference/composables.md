@@ -3,6 +3,7 @@
 Advanced patterns and best practices for creating reusable Nuxt composables.
 
 ## Table of Contents
+
 - [Naming Convention](#naming-convention)
 - [State Management](#state-management)
 - [Lifecycle Hooks](#lifecycle-hooks)
@@ -13,6 +14,7 @@ Advanced patterns and best practices for creating reusable Nuxt composables.
 ## Naming Convention
 
 ### Required Prefix
+
 Always use the `use` prefix for composables to enable auto-import.
 
 ```typescript
@@ -28,6 +30,7 @@ export const AuthService = () => { ... }
 ```
 
 ### Descriptive Names
+
 Use clear, descriptive names that indicate the composable's purpose.
 
 ```typescript
@@ -45,6 +48,7 @@ export const useHelper = () => { ... }
 ## State Management
 
 ### useState for Shared State
+
 Use `useState` to create truly shared state across components.
 
 ```typescript
@@ -67,6 +71,7 @@ export const useCounter = () => {
 ```
 
 ### Key Naming Convention
+
 Use consistent key naming for `useState`:
 
 ```typescript
@@ -81,6 +86,7 @@ const state = useState('state', () => null)
 ```
 
 ### Computed Properties
+
 Derive state using computed properties for reactive data transformations.
 
 ```typescript
@@ -109,6 +115,7 @@ export const useCart = () => {
 ## Lifecycle Hooks
 
 ### Component Lifecycle
+
 Use Vue lifecycle hooks when needed, but be aware of SSR implications.
 
 ```typescript
@@ -132,6 +139,7 @@ export const useScrollPosition = () => {
 ```
 
 ### SSR-Safe Composables
+
 Handle both server and client contexts appropriately.
 
 ```typescript
@@ -159,6 +167,7 @@ export const useLocalStorage = <T>(key: string, initialValue: T) => {
 ## Error Handling
 
 ### Try-Catch Patterns
+
 Always handle potential errors in composables.
 
 ```typescript
@@ -191,6 +200,7 @@ export const useApi = () => {
 ```
 
 ### Error State Management
+
 Expose error state for components to handle.
 
 ```typescript
@@ -230,6 +240,7 @@ export const useAuth = () => {
 ## TypeScript Support
 
 ### Type-Safe Composables
+
 Always provide full TypeScript types.
 
 ```typescript
@@ -268,6 +279,7 @@ export const useAuth = () => {
 ```
 
 ### Generic Composables
+
 Create reusable composables with generics.
 
 ```typescript
@@ -310,6 +322,7 @@ const { data, loading, execute } = useAsyncState(
 ## Testing Composables
 
 ### Unit Testing
+
 Test composables in isolation using Vitest.
 
 ```typescript
@@ -348,6 +361,7 @@ describe('useCounter', () => {
 ```
 
 ### Testing Async Composables
+
 ```typescript
 // composables/__tests__/useAuth.test.ts
 import { describe, it, expect, vi } from 'vitest'
@@ -403,6 +417,7 @@ describe('useAuth', () => {
 ## Advanced Patterns
 
 ### Composable Composition
+
 Combine multiple composables for complex functionality.
 
 ```typescript
@@ -427,6 +442,7 @@ export const useUserDashboard = () => {
 ```
 
 ### Factory Pattern
+
 Create composable factories for reusable patterns.
 
 ```typescript

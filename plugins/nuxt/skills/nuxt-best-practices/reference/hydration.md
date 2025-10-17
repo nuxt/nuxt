@@ -3,6 +3,7 @@
 Guide to avoiding hydration mismatches and building SSR-compatible Nuxt applications.
 
 ## Table of Contents
+
 - [Common Hydration Issues](#common-hydration-issues)
 - [SSR-Safe Patterns](#ssr-safe-patterns)
 - [Client-Only Rendering](#client-only-rendering)
@@ -332,7 +333,7 @@ const { data } = await useAsyncData(() => $fetch('/api/users'))
 ### Development Mode Warnings
 
 Nuxt shows warnings in development:
-```
+```bash
 [Vue warn]: Hydration node mismatch
 ```
 

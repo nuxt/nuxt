@@ -3,6 +3,7 @@
 Guide to creating efficient and maintainable Nuxt plugins.
 
 ## Table of Contents
+
 - [Plugin Basics](#plugin-basics)
 - [Performance Considerations](#performance-considerations)
 - [Client vs Server Plugins](#client-vs-server-plugins)
@@ -35,7 +36,7 @@ console.log($myFunction()) // "Hello from plugin"
 
 By default, plugins load synchronously in alphabetical order:
 
-```
+```bash
 plugins/
 ├── 01.first.ts    # Loads first
 ├── 02.second.ts   # Loads second

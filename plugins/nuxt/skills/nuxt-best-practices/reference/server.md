@@ -3,6 +3,7 @@
 Guide to building robust server APIs with Nuxt's Nitro engine.
 
 ## Table of Contents
+
 - [File-Based Routing](#file-based-routing)
 - [Event Handlers](#event-handlers)
 - [Request Handling](#request-handling)
@@ -15,7 +16,8 @@ Guide to building robust server APIs with Nuxt's Nitro engine.
 ## File-Based Routing
 
 ### Directory Structure
-```
+
+```bash
 server/
 ├── api/              # API routes (/api/*)
 │   ├── users/
@@ -34,6 +36,7 @@ server/
 ```
 
 ### HTTP Method Naming
+
 ```typescript
 // ✅ Good - Method in filename
 users/index.get.ts      // GET /api/users
@@ -50,6 +53,7 @@ users/update.ts         // Not RESTful
 ## Event Handlers
 
 ### Basic Handler
+
 ```typescript
 // server/api/users/index.get.ts
 export default defineEventHandler(async (event) => {
@@ -60,6 +64,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### With Type Safety
+
 ```typescript
 // server/api/users/index.post.ts
 interface CreateUserBody {
@@ -86,6 +91,7 @@ export default defineEventHandler(async (event) => {
 ## Request Handling
 
 ### Path Parameters
+
 ```typescript
 // server/api/users/[id].get.ts
 export default defineEventHandler(async (event) => {
@@ -112,6 +118,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Query Parameters
+
 ```typescript
 // server/api/users/index.get.ts
 export default defineEventHandler(async (event) => {
@@ -146,6 +153,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Request Body
+
 ```typescript
 // server/api/users/[id].patch.ts
 interface UpdateUserBody {
@@ -175,6 +183,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Headers
+
 ```typescript
 export default defineEventHandler(async (event) => {
   // Get specific header
@@ -193,6 +202,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Cookies
+
 ```typescript
 export default defineEventHandler(async (event) => {
   // Get cookie
@@ -216,6 +226,7 @@ export default defineEventHandler(async (event) => {
 ## Response Utilities
 
 ### Status Codes
+
 ```typescript
 export default defineEventHandler(async (event) => {
   // Set status code
@@ -226,6 +237,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Redirects
+
 ```typescript
 export default defineEventHandler(async (event) => {
   // Redirect
@@ -234,6 +246,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### No Content
+
 ```typescript
 // server/api/users/[id].delete.ts
 export default defineEventHandler(async (event) => {
@@ -248,6 +261,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Stream Response
+
 ```typescript
 export default defineEventHandler(async (event) => {
   const stream = await getStreamFromDatabase()
@@ -259,6 +273,7 @@ export default defineEventHandler(async (event) => {
 ## Error Handling
 
 ### Creating Errors
+
 ```typescript
 export default defineEventHandler(async (event) => {
   const user = await findUser()
@@ -276,6 +291,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Custom Error Data
+
 ```typescript
 throw createError({
   statusCode: 400,
@@ -290,6 +306,7 @@ throw createError({
 ```
 
 ### Try-Catch Pattern
+
 ```typescript
 export default defineEventHandler(async (event) => {
   try {
@@ -308,6 +325,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Global Error Handler
+
 ```typescript
 // server/middleware/error.ts
 export default defineEventHandler((event) => {
@@ -324,6 +342,7 @@ export default defineEventHandler((event) => {
 ## Middleware
 
 ### Authentication Middleware
+
 ```typescript
 // server/middleware/auth.ts
 export default defineEventHandler(async (event) => {
@@ -359,6 +378,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### CORS Middleware
+
 ```typescript
 // server/middleware/cors.ts
 export default defineEventHandler((event) => {
@@ -377,6 +397,7 @@ export default defineEventHandler((event) => {
 ```
 
 ### Request Logging
+
 ```typescript
 // server/middleware/logger.ts
 export default defineEventHandler((event) => {
@@ -394,6 +415,7 @@ export default defineEventHandler((event) => {
 ## Database Integration
 
 ### Prisma Example
+
 ```typescript
 // server/utils/db.ts
 import { PrismaClient } from '@prisma/client'
@@ -416,6 +438,7 @@ if (process.env.NODE_ENV !== 'production') {
 ```
 
 ### Using in Routes
+
 ```typescript
 // server/api/users/index.get.ts
 import prisma from '~/server/utils/db'
@@ -434,6 +457,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Transaction Example
+
 ```typescript
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -457,6 +481,7 @@ export default defineEventHandler(async (event) => {
 ## Authentication
 
 ### JWT Pattern
+
 ```typescript
 // server/utils/auth.ts
 import jwt from 'jsonwebtoken'
@@ -504,6 +529,7 @@ export default defineEventHandler(async (event) => {
 ```
 
 ### Session Pattern
+
 ```typescript
 // server/utils/session.ts
 import { v4 as uuidv4 } from 'uuid'
