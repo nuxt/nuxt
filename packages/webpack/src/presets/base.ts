@@ -227,7 +227,7 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
 }
 
 function getEnv (ctx: WebpackConfigContext) {
-  const _env: Record<string, string | boolean> = {
+  const _env: Record<string, string | boolean | InstanceType<typeof webpack.DefinePlugin>['definitions'][string]> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     '__NUXT_VERSION__': JSON.stringify(ctx.nuxt._version),
     '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
@@ -242,6 +242,18 @@ function getEnv (ctx: WebpackConfigContext) {
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
     'import.meta.server': ctx.isServer,
+  }
+
+  if (ctx.isClient) {
+    _env['process.prerender'] = false
+    _env['process.nitro'] = false
+    _env['import.meta.prerender'] = false
+    _env['import.meta.nitro'] = false
+  } else {
+    _env['process.prerender'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.prerender', true)
+    _env['process.nitro'] = webpack.DefinePlugin.runtimeValue(() => 'process.nitro', true)
+    _env['import.meta.prerender'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.prerender', true)
+    _env['import.meta.nitro'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.nitro', true)
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {

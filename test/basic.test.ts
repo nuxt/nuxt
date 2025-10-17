@@ -621,7 +621,7 @@ describe('pages', () => {
     }
   })
 
-  it.skipIf(isDev || isWebpack /* TODO: fix bug with import.meta.prerender being undefined in webpack build */)('prerenders pages hinted with a route rule', async () => {
+  it.skipIf(isDev)('prerenders pages hinted with a route rule', async () => {
     const html = await $fetch('/prerender/test')
     expect(html).toContain('should be prerendered: true')
   })
@@ -1231,7 +1231,7 @@ describe('errors', () => {
 
   it('should allow catching errors within error boundaries', async () => {
     const { page } = await renderPage('/error/error-boundary')
-    await page.getByText('This is the error rendering')
+    await page.getByText('This is the error rendering').first().waitFor()
     await page.close()
 
     await expectNoClientErrors('/error/error-boundary')
@@ -2043,7 +2043,7 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  it.skipIf(isDev || isWebpack /* TODO: fix bug with import.meta.prerender being undefined in webpack build */)('should allow server-only components to set prerender hints', async () => {
+  it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     expect(await readdir(join(publicDir, 'catchall', 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain(
