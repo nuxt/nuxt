@@ -20,6 +20,7 @@ import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
+import { RouterHashModeSymbol } from '#app/components/injections'
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -94,6 +95,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       window.history.scrollRestoration = 'auto'
     }
     nuxtApp.vueApp.use(router)
+
+    nuxtApp.vueApp.provide(RouterHashModeSymbol, hashMode)
 
     const previousRoute = shallowRef(router.currentRoute.value)
     router.afterEach((_to, from) => {

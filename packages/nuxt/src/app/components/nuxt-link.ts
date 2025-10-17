@@ -22,8 +22,7 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
-
-import { hashMode } from '#build/router.options'
+import { RouterHashModeSymbol } from './injections'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
@@ -141,10 +140,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  function isHashLinkWithoutHashMode (link: unknown): boolean {
-    return !hashMode && typeof link === 'string' && link.startsWith('#')
-  }
-
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve'], trailingSlash?: NuxtLinkOptions['trailingSlash']): string
   function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve'], trailingSlash?: NuxtLinkOptions['trailingSlash']): Exclude<RouteLocationRaw, string>
   function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve'], trailingSlash?: NuxtLinkOptions['trailingSlash']): RouteLocationRaw | RouteLocation | undefined {
@@ -210,6 +205,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to })
 
+    const hashMode = inject(RouterHashModeSymbol, false)
+
+    function isHashLinkWithoutHashMode (link: unknown): boolean {
+      return !hashMode && typeof link === 'string' && link.startsWith('#')
+    }
+
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
       const effectiveTrailingSlash = props.trailingSlash ?? options.trailingSlash
@@ -244,11 +245,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       async navigate (_e?: MouseEvent) {
         await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
       },
+      isHashLinkWithoutHashMode,
     } satisfies ReturnType<typeof useLink> & {
       to: ComputedRef<RouteLocationRaw>
       hasTarget: ComputedRef<boolean | null | undefined>
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
+      isHashLinkWithoutHashMode: typeof isHashLinkWithoutHashMode
     }
   }
 
@@ -354,7 +357,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     setup (props, { slots }) {
       const router = useRouter()
 
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, isHashLinkWithoutHashMode } = useNuxtLink(props)
 
       // Prefetching
       const prefetched = shallowRef(false)
