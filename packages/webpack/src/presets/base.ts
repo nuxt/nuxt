@@ -249,17 +249,12 @@ function getEnv (ctx: WebpackConfigContext) {
     _env['process.nitro'] = false
     _env['import.meta.prerender'] = false
     _env['import.meta.nitro'] = false
-  } else if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
-    // https://github.com/web-infra-dev/rspack/issues/5606
-    _env['process.prerender'] = webpack.DefinePlugin.runtimeValue(() => 'process.prerender', true)
-    _env['process.nitro'] = webpack.DefinePlugin.runtimeValue(() => 'process.nitro', true)
-    _env['import.meta.prerender'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.prerender', true)
-    _env['import.meta.nitro'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.nitro', true)
   } else {
-    _env['process.prerender'] = 'process.prerender'
-    _env['process.nitro'] = 'process.nitro'
-    _env['import.meta.prerender'] = 'import.meta.prerender'
-    _env['import.meta.nitro'] = 'import.meta.nitro'
+    // wrap in an IIFE, forcing it to be evaluated at runtime
+    _env['process.prerender'] = '(()=>process.prerender)()'
+    _env['process.nitro'] = '(()=>process.nitro)()'
+    _env['import.meta.prerender'] = '(()=>import.meta.prerender)()'
+    _env['import.meta.nitro'] = '(()=>import.meta.nitro)()'
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {
