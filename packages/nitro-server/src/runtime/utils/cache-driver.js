@@ -7,7 +7,15 @@ import lruCache from 'unstorage/drivers/lru-cache'
 /**
  * @param {string} item
  */
-const normalizeFsKey = item => decodeURIComponent(item.replaceAll(':', '_'))
+function normalizeFsKey(item) {
+  const normalized = item.replaceAll(':', '_')
+  try {
+    return decodeURIComponent(normalized)
+  } catch (error) {
+    console.warn(`Failed to decode key "${item}", using "${normalized}" instead.`)
+    return normalized
+  }
+}
 
 /**
  * @param {{ base: string }} opts
