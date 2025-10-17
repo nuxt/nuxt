@@ -147,8 +147,7 @@ describe('pages', () => {
     await expectNoClientErrors('/')
   })
 
-  // TODO: support jsx with webpack
-  it.runIf(!isWebpack)('supports jsx', async () => {
+  it('supports jsx', async () => {
     const html = await $fetch<string>('/jsx')
 
     // should import JSX/TSX components with custom elements
