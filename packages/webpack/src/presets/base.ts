@@ -250,10 +250,10 @@ function getEnv (ctx: WebpackConfigContext) {
     _env['import.meta.prerender'] = false
     _env['import.meta.nitro'] = false
   } else {
-    _env['process.prerender'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.prerender', true)
-    _env['process.nitro'] = webpack.DefinePlugin.runtimeValue(() => 'process.nitro', true)
-    _env['import.meta.prerender'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.prerender', true)
-    _env['import.meta.nitro'] = webpack.DefinePlugin.runtimeValue(() => 'import.meta.nitro', true)
+    _env['process.prerender'] = 'process.prerender'
+    _env['process.nitro'] = 'process.nitro'
+    _env['import.meta.prerender'] = 'import.meta.prerender'
+    _env['import.meta.nitro'] = 'import.meta.nitro'
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {
