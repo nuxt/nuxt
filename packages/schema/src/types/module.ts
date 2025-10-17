@@ -84,7 +84,7 @@ export interface ModuleDefinition<
   defaults?: TOptionsDefaults | ((nuxt: Nuxt) => Awaitable<TOptionsDefaults>)
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
-  moduleDependencies?: ModuleDependencies | ((nuxt: Nuxt) => ModuleDependencies)
+  moduleDependencies?: ModuleDependencies | ((nuxt: Nuxt) => ModuleDependencies) | ((nuxt: Nuxt) => Awaitable<ModuleDependencies>)
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (nuxt: Nuxt, options: TOptions, previousVersion: string) => Awaitable<void>
   setup?: (
@@ -116,7 +116,7 @@ export interface NuxtModule<
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions
   >
-  getModuleDependencies?: (nuxt: Nuxt) => ModuleDependencies | undefined
+  getModuleDependencies?: (nuxt: Nuxt) => Awaitable<ModuleDependencies> | ModuleDependencies | undefined
   getMeta?: () => Promise<ModuleMeta>
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (
