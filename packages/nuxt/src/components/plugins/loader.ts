@@ -73,7 +73,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           map.set(component, identifier)
 
           const isServerOnly = !component._raw && component.mode === 'server' &&
-          !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
+            !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
             imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
