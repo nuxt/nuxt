@@ -256,7 +256,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         env: ["dev", "built"]
-        builder: ["vite", "rspack", "webpack"]
+        builder: ["vite-env-api", "vite", "rspack", "webpack"]
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
         payload: ["json", "js"]
@@ -280,6 +280,10 @@ jobs:
             builder: "webpack"
           - manifest: "manifest-off"
             builder: "webpack"
+          - manifest: "manifest-off"
+            builder: "vite-env-api"
+          - payload: "js"
+            builder: "vite-env-api"
 
     timeout-minutes: 15
 
