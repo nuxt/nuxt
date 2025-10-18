@@ -1,6 +1,6 @@
 // @ts-check
 
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 import { defineDriver } from 'unstorage'
 import fsDriver from 'unstorage/drivers/fs-lite'
 import lruCache from 'unstorage/drivers/lru-cache'
@@ -8,8 +8,8 @@ import lruCache from 'unstorage/drivers/lru-cache'
 /**
  * @param {string} item
  */
-function normalizeFsKey(item) {
-  const safe = item.replace(/[^a-zA-Z0-9._-]/g, '_')
+function normalizeFsKey (item) {
+  const safe = item.replace(/[^\w.-]/g, '_')
   const prefix = safe.slice(0, 20)
   const hash = crypto.createHash('sha1').update(item).digest('hex').slice(0, 20)
   return `${prefix}-${hash}`
