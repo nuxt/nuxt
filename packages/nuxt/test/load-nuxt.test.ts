@@ -146,7 +146,7 @@ describe('loadNuxt', () => {
 
     const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
 
-    const tsConfigInclude = nuxt._nitro?.options.typescript?.tsConfig?.include ?? []
+    const tsConfigInclude = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
 
     const hasLayerServer = tsConfigInclude.some((p: string) =>
       p.replace(/\\/g, '/').includes('layers/auto/server'),
