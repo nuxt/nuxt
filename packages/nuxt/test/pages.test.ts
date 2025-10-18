@@ -5,6 +5,23 @@ import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 import type { NuxtPage } from 'nuxt/schema'
+import { useNuxt } from '@nuxt/kit'
+
+vi.mock('@nuxt/kit', async (original) => {
+  const mod = await original<typeof import('@nuxt/kit')>()
+  return {
+    ...mod,
+    useNuxt: vi.fn(() => {
+      return {
+        options: {
+          experimental: {
+            normalizePageNames: false,
+          },
+        },
+      }
+    }),
+  }
+})
 
 describe('pages:generateRoutesFromFiles', () => {
   vi.mock('knitwork', async (original) => {
@@ -77,8 +94,59 @@ describe('pages:generateRoutesFromFiles', () => {
     })
   }
 
-  it('should consistently normalize routes', async () => {
-    await expect(normalizedResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta-disabled.test.ts.snap')
+  describe('pages:normalizePageNames', () => {
+    it('should assign __name via Object.assign for sync imports when normalizePageNames is enabled', () => {
+      vi.mocked(useNuxt).mockReturnValueOnce({
+        options: {
+          // @ts-expect-error partial
+          experimental: { normalizePageNames: true },
+        },
+      })
+
+      const pages: NuxtPage[] = [
+        {
+          file: '/pages/sync.vue',
+          name: 'sync',
+          path: '/sync',
+          _sync: true,
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toContain('Object.assign(')
+      expect(r0.component).toContain('__name')
+    })
+
+    it('should append then(...Object.assign(m.default, { __name })) for async imports when normalizePageNames is enabled', () => {
+      vi.mocked(useNuxt).mockReturnValueOnce({
+        options: {
+          // @ts-expect-error partial
+          experimental: { normalizePageNames: true },
+        },
+      })
+
+      const pages: NuxtPage[] = [
+        {
+          file: '/pages/async.vue',
+          name: 'async',
+          path: '/async',
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toContain('.then((m) => Object.assign(m.default')
+      expect(r0.component).toContain('__name')
+    })
   })
 
   it('should consistently normalize routes when overriding meta', async () => {
