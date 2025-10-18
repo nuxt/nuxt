@@ -22,7 +22,7 @@ export default defineNuxtPlugin({
             // Add deep linking support for Chrome DevTools
             navigation: {
               name: 'Open in Nuxt DevTools',
-              url: `nuxt-devtools://performance/trace/${event.name}`,
+              url: `nuxt-devtools://performance/trace/${encodeURIComponent(event.name || 'unknown')}`,
               params: {
                 timestamp: Date.now().toString(),
               },
