@@ -148,7 +148,6 @@ describe('loadNuxt', () => {
 
     const tsConfigInclude = nuxt._nitro?.options.typescript?.tsConfig?.include ?? []
 
-    // Normalize for OS path differences and ensure layer server is included
     const hasLayerServer = tsConfigInclude.some((p: string) =>
       p.replace(/\\/g, '/').includes('layers/auto/server'),
     )
