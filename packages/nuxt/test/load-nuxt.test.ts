@@ -138,6 +138,25 @@ describe('loadNuxt', () => {
       ]
     `)
   })
+
+  it('includes layer server directories in nitro tsconfig', async () => {
+    const layerFixtureDir = withoutTrailingSlash(
+      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
+    )
+
+    const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
+
+    const tsConfigInclude = nuxt._nitro?.options.typescript?.tsConfig?.include ?? []
+
+    // Normalize for OS path differences and ensure layer server is included
+    const hasLayerServer = tsConfigInclude.some((p: string) =>
+      p.replace(/\\/g, '/').includes('layers/auto/server'),
+    )
+
+    expect(hasLayerServer).toBe(true)
+
+    await nuxt.close()
+  })
 })
 
 const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
