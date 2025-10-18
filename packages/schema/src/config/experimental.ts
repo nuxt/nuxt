@@ -168,6 +168,7 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+    normalizePageNames: false,
     spaLoadingTemplateLocation: {
       $resolve: (val) => {
         const validOptions = new Set(['body', 'within'] as const)
