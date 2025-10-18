@@ -525,7 +525,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }, slots.default?.())
       }
     },
-    // }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
   }) as unknown as (new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>) => InstanceType<DefineSetupFnComponent<
     NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
     [],
