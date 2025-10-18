@@ -24,7 +24,6 @@ export default defineNuxtPlugin({
               name: 'Open in Nuxt DevTools',
               url: `nuxt-devtools://performance/trace/${event.name}`,
               params: {
-                event: event.name,
                 timestamp: Date.now().toString(),
               },
             },
@@ -48,10 +47,13 @@ interface ExtensionTrackEntryPayload {
   trackGroup?: string // Optional: Group for organizing tracks
   properties?: [string, string][] // Key-value pairs for detailed view
   tooltipText?: string // Short description for tooltip
-  // Add navigation for deep linking
+  /** Deep linking support for Chrome DevTools - enables clickable links to Nuxt DevTools */
   navigation?: {
+    /** Display text for the link */
     name: string
+    /** Deep link URL (e.g., nuxt-devtools://...) */
     url: string
+    /** Optional parameters to pass with the link */
     params?: Record<string, string>
   }
 }
