@@ -56,11 +56,8 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       if (name === 'ssr') {
         if (config.build?.rollupOptions?.output && !Array.isArray(config.build.rollupOptions.output)) {
           config.build.rollupOptions.output.manualChunks = undefined
-
-          // @ts-expect-error non-public property
-          if (vite.rolldownVersion) {
-            // @ts-expect-error rolldown-specific
-            config.build.rollupOptions.output.advancedChunks = undefined
+          if ((vite as any).rolldownVersion) {
+            (config.build.rollupOptions.output as any).advancedChunks = undefined
           }
         }
       }
