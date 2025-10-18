@@ -19,6 +19,15 @@ export default defineNuxtPlugin({
             dataType: 'track-entry',
             track: 'nuxt',
             color: 'tertiary-dark',
+            // Add deep linking support for Chrome DevTools
+            navigation: {
+              name: 'Open in Nuxt DevTools',
+              url: `nuxt-devtools://performance/trace/${event.name}`,
+              params: {
+                event: event.name,
+                timestamp: Date.now().toString(),
+              },
+            },
           } satisfies ExtensionTrackEntryPayload,
         },
       })
@@ -39,4 +48,10 @@ interface ExtensionTrackEntryPayload {
   trackGroup?: string // Optional: Group for organizing tracks
   properties?: [string, string][] // Key-value pairs for detailed view
   tooltipText?: string // Short description for tooltip
+  // Add navigation for deep linking
+  navigation?: {
+    name: string
+    url: string
+    params?: Record<string, string>
+  }
 }
