@@ -17,7 +17,7 @@
       ]
     }
   },
-  "postStartCommand": "pnpm install && pnpm dev:prepare",
+  "postStartCommand": "pnpm install --frozen-lockfile && pnpm dev:prepare",
   "forwardPorts": [
     3000
   ],
