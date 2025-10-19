@@ -11,7 +11,7 @@ import lruCache from 'unstorage/drivers/lru-cache'
 function normalizeFsKey (item) {
   const safe = item.replace(/[^\w.-]/g, '_')
   const prefix = safe.slice(0, 20)
-  const hash = crypto.createHash('sha1').update(item).digest('hex').slice(0, 20)
+  const hash = crypto.createHash('sha256').update(item).digest('hex')
   return `${prefix}-${hash}`
 }
 
