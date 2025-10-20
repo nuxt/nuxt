@@ -226,7 +226,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // @ts-expect-error Rolldown-specific check
     if (vite.rolldownVersion) {
       const { replacePlugin } = await import('rolldown/experimental')
-      config.plugins!.push(replacePlugin(replaceOptions))
+      config.plugins!.push(replacePlugin(replaceOptions, { preventAssignment: true }))
     } else {
       config.plugins!.push(replacePlugin({ ...replaceOptions, preventAssignment: true }))
     }
