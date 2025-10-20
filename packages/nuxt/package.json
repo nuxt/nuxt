@@ -145,7 +145,7 @@
     "@vitejs/plugin-vue-jsx": "5.1.1",
     "@vue/compiler-sfc": "3.5.22",
     "unbuild": "3.6.1",
-    "vite": "7.1.9",
+    "vite": "7.1.11",
     "vitest": "3.2.4",
     "vue-sfc-transformer": "0.1.17"
   },
