@@ -56,7 +56,7 @@
     "nitro": "3.0.1-alpha.0",
     "unbuild": "3.6.1",
     "unimport": "5.4.1",
-    "vite": "7.1.9",
+    "vite": "7.1.11",
     "vitest": "3.2.4",
     "webpack": "5.102.1"
   },
