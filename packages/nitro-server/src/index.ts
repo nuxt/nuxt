@@ -176,7 +176,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
       entry: resolve(distDir, 'runtime/handlers/renderer'),
     },
     nodeModulesDirs: nuxt.options.modulesDir,
-    handlers: nuxt.options.serverHandlers,
+    handlers: [
+      {
+        middleware: true,
+        handler: resolve(distDir, 'runtime/middleware/base-url'),
+      },
+      ...nuxt.options.serverHandlers,
+    ],
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {

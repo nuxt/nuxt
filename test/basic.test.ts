@@ -11,10 +11,10 @@ import type { NuxtIslandResponse } from 'nuxt/app'
 
 import type { $Fetch } from 'nitro/types'
 
-const $fetch = _$fetch as $Fetch
-
 import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+
+const $fetch = _$fetch as $Fetch
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -2163,8 +2163,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     `)
   })
 
-  // TODO: Nitro v3 currently does not support runtime base URL
-  it.todo('should allow setting base URL and build assets directory', async () => {
+  it('should allow setting base URL and build assets directory', async () => {
     await startServer({
       env: {
         NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
@@ -2178,11 +2177,10 @@ describe.skipIf(isDev)('dynamic paths', () => {
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
-    expect(await $fetch<string>('/foo/url')).toContain('path: /foo/url')
+    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
   })
 
-  // TODO: Nitro v3 currently does not support runtime base URL
-  it.todo('should allow setting relative baseURL', async () => {
+  it('should allow setting relative baseURL', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: './',
@@ -2197,8 +2195,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     }
   })
 
-  // TODO: Nitro v3 currently does not support runtime base URL
-  it.todo('should use baseURL when redirecting', async () => {
+  it('should use baseURL when redirecting', async () => {
     await startServer({
       env: {
         NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
@@ -2210,8 +2207,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     expect(headers.get('location')).toEqual('/foo/')
   })
 
-  // TODO: Nitro v3 currently does not support runtime base URL
-  it.todo('should allow setting CDN URL', async () => {
+  it('should allow setting CDN URL', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '/foo/',
@@ -2227,9 +2223,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     }
   })
 
-  // TODO: Nitro v3 currently does not support runtime base URL
-  // .skipIf(isDev || isWebpack)
-  it.todo('should render relative importmap path with relative path', async () => {
+  it.skipIf(isWebpack)('should render relative importmap path with relative path', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',
@@ -2528,9 +2522,7 @@ describe('component islands', () => {
     await page.close()
   })
 
-  // TODO: Nitro v3 currently does not support runtime base URL
-  // skipIf(isDev)
-  it.todo('should not render an error when having a baseURL', async () => {
+  it.skipIf(isDev)('should not render an error when having a baseURL', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '/foo/',
