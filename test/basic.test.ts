@@ -2232,7 +2232,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
   // TODO: Nitro v3 currently does not support runtime base URL
   // .skipIf(isDev() || isWebpack)
-  it('should render relative importmap path with relative path', async () => {
+  it.todo('should render relative importmap path with relative path', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',
