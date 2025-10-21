@@ -7,6 +7,7 @@ export interface Component {
   kebabName: string
   export: string
   filePath: string
+  shortPath: string
   chunkName: string
   prefetch: boolean
   preload: boolean
@@ -71,11 +72,6 @@ export interface ScanDir {
    * This flag indicates, component should be loaded async (with a separate chunk) regardless of using Lazy prefix or not.
    */
   isAsync?: boolean
-  /**
-   * Path to component's declaration file
-   * Used for type generation when different from filePath
-   */
-  declarationPath?: string
   extendComponent?: (component: Component) => Promise<Component | void> | (Component | void)
   /**
    * If enabled, registers components to be globally available.

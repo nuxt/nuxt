@@ -1,9 +1,9 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
+import type { NuxtPayload } from 'nuxt/app'
 
 import { useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
-import type { NuxtPayload } from '#app/nuxt'
 import type { H3Event } from 'h3'
 import { generateErrorOverlayHTML } from '../utils/dev'
 

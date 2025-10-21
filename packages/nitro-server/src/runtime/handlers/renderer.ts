@@ -15,7 +15,7 @@ import destr from 'destr'
 import { useNitroApp } from 'nitro/runtime'
 import { relative } from 'pathe'
 
-import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
+import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
 
 import { getRenderer } from '../utils/renderer/build-files'
 import { payloadCache } from '../utils/cache'
@@ -47,13 +47,11 @@ if (process.env.NUXT_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
   (globalThis as any).AsyncLocalStorage = AsyncLocalStorage
 }
 
-export interface NuxtRenderHTMLContext {
-  htmlAttrs: string[]
-  head: string[]
-  bodyAttrs: string[]
-  bodyPrepend: string[]
-  body: string[]
-  bodyAppend: string[]
+export interface NuxtRenderResponse {
+  body: string
+  statusCode: number
+  statusMessage?: string
+  headers: Record<string, string>
 }
 
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
@@ -179,7 +177,7 @@ export default defineEventHandler(async (event) => {
     // Hint nitro to prerender payload for this route
     event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await payloadCache!.setItem(ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
+    await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || !!routeOptions?.noScripts

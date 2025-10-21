@@ -59,7 +59,7 @@
     "std-env": "^3.9.0",
     "time-fix-plugin": "^2.0.7",
     "tinyglobby": "^0.2.15",
-    "ts-checker-rspack-plugin": "^1.1.5",
+    "ts-checker-rspack-plugin": "^1.1.6",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.21",
     "unplugin": "^2.3.10",

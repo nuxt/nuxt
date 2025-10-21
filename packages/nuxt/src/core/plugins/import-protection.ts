@@ -13,7 +13,7 @@ interface NuxtImportProtectionOptions {
   context: 'nuxt-app' | 'nitro-app' | 'shared'
 }
 
-export const createImportProtectionPatterns = (nuxt: { options: NuxtOptions }, options: NuxtImportProtectionOptions) => {
+export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, options: NuxtImportProtectionOptions) {
   const patterns: ImportProtectionOptions['patterns'] = []
   const context = contextFlags[options.context]
 
