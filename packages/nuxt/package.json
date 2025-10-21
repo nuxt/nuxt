@@ -90,7 +90,7 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "exsolve": "^1.0.7",
-    "h3": "^2.0.1-rc.1",
+    "h3": "^2.0.1-rc.2",
     "hookable": "^5.5.3",
     "ignore": "^7.0.5",
     "impound": "^1.0.0",

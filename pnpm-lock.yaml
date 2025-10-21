@@ -20,7 +20,7 @@ overrides:
   '@vue/shared': 3.5.22
   c12: 3.3.0
   compatx: 0.2.0
-  h3: 2.0.1-rc.1
+  h3: 2.0.1-rc.2
   jiti: 2.6.1
   magic-string: 0.30.19
   nitro: 3.0.1-alpha.0
@@ -159,8 +159,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.1
-        version: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+        specifier: 2.0.1-rc.2
+        version: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       happy-dom:
         specifier: 19.0.2
         version: 19.0.2
@@ -429,8 +429,8 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7
       h3:
-        specifier: 2.0.1-rc.1
-        version: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+        specifier: 2.0.1-rc.2
+        version: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -538,7 +538,7 @@ importers:
         version: 2.3.10
       unplugin-vue-router:
         specifier: ^0.15.0
-        version: 0.15.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+        version: 0.15.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       unstorage:
         specifier: ^1.17.1
         version: 1.17.1(crossws@0.4.1(srvx@0.8.15))(db0@0.3.4)(ioredis@5.8.0)
@@ -556,7 +556,7 @@ importers:
         version: 0.1.0
       vue-router:
         specifier: ^4.5.1
-        version: 4.5.1(vue@3.5.22(typescript@5.9.3))
+        version: 4.6.3(vue@3.5.22(typescript@5.9.3))
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.12.1
@@ -625,8 +625,8 @@ importers:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.102.0(esbuild@0.25.10))
       h3:
-        specifier: 2.0.1-rc.1
-        version: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+        specifier: 2.0.1-rc.2
+        version: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       jiti:
         specifier: 2.6.1
         version: 2.6.1
@@ -804,8 +804,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.102.0(esbuild@0.25.10))
       h3:
-        specifier: 2.0.1-rc.1
-        version: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+        specifier: 2.0.1-rc.2
+        version: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -957,8 +957,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.1
-        version: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+        specifier: 2.0.1-rc.2
+        version: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       jiti:
         specifier: 2.6.1
         version: 2.6.1
@@ -1072,8 +1072,8 @@ importers:
         specifier: ^9.1.0
         version: 9.1.0(typescript@5.9.3)(webpack@5.102.0(esbuild@0.25.10))
       h3:
-        specifier: 2.0.1-rc.1
-        version: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+        specifier: 2.0.1-rc.2
+        version: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       jiti:
         specifier: 2.6.1
         version: 2.6.1
@@ -1204,7 +1204,7 @@ importers:
     devDependencies:
       '@vue/devtools-api':
         specifier: latest
-        version: 8.0.2
+        version: 8.0.3
       defu:
         specifier: latest
         version: 6.1.4
@@ -1232,7 +1232,7 @@ importers:
         version: 1.4.1
       unplugin-vue-router:
         specifier: latest
-        version: 0.15.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
+        version: 0.16.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3))
       vitest:
         specifier: latest
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.8)(happy-dom@19.0.2)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
@@ -1241,7 +1241,7 @@ importers:
         version: 3.5.22(typescript@5.9.3)
       vue-router:
         specifier: latest
-        version: 4.5.1(vue@3.5.22(typescript@5.9.3))
+        version: 4.6.3(vue@3.5.22(typescript@5.9.3))
 
   test/fixtures/hmr:
     dependencies:
@@ -3456,6 +3456,15 @@ packages:
       vue:
         optional: true
 
+  '@vue-macros/common@3.1.1':
+    resolution: {integrity: sha512-afW2DMjgCBVs33mWRlz7YsGHzoEEupnl0DK5ZTKsgziAlLh5syc5m+GM7eqeYrgiQpwMaVxa1fk73caCvPxyAw==}
+    engines: {node: '>=20.19.0'}
+    peerDependencies:
+      vue: 3.5.22
+    peerDependenciesMeta:
+      vue:
+        optional: true
+
   '@vue/babel-helper-vue-transform-on@1.5.0':
     resolution: {integrity: sha512-0dAYkerNhhHutHZ34JtTl2czVQHUNWv6xEbkdF5W+Yrv5pCWsqjeORdOgbtW2I9gWlt+wBmVn+ttqN9ZxR5tzA==}
 
@@ -3490,8 +3499,8 @@ packages:
   '@vue/devtools-api@6.6.4':
     resolution: {integrity: sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==}
 
-  '@vue/devtools-api@8.0.2':
-    resolution: {integrity: sha512-RdwsaYoSTumwZ7XOt5yIPP1/T4O0bTs+c5XaEjmUB6f9x+FvDSL9AekxW1vuhK1lmA9TfewpXVt2r5LIax3LHw==}
+  '@vue/devtools-api@8.0.3':
+    resolution: {integrity: sha512-YxZE7xNvvfq5XmjJh1ml+CzVNrRjuZYCuT5Xjj0u9RlXU7za/MRuZDUXcKfp0j7IvYkDut49vlKqbiQ1xhXP2w==}
 
   '@vue/devtools-core@7.7.7':
     resolution: {integrity: sha512-9z9TLbfC+AjAi1PQyWX+OErjIaJmdFlbDHcD+cAMYKY6Bh5VlsAtCeGyRMrXwIlMEQPukvnWt3gZBLwTAIMKzQ==}
@@ -3501,14 +3510,14 @@ packages:
   '@vue/devtools-kit@7.7.7':
     resolution: {integrity: sha512-wgoZtxcTta65cnZ1Q6MbAfePVFxfM+gq0saaeytoph7nEa7yMXoi6sCPy4ufO111B9msnw0VOWjPEFCXuAKRHA==}
 
-  '@vue/devtools-kit@8.0.2':
-    resolution: {integrity: sha512-yjZKdEmhJzQqbOh4KFBfTOQjDPMrjjBNCnHBvnTGJX+YLAqoUtY2J+cg7BE+EA8KUv8LprECq04ts75wCoIGWA==}
+  '@vue/devtools-kit@8.0.3':
+    resolution: {integrity: sha512-UF4YUOVGdfzXLCv5pMg2DxocB8dvXz278fpgEE+nJ/DRALQGAva7sj9ton0VWZ9hmXw+SV8yKMrxP2MpMhq9Wg==}
 
   '@vue/devtools-shared@7.7.7':
     resolution: {integrity: sha512-+udSj47aRl5aKb0memBvcUG9koarqnxNM5yjuREvqwK6T3ap4mn3Zqqc17QrBFTqSMjr3HK1cvStEZpMDpfdyw==}
 
-  '@vue/devtools-shared@8.0.2':
-    resolution: {integrity: sha512-mLU0QVdy5Lp40PMGSixDw/Kbd6v5dkQXltd2r+mdVQV7iUog2NlZuLxFZApFZ/mObUBDhoCpf0T3zF2FWWdeHw==}
+  '@vue/devtools-shared@8.0.3':
+    resolution: {integrity: sha512-s/QNll7TlpbADFZrPVsaUNPCOF8NvQgtgmmB7Tip6pLf/HcOvBTly0lfLQ0Eylu9FQ4OqBhFpLyBgwykiSf8zw==}
 
   '@vue/language-core@2.1.10':
     resolution: {integrity: sha512-DAI289d0K3AB5TUG3xDp9OuQ71CnrujQwJrQnfuZDwo6eGNf0UoRlPuaVNO+Zrn65PC3j0oB2i7mNmVPggeGeQ==}
@@ -4967,8 +4976,8 @@ packages:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
     engines: {node: '>=10'}
 
-  h3@2.0.1-rc.1:
-    resolution: {integrity: sha512-aGbL/RZBotdOdVWx2IOg2Yz87T1XB+H9NjVnD8c2OVqfLvJbcYvkJI3muRHWud/M/rjG+Xk71IIW1V1F+fH+AQ==}
+  h3@2.0.1-rc.2:
+    resolution: {integrity: sha512-2vS7OETzPDzGQxmmcs6ttu7p0NW25zAdkPXYOr43dn4GZf81uUljJvupa158mcpUGpsQUqIy4O4THWUQT1yVeA==}
     engines: {node: '>=20.11.1'}
     peerDependencies:
       crossws: ^0.4.1
@@ -7582,6 +7591,15 @@ packages:
       vue-router:
         optional: true
 
+  unplugin-vue-router@0.16.0:
+    resolution: {integrity: sha512-yFmUQoN07KABkbxMSaNvfjnflwSi3nkSVKi7v6FTwXlzXyRDSx63vQ8Se4ho0T9Ao9I8U5FJB12fzmrGxFB0CA==}
+    peerDependencies:
+      '@vue/compiler-sfc': ^3.5.17
+      vue-router: ^4.6.0
+    peerDependenciesMeta:
+      vue-router:
+        optional: true
+
   unplugin@2.3.10:
     resolution: {integrity: sha512-6NCPkv1ClwH+/BGE9QeoTIl09nuiAt0gS28nn1PvYXsGKRwM2TCbFA2QiilmehPDTXIe684k4rZI1yl3A1PCUw==}
     engines: {node: '>=18.12.0'}
@@ -7976,6 +7994,11 @@ packages:
 
   vue-router@4.5.1:
     resolution: {integrity: sha512-ogAF3P97NPm8fJsE4by9dwSYtDwXIY1nFY9T6DyQnGHd1E2Da94w9JIolpe42LJGIl0DwOHBi8TcRPlPGwbTtw==}
+    peerDependencies:
+      vue: 3.5.22
+
+  vue-router@4.6.3:
+    resolution: {integrity: sha512-ARBedLm9YlbvQomnmq91Os7ck6efydTSpRP3nuOKCvgJOHNrhRoJDSKtee8kcL1Vf7nz6U+PMBL+hTvR3bTVQg==}
     peerDependencies:
       vue: 3.5.22
 
@@ -8894,7 +8917,7 @@ snapshots:
       fuse.js: 7.1.0
       get-port-please: 3.2.0
       giget: 2.0.0
-      h3: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+      h3: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       jiti: 2.6.1
       listhen: 1.9.0
       nypm: 0.6.2
@@ -9031,7 +9054,7 @@ snapshots:
       '@vueuse/core': 13.9.0(vue@3.5.22(typescript@5.9.3))
       consola: 3.4.2
       defu: 6.1.4
-      h3: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+      h3: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       magic-string: 0.30.19
       ofetch: 1.4.1
       ohash: 2.0.11
@@ -9092,7 +9115,7 @@ snapshots:
       estree-walker: 3.0.3
       fake-indexeddb: 6.2.2
       get-port-please: 3.2.0
-      h3: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+      h3: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       local-pkg: 1.1.2
       magic-string: 0.30.19
       node-fetch-native: 1.6.7
@@ -10513,6 +10536,16 @@ snapshots:
     optionalDependencies:
       vue: 3.5.22(typescript@5.9.3)
 
+  '@vue-macros/common@3.1.1(vue@3.5.22(typescript@5.9.3))':
+    dependencies:
+      '@vue/compiler-sfc': 3.5.22
+      ast-kit: 2.1.2
+      local-pkg: 1.1.2
+      magic-string-ast: 1.0.2
+      unplugin-utils: 0.3.0
+    optionalDependencies:
+      vue: 3.5.22(typescript@5.9.3)
+
   '@vue/babel-helper-vue-transform-on@1.5.0': {}
 
   '@vue/babel-plugin-jsx@1.5.0(@babel/core@7.28.4)':
@@ -10579,9 +10612,9 @@ snapshots:
 
   '@vue/devtools-api@6.6.4': {}
 
-  '@vue/devtools-api@8.0.2':
+  '@vue/devtools-api@8.0.3':
     dependencies:
-      '@vue/devtools-kit': 8.0.2
+      '@vue/devtools-kit': 8.0.3
 
   '@vue/devtools-core@7.7.7(vite@7.1.9(@types/node@22.18.8)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))(vue@3.5.22(typescript@5.9.3))':
     dependencies:
@@ -10605,9 +10638,9 @@ snapshots:
       speakingurl: 14.0.1
       superjson: 2.2.2
 
-  '@vue/devtools-kit@8.0.2':
+  '@vue/devtools-kit@8.0.3':
     dependencies:
-      '@vue/devtools-shared': 8.0.2
+      '@vue/devtools-shared': 8.0.3
       birpc: 2.6.1
       hookable: 5.5.3
       mitt: 3.0.1
@@ -10619,7 +10652,7 @@ snapshots:
     dependencies:
       rfdc: 1.4.1
 
-  '@vue/devtools-shared@8.0.2':
+  '@vue/devtools-shared@8.0.3':
     dependencies:
       rfdc: 1.4.1
 
@@ -12179,7 +12212,7 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3@2.0.1-rc.1(crossws@0.3.5):
+  h3@2.0.1-rc.2(crossws@0.3.5):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.7
@@ -12188,7 +12221,7 @@ snapshots:
     optionalDependencies:
       crossws: 0.3.5
 
-  h3@2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15)):
+  h3@2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15)):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.7
@@ -12871,7 +12904,7 @@ snapshots:
       crossws: 0.3.5
       defu: 6.1.4
       get-port-please: 3.2.0
-      h3: 2.0.1-rc.1(crossws@0.3.5)
+      h3: 2.0.1-rc.2(crossws@0.3.5)
       http-shutdown: 1.2.2
       jiti: 2.6.1
       mlly: 1.8.0
@@ -13517,7 +13550,7 @@ snapshots:
       db0: 0.3.4
       esbuild: 0.25.10
       fetchdts: 0.1.7
-      h3: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+      h3: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       jiti: 2.6.1
       nf3: 0.1.1
       ofetch: 1.4.1
@@ -15338,7 +15371,7 @@ snapshots:
       pathe: 2.0.3
       picomatch: 4.0.3
 
-  unplugin-vue-router@0.15.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3)):
+  unplugin-vue-router@0.15.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       '@vue-macros/common': 3.0.0-beta.16(vue@3.5.22(typescript@5.9.3))
       '@vue/compiler-sfc': 3.5.22
@@ -15358,7 +15391,33 @@ snapshots:
       unplugin-utils: 0.2.5
       yaml: 2.8.1
     optionalDependencies:
-      vue-router: 4.5.1(vue@3.5.22(typescript@5.9.3))
+      vue-router: 4.6.3(vue@3.5.22(typescript@5.9.3))
+    transitivePeerDependencies:
+      - typescript
+      - vue
+
+  unplugin-vue-router@0.16.0(@vue/compiler-sfc@3.5.22)(typescript@5.9.3)(vue-router@4.6.3(vue@3.5.22(typescript@5.9.3)))(vue@3.5.22(typescript@5.9.3)):
+    dependencies:
+      '@babel/generator': 7.28.3
+      '@vue-macros/common': 3.1.1(vue@3.5.22(typescript@5.9.3))
+      '@vue/compiler-sfc': 3.5.22
+      '@vue/language-core': 3.1.1(typescript@5.9.3)
+      ast-walker-scope: 0.8.2
+      chokidar: 4.0.3
+      json5: 2.2.3
+      local-pkg: 1.1.2
+      magic-string: 0.30.19
+      mlly: 1.8.0
+      muggle-string: 0.4.1
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      scule: 1.3.0
+      tinyglobby: 0.2.15
+      unplugin: 2.3.10
+      unplugin-utils: 0.3.0
+      yaml: 2.8.1
+    optionalDependencies:
+      vue-router: 4.6.3(vue@3.5.22(typescript@5.9.3))
     transitivePeerDependencies:
       - typescript
       - vue
@@ -15399,7 +15458,7 @@ snapshots:
       anymatch: 3.1.3
       chokidar: 4.0.3
       destr: 2.0.5
-      h3: 2.0.1-rc.1(crossws@0.4.1(srvx@0.8.15))
+      h3: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.15))
       lru-cache: 10.4.3
       node-fetch-native: 1.6.7
       ofetch: 1.4.1
@@ -15686,6 +15745,11 @@ snapshots:
       vue: 3.5.22(typescript@5.9.3)
 
   vue-router@4.5.1(vue@3.5.22(typescript@5.9.3)):
+    dependencies:
+      '@vue/devtools-api': 6.6.4
+      vue: 3.5.22(typescript@5.9.3)
+
+  vue-router@4.6.3(vue@3.5.22(typescript@5.9.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.22(typescript@5.9.3)
