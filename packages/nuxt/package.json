@@ -89,7 +89,7 @@
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.7",
-    "h3": "^2.0.1-rc.2",
+    "h3": "^2.0.1-rc.3",
     "hookable": "^5.5.3",
     "ignore": "^7.0.5",
     "impound": "^1.0.0",
