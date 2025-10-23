@@ -26,18 +26,21 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         '@vue/reactivity',
         '@vue/shared',
         '@vue/devtools-api',
+        '@vue/test-utils',
         'vue-router',
         'vue-demi',
 
         // Nuxt
         'nuxt',
         'nuxt/app',
+        '@nuxt/test-utils',
 
         // Nuxt Deps
         '@unhead/vue',
         'consola',
         'defu',
         'devalue',
+        'get-port-please',
         'h3',
         'hookable',
         'klona',
