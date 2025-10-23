@@ -47,8 +47,17 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         'unctx',
         'unenv',
 
-        // these will never be imported on the client
+        // Nuxt virtual modules - these will never be imported on the client
+        // or are resolved by Nuxt's own module resolution
         '#app-manifest',
+        '#imports',
+        '#app',
+        '#build',
+        '#build/*',
+        '#components',
+        '#head',
+        'virtual:nuxt:',
+        'virtual:nuxt:*',
       ],
     },
     define: {
