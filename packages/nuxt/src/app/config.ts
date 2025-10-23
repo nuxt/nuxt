@@ -66,7 +66,6 @@ export function useAppConfig (): AppConfig {
 
 export function _replaceAppConfig (newConfig: AppConfig) {
   const appConfig = useAppConfig()
-  console.log('replacing', appConfig, newConfig)
 
   deepAssign(appConfig, newConfig)
   deepDelete(appConfig, newConfig)
