@@ -39,6 +39,11 @@ overrides:
   vue-router: 4.5.1
   webpack: 5.102.1
 
+patchedDependencies:
+  changelogen:
+    hash: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
+    path: patches/changelogen.patch
+
 importers:
 
   .:
@@ -123,7 +128,7 @@ importers:
         version: 2.0.0
       changelogen:
         specifier: 0.6.2
-        version: 0.6.2(magicast@0.3.5)
+        version: 0.6.2(patch_hash=8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b)(magicast@0.3.5)
       consola:
         specifier: 3.4.2
         version: 3.4.2
@@ -11393,7 +11398,7 @@ snapshots:
 
   change-case@5.4.4: {}
 
-  changelogen@0.6.2(magicast@0.3.5):
+  changelogen@0.6.2(patch_hash=8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b)(magicast@0.3.5):
     dependencies:
       c12: 3.3.0(magicast@0.3.5)
       confbox: 0.2.2
