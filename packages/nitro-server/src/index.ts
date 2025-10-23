@@ -214,7 +214,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
               join(moduleDir, 'dist/runtime/server'),
             ]
           }),
-          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, dirs.server)),
+          ...layerDirs.flatMap((dirs) => {
+            const serverFileGlobs = ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts', '**/*.js', '**/*.mjs', '**/*.cjs']
+            return serverFileGlobs.map(glob => relativeWithDot(nuxt.options.buildDir, join(dirs.server, glob)))
+          }),
           ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
         ],
         exclude: [
