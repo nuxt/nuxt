@@ -273,7 +273,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           case 'resolve': {
             const { id: resolveId, importer } = request.payload
             if (!resolveId) {
-              throw createError({ status: 400, message: 'Missing id for resolve' })
+              throw new HTTPError({ status: 400, message: 'Missing id for resolve' })
             }
             const ssrNode = nuxt.options.experimental.viteEnvironmentApi
               ? ssrServer.environments.ssr.pluginContainer
