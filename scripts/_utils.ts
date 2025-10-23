@@ -1,7 +1,7 @@
-import { execSync } from 'node:child_process'
 import { promises as fsp } from 'node:fs'
 import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'
+import { compare } from 'semver'
 import { glob } from 'tinyglobby'
 import { exec } from 'tinyexec'
 import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
@@ -99,26 +99,70 @@ export async function loadWorkspace (dir: string) {
   }
 }
 
-export async function determineBumpType () {
+export async function determineBumpType (since?: string) {
   const config = await loadChangelogConfig(process.cwd())
-  const commits = await getLatestCommits()
+  const commits = await getLatestCommits(since)
 
   return determineSemverChange(commits, config)
 }
 
-export async function getLatestCommits () {
-  const config = await loadChangelogConfig(process.cwd())
+export async function getLatestTag () {
   const { stdout: latestTag } = await exec('git', ['describe', '--tags', '--abbrev=0'])
-
-  return parseCommits(await getGitDiff(latestTag.trim()), config)
+  return latestTag.trim()
 }
 
-export async function getContributors () {
+export async function getLatestReleasedTag () {
+  const latestReleasedTag = await exec('git', ['tag', '-l']).then(r => r.stdout.trim().split('\n').filter(t => /v3\.\d+\.\d+/.test(t)).sort(compare)).then(r => r.pop()!.trim())
+  return latestReleasedTag
+}
+
+export async function getPreviousReleasedCommits () {
+  const config = await loadChangelogConfig(process.cwd())
+  const latestTag = await getLatestTag()
+  const latestReleasedTag = await getLatestReleasedTag()
+  const commits = parseCommits(await getGitDiff(latestTag, latestReleasedTag), config)
+  return commits
+}
+
+export async function getLatestCommits (since?: string) {
+  const config = await loadChangelogConfig(process.cwd())
+  const latestTag = await getLatestTag()
+
+  // If filtering by date, get commits with git log --since
+  if (since) {
+    const { stdout } = await exec('git', ['log', `${latestTag}..HEAD`, '--since', since, '--pretty=format:%H'])
+    const commitHashes = new Set(stdout.trim().split('\n').filter(Boolean))
+
+    const allCommits = parseCommits(await getGitDiff(latestTag), config)
+    return allCommits.filter((commit) => {
+      // Match against full hash (shortHash is abbreviated)
+      return Array.from(commitHashes).some(hash => hash.startsWith(commit.shortHash))
+    })
+  }
+
+  return parseCommits(await getGitDiff(latestTag), config)
+}
+
+export async function getContributors (since?: string) {
   const contributors = [] as Array<{ name: string, username: string }>
   const emails = new Set<string>()
-  const latestTag = execSync('git describe --tags --abbrev=0').toString().trim()
+  const latestTag = await getLatestTag()
+
   const rawCommits = await getGitDiff(latestTag)
+
+  // Get commit hashes filtered by date if specified
+  let allowedHashes: Set<string> | null = null
+  if (since) {
+    const { stdout } = await exec('git', ['log', `${latestTag}..HEAD`, '--since', since, '--pretty=format:%H'])
+    allowedHashes = new Set(stdout.trim().split('\n').filter(Boolean))
+  }
+
   for (const commit of rawCommits) {
+    // Filter by date if specified
+    if (allowedHashes && !Array.from(allowedHashes).some(hash => hash.startsWith(commit.shortHash))) {
+      continue
+    }
+
     if (emails.has(commit.author.email) || commit.author.name === 'renovate[bot]') { continue }
     const { author } = await $fetch<{ author: { login: string, email: string } }>(`https://api.github.com/repos/nuxt/nuxt/commits/${commit.shortHash}`, {
       headers: {

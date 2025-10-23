@@ -3,17 +3,27 @@ import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
 import { consola } from 'consola'
-import { determineBumpType, getContributors, getLatestCommits, loadWorkspace } from './_utils.ts'
+import { determineBumpType, getContributors, getLatestCommits, getLatestReleasedTag, getLatestTag, getPreviousReleasedCommits, loadWorkspace } from './_utils.ts'
+
+const handleSeparateBranch = false
 
 async function main () {
   const releaseBranch = getCurrentGitBranch()
   const workspace = await loadWorkspace(process.cwd())
   const config = await loadChangelogConfig(process.cwd(), {})
 
-  const commits = await getLatestCommits().then(commits => commits.filter(
-    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps'),
+  const prevMessages = new Set(handleSeparateBranch ? await getPreviousReleasedCommits().then(r => r.map(c => c.message)) : [])
+
+  // TODO: revert after release of v4.2.0
+  // Get the date of the latest tag to filter out merged history commits
+  const latestTagName = await getLatestTag()
+  const tagDate = execSync(`git log -1 --format=%ai ${latestTagName}`, { encoding: 'utf-8' })
+  const sinceDate = tagDate.trim()
+
+  const commits = await getLatestCommits(sinceDate).then(commits => commits.filter(
+    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps') && !prevMessages.has(c.message),
   ))
-  const bumpType = await determineBumpType() || 'patch'
+  const bumpType = await determineBumpType(sinceDate) || 'patch'
 
   const newVersion = inc(workspace.find('nuxt').data.version, bumpType)
   const changelog = await generateMarkDown(commits, config)
@@ -36,7 +46,10 @@ async function main () {
 
   // Get the current PR for this release, if it exists
   const [currentPR] = await $fetch(`https://api.github.com/repos/nuxt/nuxt/pulls?head=nuxt:v${newVersion}`)
-  const contributors = await getContributors()
+  const contributors = await getContributors(sinceDate)
+
+  const latestTag = latestTagName
+  const previousReleasedTag = handleSeparateBranch ? await getLatestReleasedTag() : latestTag
 
   const releaseNotes = [
     currentPR?.body.replace(/## 👉 Changelog[\s\S]*$/, '') || `> ${newVersion} is the next ${bumpType} release.\n>\n> **Timetable**: to be announced.`,
@@ -45,7 +58,8 @@ async function main () {
       .replace(/^## v.*\n/, '')
       .replace(`...${releaseBranch}`, `...v${newVersion}`)
       .replace(/### ❤️ Contributors[\s\S]*$/, '')
-      .replace(/[\n\r]+/g, '\n'),
+      .replace(/[\n\r]+/g, '\n')
+      .replace(latestTag, previousReleasedTag),
     '### ❤️ Contributors',
     contributors.map(c => `- ${c.name} (@${c.username})`).join('\n'),
   ].join('\n')
