@@ -37,8 +37,8 @@
       "ignoreDeps": [
         "nuxt",
         "nuxt3",
-        "@unhead/vue",
-        "@nuxt/kit"
+        "@nuxt/kit",
+        "@rollup/plugin-commonjs"
       ]
     }
   ]
