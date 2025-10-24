@@ -6,14 +6,14 @@
     "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
   },
   "dependencies": {
-    "nuxt": "workspace:*"
+    "nuxt": "workspace:*",
+    "ofetch": "^1.4.1",
+    "unplugin-vue-router": "^0.15.0",
+    "vue": "^3.5.22",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "ofetch": "latest",
-    "unplugin-vue-router": "latest",
-    "vitest": "latest",
-    "vue": "latest",
-    "vue-router": "latest"
+    "vitest": "3.2.4"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

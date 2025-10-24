@@ -3,8 +3,7 @@ import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 import type { H3Event } from 'h3'
-import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
-import type { NitroRouteRules } from 'nitropack/types'
+import type { NitroRouteRules } from 'nitro/types'
 
 import type { AppConfig } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
@@ -124,15 +123,6 @@ describe('API routes', () => {
 })
 
 describe('nitro compatible APIs', () => {
-  it('getRouteRules', async () => {
-    const a = await getRouteRules('/test')
-    const b = await getRouteRules({} as H3Event)
-    const c = getNitroRouteRules({} as H3Event)
-
-    expectTypeOf(b).toEqualTypeOf(c)
-    expectTypeOf(c).toEqualTypeOf<NitroRouteRules>()
-    expectTypeOf(a).toEqualTypeOf<Record<string, any>>()
-  })
   it('useRuntimeConfig', () => {
     useRuntimeConfig({} as H3Event)
   })
@@ -187,8 +177,8 @@ describe('middleware', () => {
         // eslint-disable-next-line no-constant-condition
         if (0) {
           return createError({
-            statusCode: 404,
-            statusMessage: 'resource-type-not-found',
+            status: 404,
+            statusText: 'resource-type-not-found',
           })
         }
         return true

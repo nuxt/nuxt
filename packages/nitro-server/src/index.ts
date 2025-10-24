@@ -8,8 +8,8 @@ import { join, relative, resolve } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
-import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
+import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro'
+import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -170,17 +170,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     esbuild: {
       options: { exclude: excludePattern },
     },
-    analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
-      ? {
-          template: 'treemap',
-          projectRoot: nuxt.options.rootDir,
-          filename: join(nuxt.options.analyzeDir, '{name}.html'),
-        }
-      : false,
+    // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
     scanDirs: layerDirs.map(dirs => dirs.server),
-    renderer: resolve(distDir, 'runtime/handlers/renderer'),
+    renderer: {
+      entry: resolve(distDir, 'runtime/handlers/renderer'),
+    },
     nodeModulesDirs: nuxt.options.modulesDir,
-    handlers: nuxt.options.serverHandlers,
+    handlers: [
+      {
+        middleware: true,
+        handler: resolve(distDir, 'runtime/middleware/base-url'),
+      },
+      ...nuxt.options.serverHandlers,
+    ],
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
@@ -192,10 +194,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
     },
     routeRules: {
+      '/**': { ssr: true },
       '/__nuxt_error': { cache: false },
     },
-    appConfig: nuxt.options.appConfig,
-    appConfigFiles: layerDirs.map(dirs => join(dirs.app, 'app.config')),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -615,7 +616,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Setup handlers
   const devMiddlewareHandler = dynamicEventHandler()
-  nitro.options.devHandlers.unshift({ handler: devMiddlewareHandler })
+  nitro.options.devHandlers.unshift({ route: '', handler: devMiddlewareHandler })
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers)
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
@@ -673,7 +674,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
     if (!nuxt.options.dev) {
-      await scanHandlers(nitro)
       await writeTypes(nitro)
     }
     // Exclude nitro output dir from typescript
@@ -756,8 +756,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 
+    // TODO: remove this
     nuxt.hook('server:devHandler', (h) => { devMiddlewareHandler.set(h) })
-    nuxt.server = createDevServer(nitro)
+    const devServer = createDevServer(nitro)
+    nuxt.server = {
+      app: {
+        fetch (req: Request) {
+          return devServer.fetch(req)
+        },
+      },
+      reload: () => devServer.reload(),
+    }
 
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
     nuxt.hook('build:done', () => waitUntilCompile)
