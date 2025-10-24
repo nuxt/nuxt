@@ -23,6 +23,7 @@ export interface NuxtTimeProps {
   calendar?: string
   dayPeriod?: 'narrow' | 'short' | 'long'
   numberingSystem?: string
+  numeric?: 'always' | 'auto'
 
   dateStyle?: 'full' | 'long' | 'medium' | 'short'
   timeStyle?: 'full' | 'long' | 'medium' | 'short'
