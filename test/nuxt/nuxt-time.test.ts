@@ -94,7 +94,7 @@ describe('<NuxtTime>', () => {
     expect(thing.html()).toMatchInlineSnapshot(
       `"<time datetime="${new Date(datetime).toISOString()}">5 seconds ago</time>"`,
     )
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000))
     expect(thing.html()).toMatchInlineSnapshot(
       `"<time datetime="${new Date(datetime).toISOString()}">6 seconds ago</time>"`,
     )
@@ -116,7 +116,7 @@ describe('<NuxtTime>', () => {
     expect(thing.html()).toMatchInlineSnapshot(
       `"<time datetime="${new Date(datetime).toISOString()}">5 seconds ago</time>"`,
     )
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000))
     expect(thing.html()).toMatchInlineSnapshot(
       `"<time datetime="${new Date(datetime).toISOString()}">5 seconds ago</time>"`,
     )
