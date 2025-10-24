@@ -1,4 +1,4 @@
-import type { H3Event, EventHandlerRequest } from 'h3'
+import type { EventHandlerRequest, H3Event } from 'h3'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ reset?: boolean }>(event)
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   return { count }
 })
 
-async function h3Counter(event: H3Event<EventHandlerRequest>, name: string, reset = false) {
+async function h3Counter (event: H3Event<EventHandlerRequest>, name: string, reset = false) {
   const session = await useSession<{ counter?: number }>(event, {
     name,
     password: 'supersecretpasswordsupersecretpasswordsupersecretpasswordsupersecretpasswordsupersecretpassword',
