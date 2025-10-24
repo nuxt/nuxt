@@ -50,9 +50,9 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         'unctx',
         'unenv',
 
-        // Nuxt virtual modules - these will never be imported on the client
-        // or are resolved by Nuxt's own module resolution
+        // this will never be imported on the client
         '#app-manifest',
+        // these should all be valid ESM
         '#imports',
         '#app',
         '#build',

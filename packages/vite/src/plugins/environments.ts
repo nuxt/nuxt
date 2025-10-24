@@ -6,7 +6,6 @@ import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { useNitro } from '@nuxt/kit'
 import { resolveModulePath } from 'exsolve'
 import { defineEnv } from 'unenv'
-import { clientEnvironment } from '../shared/client'
 
 export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
   const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
@@ -21,9 +20,12 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
     '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
   }
 
+  let viteConfig: vite.InlineConfig
+
   return {
     name: 'nuxt:environments',
-    config () {
+    config (config) {
+      viteConfig = config
       if (!nuxt.options.dev) {
         return {
           base: './',
@@ -31,23 +33,12 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     configEnvironment (name, config) {
+      if (!nuxt.options.experimental.viteEnvironmentApi && viteConfig.ssr) {
+        config.optimizeDeps ||= {}
+        config.optimizeDeps.include = undefined
+      }
       if (name === 'client') {
-        // Extract entry point for clientEnvironment configuration
-        const input = config.build?.rollupOptions?.input
-        const entry = typeof input === 'object' && input !== null && !Array.isArray(input)
-          ? (input as Record<string, string>).entry || ''
-          : typeof input === 'string' ? input : ''
-
-        // Get client environment configuration including optimizeDeps
-        const clientEnv = clientEnvironment(nuxt, entry)
-
-        // Explicitly set optimizeDeps from client environment configuration
-        // This is necessary because optimizeDeps is not inherited by environments
-        // See: https://vite.dev/guide/api-environment
-        config.optimizeDeps = clientEnv.optimizeDeps
-
         const outputConfig = config.build?.rollupOptions?.output as vite.Rollup.OutputOptions
-
         return {
           build: {
             rollupOptions: {
@@ -55,6 +46,8 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
                 chunkFileNames: outputConfig?.chunkFileNames ?? (nuxt.options.dev ? undefined : fileNames),
                 entryFileNames: outputConfig?.entryFileNames ?? (nuxt.options.dev ? 'entry.js' : fileNames),
                 sourcemapPathTransform: outputConfig?.sourcemapPathTransform ?? ((relativeSourcePath, sourcemapPath) => {
+                  // client build is running in a temporary build directory, like `.nuxt/dist/client`
+                  // so we need to transform the sourcemap path to be relative to the final build directory
                   if (!isAbsolute(relativeSourcePath)) {
                     const absoluteSourcePath = resolve(dirname(sourcemapPath), relativeSourcePath)
                     return relative(clientOutputDir, absoluteSourcePath)
