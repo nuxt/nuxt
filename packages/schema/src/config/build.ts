@@ -93,6 +93,11 @@ export default defineResolvers({
           source: '#app/composables/fetch',
           argumentLength: 3,
         },
+        {
+          name: 'createUseAsyncData',
+          source: '#app/composables/asyncData',
+          argumentLength: 3,
+        },
         ...Array.isArray(val) ? val : [],
       ].filter(Boolean),
     },

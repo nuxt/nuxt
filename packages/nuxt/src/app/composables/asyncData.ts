@@ -136,8 +136,8 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-export const createAsyncData = defineKeyedFunctionFactory({
-  name: 'createAsyncData',
+export const createUseAsyncData = defineKeyedFunctionFactory({
+  name: 'createUseAsyncData',
   factory<
     FResT,
     FDataT = FResT,
@@ -465,9 +465,9 @@ export const createAsyncData = defineKeyedFunctionFactory({
   },
 })
 
-export const useAsyncData = (createAsyncData as unknown as { __nuxt_factory: typeof createAsyncData }).__nuxt_factory()
+export const useAsyncData = (createUseAsyncData as unknown as { __nuxt_factory: typeof createUseAsyncData }).__nuxt_factory()
 
-export const useLazyAsyncData = (createAsyncData as unknown as { __nuxt_factory: typeof createAsyncData }).__nuxt_factory({
+export const useLazyAsyncData = (createUseAsyncData as unknown as { __nuxt_factory: typeof createUseAsyncData }).__nuxt_factory({
   lazy: true,
   // @ts-expect-error private property
   _functionName: 'useLazyAsyncData',
