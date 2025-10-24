@@ -50,6 +50,7 @@
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
+    "@rollup/plugin-commonjs": "28.0.6",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/node": "22.18.12",
     "@unhead/vue": "2.0.14",
