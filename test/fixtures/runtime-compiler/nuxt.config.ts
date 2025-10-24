@@ -1,11 +1,11 @@
+import { withMatrix } from '../../matrix'
+
 // https://nuxt.com/docs/4.x/api/nuxt-config
-export default defineNuxtConfig({
+export default withMatrix({
   vue: {
     runtimeCompiler: true,
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   experimental: {
     externalVue: false,
   },
-  compatibilityDate: 'latest',
 })

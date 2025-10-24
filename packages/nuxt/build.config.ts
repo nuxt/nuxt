@@ -37,6 +37,5 @@ export default defineBuildConfig({
     'nuxt/schema',
     '@vue/shared',
     '@unhead/vue',
-    'nitropack',
   ],
 })

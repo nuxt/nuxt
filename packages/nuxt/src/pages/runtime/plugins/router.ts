@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoaded, RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
@@ -124,7 +124,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const route = {} as RouteLocationNormalizedLoaded
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation],
+        get: () => _route.value[key as keyof RouteLocationNormalizedLoadedGeneric],
         enumerable: true,
       })
     }
