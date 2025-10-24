@@ -23,12 +23,14 @@ export interface NuxtTimeProps {
   calendar?: string
   dayPeriod?: 'narrow' | 'short' | 'long'
   numberingSystem?: string
-  numeric?: 'always' | 'auto'
 
   dateStyle?: 'full' | 'long' | 'medium' | 'short'
   timeStyle?: 'full' | 'long' | 'medium' | 'short'
   hourCycle?: 'h11' | 'h12' | 'h23' | 'h24'
+
   relative?: boolean
+  numeric?: 'always' | 'auto'
+
   title?: boolean | string
 }
 
