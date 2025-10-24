@@ -1,0 +1,13 @@
+diff --git a/dist/shared/changelogen.D-9f3HTX.mjs b/dist/shared/changelogen.D-9f3HTX.mjs
+index dd70b3f4651f1691c1f4e4cb22862079f8c02c05..6420bbf7698a591a37cefdd9bd515b13c2d10fed 100644
+--- a/dist/shared/changelogen.D-9f3HTX.mjs
++++ b/dist/shared/changelogen.D-9f3HTX.mjs
+@@ -11,7 +11,7 @@ import { execSync } from 'node:child_process';
+ import { readPackageJSON } from 'pkg-types';
+ 
+ function execCommand(cmd, cwd) {
+-  return execSync(cmd, { encoding: "utf8", cwd }).trim();
++  return execSync(cmd, { encoding: "utf8", cwd, maxBuffer: 10 * 1024 * 1024 }).trim();
+ }
+ 
+ async function getLastGitTag(cwd) {
