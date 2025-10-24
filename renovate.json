@@ -45,7 +45,8 @@
         "h3",
         "nuxt",
         "nuxt3",
-        "@nuxt/kit"
+        "@nuxt/kit",
+        "@rollup/plugin-commonjs"
       ]
     }
   ]
