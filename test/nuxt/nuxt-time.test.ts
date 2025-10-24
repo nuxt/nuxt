@@ -42,6 +42,24 @@ describe('<NuxtTime>', () => {
     )
   })
 
+  it('should accept rest props for relative time', async () => {
+    const datetime = Date.now() - 24 * 60 * 60 * 1000
+    const thing = await mountSuspended(
+      defineComponent({
+        render: () =>
+          h(NuxtTime, {
+            datetime,
+            relative: true,
+            locale: 'en-GB',
+            numeric: 'auto',
+          }),
+      }),
+    )
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">yesterday</time>"`,
+    )
+  })
+
   it('should display datetime in title', async () => {
     const datetime = Date.now() - 5 * 60 * 1000
     const thing = await mountSuspended(
