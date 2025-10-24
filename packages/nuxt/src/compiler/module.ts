@@ -5,9 +5,9 @@ import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, to
 import { createScanPluginContext, matchWithStringOrRegex } from './utils'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin } from './plugins/keyed-function-factories'
-import { distDir } from '../dirs.ts'
+import { distDir } from '../dirs'
 import type { Unimport } from 'unimport'
-import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
+import { KeyedFunctionsPlugin } from './plugins/keyed-functions'
 
 const runtimeDir = resolve(distDir, 'compiler/runtime')
 
@@ -127,9 +127,9 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         return ({
           path: dirPath,
           extensions,
-          pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
+          pattern: dirOptions.pattern || `**/*.{${extensions.join(',')}}`,
           ignore: [
-            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // ignore declaration files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')}}`, // ignore declaration files
             ...(dirOptions.ignore || []),
           ],
         } satisfies Required<CompilerScanDir>)

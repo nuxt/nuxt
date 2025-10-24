@@ -1,5 +1,5 @@
 import type { ScanPlugin } from '@nuxt/schema'
-import { useNuxt } from './context.ts'
+import { useNuxt } from './context'
 
 /**
  * Registers a nuxt compiler scan plugin.

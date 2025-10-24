@@ -109,7 +109,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || (extensions.length > 1 ? `**/*.{${extensions.join(',')}}` : `**/*.${extensions[0] || '*'}`),
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // .d.ts files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')}}`, // .d.ts files
             ...(dirOptions.ignore || []),
           ],
           transpile,

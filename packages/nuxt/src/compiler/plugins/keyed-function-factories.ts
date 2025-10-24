@@ -139,7 +139,7 @@ function createFactoryProcessor (
       const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
         logger.error(`[nuxt:compiler] No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`)
-        return
+        continue
       }
 
       const scopeTrackerNode = scopeTracker.getDeclaration(!parsedFactoryCall.namespace ? parsedFactoryCall.factoryName : parsedFactoryCall.namespace)
