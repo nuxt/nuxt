@@ -3,9 +3,10 @@ import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, A
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
+import { appendResponseHeader } from 'h3'
 
 import { isPlainObject } from '@vue/shared'
-import { useRequestFetch } from './ssr'
+import { useRequestEvent, useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
@@ -155,6 +156,37 @@ export function useFetch<
       const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
       if (isLocalFetch) {
         _$fetch = useRequestFetch()
+
+        // Propagate Set-Cookie headers from internal API calls back to the SSR response
+        const ssrEvent = useRequestEvent()
+        if (ssrEvent) {
+          const originalOnResponse = _fetchOptions.onResponse as any
+          const newOnResponse = (ctx: any) => {
+            // Use getSetCookie() if available (newer Fetch API), otherwise iterate headers
+            const setCookieHeaders: string[] =
+              typeof ctx.response.headers.getSetCookie === 'function'
+                ? ctx.response.headers.getSetCookie()
+                : Array.from<[string, string]>(ctx.response.headers.entries())
+                    .filter(([k]) => k.toLowerCase() === 'set-cookie')
+                    .map(([, v]) => v)
+
+            for (const cookie of setCookieHeaders) {
+              appendResponseHeader(ssrEvent, 'set-cookie', cookie)
+            }
+
+            // Call original onResponse if it exists
+            if (originalOnResponse) {
+              if (Array.isArray(originalOnResponse)) {
+                for (const hook of originalOnResponse) {
+                  hook(ctx)
+                }
+              } else if (typeof originalOnResponse === 'function') {
+                return originalOnResponse(ctx)
+              }
+            }
+          }
+          _fetchOptions.onResponse = newOnResponse as any
+        }
       }
     }
 

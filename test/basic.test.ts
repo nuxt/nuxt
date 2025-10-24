@@ -684,6 +684,18 @@ describe('nuxt composables', () => {
     const cookies = res.headers.get('set-cookie')
     expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
+
+  it('propagates httpOnly cookies from useFetch during SSR', async () => {
+    const res = await fetch('/cookie-test')
+    const setCookieHeader = res.headers.get('set-cookie')
+    expect(setCookieHeader).toBeTruthy()
+    expect(setCookieHeader).toContain('my-h3-counter=')
+    expect(setCookieHeader).toContain('HttpOnly')
+    expect(setCookieHeader).toContain('Secure')
+    const html = await res.text()
+    expect(html).toContain('Counter:')
+  })
+
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
     async function extractCookie () {
