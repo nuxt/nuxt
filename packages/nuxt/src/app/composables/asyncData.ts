@@ -236,7 +236,10 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // assign factory defaults
       if (!shouldFactoryOptionsOverride) {
         for (const key in factoryOptions) {
+          // factory doesn't have a value set for the key
           if (factoryOptions[key as keyof typeof factoryOptions] === undefined) { continue }
+          // opts already has a value set for the key
+          if (opts[key as keyof typeof opts] !== undefined) { continue }
           opts[key as keyof typeof opts] = factoryOptions[key as keyof typeof factoryOptions] as any
         }
       }
