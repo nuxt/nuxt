@@ -81,6 +81,10 @@
     "pkg-types": "^2.3.0",
     "std-env": "^3.10.0"
   },
+  "peerDependencies": {
+    "mlly": "^1.7.4",
+    "oxc-walker": "^0.5.2"
+  },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   }
