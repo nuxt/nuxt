@@ -21,11 +21,11 @@ on:
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
 env:
   # 7 GiB by default on GitHub, setting to 6 GiB
-  # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  # https://docs.github.com/en/actions/concepts/runners/github-hosted-runners
   NODE_OPTIONS: --max-old-space-size=6144
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 concurrency:
