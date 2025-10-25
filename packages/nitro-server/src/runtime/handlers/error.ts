@@ -1,10 +1,11 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack/types'
 import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import type { NuxtPayload } from 'nuxt/app'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
-import type { NuxtPayload } from '#app/nuxt'
+import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (event.handled || isJsonRequest(event)) {
@@ -63,7 +64,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   // Fallback to static rendered error page
   if (!res) {
-    const { template } = import.meta.dev ? await import('../templates/error-dev') : await import('../templates/error-500')
+    const { template } = await import('../templates/error-500')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
@@ -81,6 +82,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     setResponseHeader(event, header, value)
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
+
+  if (import.meta.dev) {
+    const prettyResponse = await defaultHandler(error, event, { json: false })
+    return send(event, html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body as string)}</body>`))
+  }
 
   return send(event, html)
 }

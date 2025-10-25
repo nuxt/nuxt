@@ -36,7 +36,7 @@ import type { ModuleMeta, NuxtModule } from './module'
 import type { NuxtDebugOptions } from './debug'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt'
 import type { SerializableHtmlAttributes } from './head'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteConfig } from './config'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
 import type { ImportsOptions } from './imports'
 import type { ComponentsOptions } from './components'
 
@@ -992,7 +992,7 @@ export interface ConfigSchema {
    * Enable early access to future features or flags.
    *
    */
-    compatibilityVersion: 4
+    compatibilityVersion: 4 | 5
 
     /**
      * This enables early access to the experimental multi-app support.
@@ -1242,6 +1242,11 @@ export interface ConfigSchema {
     cookieStore: boolean
 
     /**
+     * Enable experimental Vite Environment API
+     */
+    viteEnvironmentApi: boolean
+
+    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the `app/` directory.
@@ -1448,6 +1453,23 @@ export interface ConfigSchema {
      * Whether to improve chunk stability by using an import map to resolve the entry chunk of the bundle.
      */
     entryImportMap: boolean
+
+    /**
+     * Extract async data handler functions into separate chunks for better performance and caching.
+     *
+     * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
+     * into separate chunks and dynamically imported, allowing for better code splitting and caching.
+     *
+     * @experimental This is an experimental feature and API may change in the future.
+     */
+    extractAsyncDataHandlers: boolean
+
+    /**
+     * Whether to enable `@dxup/nuxt` module for better TypeScript DX.
+     *
+     * @see https://github.com/KazariEX/dxup
+     */
+    typescriptPlugin: boolean
   }
 
   /**
@@ -1503,6 +1525,13 @@ export interface ConfigSchema {
    * @private
    */
   _modules: Array<any>
+
+  /**
+   * Configuration for Nuxt's server builder.
+   */
+  server: {
+    builder?: '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+  }
 
   /**
    * Configuration for Nitro.
@@ -1652,17 +1681,7 @@ export interface ConfigSchema {
    * @see [Vite configuration docs](https://vite.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
-  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig } & {
-    viteNode?: {
-      maxRetryAttempts?: number
-      /** in milliseconds */
-      baseRetryDelay?: number
-      /** in milliseconds */
-      maxRetryDelay?: number
-      /** in milliseconds */
-      requestTimeout?: number
-    }
-  }
+  vite: ViteOptions
 
   webpack: {
   /**

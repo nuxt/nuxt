@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerHandler, addServerPlugin, addServerTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -22,6 +22,7 @@ import defu from 'defu'
 import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
+import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -40,7 +41,7 @@ import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
-import { initNitro } from './nitro'
+import { bundleServer } from './server'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
@@ -48,6 +49,7 @@ import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
+import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers'
 import { VirtualFSPlugin } from './plugins/virtual'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 
@@ -231,6 +233,12 @@ async function initNuxt (nuxt: Nuxt) {
     })
   })
 
+  const serverBuilderTypePath = typeof nuxt.options.server.builder === 'string'
+    ? nuxt.options.server.builder === '@nuxt/nitro-server'
+      ? resolveModulePath(nuxt.options.server.builder, { from: import.meta.url })
+      : nuxt.options.server.builder
+    : undefined
+
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
@@ -238,6 +246,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (nuxt.options.typescript.shim) {
       opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/vue-shim.d.ts') })
     }
+
     // Add shims for `#build/*` imports that do not already have matching types
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
@@ -249,6 +258,15 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
+    opts.nodeReferences.push({ types: relative(nuxt.options.buildDir, resolveModulePath('@nuxt/vite-builder', { from: import.meta.url })) })
+    if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
+      opts.nodeReferences.push({ types: nuxt.options.builder })
+    }
+
+    if (serverBuilderTypePath) {
+      opts.references.push({ types: serverBuilderTypePath })
+      opts.nodeReferences.push({ types: serverBuilderTypePath })
+    }
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
@@ -273,6 +291,10 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('nitro:prepare:types', (opts) => {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
+
+    if (serverBuilderTypePath) {
+      opts.references.push({ types: serverBuilderTypePath })
+    }
   })
 
   // Prompt to install `@nuxt/scripts` if user has configured it
@@ -376,6 +398,14 @@ async function initNuxt (nuxt: Nuxt) {
     addBuildPlugin(DevOnlyPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
     }))
+
+    // Extract async data handlers into separate chunks for better performance
+    if (nuxt.options.experimental.extractAsyncDataHandlers) {
+      addBuildPlugin(ExtractAsyncDataHandlersPlugin({
+        sourcemap: !!nuxt.options.sourcemap.client,
+        rootDir: nuxt.options.rootDir,
+      }), { server: false })
+    }
   }
 
   if (nuxt.options.dev) {
@@ -384,19 +414,6 @@ async function initNuxt (nuxt: Nuxt) {
 
     // add plugin to make warnings less verbose in dev mode
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
-  }
-
-  if (nuxt.options.dev && nuxt.options.features.devLogs) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
-    addServerPlugin(resolve(distDir, 'core/runtime/nitro/plugins/dev-server-logs'))
-    nuxt.options.nitro = defu(nuxt.options.nitro, {
-      externals: {
-        inline: [/#internal\/dev-server-logs-options/],
-      },
-      virtual: {
-        '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
-      },
-    })
   }
 
   // Transform initial composable call within `<script setup>` to preserve context
@@ -589,27 +606,6 @@ async function initNuxt (nuxt: Nuxt) {
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
     })
-
-    // sync conditions with /packages/nuxt/src/core/templates.ts#L539
-    addServerTemplate({
-      filename: '#internal/nuxt/island-renderer.mjs',
-      getContents () {
-        if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
-          return `export { default } from '${resolve(distDir, 'core/runtime/nitro/handlers/island')}'`
-        }
-        return `import { defineEventHandler } from 'h3'; export default defineEventHandler(() => {});`
-      },
-    })
-    addServerHandler({
-      route: '/__nuxt_island/**',
-      handler: '#internal/nuxt/island-renderer.mjs',
-    })
-
-    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
-      nuxt.options.ssr = true
-      nuxt.options.nitro.routeRules ||= {}
-      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
-    }
   }
 
   // Add prerender payload support
@@ -728,7 +724,7 @@ export default defineNuxtPlugin({
   addModuleTranspiles(nuxt)
 
   // Init nitro
-  await initNitro(nuxt)
+  await bundleServer(nuxt)
 
   // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
   // Add prerender payload support
@@ -818,6 +814,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.alias['@vue/composition-api'] = resolve(options.appDir, 'compat/capi')
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
+  }
+  if (options.experimental.typescriptPlugin) {
+    options._modules.push('@dxup/nuxt')
   }
 
   // warn if user is using reserved namespaces
