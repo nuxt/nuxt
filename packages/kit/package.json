@@ -56,7 +56,7 @@
     "@types/semver": "7.7.1",
     "hookable": "5.5.3",
     "lodash-es": "4.17.21",
-    "nitropack": "2.12.6",
+    "nitropack": "2.12.8",
     "unbuild": "3.6.1",
     "unimport": "5.4.1",
     "vite": "7.1.9",

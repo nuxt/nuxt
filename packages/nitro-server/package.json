@@ -37,7 +37,7 @@
     "impound": "^1.0.0",
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",
-    "nitropack": "^2.12.7",
+    "nitropack": "^2.12.8",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "radix3": "^1.1.2",
