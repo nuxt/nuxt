@@ -1132,7 +1132,7 @@ describe('useAsyncData', () => {
     clear()
 
     expect(data.value).toBeUndefined()
-    expect(error.value).toBe(undefined)
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
     expect(status.value).toBe('idle')
   })
 
