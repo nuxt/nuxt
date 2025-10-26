@@ -6,7 +6,7 @@ max_cache_age = "1d"
 # Ignore all private link (such as localhost) to avoid errors
 exclude_all_private = true
 # HTTP status code: 429 (Too Many Requests) will also be treated as a valid link if Lychee gets rate limited
-accept = [200, 201, 204, 206, 300, 301, 302, 303, 304, 307, 308, 999]
+accept = [200, 201, 204, 206, 999]
 
 # Base URL or website root directory to check relative URLs.
 base_url = "https://nuxt.com/"
@@ -17,7 +17,7 @@ no_progress = true
 # include_fragments = true
 
 # Follow redirects
-max_redirects = 10
+max_redirects = 0
 
 # Set user agent to avoid bot blocking
 user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
