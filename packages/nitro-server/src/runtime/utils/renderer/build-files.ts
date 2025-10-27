@@ -27,7 +27,7 @@ const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import(
   .then(r => typeof r === 'function' ? r() : r)
   .catch((error) => {
     // Fallback to empty object if file doesn't exist
-    console.warn('[nuxt] client.precomputed.mjs not found, falling back to empty precomputed data', error)
+    if (import.meta.dev) { console.warn('[nuxt] client.precomputed.mjs not found, falling back to empty precomputed data', error) }
     return {}
   }) as Promise<PrecomputedData>
 
