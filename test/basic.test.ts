@@ -198,7 +198,9 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
-    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    expect(headers.getSetCookie()).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+    ])
 
     const { page } = await renderPage('/navigate-to-forbidden')
 
@@ -685,8 +687,17 @@ describe('nuxt composables', () => {
         }).map(([key, value]) => `${key}=${value}`).join('; '),
       },
     })
-    const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
+    const cookies = res.headers.getSetCookie()
+    expect(cookies).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+      'accessed-with-default-value=default; Path=/',
+      'set=set; Path=/',
+      'browser-set=set; Path=/',
+      'browser-set-to-null=; Max-Age=0; Path=/',
+      'browser-set-to-null-with-default=; Max-Age=0; Path=/',
+      'browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/',
+      'theCookie=show; Path=/',
+    ])
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -1164,8 +1175,7 @@ describe('errors', () => {
         accept: 'text/html',
       },
     })
-    expect(res.headers.getSetCookie()).toBe([
-      'set-in-plugin=true; Path=/',
+    expect(res.headers.getSetCookie()).toStrictEqual([
       'set-in-plugin=true; Path=/',
       'some-error=was%20set; Path=/',
     ])

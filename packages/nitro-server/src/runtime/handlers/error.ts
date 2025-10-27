@@ -20,7 +20,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       ...'res' in event ? [(event.res as Response).headers.entries()] : [],
     ]
     for (const entries of headerEntries) {
-      mergeHeaders(headers, entries)
+      mergeHeaders(headers, entries, new Set())
     }
 
     return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
@@ -86,9 +86,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     ? html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string)}</body>`)
     : html
 
-  mergeHeaders(headers, res.headers)
+  const setCookies = new Set(headers.getSetCookie())
+  mergeHeaders(headers, res.headers, setCookies)
   if ('res' in event) {
-    mergeHeaders(headers, (event as H3Event).res.headers)
+    mergeHeaders(headers, (event as H3Event).res.headers, setCookies)
   }
 
   return new Response(responseHtml, {
@@ -97,10 +98,13 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     statusText: res.statusText || defaultRes.statusText,
   })
 }
-function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>): Headers {
+function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>, setCookies: Set<string>): Headers {
   for (const [name, value] of overrides) {
     if (name === 'set-cookie') {
-      target.append(name, value)
+      if (!setCookies.has(value)) {
+        setCookies.add(value)
+        target.append(name, value)
+      }
     } else {
       target.set(name, value)
     }
