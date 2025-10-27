@@ -70,7 +70,7 @@
   "dependencies": {
     "@dxup/nuxt": "^0.2.0",
     "@nuxt/cli": "^3.29.3",
-    "@nuxt/devtools": "^2.6.5",
+    "@nuxt/devtools": "^2.7.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",
@@ -102,7 +102,7 @@
     "nypm": "^0.6.2",
     "ofetch": "^1.4.1",
     "ohash": "^2.0.11",
-    "on-change": "^6.0.0",
+    "on-change": "^6.0.1",
     "oxc-minify": "^0.95.0",
     "oxc-parser": "^0.95.0",
     "oxc-transform": "^0.95.0",
