@@ -4,7 +4,7 @@
 <template>
   <!-- Edit this file to play around with Nuxt but never commit changes! -->
   <div>
-    Nuxt Playground test
+    Nuxt Playground
   </div>
 </template>
 
