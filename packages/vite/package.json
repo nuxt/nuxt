@@ -45,7 +45,7 @@
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.7",
     "get-port-please": "^3.2.0",
-    "h3": "^2.0.1-rc.3",
+    "h3": "^2.0.1-rc.4",
     "jiti": "^2.6.1",
     "knitwork": "^1.2.0",
     "magic-string": "^0.30.19",
