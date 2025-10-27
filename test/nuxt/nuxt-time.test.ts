@@ -42,6 +42,42 @@ describe('<NuxtTime>', () => {
     )
   })
 
+  it('should work with relative\'s `numeric` prop', async () => {
+    const datetime = Date.now() - 24 * 60 * 60 * 1000
+    const thing = await mountSuspended(
+      defineComponent({
+        render: () =>
+          h(NuxtTime, {
+            datetime,
+            relative: true,
+            locale: 'en-GB',
+            numeric: 'auto',
+          }),
+      }),
+    )
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">yesterday</time>"`,
+    )
+  })
+
+  it('should work with relative\'s `relativeStyle` prop', async () => {
+    const datetime = Date.now() - 5 * 60 * 1000
+    const thing = await mountSuspended(
+      defineComponent({
+        render: () =>
+          h(NuxtTime, {
+            datetime,
+            relative: true,
+            locale: 'en-GB',
+            relativeStyle: 'short',
+          }),
+      }),
+    )
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">5 min ago</time>"`,
+    )
+  })
+
   it('should display datetime in title', async () => {
     const datetime = Date.now() - 5 * 60 * 1000
     const thing = await mountSuspended(
