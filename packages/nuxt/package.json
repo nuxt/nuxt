@@ -140,7 +140,7 @@
     "@vue/compiler-sfc": "3.5.22",
     "unbuild": "3.6.1",
     "vite": "7.1.9",
-    "vitest": "3.2.4",
+    "vitest": "4.0.4",
     "vue-bundle-renderer": "2.2.0",
     "vue-sfc-transformer": "0.1.17"
   },
