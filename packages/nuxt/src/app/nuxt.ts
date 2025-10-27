@@ -84,6 +84,10 @@ export interface NuxtSSRContext extends SSRContext {
   _preloadManifest?: boolean
 }
 
+type Writable<T> = {
+  -readonly [K in keyof T]: T[K]
+}
+
 export interface NuxtPayload {
   path?: string
   serverRendered?: boolean
@@ -92,7 +96,7 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: NuxtError | undefined
+  error?: Writable<NuxtError> | undefined
   _errors: Record<string, NuxtError | undefined>
   [key: string]: unknown
 }

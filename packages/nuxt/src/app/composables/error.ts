@@ -11,15 +11,6 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-type Writable<T> = {
-  -readonly [K in keyof T]: T[K]
-}
-
-export interface NuxtError<DataT = unknown> extends Writable<HTTPError<DataT>> {
-  error?: true
-  fatal?: boolean
-}
-
 /** @since 3.0.0 */
 export const showError = <DataT = unknown>(
   error: string | Error | (Partial<NuxtError<DataT>> & {
@@ -60,23 +51,23 @@ export const clearError = async (options: { redirect?: string } = {}) => {
 }
 
 /** @since 3.0.0 */
-export const isNuxtError = <DataT = unknown>(
-  error: unknown,
-): error is NuxtError<DataT> => {
+export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError<DataT> => {
   return !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
+}
+
+export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
+  readonly [NUXT_ERROR_SIGNATURE] = true
+  readonly fatal: boolean
+
+  constructor (message = '', opts: Partial<NuxtError<DataT>> = {}) {
+    super(message, opts)
+    this.fatal = opts.fatal ?? !!opts.unhandled
+  }
 }
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
-  const nuxtError: NuxtError<DataT> = typeof error === 'string' ? new HTTPError<DataT>(error) : new HTTPError<DataT>(error.message || '', error)
-
-  Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {
-    value: true,
-    configurable: false,
-    writable: false,
-  })
-
-  nuxtError.fatal ??= typeof error === 'object' && 'fatal' in error ? error.fatal || nuxtError.unhandled : nuxtError.unhandled
-
-  return nuxtError
+  return typeof error === 'string'
+    ? new NuxtError<DataT>(error)
+    : new NuxtError<DataT>(error.message, error)
 }
