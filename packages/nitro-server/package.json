@@ -56,7 +56,7 @@
     "@nuxt/schema": "workspace:*",
     "nuxt": "workspace:*",
     "unbuild": "3.6.1",
-    "vitest": "3.2.4"
+    "vitest": "4.0.4"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
