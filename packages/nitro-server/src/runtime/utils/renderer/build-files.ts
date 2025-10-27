@@ -24,7 +24,14 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
 // @ts-expect-error file will be produced after app build
 const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import('#build/dist/server/client.precomputed.mjs')
   .then(r => r.default || r)
-  .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData>
+  .then(r => typeof r === 'function' ? r() : r)
+  .catch((error) => {
+    // Fallback to empty object if file doesn't exist
+    if (import.meta.dev) {
+      console.warn('[nuxt] client.precomputed.mjs not found, falling back to empty precomputed data')
+    }
+    return {}
+  }) as Promise<PrecomputedData>
 
 // -- SSR Renderer --
 export const getSSRRenderer = lazyCachedFunction(async () => {
