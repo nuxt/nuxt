@@ -1164,7 +1164,11 @@ describe('errors', () => {
         accept: 'text/html',
       },
     })
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    expect(res.headers.getSetCookie()).toBe([
+      'set-in-plugin=true; Path=/',
+      'set-in-plugin=true; Path=/',
+      'some-error=was%20set; Path=/',
+    ])
     expect(await res.text()).toContain('This is a custom error')
   })
 

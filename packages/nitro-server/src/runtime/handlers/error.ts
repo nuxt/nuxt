@@ -1,4 +1,4 @@
-import { joinURL, withQuery, withoutBase } from 'ufo'
+import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 import type { NuxtPayload } from 'nuxt/app'
 
@@ -8,21 +8,19 @@ import type { H3Event } from 'h3'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
-  if (isJsonRequest(event)) {
-    // let Nitro handle JSON errors
-    return
-  }
   // invoke default Nitro error handler (which will log appropriately if required)
   const defaultRes = await defaultHandler(error, event, { json: true })
 
-  // let Nitro handle redirect if appropriate
+  // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500
   const headers = new Headers(error.headers)
-  if (status === 404 && defaultRes.status === 302) {
-    for (const [header, value] of Object.entries(defaultRes.headers)) {
-      if (!headers.has(header)) {
-        headers.set(header, value)
-      }
+  if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
+    const headerEntries = [
+      Object.entries(defaultRes.headers),
+      ...'res' in event ? [(event.res as Response).headers.entries()] : [],
+    ]
+    for (const entries of headerEntries) {
+      mergeHeaders(headers, entries)
     }
 
     return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
@@ -32,21 +30,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     })
   }
 
-  if (import.meta.dev && typeof defaultRes.body !== 'string' && Array.isArray(defaultRes.body.stack)) {
-    // normalize to string format expected by nuxt `error.vue`
-    defaultRes.body.stack = defaultRes.body.stack.join('\n')
-  }
-
-  // TODO: use Nitro format error object
-  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'status' | 'statusText' | 'message' | 'stack'> & { url: string, data: any }
-  // remove proto/hostname/port from URL
-  const url = new URL(errorObject.url)
-  errorObject.url = withoutBase(url.pathname, useRuntimeConfig().app.baseURL) + url.search + url.hash
-  // add default server message
-  errorObject.message ||= 'Server Error'
-  // we will be rendering this error internally so we can pass along the error.data safely
+  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'status' | 'statusText' | 'message' | 'stack'> & { url: URL | string, data: any }
+  // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ||= error.data
-  errorObject.statusText ||= error.statusText
+  errorObject.url = errorObject.url.toString()
 
   for (const header in defaultRes.headers) {
     if (
@@ -99,9 +86,24 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     ? html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string)}</body>`)
     : html
 
+  mergeHeaders(headers, res.headers)
+  if ('res' in event) {
+    mergeHeaders(headers, (event as H3Event).res.headers)
+  }
+
   return new Response(responseHtml, {
-    headers: res.headers,
+    headers,
     status: res.status && res.status !== 200 ? res.status : defaultRes.status,
     statusText: res.statusText || defaultRes.statusText,
   })
+}
+function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>): Headers {
+  for (const [name, value] of overrides) {
+    if (name === 'set-cookie') {
+      target.append(name, value)
+    } else {
+      target.set(name, value)
+    }
+  }
+  return target
 }
