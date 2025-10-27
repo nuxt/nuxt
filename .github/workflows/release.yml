@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: current
           registry-url: "https://registry.npmjs.org/"
-          cache: "pnpm"
+          package-manager-cache: false
 
       - name: 📦 Install dependencies
         run: pnpm install
