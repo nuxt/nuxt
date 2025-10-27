@@ -64,6 +64,7 @@ export default defineResolvers({
     },
   },
   experimental: {
+    runtimeBaseURL: false,
     decorators: false,
     asyncEntry: {
       $resolve: val => typeof val === 'boolean' ? val : false,

@@ -1470,6 +1470,10 @@ export interface ConfigSchema {
      * @see https://github.com/KazariEX/dxup
      */
     typescriptPlugin: boolean
+    /**
+     * Whether to add a middleware to handle changes of base URL at runtime (has a performance overhead)
+     */
+    runtimeBaseURL: boolean
   }
 
   /**
