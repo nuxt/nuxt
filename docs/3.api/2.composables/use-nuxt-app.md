@@ -108,7 +108,7 @@ Nuxt exposes the following properties through `ssrContext`:
   ::code-group
   ```vue [app/app.vue]
   <script setup lang="ts">
-  const { data } = await useAsyncData('count', (_, { signal }) => $fetch('/api/count', { signal }))
+  const { data } = await useAsyncData('count', (_nuxtApp, { signal }) => $fetch('/api/count', { signal }))
   </script>
   ```
   ```ts [server/api/count.ts]

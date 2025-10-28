@@ -20,7 +20,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
-  (_, { signal }) => $fetch('https://api.nuxtjs.dev/mountains', { signal }),
+  (_nuxtApp, { signal }) => $fetch('https://api.nuxtjs.dev/mountains', { signal }),
 )
 </script>
 ```
@@ -42,7 +42,7 @@ The built-in `watch` option allows automatically rerunning the fetcher function 
 const page = ref(1)
 const { data: posts } = await useAsyncData(
   'posts',
-  (_, { signal }) => $fetch('https://fakeApi.com/posts', {
+  (_nuxtApp, { signal }) => $fetch('https://fakeApi.com/posts', {
     params: {
       page: page.value,
     },
@@ -78,7 +78,7 @@ You can make your `handler` function abortable by using the `signal` provided in
 ```ts
 const { data, error } = await useAsyncData(
   'users',
-  (_, { signal }) => $fetch('/api/users', { signal }),
+  (_nuxtApp, { signal }) => $fetch('/api/users', { signal }),
 )
 
 refresh() // will actually cancel the $fetch request (if dedupe: cancel)
@@ -93,7 +93,7 @@ You can also pass an `AbortSignal` to the `refresh`/`execute` function to cancel
 ```ts
 const { refresh } = await useAsyncData(
   'users',
-  (_, { signal }) => $fetch('/api/users', { signal }),
+  (_nuxtApp, { signal }) => $fetch('/api/users', { signal }),
 )
 const abortController = new AbortController()
 
@@ -111,7 +111,7 @@ If your `handler` function does not support abort signals, you can implement you
 ```ts
 const { data, error } = await useAsyncData(
   'users',
-  (_, { signal }) => {
+  (_nuxtApp, { signal }) => {
     return new Promise((resolve, reject) => {
       signal?.addEventListener('abort', () => {
         reject(new Error('Request aborted'))
@@ -193,12 +193,12 @@ The following options **can differ** without triggering warnings:
 
 ```ts
 // ❌ This will trigger a development warning
-const { data: users1 } = useAsyncData('users', (_, { signal }) => $fetch('/api/users', { signal }), { deep: false })
-const { data: users2 } = useAsyncData('users', (_, { signal }) => $fetch('/api/users', { signal }), { deep: true })
+const { data: users1 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { deep: false })
+const { data: users2 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { deep: true })
 
 // ✅ This is allowed
-const { data: users1 } = useAsyncData('users', (_, { signal }) => $fetch('/api/users', { signal }), { immediate: true })
-const { data: users2 } = useAsyncData('users', (_, { signal }) => $fetch('/api/users', { signal }), { immediate: false })
+const { data: users1 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { immediate: true })
+const { data: users2 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { immediate: false })
 ```
 
 ::tip
