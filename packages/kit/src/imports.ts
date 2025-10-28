@@ -1,5 +1,4 @@
-import type { Import } from 'unimport'
-import type { ImportPresetWithDeprecation } from '@nuxt/schema'
+import type { Import, InlinePreset } from 'unimport'
 import { useNuxt } from './context'
 import { toArray } from './utils'
 
@@ -16,8 +15,8 @@ export function addImportsDir (dirs: string | string[], opts: { prepend?: boolea
     }
   })
 }
-export function addImportsSources (presets: ImportPresetWithDeprecation | ImportPresetWithDeprecation[]) {
-  useNuxt().hook('imports:sources', (_presets: ImportPresetWithDeprecation[]) => {
+export function addImportsSources (presets: InlinePreset | InlinePreset[]) {
+  useNuxt().hook('imports:sources', (_presets: InlinePreset[]) => {
     for (const preset of toArray(presets)) {
       _presets.push(preset)
     }
