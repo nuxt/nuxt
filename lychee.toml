@@ -39,6 +39,8 @@ exclude = [
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
+  "https://nuxt.new/c/v4",
+  "https://nuxt.new/s/v4",
   # single-quotes are required for regexp
   'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
@@ -47,5 +49,6 @@ exclude = [
   "http://auth.com",
   "http://example1.com/",
   "http://example2.com/",
+  "http://example3.com/",
   "~images/main-bg.jpg",
 ]
