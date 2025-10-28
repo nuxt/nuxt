@@ -4,7 +4,7 @@ navigation: false
 
 # Nuxt Docs
 
-This repository contains the documentation of Nuxt hosted on <https://nuxt.com/docs>
+This repository contains the documentation of Nuxt hosted on <https://nuxt.com/docs/4.x/getting-started/introduction>
 
 ## Contributing
 

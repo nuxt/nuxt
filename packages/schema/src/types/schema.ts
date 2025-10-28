@@ -46,14 +46,14 @@ export interface ConfigSchema {
    *
    * Any components in the directories configured here can be used throughout your pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/components)
+   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/components)
    */
   components: boolean | ComponentsOptions | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/guide/directory-structure/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/composables)
    */
   imports: ImportsOptions
 
@@ -353,7 +353,7 @@ export interface ConfigSchema {
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
    *
-   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/plugins)
    *
    * @example
    * ```js
@@ -480,7 +480,7 @@ export interface ConfigSchema {
     /**
      * Nuxt allows visualizing your bundles and how to optimize them.
      *
-     * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+     * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
      *
      * @example
      * ```js
@@ -876,7 +876,7 @@ export interface ConfigSchema {
     /**
      * Options to pass directly to `chokidar`.
      *
-     * @see [chokidar](https://github.com/paulmillr/chokidar#api)
+     * @see [chokidar](https://github.com/paulmillr/chokidar)
      */
     chokidar: ChokidarOptions
   }
@@ -1596,7 +1596,7 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
-   * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions.html).
+   * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */
     options: RouterConfigSerializable
   }
@@ -1678,7 +1678,7 @@ export interface ConfigSchema {
   /**
    * Configuration that will be passed directly to Vite.
    *
-   * @see [Vite configuration docs](https://vite.dev/config) for more information.
+   * @see [Vite configuration docs](https://vite.dev/config/) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
   vite: ViteOptions
@@ -1687,7 +1687,7 @@ export interface ConfigSchema {
   /**
    * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
    *
-   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
    *
    * @example
    * ```js
@@ -1710,7 +1710,7 @@ export interface ConfigSchema {
     /**
      * Enables Common CSS Extraction.
      *
-     * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted into separate files, usually one per component. This allows caching your CSS and JavaScript separately.
+     * Using [mini-css-extract-plugin](https://github.com/webpack/mini-css-extract-plugin) under the hood, your CSS will be extracted into separate files, usually one per component. This allows caching your CSS and JavaScript separately.
      *
      * @example
      * ```js
@@ -1802,12 +1802,12 @@ export interface ConfigSchema {
      */
     loaders: {
       /**
-       * @see [esbuild loader](https://github.com/esbuild-kit/esbuild-loader)
+       * @see [esbuild loader](https://github.com/privatenumber/esbuild-loader)
        */
       esbuild: Omit<LoaderOptions, 'loader'>
 
       /**
-       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [`file-loader` Options](https://github.com/webpack/file-loader#options)
        */
       file: {
         esModule: boolean
@@ -1816,7 +1816,7 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [`file-loader` Options](https://github.com/webpack/file-loader#options)
        */
       fontUrl: {
         esModule: boolean
@@ -1825,7 +1825,7 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [`file-loader` Options](https://github.com/webpack/file-loader#options)
        */
       imgUrl: {
         esModule: boolean
@@ -1844,7 +1844,7 @@ export interface ConfigSchema {
       vue: Partial<VueLoaderOptions>
 
       /**
-       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       * See [css-loader](https://github.com/webpack/css-loader) for available options.
        */
       css: {
         importLoaders: number
@@ -1855,7 +1855,7 @@ export interface ConfigSchema {
       }
 
       /**
-       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       * See [css-loader](https://github.com/webpack/css-loader) for available options.
        */
       cssModules: {
         importLoaders: number
@@ -1870,12 +1870,12 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`less-loader` Options](https://github.com/webpack-contrib/less-loader#options)
+       * @see [`less-loader` Options](https://github.com/webpack/less-loader#options)
        */
       less: any
 
       /**
-       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
+       * @see [`sass-loader` Options](https://github.com/webpack/sass-loader#options)
        */
       sass: {
         sassOptions: {
@@ -1884,12 +1884,12 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
+       * @see [`sass-loader` Options](https://github.com/webpack/sass-loader#options)
        */
       scss: any
 
       /**
-       * @see [`stylus-loader` Options](https://github.com/webpack-contrib/stylus-loader#options)
+       * @see [`stylus-loader` Options](https://github.com/webpack/stylus-loader#options)
        */
       stylus: any
 
@@ -1923,7 +1923,7 @@ export interface ConfigSchema {
      *
      * Defaults to true when `extractCSS` is enabled.
      *
-     * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
+     * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack/css-minimizer-webpack-plugin).
      */
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     optimizeCSS: false | BasePluginOptions & DefinedDefaultMinimizerAndOptions<{}>
@@ -1934,7 +1934,7 @@ export interface ConfigSchema {
     optimization: false | Configuration['optimization']
 
     /**
-     * Customize PostCSS Loader. same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
+     * Customize PostCSS Loader. same options as [`postcss-loader` options](https://github.com/webpack/postcss-loader#options)
      */
     postcss: { execute?: boolean, postcssOptions: ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: AutoprefixerOptions, cssnano?: CssnanoOptions } }, sourceMap?: boolean, implementation?: any }
 
@@ -1944,7 +1944,7 @@ export interface ConfigSchema {
     devMiddleware: WebpackDevMiddlewareOptions<IncomingMessage, ServerResponse>
 
     /**
-     * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
+     * See [webpack-hot-middleware](https://github.com/webpack/webpack-hot-middleware) for available options.
      */
     hotMiddleware: MiddlewareOptions & { client?: ClientOptions }
 
