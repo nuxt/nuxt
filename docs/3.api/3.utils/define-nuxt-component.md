@@ -9,7 +9,7 @@ links:
 ---
 
 ::note
-`defineNuxtComponent()` is a helper function for defining type safe Vue components using options API similar to [`defineComponent()`](https://vuejs.org/api/general.html#definecomponent). `defineNuxtComponent()` wrapper also adds support for `asyncData` and `head` component options.
+`defineNuxtComponent()` is a helper function for defining type safe Vue components using options API similar to [`defineComponent()`](https://vuejs.org/api/general#definecomponent). `defineNuxtComponent()` wrapper also adds support for `asyncData` and `head` component options.
 ::
 
 ::note
@@ -25,11 +25,11 @@ If you choose not to use `setup()` in your app, you can use the `asyncData()` me
 ```vue [app/pages/index.vue]
 <script lang="ts">
 export default defineNuxtComponent({
-  async asyncData() {
+  asyncData () {
     return {
       data: {
-        greetings: 'hello world!'
-      }
+        greetings: 'hello world!',
+      },
     }
   },
 })
@@ -43,9 +43,9 @@ If you choose not to use `setup()` in your app, you can use the `head()` method 
 ```vue [app/pages/index.vue]
 <script lang="ts">
 export default defineNuxtComponent({
-  head(nuxtApp) {
+  head (nuxtApp) {
     return {
-      title: 'My site'
+      title: 'My site',
     }
   },
 })

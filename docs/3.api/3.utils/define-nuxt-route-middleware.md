@@ -12,8 +12,8 @@ Route middleware are stored in the [`app/middleware/`](/docs/4.x/guide/directory
 
 ## Type
 
-```ts
-defineNuxtRouteMiddleware(middleware: RouteMiddleware) => RouteMiddleware
+```ts [Signature]
+export function defineNuxtRouteMiddleware (middleware: RouteMiddleware): RouteMiddleware
 
 interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
@@ -28,7 +28,7 @@ interface RouteMiddleware {
 
 A function that takes two Vue Router's route location objects as parameters: the next route `to` as the first, and the current route `from` as the second.
 
-Learn more about available properties of `RouteLocationNormalized` in the **[Vue Router docs](https://router.vuejs.org/api/type-aliases/RouteLocationNormalized.html)**.
+Learn more about available properties of `RouteLocationNormalized` in the **[Vue Router docs](https://router.vuejs.org/api/type-aliases/routelocationnormalized)**.
 
 ## Examples
 

@@ -53,8 +53,8 @@ Sets the message with `politeness = "assertive"`
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-  const { message, politeness, set, polite, assertive } = useRouteAnnouncer({
-    politeness: 'assertive'
-  })
+const { message, politeness, set, polite, assertive } = useRouteAnnouncer({
+  politeness: 'assertive',
+})
 </script>
 ```

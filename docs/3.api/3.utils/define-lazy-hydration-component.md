@@ -20,13 +20,13 @@ Hydrates the component when it becomes visible in the viewport.
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'visible',
-  () => import('./components/MyComponent.vue')
+  () => import('./components/MyComponent.vue'),
 )
 </script>
 
 <template>
   <div>
-    <!-- 
+    <!--
       Hydration will be triggered when
       the element(s) is 100px away from entering the viewport.
     -->
@@ -42,7 +42,7 @@ Read more about the options for `hydrate-on-visible`.
 ::
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-visible).
+Under the hood, this uses Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async#hydrate-on-visible).
 ::
 
 ### Idle Strategy
@@ -53,7 +53,7 @@ Hydrates the component when the browser is idle. This is suitable if you need th
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'idle',
-  () => import('./components/MyComponent.vue')
+  () => import('./components/MyComponent.vue'),
 )
 </script>
 
@@ -70,7 +70,7 @@ The `hydrateOnIdle` prop is optional. You can pass a positive number to specify 
 Idle strategy is for components that can be hydrated when the browser is idle.
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnIdle` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-idle).
+Under the hood, this uses Vue's built-in [`hydrateOnIdle` strategy](https://vuejs.org/guide/components/async#hydrate-on-idle).
 ::
 
 ### Interaction Strategy
@@ -81,7 +81,7 @@ Hydrates the component after a specified interaction (e.g., click, mouseover).
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'interaction',
-  () => import('./components/MyComponent.vue')
+  () => import('./components/MyComponent.vue'),
 )
 </script>
 
@@ -99,7 +99,7 @@ const LazyHydrationMyComponent = defineLazyHydrationComponent(
 The `hydrateOnInteraction` prop is optional. If you do not pass an event or a list of events, it defaults to hydrating on `pointerenter`, `click`, and `focus`.
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnInteraction` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-interaction).
+Under the hood, this uses Vue's built-in [`hydrateOnInteraction` strategy](https://vuejs.org/guide/components/async#hydrate-on-interaction).
 ::
 
 ### Media Query Strategy
@@ -110,7 +110,7 @@ Hydrates the component when the window matches a media query.
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'mediaQuery',
-  () => import('./components/MyComponent.vue')
+  () => import('./components/MyComponent.vue'),
 )
 </script>
 
@@ -126,7 +126,7 @@ const LazyHydrationMyComponent = defineLazyHydrationComponent(
 ```
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnMediaQuery` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-media-query).
+Under the hood, this uses Vue's built-in [`hydrateOnMediaQuery` strategy](https://vuejs.org/guide/components/async#hydrate-on-media-query).
 ::
 
 ### Time Strategy
@@ -136,8 +136,8 @@ Hydrates the component after a specified delay (in milliseconds).
 ```vue
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
-  'time', 
-  () => import('./components/MyComponent.vue')
+  'time',
+  () => import('./components/MyComponent.vue'),
 )
 </script>
 
@@ -159,12 +159,12 @@ Hydrates the component based on a boolean condition.
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'if',
-  () => import('./components/MyComponent.vue')
+  () => import('./components/MyComponent.vue'),
 )
 
 const isReady = ref(false)
 
-function myFunction() {
+function myFunction () {
   // Trigger custom hydration strategy...
   isReady.value = true
 }
@@ -188,7 +188,7 @@ Never hydrates the component.
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'never',
-  () => import('./components/MyComponent.vue')
+  () => import('./components/MyComponent.vue'),
 )
 </script>
 
@@ -208,11 +208,11 @@ All delayed hydration components emit a `@hydrated` event when they are hydrated
 <script setup lang="ts">
 const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'visible',
-  () => import('./components/MyComponent.vue')
+  () => import('./components/MyComponent.vue'),
 )
 
-function onHydrate() {
-  console.log("Component has been hydrated!")
+function onHydrate () {
+  console.log('Component has been hydrated!')
 }
 </script>
 

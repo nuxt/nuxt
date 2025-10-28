@@ -30,13 +30,13 @@ By default, the shared runtime context of Nuxt is namespaced under the [`buildId
 
 ### `provide (name, value)`
 
-`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/4.x/guide/directory-structure/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
+`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/4.x/guide/directory-structure/app/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
 
 `provide` function accepts `name` and `value` parameters.
 
-```js
+```ts
 const nuxtApp = useNuxtApp()
-nuxtApp.provide('hello', (name) => `Hello ${name}!`)
+nuxtApp.provide('hello', name => `Hello ${name}!`)
 
 // Prints "Hello name!"
 console.log(nuxtApp.$hello('name'))
@@ -46,7 +46,7 @@ As you can see in the example above, `$hello` has become the new and custom part
 
 ### `hook(name, cb)`
 
-Hooks available in `nuxtApp` allows you to customize the runtime aspects of your Nuxt application. You can use runtime hooks in Vue.js composables and [Nuxt plugins](/docs/4.x/guide/directory-structure/plugins) to hook into the rendering lifecycle.
+Hooks available in `nuxtApp` allows you to customize the runtime aspects of your Nuxt application. You can use runtime hooks in Vue.js composables and [Nuxt plugins](/docs/4.x/guide/directory-structure/app/plugins) to hook into the rendering lifecycle.
 
 `hook` function is useful for adding custom logic by hooking into the rendering lifecycle at a specific point. `hook` function is mostly used when creating Nuxt plugins.
 
@@ -80,12 +80,12 @@ await nuxtApp.callHook('my-plugin:init')
 
 ### `vueApp`
 
-`vueApp` is the global Vue.js [application instance](https://vuejs.org/api/application.html#application-api) that you can access through `nuxtApp`.
+`vueApp` is the global Vue.js [application instance](https://vuejs.org/api/application#application-api) that you can access through `nuxtApp`.
 
 Some useful methods:
-- [`component()`](https://vuejs.org/api/application.html#app-component) - Registers a global component if passing both a name string and a component definition, or retrieves an already registered one if only the name is passed.
-- [`directive()`](https://vuejs.org/api/application.html#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/4.x/guide/directory-structure/plugins#vue-directives).
-- [`use()`](https://vuejs.org/api/application.html#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins.html)** [(example)](/docs/4.x/guide/directory-structure/plugins#vue-plugins).
+- [`component()`](https://vuejs.org/api/application#app-component) - Registers a global component if passing both a name string and a component definition, or retrieves an already registered one if only the name is passed.
+- [`directive()`](https://vuejs.org/api/application#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/4.x/guide/directory-structure/app/plugins#vue-directives).
+- [`use()`](https://vuejs.org/api/application#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins)** [(example)](/docs/4.x/guide/directory-structure/app/plugins#vue-plugins).
 
 :read-more{icon="i-simple-icons-vuedotjs" to="https://vuejs.org/api/application.html#application-api"}
 
@@ -108,11 +108,11 @@ Nuxt exposes the following properties through `ssrContext`:
   ::code-group
   ```vue [app/app.vue]
   <script setup lang="ts">
-  const { data } = await useAsyncData('count', () => $fetch('/api/count'))
+  const { data } = await useAsyncData('count', (_nuxtApp, { signal }) => $fetch('/api/count', { signal }))
   </script>
   ```
   ```ts [server/api/count.ts]
-  export default defineEventHandler(event => {
+  export default defineEventHandler((event) => {
     return { count: 1 }
   })
   ```
@@ -173,7 +173,7 @@ export default defineComponent({
         // ...
       }
     })
-  }
+  },
 })
 ```
 
@@ -204,7 +204,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
 #### Usage
 
-```js
+```ts
 const result = nuxtApp.runWithContext(() => functionWithContext())
 ```
 
@@ -218,14 +218,14 @@ Vue.js Composition API (and Nuxt composables similarly) work by depending on an 
 
 What it does mean? The Composition API and Nuxt Composables are only available during lifecycle and in same tick before any async operation:
 
-```js
+```ts
 // --- Vue internal ---
 const _vueInstance = null
 const getCurrentInstance = () => _vueInstance
 // ---
 
 // Vue / Nuxt sets a global variable referencing to current component in _vueInstance when calling setup()
-async function setup() {
+async function setup () {
   getCurrentInstance() // Works
   await someAsyncOperation() // Vue unsets the context in same tick before async operation!
   getCurrentInstance() // null
@@ -236,7 +236,7 @@ The classic solution to this, is caching the current instance on first call to a
 
 To overcome this limitation, Vue does some behind the scenes work when compiling our application code and restores context after each call for `<script setup>`:
 
-```js
+```ts
 const __instance = getCurrentInstance() // Generated by Vue compiler
 getCurrentInstance() // Works!
 await someAsyncOperation() // Vue unsets the context
@@ -268,7 +268,7 @@ Using a new experimental feature, it is possible to enable native async context 
 Native async context support works currently in Bun and Node.
 ::
 
-:read-more{to="/docs/guide/going-further/experimental-features#asynccontext"}
+:read-more{to="/docs/4.x/guide/going-further/experimental-features#asynccontext"}
 
 ## tryUseNuxtApp
 
@@ -279,7 +279,7 @@ You can use it for composables that do not require `nuxtApp`, or to simply check
 Example usage:
 
 ```ts [composable.ts]
-export function useStandType() {
+export function useStandType () {
   // Always works on the client
   if (tryUseNuxtApp()) {
     return useRuntimeConfig().public.STAND_TYPE

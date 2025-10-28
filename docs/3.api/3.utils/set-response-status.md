@@ -16,7 +16,7 @@ Nuxt provides composables and utilities for first-class server-side-rendering su
 `setResponseStatus` can only be called in the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
-```js
+```ts
 const event = useRequestEvent()
 
 // event will be undefined in the browser
@@ -33,4 +33,4 @@ if (event) {
 In the browser, `setResponseStatus` will have no effect.
 ::
 
-:read-more{to="/docs/getting-started/error-handling"}
+:read-more{to="/docs/4.x/getting-started/error-handling"}

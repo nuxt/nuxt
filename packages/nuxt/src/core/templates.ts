@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { isAbsolute, join, relative, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
@@ -11,7 +11,7 @@ import type { Nitro } from 'nitropack/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
-import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
+import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -345,7 +345,7 @@ export const middlewareTemplate: NuxtTemplate = {
         : [
             `const _globalMiddleware = ${genObjectFromRawEntries(globalMiddleware.map(mw => [reverseResolveAlias(mw.path, alias).pop() || mw.path, genSafeVariableName(mw.name)]))}`,
             `for (const path in _globalMiddleware) {`,
-            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path })`,
+            `  Object.defineProperty(_globalMiddleware[path], '_path', { value: path, configurable: true })`,
             `}`,
             `export const globalMiddleware = Object.values(_globalMiddleware)`,
             `const _namedMiddleware = ${genArrayFromRaw(namedMiddleware.map(mw => ({
@@ -356,7 +356,7 @@ export const middlewareTemplate: NuxtTemplate = {
             `for (const mw of _namedMiddleware) {`,
             `  const i = mw.import`,
             `  mw.import = () => i().then(r => {`,
-            `    Object.defineProperty(r.default || r, '_path', { value: mw.path })`,
+            `    Object.defineProperty(r.default || r, '_path', { value: mw.path, configurable: true })`,
             `    return r`,
             `  })`,
             `}`,
@@ -364,98 +364,6 @@ export const middlewareTemplate: NuxtTemplate = {
           ],
 
     ].join('\n')
-  },
-}
-
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
-}
-
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
-export const nitroSchemaTemplate: NuxtTemplate = {
-  filename: 'types/nitro-nuxt.d.ts',
-  async getContents ({ nuxt }) {
-    const references = [] as TSReference[]
-    const declarations = [] as string[]
-    await nuxt.callHook('nitro:prepare:types', { references, declarations })
-
-    const sourceDir = join(nuxt.options.buildDir, 'types')
-    const lines = [
-      ...references.map((ref) => {
-        if ('path' in ref && isAbsolute(ref.path)) {
-          ref.path = relative(sourceDir, ref.path)
-        }
-        return `/// <reference ${renderAttrs(ref)} />`
-      }),
-      ...declarations,
-    ]
-
-    return /* typescript */`
-${lines.join('\n')}
-
-import type { RuntimeConfig } from 'nuxt/schema'
-import type { H3Event } from 'h3'
-import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
-
-declare module 'nitropack' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRuntimeConfig extends RuntimeConfig {}
-  interface NitroRouteConfig {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-  interface NitroRuntimeHooks {
-    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
-    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
-  }
-}
-declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRuntimeConfig extends RuntimeConfig {}
-  interface NitroRouteConfig {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-  interface NitroRuntimeHooks {
-    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
-    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
-  }
-}
-`
   },
 }
 
@@ -625,11 +533,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify({
-        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
-        errorValue: undefined,
-        value: undefined,
-      })}`,
+      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,

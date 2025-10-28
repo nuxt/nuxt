@@ -13,20 +13,20 @@ links:
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
-  layout: 'default'
+  layout: 'default',
 })
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/app/pages#page-metadata"}
+:read-more{to="/docs/4.x/guide/directory-structure/app/pages#page-metadata"}
 
 ## Type
 
-```ts
-definePageMeta(meta: PageMeta) => void
+```ts [Signature]
+export function definePageMeta (meta: PageMeta): void
 
 interface PageMeta {
-  validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
+  validate?: ((route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>)
   redirect?: RouteRecordRedirectOption
   name?: string
   path?: string
@@ -62,7 +62,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a [custom regular expression](/docs/api/composables/use-nuxt-app#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](/docs/4.x/api/utils/define-page-meta#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
 
   **`props`**
   
@@ -78,9 +78,9 @@ interface PageMeta {
 
   **`keepalive`**
 
-  - **Type**: `boolean` | [`KeepAliveProps`](https://vuejs.org/api/built-in-components.html#keepalive)
+  - **Type**: `boolean` | [`KeepAliveProps`](https://vuejs.org/api/built-in-components#keepalive)
 
-    Set to `true` when you want to preserve page state across route changes or use the [`KeepAliveProps`](https://vuejs.org/api/built-in-components.html#keepalive) for a fine-grained control.
+    Set to `true` when you want to preserve page state across route changes or use the [`KeepAliveProps`](https://vuejs.org/api/built-in-components#keepalive) for a fine-grained control.
 
   **`key`**
 
@@ -96,19 +96,19 @@ interface PageMeta {
 
   **`layoutTransition`**
 
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components#transition)
 
     Set name of the transition to apply for current layout. You can also set this value to `false` to disable the layout transition.
 
   **`middleware`**
 
-  - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/NavigationGuard.html#navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
+  - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
 
     Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/4.x/guide/directory-structure/app/middleware).
 
   **`pageTransition`**
 
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components#transition)
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
 
@@ -122,7 +122,7 @@ interface PageMeta {
 
   **`redirect`**
 
-  - **Type**: [`RouteRecordRedirectOption`](https://router.vuejs.org/guide/essentials/redirect-and-alias.html#redirect-and-alias)
+  - **Type**: [`RouteRecordRedirectOption`](https://router.vuejs.org/guide/essentials/redirect-and-alias)
 
     Where to redirect if the route is directly matched. The redirection happens before any navigation guard and triggers a new navigation with the new target location.
 
@@ -157,13 +157,13 @@ The example below demonstrates:
 ```vue [app/pages/some-page.vue]
 <script setup lang="ts">
 definePageMeta({
-  key: (route) => route.fullPath,
+  key: route => route.fullPath,
 
   keepalive: {
-    exclude: ['modal']
+    exclude: ['modal'],
   },
 
-  pageType: 'Checkout'
+  pageType: 'Checkout',
 })
 </script>
 ```
@@ -181,20 +181,20 @@ definePageMeta({
       const auth = useState('auth')
 
       if (!auth.value.authenticated) {
-          return navigateTo('/login')
+        return navigateTo('/login')
       }
 
       if (to.path !== '/checkout') {
         return navigateTo('/checkout')
       }
-    }
+    },
   ],
 
   // ... or a string
-  middleware: 'auth'
+  middleware: 'auth',
 
   // ... or multiple strings
-  middleware: ['auth', 'another-named-middleware']
+  middleware: ['auth', 'another-named-middleware'],
 })
 </script>
 ```
@@ -210,12 +210,12 @@ To make sure that we are only matching digits (`\d+`) for `postId` in the `[post
 ```vue [app/pages/[postId\\]-[postSlug\\].vue]
 <script setup lang="ts">
 definePageMeta({
-  path: '/:postId(\\d+)-:postSlug' 
+  path: '/:postId(\\d+)-:postSlug',
 })
 </script>
 ```
 
-For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
+For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax).
 
 ### Defining Layout
 
@@ -225,10 +225,10 @@ You can define the layout that matches the layout's file name located (by defaul
 <script setup lang="ts">
 definePageMeta({
   // set custom layout
-  layout: 'admin'
+  layout: 'admin',
 
   // ... or disable a default layout
-  layout: false
+  layout: false,
 })
 </script>
 ```

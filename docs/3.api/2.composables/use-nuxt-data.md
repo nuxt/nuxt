@@ -50,10 +50,10 @@ const route = useRoute()
 
 const { data } = useLazyFetch(`/api/posts/${route.params.id}`, {
   key: `post-${route.params.id}`,
-  default() {
+  default () {
     // Find the individual post from the cache and set it as the default value.
     return posts.value.find(post => post.id === route.params.id)
-  }
+  },
 })
 </script>
 ```
@@ -67,7 +67,7 @@ Optimistic Updates is a technique where the user interface is updated immediatel
 ```vue [app/pages/todos.vue]
 <script setup lang="ts">
 // We can access same data later using 'todos' key
-const { data } = await useAsyncData('todos', () => $fetch('/api/todos'))
+const { data } = await useAsyncData('todos', (_nuxtApp, { signal }) => $fetch('/api/todos', { signal }))
 </script>
 ```
 
@@ -80,10 +80,10 @@ let previousTodos = []
 const { data: todos } = useNuxtData('todos')
 
 async function addTodo () {
-  return $fetch('/api/addTodo', {
+  await $fetch('/api/addTodo', {
     method: 'post',
     body: {
-      todo: newTodo.value
+      todo: newTodo.value,
     },
     onRequest () {
       // Store the previously cached value to restore if fetch fails.
@@ -99,7 +99,7 @@ async function addTodo () {
     async onResponse () {
       // Invalidate todos in the background if the request succeeded.
       await refreshNuxtData('todos')
-    }
+    },
   })
 }
 </script>
@@ -107,6 +107,6 @@ async function addTodo () {
 
 ## Type
 
-```ts
-useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
+```ts [Signature]
+export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> }
 ```

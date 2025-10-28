@@ -40,7 +40,7 @@ export interface CookieOptions<T = any> extends Omit<CookieSerializeOptions & Co
 
 export interface CookieRef<T> extends Ref<T> {}
 
-export function useCookie<T = string | null | undefined>(
+export function useCookie<T = string | null | undefined> (
   name: string,
   options?: CookieOptions<T>
 ): CookieRef<T>
@@ -61,14 +61,14 @@ Most of the options will be directly passed to the [cookie](https://github.com/j
 | `default` | `() => T \| Ref<T>` | `undefined` | Function returning the default value if the cookie does not exist.  The function can also return a `Ref`. |
 | `watch` | `boolean \| 'shallow'` | `true`  | Whether to watch for changes and update the cookie. `true` for deep watch, `'shallow'` for shallow watch, i.e. data changes for only top level properties, `false` to disable. <br/> **Note:** Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/docs/4.x/api/utils/refresh-cookie). |
 | `readonly` | `boolean` | `false` | If `true`, disables writing to the cookie. |
-| `maxAge` | `number` | `undefined` | Max age in seconds for the cookie, i.e. the value for the [`Max-Age` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.2). The given number will be converted to an integer by rounding down. By default, no maximum age is set. |
-| `expires` | `Date` | `undefined` | Expiration date for the cookie. By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and will delete it on a condition like exiting a web browser application. <br/> **Note:** The [cookie storage model specification](https://tools.ietf.org/html/rfc6265#section-5.3) states that if both `expires` and `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this, so if both are set, they should point to the same date and time! <br/>If neither of `expires` and `maxAge` is set, the cookie will be session-only and removed when the user closes their browser. |
+| `maxAge` | `number` | `undefined` | Max age in seconds for the cookie, i.e. the value for the [`Max-Age` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.2). The given number will be converted to an integer by rounding down. By default, no maximum age is set. |
+| `expires` | `Date` | `undefined` | Expiration date for the cookie. By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and will delete it on a condition like exiting a web browser application. <br/> **Note:** The [cookie storage model specification](https://datatracker.ietf.org/doc/html/rfc6265#section-5.3) states that if both `expires` and `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this, so if both are set, they should point to the same date and time! <br/>If neither of `expires` and `maxAge` is set, the cookie will be session-only and removed when the user closes their browser. |
 | `httpOnly` | `boolean` | `false` | Sets the HttpOnly attribute. <br/> **Note:** Be careful when setting this to `true`, as compliant clients will not allow client-side JavaScript to see the cookie in `document.cookie`. |
-| `secure` | `boolean` | `false` | Sets the [`Secure` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.5). <br/>**Note:** Be careful when setting this to `true`, as compliant clients will not send the cookie back to the server in the future if the browser does not have an HTTPS connection. This can lead to hydration errors. |
+| `secure` | `boolean` | `false` | Sets the [`Secure` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.5). <br/>**Note:** Be careful when setting this to `true`, as compliant clients will not send the cookie back to the server in the future if the browser does not have an HTTPS connection. This can lead to hydration errors. |
 | `partitioned` | `boolean` | `false` | Sets the [`Partitioned` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/draft-cutler-httpbis-partitioned-cookies#section-2.1). <br/>**Note:** This is an attribute that has not yet been fully standardized, and may change in the future. <br/>This also means many clients may ignore this attribute until they understand it.<br/>More information can be found in the [proposal](https://github.com/privacycg/CHIPS). |
-| `domain` | `string` | `undefined` | Sets the [`Domain` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.3). By default, no domain is set, and most clients will consider applying the cookie only to the current domain. |
-| `path` | `string` | `'/'` | Sets the [`Path` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.4). By default, the path is considered the ["default path"](https://tools.ietf.org/html/rfc6265#section-5.1.4). |
-| `sameSite` | `boolean \| string` | `undefined` | Sets the [`SameSite` `Set-Cookie` attribute](https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.2.7). <br/>- `true` will set the `SameSite` attribute to `Strict` for strict same-site enforcement.<br/>- `false` will not set the `SameSite` attribute.<br/>- `'lax'` will set the `SameSite` attribute to `Lax` for lax same-site enforcement.<br/>- `'none'` will set the `SameSite` attribute to `None` for an explicit cross-site cookie.<br/>- `'strict'` will set the `SameSite` attribute to `Strict` for strict same-site enforcement. |
+| `domain` | `string` | `undefined` | Sets the [`Domain` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.3). By default, no domain is set, and most clients will consider applying the cookie only to the current domain. |
+| `path` | `string` | `'/'` | Sets the [`Path` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.4). By default, the path is considered the ["default path"](https://datatracker.ietf.org/doc/html/rfc6265#section-5.1.4). |
+| `sameSite` | `boolean \| string` | `undefined` | Sets the [`SameSite` `Set-Cookie` attribute](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.2.7). <br/>- `true` will set the `SameSite` attribute to `Strict` for strict same-site enforcement.<br/>- `false` will not set the `SameSite` attribute.<br/>- `'lax'` will set the `SameSite` attribute to `Lax` for lax same-site enforcement.<br/>- `'none'` will set the `SameSite` attribute to `None` for an explicit cross-site cookie.<br/>- `'strict'` will set the `SameSite` attribute to `Strict` for strict same-site enforcement. |
 
 ## Return Values
 
@@ -84,15 +84,21 @@ The example below creates a cookie called `counter`. If the cookie doesn't exist
 <script setup lang="ts">
 const counter = useCookie('counter')
 
-counter.value = counter.value || Math.round(Math.random() * 1000)
+counter.value ||= Math.round(Math.random() * 1000)
 </script>
 
 <template>
   <div>
     <h1>Counter: {{ counter || '-' }}</h1>
-    <button @click="counter = null">reset</button>
-    <button @click="counter--">-</button>
-    <button @click="counter++">+</button>
+    <button @click="counter = null">
+      reset
+    </button>
+    <button @click="counter--">
+      -
+    </button>
+    <button @click="counter++">
+      +
+    </button>
   </div>
 </template>
 ```
@@ -105,8 +111,8 @@ const user = useCookie(
   'userInfo',
   {
     default: () => ({ score: -1 }),
-    watch: false
-  }
+    watch: false,
+  },
 )
 
 if (user.value) {
@@ -128,20 +134,18 @@ const list = useCookie(
   'list',
   {
     default: () => [],
-    watch: 'shallow'
-  }
+    watch: 'shallow',
+  },
 )
 
-function add() {
+function add () {
   list.value?.push(Math.round(Math.random() * 1000))
   // list cookie won't be updated with this change
 }
 
-function save() {
-  if (list.value) {
-    // the actual `list` cookie will be updated
-    list.value = [...list.value]
-  }
+function save () {
+  // the actual `list` cookie will be updated
+  list.value &&= [...list.value]
 }
 </script>
 
@@ -149,8 +153,12 @@ function save() {
   <div>
     <h1>List</h1>
     <pre>{{ list }}</pre>
-    <button @click="add">Add</button>
-    <button @click="save">Save</button>
+    <button @click="add">
+      Add
+    </button>
+    <button @click="save">
+      Save
+    </button>
   </div>
 </template>
 ```
@@ -160,7 +168,7 @@ function save() {
 You can use `getCookie` and `setCookie` from [`h3`](https://github.com/h3js/h3) package to set cookies in server API routes.
 
 ```ts [server/api/counter.ts]
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   // Read counter cookie
   let counter = getCookie(event, 'counter') || 0
 
@@ -172,4 +180,4 @@ export default defineEventHandler(event => {
 })
 ```
 
-:link-example{to="/docs/examples/advanced/use-cookie"}
+:link-example{to="/docs/4.x/examples/advanced/use-cookie"}

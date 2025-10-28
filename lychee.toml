@@ -17,7 +17,7 @@ no_progress = true
 # include_fragments = true
 
 # Follow redirects
-max_redirects = 10
+max_redirects = 1
 
 # Set user agent to avoid bot blocking
 user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
@@ -31,7 +31,6 @@ max_retries = 6
 exclude = [
   "https://twitter.nuxt.dev/",
   "https://www.webpagetest.org/",
-  "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
   # dummy example URLs
@@ -40,16 +39,17 @@ exclude = [
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
-  'https://www.npmjs.com/package/(.*)importName(.*)',
-  # TODO: address 404s (non-prerendered files?) from nuxt.com
-  "https://nuxt.com/docs/guide/going-further/modules",
-  "https://nuxt.com/docs/guide/directory-structure/pages",
+  "https://nuxt.new/c/v4",
+  "https://nuxt.new/s/v4",
+  "https://www.npmjs.com/",
   # single-quotes are required for regexp
+  'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
   # excluded URLs from test suite
   "http://auth.com",
   "http://example1.com/",
   "http://example2.com/",
+  "http://example3.com/",
   "~images/main-bg.jpg",
 ]

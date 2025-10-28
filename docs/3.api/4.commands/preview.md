@@ -10,7 +10,7 @@ links:
 
 <!--preview-cmd-->
 ```bash [Terminal]
-npx nuxt preview [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName] [--dotenv] [-p, --port]
+npx nuxt preview [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--envName] [-e, --extends=<layer-name>] [-p, --port] [--dotenv]
 ```
 <!--/preview-cmd-->
 
@@ -32,8 +32,9 @@ Option | Default | Description
 `--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
+`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
+`-p, --port` |  | Port to listen on (use `PORT` environment variable to override)
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory
-`-p, --port` |  | Port to listen on (default: `NUXT_PORT \|\| NITRO_PORT \|\| PORT`)
 <!--/preview-opts-->
 
 This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a `.env` file or as command-line argument.

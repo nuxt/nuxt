@@ -86,7 +86,6 @@ export const RenderPlugin = () => {
         }
 
         // Minify HTML
-        // @ts-expect-error error in htmlnano types: https://github.com/posthtml/htmlnano/issues/376
         html = await htmlnano.process(html, { collapseWhitespace: 'aggressive' }).then(r => r.html)
 
         if (!isCompleteHTML) {
@@ -201,13 +200,12 @@ export const RenderPlugin = () => {
 
       // we manually copy files across rather than using symbolic links for better windows support
       const nuxtRoot = r('../nuxt')
-      for (const file of ['error-404.vue', 'error-500.vue', 'error-dev.vue', 'welcome.vue']) {
+      const nitroRoot = r('../nitro-server')
+      for (const file of ['error-404.vue', 'error-500.vue', 'welcome.vue']) {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
-      await mkdir(join(nuxtRoot, 'src/core/runtime/nitro/templates'), { recursive: true })
-      for (const file of ['error-500.ts', 'error-dev.ts']) {
-        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro/templates', file))
-      }
+      await mkdir(join(nitroRoot, 'src/runtime/templates'), { recursive: true })
+      await copyFile(r(`dist/templates/error-500.ts`), join(nitroRoot, 'src/runtime/templates/error-500.ts'))
     },
   }
 }

@@ -31,6 +31,7 @@ jobs:
             ui-templates
             vite
             webpack
+            nitro
             deps
           subjectPattern: ^(?![A-Z]).+$
           subjectPatternError: |

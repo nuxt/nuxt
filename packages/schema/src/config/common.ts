@@ -9,7 +9,6 @@ import { findWorkspaceDir } from 'pkg-types'
 import type { NuxtDebugOptions } from '../types/debug'
 import type { NuxtModule } from '../types/module'
 import { defineResolvers } from '../utils/definition'
-import { withTrailingSlash } from 'ufo'
 
 export default defineResolvers({
   extends: undefined,
@@ -294,4 +293,8 @@ function provideFallbackValues (obj: Record<string, any>) {
       provideFallbackValues(obj[key])
     }
   }
+}
+
+function withTrailingSlash (str: string) {
+  return str.replace(/\/?$/, '/')
 }
