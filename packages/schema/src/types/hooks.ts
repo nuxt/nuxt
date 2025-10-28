@@ -62,6 +62,9 @@ export type NuxtLayout = {
   file: string
 }
 
+/**
+ * @deprecated Use {@link InlinePreset}
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ImportPresetWithDeprecation extends InlinePreset {
 }
@@ -224,7 +227,7 @@ export interface NuxtHooks {
    * @param presets Array containing presets objects
    * @returns Promise
    */
-  'imports:sources': (presets: ImportPresetWithDeprecation[]) => HookResult
+  'imports:sources': (presets: InlinePreset[]) => HookResult
   /**
    * Called at setup allowing modules to extend imports.
    * @param imports Array containing the imports to extend
