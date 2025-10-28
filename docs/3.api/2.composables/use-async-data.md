@@ -95,14 +95,15 @@ const { refresh } = await useAsyncData(
   'users',
   (_nuxtApp, { signal }) => $fetch('/api/users', { signal }),
 )
-const abortController = new AbortController()
+let abortController : AbortController | undefined
 
 function handleUserAction () {
+  abortController = new AbortController()
   refresh({ signal: abortController.signal })
 }
 
 function handleCancel () {
-  abortController.abort() // aborts the ongoing refresh request
+  abortController?.abort() // aborts the ongoing refresh request
 }
 ```
 
