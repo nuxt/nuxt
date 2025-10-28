@@ -88,7 +88,7 @@ refresh()
 clear() // will cancel the latest pending handler
 ```
 
-You can also pass an `AbortSignal` to the `refresh`/`execute` function to cancel individual the request manually.
+You can also pass an `AbortSignal` to the `refresh`/`execute` function to cancel individual requests manually.
 
 ```ts
 const { refresh } = await useAsyncData(
