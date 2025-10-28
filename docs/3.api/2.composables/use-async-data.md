@@ -33,6 +33,7 @@ If you're using a custom useAsyncData wrapper, do not await it in the composable
 `data`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
+
 ### Watch Params
 
 The built-in `watch` option allows automatically rerunning the fetcher function when any changes are detected.
@@ -70,6 +71,63 @@ const { data: user } = useAsyncData(
 )
 </script>
 ```
+
+### Make your `handler` abortable
+
+You can make your `handler` function abortable by using the `signal` provided in the second argument. This is useful for cancelling requests when they are no longer needed, such as when a user navigates away from a page. `$fetch` natively supports abort signals.
+
+```ts
+const { data, error } = await useAsyncData(
+  'users',
+  (_, { signal }) => $fetch('/api/users', { signal }),
+)
+
+refresh() // will actually cancel the $fetch request (if dedupe: cancel)
+refresh() // will actually cancel the $fetch request (if dedupe: cancel)
+refresh()
+
+clear() // will cancel the latest pending handler
+``` 
+
+You can also pass an `AbortSignal` to the `refresh`/`execute` function to cancel individual the request manually.
+
+```ts
+const { refresh } = await useAsyncData(
+  'users',
+  (_, { signal }) => $fetch('/api/users', { signal }),
+)
+const abortController = new AbortController()
+
+function handleUserAction () {
+  refresh({ signal: abortController.signal })
+}
+
+function handleCancel () {
+  abortController.abort() // aborts the ongoing refresh request
+}
+```
+
+If your `handler` function does not support abort signals, you can implement your own abort logic using the `signal` provided.
+
+```ts
+const { data, error } = await useAsyncData(
+  'users',
+  (_, { signal }) => {
+    return new Promise((resolve, reject) => {
+      signal?.addEventListener('abort', () => {
+        reject(new Error('Request aborted'))
+      })
+      return Promise.resolve(callback.call(this, yourHandler)).then(resolve, reject)
+    })
+  },
+)
+```
+
+The handler signal will be aborted when:
+
+- A new request is made with `dedupe: 'cancel'`
+- The `clear` function is called
+- The `options.timeout` duration is exceeded
 
 ::warning
 [`useAsyncData`](/docs/4.x/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
