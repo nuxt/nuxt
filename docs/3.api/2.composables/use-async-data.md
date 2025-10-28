@@ -33,7 +33,6 @@ If you're using a custom useAsyncData wrapper, do not await it in the composable
 `data`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
-
 ### Watch Params
 
 The built-in `watch` option allows automatically rerunning the fetcher function when any changes are detected.
@@ -87,7 +86,7 @@ refresh() // will actually cancel the $fetch request (if dedupe: cancel)
 refresh()
 
 clear() // will cancel the latest pending handler
-``` 
+```
 
 You can also pass an `AbortSignal` to the `refresh`/`execute` function to cancel individual the request manually.
 
