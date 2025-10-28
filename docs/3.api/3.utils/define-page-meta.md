@@ -78,9 +78,9 @@ interface PageMeta {
 
   **`keepalive`**
 
-  - **Type**: `boolean` | [`KeepAliveProps`](https://vuejs.org/api/built-in-components.html#keepalive)
+  - **Type**: `boolean` | [`KeepAliveProps`](https://vuejs.org/api/built-in-components#keepalive)
 
-    Set to `true` when you want to preserve page state across route changes or use the [`KeepAliveProps`](https://vuejs.org/api/built-in-components.html#keepalive) for a fine-grained control.
+    Set to `true` when you want to preserve page state across route changes or use the [`KeepAliveProps`](https://vuejs.org/api/built-in-components#keepalive) for a fine-grained control.
 
   **`key`**
 
@@ -96,7 +96,7 @@ interface PageMeta {
 
   **`layoutTransition`**
 
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components#transition)
 
     Set name of the transition to apply for current layout. You can also set this value to `false` to disable the layout transition.
 
@@ -108,7 +108,7 @@ interface PageMeta {
 
   **`pageTransition`**
 
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components#transition)
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
 
@@ -215,7 +215,7 @@ definePageMeta({
 </script>
 ```
 
-For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
+For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax).
 
 ### Defining Layout
 

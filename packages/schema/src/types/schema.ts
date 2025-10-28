@@ -96,7 +96,7 @@ export interface ConfigSchema {
     /**
      * Options for the Vue compiler that will be passed at build time.
      *
-     * @see [Vue documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
+     * @see [Vue documentation](https://vuejs.org/api/application#app-config-compileroptions)
      */
     compilerOptions: CompilerOptions
 
@@ -113,7 +113,7 @@ export interface ConfigSchema {
     /**
      * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
      *
-     * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
+     * @see [Vue app config documentation](https://vuejs.org/api/application#app-config)
      */
     config: Serializable<VueAppConfig>
   }
@@ -213,7 +213,7 @@ export interface ConfigSchema {
      *
      * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
      *
-     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components#transition)
      */
     layoutTransition: NuxtAppConfig['layoutTransition']
 
@@ -222,7 +222,7 @@ export interface ConfigSchema {
      *
      * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
      *
-     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components#transition)
      */
     pageTransition: NuxtAppConfig['pageTransition']
 
@@ -241,7 +241,7 @@ export interface ConfigSchema {
      *
      * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
      *
-     * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components.html#keepalive)
+     * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components#keepalive)
      */
     keepalive: NuxtAppConfig['keepalive']
 

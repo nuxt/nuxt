@@ -41,6 +41,7 @@ exclude = [
   "https://mycdn.org/",
   "https://nuxt.new/c/v4",
   "https://nuxt.new/s/v4",
+  "https://www.npmjs.com/",
   # single-quotes are required for regexp
   'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
