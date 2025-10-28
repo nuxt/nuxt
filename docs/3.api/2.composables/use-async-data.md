@@ -18,7 +18,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
-const { data, status, error, refresh, clear } = await useAsyncData(
+const { data, pending, status, error, refresh, clear } = await useAsyncData(
   'mountains',
   () => $fetch('https://api.nuxtjs.dev/mountains'),
 )
@@ -150,6 +150,7 @@ Keyed state created using `useAsyncData` can be retrieved across your Nuxt appli
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
+- `pending`: a boolean indicating whether the data is still being fetched.
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
 - `status`: a string indicating the status of the data request:
