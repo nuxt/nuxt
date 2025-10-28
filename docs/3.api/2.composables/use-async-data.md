@@ -20,7 +20,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
-  () => $fetch('https://api.nuxtjs.dev/mountains'),
+  (_nuxtApp, { signal }) => $fetch('https://api.nuxtjs.dev/mountains', { signal }),
 )
 </script>
 ```
@@ -42,10 +42,11 @@ The built-in `watch` option allows automatically rerunning the fetcher function 
 const page = ref(1)
 const { data: posts } = await useAsyncData(
   'posts',
-  () => $fetch('https://fakeApi.com/posts', {
+  (_nuxtApp, { signal }) => $fetch('https://fakeApi.com/posts', {
     params: {
       page: page.value,
     },
+    signal,
   }), {
     watch: [page],
   },
@@ -69,6 +70,64 @@ const { data: user } = useAsyncData(
 )
 </script>
 ```
+
+### Make your `handler` abortable
+
+You can make your `handler` function abortable by using the `signal` provided in the second argument. This is useful for cancelling requests when they are no longer needed, such as when a user navigates away from a page. `$fetch` natively supports abort signals.
+
+```ts
+const { data, error } = await useAsyncData(
+  'users',
+  (_nuxtApp, { signal }) => $fetch('/api/users', { signal }),
+)
+
+refresh() // will actually cancel the $fetch request (if dedupe: cancel)
+refresh() // will actually cancel the $fetch request (if dedupe: cancel)
+refresh()
+
+clear() // will cancel the latest pending handler
+```
+
+You can also pass an `AbortSignal` to the `refresh`/`execute` function to cancel individual requests manually.
+
+```ts
+const { refresh } = await useAsyncData(
+  'users',
+  (_nuxtApp, { signal }) => $fetch('/api/users', { signal }),
+)
+let abortController : AbortController | undefined
+
+function handleUserAction () {
+  abortController = new AbortController()
+  refresh({ signal: abortController.signal })
+}
+
+function handleCancel () {
+  abortController?.abort() // aborts the ongoing refresh request
+}
+```
+
+If your `handler` function does not support abort signals, you can implement your own abort logic using the `signal` provided.
+
+```ts
+const { data, error } = await useAsyncData(
+  'users',
+  (_nuxtApp, { signal }) => {
+    return new Promise((resolve, reject) => {
+      signal?.addEventListener('abort', () => {
+        reject(new Error('Request aborted'))
+      })
+      return Promise.resolve(callback.call(this, yourHandler)).then(resolve, reject)
+    })
+  },
+)
+```
+
+The handler signal will be aborted when:
+
+- A new request is made with `dedupe: 'cancel'`
+- The `clear` function is called
+- The `options.timeout` duration is exceeded
 
 ::warning
 [`useAsyncData`](/docs/3.x/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/3.x/api/composables/use-async-data).
@@ -135,12 +194,12 @@ The following options **can differ** without triggering warnings:
 
 ```ts
 // ❌ This will trigger a development warning
-const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { deep: false })
-const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { deep: true })
+const { data: users1 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { deep: false })
+const { data: users2 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { deep: true })
 
 // ✅ This is allowed
-const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: true })
-const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: false })
+const { data: users1 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { immediate: true })
+const { data: users2 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch('/api/users', { signal }), { immediate: false })
 ```
 
 ::tip
@@ -170,13 +229,15 @@ If you have not fetched data on the server (for example, with `server: false`), 
 ## Type
 
 ```ts [Signature]
+export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
+
 export function useAsyncData<DataT, DataE> (
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
+  handler: AsyncDataHandler<DataT>,
   options?: AsyncDataOptions<DataT>
 ): AsyncData<DataT, DataE>
 export function useAsyncData<DataT, DataE> (
   key: MaybeRefOrGetter<string>,
-  handler: (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<DataT>,
+  handler: AsyncDataHandler<DataT>,
   options?: AsyncDataOptions<DataT>
 ): Promise<AsyncData<DataT, DataE>>
 
