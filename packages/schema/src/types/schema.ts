@@ -111,7 +111,7 @@ export interface ConfigSchema {
     propsDestructure: boolean
 
     /**
-     * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
+     * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin.
      *
      * @see [Vue app config documentation](https://vuejs.org/api/application#app-config)
      */
