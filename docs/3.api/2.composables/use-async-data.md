@@ -20,7 +20,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 <script setup lang="ts">
 const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
-  () => $fetch('https://api.nuxtjs.dev/mountains'),
+  ({signal}) => $fetch('https://api.nuxtjs.dev/mountains', {signal}),
 )
 </script>
 ```
@@ -42,10 +42,11 @@ The built-in `watch` option allows automatically rerunning the fetcher function 
 const page = ref(1)
 const { data: posts } = await useAsyncData(
   'posts',
-  () => $fetch('https://fakeApi.com/posts', {
+  ({signal}) => $fetch('https://fakeApi.com/posts', {
     params: {
       page: page.value,
     },
+    signal,
   }), {
     watch: [page],
   },
@@ -135,12 +136,12 @@ The following options **can differ** without triggering warnings:
 
 ```ts
 // ❌ This will trigger a development warning
-const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { deep: false })
-const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { deep: true })
+const { data: users1 } = useAsyncData('users', ({signal}) => $fetch('/api/users', {signal}), { deep: false })
+const { data: users2 } = useAsyncData('users', ({signal}) => $fetch('/api/users', {signal}), { deep: true })
 
 // ✅ This is allowed
-const { data: users1 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: true })
-const { data: users2 } = useAsyncData('users', () => $fetch('/api/users'), { immediate: false })
+const { data: users1 } = useAsyncData('users', ({signal}) => $fetch('/api/users', {signal}), { immediate: true })
+const { data: users2 } = useAsyncData('users', ({signal}) => $fetch('/api/users', {signal}), { immediate: false })
 ```
 
 ::tip

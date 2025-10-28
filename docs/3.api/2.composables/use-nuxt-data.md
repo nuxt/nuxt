@@ -67,7 +67,7 @@ Optimistic Updates is a technique where the user interface is updated immediatel
 ```vue [app/pages/todos.vue]
 <script setup lang="ts">
 // We can access same data later using 'todos' key
-const { data } = await useAsyncData('todos', () => $fetch('/api/todos'))
+const { data } = await useAsyncData('todos', ({signal}) => $fetch('/api/todos', {signal}))
 </script>
 ```
 
