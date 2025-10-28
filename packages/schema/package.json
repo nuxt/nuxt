@@ -37,7 +37,7 @@
   "devDependencies": {
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",
-    "@types/webpack-hot-middleware": "2.25.11",
+    "@types/webpack-hot-middleware": "2.25.12",
     "@unhead/vue": "2.0.19",
     "@vitejs/plugin-vue": "6.0.1",
     "@vitejs/plugin-vue-jsx": "5.1.1",
