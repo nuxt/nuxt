@@ -1,4 +1,4 @@
-FROM node:lts@sha256:99981c3d1aac0d98cd9f03f74b92dddf30f30ffb0b34e6df8bd96283f62f12c6
+FROM nodejs/devcontainer:nightly@sha256:117d2ccb0ce3e31fa42715b6a0ca6b9541e1c8e7e162f19267c721416617100d
 
 RUN apt-get update && \
     apt-get install -fy libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdbus-1-3 libdrm2 libxkbcommon0 libatspi2.0-0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 && \
