@@ -21,3 +21,5 @@ publicHoistPattern:
   - 'webpack-*'
 
 shellEmulator: true
+
+verifyDepsBeforeRun: install
