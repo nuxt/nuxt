@@ -19,7 +19,7 @@ export function ReplacePlugin (): Plugin {
         }
       }
 
-      if ((vite as any).rolldownVersion) {
+      if (config.isProduction && (vite as any).rolldownVersion) {
         const { replacePlugin } = await import('rolldown/experimental')
         return replacePlugin(replaceOptions, { preventAssignment: true })
       } else {
