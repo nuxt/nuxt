@@ -100,7 +100,7 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 ### Reactive Fetch Options
 
-Fetch options can be provided as reactive, supporting `computed`, `ref` and [computed getters](https://vuejs.org/guide/essentials/computed.html). When a reactive fetch option is updated it will trigger a refetch using the updated resolved reactive value.
+Fetch options can be provided as reactive, supporting `computed`, `ref` and [computed getters](https://vuejs.org/guide/essentials/computed). When a reactive fetch option is updated it will trigger a refetch using the updated resolved reactive value.
 
 ```ts
 const searchQuery = ref('initial')

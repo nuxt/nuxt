@@ -6,7 +6,7 @@ on:
       - "v*"
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: current
           registry-url: "https://registry.npmjs.org/"
-          cache: "pnpm"
+          package-manager-cache: false
 
       - name: 📦 Install dependencies
         run: pnpm install

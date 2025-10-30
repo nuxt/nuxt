@@ -29,7 +29,7 @@ Because the data inside `useState` will be serialized to JSON, it is important t
 
 ## Using `shallowRef`
 
-If you don't need your state to be deeply reactive, you can combine `useState` with [`shallowRef`](https://vuejs.org/api/reactivity-advanced.html#shallowref). This can improve performance when your state contains large objects and arrays.
+If you don't need your state to be deeply reactive, you can combine `useState` with [`shallowRef`](https://vuejs.org/api/reactivity-advanced#shallowref). This can improve performance when your state contains large objects and arrays.
 
 ```ts
 const state = useState('my-shallow-state', () => shallowRef({ deep: 'not reactive' }))
