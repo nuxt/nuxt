@@ -99,9 +99,9 @@ export async function loadWorkspace (dir: string) {
   }
 }
 
-export async function determineBumpType () {
+export async function determineBumpType (since?: string) {
   const config = await loadChangelogConfig(process.cwd())
-  const commits = await getLatestCommits()
+  const commits = await getLatestCommits(since)
 
   return determineSemverChange(commits, config)
 }

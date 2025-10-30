@@ -1,19 +1,16 @@
 name: release
 
 on:
-  pull_request_target:
-    types: [closed]
-    branches:
-      - main
-      - 3.x
+  push:
+    tags:
+      - "v*"
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 jobs:
   release:
-    if: github.repository == 'nuxt/nuxt' && github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'v3.') || startsWith(github.event.pull_request.head.ref, 'v4.'))
     concurrency:
       group: release
     permissions:
@@ -30,7 +27,7 @@ jobs:
         with:
           node-version: current
           registry-url: "https://registry.npmjs.org/"
-          cache: "pnpm"
+          package-manager-cache: false
 
       - name: 📦 Install dependencies
         run: pnpm install
@@ -41,19 +38,4 @@ jobs:
       - name: 🛠 Build and release project
         run: node scripts/release.ts
         env:
-          TAG: ${{ startsWith(github.event.pull_request.head.ref, 'v3.') && '3x' || 'latest' }}
-
-      - name: 🏷️ Create tag
-        env:
-          TAG_NAME: ${{ github.event.pull_request.head.ref }}
-        run: |
-          git tag "$TAG_NAME"
-          git push origin "$TAG_NAME"
-
-      - name: 🛳️ Create GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ github.event.pull_request.head.ref }}
-          RELEASE_NAME: ${{ github.event.pull_request.head.ref }}
-          BODY: ${{ github.event.pull_request.body }}
-        run: gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$BODY"
+          TAG: ${{ startsWith(github.ref_name, 'v3.') && '3x' || 'latest' }}

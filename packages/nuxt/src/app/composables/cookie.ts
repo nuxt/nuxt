@@ -211,7 +211,7 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 /**
  * The maximum value allowed on a timeout delay.
  *
- * Reference: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
+ * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout#maximum_delay_value
  */
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 

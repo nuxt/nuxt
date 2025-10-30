@@ -911,11 +911,13 @@ describe('useAsyncData', () => {
     vi.stubGlobal('AbortController',
       Mock,
     )
-    const { promise, resolve } = Promise.withResolvers<boolean>()
+    // Manual implementation of Promise.withResolvers for compatibility
+    let resolve: (value: boolean) => void
+    const promise = new Promise<boolean>((res) => { resolve = res })
     const { clear } = useAsyncData('', () => promise)
     expect(aborted).toBe(false)
     clear()
-    resolve(true)
+    resolve!(true)
     expect(aborted).toBe(true)
   })
 
