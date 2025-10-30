@@ -184,5 +184,5 @@ onMounted(() => {
 4. **Avoid side effects in setup**: Move browser-dependent code to `onMounted`
 
 ::tip
-You can read the [Vue documentation on SSR hydration mismatch](https://vuejs.org/guide/scaling-up/ssr.html#hydration-mismatch) for a better understanding of hydration.
+You can read the [Vue documentation on SSR hydration mismatch](https://vuejs.org/guide/scaling-up/ssr#hydration-mismatch) for a better understanding of hydration.
 ::

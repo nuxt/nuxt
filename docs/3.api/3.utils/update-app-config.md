@@ -9,7 +9,7 @@ links:
 ---
 
 ::note
-Updates the [`app.config`](/docs/4.x/guide/directory-structure/app-config) using deep assignment. Existing (nested) properties will be preserved.
+Updates the [`app.config`](/docs/4.x/guide/directory-structure/app/app-config) using deep assignment. Existing (nested) properties will be preserved.
 ::
 
 ## Usage
@@ -25,4 +25,4 @@ updateAppConfig(newAppConfig)
 console.log(appConfig) // { foo: 'baz' }
 ```
 
-:read-more{to="/docs/4.x/guide/directory-structure/app-config"}
+:read-more{to="/docs/4.x/guide/directory-structure/app/app-config"}

@@ -23,6 +23,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { NuxtPage } from '#components'
+import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -337,7 +338,7 @@ describe('loading state', () => {
   })
 })
 
-describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
+describe.skipIf(!isTestingAppManifest)('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
     // @ts-expect-error timestamp is not optional

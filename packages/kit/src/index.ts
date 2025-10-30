@@ -16,6 +16,7 @@ export { getLayerDirectories } from './layers'
 export type { LayerDirectories } from './layers'
 
 // Utils
+export { setGlobalHead } from './head'
 export { addImports, addImportsDir, addImportsSources } from './imports'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config'
 export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig } from './build'

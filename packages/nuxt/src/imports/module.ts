@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import type { Import, Unimport } from 'unimport'
+import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
@@ -39,7 +39,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   }),
   setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
-    const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
+    const presets: InlinePreset[] = JSON.parse(JSON.stringify(options.presets))
 
     if (options.polyfills) {
       presets.push(...appCompatPresets)

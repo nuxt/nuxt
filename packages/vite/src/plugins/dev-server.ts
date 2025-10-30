@@ -66,6 +66,10 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }))
       })
 
+      if (nuxt.options.experimental.viteEnvironmentApi) {
+        await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
+      }
+
       const mw: Connect.ServerStackItem = {
         route: '',
         handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
