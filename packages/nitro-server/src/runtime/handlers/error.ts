@@ -30,7 +30,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     })
   }
 
-  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'status' | 'statusText' | 'message' | 'stack'> & { url: URL | string, data: any }
+  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'status' | 'statusText' | 'message' | 'stack'> & { url: URL | string, data: any }
   // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ||= error.data
   errorObject.url = errorObject.url.toString()
