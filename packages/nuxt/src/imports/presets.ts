@@ -281,7 +281,7 @@ export const appCompatPresets: InlinePreset[] = [
 ]
 
 // #region experimental
-export const lazyHydrationMacroPreset = [
+export const lazyHydrationMacroPreset: InlinePreset[] = [
   {
     imports: ['defineLazyHydrationComponent'],
     from: '#app/composables/lazy-hydration',
@@ -296,6 +296,7 @@ export const inlineRouteRulesPresets: InlinePreset[] = [
 ]
 
 export const experimentalPresets = [
+  ...lazyHydrationMacroPreset,
   ...inlineRouteRulesPresets,
 ]
 // #endregion

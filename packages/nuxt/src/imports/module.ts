@@ -9,7 +9,7 @@ import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory, logger, resolveToAlias } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets, experimentalPresets } from './presets'
-import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
+import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 const allNuxtPresets = [
   ...defaultPresets,
