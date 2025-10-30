@@ -8,7 +8,7 @@
   "dependencies": {
     "nuxt": "workspace:*",
     "ofetch": "^1.4.1",
-    "unplugin-vue-router": "^0.15.0",
+    "unplugin-vue-router": "^0.16.1",
     "vue": "^3.5.22",
     "vue-router": "^4.5.1"
   },
