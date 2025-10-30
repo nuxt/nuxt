@@ -44,7 +44,7 @@
   "resolutions": {
     "@babel/core": "7.28.4",
     "@babel/helper-plugin-utils": "7.27.1",
-    "@nuxt/cli": "3.29.3",
+    "@nuxt/cli": "https://pkg.pr.new/@nuxt/cli@f38bb1a",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",

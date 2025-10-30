@@ -758,17 +758,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 
-    // TODO: remove this
     nuxt.hook('server:devHandler', (h) => { devMiddlewareHandler.set(h) })
-    const devServer = createDevServer(nitro)
-    nuxt.server = {
-      app: {
-        fetch (req: Request) {
-          return devServer.fetch(req)
-        },
-      },
-      reload: () => devServer.reload(),
-    }
+    nuxt.server = createDevServer(nitro)
 
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
     nuxt.hook('build:done', () => waitUntilCompile)
