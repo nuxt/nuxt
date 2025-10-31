@@ -152,7 +152,7 @@ export function addRspackPlugin (pluginOrGetter: Arrayable<RspackPluginInstance>
 /**
  * Append Vite plugin to the config.
  */
-export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Thenable<Arrayable<VitePlugin>>), options: ExtendViteConfigOptions = {}) {
+export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Thenable<Arrayable<VitePlugin>>), options: ExtendConfigOptions = {}) {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -167,7 +167,6 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     config.plugins ||= []
 
     const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (options.server !== false && options.client !== false) {
       const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
       config.plugins[method](...plugin)
@@ -179,7 +178,6 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
       return
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const environmentName = options.server === false ? 'client' : 'ssr'
     const pluginName = plugin.map(p => p.name).join('|')
     config.plugins.push({
@@ -199,11 +197,9 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     }
     const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (env.isClient && options.server === false) {
       config.plugins![method](...plugin)
     }
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (env.isServer && options.client === false) {
       config.plugins![method](...plugin)
     }
