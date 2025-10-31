@@ -128,9 +128,9 @@ export function extendViteConfig (fn: ((config: ViteConfig) => Thenable<void>), 
  * Append webpack plugin to the config.
  */
 export function addWebpackPlugin (pluginOrGetter: Arrayable<WebpackPluginInstance> | (() => Thenable<Arrayable<WebpackPluginInstance>>), options?: ExtendWebpackConfigOptions) {
-  extendWebpackConfig((config) => {
+  extendWebpackConfig(async (config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+    const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
 
     config.plugins ||= []
     config.plugins[method](...toArray(plugin))
