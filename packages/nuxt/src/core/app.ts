@@ -70,18 +70,26 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       throw e
     })
 
-    template.modified = oldContents !== contents
-    if (template.modified) {
-      nuxt.vfs[fullPath] = contents
-
+    if (template.modified === undefined) {
       const aliasPath = '#build/' + template.filename
-      nuxt.vfs[aliasPath] = contents
+      Object.defineProperty(nuxt.vfs, aliasPath, {
+        get: () => nuxt.vfs[fullPath],
+        enumerable: true,
+      })
 
       // In case a non-normalized absolute path is called for on Windows
       if (process.platform === 'win32') {
-        nuxt.vfs[fullPath.replace(FORWARD_SLASH_RE, '\\')] = contents
+        const windowsPath = fullPath.replace(FORWARD_SLASH_RE, '\\')
+        Object.defineProperty(nuxt.vfs, windowsPath, {
+          get: () => nuxt.vfs[fullPath],
+          enumerable: true,
+        })
       }
+    }
 
+    template.modified = oldContents !== contents
+    if (template.modified) {
+      nuxt.vfs[fullPath] = contents
       changedTemplates.push(template)
     }
 
