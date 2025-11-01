@@ -1,21 +1,28 @@
-import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
-import { useNuxtApp } from '../nuxt'
+import { computed, toRef, unref } from 'vue'
+import { type NuxtApp, useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 
 const useStateKeyPrefix = '$s'
+const getDefault = () => undefined
+
+type InitOption<T> = (() => T | Ref<T>)
+type UseStateOptions<T> = InitOption<T>
+
 /**
  * Create a global reactive ref that will be hydrated but not shared across ssr requests
  * @since 3.0.0
  * @param key a unique key ensuring that data fetching can be properly de-duplicated across requests
  * @param init a function that provides initial value for the state when it's not initiated
  */
-export function useState<T> (key?: string, init?: (() => T | Ref<T>)): Ref<T>
-export function useState<T> (init?: (() => T | Ref<T>)): Ref<T>
+export function useState<T> (key?: string, init?: UseStateOptions<T>): Ref<T>
+export function useState<T> (init?: UseStateOptions<T>): Ref<T>
 export function useState<T> (...args: any): Ref<T> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
-  if (typeof args[0] !== 'string') { args.unshift(autoKey) }
-  const [_key, init] = args as [string, (() => T | Ref<T>)]
+  if (typeof args[0] !== 'string') {
+    args.unshift(autoKey)
+  }
+  const [_key, init] = args as [unknown, (() => T | Ref<T>)]
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [useState] key must be a string: ' + _key)
   }
@@ -23,24 +30,36 @@ export function useState<T> (...args: any): Ref<T> {
     throw new Error('[nuxt] [useState] init must be a function: ' + init)
   }
   const key = useStateKeyPrefix + _key
+  const defaultFn = init || getDefault as () => T
 
   const nuxtApp = useNuxtApp()
   const state = toRef(nuxtApp.payload.state, key)
-  if (state.value === undefined && init) {
-    const initialValue = init()
-    if (isRef(initialValue)) {
-      // vue will unwrap the ref for us
-      nuxtApp.payload.state[key] = initialValue
-      return initialValue as Ref<T>
-    }
-    state.value = initialValue
+  nuxtApp._state[key] ??= {
+    data: state,
+    _default: defaultFn,
   }
-  return state
+  if (state.value === undefined) {
+    nuxtApp.payload.state[key] = defaultFn()
+  }
+
+  return computed({
+    get () {
+      return nuxtApp._state[key]?.data.value ?? nuxtApp.payload.state[key]
+    },
+    set (value) {
+      if (nuxtApp._state[key]) {
+        nuxtApp._state[key]!.data.value = value
+      } else {
+        nuxtApp.payload.state[key] = value
+      }
+    },
+  })
 }
 
 /** @since 3.6.0 */
 export function clearNuxtState (
   keys?: string | string[] | ((key: string) => boolean),
+  reset?: boolean,
 ): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)
@@ -53,9 +72,16 @@ export function clearNuxtState (
       : toArray(keys)
 
   for (const _key of _keys) {
-    const key = useStateKeyPrefix + _key
-    if (key in nuxtApp.payload.state) {
-      nuxtApp.payload.state[key] = undefined
-    }
+    clearNuxtStateByKey(nuxtApp, useStateKeyPrefix + _key, reset ?? true)
+  }
+}
+
+function clearNuxtStateByKey (nuxtApp: NuxtApp, key: string, reset: boolean): void {
+  if (key in nuxtApp.payload.state) {
+    nuxtApp.payload.state[key] = undefined
+  }
+
+  if (nuxtApp._state[key]) {
+    nuxtApp._state[key]!.data.value = reset ? unref(nuxtApp._state[key]!._default()) : undefined
   }
 }
