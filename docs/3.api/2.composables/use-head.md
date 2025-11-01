@@ -54,7 +54,7 @@ interface MetaObject {
 }
 ```
 
-See [@unhead/schema](https://github.com/unjs/unhead/blob/main/packages/schema/src/schema.ts) for more detailed types.
+See [@unhead/schema](https://github.com/unjs/unhead/blob/main/packages/vue/src/types/schema.ts) for more detailed types.
 
 ## Parameters
 
