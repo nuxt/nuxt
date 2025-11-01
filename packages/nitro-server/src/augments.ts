@@ -1,11 +1,11 @@
-import type {} from 'nitropack/types'
+import type {} from 'nitro/types'
 
 import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 import type { RuntimeConfig } from 'nuxt/schema'
 
-declare module 'nitropack' {
+declare module 'nitro' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -19,7 +19,7 @@ declare module 'nitropack' {
   }
 }
 
-declare module 'nitropack/types' {
+declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -34,7 +34,7 @@ declare module 'nitropack/types' {
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
-declare module 'nitropack' {
+declare module 'nitro' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
@@ -49,7 +49,7 @@ declare module 'nitropack' {
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
-declare module 'nitropack/types' {
+declare module 'nitro/types' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {

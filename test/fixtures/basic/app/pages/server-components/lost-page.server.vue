@@ -3,5 +3,5 @@
 </template>
 
 <script setup lang="ts">
-throw showError(createError({ statusCode: 404, statusMessage: 'not found' }))
+throw showError(createError({ status: 404, statusText: 'not found' }))
 </script>

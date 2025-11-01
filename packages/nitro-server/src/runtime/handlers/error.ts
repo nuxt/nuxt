@@ -1,66 +1,68 @@
-import { joinURL, withQuery, withoutBase } from 'ufo'
-import type { NitroErrorHandler } from 'nitropack/types'
-import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { joinURL, withQuery } from 'ufo'
+import type { NitroErrorHandler } from 'nitro/types'
 import type { NuxtPayload } from 'nuxt/app'
 
-import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
+import { useRuntimeConfig } from 'nitro/runtime'
 import { isJsonRequest } from '../utils/error'
+import type { H3Event } from 'h3'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
-  if (event.handled || isJsonRequest(event)) {
-    // let Nitro handle JSON errors
-    return
-  }
   // invoke default Nitro error handler (which will log appropriately if required)
   const defaultRes = await defaultHandler(error, event, { json: true })
 
-  // let Nitro handle redirect if appropriate
-  const statusCode = error.statusCode || 500
-  if (statusCode === 404 && defaultRes.status === 302) {
-    setResponseHeaders(event, defaultRes.headers)
-    setResponseStatus(event, defaultRes.status, defaultRes.statusText)
-    return send(event, JSON.stringify(defaultRes.body, null, 2))
+  // return Nitro response + our headers for redirects and JSON responses
+  const status = error.status || 500
+  const headers = new Headers(error.headers)
+  if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
+    const headerEntries = [
+      Object.entries(defaultRes.headers),
+      ...'res' in event ? [(event.res as Response).headers.entries()] : [],
+    ]
+    for (const entries of headerEntries) {
+      mergeHeaders(headers, entries, new Set())
+    }
+
+    return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
+      headers,
+      status: defaultRes.status,
+      statusText: defaultRes.statusText,
+    })
   }
 
-  if (import.meta.dev && typeof defaultRes.body !== 'string' && Array.isArray(defaultRes.body.stack)) {
-    // normalize to string format expected by nuxt `error.vue`
-    defaultRes.body.stack = defaultRes.body.stack.join('\n')
-  }
-
-  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
-  // remove proto/hostname/port from URL
-  const url = new URL(errorObject.url)
-  errorObject.url = withoutBase(url.pathname, useRuntimeConfig(event).app.baseURL) + url.search + url.hash
-  // add default server message
-  errorObject.message ||= 'Server Error'
-  // we will be rendering this error internally so we can pass along the error.data safely
+  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'status' | 'statusText' | 'message' | 'stack'> & { url: URL | string, data: any }
+  // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ||= error.data
-  errorObject.statusMessage ||= error.statusMessage
+  errorObject.url = errorObject.url.toString()
 
-  delete defaultRes.headers['content-type'] // this would be set to application/json
-  delete defaultRes.headers['content-security-policy'] // this would disable JS execution in the error page
-
-  setResponseHeaders(event, defaultRes.headers)
-
-  // Access request headers
-  const reqHeaders = getRequestHeaders(event)
+  for (const header in defaultRes.headers) {
+    if (
+      // this would be set to application/json
+      header === 'content-type' ||
+      // this would disable JS execution in the error page
+      header === 'content-security-policy' ||
+      headers.has(header)
+    ) {
+      continue
+    }
+    headers.set(header, defaultRes.headers[header]!)
+  }
 
   // Detect to avoid recursion in SSR rendering of errors
-  const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error']
+  const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!event.req.headers.get('x-nuxt-error')
+
+  if (!isRenderingError) {
+    event.req.headers.set('x-nuxt-error', 'true')
+  }
 
   // HTML response (via SSR)
-  const res = isRenderingError
-    ? null
-    : await useNitroApp().localFetch(
-        withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
-        {
-          headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
-          redirect: 'manual',
-        },
-      ).catch(() => null)
-
-  if (event.handled) { return }
+  const res = !isRenderingError && await fetch(
+    withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject),
+    {
+      headers: event.req.headers,
+      redirect: 'manual',
+    },
+  ).catch(() => null)
 
   // Fallback to static rendered error page
   if (!res) {
@@ -69,24 +71,43 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
     }
-    setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
-    return send(event, template(errorObject))
+    headers.set('Content-Type', 'text/html;charset=UTF-8')
+
+    return new Response(template(errorObject), {
+      headers,
+      status: defaultRes.status,
+      statusText: defaultRes.statusText,
+    })
   }
 
   const html = await res.text()
-  for (const [header, value] of res.headers.entries()) {
-    if (header === 'set-cookie') {
-      appendResponseHeader(event, header, value)
-      continue
+
+  const responseHtml = import.meta.dev
+    ? html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string)}</body>`)
+    : html
+
+  const setCookies = new Set(headers.getSetCookie())
+  mergeHeaders(headers, res.headers, setCookies)
+  if ('res' in event) {
+    mergeHeaders(headers, (event as H3Event).res.headers, setCookies)
+  }
+
+  return new Response(responseHtml, {
+    headers,
+    status: res.status && res.status !== 200 ? res.status : defaultRes.status,
+    statusText: res.statusText || defaultRes.statusText,
+  })
+}
+function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>, setCookies: Set<string>): Headers {
+  for (const [name, value] of overrides) {
+    if (name === 'set-cookie') {
+      if (!setCookies.has(value)) {
+        setCookies.add(value)
+        target.append(name, value)
+      }
+    } else {
+      target.set(name, value)
     }
-    setResponseHeader(event, header, value)
   }
-  setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
-
-  if (import.meta.dev) {
-    const prettyResponse = await defaultHandler(error, event, { json: false })
-    return send(event, html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body as string)}</body>`))
-  }
-
-  return send(event, html)
+  return target
 }

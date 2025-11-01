@@ -9,10 +9,10 @@ import type { DotenvOptions, SourceOptions } from 'c12'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
-import type { H3CorsOptions } from 'h3'
+import type { CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
-import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
+import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitro/types'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -981,7 +981,7 @@ export interface ConfigSchema {
     /**
      * Set CORS options for the dev server
      */
-    cors: H3CorsOptions
+    cors: CorsOptions
   }
 
   /**
@@ -1470,6 +1470,10 @@ export interface ConfigSchema {
      * @see https://github.com/KazariEX/dxup
      */
     typescriptPlugin: boolean
+    /**
+     * Whether to add a middleware to handle changes of base URL at runtime (has a performance overhead)
+     */
+    runtimeBaseURL: boolean
   }
 
   /**

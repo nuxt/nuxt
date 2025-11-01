@@ -24,8 +24,8 @@ export default defineComponent({
 
     if (!component) {
       throw createError({
-        statusCode: 404,
-        statusMessage: `Island component not found: ${props.context.name}`,
+        status: 404,
+        statusText: `Island component not found: ${props.context.name}`,
       })
     }
 

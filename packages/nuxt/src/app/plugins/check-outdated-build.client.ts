@@ -1,4 +1,5 @@
 import type { FetchError } from 'ofetch'
+import { $fetch } from 'ofetch'
 import { defineNuxtPlugin } from '../nuxt'
 import { getAppManifest } from '../composables/manifest'
 import type { NuxtAppManifestMeta } from '../composables/manifest'
