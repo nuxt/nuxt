@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       # https://github.com/github/ai-moderator
-      - uses: github/ai-moderator@6bcdb2a79c2e564db8d76d7d4439d91a044c4eb6 # v1.1.2
+      - uses: github/ai-moderator@81159c370785e295c97461ade67d7c33576e9319 # v1.1.4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ai-label: 'possible-ai-content'
