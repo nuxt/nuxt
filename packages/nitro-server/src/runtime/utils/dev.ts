@@ -145,6 +145,7 @@ const errorCSS = /* css */ `
   top: 0;
   width: 100vw;
   height: 100vh;
+  border: none;
   z-index: var(--z-base);
 }
 #frame[inert] {
