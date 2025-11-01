@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
 import { onPrehydrate } from '../composables/ssr'
 import { useNuxtApp } from '../nuxt'
 
@@ -31,12 +31,19 @@ export interface NuxtTimeProps {
   relative?: boolean
   numeric?: 'always' | 'auto'
   relativeStyle?: 'long' | 'short' | 'narrow'
+  /**
+   * Automatically updates the rendered time on an interval
+   *
+   * @default true
+   */
+  relativeReactive?: boolean
 
   title?: boolean | string
 }
 
 const props = withDefaults(defineProps<NuxtTimeProps>(), {
   hour12: undefined,
+  relativeReactive: true,
 })
 
 const el = getCurrentInstance()?.vnode.el
@@ -57,8 +64,23 @@ if (import.meta.client && props.relative) {
   const handler = () => {
     now.value = new Date()
   }
-  const interval = setInterval(handler, 1000)
-  onBeforeUnmount(() => clearInterval(interval))
+  let interval: ReturnType<typeof setInterval> | undefined
+  const _clearInterval = () => {
+    if (interval) {
+      clearInterval(interval)
+      interval = undefined
+    }
+  }
+  watch(
+    () => props.relativeReactive,
+    (nV) => {
+      _clearInterval()
+
+      if (nV) { interval = setInterval(handler, 1000) }
+    },
+    { immediate: true },
+  )
+  onBeforeUnmount(() => { _clearInterval() })
 }
 
 const formatter = computed(() => {

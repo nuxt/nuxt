@@ -78,6 +78,50 @@ describe('<NuxtTime>', () => {
     )
   })
 
+  it('should work with relative\'s `relativeReactive` prop (true)', async () => {
+    const datetime = Date.now() - 5 * 1000
+    const thing = await mountSuspended(
+      defineComponent({
+        render: () =>
+          h(NuxtTime, {
+            datetime,
+            relative: true,
+            locale: 'en-GB',
+            relativeReactive: true,
+          }),
+      }),
+    )
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">5 seconds ago</time>"`,
+    )
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">6 seconds ago</time>"`,
+    )
+  })
+
+  it('should work with relative\'s `relativeReactive` prop (false)', async () => {
+    const datetime = Date.now() - 5 * 1000
+    const thing = await mountSuspended(
+      defineComponent({
+        render: () =>
+          h(NuxtTime, {
+            datetime,
+            relative: true,
+            locale: 'en-GB',
+            relativeReactive: false,
+          }),
+      }),
+    )
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">5 seconds ago</time>"`,
+    )
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    expect(thing.html()).toMatchInlineSnapshot(
+      `"<time datetime="${new Date(datetime).toISOString()}">5 seconds ago</time>"`,
+    )
+  })
+
   it('should display datetime in title', async () => {
     const datetime = Date.now() - 5 * 60 * 1000
     const thing = await mountSuspended(
@@ -116,8 +160,8 @@ describe('<NuxtTime>', () => {
 
   const tests = [
     [`${Date.now() - 25 * 60 * 60 * 1000}`, '1 day ago'],
-    [`${Date.now() - 45 * 24 * 60 * 60 * 1000}`, '2 months ago'],
-    [`${Date.now() - 15 * 30 * 24 * 60 * 60 * 1000}`, '1 year ago'],
+    [`${Date.now() - 45 * 24 * 60 * 60 * 1000}`, '2 mo ago'],
+    [`${Date.now() - 15 * 30 * 24 * 60 * 60 * 1000}`, '1 yr ago'],
   ]
 
   it.each(tests)('should generate the correct hydrateable code', async (_datetime,
@@ -131,6 +175,7 @@ describe('<NuxtTime>', () => {
             ssr: true,
             datetime,
             relative: true,
+            relativeStyle: 'short',
             title: 'test',
             locale: 'en-GB',
           }),
@@ -140,7 +185,7 @@ describe('<NuxtTime>', () => {
     const html = thing.html()
     const id = html.match(/data-prehydrate-id="([^"]+)"/)?.[1]
     expect(thing.html()).toEqual(
-      `<time data-locale="en-GB" data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
+      `<time data-relative-style="short" data-locale="en-GB" data-relative="true" data-relative-reactive="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
 
     vi.spyOn(document, 'querySelectorAll').mockImplementation((selector) => {
@@ -159,7 +204,7 @@ describe('<NuxtTime>', () => {
     expect(window._nuxtTimeNow).toBeDefined()
 
     expect(thing.html()).toEqual(
-      `<time data-locale="en-GB" data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
+      `<time data-relative-style="short" data-locale="en-GB" data-relative="true" data-relative-reactive="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
 
     vi.restoreAllMocks()
