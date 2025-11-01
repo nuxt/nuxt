@@ -10,7 +10,7 @@ import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
-import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
+import type { CompilerScanDir, NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Component, ComponentsOptions } from './components'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 
@@ -259,6 +259,24 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'components:extend': (components: Component[]) => HookResult
+
+  // Nuxt Compiler
+  /**
+   * Called when the Nuxt compiler is ready to be used.
+   * @returns Promise
+   */
+  'compiler:ready': () => HookResult
+  /**
+   * Allows extending the directories scanned by the Nuxt Compiler.
+   * @param dirs The `dirs` option to push new items
+   * @returns Promise
+   */
+  'compiler:dirs': (dirs: (string | CompilerScanDir)[]) => HookResult
+  /**
+   * Allows extending the files scanned by the Nuxt Compiler.
+   * @param files The resolved absolute paths to the files to be scanned by the Nuxt Compiler.
+   */
+  'compiler:files': (files: string[]) => HookResult
 
   // Nitropack
   /**
