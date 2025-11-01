@@ -955,7 +955,7 @@ describe('useAsyncData', () => {
   it('should abort handler signal', async () => {
     vi.useFakeTimers()
     let _signal: AbortController['signal']
-    const promiseFn = vi.fn((_, { signal }) => {
+    const promiseFn = vi.fn(({ signal }) => {
       _signal = signal
       return new Promise(resolve => setTimeout(() => resolve('index'), 1000))
     })
@@ -1004,7 +1004,7 @@ describe('useAsyncData', () => {
     const controller1 = new AbortController()
 
     let receivedSignal: AbortSignal | undefined
-    const promiseFn = vi.fn((_, { signal }) => {
+    const promiseFn = vi.fn(({ signal }) => {
       receivedSignal = signal
       return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
     })
@@ -1084,7 +1084,7 @@ describe('useAsyncData', () => {
   it('should handle abort during dedupe:cancel', async () => {
     vi.useFakeTimers()
     let abortedCount = 0
-    const promiseFn = vi.fn((_, { signal }) => {
+    const promiseFn = vi.fn(({ signal }) => {
       signal.addEventListener('abort', () => abortedCount++)
       return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
     })
@@ -1137,7 +1137,7 @@ describe('useAsyncData', () => {
     vi.useFakeTimers()
     let aborted = false
 
-    const promiseFn = vi.fn((_, { signal }) => {
+    const promiseFn = vi.fn(({ signal }) => {
       signal.addEventListener('abort', () => { aborted = true })
       return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
     })
