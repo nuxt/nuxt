@@ -10,7 +10,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
@@ -67,7 +67,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   for (const m of nuxt.options._installedModules) {
     const path = m.meta?.rawPath || m.entryPath
     if (path) {
-      moduleEntryPaths.push(path)
+      moduleEntryPaths.push(getDirectory(path))
     }
   }
 
