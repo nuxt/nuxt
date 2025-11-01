@@ -17,7 +17,7 @@ export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>
 
-export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
+export type AsyncDataHandler<ResT> = (context: { signal: AbortSignal, nuxtApp: NuxtApp }) => Promise<ResT>
 
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
@@ -650,11 +650,12 @@ function createAsyncData<
   // When prerendering, share payload data automatically between requests
   const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
     ? _handler
-    : (nuxtApp, options) => {
+    : (ctx) => {
+        const { nuxtApp } = ctx
         const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
         if (value) { return value as Promise<ResT> }
 
-        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(nuxtApp, options)))
+        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(ctx)))
 
         nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
         return promise
@@ -718,7 +719,7 @@ function createAsyncData<
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
             }, { once: true })
 
-            return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
+            return Promise.resolve(handler({ signal: mergedSignal, nuxtApp })).then(resolve, reject)
           } catch (err) {
             reject(err)
           }
