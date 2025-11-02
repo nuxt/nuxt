@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
