@@ -143,6 +143,47 @@ export default createConfigForNuxt({
 
   // Append local rules
   .append(
+    {
+      files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      name: 'local/requires/explicit-node-imports',
+      rules: {
+    // Ban direct use of restricted global identifiers
+      'no-restricted-globals': [
+      'error',
+        {
+          name: 'process',
+          message: 'Use explicit import: import process from "node:process" (or a scoped alias). Implicit globals are banned for clarity and tree-shakability.',
+      },
+      {
+          name: 'performance',
+          message: 'Use explicit import: import { performance } from "node:perf_hooks". Implicit global performance is banned in server contexts to ensure Node.js-specific usage.',
+      },
+    ],
+
+      // Ban the 'node:' prefix as a bare identifier (catches `node:process` or `node:perf` in require/import/typeof)
+      '@typescript-eslint/no-restricted-imports': [
+      'error',
+        {
+          paths: [
+            {
+              name: 'node:process',
+              message: 'Use quoted module specifier: import ... from "node:process" (not bare node:process).',
+          },
+          {
+              name: 'node:perf_hooks',
+              message: 'Use quoted module specifier: import ... from "node:perf_hooks" (not bare node:perf_hooks).',
+          },
+        ],
+        patterns: [
+          {
+              group: ['node:process', 'node:perf_hooks'],
+              message: 'Bare node: prefixes are banned. Use "node:process" or "node:perf_hooks" as strings in import/require.',
+              },
+            ],
+          },
+        ],
+      },
+    },
     // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
