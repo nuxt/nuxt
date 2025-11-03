@@ -157,32 +157,9 @@ export default createConfigForNuxt({
       {
           name: 'performance',
           message: 'Use explicit import: import { performance } from "node:perf_hooks". Implicit global performance is banned in server contexts to ensure Node.js-specific usage.',
-      },
-    ],
-
-      // Ban the 'node:' prefix as a bare identifier (catches `node:process` or `node:perf` in require/import/typeof)
-      '@typescript-eslint/no-restricted-imports': [
-      'error',
-        {
-          paths: [
-            {
-              name: 'node:process',
-              message: 'Use quoted module specifier: import ... from "node:process" (not bare node:process).',
-          },
-          {
-              name: 'node:perf_hooks',
-              message: 'Use quoted module specifier: import ... from "node:perf_hooks" (not bare node:perf_hooks).',
-          },
-        ],
-        patterns: [
-          {
-              group: ['node:process', 'node:perf_hooks'],
-              message: 'Bare node: prefixes are banned. Use "node:process" or "node:perf_hooks" as strings in import/require.',
-              },
-            ],
-          },
-        ],
-      },
+        },
+      ],
+     },
     },
     // @ts-expect-error type issues
     {
