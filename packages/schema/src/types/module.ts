@@ -92,7 +92,7 @@ export interface ModuleDefinition<
     resolvedOptions: TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions,
-    nuxt: Nuxt
+    nuxt: Nuxt,
   ) => ModuleSetupReturn
 }
 
@@ -110,7 +110,7 @@ export interface NuxtModule<
   ): ModuleSetupReturn
   getOptions?: (
     inlineOptions?: Partial<TOptions>,
-    nuxt?: Nuxt
+    nuxt?: Nuxt,
   ) => Promise<
     TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
@@ -124,6 +124,6 @@ export interface NuxtModule<
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions,
     nuxt: Nuxt,
-    previousVersion: string
+    previousVersion: string,
   ) => Awaitable<void>
 }

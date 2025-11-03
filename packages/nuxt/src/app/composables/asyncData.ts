@@ -150,7 +150,7 @@ export function useAsyncData<
   DefaultT = undefined,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
   ResT,
@@ -160,7 +160,7 @@ export function useAsyncData<
   DefaultT = DataT,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -178,7 +178,7 @@ export function useAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
   ResT,
@@ -189,7 +189,7 @@ export function useAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
   ResT,
@@ -459,7 +459,7 @@ export function useLazyAsyncData<
   DefaultT = undefined,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useLazyAsyncData<
   ResT,
@@ -469,7 +469,7 @@ export function useLazyAsyncData<
   DefaultT = DataT,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -487,7 +487,7 @@ export function useLazyAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useLazyAsyncData<
   ResT,
@@ -498,7 +498,7 @@ export function useLazyAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 
 export function useLazyAsyncData<

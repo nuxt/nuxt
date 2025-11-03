@@ -11,12 +11,12 @@ import { checkNuxtCompatibility } from '../compatibility'
  * any hooks that are provided, and calling an optional setup function for full control.
  */
 export function defineNuxtModule<TOptions extends ModuleOptions> (
-  definition: ModuleDefinition<TOptions, Partial<TOptions>, false> | NuxtModule<TOptions, Partial<TOptions>, false>
+  definition: ModuleDefinition<TOptions, Partial<TOptions>, false> | NuxtModule<TOptions, Partial<TOptions>, false>,
 ): NuxtModule<TOptions, TOptions, false>
 
 export function defineNuxtModule<TOptions extends ModuleOptions> (): {
   with: <TOptionsDefaults extends Partial<TOptions>> (
-    definition: ModuleDefinition<TOptions, TOptionsDefaults, true> | NuxtModule<TOptions, TOptionsDefaults, true>
+    definition: ModuleDefinition<TOptions, TOptionsDefaults, true> | NuxtModule<TOptions, TOptionsDefaults, true>,
   ) => NuxtModule<TOptions, TOptionsDefaults, true>
 }
 
