@@ -17,12 +17,12 @@ The `useHead` composable allows you to manage your head tags in a programmatic a
 useHead({
   title: 'My App',
   meta: [
-    { name: 'description', content: 'My amazing site.' }
+    { name: 'description', content: 'My amazing site.' },
   ],
   bodyAttrs: {
-    class: 'test'
+    class: 'test',
   },
-  script: [{ innerHTML: 'console.log(\'Hello world\')' }]
+  script: [{ innerHTML: 'console.log(\'Hello world\')' }],
 })
 </script>
 ```
@@ -88,8 +88,8 @@ useHead({
   meta: [
     { name: 'description', content: 'Learn more about our company' },
     { property: 'og:title', content: 'About Us' },
-    { property: 'og:description', content: 'Learn more about our company' }
-  ]
+    { property: 'og:description', content: 'Learn more about our company' },
+  ],
 })
 </script>
 ```
@@ -103,11 +103,11 @@ const profile = ref({ name: 'John Doe' })
 useHead({
   title: computed(() => profile.value.name),
   meta: [
-    { 
-      name: 'description', 
-      content: computed(() => `Profile page for ${profile.value.name}`) 
-    }
-  ]
+    {
+      name: 'description',
+      content: computed(() => `Profile page for ${profile.value.name}`),
+    },
+  ],
 })
 </script>
 ```
@@ -121,8 +121,8 @@ const count = ref(0)
 useHead(() => ({
   title: `Count: ${count.value}`,
   meta: [
-    { name: 'description', content: `Current count is ${count.value}` }
-  ]
+    { name: 'description', content: `Current count is ${count.value}` },
+  ],
 }))
 </script>
 ```
@@ -135,15 +135,15 @@ useHead({
   link: [
     {
       rel: 'stylesheet',
-      href: 'https://cdn.example.com/styles.css'
-    }
+      href: 'https://cdn.example.com/styles.css',
+    },
   ],
   script: [
     {
       src: 'https://cdn.example.com/script.js',
-      async: true
-    }
-  ]
+      async: true,
+    },
+  ],
 })
 </script>
 ```
@@ -157,11 +157,11 @@ const isDark = ref(true)
 useHead({
   htmlAttrs: {
     lang: 'en',
-    class: computed(() => isDark.value ? 'dark' : 'light')
+    class: computed(() => isDark.value ? 'dark' : 'light'),
   },
   bodyAttrs: {
-    class: 'themed-page'
-  }
+    class: 'themed-page',
+  },
 })
 </script>
 ```

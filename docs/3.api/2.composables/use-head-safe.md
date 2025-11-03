@@ -12,22 +12,6 @@ links:
 
 The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/3.x/api/composables/use-head) composable that restricts the input to only allow safe values. This is the recommended way to manage head data when working with user input, as it prevents XSS attacks by sanitizing potentially dangerous attributes.
 
-```vue [app/app.vue]
-<script setup lang="ts">
-useHeadSafe({
-  script: [
-    { id: 'xss-script', innerHTML: 'alert("xss")' },
-  ],
-  meta: [
-    { 'http-equiv': 'refresh', content: '0;javascript:alert(1)' },
-  ],
-})
-// Will safely generate
-// <script id="xss-script"></script>
-// <meta content="0;javascript:alert(1)">
-</script>
-```
-
 ::warning
 When using `useHeadSafe`, potentially dangerous attributes like `innerHTML` in scripts or `http-equiv` in meta tags are automatically stripped out to prevent XSS attacks. Use this composable whenever you're working with user-generated content.
 ::
@@ -69,7 +53,7 @@ This composable does not return any value.
 ```vue [app/pages/user-profile.vue]
 <script setup lang="ts">
 // User-generated content that might contain malicious code
-const userBio = ref('<script>alert("xss")</script>')
+const userBio = ref('<script>alert("xss")<' + '/script>')
 
 useHeadSafe({
   title: `User Profile`,

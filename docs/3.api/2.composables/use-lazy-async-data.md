@@ -23,9 +23,15 @@ const { status, data: posts } = await useLazyAsyncData('posts', () => $fetch('/a
 
 <template>
   <div>
-    <div v-if="status === 'pending'">Loading...</div>
-    <div v-else-if="status === 'error'">Error loading posts</div>
-    <div v-else>{{ posts }}</div>
+    <div v-if="status === 'pending'">
+      Loading...
+    </div>
+    <div v-else-if="status === 'error'">
+      Error loading posts
+    </div>
+    <div v-else>
+      {{ posts }}
+    </div>
   </div>
 </template>
 ```
