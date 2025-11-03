@@ -1600,7 +1600,7 @@ export interface ConfigSchema {
      * for Nuxt projects.
      *
      * @default true
-     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM)
+     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM/edit)
      */
     chromeDevtoolsProjectSettings: boolean
 
