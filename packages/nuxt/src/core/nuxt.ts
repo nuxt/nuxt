@@ -29,6 +29,7 @@ import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import importsModule from '../imports/module'
+import compilerModule from '../compiler/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
@@ -45,7 +46,6 @@ import { bundleServer } from './server'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
-import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
@@ -319,13 +319,6 @@ async function initNuxt (nuxt: Nuxt) {
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
-  // Add keys for useFetch, useAsyncData, etc.
-  addBuildPlugin(ComposableKeysPlugin({
-    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    rootDir: nuxt.options.rootDir,
-    composables: nuxt.options.optimization.keyedComposables,
-  }))
-
   // shared folder import protection
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
   const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
@@ -595,6 +588,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
+  await nuxt.callHook('compiler:ready')
+
   // remove duplicate css after modules are done
   nuxt.options.css = nuxt.options.css
     .filter((value, index, array) => !array.includes(value, index + 1))
@@ -792,6 +787,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
+  options._modules.push(compilerModule)
   const importIncludes: RegExp[] = []
   for (const layer of options._layers) {
     if (layer.cwd && layer.cwd.includes('node_modules')) {

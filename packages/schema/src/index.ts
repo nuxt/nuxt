@@ -1,6 +1,7 @@
 // Types
 export type { NuxtCompatibility, NuxtCompatibilityIssue, NuxtCompatibilityIssues } from './types/compatibility'
 export type { Component, ComponentMeta, ComponentsDir, ComponentsOptions, ScanDir } from './types/components'
+export type { NuxtCompilerOptions, KeyedFunction, KeyedFunctionFactory, CompilerScanDir } from './types/compiler'
 export type { AppConfig, AppConfigInput, CustomAppConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigLayer, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeValue, SchemaDefinition, UpperSnakeCase, ViteConfig, ViteOptions } from './types/config'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export type { ImportPresetWithDeprecation } from './types/hooks'
@@ -8,7 +9,7 @@ export type { GenerateAppOptions, HookResult, NuxtAnalyzeMeta, NuxtHookName, Nux
 export type { ImportsOptions } from './types/imports'
 export type { AppHeadMetaObject, MetaObject, MetaObjectRaw } from './types/head'
 export type { ModuleDefinition, ModuleDependencies, ModuleDependencyMeta, ModuleMeta, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, NuxtModule, ResolvedModuleOptions } from './types/module'
-export type { Nuxt, NuxtApp, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate } from './types/nuxt'
+export type { Nuxt, NuxtApp, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate, ScanPlugin, ScanPluginFilter, ScanPluginHandlerContext } from './types/nuxt'
 export type { RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router'
 export type { NuxtDebugContext, NuxtDebugModuleMutationRecord } from './types/debug'
 
