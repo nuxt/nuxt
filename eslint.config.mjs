@@ -145,6 +145,7 @@ export default createConfigForNuxt({
   .append(
     {
       files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      ignores: ['packages/**/*.client.ts', 'packages/**/*.client.mts', 'packages/**/*.client.js', 'packages/**/*.client.mjs'],
       name: 'local/requires/explicit-node-imports',
       rules: {
         // Ban direct use of restricted global identifiers
@@ -239,7 +240,6 @@ export default createConfigForNuxt({
                   'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
-                  'node:perf_hooks',
                 ].map(r => `!${r}`),
                 '!#[a-z]*/**', // aliases
                 '!.*/**', // relative imports
