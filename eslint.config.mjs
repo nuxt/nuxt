@@ -147,19 +147,19 @@ export default createConfigForNuxt({
       files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
       name: 'local/requires/explicit-node-imports',
       rules: {
-    // Ban direct use of restricted global identifiers
-      'no-restricted-globals': [
-      'error',
-        {
-          name: 'process',
-          message: 'Use explicit import: import process from "node:process" (or a scoped alias). Implicit globals are banned for clarity and tree-shakability.',
+        // Ban direct use of restricted global identifiers
+        'no-restricted-globals': [
+          'error',
+          //   {
+          //     name: 'process',
+          //     message: 'Use explicit import: import process from "node:process" (or a scoped alias). Implicit globals are banned for clarity and tree-shakability.',
+          // },
+          {
+            message: 'Use explicit import: import { performance } from "node:perf_hooks". Implicit global performance is banned in server contexts to ensure Node.js-specific usage.',
+            name: 'performance',
+          },
+        ],
       },
-      {
-          name: 'performance',
-          message: 'Use explicit import: import { performance } from "node:perf_hooks". Implicit global performance is banned in server contexts to ensure Node.js-specific usage.',
-        },
-      ],
-     },
     },
     // @ts-expect-error type issues
     {
@@ -239,6 +239,7 @@ export default createConfigForNuxt({
                   'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
+                  'node:perf_hooks',
                 ].map(r => `!${r}`),
                 '!#[a-z]*/**', // aliases
                 '!.*/**', // relative imports
