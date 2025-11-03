@@ -231,7 +231,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
   ]
-  for (const _obj of [opts.params || opts.query]) {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  for (const _obj of [opts.query || opts.params]) {
     const obj = toValue(_obj)
     if (!obj) { continue }
 
