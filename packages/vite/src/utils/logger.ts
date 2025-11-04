@@ -1,3 +1,4 @@
+import process from 'node:process'
 import type * as vite from 'vite'
 import { createLogger } from 'vite'
 import { logger } from '@nuxt/kit'

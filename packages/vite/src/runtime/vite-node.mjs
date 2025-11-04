@@ -1,5 +1,6 @@
 // @ts-check
 
+import process from 'node:process'
 import { performance } from 'node:perf_hooks'
 import { createError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'

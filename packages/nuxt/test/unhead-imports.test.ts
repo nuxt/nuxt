@@ -1,4 +1,5 @@
 // @vitest-environment node
+import process from 'node:process'
 import { describe, expect, it } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import { UnheadImportsPlugin } from '../src/head/plugins/unhead-imports'
