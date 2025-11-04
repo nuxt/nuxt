@@ -1,4 +1,6 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
+import process from 'node:process'
+import { performance } from 'node:perf_hooks'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate as _compileTemplate, findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath, templateUtils } from '@nuxt/kit'

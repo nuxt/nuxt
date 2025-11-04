@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition'

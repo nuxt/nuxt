@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { readdirSync } from 'node:fs'

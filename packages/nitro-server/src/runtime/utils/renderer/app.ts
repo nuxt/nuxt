@@ -1,3 +1,4 @@
+import process from 'node:process'
 import type { H3Event } from 'h3'
 import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
