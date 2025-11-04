@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
