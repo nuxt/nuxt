@@ -234,12 +234,12 @@ export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: Abort
 
 export function useAsyncData<DataT, DataE> (
   handler: AsyncDataHandler<DataT>,
-  options?: AsyncDataOptions<DataT>
+  options?: AsyncDataOptions<DataT>,
 ): AsyncData<DataT, DataE>
 export function useAsyncData<DataT, DataE> (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<DataT>,
-  options?: AsyncDataOptions<DataT>
+  options?: AsyncDataOptions<DataT>,
 ): Promise<AsyncData<DataT, DataE>>
 
 type AsyncDataOptions<DataT> = {

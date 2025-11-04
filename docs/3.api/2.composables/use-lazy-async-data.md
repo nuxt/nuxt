@@ -47,13 +47,13 @@ When using `useLazyAsyncData`, navigation will occur before fetching is complete
 ```ts [Signature]
 export function useLazyAsyncData<DataT, ErrorT> (
   handler: (ctx?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>
+  options?: AsyncDataOptions<DataT>,
 ): AsyncData<DataT, ErrorT>
 
 export function useLazyAsyncData<DataT, ErrorT> (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>
+  options?: AsyncDataOptions<DataT>,
 ): AsyncData<DataT, ErrorT>
 ```
 
