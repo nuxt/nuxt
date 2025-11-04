@@ -75,7 +75,7 @@ export default defineNuxtModule<ComponentsOptions>({
       for (let i = 0; i < layerCount; i++) {
         const layer = nuxt.options._layers[i]!
         // Assign priority based on layer position: lower index = higher priority
-        // This ensures root (index 0) has highest priority, then extends[0], extends[1], etc.
+        // This ensures correct override order: root > auto-scanned > extends layers
         const priority = layerCount - i
         const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority })
         allDirs.push(...layerDirs)
