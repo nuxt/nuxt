@@ -61,8 +61,8 @@ describe('loadNuxt', () => {
 
     expect(nuxt.options.css).toMatchInlineSnapshot(`
       [
-        "custom.css",
         "auto.css",
+        "custom.css",
         "final-project.css",
         "duplicate.css",
         "override.css",
@@ -118,12 +118,12 @@ describe('loadNuxt', () => {
 
     expect(modules).toMatchInlineSnapshot(`
       [
-        "customLayerInlineModule",
-        "customLayerModule",
-        "customLayerAutoModule",
         "autoLayerInlineModule",
         "autoLayerModule",
         "autoLayerAutoModule",
+        "customLayerInlineModule",
+        "customLayerModule",
+        "customLayerAutoModule",
         "projectModule",
         "projectInlineModule",
         "css",

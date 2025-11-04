@@ -26,20 +26,20 @@ describe('loadNuxtConfig', () => {
     `)
   })
 
-  it('should respect alphabetical order of local layers', async () => {
+  it('should respect layer priority order', async () => {
     const cwd = fileURLToPath(new URL('./layer-fixture', import.meta.url)).replace(/\\/g, '/')
     const config = await loadNuxtConfig({ cwd })
-    // priority list
-    // 1. layers in nuxt.config (first overrides second)
-    // 2. then local layers in alphabetical order (Z overrides A)
-    // 3. local project overrides
+    // Priority order (highest to lowest):
+    // 1. Root project (layer-fixture)
+    // 2. Layers in extends config - first entry has higher priority (b before a)
+    // 3. Auto-scanned layers from layers/* - alphabetically Z before A (d before c)
     expect(config._layers.map(l => basename(l.cwd))).toMatchInlineSnapshot(`
       [
         "layer-fixture",
-        "d",
-        "c",
         "b",
         "a",
+        "d",
+        "c",
       ]
     `)
   })
