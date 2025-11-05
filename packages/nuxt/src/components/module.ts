@@ -71,6 +71,7 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs: ComponentsDir[] = []
+      const layerCount = nuxt.options._layers.length
       for (const [i, layer] of nuxt.options._layers.entries()) {
         // Assign priority based on layer position: lower index = higher priority
         // This ensures correct override order: root > auto-scanned > extends layers
