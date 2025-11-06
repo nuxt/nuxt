@@ -1,5 +1,6 @@
 // Module
 export { defineNuxtModule } from './module/define'
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export { getDirectory, installModule, installModules, loadNuxtModuleInstance, normalizeModuleTranspilePath, resolveModuleWithOptions } from './module/install'
 export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from './module/compatibility'
 
@@ -20,9 +21,11 @@ export { addImports, addImportsDir, addImportsSources } from './imports'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config'
 export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig } from './build'
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build'
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, isNuxtMajorVersion, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility'
 export { addComponent, addComponentExports, addComponentsDir } from './components'
 export type { AddComponentOptions } from './components'
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export { getNuxtCtx, runWithNuxtContext, tryUseNuxt, useNuxt, nuxtCtx } from './context'
 export { createIsIgnored, isIgnored, resolveIgnorePatterns } from './ignore'
 export { addLayout } from './layout'
@@ -37,6 +40,7 @@ export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, upd
 export { logger, useLogger } from './logger'
 
 // Internal Utils
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export { directoryToURL, resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm'
 export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm'
 export * from './internal/template'
