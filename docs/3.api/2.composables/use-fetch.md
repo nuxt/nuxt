@@ -128,7 +128,7 @@ searchQuery.value = 'new search'
 ```ts [Signature]
 export function useFetch<DataT, ErrorT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
-  options?: UseFetchOptions<DataT>
+  options?: UseFetchOptions<DataT>,
 ): Promise<AsyncData<DataT, ErrorT>>
 
 type UseFetchOptions<DataT> = {

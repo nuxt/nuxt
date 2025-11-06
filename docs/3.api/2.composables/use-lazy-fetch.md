@@ -48,7 +48,7 @@ Awaiting `useLazyFetch` only ensures the call is initialized. On client-side nav
 ```ts [Signature]
 export function useLazyFetch<DataT, ErrorT> (
   url: string | Request | Ref<string | Request> | (() => string | Request),
-  options?: UseFetchOptions<DataT>
+  options?: UseFetchOptions<DataT>,
 ): Promise<AsyncData<DataT, ErrorT>>
 ```
 
