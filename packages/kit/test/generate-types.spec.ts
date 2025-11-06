@@ -148,6 +148,8 @@ describe('resolveLayerPaths', async () => {
         "nuxt": [
           "../app/**/*",
           "../custom-modules/*/runtime/**/*",
+          "../test/**/*",
+          "../tests/**/*",
           "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
         ],
