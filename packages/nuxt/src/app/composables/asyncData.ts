@@ -703,22 +703,21 @@ function createAsyncData<
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
+      const cleanupController = new AbortController()
       const promise: Promise<ResT | void> = new Promise<ResT>(
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = mergeAbortSignals(nuxtApp, [asyncData._abortController?.signal, opts?.signal], timeout)
+            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout)
             if (mergedSignal.aborted) {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
               return
             }
-            const onAbort = () => {
+            mergedSignal.addEventListener('abort', () => {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-            }
-            mergedSignal.addEventListener('abort', onAbort, { once: true })
-            removeListenerAfterRender(nuxtApp, mergedSignal, onAbort)
+            }, { once: true, signal: cleanupController.signal })
 
             return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
@@ -772,6 +771,7 @@ function createAsyncData<
           if (pendingWhenIdle) {
             asyncData.pending.value = false
           }
+          cleanupController.abort()
 
           delete nuxtApp._asyncDataPromises[key]
         })
@@ -823,7 +823,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
   }
 }
-function mergeAbortSignals (nuxtApp: NuxtApp, signals: Array<AbortSignal | null | undefined>, timeout?: number): AbortSignal {
+function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
   const list = signals.filter(s => !!s)
   if (typeof timeout === 'number' && timeout >= 0) {
     const timeoutSignal = AbortSignal.timeout?.(timeout)
@@ -861,20 +861,8 @@ function mergeAbortSignals (nuxtApp: NuxtApp, signals: Array<AbortSignal | null 
   }
 
   for (const sig of list) {
-    sig.addEventListener?.('abort', onAbort, { once: true })
-    removeListenerAfterRender(nuxtApp, sig, onAbort)
+    sig.addEventListener?.('abort', onAbort, { once: true, signal: cleanupSignal })
   }
 
   return controller.signal
-}
-
-function removeListenerAfterRender (nuxtApp: NuxtApp, sig: AbortSignal, onAbort: () => void) {
-  if (!import.meta.server) {
-    return
-  }
-  for (const hook of ['app:rendered', 'app:error'] as const) {
-    nuxtApp.hooks.hookOnce(hook, () => {
-      sig.removeEventListener?.('abort', onAbort)
-    })
-  }
 }
