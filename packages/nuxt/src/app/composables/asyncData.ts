@@ -708,7 +708,7 @@ function createAsyncData<
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = mergeAbortSignals(nuxtApp, [asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout)
+            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout)
             if (mergedSignal.aborted) {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
@@ -823,7 +823,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
   }
 }
-function mergeAbortSignals (nuxtApp: NuxtApp, signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
+function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
   const list = signals.filter(s => !!s)
   if (typeof timeout === 'number' && timeout >= 0) {
     const timeoutSignal = AbortSignal.timeout?.(timeout)
