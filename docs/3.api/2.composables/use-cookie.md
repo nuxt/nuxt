@@ -42,7 +42,7 @@ export interface CookieRef<T> extends Ref<T> {}
 
 export function useCookie<T = string | null | undefined> (
   name: string,
-  options?: CookieOptions<T>
+  options?: CookieOptions<T>,
 ): CookieRef<T>
 ```
 

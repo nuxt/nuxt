@@ -119,7 +119,7 @@ await navigateTo('https://nuxt.com', {
 ```ts [Signature]
 export function navigateTo (
   to: RouteLocationRaw | undefined | null,
-  options?: NavigateToOptions
+  options?: NavigateToOptions,
 ): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw
 
 interface NavigateToOptions {

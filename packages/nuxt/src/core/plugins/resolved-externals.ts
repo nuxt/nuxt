@@ -1,7 +1,6 @@
 import type { Plugin } from 'vite'
 import { tryImportModule, useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import type { PackageJson } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 
 import { runtimeDependencies as runtimeNuxtDependencies } from '../../meta.mjs'
