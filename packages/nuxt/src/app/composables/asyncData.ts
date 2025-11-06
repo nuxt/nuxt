@@ -717,11 +717,12 @@ function createAsyncData<
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
+      const cleanupController = new AbortController()
       const promise: Promise<ResT | void> = new Promise<ResT>(
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], timeout)
+            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout)
             if (mergedSignal.aborted) {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
@@ -730,7 +731,7 @@ function createAsyncData<
             mergedSignal.addEventListener('abort', () => {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-            }, { once: true })
+            }, { once: true, signal: cleanupController.signal })
 
             return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
@@ -784,6 +785,7 @@ function createAsyncData<
           if (pendingWhenIdle) {
             asyncData.pending.value = false
           }
+          cleanupController.abort()
 
           delete nuxtApp._asyncDataPromises[key]
         })
@@ -837,7 +839,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
   }
 }
-function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, timeout?: number): AbortSignal {
+function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
   const list = signals.filter(s => !!s)
   if (typeof timeout === 'number' && timeout >= 0) {
     const timeoutSignal = AbortSignal.timeout?.(timeout)
@@ -875,7 +877,7 @@ function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, time
   }
 
   for (const sig of list) {
-    sig.addEventListener?.('abort', onAbort, { once: true })
+    sig.addEventListener?.('abort', onAbort, { once: true, signal: cleanupSignal })
   }
 
   return controller.signal

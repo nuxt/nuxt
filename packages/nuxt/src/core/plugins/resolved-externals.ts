@@ -13,14 +13,10 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:resolve-externals',
     enforce: 'pre',
-    async applyToEnvironment (environment) {
-      if (nuxt.options.dev || environment.name !== 'ssr') {
-        return false
-      }
-
-      const runtimeNitroDependencies = await tryImportModule<PackageJson>('nitropack/package.json', {
+    async config () {
+      const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitropack/runtime/meta')>('nitropack/runtime/meta', {
         url: new URL(import.meta.url),
-      })?.then(r => r?.dependencies ? Object.keys(r.dependencies) : []).catch(() => []) || []
+      }) || {}
 
       external = new Set([
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
@@ -32,26 +28,38 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
         ...runtimeNitroDependencies,
       ])
 
-      return true
-    },
-    async resolveId (id, importer) {
-      if (!external.has(id)) {
-        return
+      return {
+        optimizeDeps: {
+          exclude: Array.from(external),
+        },
       }
+    },
+    applyToEnvironment (environment) {
+      if (nuxt.options.dev || environment.name !== 'ssr') {
+        return false
+      }
+      return {
+        name: 'nuxt:resolve-externals:external',
+        async resolveId (id, importer) {
+          if (!external.has(id)) {
+            return
+          }
 
-      const res = await this.resolve?.(id, importer, { skipSelf: true })
-      if (res !== undefined && res !== null) {
-        if (res.id === id) {
-          res.id = resolveModulePath(res.id, {
-            try: true,
-            from: importer,
-            extensions: nuxt.options.extensions,
-          }) || res.id
-        }
-        return {
-          ...res,
-          external: 'absolute',
-        }
+          const res = await this.resolve?.(id, importer, { skipSelf: true })
+          if (res !== undefined && res !== null) {
+            if (res.id === id) {
+              res.id = resolveModulePath(res.id, {
+                try: true,
+                from: importer,
+                extensions: nuxt.options.extensions,
+              }) || res.id
+            }
+            return {
+              ...res,
+              external: 'absolute',
+            }
+          }
+        },
       }
     },
   }

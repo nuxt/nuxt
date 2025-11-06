@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { applyDefaults } from 'untyped'
+import process from 'node:process'
 
 import { normalize } from 'pathe'
 import { NuxtConfigSchema } from '../src'

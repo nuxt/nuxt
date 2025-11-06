@@ -2,6 +2,7 @@
 // This is likely not portable. A type annotation is necessary.
 import type {} from 'unstorage'
 import { useStorage } from '#internal/nitro'
+import process from 'node:process'
 
 export const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
 export const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null

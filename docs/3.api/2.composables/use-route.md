@@ -76,7 +76,7 @@ The `useRoute()` composable should only be used in the setup function of a Vue c
 This applies to any composable that uses `useRoute()` internally too.
 ::
 
-::read-more{to="/docs/4.x/guide/directory-structure/app/middleware"}
+::read-more{to="/docs/3.x/guide/directory-structure/app/middleware"}
 Read more about accessing the route in the middleware section.
 ::
 
