@@ -1076,8 +1076,8 @@ importers:
         specifier: 7.1.12
         version: 7.1.12(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
       vite-node:
-        specifier: ^5.0.0-beta.2
-        version: 5.0.0-beta.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
+        specifier: ^5.0.0
+        version: 5.0.0(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
       vite-plugin-checker:
         specifier: ^0.11.0
         version: 0.11.0(eslint@9.39.0(jiti@2.6.1))(optionator@0.9.4)(typescript@5.9.3)(vite@7.1.12(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))(vue-tsc@3.1.3(typescript@5.9.3))
@@ -8130,8 +8130,8 @@ packages:
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
-  vite-node@5.0.0-beta.2:
-    resolution: {integrity: sha512-JRThfAQEqZJIHKEcDV8B2IpTY27M7i9b4HUpNDUYVZ9Jw3GNkEo4OGNC2/FQ4ndp2Y0TEP6AlS0dFy1O0VuUUg==}
+  vite-node@5.0.0:
+    resolution: {integrity: sha512-nJINVH7lHBKoyDFYnwrXbNUrmTJ2ssBHTd/mXVZfLq/O5K7ksv4CayQOA5KkbOSrsgSQg8antcVPgQmzBWWn/w==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
@@ -16331,7 +16331,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite-node@5.0.0-beta.2(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1):
+  vite-node@5.0.0(@types/node@24.10.0)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3
