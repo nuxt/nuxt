@@ -107,15 +107,30 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }
       }
 
-      const viteMiddleware = defineEventHandler(async (event) => {
-        const viteRoutes: string[] = []
-        for (const viteRoute of viteServer.middlewares.stack) {
-          const m = viteRoute.route
-          if (m.length > 1) {
-            viteRoutes.push(m)
+      const proxyConfig = viteServer.config.server.proxy
+      function isProxyPath (path: string) {
+        if (!proxyConfig) { return false }
+
+        for (const key in proxyConfig) {
+          if (path.startsWith(key)) {
+            return true
           }
         }
-        if (!event.path.startsWith(viteServer.config.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
+        return false
+      }
+
+      const viteMiddleware = defineEventHandler(async (event) => {
+        const viteRoutes: string[] = []
+        const isBasePath = event.path.startsWith(viteServer.config.base!)
+        if (!isBasePath) {
+          for (const viteRoute of viteServer.middlewares.stack) {
+            const m = viteRoute.route
+            if (m.length > 1) {
+              viteRoutes.push(m)
+            }
+          }
+        }
+        if (!isBasePath && !viteRoutes.some(route => event.path.startsWith(route)) && !isProxyPath(event.path)) {
           // @ts-expect-error _skip_transform is a private property
           event.node.req._skip_transform = true
         } else if (!useViteCors) {
