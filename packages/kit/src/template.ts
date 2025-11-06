@@ -180,6 +180,8 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
     nuxt: [
       join(relativeSrcDir, '**/*'),
       join(relativeModulesDir, `*/runtime/**/*`),
+      join(relativeRootDir, `test/**/*`),
+      join(relativeRootDir, `tests/**/*`),
       join(relativeRootDir, `layers/*/app/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/**/*`),
     ],
