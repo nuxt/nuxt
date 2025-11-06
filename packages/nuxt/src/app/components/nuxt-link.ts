@@ -358,7 +358,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       // Prefetching
       const prefetched = shallowRef(false)
-      const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
+      const el = import.meta.server ? undefined : ref<HTMLAnchorElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
@@ -394,7 +394,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             onNuxtReady(() => {
               idleId = requestIdleCallback(() => {
                 if (el?.value?.tagName) {
-                  unobserve = observer!.observe(el.value as HTMLElement, async () => {
+                  unobserve = observer!.observe(el.value as HTMLAnchorElement, async () => {
                     unobserve?.()
                     unobserve = null
                     await prefetch(nuxtApp)
@@ -517,6 +517,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             }
 
             event.preventDefault()
+
+            ;(event.target as HTMLAnchorElement)?.focus()
 
             return props.replace
               ? router.replace(href.value)
