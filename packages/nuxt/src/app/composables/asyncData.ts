@@ -707,16 +707,18 @@ function createAsyncData<
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], timeout)
+            const mergedSignal = mergeAbortSignals(nuxtApp, [asyncData._abortController?.signal, opts?.signal], timeout)
             if (mergedSignal.aborted) {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
               return
             }
-            mergedSignal.addEventListener('abort', () => {
+            const onAbort = () => {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-            }, { once: true })
+            }
+            mergedSignal.addEventListener('abort', onAbort, { once: true })
+            removeListenerAfterRender(nuxtApp, mergedSignal, onAbort)
 
             return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
@@ -821,7 +823,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
   }
 }
-function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, timeout?: number): AbortSignal {
+function mergeAbortSignals (nuxtApp: NuxtApp, signals: Array<AbortSignal | null | undefined>, timeout?: number): AbortSignal {
   const list = signals.filter(s => !!s)
   if (typeof timeout === 'number' && timeout >= 0) {
     const timeoutSignal = AbortSignal.timeout?.(timeout)
@@ -860,7 +862,19 @@ function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, time
 
   for (const sig of list) {
     sig.addEventListener?.('abort', onAbort, { once: true })
+    removeListenerAfterRender(nuxtApp, sig, onAbort)
   }
 
   return controller.signal
+}
+
+function removeListenerAfterRender (nuxtApp: NuxtApp, sig: AbortSignal, onAbort: () => void) {
+  if (!import.meta.server) {
+    return
+  }
+  for (const hook of ['app:rendered', 'app:error'] as const) {
+    nuxtApp.hooks.hookOnce(hook, () => {
+      sig.removeEventListener?.('abort', onAbort)
+    })
+  }
 }
