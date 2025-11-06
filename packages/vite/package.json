@@ -60,7 +60,7 @@
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.24",
     "vite": "^7.1.12",
-    "vite-node": "^3.2.4",
+    "vite-node": "^5.0.0-beta.2",
     "vite-plugin-checker": "^0.11.0",
     "vue-bundle-renderer": "^2.2.0"
   },
