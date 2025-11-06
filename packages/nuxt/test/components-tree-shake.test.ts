@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'

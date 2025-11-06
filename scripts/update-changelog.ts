@@ -14,10 +14,16 @@ async function main () {
 
   const prevMessages = new Set(handleSeparateBranch ? await getPreviousReleasedCommits().then(r => r.map(c => c.message)) : [])
 
-  const commits = await getLatestCommits().then(commits => commits.filter(
+  // TODO: revert after release of v4.2.0
+  // Get the date of the latest tag to filter out merged history commits
+  const latestTagName = await getLatestTag()
+  const tagDate = execSync(`git log -1 --format=%ai ${latestTagName}`, { encoding: 'utf-8' })
+  const sinceDate = tagDate.trim()
+
+  const commits = await getLatestCommits(sinceDate).then(commits => commits.filter(
     c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps') && !prevMessages.has(c.message),
   ))
-  const bumpType = await determineBumpType() || 'patch'
+  const bumpType = await determineBumpType(sinceDate) || 'patch'
 
   const newVersion = inc(workspace.find('nuxt').data.version, bumpType)
   const changelog = await generateMarkDown(commits, config)
@@ -40,9 +46,9 @@ async function main () {
 
   // Get the current PR for this release, if it exists
   const [currentPR] = await $fetch(`https://api.github.com/repos/nuxt/nuxt/pulls?head=nuxt:v${newVersion}`)
-  const contributors = await getContributors()
+  const contributors = await getContributors(sinceDate)
 
-  const latestTag = await getLatestTag()
+  const latestTag = latestTagName
   const previousReleasedTag = handleSeparateBranch ? await getLatestReleasedTag() : latestTag
 
   const releaseNotes = [

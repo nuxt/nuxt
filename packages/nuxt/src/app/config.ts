@@ -21,6 +21,12 @@ function isPojoOrArray (val: unknown): val is object {
 }
 
 function deepDelete (obj: any, newObj: any) {
+  if (Array.isArray(obj) && Array.isArray(newObj)) {
+    obj.length = 0
+    obj.push(...newObj)
+    return
+  }
+
   for (const key in obj) {
     const val = newObj[key]
     if (!(key in newObj)) {
@@ -39,7 +45,12 @@ function deepAssign (obj: any, newObj: any) {
     const val = newObj[key]
     if (isPojoOrArray(val)) {
       const defaultVal = Array.isArray(val) ? [] : {}
-      obj[key] ||= defaultVal
+      if (Array.isArray(obj[key]) !== Array.isArray(val)) {
+        obj[key] = defaultVal
+      } else {
+        obj[key] ??= defaultVal
+      }
+
       deepAssign(obj[key], val)
     } else {
       obj[key] = val
