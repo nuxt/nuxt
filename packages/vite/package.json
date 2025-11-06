@@ -27,10 +27,10 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "nitropack": "2.12.9",
-    "rolldown": "1.0.0-beta.46",
+    "rolldown": "1.0.0-beta.47",
     "rollup": "4.52.5",
     "unbuild": "3.6.1",
-    "vue": "3.5.22"
+    "vue": "3.5.23"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -59,7 +59,7 @@
     "std-env": "^3.10.0",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.24",
-    "vite": "^7.1.12",
+    "vite": "^7.2.1",
     "vite-node": "^5.0.0",
     "vite-plugin-checker": "^0.11.0",
     "vue-bundle-renderer": "^2.2.0"
