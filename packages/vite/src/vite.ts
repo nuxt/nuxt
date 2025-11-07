@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { performance } from 'node:perf_hooks'
 import { createBuilder, createServer, mergeConfig } from 'vite'
 import * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
