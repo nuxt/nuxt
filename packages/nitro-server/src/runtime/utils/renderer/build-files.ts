@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'

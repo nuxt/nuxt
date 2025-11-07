@@ -384,7 +384,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       if (import.meta.client) {
-        checkPropConflicts(props, 'prefetch', 'noPrefetch')
+        checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
           let idleId: number

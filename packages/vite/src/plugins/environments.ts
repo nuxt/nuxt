@@ -24,6 +24,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
 
   return {
     name: 'nuxt:environments',
+    enforce: 'pre', // run before other plugins
     config (config) {
       viteConfig = config
       if (!nuxt.options.dev) {
