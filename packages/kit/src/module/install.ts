@@ -41,7 +41,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     }
   }
 
-  const optionsFunctions = new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
+  nuxt._moduleOptionsFunctions ||= new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
   const resolvedModules: Array<ResolvedModule> = []
   const inlineConfigKeys = new Set(
     await Promise.all([...modulesToInstall].map(([mod]) => typeof mod !== 'string' && Promise.resolve(mod.getMeta?.())?.then(r => r?.configKey))),
@@ -81,8 +81,8 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
 
       if (value.overrides || value.defaults) {
-        const currentFns = optionsFunctions.get(resolvedModule.module) || []
-        optionsFunctions.set(resolvedModule.module, [
+        const currentFns = nuxt._moduleOptionsFunctions.get(resolvedModule.module) || []
+        nuxt._moduleOptionsFunctions.set(resolvedModule.module, [
           ...currentFns,
           () => ({ defaults: value.defaults, overrides: value.overrides }),
         ])
@@ -128,8 +128,8 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     const configKey = meta?.configKey as keyof NuxtOptions | undefined
     if (configKey) {
       const optionsFns = [
-        ...optionsFunctions.get(moduleToInstall) || [],
-        ...optionsFunctions.get(configKey) || [],
+        ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
+        ...nuxt._moduleOptionsFunctions.get(configKey) || [],
       ]
       if (optionsFns.length > 0) {
         const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
@@ -146,6 +146,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     await callLifecycleHooks(nuxtModule, meta, inlineOptions, nuxt)
     await callModule(nuxtModule, meta, inlineOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt)
   }
+
+  // clean up merging options
+  delete nuxt._moduleOptionsFunctions
 }
 
 /**
@@ -167,8 +170,30 @@ export async function installModule<
 
   // module lifecycle hooks
   const meta = await nuxtModule.getMeta?.()
-  await callLifecycleHooks(nuxtModule, meta, inlineOptions, nuxt)
-  await callModule(nuxtModule, meta, inlineOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt)
+
+  // Apply options from moduleDependencies if available
+  let mergedOptions = inlineOptions
+  const configKey = meta?.configKey as keyof NuxtOptions | undefined
+  if (configKey && nuxt._moduleOptionsFunctions) {
+    const optionsFns = [
+      ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
+      ...nuxt._moduleOptionsFunctions.get(configKey) || [],
+    ]
+    if (optionsFns.length > 0) {
+      const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
+      const defaults: Array<Record<string, unknown> | undefined> = []
+      for (const fn of optionsFns) {
+        const options = fn()
+        overrides.push(options.overrides)
+        defaults.push(options.defaults)
+      }
+      mergedOptions = defu(inlineOptions, ...overrides, nuxt.options[configKey], ...defaults) as any
+      ;(nuxt.options[configKey] as any) = mergedOptions
+    }
+  }
+
+  await callLifecycleHooks(nuxtModule, meta, mergedOptions, nuxt)
+  await callModule(nuxtModule, meta, mergedOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt)
 }
 
 export function resolveModuleWithOptions (
