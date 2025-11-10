@@ -388,5 +388,4 @@ jobs:
           name: dist
           path: packages
 
-      # TODO: './packages/nitro-server' 
-      - run: pnpm pkg-pr-new publish --compact './packages/kit' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack'
+      - run: pnpm pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack'
