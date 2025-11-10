@@ -24,7 +24,7 @@ The `app/` directory is the main directory of the Nuxt application. It contains 
 
 This directory also includes specific files:
 - [`app.config.ts`](/docs/directory-structure/app/app-config): a reactive configuration within your application
-- [`app.vue`](/docs/directory-structure/app/app-vue): the root component of your Nuxt application
+- [`app.vue`](/docs/directory-structure/app/app): the root component of your Nuxt application
 - [`error.vue`](/docs/directory-structure/app/error): the error page of your Nuxt application
 
 ## Public Directory
@@ -53,10 +53,6 @@ The [`content/`](/docs/directory-structure/content) directory is enabled by the 
 ## Modules Directory
 
 The [`modules/`](/docs/directory-structure/modules) directory is the directory that contains the local modules of the Nuxt application. Modules are used to extend the functionality of the Nuxt application.
-
-## Layers Directory
-
-The [`layers/`](/docs/directory-structure/layers) directory is the directory that contains the layers of the Nuxt application. Layers are used to extend the functionality of the Nuxt application.
 
 ## Nuxt Files
 
