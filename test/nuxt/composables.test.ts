@@ -244,7 +244,7 @@ describe('clearNuxtState', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
-    clearNuxtState(key, false)
+    clearNuxtState(key)
     expect(state.value).toBeUndefined()
   })
 
@@ -255,10 +255,10 @@ describe('clearNuxtState', () => {
     const state2 = useState(key2, () => 'test')
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
-    clearNuxtState([key1, 'other'], false)
+    clearNuxtState([key1, 'other'])
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBe('test')
-    clearNuxtState([key1, key2], false)
+    clearNuxtState([key1, key2])
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBeUndefined()
   })
@@ -269,7 +269,7 @@ describe('clearNuxtState', () => {
     expect(state.value).toBe('test')
     clearNuxtState(() => false, false)
     expect(state.value).toBe('test')
-    clearNuxtState(k => k === key, false)
+    clearNuxtState(k => k === key)
     expect(state.value).toBeUndefined()
   })
 
@@ -278,7 +278,7 @@ describe('clearNuxtState', () => {
     const state2 = useState('clearNuxtState-test2', () => 'test')
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
-    clearNuxtState(undefined, false)
+    clearNuxtState(undefined)
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBeUndefined()
   })
@@ -288,7 +288,7 @@ describe('clearNuxtState', () => {
     const state = useState(key, () => 'test')
     state.value = 'test-2'
     expect(state.value).toBe('test-2')
-    clearNuxtState(key)
+    clearNuxtState(key, true)
     expect(state.value).toBe('test')
   })
 
@@ -301,10 +301,10 @@ describe('clearNuxtState', () => {
     expect(state2.value).toBe('test')
     state1.value = 'test-2'
     state2.value = 'test-2'
-    clearNuxtState([key1, 'other'])
+    clearNuxtState([key1, 'other'], true)
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test-2')
-    clearNuxtState([key1, key2])
+    clearNuxtState([key1, key2], true)
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
   })
@@ -313,10 +313,10 @@ describe('clearNuxtState', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
-    clearNuxtState(() => false)
+    clearNuxtState(() => false, true)
     expect(state.value).toBe('test')
     state.value = 'test-2'
-    clearNuxtState(k => k === key)
+    clearNuxtState(k => k === key, true)
     expect(state.value).toBe('test')
   })
 
@@ -327,7 +327,7 @@ describe('clearNuxtState', () => {
     state2.value = 'test-2'
     expect(state1.value).toBe('test-2')
     expect(state2.value).toBe('test-2')
-    clearNuxtState()
+    clearNuxtState(undefined, true)
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
   })
@@ -338,7 +338,7 @@ describe('clearNuxtState', () => {
     state1.value = 'test-2'
     expect(state1.value).toBe('test-2')
     expect(state2.value).toBe('test-2')
-    clearNuxtState()
+    clearNuxtState(undefined, true)
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
   })

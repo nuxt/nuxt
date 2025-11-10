@@ -1,12 +1,12 @@
-import type { Ref } from 'vue'
-import { computed, toRef, unref } from 'vue'
+import type { MaybeRefOrGetter, Ref, UnwrapRef } from 'vue'
+import { toRef, toValue } from 'vue'
 import { type NuxtApp, useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 
 const useStateKeyPrefix = '$s'
 const getDefault = () => undefined
 
-type InitOption<T> = (() => T | Ref<T>)
+type InitOption<T> = (() => MaybeRefOrGetter<T>)
 type UseStateOptions<T> = InitOption<T>
 
 /**
@@ -15,14 +15,14 @@ type UseStateOptions<T> = InitOption<T>
  * @param key a unique key ensuring that data fetching can be properly de-duplicated across requests
  * @param init a function that provides initial value for the state when it's not initiated
  */
-export function useState<T> (key?: string, init?: UseStateOptions<T>): Ref<T>
+export function useState<T> (key?: string, init?: UseStateOptions<T>): Ref<UnwrapRef<T>>
 export function useState<T> (init?: UseStateOptions<T>): Ref<T>
 export function useState<T> (...args: any): Ref<T> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') {
     args.unshift(autoKey)
   }
-  const [_key, init] = args as [unknown, (() => T | Ref<T>)]
+  const [_key, init] = args as [unknown, InitOption<T>]
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [useState] key must be a string: ' + _key)
   }
@@ -39,21 +39,10 @@ export function useState<T> (...args: any): Ref<T> {
     _default: defaultFn,
   }
   if (state.value === undefined) {
-    nuxtApp.payload.state[key] = defaultFn()
+    nuxtApp.payload.state[key] = toValue(defaultFn)
   }
 
-  return computed({
-    get () {
-      return nuxtApp._state[key]?.data.value ?? nuxtApp.payload.state[key]
-    },
-    set (value) {
-      if (nuxtApp._state[key]) {
-        nuxtApp._state[key]!.data.value = value
-      } else {
-        nuxtApp.payload.state[key] = value
-      }
-    },
-  })
+  return state as Ref<T>
 }
 
 /** @since 3.6.0 */
@@ -63,6 +52,7 @@ export function clearNuxtState (
 ): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)
+    .filter(key => key.startsWith(useStateKeyPrefix))
     .map(key => key.substring(useStateKeyPrefix.length))
 
   const _keys: string[] = !keys
@@ -72,7 +62,7 @@ export function clearNuxtState (
       : toArray(keys)
 
   for (const _key of _keys) {
-    clearNuxtStateByKey(nuxtApp, useStateKeyPrefix + _key, reset ?? true)
+    clearNuxtStateByKey(nuxtApp, useStateKeyPrefix + _key, reset ?? false)
   }
 }
 
@@ -82,6 +72,6 @@ function clearNuxtStateByKey (nuxtApp: NuxtApp, key: string, reset: boolean): vo
   }
 
   if (nuxtApp._state[key]) {
-    nuxtApp._state[key]!.data.value = reset ? unref(nuxtApp._state[key]!._default()) : undefined
+    nuxtApp._state[key]!.data.value = reset ? toValue(unref(nuxtApp._state[key]!._default)) : undefined
   }
 }

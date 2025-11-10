@@ -1,5 +1,5 @@
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
-import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
+import type { App, EffectScope, MaybeRefOrGetter, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
@@ -146,7 +146,7 @@ interface _NuxtApp {
   _state: Record<string, {
     data: Ref<unknown>
     /** @internal */
-    _default: () => unknown
+    _default: () => MaybeRefOrGetter<unknown>
   } | undefined>
 
   /** @internal */
