@@ -23,9 +23,9 @@ The following directories are related to the universal Nuxt application:
 - [`utils/`](/docs/3.x/directory-structure/utils): add functions throughout your application that can be used in your components, composables, and pages.
 
 This directory also includes specific files:
-- [`app.config.ts`](/docs/3.x/directory-structure/app/app-config): a reactive configuration within your application
-- [`app.vue`](/docs/directory-structure/app/app-vue): the root component of your Nuxt application
-- [`error.vue`](/docs/directory-structure/app/error): the error page of your Nuxt application
+- [`app.config.ts`](/docs/3.x/directory-structure/app-config): a reactive configuration within your application
+- [`app.vue`](/docs/3.x/directory-structure/app/app): the root component of your Nuxt application
+- [`error.vue`](/docs/3.x/directory-structure/error): the error page of your Nuxt application
 
 ### Server Directory
 
@@ -54,10 +54,6 @@ The [`content/`](/docs/3.x/directory-structure/content) directory is enabled by 
 ## Modules Directory
 
 The [`modules/`](/docs/3.x/directory-structure/modules) directory is the directory that contains the local modules of the Nuxt application. Modules are used to extend the functionality of the Nuxt application.
-
-## Layers Directory
-
-The [`layers/`](/docs/3.x/directory-structure/layers) directory is the directory that contains the layers of the Nuxt application. Layers are used to extend the functionality of the Nuxt application.
 
 ## Nuxt Files
 
