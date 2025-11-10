@@ -21,3 +21,6 @@ publicHoistPattern:
   - 'webpack-*'
 
 shellEmulator: true
+
+trustPolicy: no-downgrade
+
