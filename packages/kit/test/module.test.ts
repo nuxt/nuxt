@@ -323,7 +323,7 @@ export default Object.assign((options) => {
                 optional: true,
                 overrides: {
                   value: 'from module-a override',
-                  moduleOverride: 'from module-a'
+                  moduleOverride: 'from module-a',
                 },
                 defaults: {
                   defaultValue: 'from module-a default',
