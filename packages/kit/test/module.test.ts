@@ -135,6 +135,27 @@ export default () => {
     expect(globalThis.someModuleLoaded).toBe(1)
   })
 
+  it('should resolve moduleDependencies provided as async functions', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'foo' },
+            async moduleDependencies () {
+              await Promise.resolve()
+              return {
+                'some-module': {},
+              }
+            },
+          }),
+        ],
+      },
+    })
+
+    expect(globalThis.someModuleLoaded).toBe(1)
+  })
+
   it('should not install modules that are already installed by the user', async () => {
     nuxt = await loadNuxt({
       cwd: tempDir,
