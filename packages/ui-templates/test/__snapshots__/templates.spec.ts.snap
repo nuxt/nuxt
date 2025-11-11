@@ -1041,10 +1041,8 @@ exports[`template > produces correct output for welcome template 1`] = `
   opacity: 1;
   transition: all 0.3s linear;
 }
+.examples-container:hover > .examples-gradient-right,
 .modules-container:hover > .modules-gradient-right {
-  opacity: 0.2;
-}
-.examples-container:hover > .examples-gradient-right {
   opacity: 0.2;
 }
 .examples-gradient-right {
@@ -1062,34 +1060,24 @@ exports[`template > produces correct output for welcome template 1`] = `
   .modules-image-light {
     display: block;
   }
+  .modules-container:hover > a > .modules-image-light,
   .modules-image-dark {
     display: none;
   }
-  .modules-container:hover > a > .modules-image-light {
-    display: none;
-  }
+  .examples-image-light,
   .modules-container:hover > a > .modules-image-color-light {
     display: block;
   }
-  .examples-image-light {
-    display: block;
-  }
+  .examples-container:hover > a > .examples-image-light,
   .examples-image-dark {
     display: none;
   }
-  .examples-container:hover > a > .examples-image-light {
-    display: none;
-  }
+  .documentation-image-light,
   .examples-container:hover > a > .examples-image-color-light {
     display: block;
   }
-  .documentation-image-light {
-    display: block;
-  }
+  .documentation-container:hover > a > div > .documentation-image-light,
   .documentation-image-dark {
-    display: none;
-  }
-  .documentation-container:hover > a > div > .documentation-image-light {
     display: none;
   }
   .documentation-container:hover > a > div > .documentation-image-color-light {
