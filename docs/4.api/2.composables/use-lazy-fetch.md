@@ -14,7 +14,7 @@ links:
 
 By default, [`useFetch`](/docs/3.x/api/composables/use-fetch) blocks navigation until its async handler is resolved. `useLazyFetch` allows navigation to proceed immediately, with data being fetched in the background.
 
-```vue [app/pages/index.vue]
+```vue [pages/index.vue]
 <script setup lang="ts">
 const { status, data: posts } = await useLazyFetch('/api/posts')
 </script>

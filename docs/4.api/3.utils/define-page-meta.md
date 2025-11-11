@@ -18,7 +18,7 @@ definePageMeta({
 </script>
 ```
 
-:read-more{to="/docs/guide/directory-structure/pages#page-metadata"}
+:read-more{to="/docs/3.x/directory-structure/pages#page-metadata"}
 
 ## Type
 
@@ -62,7 +62,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a [custom regular expression](#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](/docs/3.x/api/utils/define-page-meta#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
 
   **`props`**
   
@@ -78,9 +78,9 @@ interface PageMeta {
 
   **`keepalive`**
 
-  - **Type**: `boolean` | [`KeepAliveProps`](https://vuejs.org/api/built-in-components.html#keepalive)
+  - **Type**: `boolean` | [`KeepAliveProps`](https://vuejs.org/api/built-in-components#keepalive)
 
-    Set to `true` when you want to preserve page state across route changes or use the [`KeepAliveProps`](https://vuejs.org/api/built-in-components.html#keepalive) for a fine-grained control.
+    Set to `true` when you want to preserve page state across route changes or use the [`KeepAliveProps`](https://vuejs.org/api/built-in-components#keepalive) for a fine-grained control.
 
   **`key`**
 
@@ -96,19 +96,19 @@ interface PageMeta {
 
   **`layoutTransition`**
 
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components#transition)
 
     Set name of the transition to apply for current layout. You can also set this value to `false` to disable the layout transition.
 
   **`middleware`**
 
-  - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/NavigationGuard.html#navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
+  - **Type**: `MiddlewareKey` | [`NavigationGuard`](https://router.vuejs.org/api/interfaces/navigationguard) | `Array<MiddlewareKey | NavigationGuard>`
 
     Define anonymous or named middleware directly within `definePageMeta`. Learn more about [route middleware](/docs/3.x/directory-structure/middleware).
 
   **`pageTransition`**
 
-  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
+  - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components#transition)
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
 
@@ -122,7 +122,7 @@ interface PageMeta {
 
   **`redirect`**
 
-  - **Type**: [`RouteRecordRedirectOption`](https://router.vuejs.org/guide/essentials/redirect-and-alias.html#redirect-and-alias)
+  - **Type**: [`RouteRecordRedirectOption`](https://router.vuejs.org/guide/essentials/redirect-and-alias)
 
     Where to redirect if the route is directly matched. The redirection happens before any navigation guard and triggers a new navigation with the new target location.
 
@@ -136,7 +136,7 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [custom routing](/docs/3.x/guide/recipes/custom-routing#using-approuteroptions)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/3.x/guide/recipes/custom-routing#using-routeroptions)) for more info.
 
   **`[key: string]`**
 
@@ -215,7 +215,7 @@ definePageMeta({
 </script>
 ```
 
-For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
+For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax).
 
 ### Defining Layout
 

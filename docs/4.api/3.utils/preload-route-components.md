@@ -14,7 +14,7 @@ Preloading routes loads the components of a given route that the user might navi
 Nuxt already automatically preloads the necessary routes if you're using the `NuxtLink` component.
 ::
 
-:read-more{to="/docs/api/components/nuxt-link"}
+:read-more{to="/docs/3.x/api/components/nuxt-link"}
 
 ## Example
 
@@ -34,7 +34,7 @@ const submit = async () => {
 }
 ```
 
-:read-more{to="/docs/api/utils/navigate-to"}
+:read-more{to="/docs/3.x/api/utils/navigate-to"}
 
 ::note
 On server, `preloadRouteComponents` will have no effect.

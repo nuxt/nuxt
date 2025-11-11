@@ -22,7 +22,7 @@ export function abortNavigation (err?: Error | string): false
 
 ### `err`
 
-- **Type**: [`Error`](https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Global_Objects/Error) | `string`
+- **Type**: [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) | `string`
 
   Optional error to be thrown by `abortNavigation`.
 
@@ -60,7 +60,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 ### `err` as an Error Object
 
-You can pass the error as an [`Error`](https://developer.mozilla.org/pl/docs/Web/JavaScript/Reference/Global_Objects/Error) object, e.g. caught by the `catch`-block:
+You can pass the error as an [`Error`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) object, e.g. caught by the `catch`-block:
 
 ```ts [middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {

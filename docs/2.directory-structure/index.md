@@ -10,7 +10,7 @@ Nuxt applications have a specific directory structure that is used to organize t
 
 The root directory of a Nuxt application is the directory that contains the `nuxt.config.ts` file. This file is used to configure the Nuxt application.
 
-### App Directory & Files
+## App Directory
 
 The following directories are related to the universal Nuxt application:
 - [`assets/`](/docs/3.x/directory-structure/assets): website's assets that the build tool (Vite or webpack) will process
@@ -27,7 +27,13 @@ This directory also includes specific files:
 - [`app.vue`](/docs/3.x/directory-structure/app): the root component of your Nuxt application
 - [`error.vue`](/docs/3.x/directory-structure/error): the error page of your Nuxt application
 
-### Server Directory
+## Public Directory
+
+The [`public/`](/docs/3.x/directory-structure/public) directory is the directory that contains the public files of the Nuxt application. Files contained within this directory are served at the root and are not modified by the build process.
+
+This is suitable for files that have to keep their names (e.g. `robots.txt`) _or_ likely won't change (e.g. `favicon.ico`).
+
+## Server Directory
 
 The [`server/`](/docs/3.x/directory-structure/server) directory is the directory that contains the server-side code of the Nuxt application. It contains the following subdirectories:
 - [`api/`](/docs/3.x/directory-structure/server#server-routes): contains the API routes of the application.
@@ -35,12 +41,6 @@ The [`server/`](/docs/3.x/directory-structure/server) directory is the directory
 - [`middleware/`](/docs/3.x/directory-structure/server#server-middleware): run code before a server route is processed
 - [`plugins/`](/docs/3.x/directory-structure/server#server-plugins): use plugins and more at the creation of the Nuxt server
 - [`utils/`](/docs/3.x/directory-structure/server#server-utilities): add functions throughout your application that can be used in your server  code.
-
-## Public Directory
-
-The [`public/`](/docs/3.x/directory-structure/public) directory is the directory that contains the public files of the Nuxt application. Files contained within this directory are served at the root and are not modified by the build process.
-
-This is suitable for files that have to keep their names (e.g. `robots.txt`) _or_ likely won't change (e.g. `favicon.ico`).
 
 ## Shared Directory
 

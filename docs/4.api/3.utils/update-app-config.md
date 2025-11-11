@@ -25,4 +25,4 @@ updateAppConfig(newAppConfig)
 console.log(appConfig) // { foo: 'baz' }
 ```
 
-:read-more{to="/docs/guide/directory-structure/app-config"}
+:read-more{to="/docs/3.x/directory-structure/app-config"}

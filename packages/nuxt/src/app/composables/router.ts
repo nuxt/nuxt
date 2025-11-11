@@ -22,7 +22,7 @@ export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/3.x/guide/directory-structure/middleware#accessing-route-in-middleware` + ('\n' + trace))
+    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/3.x/directory-structure/middleware#accessing-route-in-middleware` + ('\n' + trace))
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)

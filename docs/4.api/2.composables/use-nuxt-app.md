@@ -16,7 +16,7 @@ const nuxtApp = useNuxtApp()
 </script>
 ```
 
-If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
+If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](/docs/3.x/api/composables/use-nuxt-app#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
 
 <!--
 note
@@ -80,12 +80,12 @@ await nuxtApp.callHook('my-plugin:init')
 
 ### `vueApp`
 
-`vueApp` is the global Vue.js [application instance](https://vuejs.org/api/application.html#application-api) that you can access through `nuxtApp`.
+`vueApp` is the global Vue.js [application instance](https://vuejs.org/api/application#application-api) that you can access through `nuxtApp`.
 
 Some useful methods:
-- [`component()`](https://vuejs.org/api/application.html#app-component) - Registers a global component if passing both a name string and a component definition, or retrieves an already registered one if only the name is passed.
-- [`directive()`](https://vuejs.org/api/application.html#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/3.x/directory-structure/plugins#vue-directives).
-- [`use()`](https://vuejs.org/api/application.html#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins.html)** [(example)](/docs/3.x/directory-structure/plugins#vue-plugins).
+- [`component()`](https://vuejs.org/api/application#app-component) - Registers a global component if passing both a name string and a component definition, or retrieves an already registered one if only the name is passed.
+- [`directive()`](https://vuejs.org/api/application#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/3.x/directory-structure/plugins#vue-directives).
+- [`use()`](https://vuejs.org/api/application#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins)** [(example)](/docs/3.x/directory-structure/plugins#vue-plugins).
 
 :read-more{icon="i-simple-icons-vuedotjs" to="https://vuejs.org/api/application.html#application-api"}
 
@@ -120,7 +120,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   After fetching the value of `count` using [`useAsyncData`](/docs/3.x/api/composables/use-async-data) in the example above, if you access `payload.data`, you will see `{ count: 1 }` recorded there.
 
-  When accessing the same `payload.data` from [`ssrcontext`](#ssrcontext), you can access the same value on the server side as well.
+  When accessing the same `payload.data` from [`ssrcontext`](/docs/3.x/api/composables/use-nuxt-app#ssrcontext), you can access the same value on the server side as well.
 
 - `state` (object) - When you use [`useState`](/docs/3.x/api/composables/use-state) composable in Nuxt to set shared state, this state data is accessed through `payload.state.[name-of-your-state]`.
 
@@ -268,7 +268,7 @@ Using a new experimental feature, it is possible to enable native async context 
 Native async context support works currently in Bun and Node.
 ::
 
-:read-more{to="/docs/guide/going-further/experimental-features#asynccontext"}
+:read-more{to="/docs/3.x/guide/going-further/experimental-features#asynccontext"}
 
 ## tryUseNuxtApp
 

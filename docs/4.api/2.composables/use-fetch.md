@@ -26,7 +26,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
 ```
 
 ::warning
-If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/3.x/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
+If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/3.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata) for more information on how to make a custom async data fetcher.
 ::
 
 ::note
@@ -96,11 +96,11 @@ If you encounter the `data` variable destructured from a `useFetch` returns a st
 
 :video-accordion{title="Watch the video from Alexander Lichter to avoid using useFetch the wrong way" videoId="njsGVmcWviY"}
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/3.x/getting-started/data-fetching"}
 
 ### Reactive Fetch Options
 
-Fetch options can be provided as reactive, supporting `computed`, `ref` and [computed getters](https://vuejs.org/guide/essentials/computed.html). When a reactive fetch option is updated it will trigger a refetch using the updated resolved reactive value.
+Fetch options can be provided as reactive, supporting `computed`, `ref` and [computed getters](https://vuejs.org/guide/essentials/computed). When a reactive fetch option is updated it will trigger a refetch using the updated resolved reactive value.
 
 ```ts
 const searchQuery = ref('initial')
@@ -205,7 +205,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `watch` | `MultiWatchSources \| false` | - | Array of reactive sources to watch and auto-refresh. `false` disables watching. |
 | `deep` | `boolean` | `true` | Return data in a deep ref object. Set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive. |
 | `dedupe` | `'cancel' \| 'defer'` | `'cancel'` | Avoid fetching same key more than once at a time. |
-| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch) |
+| `$fetch` | `typeof globalThis.$fetch` | - | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/3.x/guide/recipes/custom-usefetch) |
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -244,6 +244,6 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ### Examples
 
-:link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
+:link-example{to="/docs/3.x/examples/advanced/use-custom-fetch-composable"}
 
-:link-example{to="/docs/examples/features/data-fetching"}
+:link-example{to="/docs/3.x/examples/features/data-fetching"}

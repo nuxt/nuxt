@@ -17,7 +17,7 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 ::
 
 ::note
-`navigateTo` cannot be used within Nitro routes. To perform a server-side redirect in Nitro routes, use [`sendRedirect`](https://h3.dev/utils/response#sendredirectevent-location-code) instead.
+`navigateTo` cannot be used within Nitro routes. To perform a server-side redirect in Nitro routes, use [`sendRedirect`](https://h3.dev/utils/response#redirectlocation-status-statustext) instead.
 ::
 
 ### Within a Vue Component
@@ -68,7 +68,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 In this case, `navigateTo` will be executed but not returned, which may lead to unexpected behavior.
 
-:read-more{to="/docs/guide/directory-structure/middleware"}
+:read-more{to="/docs/3.x/directory-structure/middleware"}
 
 ### Navigating to an External URL
 
@@ -148,7 +148,7 @@ type OpenWindowFeatures = {
 
 ### `to`
 
-**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/interfaces/RouteLocationOptions.html#Interface-RouteLocationOptions) | `undefined` | `null`
+**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/interfaces/routelocationoptions) | `undefined` | `null`
 
 **Default**: `'/'`
 
@@ -186,9 +186,9 @@ An object accepting the following properties:
   - **Type**: `number`
   - **Default**: `302`
 
-  - `navigateTo` redirects to the given path and sets the redirect code to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302) by default when the redirection takes place on the server side.
+  - `navigateTo` redirects to the given path and sets the redirect code to [`302 Found`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/302) by default when the redirection takes place on the server side.
 
-    This default behavior can be modified by providing different `redirectCode`. Commonly, [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/301) can be used for permanent redirections.
+    This default behavior can be modified by providing different `redirectCode`. Commonly, [`301 Moved Permanently`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/301) can be used for permanent redirections.
 
 - `external`
 

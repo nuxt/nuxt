@@ -50,7 +50,7 @@ This composable does not return any value.
 
 ## Example
 
-```vue [app/pages/user-profile.vue]
+```vue [pages/user-profile.vue]
 <script setup lang="ts">
 // User-generated content that might contain malicious code
 const userBio = ref('<script>alert("xss")<' + '/script>')

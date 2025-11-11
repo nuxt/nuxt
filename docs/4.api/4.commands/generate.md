@@ -37,6 +37,6 @@ Option | Default | Description
 `-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
 <!--/generate-opts-->
 
-::read-more{to="/docs/getting-started/deployment#static-hosting"}
+::read-more{to="/docs/3.x/getting-started/deployment#static-hosting"}
 Read more about pre-rendering and static hosting.
 ::

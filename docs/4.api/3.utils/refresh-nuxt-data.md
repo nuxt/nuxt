@@ -93,4 +93,4 @@ async function refresh () {
 If you have access to the `asyncData` instance, it is recommended to use its `refresh` or `execute` method as the preferred way to refetch the data.
 ::
 
-:read-more{to="/docs/getting-started/data-fetching"}
+:read-more{to="/docs/3.x/getting-started/data-fetching"}

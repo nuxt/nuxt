@@ -12,7 +12,7 @@ links:
 
 The `useHead` composable allows you to manage your head tags in a programmatic and reactive way, powered by [Unhead](https://unhead.unjs.io). It lets you customize the meta tags, links, scripts, and other elements in the `<head>` section of your HTML document.
 
-```vue [app/app.vue]
+```vue [app.vue]
 <script setup lang="ts">
 useHead({
   title: 'My App',
@@ -38,7 +38,7 @@ The properties of `useHead` can be dynamic, accepting `ref`, `computed` and `rea
 ## Type
 
 ```ts [Signature]
-export function useHead (meta: MaybeComputedRef<MetaObject>): ActiveHeadEntry<UseHeadInput>
+export function useHead (meta: MaybeComputedRef<MetaObject>): void
 
 interface MetaObject {
   title?: string
@@ -51,21 +51,6 @@ interface MetaObject {
   noscript?: Noscript[]
   htmlAttrs?: HtmlAttributes
   bodyAttrs?: BodyAttributes
-}
-
-interface ActiveHeadEntry<Input> {
-  /**
-   * Updates the entry with new input.
-   *
-   * Will first clear any side effects for previous input.
-   */
-  patch: (input: Input) => void
-  /**
-   * Dispose the entry, removing it from the active head.
-   *
-   * Will queue side effects for removal.
-   */
-  dispose: () => void
 }
 ```
 
@@ -96,7 +81,7 @@ This composable does not return any value. It registers the head metadata with U
 
 ### Basic Meta Tags
 
-```vue [app/pages/about.vue]
+```vue [pages/about.vue]
 <script setup lang="ts">
 useHead({
   title: 'About Us',
@@ -111,7 +96,7 @@ useHead({
 
 ### Reactive Meta Tags
 
-```vue [app/pages/profile.vue]
+```vue [pages/profile.vue]
 <script setup lang="ts">
 const profile = ref({ name: 'John Doe' })
 
@@ -129,7 +114,7 @@ useHead({
 
 ### Using a Function for Full Reactivity
 
-```vue [app/pages/dynamic.vue]
+```vue [pages/dynamic.vue]
 <script setup lang="ts">
 const count = ref(0)
 
@@ -144,7 +129,7 @@ useHead(() => ({
 
 ### Adding External Scripts and Styles
 
-```vue [app/pages/external.vue]
+```vue [pages/external.vue]
 <script setup lang="ts">
 useHead({
   link: [
@@ -165,7 +150,7 @@ useHead({
 
 ### Body and HTML Attributes
 
-```vue [app/pages/themed.vue]
+```vue [pages/themed.vue]
 <script setup lang="ts">
 const isDark = ref(true)
 
