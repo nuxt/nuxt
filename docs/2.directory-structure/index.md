@@ -36,7 +36,6 @@ The [`server/`](/docs/3.x/directory-structure/server) directory is the directory
 - [`plugins/`](/docs/3.x/directory-structure/server#server-plugins): use plugins and more at the creation of the Nuxt server
 - [`utils/`](/docs/3.x/directory-structure/server#server-utilities): add functions throughout your application that can be used in your server  code.
 
-
 ## Public Directory
 
 The [`public/`](/docs/3.x/directory-structure/public) directory is the directory that contains the public files of the Nuxt application. Files contained within this directory are served at the root and are not modified by the build process.
@@ -60,4 +59,3 @@ The [`modules/`](/docs/3.x/directory-structure/modules) directory is the directo
 - [`nuxt.config.ts`](/docs/3.x/directory-structure/nuxt-config) file is the main configuration file for the Nuxt application.
 - [`.nuxtrc`](/docs/3.x/directory-structure/nuxtrc) file is another syntax for configuring the Nuxt application (useful for global configurations).
 - [`.nuxtignore`](/docs/3.x/directory-structure/nuxtignore) file is used to ignore files in the root directory during the build phase.
-
