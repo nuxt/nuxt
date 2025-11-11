@@ -7,7 +7,7 @@ const useStateKeyPrefix = '$s'
 const getDefault = () => undefined
 
 type InitOption<T> = (() => MaybeRefOrGetter<T>)
-type UseStateOptions<T> = InitOption<T>
+type UseStateReturn<T> = Ref<UnwrapRef<T>>
 
 /**
  * Create a global reactive ref that will be hydrated but not shared across ssr requests
@@ -15,9 +15,9 @@ type UseStateOptions<T> = InitOption<T>
  * @param key a unique key ensuring that data fetching can be properly de-duplicated across requests
  * @param init a function that provides initial value for the state when it's not initiated
  */
-export function useState<T> (key?: string, init?: UseStateOptions<T>): Ref<UnwrapRef<T>>
-export function useState<T> (init?: UseStateOptions<T>): Ref<T>
-export function useState<T> (...args: any): Ref<T> {
+export function useState<T> (key?: string, init?: InitOption<T>): UseStateReturn<T>
+export function useState<T> (init?: InitOption<T>): UseStateReturn<T>
+export function useState<T> (...args: any): UseStateReturn<T> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') {
     args.unshift(autoKey)
@@ -39,10 +39,10 @@ export function useState<T> (...args: any): Ref<T> {
     _default: defaultFn,
   }
   if (state.value === undefined) {
-    nuxtApp.payload.state[key] = toValue(defaultFn)
+    nuxtApp.payload.state[key] = toValueWithFallback(defaultFn)
   }
 
-  return state as Ref<T>
+  return state
 }
 
 /** @since 3.6.0 */
@@ -67,11 +67,23 @@ export function clearNuxtState (
 }
 
 function clearNuxtStateByKey (nuxtApp: NuxtApp, key: string, reset: boolean): void {
-  if (key in nuxtApp.payload.state) {
+  if (nuxtApp._state[key]) {
+    nuxtApp._state[key]!.data.value = reset ? toValueWithFallback(nuxtApp._state[key]!._default) : undefined
+  } else if (key in nuxtApp.payload.state) {
+    // Clear legacy state entries that lack _state registry
     nuxtApp.payload.state[key] = undefined
   }
+}
 
-  if (nuxtApp._state[key]) {
-    nuxtApp._state[key]!.data.value = reset ? toValue(nuxtApp._state[key]!._default) : undefined
+/**
+ * Vue's toValue with a fallback to the default init value (undefined)
+ * @param source the value to parse in Vue's toValue
+ */
+function toValueWithFallback<T> (source: MaybeRefOrGetter<T>): T | undefined {
+  try {
+    return toValue(source)
+  } catch (e) {
+    console.error('Error transforming default value', value, e)
+    return getDefault()
   }
 }

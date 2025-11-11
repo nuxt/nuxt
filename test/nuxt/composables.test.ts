@@ -342,6 +342,18 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
   })
+
+  it('expect fetching state after reset has init value', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    state1.value = 'test-2'
+    expect(state1.value).toBe('test-2')
+    const state2 = useState('clearNuxtState-test', () => 'test')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState(undefined, true)
+    expect(state1.value).toBe('test')
+    const state3 = useState('clearNuxtState-test', () => 'test')
+    expect(state3.value).toBe('test')
+  })
 })
 
 describe('url', () => {
