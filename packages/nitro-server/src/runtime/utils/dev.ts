@@ -320,10 +320,11 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       const preview = document.createElement('div');
       preview.id = 'preview';
       
-      const button = document.createElement('button');
+      const button = document.createElement('div');
       button.id = 'toggle';
       button.setAttribute('aria-expanded', 'true');
-      button.setAttribute('type', 'button');
+      button.setAttribute('role', 'button');
+      button.setAttribute('tabindex', '0');
       button.innerHTML = '<span class="sr-only">Toggle detailed error view</span>';
       
       const liveRegion = document.createElement('div');
@@ -590,6 +591,12 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
           return;
         }
         toggleView();
+      });
+      button.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleView();
+        }
       });
       pipCloseButton.addEventListener('click', function (e) {
         e.preventDefault(); e.stopPropagation();
