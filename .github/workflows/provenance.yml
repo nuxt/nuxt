@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  check-provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check provenance downgrades
+        uses: danielroe/provenance-action@a5a718233ca12eff67651fcf29a030bbbd5b3ca1 # v0.1.0
+        with:
+          fail-on-provenance-change: true
