@@ -24,7 +24,7 @@ The following directories are related to the universal Nuxt application:
 
 This directory also includes specific files:
 - [`app.config.ts`](/docs/3.x/directory-structure/app-config): a reactive configuration within your application
-- [`app.vue`](/docs/3.x/directory-structure/app/app): the root component of your Nuxt application
+- [`app.vue`](/docs/3.x/directory-structure/app): the root component of your Nuxt application
 - [`error.vue`](/docs/3.x/directory-structure/error): the error page of your Nuxt application
 
 ### Server Directory
