@@ -72,6 +72,6 @@ function clearNuxtStateByKey (nuxtApp: NuxtApp, key: string, reset: boolean): vo
   }
 
   if (nuxtApp._state[key]) {
-    nuxtApp._state[key]!.data.value = reset ? toValue(unref(nuxtApp._state[key]!._default)) : undefined
+    nuxtApp._state[key]!.data.value = reset ? toValue(nuxtApp._state[key]!._default) : undefined
   }
 }
