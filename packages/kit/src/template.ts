@@ -247,7 +247,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     legacyExclude.add(relativeWithDot(nuxt.options.buildDir, dir))
   }
 
-  // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
+  // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nitro-server/src/index.ts
   // + nitro generate .data in development when kv storage is used
   for (const dir of ['dist', '.data']) {
     exclude.add(relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, dir)))

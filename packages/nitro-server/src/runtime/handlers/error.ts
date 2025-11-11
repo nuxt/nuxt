@@ -85,7 +85,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   if (import.meta.dev) {
     const prettyResponse = await defaultHandler(error, event, { json: false })
-    return send(event, html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body as string)}</body>`))
+    return send(event, html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body as string, { startMinimized: 300 <= statusCode && statusCode < 500 })}</body>`))
   }
 
   return send(event, html)

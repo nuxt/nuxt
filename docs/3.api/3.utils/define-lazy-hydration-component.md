@@ -42,7 +42,7 @@ Read more about the options for `hydrate-on-visible`.
 ::
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-visible).
+Under the hood, this uses Vue's built-in [`hydrateOnVisible` strategy](https://vuejs.org/guide/components/async#hydrate-on-visible).
 ::
 
 ### Idle Strategy
@@ -70,7 +70,7 @@ The `hydrateOnIdle` prop is optional. You can pass a positive number to specify 
 Idle strategy is for components that can be hydrated when the browser is idle.
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnIdle` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-idle).
+Under the hood, this uses Vue's built-in [`hydrateOnIdle` strategy](https://vuejs.org/guide/components/async#hydrate-on-idle).
 ::
 
 ### Interaction Strategy
@@ -99,7 +99,7 @@ const LazyHydrationMyComponent = defineLazyHydrationComponent(
 The `hydrateOnInteraction` prop is optional. If you do not pass an event or a list of events, it defaults to hydrating on `pointerenter`, `click`, and `focus`.
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnInteraction` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-interaction).
+Under the hood, this uses Vue's built-in [`hydrateOnInteraction` strategy](https://vuejs.org/guide/components/async#hydrate-on-interaction).
 ::
 
 ### Media Query Strategy
@@ -126,7 +126,7 @@ const LazyHydrationMyComponent = defineLazyHydrationComponent(
 ```
 
 ::note
-Under the hood, this uses Vue's built-in [`hydrateOnMediaQuery` strategy](https://vuejs.org/guide/components/async.html#hydrate-on-media-query).
+Under the hood, this uses Vue's built-in [`hydrateOnMediaQuery` strategy](https://vuejs.org/guide/components/async#hydrate-on-media-query).
 ::
 
 ### Time Strategy

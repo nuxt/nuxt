@@ -12,11 +12,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:resolve-externals',
     enforce: 'pre',
-    async applyToEnvironment (environment) {
-      if (nuxt.options.dev || environment.name !== 'ssr') {
-        return false
-      }
-
+    async config () {
       const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitropack/runtime/meta')>('nitropack/runtime/meta', {
         url: new URL(import.meta.url),
       }) || {}
@@ -31,26 +27,38 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
         ...runtimeNitroDependencies,
       ])
 
-      return true
-    },
-    async resolveId (id, importer) {
-      if (!external.has(id)) {
-        return
+      return {
+        optimizeDeps: {
+          exclude: Array.from(external),
+        },
       }
+    },
+    applyToEnvironment (environment) {
+      if (nuxt.options.dev || environment.name !== 'ssr') {
+        return false
+      }
+      return {
+        name: 'nuxt:resolve-externals:external',
+        async resolveId (id, importer) {
+          if (!external.has(id)) {
+            return
+          }
 
-      const res = await this.resolve?.(id, importer, { skipSelf: true })
-      if (res !== undefined && res !== null) {
-        if (res.id === id) {
-          res.id = resolveModulePath(res.id, {
-            try: true,
-            from: importer,
-            extensions: nuxt.options.extensions,
-          }) || res.id
-        }
-        return {
-          ...res,
-          external: 'absolute',
-        }
+          const res = await this.resolve?.(id, importer, { skipSelf: true })
+          if (res !== undefined && res !== null) {
+            if (res.id === id) {
+              res.id = resolveModulePath(res.id, {
+                try: true,
+                from: importer,
+                extensions: nuxt.options.extensions,
+              }) || res.id
+            }
+            return {
+              ...res,
+              external: 'absolute',
+            }
+          }
+        },
       }
     },
   }
