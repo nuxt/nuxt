@@ -59,4 +59,3 @@ The [`modules/`](/docs/directory-structure/modules) directory is the directory t
 - [`nuxt.config.ts`](/docs/directory-structure/nuxt-config) file is the main configuration file for the Nuxt application.
 - [`.nuxtrc`](/docs/directory-structure/nuxtrc) file is another syntax for configuring the Nuxt application (useful for global configurations).
 - [`.nuxtignore`](/docs/directory-structure/nuxtignore) file is used to ignore files in the root directory during the build phase.
-
