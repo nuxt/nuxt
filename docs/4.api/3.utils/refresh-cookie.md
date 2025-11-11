@@ -1,8 +1,6 @@
 ---
 title: "refreshCookie"
 description: "Refresh useCookie values manually when a cookie has changed"
-navigation:
-  badge: New
 links:
   - label: Source
     icon: i-simple-icons-github
