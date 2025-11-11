@@ -23,5 +23,4 @@ publicHoistPattern:
 shellEmulator: true
 
 verifyDepsBeforeRun: install
-trustPolicy: no-downgrade
 
