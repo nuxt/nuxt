@@ -49,7 +49,7 @@ router.resolve({ name: 'home' })
 ```
 
 ::note
-`router.addRoute()` adds route details into an array of routes and it is useful while building [Nuxt plugins](/docs/4.x/guide/directory-structure/app/plugins) while `router.push()` on the other hand, triggers a new navigation immediately and it is useful in pages, Vue components and composable.
+`router.addRoute()` adds route details into an array of routes and it is useful while building [Nuxt plugins](/docs/4.x/directory-structure/app/plugins) while `router.push()` on the other hand, triggers a new navigation immediately and it is useful in pages, Vue components and composable.
 ::
 
 ## Based on History API
@@ -80,7 +80,7 @@ Read more about the browser's History API.
 
 However, Nuxt has a concept of **route middleware** that simplifies the implementation of navigation guards and provides a better developer experience.
 
-:read-more{to="/docs/4.x/guide/directory-structure/app/middleware"}
+:read-more{to="/docs/4.x/directory-structure/app/middleware"}
 
 ## Promise and Error Handling
 

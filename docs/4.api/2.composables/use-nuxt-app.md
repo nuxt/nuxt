@@ -30,7 +30,7 @@ By default, the shared runtime context of Nuxt is namespaced under the [`buildId
 
 ### `provide (name, value)`
 
-`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/4.x/guide/directory-structure/app/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
+`nuxtApp` is a runtime context that you can extend using [Nuxt plugins](/docs/4.x/directory-structure/app/plugins). Use the `provide` function to create Nuxt plugins to make values and helper methods available in your Nuxt application across all composables and components.
 
 `provide` function accepts `name` and `value` parameters.
 
@@ -46,7 +46,7 @@ As you can see in the example above, `$hello` has become the new and custom part
 
 ### `hook(name, cb)`
 
-Hooks available in `nuxtApp` allows you to customize the runtime aspects of your Nuxt application. You can use runtime hooks in Vue.js composables and [Nuxt plugins](/docs/4.x/guide/directory-structure/app/plugins) to hook into the rendering lifecycle.
+Hooks available in `nuxtApp` allows you to customize the runtime aspects of your Nuxt application. You can use runtime hooks in Vue.js composables and [Nuxt plugins](/docs/4.x/directory-structure/app/plugins) to hook into the rendering lifecycle.
 
 `hook` function is useful for adding custom logic by hooking into the rendering lifecycle at a specific point. `hook` function is mostly used when creating Nuxt plugins.
 
@@ -84,8 +84,8 @@ await nuxtApp.callHook('my-plugin:init')
 
 Some useful methods:
 - [`component()`](https://vuejs.org/api/application#app-component) - Registers a global component if passing both a name string and a component definition, or retrieves an already registered one if only the name is passed.
-- [`directive()`](https://vuejs.org/api/application#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/4.x/guide/directory-structure/app/plugins#vue-directives).
-- [`use()`](https://vuejs.org/api/application#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins)** [(example)](/docs/4.x/guide/directory-structure/app/plugins#vue-plugins).
+- [`directive()`](https://vuejs.org/api/application#app-directive) - Registers a global custom directive if passing both a name string and a directive definition, or retrieves an already registered one if only the name is passed[(example)](/docs/4.x/directory-structure/app/plugins#vue-directives).
+- [`use()`](https://vuejs.org/api/application#app-use) - Installs a **[Vue.js Plugin](https://vuejs.org/guide/reusability/plugins)** [(example)](/docs/4.x/directory-structure/app/plugins#vue-plugins).
 
 :read-more{icon="i-simple-icons-vuedotjs" to="https://vuejs.org/api/application.html#application-api"}
 

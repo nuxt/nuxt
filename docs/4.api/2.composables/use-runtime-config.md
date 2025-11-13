@@ -95,7 +95,7 @@ Any environment variables set within `.env` file are accessed using `process.env
 In **production runtime**, you should use platform environment variables and `.env` is not used.
 ::
 
-:read-more{to="/docs/4.x/guide/directory-structure/env"}
+:read-more{to="/docs/4.x/directory-structure/env"}
 
 ## `app` namespace
 

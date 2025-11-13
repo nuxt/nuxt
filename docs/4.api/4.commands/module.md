@@ -4,7 +4,7 @@ description: "Search and add modules to your Nuxt application with the command l
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/module/
+    to: https://github.com/nuxt/cli/tree/main/packages/nuxi/src/commands/module
     size: xs
 ---
 
@@ -39,8 +39,8 @@ The command lets you install [Nuxt modules](/modules) in your application with n
 When running the command, it will:
 
 - install the module as a dependency using your package manager
-- add it to your [package.json](/docs/4.x/guide/directory-structure/package) file
-- update your [`nuxt.config`](/docs/4.x/guide/directory-structure/nuxt-config) file
+- add it to your [package.json](/docs/4.x/directory-structure/package) file
+- update your [`nuxt.config`](/docs/4.x/directory-structure/nuxt-config) file
 
 **Example:**
 
