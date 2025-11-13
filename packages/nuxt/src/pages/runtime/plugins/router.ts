@@ -48,9 +48,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
   async setup (nuxtApp) {
-    // add hook before any async operation to ensure correct order
-    nuxtApp.hook('page:finish', syncCurrentRoute)
-
     let routerBase = useRuntimeConfig().app.baseURL
     if (hashMode && !routerBase.includes('#')) {
       // allow the user to provide a `#` in the middle: `/base/#/app`
@@ -113,9 +110,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
-    function syncCurrentRoute () {
-      _route.value = router.currentRoute.value
-    }
+    const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
+    nuxtApp.hook('page:finish', syncCurrentRoute, {
+      // TODO: ???
+      enforce: 'pre',
+    })
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
