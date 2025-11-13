@@ -4,7 +4,7 @@ description: "Search and add modules to your Nuxt application with the command l
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/module/
+    to: https://github.com/nuxt/cli/tree/main/packages/nuxi/src/commands/module
     size: xs
 ---
 
