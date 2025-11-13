@@ -108,23 +108,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
-    // Allows suspending the route object until page navigation completes
-    const _route = shallowRef(router.currentRoute.value)
-    const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
-    nuxtApp.hook('page:finish', syncCurrentRoute)
-    router.afterEach((to, from) => {
-      // We won't trigger suspense if the component is reused between routes
-      // so we need to update the route manually
-      if (to.matched[to.matched.length - 1]?.components?.default === from.matched[from.matched.length - 1]?.components?.default) {
-        syncCurrentRoute()
-      }
-    })
-
     // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
     const route = {} as RouteLocationNormalizedLoaded
-    for (const key in _route.value) {
+    for (const key in router.currentRoute.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocationNormalizedLoadedGeneric],
+        get: () => router.currentRoute.value[key as keyof RouteLocationNormalizedLoadedGeneric],
         enumerable: true,
       })
     }
@@ -171,7 +159,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
       ? router.resolve(initialURL)
       : router.currentRoute.value
-    syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
       // We're in an island context, and don't need to handle middleware or redirections
