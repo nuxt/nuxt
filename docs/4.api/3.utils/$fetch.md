@@ -11,7 +11,7 @@ links:
 Nuxt uses [ofetch](https://github.com/unjs/ofetch) to expose globally the `$fetch` helper for making HTTP requests within your Vue app or API routes.
 
 ::tip{icon="i-lucide-rocket"}
-During server-side rendering, calling `$fetch` to fetch your internal [API routes](/docs/4.x/guide/directory-structure/server) will directly call the relevant function (emulating the request), **saving an additional API call**.
+During server-side rendering, calling `$fetch` to fetch your internal [API routes](/docs/4.x/directory-structure/server) will directly call the relevant function (emulating the request), **saving an additional API call**.
 ::
 
 ::note{color="blue" icon="i-lucide-info"}

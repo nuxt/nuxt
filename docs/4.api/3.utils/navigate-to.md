@@ -68,7 +68,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 In this case, `navigateTo` will be executed but not returned, which may lead to unexpected behavior.
 
-:read-more{to="/docs/4.x/guide/directory-structure/app/middleware"}
+:read-more{to="/docs/4.x/directory-structure/app/middleware"}
 
 ### Navigating to an External URL
 

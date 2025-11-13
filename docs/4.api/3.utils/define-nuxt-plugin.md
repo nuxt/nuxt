@@ -16,7 +16,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 })
 ```
 
-:read-more{to="/docs/4.x/guide/directory-structure/app/plugins#creating-plugins"}
+:read-more{to="/docs/4.x/directory-structure/app/plugins#creating-plugins"}
 
 ## Type
 
@@ -42,7 +42,7 @@ interface ObjectPlugin<T> {
 ## Parameters
 
 **plugin**: A plugin can be defined in two ways:
-1. **Function Plugin**: A function that receives the [`NuxtApp`](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface) instance and can return a promise with a potential object with a [`provide`](/docs/4.x/guide/directory-structure/app/plugins#providing-helpers) property if you want to provide a helper on [`NuxtApp`](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface) instance.
+1. **Function Plugin**: A function that receives the [`NuxtApp`](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface) instance and can return a promise with a potential object with a [`provide`](/docs/4.x/directory-structure/app/plugins#providing-helpers) property if you want to provide a helper on [`NuxtApp`](/docs/4.x/guide/going-further/internals#the-nuxtapp-interface) instance.
 2. **Object Plugin**: An object that can include various properties to configure the plugin's behavior, such as `name`, `enforce`, `dependsOn`, `order`, `parallel`, `setup`, `hooks`, and `env`.
 
 | Property           | Type                                                                 | Required | Description                                                                                                     |
