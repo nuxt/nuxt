@@ -1,3 +1,0 @@
-# action lint configuration
-paths:
-  .github/workflows/gh-ai-moderator.yml:
