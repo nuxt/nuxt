@@ -1,5 +1,3 @@
 # action lint configuration
 paths:
   .github/workflows/gh-ai-moderator.yml:
-    ignore:
-      - 'unknown permission scope "models".' # wait until https://github.com/rhysd/actionlint/pull/551 is released
