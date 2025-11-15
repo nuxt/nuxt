@@ -1,10 +1,10 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocationNormalizedLoaded, RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
-import type { Plugin, RouteMiddleware } from 'nuxt/app'
+import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
@@ -120,7 +120,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
-    const route = { sync: syncCurrentRoute } as unknown as RouteLocationNormalizedLoaded
+    const route = { sync: syncCurrentRoute } as NuxtApp['_route']
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
         get: () => _route.value[key as keyof RouteLocationNormalizedLoadedGeneric],
