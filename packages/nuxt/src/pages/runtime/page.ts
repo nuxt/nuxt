@@ -178,7 +178,7 @@ export default defineComponent({
                       delete nuxtApp._runningTransition
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
-                        nuxtApp.callHook('page:loading:end')
+                        await nuxtApp.callHook('page:loading:end')
                       }
                     } finally {
                       done()
