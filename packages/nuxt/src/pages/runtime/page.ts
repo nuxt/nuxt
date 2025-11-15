@@ -170,14 +170,19 @@ export default defineComponent({
                     if (hasTransition) { nuxtApp._runningTransition = true }
                     nuxtApp.callHook('page:start', routeProps.Component)
                   },
-                  onResolve: () => {
-                    nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
+                  onResolve: async () => {
+                    await nextTick()
+                    try {
+                      nuxtApp._route.sync?.()
+                      await nuxtApp.callHook('page:finish', routeProps.Component)
                       delete nuxtApp._runningTransition
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
-                        return nuxtApp.callHook('page:loading:end')
+                        nuxtApp.callHook('page:loading:end')
                       }
-                    }).finally(done))
+                    } finally {
+                      done()
+                    }
                   },
                 }, {
                   default: () => {
