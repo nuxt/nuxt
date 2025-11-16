@@ -242,7 +242,7 @@ jobs:
         run: pnpm test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@4348f634fa7309fe23aac9502e88b999ec90a164 # v4.3.1
+        uses: CodSpeedHQ/action@6a8e2b874c338bf81cc5e8be715ada75908d3871 # v4.3.4
         with:
           run: pnpm vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -390,5 +390,4 @@ jobs:
           name: dist
           path: packages
 
-      # TODO: './packages/nitro-server' 
-      - run: pnpm pkg-pr-new publish --compact './packages/kit' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack'
+      - run: pnpm pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack'
