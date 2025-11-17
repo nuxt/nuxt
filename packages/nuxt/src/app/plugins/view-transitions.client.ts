@@ -67,6 +67,12 @@ export default defineNuxtPlugin((nuxtApp) => {
     resetTransitionState()
   })
 
+  nuxtApp.hook('app:error', () => {
+    // Finish the transition instead of aborting to allow smooth animation to error page
+    finishTransition?.()
+    resetTransitionState()
+  })
+
   nuxtApp.hook('page:finish', () => {
     finishTransition?.()
     resetTransitionState()
