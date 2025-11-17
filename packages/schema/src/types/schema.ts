@@ -1299,6 +1299,11 @@ export interface ConfigSchema {
     normalizeComponentNames: boolean
 
     /**
+     * Ensure that page components name match their route names.
+     */
+    normalizePageNames: boolean
+
+    /**
      * Keep showing the spa-loading-template until suspense:resolve
      *
      * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)

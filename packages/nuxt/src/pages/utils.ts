@@ -526,6 +526,7 @@ interface NormalizeRoutesOptions {
   clientComponentRuntime: string
 }
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
+  const nuxt = useNuxt()
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -573,7 +574,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file)
+      const isSyncImport = page._sync && page.mode !== 'client'
+      const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
@@ -587,6 +589,14 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
           : page.mode === 'client'
             ? `() => createClientPage(${pageImport})`
             : pageImport,
+      }
+
+      if (nuxt.options.experimental.normalizePageNames) {
+        if (isSyncImport) {
+          metaRoute.component = `Object.assign(${pageImportName}, { __name: ${metaRoute.name} })`
+        } else {
+          metaRoute.component = `${metaRoute.component}.then((m) => Object.assign(m.default, { __name: ${metaRoute.name} }))`
+        }
       }
 
       if (page.mode === 'server') {
