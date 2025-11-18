@@ -57,7 +57,7 @@
     "mini-css-extract-plugin": "2.9.4",
     "nitropack": "2.12.9",
     "ofetch": "1.5.1",
-    "oxc-transform": "0.97.0",
+    "oxc-transform": "0.98.0",
     "postcss": "8.5.6",
     "rollup-plugin-visualizer": "6.0.5",
     "sass-loader": "16.0.6",

@@ -18,6 +18,7 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
       },
       handler (code, id) {
         const s = new MagicString(code)
+
         parseAndWalk(code, id, (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
             return
@@ -28,18 +29,13 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
             if (callback.type !== 'ArrowFunctionExpression' && callback.type !== 'FunctionExpression') { return }
 
             const needsAttr = callback.params.length > 0
-
-            try {
-              const { code: result } = transformAndMinify(`forEach(${code.slice(callback.start, callback.end)})`, { lang: 'ts' })
-              const cleaned = result.slice('forEach'.length).replace(/;$/, '')
-              const args = [JSON.stringify(cleaned)]
-              if (needsAttr) {
-                args.push(JSON.stringify(hash(result).slice(0, 10)))
-              }
-              s.overwrite(callback.start, callback.end, args.join(', '))
-            } catch (e) {
-              console.error(`[nuxt] Could not transform onPrehydrate in \`${id}\`:`, e)
+            const { code: result } = transformAndMinify(`forEach(${code.slice(callback.start, callback.end)})`, { lang: 'ts' })
+            const cleaned = result.slice('forEach'.length).replace(/;$/, '')
+            const args = [JSON.stringify(cleaned)]
+            if (needsAttr) {
+              args.push(JSON.stringify(hash(result).slice(0, 10)))
             }
+            s.overwrite(callback.start, callback.end, args.join(', '))
           }
         })
 
