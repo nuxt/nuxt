@@ -257,7 +257,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
     const dynamicProperties = new Set<keyof NuxtPage>()
 
-    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), async (node) => {
+    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier') { return }
 
       // function name is one of the extracted macro functions and not yet found
