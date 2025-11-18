@@ -13,7 +13,7 @@ import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
 import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
-import { transform as oxcTransform } from 'oxc-transform'
+import { transformSync } from 'oxc-transform'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 import type { NuxtPage } from 'nuxt/schema'
@@ -257,7 +257,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
     const dynamicProperties = new Set<keyof NuxtPage>()
 
-    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), async (node) => {
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier') { return }
 
       // function name is one of the extracted macro functions and not yet found
@@ -271,7 +271,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // TODO: always true because `extractScriptContent` only detects ts/tsx loader
       if (/tsx?/.test(script.loader)) {
         // slice, transform and parse the `define...` macro node to avoid parsing the whole file
-        const transformed = oxcTransform(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
         if (transformed.errors.length) {
           for (const error of transformed.errors) {
             logger.warn(`Error while transforming \`${fnName}()\`` + error.codeframe)
