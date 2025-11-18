@@ -5,7 +5,7 @@ import { withoutBase } from 'ufo'
 import { isCSSRequest } from 'vite'
 import type { ViteDevServer } from 'vite'
 
-// https://github.com/vitejs/vite/tree/main/packages/vite/src/node/server/warmup.ts#L62-L70
+// https://github.com/vitejs/vite/blob/main/packages/vite/src/node/server/warmup.ts#L62-L70
 function fileToUrl (file: string, root: string) {
   const url = relative(root, file)
   // out of root, use /@fs/ prefix
