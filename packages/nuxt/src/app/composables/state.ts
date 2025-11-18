@@ -83,7 +83,7 @@ function toValueWithFallback<T> (source: MaybeRefOrGetter<T>): T | undefined {
   try {
     return toValue(source)
   } catch (e) {
-    console.error('Error transforming default value', value, e)
+    console.error('Error transforming default value', source, e)
     return getDefault()
   }
 }
