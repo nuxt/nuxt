@@ -5,7 +5,6 @@ import { minify } from 'oxc-minify'
 import type { MinifyResult } from 'oxc-minify'
 
 export async function transformAndMinify (input: string, options?: TransformOptions): Promise<TransformResult | MinifyResult> {
-  // not async until https://github.com/oxc-project/oxc/issues/10900
   const oxcOptions = tryUseNuxt()?.options.oxc
   const transformResult = await transform('', input, { ...oxcOptions?.transform.options, ...options })
   const minifyResult = await minify('', transformResult.code, { compress: { target: oxcOptions?.transform.options.target as 'esnext' || 'esnext' } })
