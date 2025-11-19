@@ -63,7 +63,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
 
   nuxtApp.hook('vue:error', () => {
-    abortTransition?.()
+    finishTransition?.()
     resetTransitionState()
   })
 
