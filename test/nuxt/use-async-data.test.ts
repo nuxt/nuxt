@@ -1153,4 +1153,22 @@ describe('useAsyncData', () => {
 
     vi.useRealTimers()
   })
+
+  it('should correctly return deduped promises', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 100)))
+
+    const p1 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    const p2 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    const p3 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    const p4 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+
+    vi.advanceTimersByTime(100)
+    const [r1, r2, r3, r4] = await Promise.all([p1, p2, p3, p4])
+    expect(promiseFn).toHaveBeenCalledTimes(4)
+    expect(r1.data.value).toBe('test')
+    expect(r2.data.value).toBe('test')
+    expect(r3.data.value).toBe('test')
+    expect(r4.data.value).toBe('test')
+  })
 })
