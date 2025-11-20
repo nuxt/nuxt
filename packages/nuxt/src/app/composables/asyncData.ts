@@ -749,7 +749,6 @@ function createAsyncData<
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
-          console.log('aborted')
           // If the promise was replaced by another one, we do not update the asyncData
           if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
             return nuxtApp._asyncDataPromises[key]
