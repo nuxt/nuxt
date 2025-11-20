@@ -273,11 +273,9 @@ export function useAsyncData<
 
   const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered
 
-  let promise: Promise<void> = Promise.resolve()
-
   // Server side
   if (import.meta.server && fetchOnServer && options.immediate) {
-    promise = initialFetch()
+    const promise = initialFetch()
     if (getCurrentInstance()) {
       onServerPrefetch(() => promise)
     } else {
@@ -322,7 +320,7 @@ export function useAsyncData<
       instance._nuxtOnBeforeMountCbs.push(initialFetch)
     } else if (options.immediate && asyncData.status.value !== 'success') {
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
-      promise = initialFetch()
+      initialFetch()
     }
 
     function unregister (key: string) {
@@ -426,7 +424,7 @@ export function useAsyncData<
   }
 
   // Allow directly awaiting on asyncData
-  const asyncDataPromise = Promise.resolve(promise).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+  const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
   Object.assign(asyncDataPromise, asyncReturn)
 
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
