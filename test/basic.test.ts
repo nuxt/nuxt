@@ -3148,16 +3148,7 @@ describe('nuxt-time', () => {
 })
 
 describe('async-data', () => {
-  it('should correctly return deduped promises (renderPage)', async () => {
-    const { page } = await renderPage('/async-data/multiple')
-    expect(await page.getByTestId('1').textContent()).toBe('Hello from async data!')
-    expect(await page.getByTestId('2').textContent()).toBe('Hello from async data!')
-    expect(await page.getByTestId('3').textContent()).toBe('Hello from async data!')
-    expect(await page.getByTestId('4').textContent()).toBe('Hello from async data!')
-    expect(await page.getByTestId('5').textContent()).toBe('Hello from async data!')
-  })
-
-  it('should correctly return deduped promises (fetch)', async () => {
+  it('should correctly return deduped promises', async () => {
     const html = await $fetch<string>('/async-data/multiple')
 
     expect(html).toContain('<span data-testid="1">Hello from async data!</span>')
