@@ -140,7 +140,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 
       const tokens = parseSegment(segment!, file.absolutePath)
 
-      // Skip group segments after adding to meta
+      // Skip group segments after collecting their names
       if (tokens.every(token => token.type === SegmentTokenType.group)) {
         const groupNames = tokens.map(t => t.value)
 
@@ -169,6 +169,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       }
     }
 
+    // Add route groups to meta
     if (routeGroups.length > 0) {
       route.meta ||= {}
       route.meta.groups = routeGroups
