@@ -49,7 +49,7 @@ async function main () {
     const originalReadme = readFileSync('README.md', 'utf-8')
     const readme = originalReadme.replace(
       /\.\/\.github\/assets/g,
-      'https://github.com/nuxt/nuxt/tree/main/.github/assets',
+      'https://github.com/nuxt/nuxt/blob/main/.github/assets',
     )
     writeFileSync('README.md', readme)
 

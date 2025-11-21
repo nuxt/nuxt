@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
+import process from 'node:process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
@@ -10,7 +11,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
@@ -67,7 +68,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   for (const m of nuxt.options._installedModules) {
     const path = m.meta?.rawPath || m.entryPath
     if (path) {
-      moduleEntryPaths.push(path)
+      moduleEntryPaths.push(getDirectory(path))
     }
   }
 
@@ -218,7 +219,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
         ],
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-          // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
           relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
         ],
       },
@@ -493,7 +493,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
-      exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
+      exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
     }),
   )
 
