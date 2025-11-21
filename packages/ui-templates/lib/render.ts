@@ -58,7 +58,7 @@ export const RenderPlugin = () => {
         // Inline SVGs
         const svgSources: string[] = []
 
-        for (const [_, src] of html.matchAll(/src="([^"]+)"|url([^)]+)/g)) {
+        for (const [_, src] of html.matchAll(/src="([^"]+)"|url\([^)]+\)/g)) {
           if (src?.match(/\.svg$/)) {
             svgSources.push(src)
           }
@@ -99,7 +99,7 @@ export const RenderPlugin = () => {
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
         // Serialize into a js function
-        const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
+        const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
         let hasExpression = false
         let templateString = chunks.shift()
@@ -123,22 +123,22 @@ export const RenderPlugin = () => {
         ].join('\n')
 
         const templateContent = html
-          .match(/<body[^>]*>([\s\S]*)<\/body>/)?.[0]
+          .match(/<body[^>]*>[\s\S]*<\/body>/)?.[0]
           .replace(/(?<=<\/|<)body/g, 'div')
           .replace(/messages\./g, '')
-          .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
+          .replace(/<script[^>]*>[\s\S]*?<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
 
-          .replace(/<([^>]+) ([a-z]+)="([^"]*)(\{\{\s*(\w+)\s*\}\})([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$5}$6`"$7>')
+          .replace(/<([^>]+) ([a-z]+)="([^"]*)\{\{\s*(\w+)\s*\}\}([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$4}$5`"$6>')
           .replace(/>\{\{\s*(\w+)\s*\}\}<\/[\w-]*>/g, ' v-text="$1" />')
           .replace(/>\{\{\{\s*(\w+)\s*\}\}\}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
-        const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1]?.replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
+        const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1]?.replace(/\{\{[\s\S]+?\}\}/g, (r) => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
         const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1]).join('\n')
-        const globalStyles = styleContent.replace(/(\.[^{\d][^{]*\{[^}]*\})+.?/g, (r) => {
+        const globalStyles = styleContent.replace(/(?:\.[^{\d][^{]*\{[^}]*\})+.?/g, (r) => {
           const lastChar = r[r.length - 1]
           if (lastChar && !['}', '.', '@', '*', ':'].includes(lastChar)) {
             return ';' + lastChar
@@ -200,13 +200,12 @@ export const RenderPlugin = () => {
 
       // we manually copy files across rather than using symbolic links for better windows support
       const nuxtRoot = r('../nuxt')
-      for (const file of ['error-404.vue', 'error-500.vue', 'error-dev.vue', 'welcome.vue']) {
+      const nitroRoot = r('../nitro-server')
+      for (const file of ['error-404.vue', 'error-500.vue', 'welcome.vue']) {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
-      await mkdir(join(nuxtRoot, 'src/core/runtime/nitro/templates'), { recursive: true })
-      for (const file of ['error-500.ts', 'error-dev.ts']) {
-        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro/templates', file))
-      }
+      await mkdir(join(nitroRoot, 'src/runtime/templates'), { recursive: true })
+      await copyFile(r(`dist/templates/error-500.ts`), join(nitroRoot, 'src/runtime/templates/error-500.ts'))
     },
   }
 }

@@ -1,4 +1,4 @@
-import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -96,7 +96,7 @@ export async function isPrerendered (url = useRoute().path) {
   const nuxtApp = useNuxtApp()
   // Note: Alternative for server is checking x-nitro-prerender header
   if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
-  url = withoutTrailingSlash(url)
+  url = url === '/' ? url : url.replace(/\/$/, '')
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true

@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
@@ -200,13 +201,15 @@ export default defineResolvers({
   alias: {
     $resolve: async (val, get) => {
       const [srcDir, rootDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('buildDir'), get('dir.shared')])
+      const srcWithTrailingSlash = withTrailingSlash(srcDir)
+      const rootWithTrailingSlash = withTrailingSlash(rootDir)
       return {
-        '~': srcDir,
-        '@': srcDir,
-        '~~': rootDir,
-        '@@': rootDir,
-        '#shared': resolve(rootDir, sharedDir),
-        '#build': buildDir,
+        '~': srcWithTrailingSlash,
+        '@': srcWithTrailingSlash,
+        '~~': rootWithTrailingSlash,
+        '@@': rootWithTrailingSlash,
+        '#shared': withTrailingSlash(resolve(rootDir, sharedDir)),
+        '#build': withTrailingSlash(buildDir),
         '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...typeof val === 'object' ? val : {},
       }
@@ -291,4 +294,8 @@ function provideFallbackValues (obj: Record<string, any>) {
       provideFallbackValues(obj[key])
     }
   }
+}
+
+function withTrailingSlash (str: string) {
+  return str.replace(/\/?$/, '/')
 }
