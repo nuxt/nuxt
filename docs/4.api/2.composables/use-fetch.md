@@ -31,7 +31,7 @@ If you're using a custom useFetch wrapper, do not await it in the composable, as
 
 ::note
 You do not need to await useFetch. Nuxt will still await the promise and server render the correct result. The difference is how it is handled on the client side.
-If you omit the `await`, navigation will happen immediately and you will have to handle loading states on your own. This will usually result in a better UX for your app but also means more effort.
+If you omit the `await`, navigation will happen immediately, and you will have to handle loading states on your own. This will usually result in a better UX for your app but also means more effort.
 ::
 
 ::note
