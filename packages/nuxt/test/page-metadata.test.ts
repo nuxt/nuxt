@@ -361,7 +361,9 @@ describe('normalizeRoutes', () => {
         {
           name: "some-custom-name",
           path: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.path ?? "/",
+          props: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.props ?? false,
           meta: { ...(indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta || {}), ...{"layout":"test","foo":"bar"} },
+          alias: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.alias || [],
           redirect: "/",
           component: () => import("/app/pages/index.vue")
         }
