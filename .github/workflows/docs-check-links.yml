@@ -10,7 +10,7 @@ on:
       - 3.x
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Lychee link checker
-        uses: lycheeverse/lychee-action@e79a91bfe7208fbf053c02277ad554a4df6ebac3 # for v1.8.0
+        uses: lycheeverse/lychee-action@1ef33e2493308e49729a7789ddd73e7f8bed8f45 # for v1.8.0
         with:
           # arguments with file types to check
           args: >-

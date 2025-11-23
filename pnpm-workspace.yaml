@@ -12,10 +12,15 @@ ignoredBuiltDependencies:
   - esbuild
   - oxc-resolver
   - unrs-resolver
-  - vue-demi
+
+patchedDependencies:
+  changelogen: patches/changelogen.patch
 
 publicHoistPattern:
   - '*-loader'
   - 'webpack-*'
 
 shellEmulator: true
+
+verifyDepsBeforeRun: install
+

@@ -200,11 +200,12 @@ export const RenderPlugin = () => {
 
       // we manually copy files across rather than using symbolic links for better windows support
       const nuxtRoot = r('../nuxt')
+      const nitroRoot = r('../nitro-server')
       for (const file of ['error-404.vue', 'error-500.vue', 'welcome.vue']) {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
-      await mkdir(join(nuxtRoot, 'src/core/runtime/nitro/templates'), { recursive: true })
-      await copyFile(r(`dist/templates/error-500.ts`), join(nuxtRoot, 'src/core/runtime/nitro/templates/error-500.ts'))
+      await mkdir(join(nitroRoot, 'src/runtime/templates'), { recursive: true })
+      await copyFile(r(`dist/templates/error-500.ts`), join(nitroRoot, 'src/runtime/templates/error-500.ts'))
     },
   }
 }

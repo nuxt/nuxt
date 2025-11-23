@@ -1,5 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { type GlobOptions, glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
