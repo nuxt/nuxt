@@ -778,8 +778,8 @@ importers:
         specifier: ^17.4.2
         version: 17.4.2(@vue/compiler-sfc@3.5.25)(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0(esbuild@0.27.0))
       webpack-bundle-analyzer:
-        specifier: ^4.10.2
-        version: 4.10.2
+        specifier: ^5.0.1
+        version: 5.0.1
       webpack-dev-middleware:
         specifier: ^7.4.5
         version: 7.4.5(webpack@5.103.0(esbuild@0.27.0))
@@ -1219,8 +1219,8 @@ importers:
         specifier: 5.103.0
         version: 5.103.0(esbuild@0.27.0)
       webpack-bundle-analyzer:
-        specifier: ^4.10.2
-        version: 4.10.2
+        specifier: ^5.0.1
+        version: 5.0.1
       webpack-dev-middleware:
         specifier: ^7.4.5
         version: 7.4.5(webpack@5.103.0(esbuild@0.27.0))
@@ -8496,9 +8496,9 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
-  webpack-bundle-analyzer@4.10.2:
-    resolution: {integrity: sha512-vJptkMm9pk5si4Bv922ZbKLV8UTT4zib4FPgXMhgzUny0bfDDkLXAVQs3ly3fS4/TN9ROFtb0NFrm04UXFE/Vw==}
-    engines: {node: '>= 10.13.0'}
+  webpack-bundle-analyzer@5.0.1:
+    resolution: {integrity: sha512-PUp3YFOHysSw8t+13rcF+8o5SGaP/AZ5KnIF3qJfFodv4xJkmixnfcyy+LOwNadpzvyrEKpaMlewAG2sFUfdpw==}
+    engines: {node: '>= 20.9.0'}
     hasBin: true
 
   webpack-dev-middleware@7.4.5:
@@ -16719,7 +16719,7 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
-  webpack-bundle-analyzer@4.10.2:
+  webpack-bundle-analyzer@5.0.1:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
       acorn: 8.15.0
@@ -16727,7 +16727,6 @@ snapshots:
       commander: 7.2.0
       debounce: 1.2.1
       escape-string-regexp: 4.0.0
-      gzip-size: 6.0.0
       html-escaper: 2.0.2
       opener: 1.5.2
       picocolors: 1.1.1
