@@ -75,7 +75,7 @@
     "vite": "7.2.4",
     "vue": "3.5.25",
     "vue-router": "4.6.3",
-    "webpack": "5.102.1"
+    "webpack": "5.103.0"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
@@ -149,7 +149,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.25",
     "vue-tsc": "3.1.5",
-    "webpack": "5.102.1"
+    "webpack": "5.103.0"
   },
   "packageManager": "pnpm@10.23.0",
   "version": ""
