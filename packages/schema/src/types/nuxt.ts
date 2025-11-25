@@ -95,6 +95,11 @@ export interface Nuxt {
   _debug?: NuxtDebugContext
   /** Async local storage for current running Nuxt module instance. */
   _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
+  /**
+   * Module options functions collected from moduleDependencies.
+   * @internal
+   */
+  _moduleOptionsFunctions?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions
