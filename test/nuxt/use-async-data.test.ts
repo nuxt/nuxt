@@ -1154,21 +1154,43 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
-  it('should correctly return deduped promises', async () => {
+  it('should resolve deduped promises at the same time', async () => {
     vi.useFakeTimers()
-    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 100)))
+    let count = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(++count), 100)))
+
+    const resolved = {
+      p1: false,
+      p2: false,
+      p3: false,
+      p4: false,
+    }
 
     const p1 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    p1.then(() => { resolved.p1 = true })
+    vi.advanceTimersByTime(90)
+
     const p2 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
     const p3 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
     const p4 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    p2.then(() => { resolved.p2 = true })
+    p3.then(() => { resolved.p3 = true })
+    p4.then(() => { resolved.p4 = true })
 
-    vi.advanceTimersByTime(100)
-    const [r1, r2, r3, r4] = await Promise.all([p1, p2, p3, p4])
+    vi.advanceTimersByTime(60)
+    await flushPromises()
+    expect(resolved).toEqual({ p1: false, p2: false, p3: false, p4: false })
+
+    vi.advanceTimersByTime(40)
+    const res = await Promise.all([p1, p2, p3, p4])
+
+    expect(resolved).toEqual({ p1: true, p2: true, p3: true, p4: true })
     expect(promiseFn).toHaveBeenCalledTimes(4)
-    expect(r1.data.value).toBe('test')
-    expect(r2.data.value).toBe('test')
-    expect(r3.data.value).toBe('test')
-    expect(r4.data.value).toBe('test')
+
+    for (const r of res) {
+      expect(r.data.value).toBe(4)
+    }
+
+    vi.useRealTimers()
   })
 })

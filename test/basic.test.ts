@@ -3146,15 +3146,3 @@ describe('nuxt-time', () => {
     expect(logs.join('')).toMatchInlineSnapshot('""')
   })
 })
-
-describe('async-data', () => {
-  it('should correctly return deduped promises', async () => {
-    const html = await $fetch<string>('/async-data/multiple')
-
-    expect(html).toContain('<span data-testid="1">Hello from async data!</span>')
-    expect(html).toContain('<span data-testid="2">Hello from async data!</span>')
-    expect(html).toContain('<span data-testid="3">Hello from async data!</span>')
-    expect(html).toContain('<span data-testid="4">Hello from async data!</span>')
-    expect(html).toContain('<span data-testid="5">Hello from async data!</span>')
-  })
-})
