@@ -384,7 +384,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       if (import.meta.client) {
-        checkPropConflicts(props, 'prefetch', 'noPrefetch')
+        checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
           let idleId: number
@@ -471,7 +471,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
         ) || null
 
-        // https://router.vuejs.org/api/interfaces/RouterLinkProps.html#custom-
+        // https://router.vuejs.org/api/interfaces/routerlinkprops#custom-
         if (props.custom) {
           if (!slots.default) {
             return null

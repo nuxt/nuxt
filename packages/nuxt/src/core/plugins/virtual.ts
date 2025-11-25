@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { dirname, isAbsolute, resolve } from 'pathe'

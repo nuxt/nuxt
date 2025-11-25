@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { performance } from 'node:perf_hooks'
 import { createBuilder, createServer, mergeConfig } from 'vite'
 import * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
@@ -169,7 +170,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
             },
             sanitizeFileName: sanitizeFilePath,
-            // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
+            // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
             assetFileNames: nuxt.options.dev
               ? undefined
               : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),

@@ -19,8 +19,8 @@ export function ReplacePlugin (): Plugin {
         }
       }
 
-      if ((vite as any).rolldownVersion) {
-        const { replacePlugin } = await import('rolldown/experimental')
+      if (config.isProduction && (vite as any).rolldownVersion) {
+        const { replacePlugin } = await import('rolldown/plugins')
         return replacePlugin(replaceOptions, { preventAssignment: true })
       } else {
         return replacePlugin({ ...replaceOptions, preventAssignment: true })
