@@ -53,7 +53,7 @@ import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
 
-export function createNuxt (options: NuxtOptions): Nuxt {
+export function createNuxt(options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
 
   const { callHook, callHookParallel, callHookWith } = hooks
@@ -81,7 +81,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     const proxiedOptions = new WeakMap<NuxtModule, NuxtOptions>()
 
     Object.defineProperty(nuxt, 'options', {
-      get () {
+      get() {
         const currentModule = nuxt._asyncLocalStorageModule!.getStore()
         if (!currentModule) {
           return options
@@ -159,7 +159,7 @@ export const keyDependencies: string[] = [
 
 let warnedAboutCompatDate = false
 
-async function initNuxt (nuxt: Nuxt) {
+async function initNuxt(nuxt: Nuxt) {
   const layerDirs = getLayerDirectories(nuxt)
 
   // Register user hooks
@@ -341,6 +341,9 @@ async function initNuxt (nuxt: Nuxt) {
       'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     },
   }), { server: false })
+
+  // Add plugin normalization plugin
+  addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
@@ -785,7 +788,7 @@ export default defineNuxtPlugin({
   await nuxt.callHook('ready', nuxt)
 }
 
-export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+export async function loadNuxt(opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = await loadNuxtConfig(opts)
 
   // Temporary until finding better placement for each
@@ -875,7 +878,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       configurable: false,
       enumerable: true,
       get: () => nitroOptions,
-      set (value) {
+      set(value) {
         Object.assign(nitroOptions, value)
       },
     },
@@ -907,7 +910,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
 
-function deduplicateArray<T = unknown> (maybeArray: T): T {
+function deduplicateArray<T = unknown>(maybeArray: T): T {
   if (!Array.isArray(maybeArray)) { return maybeArray }
 
   const fresh: any[] = []
@@ -922,7 +925,7 @@ function deduplicateArray<T = unknown> (maybeArray: T): T {
   return fresh as T
 }
 
-function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: string[]) {
+function createPortalProperties(sourceValue: any, options: NuxtOptions, paths: string[]) {
   let sharedValue = sourceValue
 
   for (const path of paths) {
@@ -942,7 +945,7 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
         configurable: false,
         enumerable: true,
         get: () => sharedValue,
-        set (value) {
+        set(value) {
           sharedValue = value
         },
       },
@@ -950,7 +953,7 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
   }
 }
 
-async function resolveModules (nuxt: Nuxt) {
+async function resolveModules(nuxt: Nuxt) {
   const modules = new Map<string | NuxtModule, Record<string, any>>()
   const paths = new Set<string>()
   const resolvedModulePaths = new Set<string>()
@@ -1011,7 +1014,7 @@ async function resolveModules (nuxt: Nuxt) {
 }
 
 const NESTED_PKG_RE = /^[^@]+\//
-async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [string]>> {
+async function resolveTypescriptPaths(nuxt: Nuxt): Promise<Record<string, [string]>> {
   nuxt.options.typescript.hoist ||= []
   const paths = Object.fromEntries(await Promise.all(nuxt.options.typescript.hoist.map(async (pkg) => {
     const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
@@ -1040,6 +1043,6 @@ async function resolveTypescriptPaths (nuxt: Nuxt): Promise<Record<string, [stri
   return paths
 }
 
-function withTrailingSlash (dir: string) {
+function withTrailingSlash(dir: string) {
   return dir.replace(/[^/]$/, '$&/')
 }

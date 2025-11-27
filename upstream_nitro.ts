@@ -37,11 +37,7 @@ const logLevelMapReverse = {
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
-<<<<<<< HEAD
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
-=======
-export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
->>>>>>> 3e63c47e9 (feat(schema): add global tsconfig options)
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
   const excludePaths: string[] = []
@@ -179,10 +175,10 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {
-        template: 'treemap',
-        projectRoot: nuxt.options.rootDir,
-        filename: join(nuxt.options.analyzeDir, '{name}.html'),
-      }
+          template: 'treemap',
+          projectRoot: nuxt.options.rootDir,
+          filename: join(nuxt.options.analyzeDir, '{name}.html'),
+        }
       : false,
     scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: resolve(distDir, 'runtime/handlers/renderer'),
@@ -222,45 +218,38 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
       strict: true,
       generateTsConfig: true,
       tsconfigPath: 'tsconfig.server.json',
-      tsConfig: defu(
-        nuxt.options.nitro.typescript?.tsConfig,
-        nuxt.options.typescript?.serverTsConfig,
-        nuxt.options.typescript?.tsConfig,
-        {
-          compilerOptions: {
-            lib: ['esnext', 'webworker', 'dom.iterable'],
-            skipLibCheck: true,
-            noUncheckedIndexedAccess: true,
-          },
-          include: [
-            join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
-            ...modules.flatMap((m) => {
-              const moduleDir = relativeWithDot(nuxt.options.buildDir, m)
-              return [
-                join(moduleDir, 'runtime/server'),
-                join(moduleDir, 'dist/runtime/server'),
-              ]
-            }),
-            ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.server, '**/*'))),
-            ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
-          ],
-          exclude: [
-            ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-            relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
-          ],
+      tsConfig: {
+        compilerOptions: {
+          lib: ['esnext', 'webworker', 'dom.iterable'],
+          skipLibCheck: true,
+          noUncheckedIndexedAccess: true,
         },
-      ) as any,
-        },
-      ),
+        include: [
+          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
+          ...modules.flatMap((m) => {
+            const moduleDir = relativeWithDot(nuxt.options.buildDir, m)
+            return [
+              join(moduleDir, 'runtime/server'),
+              join(moduleDir, 'dist/runtime/server'),
+            ]
+          }),
+          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.server, '**/*'))),
+          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
+        ],
+        exclude: [
+          ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+          relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+        ],
+      },
     },
     publicAssets: [
       nuxt.options.dev
         ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
         : {
-          dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
-          maxAge: 31536000 /* 1 year */,
-          baseURL: nuxt.options.app.buildAssetsDir,
-        },
+            dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
+            maxAge: 31536000 /* 1 year */,
+            baseURL: nuxt.options.app.buildAssetsDir,
+          },
       ...layerPublicAssetsDirs,
     ],
     prerender: {
@@ -277,10 +266,10 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
         ...(nuxt.options.dev
           ? []
           : [
-            ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
-            '@nuxt/',
-            nuxt.options.buildDir,
-          ]),
+              ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
+              '@nuxt/',
+              nuxt.options.buildDir,
+            ]),
         ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
@@ -293,12 +282,12 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
         // force include files used in generated code from the runtime-compiler
         ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
           ? [
-            ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
-              const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
-              if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
-              return targets
-            }, []),
-          ]
+              ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+                const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
+                if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+                return targets
+              }, []),
+            ]
           : [],
       ],
     },
@@ -307,12 +296,12 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
         : {
-          'estree-walker': mockProxy,
-          '@babel/parser': mockProxy,
-          '@vue/compiler-core': mockProxy,
-          '@vue/compiler-dom': mockProxy,
-          '@vue/compiler-ssr': mockProxy,
-        },
+            'estree-walker': mockProxy,
+            '@babel/parser': mockProxy,
+            '@vue/compiler-core': mockProxy,
+            '@vue/compiler-dom': mockProxy,
+            '@vue/compiler-ssr': mockProxy,
+          },
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Nuxt aliases
@@ -642,7 +631,7 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
 
   const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
   const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
-  await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => { })
+  await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
       // TODO: resolve upstream where file URLs are not being resolved/inlined correctly
@@ -670,7 +659,7 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
       name: 'nuxt:vue:runtime-compiler',
       applyToEnvironment: environment => environment.name === 'client',
       enforce: 'pre',
-      resolveId(id, importer) {
+      resolveId (id, importer) {
         if (id === 'vue') {
           return this.resolve('vue/dist/vue.esm-bundler', importer, { skipSelf: true })
         }
@@ -796,11 +785,11 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
-  async function symlinkDist() {
+  async function symlinkDist () {
     if (nitro.options.static) {
       const distDir = resolve(nuxt.options.rootDir, 'dist')
       if (!existsSync(distDir)) {
-        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => { })
+        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
       }
     }
   }
@@ -844,11 +833,11 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }) {
 }
 
 const RELATIVE_RE = /^([^.])/
-function relativeWithDot(from: string, to: string) {
+function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
 }
 
-async function spaLoadingTemplatePath(nuxt: Nuxt) {
+async function spaLoadingTemplatePath (nuxt: Nuxt) {
   if (typeof nuxt.options.spaLoadingTemplate === 'string') {
     return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
   }
@@ -858,7 +847,7 @@ async function spaLoadingTemplatePath(nuxt: Nuxt) {
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }
 
-async function spaLoadingTemplate(nuxt: Nuxt) {
+async function spaLoadingTemplate (nuxt: Nuxt) {
   if (nuxt.options.spaLoadingTemplate === false) { return '' }
 
   const spaLoadingTemplate = await spaLoadingTemplatePath(nuxt)

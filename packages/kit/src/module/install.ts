@@ -35,7 +35,7 @@ const ignoredConfigKeys = new Set(['components', 'imports', 'pages', 'devtools',
  * Installs a set of modules on a Nuxt instance.
  * @internal
  */
-export async function installModules (modulesToInstall: Map<ModuleToInstall, Record<string, any>>, resolvedModulePaths: Set<string>, nuxt: Nuxt = useNuxt()): Promise<void> {
+export async function installModules(modulesToInstall: Map<ModuleToInstall, Record<string, any>>, resolvedModulePaths: Set<string>, nuxt: Nuxt = useNuxt()): Promise<void> {
   const localLayerModuleDirs: string[] = []
   for (const l of nuxt.options._layers) {
     const srcDir = l.config.srcDir || l.cwd
@@ -145,7 +145,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         defaults.push(options.defaults)
       }
       if (configKey) {
-        ;(nuxt.options[configKey] as any) = defu(...overrides, nuxt.options[configKey], ...defaults)
+        ; (nuxt.options[configKey] as any) = defu(...overrides, nuxt.options[configKey], ...defaults)
       }
     }
 
@@ -174,7 +174,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
 export async function installModule<
   T extends string | NuxtModule,
   Config extends Extract<NonNullable<NuxtConfig['modules']>[number], [T, any]>,
-> (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()): Promise<void> {
+>(moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()): Promise<void> {
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   const localLayerModuleDirs: string[] = []
@@ -204,7 +204,7 @@ export async function installModule<
         defaults.push(options.defaults)
       }
       mergedOptions = defu(inlineOptions, ...overrides, nuxt.options[configKey], ...defaults) as any
-      ;(nuxt.options[configKey] as any) = mergedOptions
+        ; (nuxt.options[configKey] as any) = mergedOptions
     }
   }
 
@@ -223,7 +223,7 @@ export async function installModule<
   })
 }
 
-export function resolveModuleWithOptions (
+export function resolveModuleWithOptions(
   definition: NuxtModule<any> | string | false | undefined | null | [(NuxtModule | string)?, Record<string, any>?],
   nuxt: Nuxt,
 ): { resolvedPath?: string, module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
@@ -255,7 +255,7 @@ export function resolveModuleWithOptions (
   }
 }
 
-export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()): Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }> {
+export async function loadNuxtModuleInstance(nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()): Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }> {
   let buildTimeModuleMeta: ModuleMeta = {}
 
   if (typeof nuxtModule === 'function') {
@@ -318,7 +318,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
 // --- Internal ---
 
-export function getDirectory (p: string): string {
+export function getDirectory(p: string): string {
   try {
     // we need to target directories instead of module file paths themselves
     // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module
@@ -335,7 +335,7 @@ export const normalizeModuleTranspilePath = (p: string) => {
 
 const MissingModuleMatcher = /Cannot find module\s+['"]?([^'")\s]+)['"]?/i
 
-async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt()) {
+async function callLifecycleHooks(nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt()) {
   if (!meta.name || !meta.version) {
     return
   }
@@ -372,7 +372,7 @@ interface CallModuleOptions {
   localLayerModuleDirs: string[]
 }
 
-async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>, false>, moduleOptions: Record<string, unknown> = {}, options: CallModuleOptions) {
+async function callModule(nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>, false>, moduleOptions: Record<string, unknown> = {}, options: CallModuleOptions) {
   const modulePath = options.modulePath
   const nameOrPath = options.nameOrPath
   const localLayerModuleDirs = options.localLayerModuleDirs

@@ -123,28 +123,28 @@ export interface ConfigSchema {
    * Nuxt App configuration.
    */
   app: {
-  /**
-   * The base path of your Nuxt application.
-   *
-   * For example:
-   *
-   *
-   * @example
-   * ```ts
-   * export default defineNuxtConfig({
-   *   app: {
-   *     baseURL: '/prefix/'
-   *   }
-   * })
-   * ```
-   *
-   * This can also be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
-   *
-   * @example
-   * ```bash
-   * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
-   * ```
-   */
+    /**
+     * The base path of your Nuxt application.
+     *
+     * For example:
+     *
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     baseURL: '/prefix/'
+     *   }
+     * })
+     * ```
+     *
+     * This can also be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
+     *
+     * @example
+     * ```bash
+     * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
+     * ```
+     */
     baseURL: string
 
     /**
@@ -393,20 +393,20 @@ export interface ConfigSchema {
    * An object that allows us to configure the `unhead` nuxt module.
    */
   unhead: {
-  /**
-   * Enable the legacy compatibility mode for `unhead` module. This applies the following changes: - Disables Capo.js sorting - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body` - Adds the `PromisesPlugin`: supports promises as input
-   *
-   *
-   * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
-   *
-   * @example
-   * ```ts
-   * export default defineNuxtConfig({
-   *  unhead: {
-   *   legacy: true
-   * })
-   * ```
-   */
+    /**
+     * Enable the legacy compatibility mode for `unhead` module. This applies the following changes: - Disables Capo.js sorting - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body` - Adds the `PromisesPlugin`: supports promises as input
+     *
+     *
+     * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/typescript/head/guides/get-started/migration)
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   legacy: true
+     * })
+     * ```
+     */
     legacy: boolean
 
     /**
@@ -451,16 +451,16 @@ export interface ConfigSchema {
    * Shared build configuration.
    */
   build: {
-  /**
-   * If you want to transpile specific dependencies with Babel, you can add them here. Each item in transpile can be a package name, a function, a string or regex object matching the dependency's file name.
-   *
-   * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
-   *
-   * @example
-   * ```js
-   * transpile: [({ isLegacy }) => isLegacy && 'ky']
-   * ```
-   */
+    /**
+     * If you want to transpile specific dependencies with Babel, you can add them here. Each item in transpile can be a package name, a function, a string or regex object matching the dependency's file name.
+     *
+     * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
+     *
+     * @example
+     * ```js
+     * transpile: [({ isLegacy }) => isLegacy && 'ky']
+     * ```
+     */
     transpile: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)>
 
     /**
@@ -939,22 +939,22 @@ export interface ConfigSchema {
   appConfig: AppConfig
 
   devServer: {
-  /**
-   * Whether to enable HTTPS.
-   *
-   *
-   * @example
-   * ```ts
-   * export default defineNuxtConfig({
-   *   devServer: {
-   *     https: {
-   *       key: './server.key',
-   *       cert: './server.crt'
-   *     }
-   *   }
-   * })
-   * ```
-   */
+    /**
+     * Whether to enable HTTPS.
+     *
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   devServer: {
+     *     https: {
+     *       key: './server.key',
+     *       cert: './server.crt'
+     *     }
+     *   }
+     * })
+     * ```
+     */
     https: boolean | { key: string, cert: string } | { pfx: string, passphrase: string }
 
     /**
@@ -989,10 +989,10 @@ export interface ConfigSchema {
    * `future` is for early opting-in to new features that will become default in a future (possibly major) version of the framework.
    */
   future: {
-  /**
-   * Enable early access to future features or flags.
-   *
-   */
+    /**
+     * Enable early access to future features or flags.
+     *
+     */
     compatibilityVersion: 4 | 5
 
     /**
@@ -1017,11 +1017,11 @@ export interface ConfigSchema {
    * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
    */
   features: {
-  /**
-   * Inline styles when rendering HTML (currently vite only).
-   *
-   * You can also pass a function that receives the path of a Vue component and returns a boolean indicating whether to inline the styles for that component.
-   */
+    /**
+     * Inline styles when rendering HTML (currently vite only).
+     *
+     * You can also pass a function that receives the path of a Vue component and returns a boolean indicating whether to inline the styles for that component.
+     */
     inlineStyles: boolean | ((id?: string) => boolean)
 
     /**
@@ -1040,12 +1040,12 @@ export interface ConfigSchema {
   }
 
   experimental: {
-  /**
-   * Enable to use experimental decorators in Nuxt and Nitro.
-   *
-   *
-   * @see https://github.com/tc39/proposal-decorators
-   */
+    /**
+     * Enable to use experimental decorators in Nuxt and Nitro.
+     *
+     *
+     * @see https://github.com/tc39/proposal-decorators
+     */
     decorators: boolean
 
     /**
@@ -1577,9 +1577,9 @@ export interface ConfigSchema {
   devServerHandlers: NitroDevEventHandler[]
 
   postcss: {
-  /**
-   * A strategy for ordering PostCSS plugins.
-   */
+    /**
+     * A strategy for ordering PostCSS plugins.
+     */
     order: 'cssnanoLast' | 'autoprefixerLast' | 'autoprefixerAndCssnanoLast' | string[] | ((names: string[]) => string[])
 
     /**
@@ -1591,14 +1591,14 @@ export interface ConfigSchema {
   }
 
   router: {
-  /**
-   * Additional router options passed to `vue-router`. On top of the options for `vue-router`, Nuxt offers additional options to customize the router (see below).
-   *
-   * @note Only JSON serializable options should be passed by Nuxt config.
-   * For more control, you can use `app/router.options.ts` file.
-   *
-   * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
-   */
+    /**
+     * Additional router options passed to `vue-router`. On top of the options for `vue-router`, Nuxt offers additional options to customize the router (see below).
+     *
+     * @note Only JSON serializable options should be passed by Nuxt config.
+     * For more control, you can use `app/router.options.ts` file.
+     *
+     * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
+     */
     options: RouterConfigSerializable
   }
 
@@ -1606,10 +1606,10 @@ export interface ConfigSchema {
    * Configuration for Nuxt's TypeScript integration.
    */
   typescript: {
-  /**
-   * TypeScript comes with certain checks to give you more safety and analysis of your program. Once you’ve converted your codebase to TypeScript, you can start enabling these checks for greater safety. [Read More](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html#getting-stricter-checks)
-   *
-   */
+    /**
+     * TypeScript comes with certain checks to give you more safety and analysis of your program. Once you’ve converted your codebase to TypeScript, you can start enabling these checks for greater safety. [Read More](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html#getting-stricter-checks)
+     *
+     */
     strict: boolean
 
     /**
@@ -1640,7 +1640,24 @@ export interface ConfigSchema {
     typeCheck: boolean | 'build'
 
     /**
-     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     * You can extend generated tsconfig files using this option.
+     *
+     * This option applies globally to all generated TypeScript configuration files (app, node, shared, and server).
+     * For context-specific customization, use `appTsConfig`, `nodeTsConfig`, `sharedTsConfig`, or `serverTsConfig`.
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   typescript: {
+     *     tsConfig: {
+     *       compilerOptions: {
+     *         noUncheckedIndexedAccess: true,
+     *         verbatimModuleSyntax: true
+     *       }
+     *     }
+     *   }
+     * })
+     * ```
      */
     tsConfig: 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
@@ -1655,6 +1672,20 @@ export interface ConfigSchema {
     sharedTsConfig: TSConfig
 
     /**
+     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     *
+     * This allows app-specific TypeScript configuration that will be merged with the global `typescript.tsConfig`.
+     */
+    appTsConfig: TSConfig
+
+    /**
+     * You can extend the generated `tsconfig.server.json` (Nitro) using this option.
+     *
+     * This allows server-specific TypeScript configuration that will be merged with the global `typescript.tsConfig`.
+     */
+    serverTsConfig: TSConfig
+
+    /**
      * Generate a `*.vue` shim.
      *
      * We recommend instead letting the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar) generate accurate types for your components.
@@ -1664,9 +1695,9 @@ export interface ConfigSchema {
   }
 
   esbuild: {
-  /**
-   * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
-   */
+    /**
+     * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
+     */
     options: EsbuildTransformOptions
   }
 
@@ -1685,18 +1716,18 @@ export interface ConfigSchema {
   vite: ViteOptions
 
   webpack: {
-  /**
-   * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
-   *
-   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
-   *
-   * @example
-   * ```js
-   * analyze: {
-   *   analyzerMode: 'static'
-   * }
-   * ```
-   */
+    /**
+     * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
+     *
+     * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+     *
+     * @example
+     * ```js
+     * analyze: {
+     *   analyzerMode: 'static'
+     * }
+     * ```
+     */
     analyze: boolean | { enabled?: boolean } & BundleAnalyzerPlugin.Options
 
     /**
