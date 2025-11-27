@@ -22,6 +22,7 @@ const testsToTriggerOn = [
   ['nuxt/schema', 'components/Component.vue', true],
   ['/root/node_modules/@nuxt/kit', 'components/Component.vue', true],
   ['some-nuxt-module', 'components/Component.vue', true],
+  ['some-nuxt-module/runtime/something.vue', 'components/Component.vue', false],
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
   ['src/server/api/test.ts', 'components/Component.vue', true],
   ['node_modules/nitropack/node_modules/crossws/dist/adapters/bun.mjs', 'node_modules/nitropack/dist/presets/bun/runtime/bun.mjs', false],
@@ -44,7 +45,10 @@ const transformWithImportProtection = (id: string, importer: string, context: 'n
     cwd: '/root',
     patterns: createImportProtectionPatterns({
       options: {
-        modules: ['some-nuxt-module'],
+        _installedModules: [
+          // @ts-expect-error an incomplete module
+          { entryPath: 'some-nuxt-module' },
+        ],
         srcDir: '/root/src/',
         serverDir: '/root/src/server',
       } satisfies Partial<NuxtOptions> as NuxtOptions,
