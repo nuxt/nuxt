@@ -4,7 +4,7 @@ import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptio
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
-import { parseNodeModulePath } from 'mlly'
+import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { isRelative } from 'ufo'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
@@ -330,8 +330,13 @@ async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, met
   }
 
   const modulePath = resolvedModulePath || moduleToInstall
+  let entryPath: string | undefined
   if (typeof modulePath === 'string') {
     const parsed = parseNodeModulePath(modulePath)
+    if (parsed.name) {
+      const subpath = await lookupNodeModuleSubpath(modulePath) || '.'
+      entryPath = join(parsed.name, subpath === './' ? '.' : subpath)
+    }
     const moduleRoot = parsed.dir
       ? parsed.dir + parsed.name
       : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
@@ -343,7 +348,7 @@ async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, met
   }
 
   nuxt.options._installedModules ||= []
-  const entryPath = typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall, nuxt.options.alias) : undefined
+  entryPath ||= typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall, nuxt.options.alias) : undefined
 
   if (typeof moduleToInstall === 'string' && entryPath !== moduleToInstall) {
     buildTimeModuleMeta.rawPath = moduleToInstall
