@@ -102,6 +102,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/route-announcer',
   },
   {
+    imports: ['useRouteQuery'],
+    from: '#app/composables/route-query',
+  },
+  {
     imports: ['useRuntimeHook'],
     from: '#app/composables/runtime-hook',
   },
