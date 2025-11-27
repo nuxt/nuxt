@@ -555,6 +555,7 @@ export default defineResolvers({
         '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
         '**/*.d.{cts,mts,ts}', // ignore type declarations
+        '**/*.d.vue.{cts,mts,ts}',
         '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
         '**/*.sock',
         relative(rootDir, analyzeDir),

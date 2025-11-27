@@ -115,6 +115,7 @@ export default defineNuxtModule<ComponentsOptions>({
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
             '**/*.d.{cts,mts,ts}', // .d.ts files
+            '**/*.d.vue.{cts,mts,ts}', // .d.vue.ts files
             ...(dirOptions.ignore || []),
           ],
           transpile,
