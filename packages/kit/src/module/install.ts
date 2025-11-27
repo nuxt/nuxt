@@ -127,19 +127,21 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   for (const { nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
     // Merge options
     const configKey = meta?.configKey as keyof NuxtOptions | undefined
-    if (configKey) {
-      const optionsFns = [
-        ...optionsFunctions.get(moduleToInstall) || [],
-        ...optionsFunctions.get(configKey) || [],
-      ]
-      if (optionsFns.length > 0) {
-        const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
-        const defaults: Array<Record<string, unknown> | undefined> = []
-        for (const fn of optionsFns) {
-          const options = fn()
-          overrides.push(options.overrides)
-          defaults.push(options.defaults)
-        }
+    const optionsFns = [
+      ...optionsFunctions.get(moduleToInstall) || [],
+      ...meta?.name ? optionsFunctions.get(meta.name) || [] : [],
+      // TODO: consider dropping options functions keyed by config key
+      ...configKey ? optionsFunctions.get(configKey) || [] : [],
+    ]
+    if (optionsFns.length > 0) {
+      const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
+      const defaults: Array<Record<string, unknown> | undefined> = []
+      for (const fn of optionsFns) {
+        const options = fn()
+        overrides.push(options.overrides)
+        defaults.push(options.defaults)
+      }
+      if (configKey) {
         ;(nuxt.options[configKey] as any) = defu(...overrides, nuxt.options[configKey], ...defaults)
       }
     }
