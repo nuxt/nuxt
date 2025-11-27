@@ -342,7 +342,7 @@ async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, met
   }
 
   nuxt.options._installedModules ||= []
-  entryPath ||= typeof moduleToInstall === 'string' ? moduleToInstall : undefined
+  entryPath ||= typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall, nuxt.options.alias) : undefined
 
   if (typeof moduleToInstall === 'string' && entryPath !== moduleToInstall) {
     buildTimeModuleMeta.rawPath = moduleToInstall
