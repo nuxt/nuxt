@@ -7,8 +7,9 @@ import type { NuxtError } from 'nuxt/app'
 import { useNuxtApp } from '#app/nuxt'
 
 // Generated at runtime to be extended
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtLayouts {
-  [key: string]: unknown
+
 }
 
 export interface PageMeta {
