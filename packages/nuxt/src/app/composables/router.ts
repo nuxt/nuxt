@@ -4,7 +4,7 @@ import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, Route
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
-import type { PageMeta } from '../../pages/runtime/composables'
+import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
@@ -266,14 +266,19 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   throw err
 }
 
-/** @since 3.0.0 */
-export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
+/**
+ * Sets the layout for the current page.
+ * TODO type props
+ * @since 3.0.0
+ */
+export const setPageLayout = <Layout extends keyof NuxtLayouts['layouts']>(layout: Layout, props?: NuxtLayouts['layouts'][Layout]) => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
       console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
     }
     nuxtApp.payload.state._layout = layout
+    nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
     console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
@@ -282,11 +287,14 @@ export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? strin
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
       to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+      to.meta.layoutProps = props
       unsubscribe()
     })
   }
   if (!inMiddleware) {
-    useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+    const route = useRoute()
+    route.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+    route.meta.layoutProps = props
   }
 }
 

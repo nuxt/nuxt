@@ -6,6 +6,11 @@ import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtError } from 'nuxt/app'
 import { useNuxtApp } from '#app/nuxt'
 
+// Generated at runtime to be extended
+export interface NuxtLayouts {
+  [key: string]: unknown
+}
+
 export interface PageMeta {
   [key: string]: unknown
   /**
