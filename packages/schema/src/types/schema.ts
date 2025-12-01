@@ -1674,14 +1674,14 @@ export interface ConfigSchema {
     /**
      * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
      *
-     * This allows app-specific TypeScript configuration that will be merged with the global `typescript.tsConfig`.
+     * This allows app-specific TypeScript configuration. These options will be merged with (and take priority over) the global `typescript.tsConfig`.
      */
     appTsConfig: TSConfig
 
     /**
      * You can extend the generated `tsconfig.server.json` (Nitro) using this option.
      *
-     * This allows server-specific TypeScript configuration that will be merged with the global `typescript.tsConfig`.
+     * This allows server-specific TypeScript configuration. These options will be merged with (and take priority over) the global `typescript.tsConfig`.
      */
     serverTsConfig: TSConfig
 
