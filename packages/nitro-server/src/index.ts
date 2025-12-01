@@ -6,7 +6,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { join, relative, resolve } from 'pathe'
-import { readPackageJSON } from 'pkg-types'
+import { readPackageJSON, type TSConfig } from 'pkg-types'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
@@ -227,7 +227,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
             relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
           ],
         },
-      ),
+      ) as unknown as TSConfig,
     },
     publicAssets: [
       nuxt.options.dev
