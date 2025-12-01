@@ -8,7 +8,8 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import { join, relative, resolve } from 'pathe'
-import { readPackageJSON } from 'pkg-types'
+import { readPackageJSON, type TSConfig } from 'pkg-types'
+import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { hash } from 'ohash'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
@@ -245,7 +246,7 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
           ],
         },
-      ) as any,
+      ) as unknown as TSConfig,
     },
     publicAssets: [
       nuxt.options.dev
