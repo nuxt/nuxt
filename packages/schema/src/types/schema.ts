@@ -1662,25 +1662,29 @@ export interface ConfigSchema {
 
     /**
      * You can extend the generated `.nuxt/tsconfig.node.json` using this option.
+     *
+     * This allows node-specific TypeScript configuration that will be merged with the global `typescript.tsConfig` (which it overrides).
      */
     nodeTsConfig: TSConfig
 
     /**
      * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.
+     *
+     * This allows shared TypeScript configuration that will be merged with the global `typescript.tsConfig` (which it overrides).
      */
     sharedTsConfig: TSConfig
 
     /**
-     * You can extend the generated `.nuxt/tsconfig.app.json` (and legacy `.nuxt/tsconfig.json`) using this option.
+     * You can extend the generated `.nuxt/tsconfig.app.json` using this option.
      *
-     * This allows app-specific TypeScript configuration that will be merged with the global `typescript.tsConfig`.
+     * This allows app-specific TypeScript configuration that will be merged with the global `typescript.tsConfig` (which it overrides).
      */
     appTsConfig: TSConfig
 
     /**
      * You can extend the generated `tsconfig.server.json` (Nitro) using this option.
      *
-     * This allows server-specific TypeScript configuration that will be merged with the global `typescript.tsConfig`.
+     * This allows server-specific TypeScript configuration that will be merged with the global `typescript.tsConfig` (which it overrides).
      */
     serverTsConfig: TSConfig
 
