@@ -246,7 +246,7 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
           ],
         },
-      ) as unknown as TSConfig,
+      ) as any,
     },
     publicAssets: [
       nuxt.options.dev
