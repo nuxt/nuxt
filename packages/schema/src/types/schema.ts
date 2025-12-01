@@ -461,7 +461,7 @@ export interface ConfigSchema {
      * transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
      */
-    transpile: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)>
+    transpile: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean, isModern?: boolean, isLegacy?: boolean }) => string | RegExp | false)>
 
     /**
      * It is recommended to use `addTemplate` from `@nuxt/kit` instead of this option.
