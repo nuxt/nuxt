@@ -238,11 +238,13 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     }
 
     const initialLayout = nuxtApp.payload.state._layout
+    const initialLayoutProps = nuxtApp.payload.state._layoutProps
     nuxtApp.hooks.hookOnce('app:created', async () => {
       router.beforeEach(async (to, from) => {
         to.meta = reactive(to.meta || {})
         if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
           to.meta.layout = initialLayout
+          to.meta.layoutProps = initialLayoutProps
         }
         nuxtApp._processingMiddleware = true
 

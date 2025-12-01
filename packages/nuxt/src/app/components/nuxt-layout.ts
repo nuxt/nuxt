@@ -96,7 +96,7 @@ export default defineComponent({
           default: () => h(
             LayoutProvider,
             {
-              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+              layoutProps: mergeProps(context.attrs, route.meta.layoutProps ?? {}, { ref: layoutRef }),
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,

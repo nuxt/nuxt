@@ -1,4 +1,4 @@
-import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
+import type { KeepAliveProps, TransitionProps, UnwrapRef, VNodeProps } from 'vue'
 import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
@@ -54,7 +54,12 @@ export interface PageMeta {
 
 declare module 'vue-router' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface RouteMeta extends UnwrapRef<PageMeta> {}
+  interface RouteMeta extends UnwrapRef<PageMeta> {
+    /**
+     * @internal
+     */
+    layoutProps?: Record<string, unknown>
+  }
 }
 
 const warnRuntimeUsage = (method: string) => {
