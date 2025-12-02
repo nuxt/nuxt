@@ -18,9 +18,6 @@ With modules, you can encapsulate, properly test, and share custom solutions as 
   ::card{icon="i-lucide-box" title="Understand Module Structure" to="/docs/4.x/guide/modules/module-anatomy"}
   Learn how Nuxt modules are structured and how to define them.
   ::
-  ::card{icon="i-lucide-wrench" title="Use Development Tools" to="/docs/4.x/guide/modules/tooling"}
-  Discover the official tools to build, test and publish your Nuxt modules.
-  ::
   ::card{icon="i-lucide-code" title="Add Plugins, Components & More" to="/docs/4.x/guide/modules/recipes-basics"}
   Learn how to inject plugins, components, composables and server routes from your module.
   ::
