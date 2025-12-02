@@ -384,7 +384,7 @@ export function useAsyncData<
     const unsubParamsWatcher = options.watch
       ? watch(options.watch, () => {
           if (keyChanging) { return } // avoid double execute while the key switch is being processed
-          asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
+          nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: options.dedupe })
         })
       : () => {}
 
