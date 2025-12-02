@@ -976,7 +976,7 @@ export interface ConfigSchema {
     /**
      * Template to show a loading screen
      */
-    loadingTemplate: (data: { loading?: string }) => string
+    loadingTemplate: (data: { loading?: string, snowEffect?: boolean }) => string
 
     /**
      * Set CORS options for the dev server
@@ -1470,6 +1470,18 @@ export interface ConfigSchema {
      * @see https://github.com/KazariEX/dxup
      */
     typescriptPlugin: boolean
+
+    /**
+     * Enable or disable the seasonal snow effect on the loading screen.
+     *
+     * When enabled, snowflakes will be displayed during winter months (November-January in Northern Hemisphere, May-July in Southern Hemisphere).
+     * The effect automatically respects `prefers-reduced-motion` accessibility settings.
+     *
+     * Can be disabled by setting `NUXT_SNOW=false` environment variable.
+     *
+     * @default true
+     */
+    snowEffect: boolean
   }
 
   /**
