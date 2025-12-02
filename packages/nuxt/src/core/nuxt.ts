@@ -327,29 +327,6 @@ async function initNuxt (nuxt: Nuxt) {
     composables: nuxt.options.optimization.keyedComposables,
   }))
 
-  // shared folder import protection
-  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
-  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
-  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
-  const sharedProtectionConfig = {
-    cwd: nuxt.options.rootDir,
-    include: sharedPatterns,
-    patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
-  }
-  addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
-  addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
-
-  // Add import protection
-  const nuxtProtectionConfig = {
-    cwd: nuxt.options.rootDir,
-    // Exclude top-level resolutions by plugins
-    exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
-    patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
-  }
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-  addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
-
   // add resolver for modules used in virtual files
   addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
 
@@ -392,6 +369,29 @@ async function initNuxt (nuxt: Nuxt) {
         composables: nuxt.options.optimization.treeShake.composables.client,
       }), { server: false })
     }
+
+    // shared folder import protection
+    const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+    const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+    const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+    const sharedProtectionConfig = {
+      cwd: nuxt.options.rootDir,
+      include: sharedPatterns,
+      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+    }
+    addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
+    addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
+
+    // Add import protection
+    const nuxtProtectionConfig = {
+      cwd: nuxt.options.rootDir,
+      // Exclude top-level resolutions by plugins
+      exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
+      patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
+    }
+    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+    addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
   })
 
   if (!nuxt.options.dev) {
