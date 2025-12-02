@@ -12,28 +12,28 @@ Nuxt's [configuration](/docs/4.x/api/nuxt-config) and [hooks](/docs/4.x/guide/go
 With modules, you can encapsulate, properly test, and share custom solutions as npm packages without adding unnecessary boilerplate to your project, or requiring changes to Nuxt itself.
 
 ::card-group{class="sm:grid-cols-1"}
-  ::card{icon="i-lucide-rocket" title="Getting Started" to="/docs/4.x/guide/modules/getting-started"}
-  Bootstrap your first Nuxt module using the official starter template.
+  ::card{icon="i-lucide-rocket" title="Create Your First Module" to="/docs/4.x/guide/modules/getting-started"}
+  Learn how to create your first Nuxt module using the official starter template.
   ::
-  ::card{icon="i-lucide-box" title="Module Anatomy" to="/docs/4.x/guide/modules/module-anatomy"}
-  Understand the structure and definition of a Nuxt module.
+  ::card{icon="i-lucide-box" title="Understand Module Structure" to="/docs/4.x/guide/modules/module-anatomy"}
+  Learn how Nuxt modules are structured and how to define them.
   ::
-  ::card{icon="i-lucide-wrench" title="Tooling" to="/docs/4.x/guide/modules/tooling"}
-  Discover the first-party tools to help you build modules.
+  ::card{icon="i-lucide-wrench" title="Use Development Tools" to="/docs/4.x/guide/modules/tooling"}
+  Discover the official tools to build, test and publish your Nuxt modules.
   ::
-  ::card{icon="i-lucide-code" title="Recipes: Injecting Code" to="/docs/4.x/guide/modules/recipes-basics"}
-  Learn how to inject plugins, components, composables, and more.
+  ::card{icon="i-lucide-code" title="Add Plugins, Components & More" to="/docs/4.x/guide/modules/recipes-basics"}
+  Learn how to inject plugins, components, composables and server routes from your module.
   ::
-  ::card{icon="i-lucide-layers" title="Recipes: Hooks & Types" to="/docs/4.x/guide/modules/recipes-advanced"}
-  Master hooks, templates, and type declarations.
+  ::card{icon="i-lucide-layers" title="Use Hooks & Extend Types" to="/docs/4.x/guide/modules/recipes-advanced"}
+  Master lifecycle hooks, virtual files and TypeScript declarations in your modules.
   ::
-  ::card{icon="i-lucide-test-tube" title="Testing" to="/docs/4.x/guide/modules/testing"}
-  Test your module with unit, integration, and end-to-end tests.
+  ::card{icon="i-lucide-test-tube" title="Test Your Module" to="/docs/4.x/guide/modules/testing"}
+  Learn how to test your Nuxt module with unit, integration and E2E tests.
   ::
-  ::card{icon="i-lucide-medal" title="Best Practices" to="/docs/4.x/guide/modules/best-practices"}
-  Follow best practices for building performant and maintainable modules.
+  ::card{icon="i-lucide-medal" title="Follow Best Practices" to="/docs/4.x/guide/modules/best-practices"}
+  Build performant and maintainable Nuxt modules with these guidelines.
   ::
-  ::card{icon="i-lucide-globe" title="Ecosystem" to="/docs/4.x/guide/modules/ecosystem"}
-  Join the Nuxt module ecosystem and share your module with the community.
+  ::card{icon="i-lucide-globe" title="Publish & Share Your Module" to="/docs/4.x/guide/modules/ecosystem"}
+  Join the Nuxt module ecosystem and publish your module to npm.
   ::
 ::
