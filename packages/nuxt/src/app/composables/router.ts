@@ -271,7 +271,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
  * TODO type props
  * @since 3.0.0
  */
-export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: Layout, props?: NuxtLayouts[Layout]) => {
+export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? unknown : Layout, props?: typeof layout extends Layout ? NuxtLayouts[Layout] : never) => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
