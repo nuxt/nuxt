@@ -14,7 +14,7 @@ npx nuxt add <TEMPLATE> <NAME> [--cwd=<directory>] [--logLevel=<silent|info|verb
 ```
 <!--/add-cmd-->
 
-### Arguments
+## Arguments
 
 <!--add-args-->
 | Argument   | Description                                                                                                                                                                                                      |
