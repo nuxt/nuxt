@@ -42,9 +42,8 @@ export async function callOnce (...args: any): Promise<void> {
 
   // If key already ran
   if (nuxtApp.payload.once.has(_key)) {
-    if (import.meta.dev && _isHmrUpdating) {
-      // Allow re-execution during HMR
-    } else {
+    // Allow re-execution during HMR
+    if (!import.meta.dev || !_isHmrUpdating) {
       return
     }
   }
