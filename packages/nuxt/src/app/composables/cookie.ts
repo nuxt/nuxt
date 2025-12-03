@@ -21,6 +21,8 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
+  // refresh cookie expiration even when the value remains unchanged after writing
+  refresh?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -31,6 +33,7 @@ const CookieDefaults = {
   watch: true,
   decode: val => destr(decodeURIComponent(val)),
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
+  refresh: false,
 } satisfies CookieOptions<any>
 
 // we use globalThis to avoid crashes in web workers
@@ -57,10 +60,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
-  // use a custom ref to expire the cookie on client side otherwise use basic ref
+  // use a custom ref to expire the cookie on client side otherwise use cookieServerRef
   const cookie = import.meta.client && delay && !hasExpired
     ? cookieRef<T | undefined>(cookieValue, delay, opts.watch && opts.watch !== 'shallow')
-    : ref<T | undefined>(cookieValue)
+    : cookieServerRef<T | undefined>(name, cookieValue)
 
   if (import.meta.dev && hasExpired) {
     console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
@@ -131,7 +134,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (opts.watch) {
       watch(cookie, () => {
         if (watchPaused) { return }
-        callback()
+        callback(opts.refresh)
       },
       { deep: opts.watch !== 'shallow' })
     }
@@ -142,7 +145,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
-      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      if (
+        opts.readonly
+        || (isEqual(cookie.value, cookies[name]) && !opts.refresh)
+      ) { return }
+
+      nuxtApp._cookiesChanged ||= {}
+      if (opts.refresh && !nuxtApp._cookiesChanged[name]) {
+        return
+      }
+
       nuxtApp._cookies ||= {}
       if (name in nuxtApp._cookies) {
         // do not append a second `set-cookie` header
@@ -252,6 +264,28 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
       },
       set (newValue) {
         createExpirationTimeout()
+
+        internalRef.value = newValue
+        trigger()
+      },
+    }
+  })
+}
+
+// custom ref that will track explicit cookie writes on the server (used for `refresh` option)
+function cookieServerRef<T> (name: string, value: T | undefined) {
+  const internalRef = ref(value)
+
+  return customRef((track, trigger) => {
+    return {
+      get () {
+        track()
+        return internalRef.value
+      },
+      set (newValue) {
+        const nuxtApp = useNuxtApp()
+        nuxtApp._cookiesChanged ||= {}
+        nuxtApp._cookiesChanged[name] = true
 
         internalRef.value = newValue
         trigger()

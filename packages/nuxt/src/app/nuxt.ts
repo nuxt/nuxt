@@ -111,6 +111,7 @@ interface _NuxtApp {
 
   /** @internal */
   _cookies?: Record<string, unknown>
+  _cookiesChanged?: Record<string, unknown>
   /**
    * The id of the Nuxt application.
    * @internal */
