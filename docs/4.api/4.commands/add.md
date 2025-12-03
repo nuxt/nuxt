@@ -17,20 +17,20 @@ npx nuxt add <TEMPLATE> <NAME> [--cwd=<directory>] [--logLevel=<silent|info|verb
 ### Arguments
 
 <!--add-args-->
-Argument | Description
---- | ---
-`TEMPLATE` | Specify which template to generate (options: <api\|app\|app-config\|component\|composable\|error\|layer\|layout\|middleware\|module\|page\|plugin\|server-middleware\|server-plugin\|server-route\|server-util>)
-`NAME` | Specify name of the generated file
+| Argument   | Description                                                                                                                                                                                                      |
+|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `TEMPLATE` | Specify which template to generate (options: <api\|app\|app-config\|component\|composable\|error\|layer\|layout\|middleware\|module\|page\|plugin\|server-middleware\|server-plugin\|server-route\|server-util>) |
+| `NAME`     | Specify name of the generated file                                                                                                                                                                               |
 <!--/add-args-->
 
 ### Options
 
 <!--add-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` | `.` | Specify the working directory
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--force` | `false` | Force override file if it already exists
+| Option                               | Default | Description                              |
+|--------------------------------------|---------|------------------------------------------|
+| `--cwd=<directory>`                  | `.`     | Specify the working directory            |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level             |
+| `--force`                            | `false` | Force override file if it already exists |
 <!--/add-opts-->
 
 **Modifiers:**
