@@ -84,7 +84,7 @@
     "@unhead/vue": "^2.0.19",
     "@vue/shared": "^3.5.24",
     "c12": "^3.3.2",
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "compatx": "^0.2.0",
     "consola": "^3.4.2",
     "cookie-es": "^2.0.0",
