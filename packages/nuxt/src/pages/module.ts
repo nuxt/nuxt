@@ -634,7 +634,7 @@ export default defineNuxtModule({
           '  interface NuxtLayouts {',
           ...Array.from(interfaceKeyValues.entries()).map(([key, value]) => `    '${key}': InstanceType<typeof ${value}>['$props'],`),
           '}',
-          '  export type LayoutKey = keyof NuxtLayouts[\'layouts\']',
+          '  export type LayoutKey = keyof NuxtLayouts',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
