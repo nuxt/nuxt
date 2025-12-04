@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, escapeHtml } from 'vue'
 
 const props = defineProps({
   error: Object,
@@ -28,7 +28,7 @@ const stacktrace = _error.stack
           line.includes('internal') ||
           line.includes('new Promise'),
         }
-      }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
+      }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${escapeHtml(i.text)}</span>`).join('\n')
   : ''
 
 // Error page props
