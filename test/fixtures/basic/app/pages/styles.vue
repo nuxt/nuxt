@@ -3,7 +3,7 @@
     <ClientOnlyScript />
     <FunctionalComponent />
     <ServerOnlyComponent />
-    <SharedComponent />
+    <SharedComponent class="style-from-parent" />
   </div>
 </template>
 
@@ -22,5 +22,9 @@ import '~/assets/assets.css'
   /* definePageMeta( */
   div {
     --scoped: 'scoped';
+  }
+
+  .style-from-parent {
+    --style-from-parent: 'style-from-parent';
   }
 </style>
