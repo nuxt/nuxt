@@ -112,6 +112,17 @@ To optimize your app, you may want to delay the hydration of some components unt
 
 To avoid fetching same data twice (once on the server and once on client) Nuxt provides [`useFetch`](/docs/4.x/api/composables/use-fetch) and [`useAsyncData`](/docs/4.x/api/composables/use-async-data). They ensure that if an API call is made on the server, the data is forwarded to the client in the payload instead of being fetched again.
 
+To avoid a waterfall effect when you need to make multiple API calls, you can use `Promise.all` to run them in parallel, improving performance:
+
+```ts
+const { data } = await useAsyncData(() => {
+    return Promise.all([
+        $fetch("/api/products/"),
+        $fetch("/api/category/shoes")
+    ]);
+});
+```
+
 :read-more{title="Data fetching" to="/docs/4.x/getting-started/data-fetching"}
 
 ## Core Nuxt Modules
