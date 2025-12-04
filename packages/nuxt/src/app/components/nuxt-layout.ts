@@ -1,5 +1,5 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
-import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
+import { KeepAlive, Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { PageMeta } from '../../pages/runtime/composables'
@@ -94,17 +94,23 @@ export default defineComponent({
       return _wrapInTransition(hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
           default: () => h(
-            LayoutProvider,
-            {
-              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
-              key: layout.value || undefined,
-              name: layout.value,
-              shouldProvide: !props.name,
-              isRenderingNewLayout: (name?: string | boolean) => {
-                return (name !== previouslyRenderedLayout && name === layout.value)
+            KeepAlive,
+            {},
+            [h(
+              LayoutProvider,
+              {
+                layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+                key: layout.value || undefined,
+                name: layout.value,
+                shouldProvide: !props.name,
+                isRenderingNewLayout: (name?: string | boolean) => {
+                  return (name !== previouslyRenderedLayout && name === layout.value)
+                },
+                hasTransition: !!transitionProps,
               },
-              hasTransition: !!transitionProps,
-            }, context.slots),
+              context.slots,
+            )],
+          ),
         }),
       }).default()
     }
