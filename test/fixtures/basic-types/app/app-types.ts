@@ -298,6 +298,17 @@ describe('layouts', () => {
     // @ts-expect-error Invalid layout
     h(NuxtLayout, { fallback: 'invalid-layout' })
   })
+
+  it('setPageLayout recognizes named layouts and props', () => {
+    setPageLayout('custom')
+    setPageLayout('pascal-case')
+    setPageLayout('override')
+    setPageLayout('with-props', { aProp: 42 })
+    // @ts-expect-error Invalid layout
+    setPageLayout('invalid-layout')
+    // @ts-expect-error Invalid layout props
+    setPageLayout('with-props', { aProp: 'string-instead-of-number' })
+  })
 })
 
 describe('nuxtApp', () => {
