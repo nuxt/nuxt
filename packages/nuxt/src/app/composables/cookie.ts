@@ -21,7 +21,16 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
-  // refresh cookie expiration even when the value remains unchanged after writing
+
+  /**
+   * Refresh cookie expiration even when the value remains unchanged.
+   *
+   * By default, a cookie is only rewritten when its value changes.
+   * When `refresh` is set to `true`, the cookie will be re-written
+   * on every assignment, extending its expiration.
+   *
+   * @default false
+   */
   refresh?: boolean
 }
 
@@ -145,13 +154,15 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
+      const valueIsSame = isEqual(cookie.value, cookies[name])
+
       if (
         opts.readonly
-        || (isEqual(cookie.value, cookies[name]) && !opts.refresh)
+        || (valueIsSame && !opts.refresh)
       ) { return }
 
       nuxtApp._cookiesChanged ||= {}
-      if (opts.refresh && !nuxtApp._cookiesChanged[name]) {
+      if (valueIsSame && opts.refresh && !nuxtApp._cookiesChanged[name]) {
         return
       }
 
@@ -272,7 +283,12 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
   })
 }
 
-// custom ref that will track explicit cookie writes on the server (used for `refresh` option)
+/**
+ * Custom ref that tracks explicit cookie writes on the server.
+ *
+ * This is required for the `refresh` option to ensure the cookie is
+ * re-written on SSR even when the value remains unchanged.
+ */
 function cookieServerRef<T> (name: string, value: T | undefined) {
   const internalRef = ref(value)
 
