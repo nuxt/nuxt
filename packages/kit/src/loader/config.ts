@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import process from 'node:process'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
@@ -26,24 +27,26 @@ const merger = createDefu((obj, key, value) => {
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  const localLayers = (await glob('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() }))
+  const localLayers = (await glob('layers/*', {
+    onlyDirectories: true, cwd: opts.cwd || process.cwd(),
+  }))
     .map((d: string) => d.endsWith('/') ? d.substring(0, d.length - 1) : d)
+    .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
-  const globalSelf = globalThis as any
-  globalSelf.defineNuxtConfig = (c: any) => c
-  const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await loadConfig<NuxtConfig>({
-    name: 'nuxt',
-    configFile: 'nuxt.config',
-    rcFile: '.nuxtrc',
-    extend: { extendKey: ['theme', '_extends', 'extends'] },
-    dotenv: true,
-    globalRc: true,
-    // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
-    merger,
-    ...opts,
-  })
-  delete globalSelf.defineNuxtConfig
+  const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await withDefineNuxtConfig(
+    () => loadConfig<NuxtConfig>({
+      name: 'nuxt',
+      configFile: 'nuxt.config',
+      rcFile: '.nuxtrc',
+      extend: { extendKey: ['theme', '_extends', 'extends'] },
+      dotenv: true,
+      globalRc: true,
+      // @ts-expect-error TODO: fix type in c12, it should accept createDefu directly
+      merger,
+      ...opts,
+    }),
+  )
 
   // Fill config
   nuxtConfig.rootDir ||= cwd
@@ -130,4 +133,23 @@ async function loadNuxtSchema (cwd: string) {
   }
   const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
   return await import(schemaPath).then(r => r.NuxtConfigSchema)
+}
+
+async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
+  const key = 'defineNuxtConfig'
+  const globalSelf = globalThis as any
+
+  if (!globalSelf[key]) {
+    globalSelf[key] = (c: any) => c
+    globalSelf[key].count = 0
+  }
+  globalSelf[key].count++
+  try {
+    return await fn()
+  } finally {
+    globalSelf[key].count--
+    if (!globalSelf[key].count) {
+      delete globalSelf[key]
+    }
+  }
 }

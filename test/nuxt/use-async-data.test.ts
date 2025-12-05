@@ -16,6 +16,18 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
   headers: Object.fromEntries(event.headers.entries()),
 })))
 
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ method: event.method, headers: Object.fromEntries(event.headers.entries()) })
+    }, 100)
+  })
+}))
+
+beforeEach(() => {
+  vi.unstubAllGlobals()
+})
+
 describe('useAsyncData', () => {
   let uniqueKey: string
   let counter = 0
@@ -70,6 +82,8 @@ describe('useAsyncData', () => {
   })
 
   it('should capture errors', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
@@ -90,6 +104,7 @@ describe('useAsyncData', () => {
       /\[nuxt\] \[useAsyncData\] Incompatible options detected for "[^"]+" \(used at .*:\d+:\d+\):\n- different handler\n- different `default` value\nYou can use a different key or move the call to a composable to ensure the options are shared across calls./,
     ))
     warn.mockRestore()
+    vi.unstubAllGlobals()
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -353,6 +368,60 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
 
+  it('should watch params deeply in a non synchronous way', async () => {
+    const foo = ref('foo')
+    const baz = ref('baz')
+    const locale = ref('en')
+
+    type Params = { deep: { baz: string }, foo?: string, locale?: string }
+    const params = reactive<Params>({ deep: { baz: 'baz' } })
+
+    watch(foo, (foo) => {
+      params.foo = foo
+      params.locale = locale.value
+    }, { immediate: true })
+
+    watch(baz, (baz) => {
+      params.deep.baz = baz
+    }, { immediate: true })
+
+    const requestHistory: Array<Record<string, unknown>> = []
+
+    // 1. first request
+    await useAsyncData(uniqueKey, async () => {
+      requestHistory.push(JSON.parse(JSON.stringify(params)))
+      await Promise.resolve()
+    }, { watch: [params] })
+
+    // 2. second request
+    foo.value = 'bar'
+    locale.value = 'fr'
+    // We need to wait for the debounce 0
+    await new Promise(resolve => setTimeout(resolve, 5))
+
+    // 3. third request
+    baz.value = 'bar'
+    await nextTick()
+
+    expect(requestHistory).toEqual([
+      {
+        deep: { baz: 'baz' },
+        foo: 'foo',
+        locale: 'en',
+      },
+      {
+        deep: { baz: 'baz' },
+        foo: 'bar',
+        locale: 'fr',
+      },
+      {
+        deep: { baz: 'bar' },
+        foo: 'bar',
+        locale: 'fr',
+      },
+    ])
+  })
+
   it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     useAsyncData(uniqueKey, promiseFn)
@@ -372,6 +441,7 @@ describe('useAsyncData', () => {
   })
 
   it('should warn if incompatible options are used', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: false })
@@ -407,6 +477,7 @@ describe('useAsyncData', () => {
     ))
 
     warn.mockReset()
+    vi.unstubAllGlobals()
   })
 
   it('should only refresh asyncdata once when watched dependency is updated', async () => {
@@ -740,6 +811,386 @@ describe('useAsyncData', () => {
     await nextTick()
     expect(data.value).toBe('about')
     expect(promiseFn).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33274
+  it('should not execute handler multiple times when external watch is defined before useAsyncData with computed key', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    // watch must be defined before useAsyncData to reproduce the bug
+    watch(q, () => {})
+
+    const { data, error } = await useAsyncData(
+      () => `query-${q.value}`,
+      () => promiseFn(q.value),
+      {
+        watch: [q],
+        immediate: true,
+      },
+    )
+
+    // Initial execute
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(promiseFn).toHaveBeenNthCalledWith(1, '')
+
+    // First key change
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenNthCalledWith(2, 's')
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+
+    // Second key change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+    expect(promiseFn).toHaveBeenNthCalledWith(3, 'se')
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+  })
+
+  it('should automatically re-execute when watched dependency changes', async () => {
+    const q = ref('')
+    const promiseFn = vi.fn((query: string) => Promise.resolve(`result for: ${query}`))
+
+    const externalWatchSpy = vi.fn()
+    watch(q, externalWatchSpy)
+
+    const { data, error } = await useAsyncData(
+      () => `auto-query-${q.value}`,
+      () => promiseFn(q.value),
+      {
+        watch: [q],
+        immediate: true,
+      },
+    )
+
+    expect(data.value).toBe('result for: ')
+    expect(promiseFn).toHaveBeenCalledWith('')
+
+    // First change triggers automatic request
+    q.value = 's'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: s')
+    expect(promiseFn).toHaveBeenCalledWith('s')
+
+    // Second change
+    q.value = 'se'
+    await nextTick()
+    await flushPromises()
+
+    expect(error.value).toBe(undefined)
+    expect(data.value).toBe('result for: se')
+    expect(promiseFn).toHaveBeenCalledWith('se')
+
+    expect(externalWatchSpy).toHaveBeenCalledTimes(2)
+    expect(promiseFn).toHaveBeenCalledTimes(3) // initial + 2 changes
+  })
+
+  it('should trigger AbortController on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    // Manual implementation of Promise.withResolvers for compatibility
+    let resolve: (value: boolean) => void
+    const promise = new Promise<boolean>((res) => { resolve = res })
+    const { clear } = useAsyncData('', () => promise)
+    expect(aborted).toBe(false)
+    clear()
+    resolve!(true)
+    expect(aborted).toBe(true)
+  })
+
+  it('should be externally cancellable when executing', async () => {
+    vi.useFakeTimers()
+    const controller = new AbortController()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { execute, status } = useAsyncData(() => 'index', promiseFn)
+    vi.advanceTimersToNextTimer()
+    await flushPromises()
+    expect(status.value).toBe('success')
+    execute({ signal: controller.signal })
+    vi.advanceTimersByTime(100)
+    expect(status.value).toBe('pending')
+    controller.abort('test abort')
+    await flushPromises()
+    expect(status.value).toBe('idle')
+    vi.useRealTimers()
+  })
+
+  it('should be cancellable via abort', async () => {
+    vi.useFakeTimers()
+    let count = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(count++), 1000)))
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(status.value).toBe('idle')
+    expect(count).toBe(0)
+    vi.useRealTimers()
+  })
+
+  it('should abort handler signal', async () => {
+    vi.useFakeTimers()
+    let _signal: AbortController['signal']
+    const promiseFn = vi.fn((_, { signal }) => {
+      _signal = signal
+      return new Promise(resolve => setTimeout(() => resolve('index'), 1000))
+    })
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+    clear()
+    await nextTick()
+    await flushPromises()
+    expect(_signal!.aborted).toBe(true)
+    vi.useRealTimers()
+  })
+
+  it('should accept timeout', async () => {
+    vi.useFakeTimers()
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('index'), 1000)))
+    const { status } = useAsyncData(promiseFn, { timeout: 1 })
+    expect(status.value).toBe('pending')
+    await vi.waitFor(() => { // todo: advanceTimersToNextTimer is not working here (?)
+      expect(status.value).toBe('error')
+    })
+    vi.useRealTimers()
+  })
+
+  it('should handle already-aborted signal', async () => {
+    const controller = new AbortController()
+    controller.abort(new DOMException('Already aborted', 'AbortError'))
+
+    const promiseFn = vi.fn(() => {
+      return new Promise(resolve => setTimeout(() => resolve('test'), 100))
+    })
+
+    const { execute, status } = useAsyncData('already-aborted-test', promiseFn, {
+      immediate: false,
+    })
+
+    execute({ signal: controller.signal })
+    await flushPromises()
+
+    // When signal is already aborted, the handler execution is aborted
+    // so handler might not be called, and status is immediately set to idle
+    expect(status.value).toBe('idle')
+  })
+
+  it('should merge multiple abort signals', async () => {
+    vi.useFakeTimers()
+    const controller1 = new AbortController()
+
+    let receivedSignal: AbortSignal | undefined
+    const promiseFn = vi.fn((_, { signal }) => {
+      receivedSignal = signal
+      return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
+    })
+
+    const { execute, status, error } = useAsyncData('test-merge', promiseFn, { immediate: false })
+
+    execute({ signal: controller1.signal })
+    expect(status.value).toBe('pending')
+
+    // Abort via first controller
+    controller1.abort(new Error('Aborted by controller1'))
+    await flushPromises()
+
+    // External abort results in error state (not idle), with AbortError
+    expect(status.value).toBe('error')
+    expect(error.value).toBeTruthy()
+    expect(receivedSignal?.aborted).toBe(true)
+
+    vi.useRealTimers()
+  })
+
+  it('should work when AbortSignal.reason is unavailable (older browsers)', async () => {
+    vi.useFakeTimers()
+
+    // Mock older AbortController without .reason property
+    class OldAbortController {
+      signal: any = {
+        aborted: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }
+
+      abort () {
+        this.signal.aborted = true
+        // No reason property in old browsers
+      }
+    }
+
+    vi.stubGlobal('AbortController', OldAbortController)
+
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 1000)))
+
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+
+    clear()
+    await flushPromises()
+
+    expect(status.value).toBe('idle')
+
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  it('should handle abort during dedupe:defer', async () => {
+    vi.useFakeTimers()
+    let callCount = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(++callCount), 1000)))
+
+    const { execute, clear, status } = useAsyncData(promiseFn, { dedupe: 'defer', immediate: false })
+
+    execute()
+    expect(status.value).toBe('pending')
+
+    execute() // Should defer to existing request
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    clear() // Abort both
+    await flushPromises()
+
+    expect(status.value).toBe('idle')
+    expect(callCount).toBe(0)
+
+    vi.useRealTimers()
+  })
+
+  it('should handle abort during dedupe:cancel', async () => {
+    vi.useFakeTimers()
+    let abortedCount = 0
+    const promiseFn = vi.fn((_, { signal }) => {
+      signal.addEventListener('abort', () => abortedCount++)
+      return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
+    })
+
+    const { execute, status } = useAsyncData(promiseFn, { dedupe: 'cancel', immediate: false })
+
+    execute()
+    expect(status.value).toBe('pending')
+
+    execute() // Should cancel previous and start new
+    await flushPromises()
+
+    expect(abortedCount).toBe(1) // First request was aborted
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    vi.useRealTimers()
+  })
+
+  it('should accept signal in refresh()', async () => {
+    const controller = new AbortController()
+
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+
+    const { refresh, status } = await useAsyncData('refresh-signal-test', promiseFn)
+    expect(status.value).toBe('success')
+
+    refresh({ signal: controller.signal })
+    // Abort with DOMException to get idle state
+    controller.abort(new DOMException('Aborted', 'AbortError'))
+    await flushPromises()
+
+    // AbortError causes idle state (not error)
+    expect(status.value).toBe('idle')
+  })
+
+  it('should clear error when clearing after error', async () => {
+    const { data, error, status, clear } = await useAsyncData(() => Promise.reject(new Error('test error')))
+
+    expect(status.value).toBe('error')
+    expect(error.value).toBeTruthy()
+
+    clear()
+
+    expect(data.value).toBeUndefined()
+    expect(error.value).toBe(undefined)
+    expect(status.value).toBe('idle')
+  })
+
+  it('should abort ongoing request when clearing', async () => {
+    vi.useFakeTimers()
+    let aborted = false
+
+    const promiseFn = vi.fn((_, { signal }) => {
+      signal.addEventListener('abort', () => { aborted = true })
+      return new Promise(resolve => setTimeout(() => resolve('test'), 1000))
+    })
+
+    const { clear, status } = useAsyncData(promiseFn)
+    expect(status.value).toBe('pending')
+
+    clear()
+    await flushPromises()
+
+    expect(aborted).toBe(true)
+    expect(status.value).toBe('idle')
+
+    vi.useRealTimers()
+  })
+
+  it('should resolve deduped promises at the same time', async () => {
+    vi.useFakeTimers()
+    let count = 0
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve(++count), 100)))
+
+    const resolved = {
+      p1: false,
+      p2: false,
+      p3: false,
+      p4: false,
+    }
+
+    const p1 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    p1.then(() => { resolved.p1 = true })
+    vi.advanceTimersByTime(90)
+
+    const p2 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    const p3 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    const p4 = useAsyncData('sameKey', promiseFn, { dedupe: 'cancel' })
+    p2.then(() => { resolved.p2 = true })
+    p3.then(() => { resolved.p3 = true })
+    p4.then(() => { resolved.p4 = true })
+
+    vi.advanceTimersByTime(60)
+    await flushPromises()
+    expect(resolved).toEqual({ p1: false, p2: false, p3: false, p4: false })
+
+    vi.advanceTimersByTime(40)
+    const res = await Promise.all([p1, p2, p3, p4])
+
+    expect(resolved).toEqual({ p1: true, p2: true, p3: true, p4: true })
+    expect(promiseFn).toHaveBeenCalledTimes(4)
+
+    for (const r of res) {
+      expect(r.data.value).toBe(4)
+    }
+
     vi.useRealTimers()
   })
 })

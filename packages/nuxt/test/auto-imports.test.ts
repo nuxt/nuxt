@@ -138,6 +138,7 @@ const excludedVueHelpers = [
   'isRuntimeOnly',
   'isVNode',
   'mergeDefaults',
+  'mergeModels',
   'mergeProps',
   'openBlock',
   'popScopeId',
@@ -193,6 +194,8 @@ const excludedVueHelpers = [
   'hydrateOnIdle',
   'onWatcherCleanup',
   'getCurrentWatcher',
+  'patchProp',
+  'nodeOps',
   'module.exports',
 ]
 

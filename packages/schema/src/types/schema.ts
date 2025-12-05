@@ -13,8 +13,8 @@ import type { H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
 import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
-import type { Options as Options0 } from 'autoprefixer'
-import type { Options as Options1 } from 'cssnano'
+import type { Options as AutoprefixerOptions } from 'autoprefixer'
+import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
 import type { RawVueCompilerOptions } from '@vue/language-core'
 import type { PluginOptions } from 'mini-css-extract-plugin'
@@ -24,7 +24,7 @@ import type { VueLoaderOptions } from 'vue-loader'
 import type { BasePluginOptions, DefinedDefaultMinimizerAndOptions } from 'css-minimizer-webpack-plugin'
 import type { Configuration, WebpackError } from 'webpack'
 import type { ProcessOptions } from 'postcss'
-import type { Options as Options3 } from 'webpack-dev-middleware'
+import type { Options as WebpackDevMiddlewareOptions } from 'webpack-dev-middleware'
 import type { ClientOptions, MiddlewareOptions } from 'webpack-hot-middleware'
 import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
@@ -36,7 +36,7 @@ import type { ModuleMeta, NuxtModule } from './module'
 import type { NuxtDebugOptions } from './debug'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt'
 import type { SerializableHtmlAttributes } from './head'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteConfig } from './config'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
 import type { ImportsOptions } from './imports'
 import type { ComponentsOptions } from './components'
 
@@ -46,14 +46,14 @@ export interface ConfigSchema {
    *
    * Any components in the directories configured here can be used throughout your pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @see [`components/` directory documentation](https://nuxt.com/docs/guide/directory-structure/components)
+   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/components)
    */
   components: boolean | ComponentsOptions | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/directory-structure/app/composables)
    */
   imports: ImportsOptions
 
@@ -96,7 +96,7 @@ export interface ConfigSchema {
     /**
      * Options for the Vue compiler that will be passed at build time.
      *
-     * @see [Vue documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
+     * @see [Vue documentation](https://vuejs.org/api/application#app-config-compileroptions)
      */
     compilerOptions: CompilerOptions
 
@@ -111,9 +111,9 @@ export interface ConfigSchema {
     propsDestructure: boolean
 
     /**
-     * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
+     * It is possible to pass configure the Vue app globally. Only serializable options may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin.
      *
-     * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
+     * @see [Vue app config documentation](https://vuejs.org/api/application#app-config)
      */
     config: Serializable<VueAppConfig>
   }
@@ -213,7 +213,7 @@ export interface ConfigSchema {
      *
      * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
      *
-     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components#transition)
      */
     layoutTransition: NuxtAppConfig['layoutTransition']
 
@@ -222,17 +222,17 @@ export interface ConfigSchema {
      *
      * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
      *
-     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components#transition)
      */
     pageTransition: NuxtAppConfig['pageTransition']
 
     /**
      * Default values for view transitions.
      *
-     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental).
+     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental).
      * This can be overridden with `definePageMeta` on an individual page.
      *
-     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental)
+     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental)
      */
     viewTransition: NuxtAppConfig['viewTransition']
 
@@ -241,7 +241,7 @@ export interface ConfigSchema {
      *
      * This can be overridden with `definePageMeta` on an individual page. Only JSON-serializable values are allowed.
      *
-     * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components.html#keepalive)
+     * @see [Vue KeepAlive](https://vuejs.org/api/built-in-components#keepalive)
      */
     keepalive: NuxtAppConfig['keepalive']
 
@@ -285,7 +285,7 @@ export interface ConfigSchema {
     spaLoaderTag: string
 
     /**
-     * Customize Nuxt Nuxt SpaLoader element attributes.
+     * Customize Nuxt SPA loading template element attributes.
      */
     spaLoaderAttrs: SerializableHtmlAttributes
   }
@@ -353,7 +353,7 @@ export interface ConfigSchema {
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
    *
-   * @see [`plugins/` directory documentation](https://nuxt.com/docs/guide/directory-structure/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/plugins)
    *
    * @example
    * ```js
@@ -480,7 +480,7 @@ export interface ConfigSchema {
     /**
      * Nuxt allows visualizing your bundles and how to optimize them.
      *
-     * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+     * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
      *
      * @example
      * ```js
@@ -876,7 +876,7 @@ export interface ConfigSchema {
     /**
      * Options to pass directly to `chokidar`.
      *
-     * @see [chokidar](https://github.com/paulmillr/chokidar#api)
+     * @see [chokidar](https://github.com/paulmillr/chokidar)
      */
     chokidar: ChokidarOptions
   }
@@ -992,7 +992,7 @@ export interface ConfigSchema {
    * Enable early access to future features or flags.
    *
    */
-    compatibilityVersion: 4
+    compatibilityVersion: 4 | 5
 
     /**
      * This enables early access to the experimental multi-app support.
@@ -1242,6 +1242,11 @@ export interface ConfigSchema {
     cookieStore: boolean
 
     /**
+     * Enable experimental Vite Environment API
+     */
+    viteEnvironmentApi: boolean
+
+    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the `app/` directory.
@@ -1327,7 +1332,7 @@ export interface ConfigSchema {
      * for Nuxt projects.
      *
      * @default true
-     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM)
+     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM/edit)
      */
     chromeDevtoolsProjectSettings: boolean
 
@@ -1443,6 +1448,28 @@ export interface ConfigSchema {
      * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
      */
     pendingWhenIdle: boolean
+
+    /**
+     * Whether to improve chunk stability by using an import map to resolve the entry chunk of the bundle.
+     */
+    entryImportMap: boolean
+
+    /**
+     * Extract async data handler functions into separate chunks for better performance and caching.
+     *
+     * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
+     * into separate chunks and dynamically imported, allowing for better code splitting and caching.
+     *
+     * @experimental This is an experimental feature and API may change in the future.
+     */
+    extractAsyncDataHandlers: boolean
+
+    /**
+     * Whether to enable `@dxup/nuxt` module for better TypeScript DX.
+     *
+     * @see https://github.com/KazariEX/dxup
+     */
+    typescriptPlugin: boolean
   }
 
   /**
@@ -1500,6 +1527,13 @@ export interface ConfigSchema {
   _modules: Array<any>
 
   /**
+   * Configuration for Nuxt's server builder.
+   */
+  server: {
+    builder?: '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
+  }
+
+  /**
    * Configuration for Nitro.
    *
    * @see [Nitro configuration docs](https://nitro.build/config)
@@ -1519,9 +1553,9 @@ export interface ConfigSchema {
    * Nitro server handlers.
    *
    * Each handler accepts the following options:
-   * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/unjs/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
+   * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see [`server/` directory documentation](https://nuxt.com/docs/guide/directory-structure/server)
+   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
    *
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    *
@@ -1552,7 +1586,7 @@ export interface ConfigSchema {
      *
      * @see [PostCSS docs](https://postcss.org/)
      */
-    plugins: Record<string, unknown> & { autoprefixer?: Options0, cssnano?: Options1 }
+    plugins: Record<string, unknown> & { autoprefixer?: false | AutoprefixerOptions, cssnano?: false | CssnanoOptions }
   }
 
   router: {
@@ -1562,7 +1596,7 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
-   * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions.html).
+   * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */
     options: RouterConfigSerializable
   }
@@ -1600,7 +1634,7 @@ export interface ConfigSchema {
      *
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
      *
-     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/guide/concepts/typescript)
+     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
      */
     typeCheck: boolean | 'build'
 
@@ -1644,16 +1678,16 @@ export interface ConfigSchema {
   /**
    * Configuration that will be passed directly to Vite.
    *
-   * @see [Vite configuration docs](https://vite.dev/config) for more information.
+   * @see [Vite configuration docs](https://vite.dev/config/) for more information.
    * Please note that not all vite options are supported in Nuxt.
    */
-  vite: ViteConfig & { $client?: ViteConfig, $server?: ViteConfig }
+  vite: ViteOptions
 
   webpack: {
   /**
    * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
    *
-   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+   * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
    *
    * @example
    * ```js
@@ -1676,7 +1710,7 @@ export interface ConfigSchema {
     /**
      * Enables Common CSS Extraction.
      *
-     * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted into separate files, usually one per component. This allows caching your CSS and JavaScript separately.
+     * Using [mini-css-extract-plugin](https://github.com/webpack/mini-css-extract-plugin) under the hood, your CSS will be extracted into separate files, usually one per component. This allows caching your CSS and JavaScript separately.
      *
      * @example
      * ```js
@@ -1768,12 +1802,12 @@ export interface ConfigSchema {
      */
     loaders: {
       /**
-       * @see [esbuild loader](https://github.com/esbuild-kit/esbuild-loader)
+       * @see [esbuild loader](https://github.com/privatenumber/esbuild-loader)
        */
       esbuild: Omit<LoaderOptions, 'loader'>
 
       /**
-       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [`file-loader` Options](https://github.com/webpack/file-loader#options)
        */
       file: {
         esModule: boolean
@@ -1782,7 +1816,7 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [`file-loader` Options](https://github.com/webpack/file-loader#options)
        */
       fontUrl: {
         esModule: boolean
@@ -1791,7 +1825,7 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [`file-loader` Options](https://github.com/webpack/file-loader#options)
        */
       imgUrl: {
         esModule: boolean
@@ -1810,7 +1844,7 @@ export interface ConfigSchema {
       vue: Partial<VueLoaderOptions>
 
       /**
-       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       * See [css-loader](https://github.com/webpack/css-loader) for available options.
        */
       css: {
         importLoaders: number
@@ -1821,7 +1855,7 @@ export interface ConfigSchema {
       }
 
       /**
-       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       * See [css-loader](https://github.com/webpack/css-loader) for available options.
        */
       cssModules: {
         importLoaders: number
@@ -1836,12 +1870,12 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`less-loader` Options](https://github.com/webpack-contrib/less-loader#options)
+       * @see [`less-loader` Options](https://github.com/webpack/less-loader#options)
        */
       less: any
 
       /**
-       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
+       * @see [`sass-loader` Options](https://github.com/webpack/sass-loader#options)
        */
       sass: {
         sassOptions: {
@@ -1850,12 +1884,12 @@ export interface ConfigSchema {
       }
 
       /**
-       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
+       * @see [`sass-loader` Options](https://github.com/webpack/sass-loader#options)
        */
       scss: any
 
       /**
-       * @see [`stylus-loader` Options](https://github.com/webpack-contrib/stylus-loader#options)
+       * @see [`stylus-loader` Options](https://github.com/webpack/stylus-loader#options)
        */
       stylus: any
 
@@ -1889,7 +1923,7 @@ export interface ConfigSchema {
      *
      * Defaults to true when `extractCSS` is enabled.
      *
-     * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
+     * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack/css-minimizer-webpack-plugin).
      */
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     optimizeCSS: false | BasePluginOptions & DefinedDefaultMinimizerAndOptions<{}>
@@ -1900,17 +1934,17 @@ export interface ConfigSchema {
     optimization: false | Configuration['optimization']
 
     /**
-     * Customize PostCSS Loader. same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
+     * Customize PostCSS Loader. same options as [`postcss-loader` options](https://github.com/webpack/postcss-loader#options)
      */
-    postcss: { execute?: boolean, postcssOptions: ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: Options0, cssnano?: Options1 } }, sourceMap?: boolean, implementation?: any }
+    postcss: { execute?: boolean, postcssOptions: ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: AutoprefixerOptions, cssnano?: CssnanoOptions } }, sourceMap?: boolean, implementation?: any }
 
     /**
      * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
      */
-    devMiddleware: Options3<IncomingMessage, ServerResponse>
+    devMiddleware: WebpackDevMiddlewareOptions<IncomingMessage, ServerResponse>
 
     /**
-     * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
+     * See [webpack-hot-middleware](https://github.com/webpack/webpack-hot-middleware) for available options.
      */
     hotMiddleware: MiddlewareOptions & { client?: ClientOptions }
 

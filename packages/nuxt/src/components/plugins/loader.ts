@@ -7,7 +7,7 @@ import { relative } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 import { installNuxtModule } from '../../core/features'
-import { logger } from '../../utils'
+import { logger, resolveToAlias } from '../../utils'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -21,7 +21,10 @@ interface LoaderOptions {
   experimentalComponentIslands?: boolean
 }
 
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)/g
+// Match both:
+// 1. _resolveComponent("ComponentName") - Vue's component resolution
+// 2. h(ComponentName, ...) - JSX h() calls with PascalCase component identifiers
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
 
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -49,7 +52,10 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const s = new MagicString(code)
       // replace `_resolveComponent("...")` to direct import
       s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
-        const { lazy, modifier, name } = args.pop()
+        const groups = args.pop()
+        const lazy = groups.hLazy || groups.lazy
+        const modifier = groups.hModifier || groups.modifier
+        const name = groups.hName || groups.name
         const normalComponent = findComponent(components, name, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
@@ -59,8 +65,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const internalInstall = ((component as any)._internal_install) as string
           if (internalInstall && nuxt?.options.test === false) {
             if (!nuxt.options.dev) {
-              const relativePath = relative(nuxt.options.rootDir, id)
-              throw new Error(`[nuxt] \`~/${relativePath}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
+              throw new Error(`[nuxt] \`${resolveToAlias(id, nuxt)}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
             }
             installNuxtModule(internalInstall)
           }

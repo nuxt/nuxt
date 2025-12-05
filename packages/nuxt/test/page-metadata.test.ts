@@ -136,6 +136,32 @@ definePageMeta({ name: 'bar' })
     `)
   })
 
+  it('should extract metadata containing TS expressions', () => {
+    const meta = getRouteMeta(`
+    <script setup lang="ts">
+    type PageName = 'name-from-page-meta' | 'whatever';
+
+    definePageMeta({
+      name: 'name-from-page-meta' as PageName,
+      path: ('/some-custom-path') as const,
+      props: <{ foo: string }>{
+        foo: 'bar' satisfies string,
+      },
+    } as const);
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "name": "name-from-page-meta",
+        "path": "/some-custom-path",
+        "props": {
+          "foo": "bar",
+        },
+      }
+    `)
+  })
+
   it('should not extract non-serialisable meta', () => {
     const meta = getRouteMeta(`
     <script setup>

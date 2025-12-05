@@ -1,12 +1,13 @@
 // @ts-check
+import process from 'node:process'
 import net from 'node:net'
 import { Buffer } from 'node:buffer'
 import { isTest } from 'std-env'
 
 /** @typedef {import('node:net').Socket} Socket */
-/** @typedef {import('../vite-node').ViteNodeFetch} ViteNodeFetch */
+/** @typedef {import('../plugins/vite-node').ViteNodeFetch} ViteNodeFetch */
 
-/** @type {import('../vite-node').ViteNodeServerOptions} */
+/** @type {import('../plugins/vite-node').ViteNodeServerOptions} */
 export const viteNodeOptions = JSON.parse(process.env.NUXT_VITE_NODE_OPTIONS || '{}')
 
 /** @type {Map<number, { resolve: (value: any) => void, reject: (reason?: any) => void }>} */
@@ -16,10 +17,10 @@ let requestIdCounter = 0
 let clientSocket
 /** @type {Promise<Socket> | undefined} */
 let currentConnectPromise
-const MAX_RETRY_ATTEMPTS = 5
-const BASE_RETRY_DELAY_MS = 100
-const MAX_RETRY_DELAY_MS = 2000
-const REQUEST_TIMEOUT_MS = 10000
+const MAX_RETRY_ATTEMPTS = viteNodeOptions.maxRetryAttempts ?? 5
+const BASE_RETRY_DELAY_MS = viteNodeOptions.baseRetryDelay ?? 100
+const MAX_RETRY_DELAY_MS = viteNodeOptions.maxRetryDelay ?? 2000
+const REQUEST_TIMEOUT_MS = viteNodeOptions.requestTimeout ?? 60000
 
 /**
  * Calculates exponential backoff delay with jitter.
@@ -218,10 +219,10 @@ function connectSocket () {
 
 /**
  * Sends a request over the IPC socket with automatic reconnection.
- * @template {keyof import('../vite-node').ViteNodeRequestMap} T
+ * @template {keyof import('../plugins/vite-node').ViteNodeRequestMap} T
  * @param {T} type - The type of the request.
- * @param {import('../vite-node').ViteNodeRequestMap[T]['request']} [payload] - The payload for the request.
- * @returns {Promise<import('../vite-node').ViteNodeRequestMap[T]['response']>} A promise that resolves with the response data.
+ * @param {import('../plugins/vite-node').ViteNodeRequestMap[T]['request']} [payload] - The payload for the request.
+ * @returns {Promise<import('../plugins/vite-node').ViteNodeRequestMap[T]['response']>} A promise that resolves with the response data.
  */
 async function sendRequest (type, payload) {
   const requestId = requestIdCounter++

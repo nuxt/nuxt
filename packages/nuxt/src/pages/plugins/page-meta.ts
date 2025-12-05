@@ -6,16 +6,9 @@ import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
-
-import {
-  ScopeTracker,
-
-  getUndeclaredIdentifiersInFunction,
-  isBindingIdentifier,
-  parseAndWalk,
-  walk,
-} from 'oxc-walker'
+import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
+
 import { logger } from '../../utils'
 import { isSerializable } from '../utils'
 import type { ParserOptions } from 'oxc-parser'
@@ -146,7 +139,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       const addedDeclarations = new Set<string>()
 
       function addDeclaration (node: ScopeTrackerNode) {
-        const codeSectionKey = `${node.start}-${node.end}`
+        const codeSectionKey = `${resolveStart(node)}-${resolveEnd(node)}`
         if (addedDeclarations.has(codeSectionKey)) { return }
         addedDeclarations.add(codeSectionKey)
         declarationNodes.push(node)
@@ -278,7 +271,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                   declaration.isUnderScope(definePageMetaScope)
                   // ensures that we compare the correct declaration to the reference
                   // (when in the same scope, the declaration must come before the reference, otherwise it must be in a parent scope)
-                  && (scopeTracker.isCurrentScopeUnder(declaration.scope) || declaration.start < node.start)
+                  && (scopeTracker.isCurrentScopeUnder(declaration.scope) || resolveStart(declaration) < node.start)
                 ) {
                   return
                 }
@@ -295,8 +288,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           const importStatements = Array.from(addedImports).join('\n')
 
           const declarations = declarationNodes
-            .sort((a, b) => a.start - b.start)
-            .map(node => code.slice(node.start, node.end))
+            .sort((a, b) => resolveStart(a) - resolveStart(b))
+            .map(node => code.slice(resolveStart(node), resolveEnd(node)))
             .join('\n')
 
           const extracted = [
@@ -339,7 +332,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 })
 
 // https://github.com/vuejs/vue-loader/pull/1911
-// https://github.com/vitejs/vite/issues/8473
+// https://github.com/vitejs/vite-plugin-vue/issues/23
 const QUERY_START_RE = /^\?/
 const MACRO_RE = /&macro=true/
 function rewriteQuery (id: string) {
@@ -360,4 +353,11 @@ function parseMacroQuery (id: string) {
 const QUOTED_SPECIFIER_RE = /(["']).*\1/
 function getQuotedSpecifier (id: string) {
   return id.match(QUOTED_SPECIFIER_RE)?.[0]
+}
+
+function resolveStart (node: ScopeTrackerNode) {
+  return 'fnNode' in node ? node.fnNode.start : node.start
+}
+function resolveEnd (node: ScopeTrackerNode) {
+  return 'fnNode' in node ? node.fnNode.end : node.end
 }

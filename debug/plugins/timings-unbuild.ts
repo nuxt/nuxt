@@ -17,7 +17,7 @@ declare global {
 
   var ___callers: Record<string, number>
 
-  var ____writeFileSync: typeof import('fs').writeFileSync
+  var ____writeFileSync: typeof import('node:fs').writeFileSync
 }
 
 export function AnnotateFunctionTimingsPlugin () {

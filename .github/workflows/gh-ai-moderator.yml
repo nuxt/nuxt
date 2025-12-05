@@ -1,0 +1,27 @@
+name: AI Moderator
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  models: read 
+
+jobs:
+  spam-detection:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      models: read
+      contents: read
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      # https://github.com/github/ai-moderator
+      - uses: github/ai-moderator@81159c370785e295c97461ade67d7c33576e9319 # v1.1.4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ai-label: 'possible-ai-content'

@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
@@ -9,7 +10,6 @@ import { findWorkspaceDir } from 'pkg-types'
 import type { NuxtDebugOptions } from '../types/debug'
 import type { NuxtModule } from '../types/module'
 import { defineResolvers } from '../utils/definition'
-import { withTrailingSlash } from 'ufo'
 
 export default defineResolvers({
   extends: undefined,
@@ -226,6 +226,7 @@ export default defineResolvers({
         '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
         '**/*.d.{cts,mts,ts}', // ignore type declarations
+        '**/*.d.vue.{cts,mts,ts}',
         '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
         '**/*.sock',
         relative(rootDir, analyzeDir),
@@ -294,4 +295,8 @@ function provideFallbackValues (obj: Record<string, any>) {
       provideFallbackValues(obj[key])
     }
   }
+}
+
+function withTrailingSlash (str: string) {
+  return str.replace(/\/?$/, '/')
 }

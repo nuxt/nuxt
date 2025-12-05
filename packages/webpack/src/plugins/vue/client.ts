@@ -5,9 +5,10 @@
 
 import { mkdir, writeFile } from 'node:fs/promises'
 
-import { normalizeWebpackManifest } from 'vue-bundle-renderer'
-import { dirname } from 'pathe'
+import { normalizeWebpackManifest, precomputeDependencies } from 'vue-bundle-renderer'
+import { join, resolve } from 'pathe'
 import { hash } from 'ohash'
+import { serialize } from 'seroval'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'
@@ -15,17 +16,16 @@ import type { Compilation, Compiler } from 'webpack'
 import { isCSS, isHotUpdate, isJS } from './util'
 
 interface PluginOptions {
-  filename: string
   nuxt: Nuxt
 }
 
 export default class VueSSRClientPlugin {
-  options: PluginOptions
+  serverDist: string
+  nuxt: Nuxt
 
   constructor (options: PluginOptions) {
-    this.options = Object.assign({
-      filename: null,
-    }, options)
+    this.serverDist = resolve(options.nuxt.options.buildDir, 'dist/server')
+    this.nuxt = options.nuxt
   }
 
   apply (compiler: Compiler) {
@@ -83,7 +83,13 @@ export default class VueSSRClientPlugin {
           continue
         }
         const id = m.identifier!.replace(/\s\w+$/, '') // remove appended hash
-        const filesSet = new Set(chunk.files.map(fileToIndex).filter(i => i !== -1))
+        const filesSet = new Set<number>()
+        for (const file of chunk.files) {
+          const index = fileToIndex(file)
+          if (index !== -1) {
+            filesSet.add(index)
+          }
+        }
 
         for (const chunkName of chunk.names!) {
           if (!entrypoints[chunkName]) {
@@ -119,15 +125,14 @@ export default class VueSSRClientPlugin {
       }
 
       const manifest = normalizeWebpackManifest(webpackManifest as any)
-      await this.options.nuxt.callHook('build:manifest', manifest)
+      await this.nuxt.callHook('build:manifest', manifest)
 
-      const src = JSON.stringify(manifest, null, 2)
+      await mkdir(this.serverDist, { recursive: true })
 
-      await mkdir(dirname(this.options.filename), { recursive: true })
-      await writeFile(this.options.filename, src)
-
-      const mjsSrc = 'export default ' + src
-      await writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
+      const precomputed = precomputeDependencies(manifest)
+      await writeFile(join(this.serverDist, `client.manifest.json`), JSON.stringify(manifest, null, 2))
+      await writeFile(join(this.serverDist, 'client.manifest.mjs'), 'export default ' + serialize(manifest), 'utf8')
+      await writeFile(join(this.serverDist, 'client.precomputed.mjs'), 'export default ' + serialize(precomputed), 'utf8')
 
       // assets[this.options.filename] = {
       //   source: () => src,

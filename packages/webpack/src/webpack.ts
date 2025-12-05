@@ -66,7 +66,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const compiler = webpack(config)
 
     // In dev, write files in memory FS
-    if (nuxt.options.dev) {
+    if (nuxt.options.dev && compiler) {
       compiler.outputFileSystem = mfs! as unknown as Compiler['outputFileSystem']
     }
 
@@ -75,18 +75,20 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
-      await new Promise(resolve => compiler.close(resolve))
+      await new Promise(resolve => compiler?.close(resolve))
     }
   })
 
   // Start Builds
   if (nuxt.options.dev) {
-    await Promise.all(compilers.map(c => compile(c)))
+    await Promise.all(compilers.map(c => c && compile(c)))
     return
   }
 
   for (const c of compilers) {
-    await compile(c)
+    if (c) {
+      await compile(c)
+    }
   }
 }
 
@@ -188,7 +190,7 @@ async function compile (compiler: Compiler) {
     const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
-      await Promise.all(compilersWatching.map(watching => pify(watching.close.bind(watching))()))
+      await Promise.all(compilersWatching.map(watching => watching && pify(watching.close.bind(watching))()))
     })
 
     // Client build

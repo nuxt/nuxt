@@ -3,10 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
+import { findWorkspaceDir } from 'pkg-types'
 import { loadNuxt } from '../src'
 import type { NuxtConfig } from '../schema'
 
-const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
 
 vi.stubGlobal('console', {
   ...console,
@@ -136,6 +137,24 @@ describe('loadNuxt', () => {
         "@nuxt/telemetry",
       ]
     `)
+  })
+
+  it('includes layer server directories in nitro tsconfig', async () => {
+    const layerFixtureDir = withoutTrailingSlash(
+      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
+    )
+
+    const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
+
+    const tsConfigInclude = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
+
+    const hasLayerServer = tsConfigInclude.some((p: string) =>
+      p.replace(/\\/g, '/').includes('layers/auto/server'),
+    )
+
+    expect(hasLayerServer).toBe(true)
+
+    await nuxt.close()
   })
 })
 

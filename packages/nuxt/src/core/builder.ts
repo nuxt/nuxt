@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, importModule, isIgnored, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -24,13 +24,13 @@ export async function build (nuxt: Nuxt) {
       // Unset mainComponent and errorComponent if app or error component is changed
       if (event === 'add' || event === 'unlink') {
         const path = resolve(nuxt.options.srcDir, relativePath)
-        for (const layer of nuxt.options._layers) {
-          const relativePath = relative(layer.config.srcDir || layer.cwd, path)
-          if (relativePath.match(/^app\./i)) {
+        for (const dirs of getLayerDirectories(nuxt)) {
+          const relativePath = relative(dirs.app, path)
+          if (/^app\./i.test(relativePath)) {
             app.mainComponent = undefined
             break
           }
-          if (relativePath.match(/^error\./i)) {
+          if (/^error\./i.test(relativePath)) {
             app.errorComponent = undefined
             break
           }
@@ -102,7 +102,7 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
+  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(dirs => dirs.app), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -241,17 +241,16 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
   } catch (err) {
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``, { cause: err })
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder\``, { cause: err })
   }
 }
 
 function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
-  for (const layer of nuxt.options._layers) {
-    const dir = layer.config.srcDir || layer.cwd
-    if (!dir || isIgnored(dir)) { continue }
+  for (const dirs of getLayerDirectories(nuxt)) {
+    if (!dirs.app || isIgnored(dirs.app)) { continue }
 
-    pathsToWatch.add(dir.replace(/[^/]$/, '$&/'))
+    pathsToWatch.add(dirs.app)
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }

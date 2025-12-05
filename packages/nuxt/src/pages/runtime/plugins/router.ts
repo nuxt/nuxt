@@ -1,10 +1,10 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
-import type { Plugin, RouteMiddleware } from 'nuxt/app'
+import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
@@ -111,20 +111,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
-    nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
-      if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
+      if (to.matched.at(-1)?.components?.default === from.matched.at(-1)?.components?.default) {
         syncCurrentRoute()
       }
     })
 
     // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
-    const route = {} as RouteLocationNormalizedLoaded
+    const route = { sync: syncCurrentRoute } as NuxtApp['_route']
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation],
+        get: () => _route.value[key as keyof RouteLocationNormalizedLoadedGeneric],
         enumerable: true,
       })
     }
@@ -223,6 +222,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
 
           try {
+            if (import.meta.dev) {
+              nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
+            }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
@@ -261,9 +263,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:end')
     })
 
-    router.afterEach(async (to, _from) => {
+    router.afterEach((to) => {
       if (to.matched.length === 0) {
-        await nuxtApp.runWithContext(() => showError(createError({
+        return nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`,

@@ -16,7 +16,6 @@ vi.mock('@nuxt/kit', () => ({
 const dirs: ComponentsDir[] = [
   {
     path: rFixture('components/islands'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -31,7 +30,6 @@ const dirs: ComponentsDir[] = [
   },
   {
     path: rFixture('components/global'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -46,7 +44,6 @@ const dirs: ComponentsDir[] = [
   },
   {
     path: rFixture('components'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -60,7 +57,6 @@ const dirs: ComponentsDir[] = [
   },
   {
     path: rFixture('components'),
-    enabled: true,
     extensions: [
       'vue',
     ],
@@ -78,7 +74,6 @@ const dirs: ComponentsDir[] = [
       'vue',
     ],
     prefix: 'nuxt',
-    enabled: true,
     pattern: '**/*.{vue,}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
@@ -88,10 +83,10 @@ const dirs: ComponentsDir[] = [
     transpile: false,
   },
 ]
-const dirUnable = dirs.map((d) => { return { ...d, enabled: false } })
 const expectedComponents = [
   {
     chunkName: 'components/isle-server',
+    declarationPath: rFixture('components/islands/Isle.vue'),
     export: 'default',
     global: undefined,
     island: true,
@@ -105,6 +100,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/glob',
+    declarationPath: rFixture('components/global/Glob.vue'),
     export: 'default',
     global: true,
     island: undefined,
@@ -121,6 +117,7 @@ const expectedComponents = [
     pascalName: 'HelloWorld',
     kebabName: 'hello-world',
     chunkName: 'components/hello-world',
+    declarationPath: rFixture('components/HelloWorld.vue'),
     shortPath: 'components/HelloWorld.vue',
     export: 'default',
     global: undefined,
@@ -134,6 +131,7 @@ const expectedComponents = [
     pascalName: 'Nuxt3',
     kebabName: 'nuxt3',
     chunkName: 'components/nuxt3-client',
+    declarationPath: rFixture('components/Nuxt3.client.vue'),
     shortPath: 'components/Nuxt3.client.vue',
     export: 'default',
     global: undefined,
@@ -147,6 +145,7 @@ const expectedComponents = [
     pascalName: 'Nuxt3',
     kebabName: 'nuxt3',
     chunkName: 'components/nuxt3-server',
+    declarationPath: rFixture('components/Nuxt3.server.vue'),
     shortPath: 'components/Nuxt3.server.vue',
     export: 'default',
     global: undefined,
@@ -157,6 +156,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/client-component-with-props',
+    declarationPath: rFixture('components/client/ComponentWithProps.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -170,6 +170,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/client-with-client-only-setup',
+    declarationPath: rFixture('components/client/WithClientOnlySetup.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -186,6 +187,7 @@ const expectedComponents = [
     pascalName: 'ParentFolder',
     kebabName: 'parent-folder',
     chunkName: 'components/parent-folder-server',
+    declarationPath: rFixture('components/parent-folder/index.server.vue'),
     shortPath: 'components/parent-folder/index.server.vue',
     export: 'default',
     global: undefined,
@@ -196,6 +198,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/same-name-same',
+    declarationPath: rFixture('components/same-name/same/Same.vue'),
     export: 'default',
     global: undefined,
     island: undefined,
@@ -209,6 +212,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/some-glob',
+    declarationPath: rFixture('components/some-glob.global.vue'),
     export: 'default',
     global: true,
     island: undefined,
@@ -222,6 +226,7 @@ const expectedComponents = [
   },
   {
     chunkName: 'components/some-server',
+    declarationPath: rFixture('components/some.island.vue'),
     export: 'default',
     global: undefined,
     island: true,
@@ -246,9 +251,4 @@ it('components:scanComponents', async () => {
     delete c._scanned
   }
   expect(scannedComponents).deep.eq(expectedComponents)
-})
-
-it('components:scanComponents:unable', async () => {
-  const scannedComponents = await scanComponents(dirUnable, srcDir)
-  expect(scannedComponents).deep.eq([])
 })
