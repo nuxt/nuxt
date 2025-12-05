@@ -169,17 +169,17 @@ function save () {
 
 ```vue
 <script setup lang="ts">
-  const session = useCookie(
-    'session', {
+const session = useCookie(
+  'session', {
     maxAge: 60 * 60, // 1 hour
     refresh: true,
     default: () => 'active',
   })
 
-  // Even if the value does not change,
-  // the cookie expiration will be refreshed
-  // every time the setter is called
-  session.value = 'active'
+// Even if the value does not change,
+// the cookie expiration will be refreshed
+// every time the setter is called
+session.value = 'active'
 </script>
 
 <template>
