@@ -291,6 +291,7 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
  */
 function cookieServerRef<T> (name: string, value: T | undefined) {
   const internalRef = ref(value)
+  const nuxtApp = useNuxtApp()
 
   return customRef((track, trigger) => {
     return {
@@ -299,7 +300,6 @@ function cookieServerRef<T> (name: string, value: T | undefined) {
         return internalRef.value
       },
       set (newValue) {
-        const nuxtApp = useNuxtApp()
         nuxtApp._cookiesChanged ||= {}
         nuxtApp._cookiesChanged[name] = true
 
