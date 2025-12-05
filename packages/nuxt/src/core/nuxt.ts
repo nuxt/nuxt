@@ -30,6 +30,7 @@ import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import importsModule from '../imports/module'
+import cspModule from '../csp/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
@@ -805,6 +806,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     },
   }])
   options._modules.push(schemaModule)
+  if (!options._modules.includes('nuxt-security') && options.csp) {
+    options._modules.push(cspModule)
+  }
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push(
