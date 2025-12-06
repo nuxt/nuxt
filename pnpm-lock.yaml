@@ -495,8 +495,8 @@ importers:
         specifier: 3.3.2
         version: 3.3.2(magicast@0.5.1)
       chokidar:
-        specifier: ^4.0.3
-        version: 4.0.3
+        specifier: ^5.0.0
+        version: 5.0.0
       compatx:
         specifier: 0.2.0
         version: 0.2.0
@@ -858,8 +858,8 @@ importers:
         specifier: 3.3.2
         version: 3.3.2(magicast@0.5.1)
       chokidar:
-        specifier: 4.0.3
-        version: 4.0.3
+        specifier: 5.0.0
+        version: 5.0.0
       compatx:
         specifier: 0.2.0
         version: 0.2.0
@@ -15415,7 +15415,7 @@ snapshots:
       unified: 11.0.5
       unist-util-visit: 5.0.0
       unist-util-visit-parents: 6.0.2
-      yaml: 2.8.1
+      yaml: 2.8.2
     transitivePeerDependencies:
       - supports-color
 
