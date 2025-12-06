@@ -6,6 +6,12 @@ import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtError } from 'nuxt/app'
 import { useNuxtApp } from '#app/nuxt'
 
+// Generated at runtime to be extended
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NuxtLayouts {
+
+}
+
 export interface PageMeta {
   [key: string]: unknown
   /**
@@ -47,8 +53,13 @@ export interface PageMeta {
 }
 
 declare module 'vue-router' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface RouteMeta extends UnwrapRef<PageMeta> {}
+
+  interface RouteMeta extends UnwrapRef<PageMeta> {
+    /**
+     * @internal
+     */
+    layoutProps?: Record<string, unknown>
+  }
 }
 
 const warnRuntimeUsage = (method: string) => {
