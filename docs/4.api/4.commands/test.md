@@ -19,20 +19,20 @@ The `test` command runs tests using [`@nuxt/test-utils`](/docs/getting-started/t
 ## Arguments
 
 <!--test-args-->
-Argument | Description
---- | ---
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/test-args-->
 
 ## Options
 
 <!--test-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--dev` |  | Run in dev mode
-`--watch` |  | Watch mode
+| Option                               | Default | Description                                                                      |
+|--------------------------------------|---------|----------------------------------------------------------------------------------|
+| `--cwd=<directory>`                  |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`) |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level                                                     |
+| `--dev`                              |         | Run in dev mode                                                                  |
+| `--watch`                            |         | Watch mode                                                                       |
 <!--/test-opts-->
 
 ::note

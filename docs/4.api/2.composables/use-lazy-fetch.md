@@ -69,14 +69,14 @@ export function useLazyFetch<DataT, ErrorT> (
 
 Returns the same `AsyncData` object as [`useFetch`](/docs/4.x/api/composables/use-fetch):
 
-| Name | Type | Description |
-| --- | --- |--- |
-| `data` | `Ref<DataT \| undefined>` | The result of the asynchronous fetch. |
-| `refresh` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Function to manually refresh the data. |
-| `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`. |
-| `error` | `Ref<ErrorT \| undefined>` | Error object if the data fetching failed. |
-| `status` | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>` | Status of the data request. |
-| `clear` | `() => void` | Resets `data` to `undefined`, `error` to `undefined`, sets `status` to `idle`, and cancels any pending requests. |
+| Name      | Type                                                | Description                                                                                                      |
+|-----------|-----------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `data`    | `Ref<DataT \| undefined>`                           | The result of the asynchronous fetch.                                                                            |
+| `refresh` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Function to manually refresh the data.                                                                           |
+| `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`.                                                                                             |
+| `error`   | `Ref<ErrorT \| undefined>`                          | Error object if the data fetching failed.                                                                        |
+| `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the data request.                                                                                      |
+| `clear`   | `() => void`                                        | Resets `data` to `undefined`, `error` to `undefined`, sets `status` to `idle`, and cancels any pending requests. |
 
 :read-more{to="/docs/4.x/api/composables/use-fetch#return-values"}
 

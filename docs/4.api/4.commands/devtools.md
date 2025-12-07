@@ -19,18 +19,18 @@ Running `nuxt devtools enable` will install the Nuxt DevTools globally, and also
 ## Arguments
 
 <!--devtools-args-->
-Argument | Description
---- | ---
-`COMMAND` | Command to run (options: <enable\|disable>)
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `COMMAND`     | Command to run (options: <enable\|disable>)    |
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/devtools-args-->
 
 ## Options
 
 <!--devtools-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
+| Option              | Default | Description                                                                      |
+|---------------------|---------|----------------------------------------------------------------------------------|
+| `--cwd=<directory>` |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`) |
 <!--/devtools-opts-->
 
 ::read-more{icon="i-simple-icons-nuxtdotjs" to="https://devtools.nuxt.com" target="\_blank"}

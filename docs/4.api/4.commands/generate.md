@@ -19,22 +19,22 @@ The `generate` command pre-renders every route of your application and stores th
 ## Arguments
 
 <!--generate-args-->
-Argument | Description
---- | ---
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/generate-args-->
 
 ## Options
 
 <!--generate-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--preset` |  | Nitro server preset
-`--dotenv` |  | Path to `.env` file to load, relative to the root directory
-`--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
-`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
+| Option                               | Default | Description                                                                                                                                          |
+|--------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--cwd=<directory>`                  |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)                                                                     |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level                                                                                                                         |
+| `--preset`                           |         | Nitro server preset                                                                                                                                  |
+| `--dotenv`                           |         | Path to `.env` file to load, relative to the root directory                                                                                          |
+| `--envName`                          |         | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server) |
+| `-e, --extends=<layer-name>`         |         | Extend from a Nuxt layer                                                                                                                             |
 <!--/generate-opts-->
 
 ::read-more{to="/docs/4.x/getting-started/deployment#static-hosting"}

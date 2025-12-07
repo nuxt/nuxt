@@ -19,34 +19,34 @@ The `dev` command starts a development server with hot module replacement at [ht
 ## Arguments
 
 <!--dev-args-->
-Argument | Description
---- | ---
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/dev-args-->
 
 ## Options
 
 <!--dev-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--dotenv` |  | Path to `.env` file to load, relative to the root directory
-`--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
-`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
-`--clear` | `false` | Clear console on restart
-`--no-f, --no-fork` |  | Disable forked mode
-`-p, --port` |  | Port to listen on (default: `NUXT_PORT \|\| NITRO_PORT \|\| PORT \|\| nuxtOptions.devServer.port`)
-`-h, --host` |  | Host to listen on (default: `NUXT_HOST \|\| NITRO_HOST \|\| HOST \|\| nuxtOptions.devServer?.host`)
-`--clipboard` | `false` | Copy the URL to the clipboard
-`-o, --open` | `false` | Open the URL in the browser
-`--https` |  | Enable HTTPS
-`--publicURL` |  | Displayed public URL (used for QR code)
-`--qr` |  | Display The QR code of public URL when available
-`--public` |  | Listen to all network interfaces
-`--tunnel` |  | Open a tunnel using https://github.com/unjs/untun
-`--sslCert` |  | (DEPRECATED) Use `--https.cert` instead.
-`--sslKey` |  | (DEPRECATED) Use `--https.key` instead.
+| Option                               | Default | Description                                                                                                                                          |
+|--------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--cwd=<directory>`                  |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)                                                                     |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level                                                                                                                         |
+| `--dotenv`                           |         | Path to `.env` file to load, relative to the root directory                                                                                          |
+| `--envName`                          |         | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server) |
+| `-e, --extends=<layer-name>`         |         | Extend from a Nuxt layer                                                                                                                             |
+| `--clear`                            | `false` | Clear console on restart                                                                                                                             |
+| `--no-f, --no-fork`                  |         | Disable forked mode                                                                                                                                  |
+| `-p, --port`                         |         | Port to listen on (default: `NUXT_PORT \|\| NITRO_PORT \|\| PORT \|\| nuxtOptions.devServer.port`)                                                   |
+| `-h, --host`                         |         | Host to listen on (default: `NUXT_HOST \|\| NITRO_HOST \|\| HOST \|\| nuxtOptions.devServer?.host`)                                                  |
+| `--clipboard`                        | `false` | Copy the URL to the clipboard                                                                                                                        |
+| `-o, --open`                         | `false` | Open the URL in the browser                                                                                                                          |
+| `--https`                            |         | Enable HTTPS                                                                                                                                         |
+| `--publicURL`                        |         | Displayed public URL (used for QR code)                                                                                                              |
+| `--qr`                               |         | Display The QR code of public URL when available                                                                                                     |
+| `--public`                           |         | Listen to all network interfaces                                                                                                                     |
+| `--tunnel`                           |         | Open a tunnel using https://github.com/unjs/untun                                                                                                    |
+| `--sslCert`                          |         | (DEPRECATED) Use `--https.cert` instead.                                                                                                             |
+| `--sslKey`                           |         | (DEPRECATED) Use `--https.key` instead.                                                                                                              |
 <!--/dev-opts-->
 
 The port and host can also be set via NUXT_PORT, PORT, NUXT_HOST or HOST environment variables.

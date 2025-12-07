@@ -217,14 +217,14 @@ An object accepting the following properties:
 
     - An object accepting the following properties:
 
-      | Property | Type    | Description |
-      |----------|---------|--------------|
-      | `popup`  | `boolean` | Requests a minimal popup window instead of a new tab, with UI features decided by the browser. |
-      | `width` or `innerWidth`  | `number`  | Specifies the content area's width (minimum 100 pixels), including scrollbars. |
-      | `height` or `innerHeight` | `number`  | Specifies the content area's height (minimum 100 pixels), including scrollbars. |
-      | `left` or `screenX`   | `number`  | Sets the horizontal position of the new window relative to the left edge of the screen. |
-      | `top` or `screenY`   | `number`  | Sets the vertical position of the new window relative to the top edge of the screen. |
-      | `noopener` | `boolean` | Prevents the new window from accessing the originating window via `window.opener`. |
-      | `noreferrer` | `boolean` | Prevents the Referer header from being sent and implicitly enables `noopener`. |
+      | Property                  | Type      | Description                                                                                    |
+      |---------------------------|-----------|------------------------------------------------------------------------------------------------|
+      | `popup`                   | `boolean` | Requests a minimal popup window instead of a new tab, with UI features decided by the browser. |
+      | `width` or `innerWidth`   | `number`  | Specifies the content area's width (minimum 100 pixels), including scrollbars.                 |
+      | `height` or `innerHeight` | `number`  | Specifies the content area's height (minimum 100 pixels), including scrollbars.                |
+      | `left` or `screenX`       | `number`  | Sets the horizontal position of the new window relative to the left edge of the screen.        |
+      | `top` or `screenY`        | `number`  | Sets the vertical position of the new window relative to the top edge of the screen.           |
+      | `noopener`                | `boolean` | Prevents the new window from accessing the originating window via `window.opener`.             |
+      | `noreferrer`              | `boolean` | Prevents the Referer header from being sent and implicitly enables `noopener`.                 |
 
       Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open#windowfeatures) for more detailed information on the **windowFeatures** properties.
