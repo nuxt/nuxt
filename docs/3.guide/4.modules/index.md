@@ -1,7 +1,7 @@
 ---
 title: 'Module Author Guide'
 titleTemplate: '%s'
-description: 'Learn how to create a Nuxt Module to integrate, enhance or extend any Nuxt applications.'
+description: 'Learn how to create a Nuxt module to integrate, enhance or extend any Nuxt applications.'
 navigation: false
 surround: false
 ---
