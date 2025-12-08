@@ -8,7 +8,7 @@ surround: false
 
 Nuxt's [configuration](/docs/4.x/api/nuxt-config) and [hooks](/docs/4.x/guide/going-further/hooks) systems make it possible to customize every aspect of Nuxt and add any integration you might need (Vue plugins, CMS, server routes, components, logging, etc.).
 
-**Nuxt Modules** are functions that sequentially run when starting Nuxt in development mode using `nuxt dev` or building a project for production with `nuxt build`.
+**Nuxt modules** are functions that sequentially run when starting Nuxt in development mode using `nuxt dev` or building a project for production with `nuxt build`.
 With modules, you can encapsulate, properly test, and share custom solutions as npm packages without adding unnecessary boilerplate to your project, or requiring changes to Nuxt itself.
 
 ::card-group{class="sm:grid-cols-1"}
