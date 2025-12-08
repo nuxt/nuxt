@@ -13,7 +13,7 @@ import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
 import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
-import { transform as oxcTransform } from 'oxc-transform'
+import { transformSync } from 'oxc-transform'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
 import type { NuxtPage } from 'nuxt/schema'
@@ -284,7 +284,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       // TODO: always true because `extractScriptContent` only detects ts/tsx loader
       if (/tsx?/.test(script.loader)) {
         // slice, transform and parse the `define...` macro node to avoid parsing the whole file
-        const transformed = oxcTransform(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
+        const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
         if (transformed.errors.length) {
           for (const error of transformed.errors) {
             logger.warn(`Error while transforming \`${fnName}()\`` + error.codeframe)

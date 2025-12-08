@@ -19,19 +19,19 @@ The `upgrade` command upgrades Nuxt to the latest version.
 ## Arguments
 
 <!--upgrade-args-->
-Argument | Description
---- | ---
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/upgrade-args-->
 
 ## Options
 
 <!--upgrade-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--dedupe` |  | Dedupe dependencies after upgrading
-`-f, --force` |  | Force upgrade to recreate lockfile and node_modules
-`-ch, --channel=<stable\|nightly\|v3\|v4\|v4-nightly\|v3-nightly>` | `stable` | Specify a channel to install from (default: stable)
+| Option                                                             | Default  | Description                                                                      |
+|--------------------------------------------------------------------|----------|----------------------------------------------------------------------------------|
+| `--cwd=<directory>`                                                |          | Specify the working directory, this takes precedence over ROOTDIR (default: `.`) |
+| `--logLevel=<silent\|info\|verbose>`                               |          | Specify build-time log level                                                     |
+| `--dedupe`                                                         |          | Dedupe dependencies after upgrading                                              |
+| `-f, --force`                                                      |          | Force upgrade to recreate lockfile and node_modules                              |
+| `-ch, --channel=<stable\|nightly\|v3\|v4\|v4-nightly\|v3-nightly>` | `stable` | Specify a channel to install from (default: stable)                              |
 <!--/upgrade-opts-->
