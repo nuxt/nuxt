@@ -905,58 +905,63 @@ describe('useAsyncData', () => {
 
   // https://github.com/nuxt/nuxt/issues/33777
   it('should continue watching params after reactive key changes', async () => {
-    const id = ref('1')
-    const page = ref(0)
-    const promiseFn = vi.fn((id: string, page: number) => Promise.resolve(`id: ${id}, page: ${page}`))
+    vi.useFakeTimers()
+    try {
+      const id = ref('1')
+      const page = ref(0)
+      const promiseFn = vi.fn((id: string, page: number) => Promise.resolve(`id: ${id}, page: ${page}`))
 
-    const params = computed(() => ({ id: id.value, page: page.value }))
+      const params = computed(() => ({ id: id.value, page: page.value }))
 
-    const { data, error } = await useAsyncData(
-      () => `data-${id.value}`,
-      () => promiseFn(params.value.id, params.value.page),
-      {
-        watch: [params],
-        immediate: true,
-      },
-    )
+      const { data, error } = await useAsyncData(
+        () => `data-${id.value}`,
+        () => promiseFn(params.value.id, params.value.page),
+        {
+          watch: [params],
+          immediate: true,
+        },
+      )
 
-    // Initial call
-    expect(data.value).toBe('id: 1, page: 0')
-    expect(promiseFn).toHaveBeenCalledTimes(1)
-    expect(promiseFn).toHaveBeenLastCalledWith('1', 0)
+      // Initial call
+      expect(data.value).toBe('id: 1, page: 0')
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      expect(promiseFn).toHaveBeenLastCalledWith('1', 0)
 
-    // Change key: id changes from '1' to '2'
-    id.value = '2'
-    await nextTick()
-    await flushPromises()
-    await new Promise(resolve => setTimeout(resolve, 5))
+      // Change key: id changes from '1' to '2'
+      id.value = '2'
+      await nextTick()
+      await flushPromises()
+      await vi.advanceTimersByTimeAsync(5)
 
-    expect(promiseFn).toHaveBeenCalledTimes(2)
-    expect(promiseFn).toHaveBeenLastCalledWith('2', 0)
-    expect(error.value).toBe(undefined)
-    expect(data.value).toBe('id: 2, page: 0')
+      expect(promiseFn).toHaveBeenCalledTimes(2)
+      expect(promiseFn).toHaveBeenLastCalledWith('2', 0)
+      expect(error.value).toBe(undefined)
+      expect(data.value).toBe('id: 2, page: 0')
 
-    // Verify params watcher continues to work after key change (issue #33777)
-    page.value = 1
-    await nextTick()
-    await flushPromises()
-    await new Promise(resolve => setTimeout(resolve, 5))
+      // Verify params watcher continues to work after key change (issue #33777)
+      page.value = 1
+      await nextTick()
+      await flushPromises()
+      await vi.advanceTimersByTimeAsync(5)
 
-    expect(promiseFn).toHaveBeenCalledTimes(3)
-    expect(promiseFn).toHaveBeenLastCalledWith('2', 1)
-    expect(error.value).toBe(undefined)
-    expect(data.value).toBe('id: 2, page: 1')
+      expect(promiseFn).toHaveBeenCalledTimes(3)
+      expect(promiseFn).toHaveBeenLastCalledWith('2', 1)
+      expect(error.value).toBe(undefined)
+      expect(data.value).toBe('id: 2, page: 1')
 
-    // Another params change to be thorough
-    page.value = 2
-    await nextTick()
-    await flushPromises()
-    await new Promise(resolve => setTimeout(resolve, 5))
+      // Another params change to be thorough
+      page.value = 2
+      await nextTick()
+      await flushPromises()
+      await vi.advanceTimersByTimeAsync(5)
 
-    expect(promiseFn).toHaveBeenCalledTimes(4)
-    expect(promiseFn).toHaveBeenLastCalledWith('2', 2)
-    expect(error.value).toBe(undefined)
-    expect(data.value).toBe('id: 2, page: 2')
+      expect(promiseFn).toHaveBeenCalledTimes(4)
+      expect(promiseFn).toHaveBeenLastCalledWith('2', 2)
+      expect(error.value).toBe(undefined)
+      expect(data.value).toBe('id: 2, page: 2')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('should trigger AbortController on clear', () => {
