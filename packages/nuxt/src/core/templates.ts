@@ -257,8 +257,8 @@ export const schemaTemplate: NuxtTemplate = {
       modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
-    const moduleDependencies = modules.flatMap(([_configKey, importName]) => [
-      `    [${genString(importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? O : Record<string, unknown>>`,
+    const moduleDependencies = modules.flatMap(([_configKey, importName, mod]) => [
+      `    [${genString(mod.meta.name || importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? O : Record<string, unknown>>`,
     ]).join('\n')
 
     return [

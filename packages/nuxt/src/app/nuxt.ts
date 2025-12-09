@@ -171,7 +171,9 @@ interface _NuxtApp {
   /** @internal */
   _appConfig: AppConfig
   /** @internal */
-  _route: RouteLocationNormalizedLoaded
+  _route: RouteLocationNormalizedLoaded & {
+    sync?: () => void
+  }
 
   /** @internal */
   _islandPromises?: Record<string, Promise<any>>

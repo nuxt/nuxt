@@ -398,7 +398,7 @@ export function useAsyncData<
     const unsubParamsWatcher = options.watch
       ? watch(options.watch, () => {
           if (keyChanging) { return } // avoid double execute while the key switch is being processed
-          asyncData._execute({ cause: 'watch', dedupe: options.dedupe })
+          nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: options.dedupe })
         })
       : () => {}
 
@@ -763,18 +763,18 @@ function createAsyncData<
         .catch((error: any) => {
           // If the promise was replaced by another one, we do not update the asyncData
           if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
-            return
+            return nuxtApp._asyncDataPromises[key]
           }
 
           // If the asyncData was explicitly aborted internally (dedupe or clear), we do not update the asyncData
           if (asyncData._abortController?.signal.aborted) {
-            return
+            return nuxtApp._asyncDataPromises[key]
           }
 
           // if the asyncData was explicitly aborted by user, we set it back to idle state
           if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
             asyncData.status.value = 'idle'
-            return
+            return nuxtApp._asyncDataPromises[key]
           }
 
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
