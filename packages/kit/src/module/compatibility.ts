@@ -28,7 +28,7 @@ export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()): bool
 }
 
 /**
- * Checks if a Nuxt Module is compatible with a given semver version.
+ * Checks if a Nuxt module is compatible with a given semver version.
  */
 export async function hasNuxtModuleCompatibility (module: string | NuxtModule, semverVersion: string, nuxt: Nuxt = useNuxt()): Promise<boolean> {
   const version = await getNuxtModuleVersion(module, nuxt)
