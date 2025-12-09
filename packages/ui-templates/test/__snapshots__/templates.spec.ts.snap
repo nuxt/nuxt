@@ -1279,7 +1279,7 @@ exports[`template > produces correct output for welcome template 1`] = `
 }
 .from-blue-400 {
   --un-gradient-from-position: 0%;
-  --un-gradient-from: rgb(96 165 250 / var(--un-from-opacity, 1))
+  --un-gradient-from: rgb(96 165 250/var(--un-from-opacity, 1))
     var(--un-gradient-from-position);
   --un-gradient-to-position: 100%;
   --un-gradient-to: rgba(96, 165, 250, 0) var(--un-gradient-to-position);
@@ -1287,7 +1287,7 @@ exports[`template > produces correct output for welcome template 1`] = `
 }
 .from-green-400 {
   --un-gradient-from-position: 0%;
-  --un-gradient-from: rgb(55 233 144 / var(--un-from-opacity, 1))
+  --un-gradient-from: rgb(55 233 144/var(--un-from-opacity, 1))
     var(--un-gradient-from-position);
   --un-gradient-to-position: 100%;
   --un-gradient-to: rgba(55, 233, 144, 0) var(--un-gradient-to-position);
@@ -1295,7 +1295,7 @@ exports[`template > produces correct output for welcome template 1`] = `
 }
 .from-yellow-400 {
   --un-gradient-from-position: 0%;
-  --un-gradient-from: rgb(250 204 21 / var(--un-from-opacity, 1))
+  --un-gradient-from: rgb(250 204 21/var(--un-from-opacity, 1))
     var(--un-gradient-from-position);
   --un-gradient-to-position: 100%;
   --un-gradient-to: rgba(250, 204, 21, 0) var(--un-gradient-to-position);
