@@ -13,7 +13,7 @@ const props = defineProps({
 const _error = props.error
 
 // TODO: extract to a separate utility
-const stacktrace = _error.stack
+const stacktrace = import.meta.dev && _error.stack
   ? _error.stack
       .split('\n')
       .splice(1)
