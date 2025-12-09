@@ -3,7 +3,9 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, escapeHtml } from 'vue'
+import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line vue/prefer-import-from-vue
+import { escapeHtml } from '@vue/shared'
 
 const props = defineProps({
   error: Object,
