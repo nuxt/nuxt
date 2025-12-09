@@ -262,7 +262,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
       if ((e as Error).message === 'Invalid plugin metadata') {
-        logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta. Learn more: https://nuxt.com/docs/4.x/guide/directory-structure/app/plugins#object-syntax-plugins`)
+        logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta. Learn more: https://nuxt.com/docs/4.x/directory-structure/app/plugins#object-syntax-plugins`)
       } else {
         logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
       }
