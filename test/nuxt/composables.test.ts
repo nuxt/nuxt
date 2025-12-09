@@ -595,7 +595,7 @@ describe('defineNuxtComponent', () => {
       }),
       render () {
         // @ts-expect-error this is not typed
-        return h('div', `Total users: ${this.users.value.length}`)
+        return h('div', `Total users: ${this.users.length}`)
       },
     })))
     const wrapper = await mountSuspended(ClientOnlyPage)
