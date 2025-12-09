@@ -935,7 +935,7 @@ describe('useAsyncData', () => {
 
       expect(promiseFn).toHaveBeenCalledTimes(2)
       expect(promiseFn).toHaveBeenLastCalledWith('2', 0)
-      expect(error.value).toBe(undefined)
+      expect(error.value).toBe(asyncDataDefaults.errorValue)
       expect(data.value).toBe('id: 2, page: 0')
 
       // Verify params watcher continues to work after key change (issue #33777)
@@ -946,7 +946,7 @@ describe('useAsyncData', () => {
 
       expect(promiseFn).toHaveBeenCalledTimes(3)
       expect(promiseFn).toHaveBeenLastCalledWith('2', 1)
-      expect(error.value).toBe(undefined)
+      expect(error.value).toBe(asyncDataDefaults.errorValue)
       expect(data.value).toBe('id: 2, page: 1')
 
       // Another params change to be thorough
@@ -957,7 +957,7 @@ describe('useAsyncData', () => {
 
       expect(promiseFn).toHaveBeenCalledTimes(4)
       expect(promiseFn).toHaveBeenLastCalledWith('2', 2)
-      expect(error.value).toBe(undefined)
+      expect(error.value).toBe(asyncDataDefaults.errorValue)
       expect(data.value).toBe('id: 2, page: 2')
     } finally {
       vi.useRealTimers()
