@@ -17,7 +17,7 @@ let _isHmrUpdating = false
  */
 export function callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
 export function callOnce (fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
-export async function callOnce (...args: any): Promise<void> {
+export async function callOnce (...args: any[]): Promise<void> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, fn, options] = args as [string, (() => any | Promise<any>), CallOnceOptions | undefined]
