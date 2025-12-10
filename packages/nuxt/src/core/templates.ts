@@ -61,6 +61,8 @@ export const cssTemplate: NuxtTemplate = {
 const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
+  // Write to disk so that vite in development (esbuild) can discover dependencies
+  write: true,
   async getContents (ctx) {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
