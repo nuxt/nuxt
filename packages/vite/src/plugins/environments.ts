@@ -23,7 +23,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:environments',
     enforce: 'pre', // run before other plugins
-    config (config) {
+    config () {
       if (!nuxt.options.dev) {
         return {
           base: './',
