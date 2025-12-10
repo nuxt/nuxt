@@ -187,7 +187,7 @@ export default defineResolvers({
   },
   extensions: {
     $resolve: (val): string[] => {
-      const extensions = ['.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx', '.vue']
+      const extensions = ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.mts', '.vue']
       if (Array.isArray(val)) {
         for (const item of val) {
           if (item && typeof item === 'string') {
