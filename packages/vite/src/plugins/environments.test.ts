@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import { EnvironmentsPlugin } from './environments'
-import * as kit from '@nuxt/kit'
+import type * as kit from '@nuxt/kit'
 
 // Mock useNitro to return a minimal nitro instance
 vi.mock('@nuxt/kit', async () => {
@@ -117,7 +117,7 @@ describe('EnvironmentsPlugin', () => {
 /**
  * Creates a mock Nuxt instance with minimal required properties
  */
-function createMockNuxt(experimentalOptions: { viteEnvironmentApi?: boolean } = {}): Nuxt {
+function createMockNuxt (experimentalOptions: { viteEnvironmentApi?: boolean } = {}): Nuxt {
   return {
     options: {
       experimental: {
