@@ -32,7 +32,7 @@ interface ResolvedModule {
  * Installs a set of modules on a Nuxt instance.
  * @internal
  */
-export async function installModules (modulesToInstall: Map<ModuleToInstall, Record<string, any>>, resolvedModulePaths: Set<string>, nuxt: Nuxt = useNuxt()) {
+export async function installModules (modulesToInstall: Map<ModuleToInstall, Record<string, any>>, resolvedModulePaths: Set<string>, nuxt: Nuxt = useNuxt()): Promise<void> {
   const localLayerModuleDirs: string[] = []
   for (const l of nuxt.options._layers) {
     const srcDir = l.config.srcDir || l.cwd
@@ -160,7 +160,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
 export async function installModule<
   T extends string | NuxtModule,
   Config extends Extract<NonNullable<NuxtConfig['modules']>[number], [T, any]>,
-> (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
+> (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()): Promise<void> {
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   const localLayerModuleDirs: string[] = []
@@ -293,7 +293,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
 // --- Internal ---
 
-export function getDirectory (p: string) {
+export function getDirectory (p: string): string {
   try {
     // we need to target directories instead of module file paths themselves
     // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module

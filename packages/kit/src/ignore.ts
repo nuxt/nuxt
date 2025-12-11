@@ -3,15 +3,16 @@ import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt } from './context'
 import { getLayerDirectories } from './layers'
+import type { Nuxt } from 'nuxt/schema'
 
-export function createIsIgnored (nuxt = tryUseNuxt()) {
-  return (pathname: string, stats?: unknown) => isIgnored(pathname, stats, nuxt)
+export function createIsIgnored (nuxt: Nuxt | null | undefined = tryUseNuxt()): (pathname: string, stats?: unknown) => boolean {
+  return (pathname, stats) => isIgnored(pathname, stats, nuxt)
 }
 
 /**
  * Return a filter function to filter an array of paths
  */
-export function isIgnored (pathname: string, _stats?: unknown, nuxt = tryUseNuxt()): boolean {
+export function isIgnored (pathname: string, _stats?: unknown, nuxt: Nuxt | null | undefined = tryUseNuxt()): boolean {
   // Happens with CLI reloads
   if (!nuxt) {
     return false
