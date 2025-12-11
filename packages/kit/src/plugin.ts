@@ -76,7 +76,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  * ```
  */
 export interface AddPluginOptions { append?: boolean }
-export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}) {
+export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}): NuxtPlugin {
   const nuxt = useNuxt()
 
   // Normalize plugin

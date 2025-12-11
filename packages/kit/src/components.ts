@@ -13,7 +13,7 @@ import { MODE_RE } from './utils'
  *
  * Requires Nuxt 2.13+
  */
-export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
+export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}): void {
   const nuxt = useNuxt()
   if (!checkNuxtVersion('>=2.13', nuxt)) {
     throw new Error(`\`addComponentsDir\` requires Nuxt 2.13 or higher.`)
@@ -30,7 +30,7 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 /**
  * This utility takes a file path or npm package that is scanned for named exports, which are get added automatically
  */
-export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & { prefix?: string }) {
+export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & { prefix?: string }): void {
   const nuxt = useNuxt()
   const components: Component[] = []
   nuxt.hook('components:dirs', async () => {
@@ -50,7 +50,7 @@ export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & {
  *
  * Requires Nuxt 2.13+
  */
-export function addComponent (opts: AddComponentOptions) {
+export function addComponent (opts: AddComponentOptions): void {
   const component = normalizeComponent(opts)
   addComponents([component])
 }

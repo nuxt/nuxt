@@ -3,7 +3,7 @@ import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
 import { toArray } from './utils'
 
-export function addImports (imports: Import | Import[]) {
+export function addImports (imports: Import | Import[]): void {
   assertNuxtCompatibility({ bridge: true })
 
   useNuxt().hook('imports:extend', (_imports) => {
@@ -11,7 +11,7 @@ export function addImports (imports: Import | Import[]) {
   })
 }
 
-export function addImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
+export function addImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}): void {
   assertNuxtCompatibility({ bridge: true })
 
   useNuxt().hook('imports:dirs', (_dirs: string[]) => {
@@ -20,7 +20,7 @@ export function addImportsDir (dirs: string | string[], opts: { prepend?: boolea
     }
   })
 }
-export function addImportsSources (presets: InlinePreset | InlinePreset[]) {
+export function addImportsSources (presets: InlinePreset | InlinePreset[]): void {
   assertNuxtCompatibility({ bridge: true })
 
   useNuxt().hook('imports:sources', (_presets: InlinePreset[]) => {
