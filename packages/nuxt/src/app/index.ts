@@ -1,4 +1,4 @@
-import '../../dist/app/types/augments'
+import type {} from './types/augments'
 
 export { applyPlugin, applyPlugins, callWithNuxt, createNuxtApp, defineAppConfig, defineNuxtPlugin, definePayloadPlugin, isNuxtPlugin, registerPluginHooks, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from './nuxt'
 export type { CreateOptions, NuxtApp, NuxtPayload, NuxtPluginIndicator, NuxtSSRContext, ObjectPlugin, Plugin, PluginEnvContext, PluginMeta, ResolvedPluginMeta, RuntimeNuxtHooks } from './nuxt'

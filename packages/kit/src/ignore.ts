@@ -3,7 +3,7 @@ import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt } from './context'
 import { getLayerDirectories } from './layers'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 
 export function createIsIgnored (nuxt: Nuxt | null | undefined = tryUseNuxt()): (pathname: string, stats?: unknown) => boolean {
   return (pathname, stats) => isIgnored(pathname, stats, nuxt)
