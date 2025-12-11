@@ -38,7 +38,7 @@ async function checkWebpackConfig () {
   // https://webpack.js.org/configuration/configuration-languages/
   return await checkAndWarnAboutConfigFileExistence({
     fileName: 'webpack.config',
-    extensions: ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', 'coffee'],
+    extensions: ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', '.coffee'],
     createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.webpack\` instead. You can read more in \`https://nuxt.com/docs/4.x/api/nuxt-config#webpack-1\`.`,
   })
 }

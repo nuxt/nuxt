@@ -25,7 +25,7 @@ export default defineResolvers({
       },
     },
     resolve: {
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
+      extensions: ['.js', '.mjs', '.ts', '.vue', '.json', '.cjs', '.tsx', '.jsx', '.mts', '.cts'],
     },
     publicDir: {
       $resolve: (val) => {

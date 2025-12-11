@@ -34,7 +34,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   if (!existsSync(plugin.src) && isAbsolute(plugin.src)) {
     try {
       plugin.src = resolveModulePath(plugin.src, {
-        extensions: tryUseNuxt()?.options.extensions ?? ['.js', '.mjs', '.cjs', '.ts', '.tsx', '.mts', '.cts'],
+        extensions: tryUseNuxt()?.options.extensions ?? ['.js', '.mjs', '.ts', '.cjs', '.tsx', '.jsx', '.mts', '.cts'],
       })
     } catch {
       // ignore errors as the file may be in the nuxt vfs
