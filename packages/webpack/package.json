@@ -27,6 +27,7 @@
   ],
   "scripts": {
     "prepack": "unbuild",
+    "build:stub": "unbuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
