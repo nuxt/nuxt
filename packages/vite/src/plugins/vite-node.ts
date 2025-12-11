@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { createError } from 'h3'
 import { join, normalize, resolve } from 'pathe'
-import { tryUseNuxt } from '@nuxt/kit'
+import { resolveAlias, tryUseNuxt } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -87,8 +87,7 @@ function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string
   // This ensures CSS is in manifest even if moduleGraph isn't populated yet
   for (const globalCss of nuxt.options.css) {
     if (typeof globalCss === 'string') {
-      // Resolve ~/ alias to root-relative path for Vite
-      css.add(globalCss.startsWith('~/') ? '/' + globalCss.slice(2) : globalCss)
+      css.add(resolveAlias(globalCss, nuxt.options.alias))
     }
   }
 
