@@ -113,7 +113,7 @@ export const RenderPlugin = () => {
           hasExpression ? 'import { escapeHtml } from \'@vue/shared\'\n' : '',
           hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
           hasMessages ? `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}` : '',
-          `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}) => {`,
+          `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}): string => {`,
           hasMessages ? '  messages = { ..._messages, ...messages }' : '',
           `  return ${templateString}`,
           '}',

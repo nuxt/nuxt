@@ -154,7 +154,7 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-export const keyDependencies = [
+export const keyDependencies: string[] = [
   '@nuxt/kit',
 ]
 

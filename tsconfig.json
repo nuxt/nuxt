@@ -51,6 +51,7 @@
   "exclude": [
     "**/dist/**",
     "**/.nuxt/**",
+    "packages/nuxt/src/meta.d.mts",
     "**/nuxt.d.ts",
     "**/examples/**",
     "**/docs/**",
