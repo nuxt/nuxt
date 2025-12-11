@@ -1,1 +1,3 @@
-export default defineEventHandler(() => 'handler added by auto-registered module')
+import { defineHandler } from 'nitro/h3'
+
+export default defineHandler(() => 'handler added by auto-registered module')

@@ -95,6 +95,8 @@ export default withMatrix({
     // To test falsy module values
     undefined,
   ],
+  // devtools are not yet compatible with nitro v3
+  devtools: { enabled: false },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -168,16 +170,10 @@ export default withMatrix({
   nitro: {
     publicAssets: [
       {
-        dir: '../custom-public',
+        dir: './custom-public',
         baseURL: '/custom',
       },
     ],
-    esbuild: {
-      options: {
-        // in order to test bigint serialization
-        target: 'es2022',
-      },
-    },
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/redirect/catchall': { ssr: false },

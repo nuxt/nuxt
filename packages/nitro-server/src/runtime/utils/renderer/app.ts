@@ -1,6 +1,6 @@
 import process from 'node:process'
 import type { H3Event } from 'h3'
-import { useRuntimeConfig } from 'nitro/runtime'
+import { useRuntimeConfig } from 'nitro/runtime-config'
 import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 import { sharedPrerenderCache } from '../cache'

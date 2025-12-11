@@ -13,7 +13,7 @@ import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { useNitroApp } from 'nitro/runtime'
+import { useNitroApp } from 'nitro/app'
 import { relative } from 'pathe'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
@@ -310,7 +310,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Allow hooking into the rendered result
-  await nitroApp.hooks.callHook('render:html', htmlContext, { event })
+  await nitroApp.hooks!.callHook('render:html', htmlContext, { event })
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')

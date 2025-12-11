@@ -3,7 +3,7 @@ import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
-import { useRuntimeConfig } from 'nitro/runtime'
+import { useRuntimeConfig } from 'nitro/runtime-config'
 
 import type { NuxtSSRContext } from 'nuxt/app'
 

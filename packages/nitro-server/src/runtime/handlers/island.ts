@@ -1,4 +1,4 @@
-import { useNitroApp } from 'nitro/runtime'
+import { useNitroApp } from 'nitro/app'
 import type { RenderResponse } from 'nitro/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
@@ -97,7 +97,7 @@ export default defineEventHandler(async (event) => {
     slots: getSlotIslandResponse(ssrContext),
   }
 
-  await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
+  await nitroApp.hooks!.callHook('render:island', islandResponse, { event, islandContext })
 
   if (import.meta.prerender) {
     await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)

@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineEventHandler } from 'h3'
+import { defineHandler } from 'h3'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
@@ -11,12 +11,12 @@ import { Transition } from 'vue'
 import type { NuxtApp } from '#app/nuxt'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
 
-registerEndpoint('/api/test', defineEventHandler(event => ({
+registerEndpoint('/api/test', defineHandler(event => ({
   method: event.req.method,
   headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
-registerEndpoint('/api/sleep', defineEventHandler((event) => {
+registerEndpoint('/api/sleep', defineHandler((event) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ method: event.req.method, headers: Object.fromEntries(event.req.headers.entries()) })

@@ -13,7 +13,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:resolve-externals',
     enforce: 'pre',
     async config () {
-      const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
+      const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitro/meta')>('nitro/meta', {
         url: new URL(import.meta.url),
       }) || {}
 

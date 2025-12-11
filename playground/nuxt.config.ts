@@ -1,4 +1,5 @@
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  // devtools are not yet compatible with nitro v3
+  devtools: { enabled: false },
   compatibilityDate: 'latest',
 })

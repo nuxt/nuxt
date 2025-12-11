@@ -20,8 +20,19 @@ export default defineResolvers({
       $resolve: (val) => {
         const defaults = [
           // Nitro auto-imported/augmented dependencies
+          'nitro',
+          'nitro/app',
+          'nitro/builder',
+          'nitro/cache',
+          'nitro/config',
+          'nitro/context',
+          'nitro/database',
+          'nitro/h3',
+          'nitro/meta',
+          'nitro/runtime-config',
+          'nitro/storage',
+          'nitro/task',
           'nitro/types',
-          'nitro/runtime',
           // TODO: remove in v5
           'nitropack/types',
           'nitropack/runtime',

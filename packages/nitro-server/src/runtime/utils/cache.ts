@@ -1,7 +1,7 @@
 // Workaround for 'The inferred type of 'payloadCache' cannot be named without a reference to '.pnpm/unstorage@1.16.0_db0@0.3.2_ioredis@5.6.1/node_modules/unstorage'.
 // This is likely not portable. A type annotation is necessary.
 import type {} from 'unstorage'
-import { useStorage } from 'nitro/runtime'
+import { useStorage } from 'nitro/storage'
 import process from 'node:process'
 
 export const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
