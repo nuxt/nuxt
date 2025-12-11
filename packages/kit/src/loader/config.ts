@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import process from 'node:process'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
@@ -79,12 +80,16 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const localRelativePaths = new Set(localLayers)
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
-    layer.config ||= {}
-    layer.config.rootDir ??= layer.cwd!
+    // Create a shallow copy to avoid mutating the cached ESM config object
+    const resolvedRootDir = layer.config?.rootDir ?? layer.cwd!
+    layer.config = {
+      ...(layer.config || {}),
+      rootDir: resolvedRootDir,
+    }
 
     // Only process/resolve layers once
-    if (processedLayers.has(layer.config.rootDir)) { continue }
-    processedLayers.add(layer.config.rootDir)
+    if (processedLayers.has(resolvedRootDir)) { continue }
+    processedLayers.add(resolvedRootDir)
 
     // Normalise layer directories
     layer.config = await applyDefaults(layerSchema, layer.config as NuxtConfig & Record<string, JSValue>) as unknown as NuxtConfig

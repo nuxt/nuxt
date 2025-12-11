@@ -82,8 +82,8 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   const html = await res.text()
 
-  const responseHtml = import.meta.dev
-    ? html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string)}</body>`)
+  const responseHtml = import.meta.dev && !import.meta.test && typeof html === 'string'
+    ? html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string, { startMinimized: 300 <= error.status && error.status < 500 })}</body>`)
     : html
 
   const setCookies = new Set(headers.getSetCookie())

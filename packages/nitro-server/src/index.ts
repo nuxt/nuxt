@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
+import process from 'node:process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
@@ -10,7 +11,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler } from 'h3'
@@ -67,7 +68,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   for (const m of nuxt.options._installedModules) {
     const path = m.meta?.rawPath || m.entryPath
     if (path) {
-      moduleEntryPaths.push(path)
+      moduleEntryPaths.push(getDirectory(path))
     }
   }
 
@@ -217,6 +218,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
               join(moduleDir, 'dist/runtime/server'),
             ]
           }),
+          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.server, '**/*'))),
           ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
         ],
         exclude: [

@@ -1,4 +1,5 @@
 import type { RenderResponse } from 'nitro/types'
+import process from 'node:process'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'

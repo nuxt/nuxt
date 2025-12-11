@@ -1,4 +1,5 @@
 // @ts-check
+import process from 'node:process'
 import net from 'node:net'
 import { Buffer } from 'node:buffer'
 import { isTest } from 'std-env'

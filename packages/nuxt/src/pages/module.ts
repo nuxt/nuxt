@@ -389,7 +389,7 @@ export default defineNuxtModule({
       }
     }
 
-    nuxt.hook('pages:extend', (pages) => {
+    nuxt.hook('pages:resolved', (pages) => {
       if (nuxt.options.dev) { return }
 
       prerenderRoutes.clear()

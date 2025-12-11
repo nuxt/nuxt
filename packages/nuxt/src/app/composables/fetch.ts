@@ -59,7 +59,7 @@ export function useFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useFetch<
   ResT = void,
@@ -72,7 +72,7 @@ export function useFetch<
   DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useFetch<
   ResT = void,
@@ -192,7 +192,7 @@ export function useLazyFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useLazyFetch<
   ResT = void,
@@ -205,7 +205,7 @@ export function useLazyFetch<
   DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useLazyFetch<
   ResT = void,
@@ -241,7 +241,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
   ]
-  for (const _obj of [opts.params || opts.query]) {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  for (const _obj of [opts.query || opts.params]) {
     const obj = toValue(_obj)
     if (!obj) { continue }
 

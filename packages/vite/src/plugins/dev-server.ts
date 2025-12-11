@@ -2,7 +2,7 @@ import type { Connect, Plugin, ServerOptions } from 'vite'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
 import defu from 'defu'
-import { HTTPError, defineEventHandler, handleCors } from 'h3'
+import { HTTPError, defineEventHandler, defineLazyEventHandler, handleCors } from 'h3'
 import { useNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -73,7 +73,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       const mw: Connect.ServerStackItem = {
         route: '',
         handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-        // 'Skip' the transform middleware
+          // 'Skip' the transform middleware
           if (req._skip_transform && req.url) {
             req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
           }
@@ -107,39 +107,79 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }
       }
 
-      const viteMiddleware = defineEventHandler(async (event) => {
-        const viteRoutes: string[] = []
-        for (const viteRoute of viteServer.middlewares.stack) {
-          const m = viteRoute.route
-          if (m.length > 1) {
-            viteRoutes.push(m)
+      const viteMiddleware = defineLazyEventHandler(() => {
+        // Pre-process proxy configuration once
+        const proxyConfig = viteServer.config.server.proxy
+        const proxyPatterns: Array<{ type: 'string' | 'regex', value: string | RegExp }> = []
+
+        if (proxyConfig) {
+          for (const key in proxyConfig) {
+            if (key.startsWith('^')) {
+              try {
+                proxyPatterns.push({ type: 'regex', value: new RegExp(key) })
+              } catch {
+                // Invalid regex, skip this key
+              }
+            } else {
+              proxyPatterns.push({ type: 'string', value: key })
+            }
           }
-        }
-        const url = event.url.pathname + event.url.search + event.url.hash
-        if (!url.startsWith(viteServer.config.base!) && !viteRoutes.some(route => url.startsWith(route))) {
-        // @ts-expect-error _skip_transform is a private property
-          event.runtime!.node!.req._skip_transform = true
-        } else if (!useViteCors) {
-          const isPreflight = handleCors(event, nuxt.options.devServer.cors)
-          if (isPreflight) {
-            return null
-          }
-          event.res.headers.set('Vary', 'Origin')
         }
 
-        // Workaround: vite devmiddleware modifies req.url
-        const _originalPath = event.runtime!.node!.req.url
-        await new Promise((resolve, reject) => {
-          viteServer.middlewares.handle(event.runtime!.node!.req as IncomingMessage, event.runtime!.node!.res as ServerResponse, (err: Error) => {
-            event.runtime!.node!.req.url = _originalPath
-            return err ? reject(err) : resolve(null)
+        function isProxyPath (path: string) {
+          for (const pattern of proxyPatterns) {
+            if (pattern.type === 'regex' && (pattern.value as RegExp).test(path)) {
+              return true
+            } else if (pattern.type === 'string' && path.startsWith(pattern.value as string)) {
+              return true
+            }
+          }
+          return false
+        }
+
+        return defineEventHandler(async (event) => {
+          const url = event.url.pathname + event.url.search + event.url.hash
+          const isBasePath = url.startsWith(viteServer.config.base!)
+
+          // Check if this is a vite-handled route or proxy path
+          let isViteRoute = isBasePath
+          if (!isViteRoute) {
+            // Check vite middleware routes (must be done per-request as middleware stack can change)
+            for (const viteRoute of viteServer.middlewares.stack) {
+              if (viteRoute.route.length > 1 && url.startsWith(viteRoute.route)) {
+                isViteRoute = true
+                break
+              }
+            }
+            // Check proxy paths
+            isViteRoute ||= isProxyPath(url)
+          }
+
+          if (!isViteRoute) {
+            // @ts-expect-error _skip_transform is a private property
+            event.runtime!.node!.req._skip_transform = true
+          } else if (!useViteCors) {
+            const isPreflight = handleCors(event, nuxt.options.devServer.cors)
+            if (isPreflight) {
+              return null
+            }
+            event.res.headers.set('Vary', 'Origin')
+          }
+
+          // Workaround: vite devmiddleware modifies req.url
+          const _originalPath = event.runtime!.node!.req.url
+          await new Promise((resolve, reject) => {
+            viteServer.middlewares.handle(event.runtime!.node!.req as IncomingMessage, event.runtime!.node!.res as ServerResponse, (err: Error) => {
+              event.runtime!.node!.req.url = _originalPath
+              return err ? reject(err) : resolve(null)
+            })
           })
-        })
 
-        // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-        if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
-          throw new HTTPError({ status: 404 })
-        }
+          // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
+          if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
+            throw new HTTPError({ status: 404 })
+          }
+        })
       })
       await nuxt.callHook('server:devHandler', viteMiddleware)
     },

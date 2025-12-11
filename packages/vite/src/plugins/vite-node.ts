@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import type { Socket } from 'node:net'
 import net from 'node:net'

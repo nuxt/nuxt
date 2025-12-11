@@ -143,7 +143,7 @@ export interface NuxtHooks {
    */
   'app:templates': (app: NuxtApp) => HookResult
   /**
-   * Called after templates are compiled into the [virtual file system](https://nuxt.com/docs/4.x/guide/directory-structure/nuxt) (vfs).
+   * Called after templates are compiled into the [virtual file system](https://nuxt.com/docs/4.x/directory-structure/nuxt) (vfs).
    * @param app The configured `NuxtApp` object
    * @returns Promise
    */
