@@ -1,4 +1,4 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
 export default defineEventHandler((event) => {
   if (event.req.headers.get('x-nuxt-no-ssr')) {

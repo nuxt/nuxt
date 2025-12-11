@@ -4,7 +4,7 @@ import type { NuxtPayload } from 'nuxt/app'
 
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { isJsonRequest } from '../utils/error'
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {

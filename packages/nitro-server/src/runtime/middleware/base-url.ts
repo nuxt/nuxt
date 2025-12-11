@@ -1,4 +1,4 @@
-import { HTTPError, defineEventHandler } from 'h3'
+import { HTTPError, defineEventHandler } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 
 const config = useRuntimeConfig()

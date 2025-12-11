@@ -14,7 +14,7 @@ import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler } from 'h3'
+import { defineEventHandler, dynamicEventHandler } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -112,7 +112,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
       if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
         return `export { default } from '${resolve(distDir, 'runtime/handlers/island')}'`
       }
-      return `import { defineEventHandler } from 'h3'; export default defineEventHandler(() => {});`
+      return `import { defineEventHandler } from 'nitro/h3'; export default defineEventHandler(() => {});`
     }
     nuxt.options.nitro.handlers ||= []
     nuxt.options.nitro.handlers.push({

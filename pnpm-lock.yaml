@@ -398,9 +398,6 @@ importers:
       exsolve:
         specifier: ^1.0.8
         version: 1.0.8
-      h3:
-        specifier: 2.0.1-rc.6
-        version: 2.0.1-rc.6(crossws@0.4.1(srvx@0.9.8))
       impound:
         specifier: ^1.0.0
         version: 1.0.0

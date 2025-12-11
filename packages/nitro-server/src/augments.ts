@@ -1,6 +1,6 @@
 import type {} from 'nitro/types'
 
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 import type { RuntimeConfig } from 'nuxt/schema'

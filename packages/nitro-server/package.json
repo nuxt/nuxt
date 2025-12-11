@@ -33,7 +33,6 @@
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
-    "h3": "^2.0.1-rc.6",
     "impound": "^1.0.0",
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",

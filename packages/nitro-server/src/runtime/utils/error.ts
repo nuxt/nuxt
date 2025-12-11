@@ -1,4 +1,4 @@
-import type { HTTPEvent } from 'h3'
+import type { HTTPEvent } from 'nitro/h3'
 
 /**
  * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.ts

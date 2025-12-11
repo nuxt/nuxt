@@ -7,8 +7,8 @@ import {
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitro/types'
-import type { H3Event } from 'h3'
-import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'h3'
+import type { H3Event } from 'nitro/h3'
+import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
