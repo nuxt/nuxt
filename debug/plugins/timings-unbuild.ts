@@ -20,7 +20,7 @@ declare global {
   var ____writeFileSync: typeof import('node:fs').writeFileSync
 }
 
-export function AnnotateFunctionTimingsPlugin () {
+export function AnnotateFunctionTimingsPlugin (): Plugin {
   return {
     name: 'timings',
     transform: {
