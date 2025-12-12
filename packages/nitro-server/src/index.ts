@@ -107,7 +107,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.experimental.componentIslands) {
     // sync conditions with /packages/nuxt/src/core/templates.ts#L539
     nuxt.options.nitro.virtual ||= {}
-    const ISLAND_RENDERER_KEY = '\0internal/nuxt/island-renderer.mjs'
+    const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
     nuxt.options.nitro.virtual[ISLAND_RENDERER_KEY] = () => {
       if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
         return `export { default } from '${resolve(distDir, 'runtime/handlers/island')}'`
@@ -134,6 +134,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
+    builder: 'rollup',
     serverDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
@@ -152,7 +153,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
       presets: [
         {
           from: 'nitro/h3',
-          imports: ['defineEventHandler', 'defineHandler'],
+          imports: ['defineEventHandler', 'defineHandler', 'eventHandler'],
         },
       ],
       imports: [
@@ -324,6 +325,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig && nitroConfig.imports) {
     nitroConfig.imports.imports ||= []
     nitroConfig.imports.imports.push({
