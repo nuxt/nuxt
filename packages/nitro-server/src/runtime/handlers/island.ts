@@ -1,4 +1,4 @@
-import { useNitroApp } from 'nitro/app'
+import { useNitroHooks } from 'nitro/app'
 import type { RenderResponse } from 'nitro/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
@@ -17,8 +17,6 @@ import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
 export default defineEventHandler(async (event) => {
-  const nitroApp = useNitroApp()
-
   event.res.headers.set('content-type', 'application/json;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
@@ -97,7 +95,7 @@ export default defineEventHandler(async (event) => {
     slots: getSlotIslandResponse(ssrContext),
   }
 
-  await nitroApp.hooks!.callHook('render:island', islandResponse, { event, islandContext })
+  await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
 
   if (import.meta.prerender) {
     await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)

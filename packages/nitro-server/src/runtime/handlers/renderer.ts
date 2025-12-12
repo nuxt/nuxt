@@ -13,7 +13,7 @@ import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { useNitroApp } from 'nitro/app'
+import { useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
@@ -65,8 +65,6 @@ const PAYLOAD_FILENAME = process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_pa
 let entryPath: string
 
 export default defineEventHandler(async (event) => {
-  const nitroApp = useNitroApp()
-
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
@@ -310,7 +308,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Allow hooking into the rendered result
-  await nitroApp.hooks!.callHook('render:html', htmlContext, { event })
+  await useNitroHooks().callHook('render:html', htmlContext, { event })
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')

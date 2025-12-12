@@ -4,13 +4,14 @@ import { consola } from 'consola'
 import { stringify } from 'devalue'
 import { withTrailingSlash } from 'ufo'
 import { toRequest } from 'nitro/h3'
+import { definePlugin } from 'nitro'
+import { HookableCore } from 'hookable'
 import { getContext } from 'unctx'
 import type { ServerRequest } from 'srvx'
 import { captureRawStackTrace, parseRawStackTrace } from 'errx'
 import type { ParsedTrace } from 'errx'
 
 import { isVNode } from 'vue'
-import type { NitroApp } from 'nitro/types'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
@@ -29,7 +30,7 @@ interface NuxtDevAsyncContext {
 
 const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
 
-export default (nitroApp: NitroApp) => {
+export default definePlugin((nitroApp) => {
   // TODO: Use nitro asyncContext
   const originalFetch = nitroApp.fetch
   nitroApp.fetch = (input: ServerRequest | URL | string, init?: RequestInit, context?: any) => {
@@ -70,16 +71,19 @@ export default (nitroApp: NitroApp) => {
     ctx.logs.push(log)
   })
 
-  nitroApp.hooks!.hook('response', () => {
+  // TODO: use useNitroHooks when fixed upstream in nitro
+  const nitroHooks = nitroApp.hooks ||= new HookableCore()
+
+  nitroHooks.hook('response', () => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     const url = new URL(ctx.request.url)
     const path = url.pathname + url.search + url.hash
-    return nitroApp.hooks!.callHook('dev:ssr-logs', { logs: ctx.logs, path })
+    return nitroHooks.callHook('dev:ssr-logs', { logs: ctx.logs, path })
   })
 
   // Pass any logs to the client
-  nitroApp.hooks!.hook('render:html', (htmlContext) => {
+  nitroHooks.hook('render:html', (htmlContext) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     try {
@@ -90,7 +94,7 @@ export default (nitroApp: NitroApp) => {
       console.warn(`[nuxt] Failed to stringify dev server logs.${shortError} You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/4.x/api/composables/use-nuxt-app#payload.`)
     }
   })
-}
+})
 
 const EXCLUDE_TRACE_RE = /\/node_modules\/(?:.*\/)?(?:nuxt|nuxt-nightly|nuxt-edge|nuxt3|consola|@vue)\/|core\/runtime\/nitro/
 

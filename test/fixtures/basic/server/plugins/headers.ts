@@ -1,8 +1,9 @@
 import { definePlugin } from 'nitro'
+import { useNitroHooks } from 'nitro/app'
 
-export default definePlugin((nitroApp) => {
+export default definePlugin(() => {
   if (!import.meta.dev) { return }
-  nitroApp.hooks!.hook('error', (error) => {
+  useNitroHooks().hook('error', (error) => {
     // TODO: somehow add error logging assertion to @nuxt/test-utils
     if (error.message?.includes('Cannot set headers after they are sent to the client')) {
       process.exit(1)
