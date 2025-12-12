@@ -249,8 +249,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           for (const file of ids) {
             if (emittedIds.has(file)) { continue }
             const inlineId = file + '?inline&used'
-            const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-            const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+            const [resolved1, res1] = await Promise.all([
+              this.resolve(file),
+              this.resolve(inlineId),
+            ])
+            const resolved = resolved1 ?? await this.resolve(file, id)
+            const res = res1 ?? await this.resolve(inlineId, id)
             if (!resolved || !res) {
               if (!warnCache.has(file)) {
                 warnCache.add(file)
@@ -276,7 +280,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             const resolved = await this.resolve(i.specifier, id)
             if (!resolved) { continue }
-            if (!(await this.resolve(resolved.id + '?inline&used'))) {
+            const resolvedIdInline = resolved.id + '?inline&used'
+            if (!(await this.resolve(resolvedIdInline))) {
               if (!warnCache.has(resolved.id)) {
                 warnCache.add(resolved.id)
                 this.warn(`[nuxt] Cannot extract styles for \`${i.specifier}\`. Its styles will not be inlined when server-rendering.`)
@@ -288,7 +293,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             const ref = this.emitFile({
               type: 'chunk',
               name: `${idFilename}-styles-${++styleCtr}.mjs`,
-              id: resolved.id + '?inline&used',
+              id: resolvedIdInline,
             })
 
             idRefMap[relativeToSrcDir(resolved.id)] = ref
