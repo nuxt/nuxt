@@ -42,7 +42,7 @@ describe('defineNuxtComponent', () => {
       }),
       render () {
         // @ts-expect-error this is not typed in options api
-        return h('div', `Total users: ${this.users.value.length}`)
+        return h('div', `Total users: ${this.users.length}`)
       },
     })
 

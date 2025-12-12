@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { readdirSync } from 'node:fs'
 
+import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import UnoCSS from 'unocss/vite'
 
@@ -37,4 +38,4 @@ export default defineConfig({
       allow: ['./templates', rootDir],
     },
   },
-})
+}) satisfies UserConfig as UserConfig

@@ -11,7 +11,7 @@ import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
-export async function build (nuxt: Nuxt) {
+export async function build (nuxt: Nuxt): Promise<void> {
   const app = createApp(nuxt)
   nuxt.apps.default = app
 

@@ -278,7 +278,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
  * @param opts.ignore additional glob patterns to ignore
  * @returns sorted array of absolute file paths
  */
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}) {
+export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean, ignore?: GlobOptions['ignore'] } = {}): Promise<string[]> {
   const files: string[] = []
   for (const p of await glob(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true, absolute: true, ignore: opts.ignore })) {
     if (!isIgnored(p)) {

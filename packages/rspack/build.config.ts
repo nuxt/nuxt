@@ -1,6 +1,6 @@
 import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin, stubOptions } from '../../debug/build-config'
-import config from '../webpack/build.config'
+import { addRollupTimingsPlugin } from '../../debug/build-config.ts'
+import config from '../webpack/build.config.ts'
 
 export default defineBuildConfig({
   ...config[0],
@@ -9,7 +9,6 @@ export default defineBuildConfig({
     '#builder',
     '@nuxt/schema',
   ],
-  stubOptions,
   hooks: {
     'rollup:options' (ctx, options) {
       addRollupTimingsPlugin(options)

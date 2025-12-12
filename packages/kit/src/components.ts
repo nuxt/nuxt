@@ -10,7 +10,7 @@ import { MODE_RE } from './utils'
 /**
  * Register a directory to be scanned for components and imported only when used.
  */
-export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
+export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}): void {
   const nuxt = useNuxt()
   nuxt.options.components ||= []
   dir.priority ||= 0
@@ -24,7 +24,7 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 /**
  * This utility takes a file path or npm package that is scanned for named exports, which are get added automatically
  */
-export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & { prefix?: string }) {
+export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & { prefix?: string }): void {
   const nuxt = useNuxt()
   const components: Component[] = []
   nuxt.hook('components:dirs', async () => {
@@ -42,7 +42,7 @@ export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & {
 /**
  * Register a component by its name and filePath.
  */
-export function addComponent (opts: AddComponentOptions) {
+export function addComponent (opts: AddComponentOptions): void {
   const component = normalizeComponent(opts)
   addComponents([component])
 }

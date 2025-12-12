@@ -24,6 +24,7 @@ export default createConfigForNuxt({
       // Ignores have to be a separate object to be treated as global ignores
       // Don't add other attributes to this object
       ignores: [
+        '.goff/**',
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',

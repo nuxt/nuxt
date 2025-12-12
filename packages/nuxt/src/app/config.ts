@@ -64,7 +64,7 @@ export function useAppConfig (): AppConfig {
   return nuxtApp._appConfig
 }
 
-export function _replaceAppConfig (newConfig: AppConfig) {
+export function _replaceAppConfig (newConfig: AppConfig): void {
   const appConfig = useAppConfig()
 
   deepAssign(appConfig, newConfig)
@@ -76,7 +76,7 @@ export function _replaceAppConfig (newConfig: AppConfig) {
  *
  * Will preserve existing properties.
  */
-export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
+export function updateAppConfig (appConfig: DeepPartial<AppConfig>): void {
   const _appConfig = useAppConfig()
   deepAssign(_appConfig, appConfig)
 }

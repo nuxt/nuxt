@@ -1,5 +1,5 @@
 import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin, stubOptions } from '../../debug/build-config'
+import { addRollupTimingsPlugin } from '../../debug/build-config.ts'
 
 export default defineBuildConfig({
   declaration: true,
@@ -7,7 +7,6 @@ export default defineBuildConfig({
     'src/index',
     { input: 'src/runtime/', outDir: 'dist/runtime', format: 'esm' },
   ],
-  stubOptions,
   hooks: {
     'rollup:options' (ctx, options) {
       addRollupTimingsPlugin(options)

@@ -35,7 +35,7 @@ const logLevelMapReverse = {
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
-export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
+export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
   const excludePaths: string[] = []

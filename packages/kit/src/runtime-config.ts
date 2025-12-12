@@ -12,7 +12,7 @@ import { useNitro } from './nitro'
  *
  * This mirrors the runtime behavior of Nitro.
  */
-export function useRuntimeConfig () {
+export function useRuntimeConfig (): Record<string, any> {
   const nuxt = useNuxt()
   return applyEnv(klona(nuxt.options.nitro.runtimeConfig!), {
     prefix: 'NITRO_',
@@ -24,7 +24,7 @@ export function useRuntimeConfig () {
 /**
  * Update Nuxt runtime configuration.
  */
-export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>) {
+export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): void | Promise<void> {
   const nuxt = useNuxt()
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
