@@ -1,4 +1,4 @@
-import { createUnplugin } from 'unplugin'
+import { createUnplugin, type UnpluginOptions } from 'unplugin'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
 import MagicString from 'magic-string'
@@ -29,6 +29,31 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
   }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
+  const nonViteTransformIncludes: UnpluginOptions['transformInclude'] =  (id) => {
+      const _id = normalize(id)
+      return layers.some(dir => _id.startsWith(dir))
+  }
+  const nonViteTransform: UnpluginOptions['transform'] = {
+      filter: {
+        code: { include: ALIAS_RE_SINGLE },
+      },
+      handler (code, id) {
+        const _id = normalize(id)
+        const layer = layers.find(l => _id.startsWith(l))
+        if (!layer) { return }
+
+        const s = new MagicString(code)
+        s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
+
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
+          }
+        }
+      },
+  }
+
   return {
     name: 'nuxt:layer-aliasing',
     enforce: 'pre',
@@ -50,33 +75,7 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     },
 
     // webpack-only transform
-    transformInclude: (id) => {
-      if (meta.framework === 'vite') { return false }
-
-      const _id = normalize(id)
-      return layers.some(dir => _id.startsWith(dir))
-    },
-    transform: {
-      filter: {
-        code: { include: ALIAS_RE_SINGLE },
-      },
-      handler (code, id) {
-        if (meta.framework === 'vite') { return }
-
-        const _id = normalize(id)
-        const layer = layers.find(l => _id.startsWith(l))
-        if (!layer) { return }
-
-        const s = new MagicString(code)
-        s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
-
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
-          }
-        }
-      },
-    },
+    transformInclude: meta.framework !== 'vite' ? nonViteTransformIncludes : undefined,
+    transform: meta.framework !== 'vite' ? nonViteTransform : undefined,
   }
 })
