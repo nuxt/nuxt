@@ -62,7 +62,7 @@
     "h3": "2.0.1-rc.6",
     "jiti": "2.6.1",
     "magic-string": "0.30.21",
-    "nitro": "3.0.1-alpha.1",
+    "nitro": "https://pkg.pr.new/nitrojs/nitro@f220bbf",
     "nuxt": "workspace:*",
     "postcss": "8.5.6",
     "rollup": "4.53.3",
