@@ -96,9 +96,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
     nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
-    nuxt.options.nitro.externals = defu(nuxt.options.nitro.externals, {
-      inline: [/#internal\/dev-server-logs-options/],
-    })
     nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
       '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
     })
@@ -182,7 +179,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     },
-    nodeModulesDirs: nuxt.options.modulesDir,
     handlers: [
       ...nuxt.options.experimental.runtimeBaseURL
         ? [{
@@ -253,36 +249,35 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
         .concat(nuxt.options.generate.routes),
     },
     sourcemap: !!nuxt.options.sourcemap.server,
-    externals: {
-      inline: [
-        ...(nuxt.options.dev
-          ? []
-          : [
-              ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
-              '@nuxt/',
-              nuxt.options.buildDir,
-            ]),
-        ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
-        'nuxt/dist',
-        'nuxt3/dist',
-        'nuxt-nightly/dist',
-        distDir,
-        // Ensure app config files have auto-imports injected even if they are pure .js files
-        ...layerDirs.map(dirs => join(dirs.app, 'app.config')),
-      ],
-      traceInclude: [
-        // force include files used in generated code from the runtime-compiler
-        ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
-          ? [
-              ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
-                const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
-                if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
-                return targets
-              }, []),
-            ]
-          : [],
-      ],
-    },
+    traceDeps: [
+      // force include files used in generated code from the runtime-compiler
+      ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
+        ? [
+            ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+              const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
+              if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+              return targets
+            }, []),
+          ]
+        : [],
+    ],
+    noExternals: [
+      ...(nuxt.options.dev
+        ? []
+        : [
+            ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
+            '@nuxt/',
+            nuxt.options.buildDir,
+          ]),
+      ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
+      'nuxt/dist',
+      'nuxt3/dist',
+      'nuxt-nightly/dist',
+      distDir,
+      // Ensure app config files have auto-imports injected even if they are pure .js files
+      ...layerDirs.map(dirs => join(dirs.app, 'app.config')),
+
+    ],
     alias: {
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
@@ -589,7 +584,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
   await nuxt.callHook('nitro:init', nitro)
 
   // Connect vfs storages
-  nitro.vfs = nuxt.vfs = nitro.vfs || nuxt.vfs || {}
+  const nitroVfs = nitro.vfs
+  nitro.vfs = new Proxy(nitroVfs, {
+    get (target, prop: string) {
+      return Reflect.get(target, prop) || { render: () => nuxt.vfs[prop] }
+    },
+    set (target, prop: string, value) {
+      return Reflect.set(target, prop, value)
+    },
+  })
 
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
