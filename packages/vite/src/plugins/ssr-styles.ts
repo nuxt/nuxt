@@ -50,7 +50,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     globalCSS: nuxt.options.css,
   }
 
-  const relativeToSrcDir = (path: string) => relative(nuxt.options.srcDir, path)
+  // relative file lookup has duplicate checks
+  const relativeCache = new Map<string, string>()
+  const relativeToSrcDir = (path: string) => {
+    let cached = relativeCache.get(path)
+    if (cached === undefined) {
+      cached = relative(nuxt.options.srcDir, path)
+      relativeCache.set(path, cached)
+    }
+    return cached
+  }
 
   const warnCache = new Set<string>()
   const components = nuxt.apps.default!.components || []
@@ -248,13 +257,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           const ids = clientCSSMap[id] || []
           for (const file of ids) {
             if (emittedIds.has(file)) { continue }
-            const inlineId = file + '?inline&used'
-            const [resolved1, res1] = await Promise.all([
-              this.resolve(file),
-              this.resolve(inlineId),
-            ])
-            const resolved = resolved1 ?? await this.resolve(file, id)
-            const res = res1 ?? await this.resolve(inlineId, id)
+            const fileInline = file + '?inline&used'
+            const resolved = await this.resolve(file) ?? await this.resolve(file, id)
+            const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
             if (!resolved || !res) {
               if (!warnCache.has(file)) {
                 warnCache.add(file)
@@ -266,7 +271,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             const ref = this.emitFile({
               type: 'chunk',
               name: `${idFilename}-styles-${++styleCtr}.mjs`,
-              id: inlineId,
+              id: fileInline,
             })
 
             idRefMap[relativeToSrcDir(file)] = ref
