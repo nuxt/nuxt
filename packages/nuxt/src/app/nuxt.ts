@@ -23,7 +23,7 @@ import type { RouteAnnouncer } from './composables/route-announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
-import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
+import { appId, chunkErrorEvent } from '#build/nuxt.config.mjs'
 
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
@@ -335,7 +335,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
   }
 
   if (import.meta.client) {
-    const __NUXT__ = multiApp ? window.__NUXT__?.[nuxtApp._id] : window.__NUXT__
+    const __NUXT__ = window.__NUXT__?.[nuxtApp._id]
     // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
     if (__NUXT__) {
       for (const key in __NUXT__) {
