@@ -5,7 +5,7 @@ import * as context from './context.js'
 
 describe('isIgnored', () => {
   it('should populate _ignore', () => {
-    const mockNuxt = { options: { ignore: ['my-dir'], _layers: [] } as NuxtConfig } as Nuxt
+    const mockNuxt = { options: { ignore: ['my-dir'], _layers: [] } as NuxtConfig } as unknown as Nuxt
     vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
 
     expect(isIgnored('my-dir/my-file.ts')).toBe(true)

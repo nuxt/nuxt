@@ -46,14 +46,14 @@ export interface ConfigSchema {
    *
    * Any components in the directories configured here can be used throughout your pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/components)
+   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/components)
    */
   components: boolean | ComponentsOptions | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/directory-structure/app/composables)
    */
   imports: ImportsOptions
 
@@ -353,7 +353,7 @@ export interface ConfigSchema {
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
    *
-   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/plugins)
    *
    * @example
    * ```js
@@ -1332,7 +1332,7 @@ export interface ConfigSchema {
      * for Nuxt projects.
      *
      * @default true
-     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM/)
+     * @see [Chrome DevTools Project Settings](https://docs.google.com/document/d/1rfKPnxsNuXhnF7AiQZhu9kIwdiMS5hnAI05HBwFuBSM/edit)
      */
     chromeDevtoolsProjectSettings: boolean
 
@@ -1555,7 +1555,7 @@ export interface ConfigSchema {
    * Each handler accepts the following options:
    * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/server)
+   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
    *
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    *

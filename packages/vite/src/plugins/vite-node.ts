@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import type { Socket } from 'node:net'
 import net from 'node:net'
@@ -506,7 +507,7 @@ export type ViteNodeServerOptions = {
   requestTimeout?: number
 }
 
-export async function writeDevServer (nuxt: Nuxt) {
+export async function writeDevServer (nuxt: Nuxt): Promise<void> {
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
   const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
 

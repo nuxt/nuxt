@@ -5,7 +5,7 @@ import { useNuxt } from './context'
 import { logger } from './logger'
 import { toArray } from './utils'
 
-export function extendPages (cb: NuxtHooks['pages:extend']) {
+export function extendPages (cb: NuxtHooks['pages:extend']): void {
   useNuxt().hook('pages:extend', cb)
 }
 
@@ -17,7 +17,7 @@ export interface ExtendRouteRulesOptions {
   override?: boolean
 }
 
-export function extendRouteRules (route: string, rule: NitroRouteConfig, options: ExtendRouteRulesOptions = {}) {
+export function extendRouteRules (route: string, rule: NitroRouteConfig, options: ExtendRouteRulesOptions = {}): void {
   const nuxt = useNuxt()
   for (const opts of [nuxt.options, nuxt.options.nitro]) {
     opts.routeRules ||= {}
@@ -40,7 +40,7 @@ export interface AddRouteMiddlewareOptions {
   prepend?: boolean
 }
 
-export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], options: AddRouteMiddlewareOptions = {}) {
+export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], options: AddRouteMiddlewareOptions = {}): void {
   const nuxt = useNuxt()
   const middlewares = toArray(input)
   nuxt.hook('app:resolve', (app) => {

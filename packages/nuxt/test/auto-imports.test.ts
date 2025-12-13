@@ -194,6 +194,8 @@ const excludedVueHelpers = [
   'hydrateOnIdle',
   'onWatcherCleanup',
   'getCurrentWatcher',
+  'patchProp',
+  'nodeOps',
   'module.exports',
 ]
 

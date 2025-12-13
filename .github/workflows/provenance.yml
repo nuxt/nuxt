@@ -13,7 +13,7 @@ jobs:
   check-provenance:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Check provenance downgrades

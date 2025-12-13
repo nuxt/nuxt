@@ -24,6 +24,7 @@ export default createConfigForNuxt({
       // Ignores have to be a separate object to be treated as global ignores
       // Don't add other attributes to this object
       ignores: [
+        '.goff/**',
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
@@ -143,6 +144,25 @@ export default createConfigForNuxt({
 
   // Append local rules
   .append(
+    {
+      files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      ignores: ['packages/**/*.client.ts', 'packages/**/*.client.mts', 'packages/**/*.client.js', 'packages/**/*.client.mjs'],
+      name: 'local/requires/explicit-node-imports',
+      rules: {
+        // Ban direct use of restricted global identifiers
+        'no-restricted-globals': [
+          'error',
+          {
+            message: 'Use explicit import: import process from "node:process" (or a scoped alias). Implicit globals are banned for clarity and tree-shakability.',
+            name: 'process',
+          },
+          {
+            message: 'Use explicit import: import { performance } from "node:perf_hooks". Implicit global performance is banned in server contexts to ensure Node.js-specific usage.',
+            name: 'performance',
+          },
+        ],
+      },
+    },
     // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
