@@ -9,7 +9,7 @@ links:
 ---
 
 ::note
-Route middleware are navigation guards stored in the [`app/middleware/`](/docs/4.x/guide/directory-structure/app/middleware) directory of your Nuxt application (unless [set otherwise](/docs/4.x/api/nuxt-config#middleware)).
+Route middleware are navigation guards stored in the [`app/middleware/`](/docs/4.x/directory-structure/app/middleware) directory of your Nuxt application (unless [set otherwise](/docs/4.x/api/nuxt-config#middleware)).
 ::
 
 ## Type

@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro-server",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -19,17 +19,18 @@
   ],
   "scripts": {
     "prepack": "unbuild",
+    "build:stub": "unbuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "^2.0.19",
-    "@vue/shared": "^3.5.24",
+    "@vue/shared": "^3.5.25",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
-    "devalue": "^5.4.2",
+    "devalue": "^5.6.0",
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
@@ -44,8 +45,8 @@
     "std-env": "^3.10.0",
     "ufo": "^1.6.1",
     "unctx": "^2.4.1",
-    "unstorage": "^1.17.2",
-    "vue": "^3.5.24",
+    "unstorage": "^1.17.3",
+    "vue": "^3.5.25",
     "vue-bundle-renderer": "^2.2.0",
     "vue-devtools-stub": "^0.1.0"
   },

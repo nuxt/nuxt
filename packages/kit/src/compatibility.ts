@@ -4,7 +4,7 @@ import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/sch
 import { useNuxt } from './context'
 
 const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
-export function normalizeSemanticVersion (version: string) {
+export function normalizeSemanticVersion (version: string): string {
   return version.replace(SEMANTIC_VERSION_RE, '') // Remove edge prefix
 }
 
@@ -14,7 +14,7 @@ const builderMap = {
   '@nuxt/webpack-builder': 'webpack',
 }
 
-export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()) {
+export function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
   const nuxtVersion = getNuxtVersion(nuxt)
   return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }
@@ -97,7 +97,7 @@ export type NuxtMajorVersion = 2 | 3 | 4
 /**
  * Check if current Nuxt instance is of specified major version
  */
-export function isNuxtMajorVersion (majorVersion: NuxtMajorVersion, nuxt: Nuxt = useNuxt()) {
+export function isNuxtMajorVersion (majorVersion: NuxtMajorVersion, nuxt: Nuxt = useNuxt()): boolean {
   const version = getNuxtVersion(nuxt)
 
   return version[0] === majorVersion.toString() && version[1] === '.'
@@ -106,14 +106,14 @@ export function isNuxtMajorVersion (majorVersion: NuxtMajorVersion, nuxt: Nuxt =
 /**
  * @deprecated Use `isNuxtMajorVersion(2, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
-export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
+export function isNuxt2 (nuxt: Nuxt = useNuxt()): boolean {
   return isNuxtMajorVersion(2, nuxt)
 }
 
 /**
  * @deprecated Use `isNuxtMajorVersion(3, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
-export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
+export function isNuxt3 (nuxt: Nuxt = useNuxt()): boolean {
   return isNuxtMajorVersion(3, nuxt)
 }
 
@@ -121,7 +121,7 @@ const NUXT_VERSION_RE = /^v/g
 /**
  * Get nuxt version
  */
-export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */) {
+export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
   const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
   if (typeof rawVersion !== 'string') {
     throw new TypeError('Cannot determine nuxt version! Is current instance passed?')

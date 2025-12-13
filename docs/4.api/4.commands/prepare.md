@@ -14,26 +14,26 @@ npx nuxt prepare [ROOTDIR] [--dotenv] [--cwd=<directory>] [--logLevel=<silent|in
 ```
 <!--/prepare-cmd-->
 
-The `prepare` command creates a [`.nuxt`](/docs/4.x/guide/directory-structure/nuxt) directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your [`package.json`](/docs/4.x/guide/directory-structure/package).
+The `prepare` command creates a [`.nuxt`](/docs/4.x/directory-structure/nuxt) directory in your application and generates types. This can be useful in a CI environment or as a `postinstall` command in your [`package.json`](/docs/4.x/directory-structure/package).
 
 ## Arguments
 
 <!--prepare-args-->
-Argument | Description
---- | ---
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/prepare-args-->
 
 ## Options
 
 <!--prepare-opts-->
-Option | Default | Description
---- | --- | ---
-`--dotenv` |  | Path to `.env` file to load, relative to the root directory
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
-`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
+| Option                               | Default | Description                                                                                                                                          |
+|--------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--dotenv`                           |         | Path to `.env` file to load, relative to the root directory                                                                                          |
+| `--cwd=<directory>`                  |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)                                                                     |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level                                                                                                                         |
+| `--envName`                          |         | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server) |
+| `-e, --extends=<layer-name>`         |         | Extend from a Nuxt layer                                                                                                                             |
 <!--/prepare-opts-->
 
 ::note

@@ -16,4 +16,4 @@ const appConfig = useAppConfig()
 console.log(appConfig)
 ```
 
-:read-more{to="/docs/4.x/guide/directory-structure/app/app-config"}
+:read-more{to="/docs/4.x/directory-structure/app/app-config"}

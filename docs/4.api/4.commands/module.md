@@ -4,7 +4,7 @@ description: "Search and add modules to your Nuxt application with the command l
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/module/
+    to: https://github.com/nuxt/cli/tree/main/packages/nuxi/src/commands/module
     size: xs
 ---
 
@@ -19,19 +19,19 @@ npx nuxt module add <MODULENAME> [--cwd=<directory>] [--logLevel=<silent|info|ve
 <!--/module-add-cmd-->
 
 <!--module-add-args-->
-Argument | Description
---- | ---
-`MODULENAME` | Specify one or more modules to install by name, separated by spaces
+| Argument     | Description                                                         |
+|--------------|---------------------------------------------------------------------|
+| `MODULENAME` | Specify one or more modules to install by name, separated by spaces |
 <!--/module-add-args-->
 
 <!--module-add-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` | `.` | Specify the working directory
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--skipInstall` |  | Skip npm install
-`--skipConfig` |  | Skip nuxt.config.ts update
-`--dev` |  | Install modules as dev dependencies
+| Option                               | Default | Description                         |
+|--------------------------------------|---------|-------------------------------------|
+| `--cwd=<directory>`                  | `.`     | Specify the working directory       |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level        |
+| `--skipInstall`                      |         | Skip npm install                    |
+| `--skipConfig`                       |         | Skip nuxt.config.ts update          |
+| `--dev`                              |         | Install modules as dev dependencies |
 <!--/module-add-opts-->
 
 The command lets you install [Nuxt modules](/modules) in your application with no manual work.
@@ -39,8 +39,8 @@ The command lets you install [Nuxt modules](/modules) in your application with n
 When running the command, it will:
 
 - install the module as a dependency using your package manager
-- add it to your [package.json](/docs/4.x/guide/directory-structure/package) file
-- update your [`nuxt.config`](/docs/4.x/guide/directory-structure/nuxt-config) file
+- add it to your [package.json](/docs/4.x/directory-structure/package) file
+- update your [`nuxt.config`](/docs/4.x/directory-structure/nuxt-config) file
 
 **Example:**
 
@@ -61,18 +61,18 @@ npx nuxt module search <QUERY> [--cwd=<directory>] [--nuxtVersion=<2|3>]
 ### Arguments
 
 <!--module-search-args-->
-Argument | Description
---- | ---
-`QUERY` | keywords to search for
+| Argument | Description            |
+|----------|------------------------|
+| `QUERY`  | keywords to search for |
 <!--/module-search-args-->
 
 ### Options
 
 <!--module-search-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` | `.` | Specify the working directory
-`--nuxtVersion=<2\|3>` |  | Filter by Nuxt version and list compatible modules only (auto detected by default)
+| Option                 | Default | Description                                                                        |
+|------------------------|---------|------------------------------------------------------------------------------------|
+| `--cwd=<directory>`    | `.`     | Specify the working directory                                                      |
+| `--nuxtVersion=<2\|3>` |         | Filter by Nuxt version and list compatible modules only (auto detected by default) |
 <!--/module-search-opts-->
 
 The command searches for Nuxt modules matching your query that are compatible with your Nuxt version.
