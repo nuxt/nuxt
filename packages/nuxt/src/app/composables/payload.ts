@@ -9,7 +9,7 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -118,19 +118,22 @@ export async function getNuxtClientPayload () {
     return payloadCache
   }
 
-  const el = multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__')
-  if (!el) {
+  const el = (document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement | null) ?? (document.getElementById('__NUXT_DATA__') as HTMLElement | null)
+
+  const inlinePayloads = el ? await parsePayload(el.textContent || '') as Record<string, NuxtPayload | undefined> | null : null
+  const inlineAppData = inlinePayloads?.[appId] || {}
+
+  const externalPayloads = el?.dataset.src ? await _importPayload(el.dataset.src) : null
+  const externalData = externalPayloads?.[appId]
+
+  if (!el && !window.__NUXT__?.[appId]) {
     return {} as Partial<NuxtPayload>
   }
 
-  const inlineData = await parsePayload(el.textContent || '')
-
-  const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
-
   payloadCache = {
-    ...inlineData,
+    ...inlineAppData,
     ...externalData,
-    ...(multiApp ? window.__NUXT__?.[appId] : window.__NUXT__),
+    ...window.__NUXT__?.[appId],
   }
 
   if (payloadCache!.config?.public) {
