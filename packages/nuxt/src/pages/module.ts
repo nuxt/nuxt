@@ -9,7 +9,7 @@ import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
-import type { NitroRouteConfig } from 'nitropack/types'
+import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs'
@@ -72,6 +72,7 @@ export default defineNuxtModule({
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
             await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
+            nitro.routing.sync()
             inlineRulesCache = inlineRules
           }
         }
@@ -193,12 +194,12 @@ export default defineNuxtModule({
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
         getContents: () => [
-          'declare module \'nitropack/types\' {',
+          'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
           '}',
-          'declare module \'nitropack\' {',
+          'declare module \'nitro\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
@@ -602,12 +603,12 @@ export default defineNuxtModule({
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          'declare module \'nitropack/types\' {',
+          'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}',
-          'declare module \'nitropack\' {',
+          'declare module \'nitro\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',

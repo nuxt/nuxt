@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { defineEventHandler } from 'h3'
+import { defineHandler } from 'h3'
 import { destr } from 'destr'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -25,9 +25,9 @@ import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { NuxtPage } from '#components'
 import { isTestingAppManifest } from '../matrix'
 
-registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+registerEndpoint('/api/test', defineHandler(event => ({
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
 describe('app config', () => {

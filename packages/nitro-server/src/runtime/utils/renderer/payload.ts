@@ -1,6 +1,5 @@
-import type { RenderResponse } from 'nitropack/types'
+import type { RenderResponse } from 'nitro/types'
 import process from 'node:process'
-import { getResponseStatus, getResponseStatusText } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
@@ -15,8 +14,8 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext) {
     body: process.env.NUXT_JSON_PAYLOADS
       ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
-    statusCode: getResponseStatus(ssrContext.event),
-    statusMessage: getResponseStatusText(ssrContext.event),
+    status: ssrContext.event.res.status || 200,
+    statusText: ssrContext.event.res.statusText || '',
     headers: {
       'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt',

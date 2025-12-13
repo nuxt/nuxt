@@ -4,13 +4,17 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch as _$fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
+import type { $Fetch } from 'nitro/types'
+
 import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+
+const $fetch = _$fetch as $Fetch
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -194,7 +198,9 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
-    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    expect(headers.getSetCookie()).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+    ])
 
     const { page } = await renderPage('/navigate-to-forbidden')
 
@@ -209,7 +215,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it('validates routes with custom statusCode and statusMessage', async () => {
+  it('validates routes with custom status and statusText', async () => {
     const CUSTOM_ERROR_CODE = 401
     const CUSTOM_ERROR_MESSAGE = 'Custom error message'
     const ERROR_PAGE_TEXT = 'This is the error page'
@@ -681,8 +687,17 @@ describe('nuxt composables', () => {
         }).map(([key, value]) => `${key}=${value}`).join('; '),
       },
     })
-    const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
+    const cookies = res.headers.getSetCookie()
+    expect(cookies).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+      'accessed-with-default-value=default; Path=/',
+      'set=set; Path=/',
+      'browser-set=set; Path=/',
+      'browser-set-to-null=; Max-Age=0; Path=/',
+      'browser-set-to-null-with-default=; Max-Age=0; Path=/',
+      'browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/',
+      'theCookie=show; Path=/',
+    ])
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -1149,16 +1164,21 @@ describe('errors', () => {
     url.host = 'localhost:3000'
     error.url = url.toString()
     expect(error).toMatchObject({
-      message: isDev ? 'This is a custom error' : 'Server Error',
-      statusCode: 422,
-      statusMessage: 'This is a custom error',
+      message: 'This is a custom error',
       url: 'http://localhost:3000/error',
     })
   })
 
   it('should render a HTML error page', async () => {
-    const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.headers.getSetCookie()).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+      'some-error=was%20set; Path=/',
+    ])
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -1179,8 +1199,8 @@ describe('errors', () => {
       {
         "error": true,
         "message": "Page Not Found: /__nuxt_error",
-        "statusCode": 404,
-        "statusMessage": "Page Not Found: /__nuxt_error",
+        "status": 404,
+        "statusText": "Page Not Found: /__nuxt_error",
         "url": "http://localhost:3000/__nuxt_error",
       }
     `)
@@ -2171,7 +2191,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
-    expect(await $fetch<string>('/foo/url')).toContain('path: /foo/url')
+    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
   })
 
   it('should allow setting relative baseURL', async () => {
@@ -2217,7 +2237,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     }
   })
 
-  it.skipIf(isDev || isWebpack)('should render relative importmap path with relative path', async () => {
+  it.skipIf(isWebpack)('should render relative importmap path with relative path', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',

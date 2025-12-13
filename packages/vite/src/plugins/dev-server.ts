@@ -2,7 +2,7 @@ import type { Connect, Plugin, ServerOptions } from 'vite'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
 import defu from 'defu'
-import { createError, defineEventHandler, defineLazyEventHandler, handleCors, setHeader } from 'h3'
+import { HTTPError, defineEventHandler, defineLazyEventHandler, handleCors } from 'h3'
 import { useNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
@@ -138,46 +138,46 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }
 
         return defineEventHandler(async (event) => {
-          const isBasePath = event.path.startsWith(viteServer.config.base!)
+          const url = event.url.pathname + event.url.search + event.url.hash
+          const isBasePath = url.startsWith(viteServer.config.base!)
 
           // Check if this is a vite-handled route or proxy path
           let isViteRoute = isBasePath
           if (!isViteRoute) {
             // Check vite middleware routes (must be done per-request as middleware stack can change)
             for (const viteRoute of viteServer.middlewares.stack) {
-              if (viteRoute.route.length > 1 && event.path.startsWith(viteRoute.route)) {
+              if (viteRoute.route.length > 1 && url.startsWith(viteRoute.route)) {
                 isViteRoute = true
                 break
               }
             }
             // Check proxy paths
-            isViteRoute ||= isProxyPath(event.path)
+            isViteRoute ||= isProxyPath(url)
           }
 
           if (!isViteRoute) {
             // @ts-expect-error _skip_transform is a private property
-            event.node.req._skip_transform = true
+            event.runtime!.node!.req._skip_transform = true
           } else if (!useViteCors) {
             const isPreflight = handleCors(event, nuxt.options.devServer.cors)
             if (isPreflight) {
               return null
             }
-            setHeader(event, 'Vary', 'Origin')
+            event.res.headers.set('Vary', 'Origin')
           }
 
           // Workaround: vite devmiddleware modifies req.url
-          const _originalPath = event.node.req.url
+          const _originalPath = event.runtime!.node!.req.url
           await new Promise((resolve, reject) => {
-            viteServer.middlewares.handle(event.node.req, event.node.res, (err: Error) => {
-              event.node.req.url = _originalPath
+            viteServer.middlewares.handle(event.runtime!.node!.req as IncomingMessage, event.runtime!.node!.res as ServerResponse, (err: Error) => {
+              event.runtime!.node!.req.url = _originalPath
               return err ? reject(err) : resolve(null)
             })
           })
 
           // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-          const ended = event.node.res.writableEnded || event.handled
-          if (!ended && event.path.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
-            throw createError({ statusCode: 404 })
+          if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
+            throw new HTTPError({ status: 404 })
           }
         })
       })

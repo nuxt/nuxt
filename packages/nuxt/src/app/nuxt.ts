@@ -7,7 +7,7 @@ import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
-import type { RenderResponse } from 'nitropack/types'
+import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
 import type { VueHeadClient } from '@unhead/vue/types'
 
@@ -85,6 +85,10 @@ export interface NuxtSSRContext extends SSRContext {
   _preloadManifest?: boolean
 }
 
+type Writable<T> = {
+  -readonly [K in keyof T]: T[K]
+}
+
 export interface NuxtPayload {
   path?: string
   serverRendered?: boolean
@@ -93,7 +97,7 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: NuxtError | undefined
+  error?: Writable<NuxtError> | undefined
   _errors: Record<string, NuxtError | undefined>
   [key: string]: unknown
 }
@@ -365,7 +369,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     }
     // Patch callHook to preserve NuxtApp context on server
     // TODO: Refactor after https://github.com/unjs/hookable/issues/74
-    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, ...args)
+    nuxtApp.hooks.callHook = (name, ...args) => nuxtApp.hooks.callHookWith(contextCaller, name, args)
   }
 
   nuxtApp.callHook = nuxtApp.hooks.callHook
