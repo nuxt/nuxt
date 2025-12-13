@@ -646,3 +646,15 @@ describe('kit utilities', () => {
     const _fromage: Fromage = 'cheese'
   })
 })
+
+describe('shared folder', () => {
+  it('works with enums', () => {
+    function test (a: string, b: Foo.Bar): void
+    function test (a: number, b: Foo.Baz): void
+    function test (a: string | number, b: Foo): void {
+      console.log(Foo.Bar)
+    }
+
+    test(2, Foo.Bar)
+  })
+})

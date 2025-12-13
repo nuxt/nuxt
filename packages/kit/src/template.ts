@@ -299,6 +299,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
         exclude.add(path)
       }
       for (const path of paths.shared) {
+        include.add(path)
         legacyInclude.add(path)
         sharedInclude.add(path)
       }
