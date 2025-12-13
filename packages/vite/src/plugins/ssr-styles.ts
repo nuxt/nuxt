@@ -8,7 +8,7 @@ import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { isCSS, isVue } from '../utils'
+import { IS_CSS_RE, isCSS, isVue } from '../utils'
 import { resolveClientEntry } from '../utils/config'
 import { useNitro } from '@nuxt/kit'
 
@@ -75,6 +75,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         enforce: 'pre',
         resolveId: {
           order: 'pre',
+          filter: {
+            id: {
+              include: [/^#build\/css$/, /\.vue$/, IS_CSS_RE],
+            },
+          },
           async handler (id, importer, _options) {
             // We want to remove side effects (namely, emitting CSS) from `.vue` files and explicitly imported `.css` files
             // but only as long as we are going to inline that CSS.
