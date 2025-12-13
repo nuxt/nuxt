@@ -13,6 +13,7 @@ import { resolveClientEntry } from '../utils/config'
 import { useNitro } from '@nuxt/kit'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
+const QUERY_RE = /\?.+$/
 
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
@@ -49,7 +50,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     globalCSS: nuxt.options.css,
   }
 
-  const relativeToSrcDir = (path: string) => relative(nuxt.options.srcDir, path)
+  // relative file lookup has duplicate checks
+  const relativeCache = new Map<string, string>()
+  const relativeToSrcDir = (path: string) => {
+    let cached = relativeCache.get(path)
+    if (cached === undefined) {
+      cached = relative(nuxt.options.srcDir, path)
+      relativeCache.set(path, cached)
+    }
+    return cached
+  }
 
   const warnCache = new Set<string>()
   const components = nuxt.apps.default!.components || []
@@ -58,6 +68,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // .server components without a corresponding .client component will need to be rendered as an island
     (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
   )
+  const islandPaths = new Set(islands.map(c => c.filePath))
 
   let entry: string
 
@@ -192,7 +203,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             const relativePath = relativeToSrcDir(moduleId)
             if (relativePath in cssMap) {
-              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativeToSrcDir(moduleId)) || isEntry)
+              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativePath) || isEntry)
             }
           }
 
@@ -232,12 +243,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
           const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
 
-          if (!(id in clientCSSMap) && !islands.some(c => c.filePath === pathname)) { return }
+          if (!(id in clientCSSMap) && !islandPaths.has(pathname)) { return }
 
           const query = parseQuery(search)
           if (query.macro || query.nuxt_component) { return }
 
-          if (!islands.some(c => c.filePath === pathname)) {
+          if (!islandPaths.has(pathname)) {
             if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
           }
 
@@ -245,12 +256,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           const idMap = cssMap[relativeId] ||= { files: [] }
 
           const emittedIds = new Set<string>()
+          const idFilename = filename(id)
 
           let styleCtr = 0
           const ids = clientCSSMap[id] || []
           for (const file of ids) {
+            if (emittedIds.has(file)) { continue }
+            const fileInline = file + '?inline&used'
             const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-            const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+            const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
             if (!resolved || !res) {
               if (!warnCache.has(file)) {
                 warnCache.add(file)
@@ -258,11 +272,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               }
               continue
             }
-            if (emittedIds.has(file)) { continue }
+            emittedIds.add(file)
             const ref = this.emitFile({
               type: 'chunk',
-              name: `${filename(id)}-styles-${++styleCtr}.mjs`,
-              id: file + '?inline&used',
+              name: `${idFilename}-styles-${++styleCtr}.mjs`,
+              id: fileInline,
             })
 
             idRefMap[relativeToSrcDir(file)] = ref
@@ -272,12 +286,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           if (!SUPPORTED_FILES_RE.test(pathname)) { return }
 
           for (const i of findStaticImports(code)) {
-            const { type } = parseQuery(i.specifier)
-            if (type !== 'style' && !i.specifier.endsWith('.css')) { continue }
+            if (!i.specifier.endsWith('.css') && parseQuery(i.specifier).type !== 'style') { continue }
 
             const resolved = await this.resolve(i.specifier, id)
             if (!resolved) { continue }
-            if (!(await this.resolve(resolved.id + '?inline&used'))) {
+            const resolvedIdInline = resolved.id + '?inline&used'
+            if (!(await this.resolve(resolvedIdInline))) {
               if (!warnCache.has(resolved.id)) {
                 warnCache.add(resolved.id)
                 this.warn(`[nuxt] Cannot extract styles for \`${i.specifier}\`. Its styles will not be inlined when server-rendering.`)
@@ -288,8 +302,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             if (emittedIds.has(resolved.id)) { continue }
             const ref = this.emitFile({
               type: 'chunk',
-              name: `${filename(id)}-styles-${++styleCtr}.mjs`,
-              id: resolved.id + '?inline&used',
+              name: `${idFilename}-styles-${++styleCtr}.mjs`,
+              id: resolvedIdInline,
             })
 
             idRefMap[relativeToSrcDir(resolved.id)] = ref
@@ -302,5 +316,5 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 }
 
 function filename (name: string) {
-  return _filename(name.replace(/\?.+$/, ''))
+  return _filename(name.replace(QUERY_RE, ''))
 }
