@@ -201,28 +201,33 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       strict: true,
       generateTsConfig: true,
       tsconfigPath: 'tsconfig.server.json',
-      tsConfig: {
-        compilerOptions: {
-          lib: ['esnext', 'webworker', 'dom.iterable'],
-          skipLibCheck: true,
+      tsConfig: defu(
+        nuxt.options.nitro.typescript?.tsConfig,
+        nuxt.options.typescript?.serverTsConfig,
+        nuxt.options.typescript?.tsConfig,
+        {
+          compilerOptions: {
+            lib: ['esnext', 'webworker', 'dom.iterable'],
+            skipLibCheck: true,
+          },
+          include: [
+            join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
+            ...modules.flatMap((m) => {
+              const moduleDir = relativeWithDot(nuxt.options.buildDir, m)
+              return [
+                join(moduleDir, 'runtime/server'),
+                join(moduleDir, 'dist/runtime/server'),
+              ]
+            }),
+            ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.server, '**/*'))),
+            ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
+          ],
+          exclude: [
+            ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+            relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+          ],
         },
-        include: [
-          join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
-          ...modules.flatMap((m) => {
-            const moduleDir = relativeWithDot(nuxt.options.buildDir, m)
-            return [
-              join(moduleDir, 'runtime/server'),
-              join(moduleDir, 'dist/runtime/server'),
-            ]
-          }),
-          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.server, '**/*'))),
-          ...layerDirs.map(dirs => relativeWithDot(nuxt.options.buildDir, join(dirs.shared, '**/*.d.ts'))),
-        ],
-        exclude: [
-          ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-          relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
-        ],
-      },
+      ) as any,
     },
     publicAssets: [
       nuxt.options.dev
@@ -565,7 +570,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
   const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.js')
-  await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
+  await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => { })
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
       // TODO: resolve upstream where file URLs are not being resolved/inlined correctly
@@ -723,7 +728,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     if (nitro.options.static) {
       const distDir = resolve(nuxt.options.rootDir, 'dist')
       if (!existsSync(distDir)) {
-        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
+        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => { })
       }
     }
   }
