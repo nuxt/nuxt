@@ -1,4 +1,4 @@
-import { createUnplugin, type UnpluginOptions } from 'unplugin'
+import { type UnpluginOptions, createUnplugin } from 'unplugin'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
 import MagicString from 'magic-string'
@@ -29,29 +29,29 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
   }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
-  const nonViteTransformIncludes: UnpluginOptions['transformInclude'] =  (id) => {
-      const _id = normalize(id)
-      return layers.some(dir => _id.startsWith(dir))
+  const nonViteTransformIncludes: UnpluginOptions['transformInclude'] = (id) => {
+    const _id = normalize(id)
+    return layers.some(dir => _id.startsWith(dir))
   }
   const nonViteTransform: UnpluginOptions['transform'] = {
-      filter: {
-        code: { include: ALIAS_RE_SINGLE },
-      },
-      handler (code, id) {
-        const _id = normalize(id)
-        const layer = layers.find(l => _id.startsWith(l))
-        if (!layer) { return }
+    filter: {
+      code: { include: ALIAS_RE_SINGLE },
+    },
+    handler (code, id) {
+      const _id = normalize(id)
+      const layer = layers.find(l => _id.startsWith(l))
+      if (!layer) { return }
 
-        const s = new MagicString(code)
-        s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
+      const s = new MagicString(code)
+      s.replace(ALIAS_RE, r => aliases[layer]?.[r as '~'] || r)
 
-        if (s.hasChanged()) {
-          return {
-            code: s.toString(),
-            map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
-          }
+      if (s.hasChanged()) {
+        return {
+          code: s.toString(),
+          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
         }
-      },
+      }
+    },
   }
 
   return {
