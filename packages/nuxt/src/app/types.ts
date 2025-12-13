@@ -1,6 +1,6 @@
 import type { SerializableHead } from '@unhead/vue'
 
-export type { PageMeta, NuxtPageProps } from '../pages/runtime/index'
+export type { PageMeta, NuxtPageProps, NuxtLayouts } from '../pages/runtime/index'
 
 export interface NuxtAppLiterals {
   [key: string]: string
