@@ -26,3 +26,24 @@ export function transpile (envs: Envs): Array<string | RegExp> {
 
   return transpile
 }
+
+/**
+ * Get transpile patterns as strings for use with Vite's optimizeDeps.exclude
+ * This resolves functions and filters to only string patterns
+ */
+export function getTranspilePatterns (envs: Envs): string[] {
+  const nuxt = useNuxt()
+  const patterns: string[] = []
+
+  for (let pattern of nuxt.options.build.transpile) {
+    if (typeof pattern === 'function') {
+      const result = pattern(envs)
+      if (result) { pattern = result }
+    }
+    if (typeof pattern === 'string') {
+      patterns.push(pattern)
+    }
+  }
+
+  return patterns
+}
