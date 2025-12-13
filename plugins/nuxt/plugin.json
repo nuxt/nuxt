@@ -1,0 +1,22 @@
+{
+  "name": "nuxt",
+  "version": "4.1.3",
+  "description": "Nuxt - The Intuitive Vue Framework for building modern web applications",
+  "author": {
+    "name": "Nuxt Team",
+    "email": "hello@nuxtlabs.com",
+    "url": "https://github.com/nuxt"
+  },
+  "homepage": "https://nuxt.com",
+  "repository": "https://github.com/nuxt/nuxt",
+  "license": "MIT",
+  "keywords": [
+    "nuxt",
+    "vue",
+    "framework",
+    "ssr",
+    "ssg",
+    "hybrid",
+    "web-framework"
+  ]
+}
