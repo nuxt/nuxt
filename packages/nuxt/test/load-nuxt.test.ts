@@ -156,6 +156,17 @@ describe('loadNuxt', () => {
 
     await nuxt.close()
   })
+
+  it('includes #server alias in nitro tsconfig paths', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+
+    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+
+    expect(tsConfigPaths).toHaveProperty('#server')
+    expect(tsConfigPaths).toHaveProperty('#server/*')
+
+    await nuxt.close()
+  })
 })
 
 const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
