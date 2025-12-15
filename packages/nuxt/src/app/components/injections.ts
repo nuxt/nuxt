@@ -8,3 +8,5 @@ export interface LayoutMeta {
 export const LayoutMetaSymbol: InjectionKey<LayoutMeta> = Symbol('layout-meta')
 
 export const PageRouteSymbol: InjectionKey<RouteLocationNormalizedLoaded> = Symbol('route')
+
+export const RouterHashModeSymbol: InjectionKey<boolean> = Symbol('router-hash-mode')
