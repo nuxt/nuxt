@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import defu from 'defu'
+import { defu } from 'defu'
 import type { Nuxt } from '@nuxt/schema'
 import { dirname, resolve } from 'pathe'
 

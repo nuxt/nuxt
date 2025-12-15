@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import MagicString from 'magic-string'
 import { parseQuery, parseURL } from 'ufo'
 import type { Plugin } from 'vite'
-import { isCSS } from '../utils'
+import { isCSS } from '../utils/index'
 
 const VITE_ASSET_RE = /__VITE_ASSET__|__VITE_PUBLIC_ASSET__/
 

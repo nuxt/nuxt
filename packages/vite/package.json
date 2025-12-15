@@ -17,6 +17,10 @@
       "import": "./dist/index.mjs"
     }
   },
+  "imports": {
+    "#vite-node": "./dist/vite-node.mjs",
+    "#vite-node-entry": "./dist/vite-node-entry.mjs"
+  },
   "files": [
     "dist"
   ],

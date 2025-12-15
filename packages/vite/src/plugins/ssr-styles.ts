@@ -8,7 +8,7 @@ import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { IS_CSS_RE, isCSS, isVue } from '../utils'
+import { IS_CSS_RE, isCSS, isVue } from '../utils/index'
 import { resolveClientEntry } from '../utils/config'
 import { useNitro } from '@nuxt/kit'
 
