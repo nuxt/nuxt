@@ -48,7 +48,7 @@
     "c12": "3.3.2",
     "chokidar": "5.0.0",
     "compatx": "0.2.0",
-    "css-minimizer-webpack-plugin": "7.0.3",
+    "css-minimizer-webpack-plugin": "7.0.4",
     "esbuild": "0.27.1",
     "esbuild-loader": "4.4.0",
     "file-loader": "6.2.0",
