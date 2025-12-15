@@ -23,6 +23,7 @@ export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, exten
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, isNuxtMajorVersion, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility'
+export type { NuxtMajorVersion } from './compatibility'
 export { addComponent, addComponentExports, addComponentsDir } from './components'
 export type { AddComponentOptions } from './components'
 // eslint-disable-next-line @typescript-eslint/no-deprecated

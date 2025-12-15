@@ -109,10 +109,12 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
   return !issues.length
 }
 
+export type NuxtMajorVersion = 2 | 3 | 4
+
 /**
  * Check if current Nuxt instance is of specified major version
  */
-export function isNuxtMajorVersion (majorVersion: 2 | 3 | 4, nuxt: Nuxt = useNuxt()): boolean {
+export function isNuxtMajorVersion (majorVersion: NuxtMajorVersion, nuxt: Nuxt = useNuxt()): boolean {
   const version = getNuxtVersion(nuxt)
 
   return version[0] === majorVersion.toString() && version[1] === '.'
