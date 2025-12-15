@@ -98,13 +98,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               return
             }
 
-            if (id === '#build/css' || id.endsWith('.vue') || isCSS(id)) {
-              const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
-              if (res) {
-                return {
-                  ...res,
-                  moduleSideEffects: false,
-                }
+            const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
+            if (res) {
+              return {
+                ...res,
+                moduleSideEffects: false,
               }
             }
           },
