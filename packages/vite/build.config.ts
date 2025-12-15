@@ -1,11 +1,12 @@
 import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin } from '../../debug/build-config.ts'
+import { addRollupTimingsPlugin } from '../../debug/build-config'
 
 export default defineBuildConfig({
   declaration: true,
   entries: [
     'src/index',
-    { input: 'src/runtime/', outDir: 'dist/runtime', format: 'esm' },
+    'src/vite-node',
+    'src/vite-node-entry',
   ],
   hooks: {
     'rollup:options' (ctx, options) {
