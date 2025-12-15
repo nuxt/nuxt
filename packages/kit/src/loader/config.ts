@@ -9,9 +9,9 @@ import { glob } from 'tinyglobby'
 import { defu } from 'defu'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { directoryToURL } from '../internal/esm'
-import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
