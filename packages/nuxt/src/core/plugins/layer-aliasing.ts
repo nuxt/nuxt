@@ -13,6 +13,7 @@ interface LayerAliasingOptions {
 
 const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
+const ALIAS_ID_RE = /^[~@]{1,2}\//
 
 export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnplugin((_options, meta) => {
   const aliases: Record<string, Record<string, string>> = {}
@@ -60,6 +61,9 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     vite: {
       resolveId: {
         order: 'pre',
+        filter: {
+          id: ALIAS_ID_RE,
+        },
         async handler (id, importer) {
           if (!importer) { return }
 
