@@ -1,6 +1,6 @@
 import * as vite from 'vite'
 import type { Nuxt } from 'nuxt/schema'
-import { transpile } from '../utils/transpile'
+import { transpile } from '../utils/transpile.ts'
 import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
 import { useNitro } from '@nuxt/kit'

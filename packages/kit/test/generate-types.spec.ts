@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 
-import { _generateTypes } from '../src/template'
+import { _generateTypes } from '../src/template.ts'
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]

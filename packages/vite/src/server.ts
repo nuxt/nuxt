@@ -5,15 +5,15 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
-import type { Nitro } from 'nitropack'
-import type { ViteBuildContext } from './vite'
-import { createViteLogger } from './utils/logger'
-import { writeDevServer } from './plugins/vite-node'
-import { writeManifest } from './manifest'
-import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
-import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
-import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker'
-import { ssr, ssrEnvironment } from './shared/server'
+import type { Nitro } from 'nitropack/types'
+import type { ViteBuildContext } from './vite.ts'
+import { createViteLogger } from './utils/logger.ts'
+import { writeDevServer } from './plugins/vite-node.ts'
+import { writeManifest } from './manifest.ts'
+import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
+import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags.ts'
+import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
+import { ssr, ssrEnvironment } from './shared/server.ts'
 
 export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   const serverEntry = nuxt.options.ssr ? ctx.entry : await resolvePath(resolve(nuxt.options.appDir, 'entry-spa'))
@@ -113,6 +113,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     await writeDevServer(nuxt)
   } else {
     logger.info('Vite server using legacy server bundler...')
-    await import('./dev-bundler').then(r => r.initViteDevBundler(ctx, () => nuxt.callHook('vite:compiled')))
+    await import('./dev-bundler.ts').then(r => r.initViteDevBundler(ctx, () => nuxt.callHook('vite:compiled')))
   }
 }

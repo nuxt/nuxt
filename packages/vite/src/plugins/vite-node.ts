@@ -19,8 +19,8 @@ import type { Nuxt } from '@nuxt/schema'
 import { provider } from 'std-env'
 import { resolveModulePath } from 'exsolve'
 
-import { isCSS } from '../utils/index'
-import { resolveClientEntry, resolveServerEntry } from '../utils/config'
+import { isCSS } from '../utils/index.ts'
+import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 

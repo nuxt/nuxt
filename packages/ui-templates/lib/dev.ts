@@ -2,8 +2,9 @@ import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
-import { template } from 'lodash-es'
-import genericMessages from '../templates/messages.json'
+import genericMessages from '../templates/messages.json' with { type: 'json' }
+import pkg from '../../nuxt/package.json' with { type: 'json' }
+import { runInNewContext } from 'node:vm'
 
 const templatesRoot = fileURLToPath(new URL('..', import.meta.url))
 
@@ -25,11 +26,20 @@ export const DevRenderingPlugin = () => {
 
       const messages = JSON.parse(await fsp.readFile(r(page, 'messages.json'), 'utf-8'))
 
-      return template(contents, {
-        interpolate: /\{\{\{?([\s\S]+?)\}?\}\}/g,
-      })({
-        messages: { ...genericMessages, ...messages },
-      })
+      const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/)
+      let templateString = chunks.shift()
+      for (const expression of contents.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
+        const value = runInNewContext(expression[1]!.trim(), {
+          version: pkg.version,
+          messages: { ...genericMessages, ...messages },
+        })
+        templateString += `${value}${chunks.shift()}`
+      }
+      if (chunks.length > 0) {
+        templateString += chunks.join('')
+      }
+
+      return templateString
     },
   }
 }

@@ -10,12 +10,12 @@ import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
-import { distDirURL, filterInPlace } from './utils'
-import { directoryToURL } from './internal/esm'
-import { getDirectory } from './module/install'
-import { tryUseNuxt, useNuxt } from './context'
-import { resolveNuxtModule } from './resolve'
-import { getLayerDirectories } from './layers'
+import { distDirURL, filterInPlace } from './utils.ts'
+import { directoryToURL } from './internal/esm.ts'
+import { getDirectory } from './module/install.ts'
+import { tryUseNuxt, useNuxt } from './context.ts'
+import { resolveNuxtModule } from './resolve.ts'
+import { getLayerDirectories } from './layers.ts'
 
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)

@@ -1,8 +1,8 @@
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
-import { useNuxt } from './context'
-import { toArray } from './utils'
+import { useNuxt } from './context.ts'
+import { toArray } from './utils.ts'
 
 const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
 /**

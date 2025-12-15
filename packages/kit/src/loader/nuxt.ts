@@ -3,9 +3,9 @@ import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { interopDefault } from 'mlly'
 import { readPackageJSON } from 'pkg-types'
-import { directoryToURL, importModule, tryImportModule } from '../internal/esm'
-import { runWithNuxtContext } from '../context'
-import type { LoadNuxtConfigOptions } from './config'
+import { directoryToURL, importModule, tryImportModule } from '../internal/esm.ts'
+import { runWithNuxtContext } from '../context.ts'
+import type { LoadNuxtConfigOptions } from './config.ts'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   /** Load nuxt with development mode */

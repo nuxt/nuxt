@@ -13,8 +13,8 @@ import { parseAndWalk } from 'oxc-walker'
 import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
 import { transformSync } from 'oxc-transform'
-import { getLoader, uniqueBy } from '../core/utils'
-import { logger, toArray } from '../utils'
+import { getLoader, uniqueBy } from '../core/utils/index.ts'
+import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 const SegmentTokenType = {

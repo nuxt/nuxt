@@ -9,7 +9,7 @@ import htmlnano from 'htmlnano'
 import { glob } from 'tinyglobby'
 import { camelCase } from 'scule'
 
-import genericMessages from '../templates/messages.json'
+import genericMessages from '../templates/messages.json' with { type: 'json' }
 
 const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
 const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)

@@ -8,7 +8,7 @@ import { normalizeViteManifest, precomputeDependencies } from 'vue-bundle-render
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Manifest as ViteClientManifest } from 'vite'
 import { serialize } from 'seroval'
-import type { ViteBuildContext } from './vite'
+import type { ViteBuildContext } from './vite.ts'
 
 export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) {
   const { nuxt } = ctx

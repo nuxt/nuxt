@@ -7,10 +7,10 @@ import { compileTemplate as _compileTemplate, findPath, getLayerDirectories, nor
 
 import type { PluginMeta } from 'nuxt/app'
 
-import { logger, resolveToAlias } from '../utils'
-import * as defaultTemplates from './templates'
-import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
-import { extractMetadata, orderMap } from './plugins/plugin-metadata'
+import { logger, resolveToAlias } from '../utils.ts'
+import * as defaultTemplates from './templates.ts'
+import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
+import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {

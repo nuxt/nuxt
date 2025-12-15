@@ -1,10 +1,10 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
-import { useNuxt } from './context'
-import { isNuxtMajorVersion } from './compatibility'
-import { logger } from './logger'
-import { toArray } from './utils'
+import { useNuxt } from './context.ts'
+import { isNuxtMajorVersion } from './compatibility.ts'
+import { logger } from './logger.ts'
+import { toArray } from './utils.ts'
 
 export function extendPages (cb: NuxtHooks['pages:extend']): void {
   const nuxt = useNuxt()

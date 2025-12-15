@@ -4,8 +4,8 @@ import { template as lodashTemplate } from 'lodash-es'
 import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
-import { logger } from '../logger'
-import { toArray } from '../utils'
+import { logger } from '../logger.ts'
+import { toArray } from '../utils.ts'
 
 /** @deprecated */
 // TODO: Remove support for compiling ejs templates in v4

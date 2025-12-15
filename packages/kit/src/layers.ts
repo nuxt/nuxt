@@ -1,8 +1,8 @@
 import type { Nuxt, NuxtConfigLayer, NuxtOptions } from '@nuxt/schema'
 import { resolve } from 'pathe'
 
-import { useNuxt } from './context'
-import { resolveAlias } from './resolve'
+import { useNuxt } from './context.ts'
+import { resolveAlias } from './resolve.ts'
 
 export interface LayerDirectories {
   /** Nuxt rootDir (`/` by default) */

@@ -5,7 +5,7 @@ import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
-import { toArray } from '.'
+import { toArray } from './index.ts'
 
 export function createIsExternal (viteServer: ViteDevServer, nuxt: Nuxt) {
   const externalOpts: ExternalsOptions = {

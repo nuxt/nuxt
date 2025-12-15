@@ -4,10 +4,10 @@ import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
-import { logger } from '../logger'
-import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
-import { checkNuxtCompatibility, isNuxtMajorVersion } from '../compatibility'
-import { compileTemplate, templateUtils } from '../internal/template'
+import { logger } from '../logger.ts'
+import { nuxtCtx, tryUseNuxt, useNuxt } from '../context.ts'
+import { checkNuxtCompatibility, isNuxtMajorVersion } from '../compatibility.ts'
+import { compileTemplate, templateUtils } from '../internal/template.ts'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing

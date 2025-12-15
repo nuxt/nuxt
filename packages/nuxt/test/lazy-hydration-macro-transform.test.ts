@@ -5,9 +5,9 @@ import vuePlugin from '@vitejs/plugin-vue'
 import vuePluginJsx from '@vitejs/plugin-vue-jsx'
 import type { AddComponentOptions } from '@nuxt/kit'
 
-import { LoaderPlugin } from '../src/components/plugins/loader'
-import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform'
-import { LazyHydrationMacroTransformPlugin } from '../src/components/plugins/lazy-hydration-macro-transform'
+import { LoaderPlugin } from '../src/components/plugins/loader.ts'
+import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform.ts'
+import { LazyHydrationMacroTransformPlugin } from '../src/components/plugins/lazy-hydration-macro-transform.ts'
 
 describe('lazy hydration macro transform', () => {
   it ('should correctly transform lazy hydration macro in sfc', async () => {

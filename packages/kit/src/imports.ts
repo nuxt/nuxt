@@ -1,7 +1,7 @@
 import type { Import, InlinePreset } from 'unimport'
-import { useNuxt } from './context'
-import { assertNuxtCompatibility } from './compatibility'
-import { toArray } from './utils'
+import { useNuxt } from './context.ts'
+import { assertNuxtCompatibility } from './compatibility.ts'
+import { toArray } from './utils.ts'
 
 export function addImports (imports: Import | Import[]): void {
   assertNuxtCompatibility({ bridge: true })

@@ -6,8 +6,8 @@ import { directoryToURL, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
 
-import { pkgDir } from '../../dirs'
-import { logger } from '../../utils'
+import { pkgDir } from '../../dirs.ts'
+import { logger } from '../../utils.ts'
 
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
 

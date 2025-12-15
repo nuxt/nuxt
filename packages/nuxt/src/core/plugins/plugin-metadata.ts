@@ -9,7 +9,7 @@ import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
 import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
-import { logger } from '../../utils'
+import { logger } from '../../utils.ts'
 
 const internalOrderMap = {
   // -50: pre-all (nuxt)

@@ -1,4 +1,4 @@
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 const ensureItemIsLast = (item: string) => (arr: string[]) => {
   const index = arr.indexOf(item)

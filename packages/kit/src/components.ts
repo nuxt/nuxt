@@ -2,11 +2,11 @@ import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { resolveModuleExportNames } from 'mlly'
 
-import { useNuxt } from './context'
-import { checkNuxtVersion } from './compatibility'
-import { logger } from './logger'
-import { resolvePath } from './resolve'
-import { MODE_RE } from './utils'
+import { useNuxt } from './context.ts'
+import { checkNuxtVersion } from './compatibility.ts'
+import { logger } from './logger.ts'
+import { resolvePath } from './resolve.ts'
+import { MODE_RE } from './utils.ts'
 
 /**
  * Register a directory to be scanned for components and imported only when used.

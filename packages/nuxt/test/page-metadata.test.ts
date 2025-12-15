@@ -4,9 +4,9 @@ import { compileScript, parse } from '@vue/compiler-sfc'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
-import { PageMetaPlugin } from '../src/pages/plugins/page-meta'
-import { getRouteMeta, normalizeRoutes } from '../src/pages/utils'
-import type { NuxtPage } from '../schema'
+import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
+import { getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
+import type { NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'
 
@@ -525,7 +525,7 @@ definePageMeta({
   it('should extract user imports', () => {
     const sfc = `
 <script setup lang="ts">
-import { validateIdParam } from './utils'
+import { validateIdParam } from './utils.ts'
 
 definePageMeta({
   validate: validateIdParam,
@@ -535,7 +535,7 @@ definePageMeta({
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
     expect(transformPlugin.transform(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
-      "import { validateIdParam } from './utils'
+      "import { validateIdParam } from './utils.ts'
 
       const __nuxt_page_meta = {
         validate: validateIdParam,
@@ -702,7 +702,7 @@ definePageMeta({
   it('should work when keeping names = true', () => {
     const sfc = `
 <script setup lang="ts">
-import { foo } from './utils'
+import { foo } from './utils.ts'
 
 const checkNum = (value) => {
   return !isNaN(Number(foo(value)))
@@ -721,7 +721,7 @@ definePageMeta({
       `
     const compiled = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
     expect(transformPlugin.transform(compiled.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
-      "import { foo } from './utils'
+      "import { foo } from './utils.ts'
       const checkNum = (value) => {
         return !isNaN(Number(foo(value)))
       }

@@ -8,10 +8,10 @@ import type { isExternal } from 'externality'
 import { genDynamicImport, genObjectFromRawEntries } from 'knitwork'
 import { debounce } from 'perfect-debounce'
 import { isIgnored, logger } from '@nuxt/kit'
-import { hashId, isCSS, uniq } from './utils'
-import { createIsExternal } from './utils/external'
-import { writeManifest } from './manifest'
-import type { ViteBuildContext } from './vite'
+import { hashId, isCSS, uniq } from './utils/index.ts'
+import { createIsExternal } from './utils/external.ts'
+import { writeManifest } from './manifest.ts'
+import type { ViteBuildContext } from './vite.ts'
 
 interface TransformChunk {
   id: string
