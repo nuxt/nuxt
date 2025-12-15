@@ -56,7 +56,7 @@
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.9.4",
     "nitro": "3.0.1-alpha.1",
-    "ofetch": "1.5.1",
+    "ofetch": "2.0.0-alpha.3",
     "oxc-transform": "0.102.0",
     "postcss": "8.5.6",
     "rollup-plugin-visualizer": "6.0.5",

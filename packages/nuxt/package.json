@@ -100,7 +100,7 @@
     "mlly": "^1.8.0",
     "nanotar": "^0.2.0",
     "nypm": "^0.6.2",
-    "ofetch": "^1.5.1",
+    "ofetch": "^2.0.0-alpha.3",
     "ohash": "^2.0.11",
     "on-change": "^6.0.1",
     "oxc-minify": "^0.102.0",
