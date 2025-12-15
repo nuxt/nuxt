@@ -626,7 +626,7 @@ importers:
         version: 2.3.11
       unplugin-vue-router:
         specifier: ^0.19.0
-        version: 0.19.0(@vue/compiler-sfc@3.5.25)(typescript@5.9.3)(vue-router@4.6.3(vue@3.5.25(typescript@5.9.3)))(vue@3.5.25(typescript@5.9.3))
+        version: 0.19.0(@vue/compiler-sfc@3.5.25)(typescript@5.9.3)(vue-router@4.6.4(vue@3.5.25(typescript@5.9.3)))(vue@3.5.25(typescript@5.9.3))
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -635,7 +635,7 @@ importers:
         version: 3.5.25(typescript@5.9.3)
       vue-router:
         specifier: ^4.6.3
-        version: 4.6.3(vue@3.5.25(typescript@5.9.3))
+        version: 4.6.4(vue@3.5.25(typescript@5.9.3))
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.13.0
@@ -689,8 +689,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2(@rspack/core@1.6.7)(webpack@5.103.0(esbuild@0.27.1))
       css-minimizer-webpack-plugin:
-        specifier: ^7.0.3
-        version: 7.0.3(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1))
+        specifier: ^7.0.4
+        version: 7.0.4(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1))
       cssnano:
         specifier: ^7.1.2
         version: 7.1.2(postcss@8.5.6)
@@ -868,8 +868,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0
       css-minimizer-webpack-plugin:
-        specifier: 7.0.3
-        version: 7.0.3(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1))
+        specifier: 7.0.4
+        version: 7.0.4(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1))
       esbuild:
         specifier: 0.27.1
         version: 0.27.1
@@ -1139,8 +1139,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2(@rspack/core@1.6.7)(webpack@5.103.0(esbuild@0.27.1))
       css-minimizer-webpack-plugin:
-        specifier: ^7.0.3
-        version: 7.0.3(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1))
+        specifier: ^7.0.4
+        version: 7.0.4(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1))
       cssnano:
         specifier: ^7.1.2
         version: 7.1.2(postcss@8.5.6)
@@ -1320,7 +1320,7 @@ importers:
         version: 1.5.1
       unplugin-vue-router:
         specifier: latest
-        version: 0.19.0(@vue/compiler-sfc@3.5.25)(typescript@5.9.3)(vue-router@4.6.3(vue@3.5.25(typescript@5.9.3)))(vue@3.5.25(typescript@5.9.3))
+        version: 0.19.0(@vue/compiler-sfc@3.5.25)(typescript@5.9.3)(vue-router@4.6.4(vue@3.5.25(typescript@5.9.3)))(vue@3.5.25(typescript@5.9.3))
       vitest:
         specifier: latest
         version: 4.0.15(@types/node@24.10.2)(happy-dom@20.0.11)(jiti@2.6.1)(terser@5.40.0)(yaml@2.8.2)
@@ -1329,7 +1329,7 @@ importers:
         version: 3.5.25(typescript@5.9.3)
       vue-router:
         specifier: latest
-        version: 4.6.3(vue@3.5.25(typescript@5.9.3))
+        version: 4.6.4(vue@3.5.25(typescript@5.9.3))
 
   test/fixtures/hmr:
     dependencies:
@@ -3212,8 +3212,8 @@ packages:
   '@shikijs/core@1.29.2':
     resolution: {integrity: sha512-vju0lY9r27jJfOY4Z7+Rt/nIOjzJpZ3y+nYpqtUZInVoXQ/TJZcfGnNOGnKjFdVZb8qexiCuSlZRKcGfhhTTZQ==}
 
-  '@shikijs/core@3.19.0':
-    resolution: {integrity: sha512-L7SrRibU7ZoYi1/TrZsJOFAnnHyLTE1SwHG1yNWjZIVCqjOEmCSuK2ZO9thnRbJG6TOkPp+Z963JmpCNw5nzvA==}
+  '@shikijs/core@3.20.0':
+    resolution: {integrity: sha512-f2ED7HYV4JEk827mtMDwe/yQ25pRiXZmtHjWF8uzZKuKiEsJR7Ce1nuQ+HhV9FzDcbIo4ObBCD9GPTzNuy9S1g==}
 
   '@shikijs/core@3.4.2':
     resolution: {integrity: sha512-AG8vnSi1W2pbgR2B911EfGqtLE9c4hQBYkv/x7Z+Kt0VxhgQKcW7UNDVYsu9YxwV6u+OJrvdJrMq6DNWoBjihQ==}
@@ -3245,16 +3245,16 @@ packages:
   '@shikijs/transformers@3.4.2':
     resolution: {integrity: sha512-I5baLVi/ynLEOZoWSAMlACHNnG+yw5HDmse0oe+GW6U1u+ULdEB3UHiVWaHoJSSONV7tlcVxuaMy74sREDkSvg==}
 
-  '@shikijs/twoslash@3.19.0':
-    resolution: {integrity: sha512-DnkH4slSLPC7dJPhZ9Eofy1X/ZgXiWsvOl/ERK7799ZqXsJwtsq2e8RgHBQUX4Y2lf6aoMojirocLY0AbPF3Dg==}
+  '@shikijs/twoslash@3.20.0':
+    resolution: {integrity: sha512-fZz6vB9a0M8iuVF/ydIV4ToC09sbOh/TqxXZFWAh5J8bLiPsyQGtygKMDQ9L0Sdop3co0TIC/JsrLmsbmZwwsw==}
     peerDependencies:
       typescript: 5.9.3
 
   '@shikijs/types@1.29.2':
     resolution: {integrity: sha512-VJjK0eIijTZf0QSTODEXCqinjBn0joAHQ+aPSBzrv4O2d/QSbsMw+ZeSRx03kV34Hy7NzUvV/7NqfYGRLrASmw==}
 
-  '@shikijs/types@3.19.0':
-    resolution: {integrity: sha512-Z2hdeEQlzuntf/BZpFG8a+Fsw9UVXdML7w0o3TgSXV3yNESGon+bs9ITkQb3Ki7zxoXOOu5oJWqZ2uto06V9iQ==}
+  '@shikijs/types@3.20.0':
+    resolution: {integrity: sha512-lhYAATn10nkZcBQ0BlzSbJA3wcmL5MXUUF8d2Zzon6saZDlToKaiRX60n2+ZaHJCmXEcZRWNzn+k9vplr8Jhsw==}
 
   '@shikijs/types@3.4.2':
     resolution: {integrity: sha512-zHC1l7L+eQlDXLnxvM9R91Efh2V4+rN3oMVS2swCBssbj2U/FBwybD1eeLaq8yl/iwT+zih8iUbTBCgGZOYlVg==}
@@ -4587,8 +4587,8 @@ packages:
       webpack:
         optional: true
 
-  css-minimizer-webpack-plugin@7.0.3:
-    resolution: {integrity: sha512-O99EbZ3P9YqfjWPvaL5Ndr54hP1V1N9IRKDLzKpEm1cw5eYF5KTFvz63Wm/AGDz841ceGmLvU1rdN8LrElMIiQ==}
+  css-minimizer-webpack-plugin@7.0.4:
+    resolution: {integrity: sha512-2iACis+P8qdLj1tHcShtztkGhCNIRUajJj7iX0IM9a5FA0wXGwjV8Nf6+HsBjBfb4LO8TTAVoetBbM54V6f3+Q==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@parcel/css': '*'
@@ -8634,6 +8634,11 @@ packages:
     peerDependencies:
       vue: 3.5.25
 
+  vue-router@4.6.4:
+    resolution: {integrity: sha512-Hz9q5sa33Yhduglwz6g9skT8OBPii+4bFn88w6J+J4MfEo4KRRpmiNG/hHHkdbRFlLBOqxN8y8gf2Fb0MTUgVg==}
+    peerDependencies:
+      vue: 3.5.25
+
   vue-sfc-transformer@0.1.17:
     resolution: {integrity: sha512-0mpkDTWm1ybtp/Mp3vhrXP4r8yxcGF+quxGyJfrHDl2tl5naQjK3xkIGaVR5BtR5KG1LWJbdCrqn7I6f460j9A==}
     engines: {node: '>=18.0.0'}
@@ -10627,9 +10632,9 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
-  '@shikijs/core@3.19.0':
+  '@shikijs/core@3.20.0':
     dependencies:
-      '@shikijs/types': 3.19.0
+      '@shikijs/types': 3.20.0
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
@@ -10684,10 +10689,10 @@ snapshots:
       '@shikijs/core': 3.4.2
       '@shikijs/types': 3.4.2
 
-  '@shikijs/twoslash@3.19.0(typescript@5.9.3)':
+  '@shikijs/twoslash@3.20.0(typescript@5.9.3)':
     dependencies:
-      '@shikijs/core': 3.19.0
-      '@shikijs/types': 3.19.0
+      '@shikijs/core': 3.20.0
+      '@shikijs/types': 3.20.0
       twoslash: 0.3.4(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -10698,7 +10703,7 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
-  '@shikijs/types@3.19.0':
+  '@shikijs/types@3.20.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -10710,7 +10715,7 @@ snapshots:
 
   '@shikijs/vitepress-twoslash@1.29.2(@nuxt/kit@packages+kit)(typescript@5.9.3)':
     dependencies:
-      '@shikijs/twoslash': 3.19.0(typescript@5.9.3)
+      '@shikijs/twoslash': 3.20.0(typescript@5.9.3)
       floating-vue: 5.2.2(@nuxt/kit@packages+kit)(vue@3.5.25(typescript@5.9.3))
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.1.0
@@ -12294,7 +12299,7 @@ snapshots:
       '@rspack/core': 1.6.7
       webpack: 5.103.0(esbuild@0.27.1)
 
-  css-minimizer-webpack-plugin@7.0.3(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1)):
+  css-minimizer-webpack-plugin@7.0.4(esbuild@0.27.1)(webpack@5.103.0(esbuild@0.27.1)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.29
       cssnano: 7.1.2(postcss@8.5.6)
@@ -16710,7 +16715,7 @@ snapshots:
       pathe: 2.0.3
       picomatch: 4.0.3
 
-  unplugin-vue-router@0.19.0(@vue/compiler-sfc@3.5.25)(typescript@5.9.3)(vue-router@4.6.3(vue@3.5.25(typescript@5.9.3)))(vue@3.5.25(typescript@5.9.3)):
+  unplugin-vue-router@0.19.0(@vue/compiler-sfc@3.5.25)(typescript@5.9.3)(vue-router@4.6.4(vue@3.5.25(typescript@5.9.3)))(vue@3.5.25(typescript@5.9.3)):
     dependencies:
       '@babel/generator': 7.28.5
       '@vue-macros/common': 3.1.1(vue@3.5.25(typescript@5.9.3))
@@ -16731,7 +16736,7 @@ snapshots:
       unplugin-utils: 0.3.1
       yaml: 2.8.2
     optionalDependencies:
-      vue-router: 4.6.3(vue@3.5.25(typescript@5.9.3))
+      vue-router: 4.6.4(vue@3.5.25(typescript@5.9.3))
     transitivePeerDependencies:
       - typescript
       - vue
@@ -17113,6 +17118,11 @@ snapshots:
       vue: 3.5.25(typescript@5.9.3)
 
   vue-router@4.6.3(vue@3.5.25(typescript@5.9.3)):
+    dependencies:
+      '@vue/devtools-api': 6.6.4
+      vue: 3.5.25(typescript@5.9.3)
+
+  vue-router@4.6.4(vue@3.5.25(typescript@5.9.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.25(typescript@5.9.3)
