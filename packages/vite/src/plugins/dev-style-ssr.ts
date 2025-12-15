@@ -1,6 +1,6 @@
 import { joinURL } from 'ufo'
 import type { Plugin } from 'vite'
-import { isCSS } from '../utils'
+import { isCSS } from '../utils/index'
 
 interface DevStyleSSRPluginOptions {
   srcDir: string
