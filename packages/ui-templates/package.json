@@ -21,7 +21,7 @@
     "@unocss/reset": "66.5.10",
     "@vue/shared": "3.5.25",
     "beasties": "0.3.5",
-    "html-validate": "10.4.0",
+    "html-validate": "10.5.0",
     "htmlnano": "2.1.5",
     "jiti": "2.6.1",
     "knitwork": "1.3.0",
@@ -33,6 +33,6 @@
     "tinyexec": "1.0.2",
     "tinyglobby": "0.2.15",
     "unocss": "66.5.10",
-    "vite": "7.2.7"
+    "vite": "7.3.0"
   }
 }
