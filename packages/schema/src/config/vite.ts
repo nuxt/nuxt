@@ -1,7 +1,7 @@
 import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   vite: {

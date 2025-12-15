@@ -1,7 +1,7 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
 import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
-import { useNuxt } from './context'
+import { useNuxt } from './context.ts'
 
 const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
 export function normalizeSemanticVersion (version: string): string {

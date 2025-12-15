@@ -8,7 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 
-import { matchWithStringOrRegex } from '../utils/plugins'
+import { matchWithStringOrRegex } from '../utils/plugins.ts'
 
 interface ComposableKeysOptions {
   sourcemap: boolean

@@ -6,7 +6,7 @@ import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
-import { isVue } from '../../core/utils'
+import { isVue } from '../../core/utils/index.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]

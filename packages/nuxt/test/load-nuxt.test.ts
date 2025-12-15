@@ -4,8 +4,8 @@ import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
-import { loadNuxt } from '../src'
-import type { NuxtConfig } from '../schema'
+import { loadNuxt } from '../src/index.ts'
+import type { NuxtConfig } from '../schema.ts'
 
 const repoRoot = await findWorkspaceDir()
 

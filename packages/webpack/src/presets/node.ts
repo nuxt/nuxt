@@ -1,4 +1,4 @@
-import type { WebpackConfigContext } from '../utils/config'
+import type { WebpackConfigContext } from '../utils/config.ts'
 
 export function node (ctx: WebpackConfigContext) {
   ctx.config.target = 'node'

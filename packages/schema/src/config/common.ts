@@ -7,9 +7,9 @@ import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 
-import type { NuxtDebugOptions } from '../types/debug'
-import type { NuxtModule } from '../types/module'
-import { defineResolvers } from '../utils/definition'
+import type { NuxtDebugOptions } from '../types/debug.ts'
+import type { NuxtModule } from '../types/module.ts'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   extends: undefined,

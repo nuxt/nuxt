@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { ComposableKeysPlugin, detectImportNames } from '../src/core/plugins/composable-keys'
+import { ComposableKeysPlugin, detectImportNames } from '../src/core/plugins/composable-keys.ts'
 
 describe('detectImportNames', () => {
   const keyedComposables = {

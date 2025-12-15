@@ -8,8 +8,8 @@ import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { IS_CSS_RE, isCSS, isVue } from '../utils/index'
-import { resolveClientEntry } from '../utils/config'
+import { IS_CSS_RE, isCSS, isVue } from '../utils/index.ts'
+import { resolveClientEntry } from '../utils/config.ts'
 import { useNitro } from '@nuxt/kit'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/

@@ -1,4 +1,4 @@
-export { isVue } from '../../../nuxt/src/core/utils/plugins'
+export { isVue } from '../../../nuxt/src/core/utils/plugins.ts'
 
 // Copied from vue-bundle-renderer utils
 export const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/

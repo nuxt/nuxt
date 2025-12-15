@@ -1,10 +1,10 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
 import type { RspackPluginInstance } from '@rspack/core'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
-import { useNuxt } from './context'
-import { toArray } from './utils'
-import { resolveAlias } from './resolve'
-import { getUserCaller, warn } from './internal/trace'
+import { useNuxt } from './context.ts'
+import { toArray } from './utils.ts'
+import { resolveAlias } from './resolve.ts'
+import { getUserCaller, warn } from './internal/trace.ts'
 
 type Arrayable<T> = T | T[]
 type Thenable<T> = T | Promise<T>

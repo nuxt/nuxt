@@ -1,7 +1,7 @@
 import type { Defu } from 'defu'
-import type { NuxtHooks } from './hooks'
-import type { Nuxt } from './nuxt'
-import type { NuxtCompatibility } from './compatibility'
+import type { NuxtHooks } from './hooks.ts'
+import type { Nuxt } from './nuxt.ts'
+import type { NuxtCompatibility } from './compatibility.ts'
 
 export interface ModuleMeta {
   /** Module name. */

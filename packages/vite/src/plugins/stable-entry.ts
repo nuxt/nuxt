@@ -5,7 +5,7 @@ import MagicString from 'magic-string'
 import { basename } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
-import { toArray } from '../utils/index'
+import { toArray } from '../utils/index.ts'
 
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let sourcemap: boolean

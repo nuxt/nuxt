@@ -210,6 +210,22 @@ export default createConfigForNuxt({
       },
     },
     {
+      files: ['packages/*/src/**'],
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      name: 'local/import-extensions',
+      plugins: {
+        'import-x': importX,
+      },
+      rules: {
+        'import/extensions': ['error', 'always', {
+          ignorePackages: true,
+          js: 'always',
+          ts: 'always',
+          vue: 'always',
+        }],
+      },
+    },
+    {
       files: ['packages/nuxt/src/app/**', 'test/**', '**/runtime/**', '**/*.test.ts'],
       name: 'local/disables/client-console',
       rules: {

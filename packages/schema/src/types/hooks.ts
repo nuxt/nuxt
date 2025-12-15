@@ -11,8 +11,8 @@ import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
 import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
-import type { Component, ComponentsOptions } from './components'
-import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
+import type { Component, ComponentsOptions } from './components.ts'
+import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
 
 export type HookResult = Promise<void> | void
 

@@ -18,14 +18,14 @@ import { defineEventHandler, dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
-import './augments'
+import './augments.ts'
 
 import { version as nitroBuilderVersion } from '../package.json'
-import { distDir, toArray } from './utils'
-import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon'
+import { distDir, toArray } from './utils.ts'
+import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection'
-import { nitroSchemaTemplate } from './templates'
+import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { nitroSchemaTemplate } from './templates.ts'
 
 const logLevelMapReverse = {
   silent: 0,
