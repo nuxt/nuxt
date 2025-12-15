@@ -176,7 +176,7 @@ export default createConfigForNuxt({
           {
             zones: [
               {
-                from: 'packages/nuxt/src/!(core)/**/*',
+                from: 'packages/nuxt/src/!(core)/runtime/*',
                 message: 'core should not directly import from modules.',
                 target: 'packages/nuxt/src/core',
               },
