@@ -314,6 +314,45 @@ export const schemaNodeTemplate: NuxtTemplate = {
   },
 }
 
+export const disabledModulesTypeTemplate: NuxtTemplate = {
+  filename: 'types/disabled-modules.d.ts',
+  getContents: ({ nuxt }) => {
+    const layerModules = nuxt.options._layerModules || []
+
+    // If no layer modules, just export an empty declaration
+    if (layerModules.length === 0) {
+      return [
+        'export {}',
+      ].join('\n')
+    }
+
+    // Generate a union type of all layer module names
+    const moduleUnion = layerModules.map(m => genString(m)).join(' | ')
+
+    return [
+      `type LayerModules = ${moduleUnion}`,
+      '',
+      'declare module \'@nuxt/schema\' {',
+      '  interface NuxtConfig {',
+      '    /**',
+      '     * Modules to disable from layers.',
+      '     */',
+      '    disabledModules?: LayerModules[]',
+      '  }',
+      '}',
+      'declare module \'nuxt/schema\' {',
+      '  interface NuxtConfig {',
+      '    /**',
+      '     * Modules to disable from layers.',
+      '     */',
+      '    disabledModules?: LayerModules[]',
+      '  }',
+      '}',
+      'export {}',
+    ].join('\n')
+  },
+}
+
 // Add layouts template
 export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',

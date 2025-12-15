@@ -157,6 +157,19 @@ export default defineResolvers({
       return modules
     },
   },
+  disabledModules: {
+    $resolve: (val) => {
+      const disabledModules: string[] = []
+      if (Array.isArray(val)) {
+        for (const mod of val) {
+          if (mod && typeof mod === 'string') {
+            disabledModules.push(mod)
+          }
+        }
+      }
+      return disabledModules
+    },
+  },
   dir: {
     app: {
       $resolve: async (val, get) => {

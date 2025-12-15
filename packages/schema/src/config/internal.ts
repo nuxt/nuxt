@@ -15,4 +15,5 @@ export default defineResolvers({
   appDir: '',
   _installedModules: [],
   _modules: [],
+  _layerModules: [],
 })
