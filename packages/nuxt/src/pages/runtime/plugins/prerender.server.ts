@@ -1,7 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { joinURL } from 'ufo'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-import defu from 'defu'
+import { defu } from 'defu'
 
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { prerenderRoutes } from '#app/composables/ssr'

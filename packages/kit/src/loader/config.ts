@@ -6,7 +6,7 @@ import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
-import defu from 'defu'
+import { defu } from 'defu'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
