@@ -30,15 +30,15 @@ import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
-import type { RouterConfigSerializable } from './router'
-import type { NuxtHooks } from './hooks'
-import type { ModuleMeta, NuxtModule } from './module'
-import type { NuxtDebugOptions } from './debug'
-import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt'
-import type { SerializableHtmlAttributes } from './head'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
-import type { ImportsOptions } from './imports'
-import type { ComponentsOptions } from './components'
+import type { RouterConfigSerializable } from './router.ts'
+import type { NuxtHooks } from './hooks.ts'
+import type { ModuleMeta, NuxtModule } from './module.ts'
+import type { NuxtDebugOptions } from './debug.ts'
+import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
+import type { SerializableHtmlAttributes } from './head.ts'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
+import type { ImportsOptions } from './imports.ts'
+import type { ComponentsOptions } from './components.ts'
 
 export interface ConfigSchema {
   /**
@@ -46,14 +46,14 @@ export interface ConfigSchema {
    *
    * Any components in the directories configured here can be used throughout your pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/components)
+   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/components)
    */
   components: boolean | ComponentsOptions | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/directory-structure/app/composables)
    */
   imports: ImportsOptions
 
@@ -353,7 +353,7 @@ export interface ConfigSchema {
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
    *
-   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/app/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/plugins)
    *
    * @example
    * ```js
@@ -1555,7 +1555,7 @@ export interface ConfigSchema {
    * Each handler accepts the following options:
    * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/guide/directory-structure/server)
+   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
    *
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    *
@@ -1902,7 +1902,7 @@ export interface ConfigSchema {
      * @example
      * ```js
      * import webpack from 'webpack'
-     * import { version } from './package.json'
+     * import { version } from './package.json.ts'
      * // ...
      * plugins: [
      *   new webpack.DefinePlugin({

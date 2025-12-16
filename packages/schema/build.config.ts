@@ -1,5 +1,4 @@
 import { defineBuildConfig } from 'unbuild'
-import { stubOptions } from '../../debug/build-config'
 
 export default defineBuildConfig({
   declaration: true,
@@ -7,7 +6,6 @@ export default defineBuildConfig({
     'src/index',
     'src/builder-env',
   ],
-  stubOptions,
   rollup: {
     dts: { respectExternal: false },
     inlineDependencies: ['untyped', 'knitwork'],
