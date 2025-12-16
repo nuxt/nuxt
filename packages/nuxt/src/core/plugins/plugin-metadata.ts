@@ -5,7 +5,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { normalize } from 'pathe'
-import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
+import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
 import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
@@ -107,7 +107,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
         throw new Error('dependsOn must take an array of string literals')
       }
-      meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as string)
+      meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }
   }
   return meta

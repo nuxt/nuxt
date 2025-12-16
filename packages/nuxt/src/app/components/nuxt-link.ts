@@ -23,7 +23,7 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
-import { hashMode } from '#build/router.options'
+import { hashMode } from '#build/router.options.mjs'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 

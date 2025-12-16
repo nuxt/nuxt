@@ -6,7 +6,7 @@ import { defu } from 'defu'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { prerenderRoutes } from '#app/composables/ssr'
 import _routes from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { crawlLinks } from '#build/nuxt.config.mjs'
 
