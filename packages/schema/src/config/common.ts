@@ -503,7 +503,7 @@ export default defineResolvers({
    */
   alias: {
     $resolve: async (val, get) => {
-      const [srcDir, rootDir, assetsDir, publicDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir'), get('dir.shared')])
+      const [srcDir, rootDir, assetsDir, publicDir, buildDir, sharedDir, serverDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir'), get('dir.shared'), get('serverDir')])
       const srcWithTrailingSlash = withTrailingSlash(srcDir)
       const rootWithTrailingSlash = withTrailingSlash(rootDir)
       return {
@@ -514,6 +514,7 @@ export default defineResolvers({
         '#shared': withTrailingSlash(resolve(rootDir, sharedDir)),
         [basename(assetsDir)]: withTrailingSlash(resolve(srcDir, assetsDir)),
         [basename(publicDir)]: withTrailingSlash(resolve(srcDir, publicDir)),
+        '#server': withTrailingSlash(serverDir),
         '#build': withTrailingSlash(buildDir),
         '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...typeof val === 'object' ? val : {},
