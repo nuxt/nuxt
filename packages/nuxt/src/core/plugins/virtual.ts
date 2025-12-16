@@ -70,7 +70,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
   const vfsEntries = new Set<string>()
   for (const key in nuxt.vfs) {
     if (!key.startsWith('#build/') && !key.startsWith(nuxt.options.buildDir)) {
-      vfsEntries.add(escapeDirectory(key))
+      vfsEntries.add(escapeDirectory(dirname(key)))
     }
   }
 
@@ -81,7 +81,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
       /^#build\//,
       new RegExp('^(\\w:)?' + escapeDirectory(nuxt.options.buildDir)),
       ...Array.from(vfsEntries).map(id => new RegExp('^' + id)),
-      new RegExp('^' + Array.from(relevantAliases).join('|')),
+      ...relevantAliases.size ? [new RegExp('^' + Array.from(relevantAliases).join('|') + '([\\\\/]|$)')] : [],
     ],
   }
 

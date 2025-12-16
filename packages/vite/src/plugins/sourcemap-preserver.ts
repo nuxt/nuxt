@@ -19,7 +19,7 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
     name: 'nuxt:sourcemap-import',
     load: {
       filter: {
-        id: new RegExp('^(\\w:)?' + escapeStringRegexp(outputDir).replace(/\//g, '[\\\\/]')),
+        id: new RegExp('^(\\w:)?' + escapeStringRegexp(outputDir.replace(/\/?$/, '/')).replace(/\//g, '[\\\\/]')),
       },
       async handler (id) {
         id = resolve(id)
