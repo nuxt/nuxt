@@ -5,9 +5,9 @@ import { normalize, relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
-import { isJS, isVue } from '../../core/utils'
-import { distDir } from '../../dirs'
-import { logger } from '../../utils'
+import { isJS, isVue } from '../../core/utils/index.ts'
+import { distDir } from '../../dirs.ts'
+import { logger } from '../../utils.ts'
 
 interface UnheadImportsPluginOptions {
   sourcemap: boolean

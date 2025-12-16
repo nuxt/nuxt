@@ -11,7 +11,7 @@ import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMid
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
-import consola from 'consola'
+import { consola } from 'consola'
 import onChange from 'on-change'
 import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
@@ -19,39 +19,39 @@ import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
 import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
-import defu from 'defu'
+import { defu } from 'defu'
 import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 
-import { installNuxtModule } from '../core/features'
-import pagesModule from '../pages/module'
-import metaModule from '../head/module'
-import componentsModule from '../components/module'
-import importsModule from '../imports/module'
+import { installNuxtModule } from '../core/features.ts'
+import pagesModule from '../pages/module.ts'
+import metaModule from '../head/module.ts'
+import componentsModule from '../components/module.ts'
+import importsModule from '../imports/module.ts'
 
-import { distDir, pkgDir } from '../dirs'
-import { version } from '../../package.json'
-import { scriptsStubsPreset } from '../imports/presets'
-import { logger } from '../utils'
-import { resolveTypePath } from './utils/types'
-import { createImportProtectionPatterns } from './plugins/import-protection'
-import { UnctxTransformPlugin } from './plugins/unctx'
-import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
-import { DevOnlyPlugin } from './plugins/dev-only'
-import { LayerAliasingPlugin } from './plugins/layer-aliasing'
-import { addModuleTranspiles } from './modules'
-import { bundleServer } from './server'
-import schemaModule from './schema'
-import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
-import { AsyncContextInjectionPlugin } from './plugins/async-context'
-import { ComposableKeysPlugin } from './plugins/composable-keys'
-import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
-import { ResolveExternalsPlugin } from './plugins/resolved-externals'
-import { PrehydrateTransformPlugin } from './plugins/prehydrate'
-import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers'
-import { VirtualFSPlugin } from './plugins/virtual'
+import { distDir, pkgDir } from '../dirs.ts'
+import pkg from '../../package.json' with { type: 'json' }
+import { scriptsStubsPreset } from '../imports/presets.ts'
+import { logger } from '../utils.ts'
+import { resolveTypePath } from './utils/types.ts'
+import { createImportProtectionPatterns } from './plugins/import-protection.ts'
+import { UnctxTransformPlugin } from './plugins/unctx.ts'
+import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
+import { DevOnlyPlugin } from './plugins/dev-only.ts'
+import { LayerAliasingPlugin } from './plugins/layer-aliasing.ts'
+import { addModuleTranspiles } from './modules.ts'
+import { bundleServer } from './server.ts'
+import schemaModule from './schema.ts'
+import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
+import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
+import { ComposableKeysPlugin } from './plugins/composable-keys.ts'
+import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
+import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
+import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
+import { VirtualFSPlugin } from './plugins/virtual.ts'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
@@ -64,7 +64,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
   const nuxt: Nuxt = {
     __name: randomUUID(),
-    _version: version,
+    _version: pkg.version,
     _asyncLocalStorageModule: options.experimental.debugModuleMutation ? new AsyncLocalStorage() : undefined,
     hooks,
     callHook: hooks.callHook,
@@ -154,7 +154,7 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-export const keyDependencies = [
+export const keyDependencies: string[] = [
   '@nuxt/kit',
 ]
 
@@ -783,7 +783,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
-    if (!await import('./features').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
+    if (!await import('./features.ts').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
     }))) {

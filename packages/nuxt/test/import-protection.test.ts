@@ -1,8 +1,8 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { ImpoundPlugin } from 'impound'
-import { createImportProtectionPatterns } from '../src/core/plugins/import-protection'
-import type { NuxtOptions } from '../schema'
+import { createImportProtectionPatterns } from '../src/core/plugins/import-protection.ts'
+import type { NuxtOptions } from '../schema.ts'
 
 const testsToTriggerOn = [
   ['~/nuxt.config', 'app.vue', true],

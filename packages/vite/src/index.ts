@@ -1,7 +1,7 @@
 import type { ViteConfig } from 'nuxt/schema'
 import type { EnvironmentOptions } from 'vite'
 
-export { bundle } from './vite'
+export { bundle } from './vite.ts'
 
 declare module 'nuxt/schema' {
   interface ViteOptions extends ViteConfig {

@@ -30,15 +30,15 @@ import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
-import type { RouterConfigSerializable } from './router'
-import type { NuxtHooks } from './hooks'
-import type { ModuleMeta, NuxtModule } from './module'
-import type { NuxtDebugOptions } from './debug'
-import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt'
-import type { SerializableHtmlAttributes } from './head'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
-import type { ImportsOptions } from './imports'
-import type { ComponentsOptions } from './components'
+import type { RouterConfigSerializable } from './router.ts'
+import type { NuxtHooks } from './hooks.ts'
+import type { ModuleMeta, NuxtModule } from './module.ts'
+import type { NuxtDebugOptions } from './debug.ts'
+import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
+import type { SerializableHtmlAttributes } from './head.ts'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
+import type { ImportsOptions } from './imports.ts'
+import type { ComponentsOptions } from './components.ts'
 
 export interface ConfigSchema {
   /**
@@ -976,7 +976,7 @@ export interface ConfigSchema {
     /**
      * Template to show a loading screen
      */
-    loadingTemplate: (data: { loading?: string, snowEffect?: boolean }) => string
+    loadingTemplate: (data: { loading?: string }) => string
 
     /**
      * Set CORS options for the dev server
@@ -1470,18 +1470,6 @@ export interface ConfigSchema {
      * @see https://github.com/KazariEX/dxup
      */
     typescriptPlugin: boolean
-
-    /**
-     * Enable or disable the seasonal snow effect on the loading screen.
-     *
-     * When enabled, snowflakes will be displayed during winter months (November-January in Northern Hemisphere, May-July in Southern Hemisphere).
-     * The effect automatically respects `prefers-reduced-motion` accessibility settings.
-     *
-     * Can be disabled by setting `NUXT_SNOW=false` environment variable.
-     *
-     * @default true
-     */
-    snowEffect: boolean
   }
 
   /**
@@ -1914,7 +1902,7 @@ export interface ConfigSchema {
      * @example
      * ```js
      * import webpack from 'webpack'
-     * import { version } from './package.json'
+     * import { version } from './package.json.ts'
      * // ...
      * plugins: [
      *   new webpack.DefinePlugin({

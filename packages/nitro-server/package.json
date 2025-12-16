@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro-server",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "prepack": "unbuild",
+    "build:stub": "unbuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -29,7 +30,7 @@
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
-    "devalue": "^5.5.0",
+    "devalue": "^5.6.1",
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",

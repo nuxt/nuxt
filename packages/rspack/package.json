@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/rspack-builder",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -27,15 +27,16 @@
   ],
   "scripts": {
     "prepack": "unbuild",
+    "build:stub": "unbuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^1.6.5",
-    "autoprefixer": "^10.4.22",
+    "@rspack/core": "^1.6.7",
+    "autoprefixer": "^10.4.23",
     "css-loader": "^7.1.2",
-    "css-minimizer-webpack-plugin": "^7.0.2",
+    "css-minimizer-webpack-plugin": "^7.0.4",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
     "esbuild-loader": "^4.4.0",
@@ -45,7 +46,7 @@
     "jiti": "^2.6.1",
     "knitwork": "^1.3.0",
     "magic-string": "^0.30.21",
-    "memfs": "^4.51.0",
+    "memfs": "^4.51.1",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
@@ -59,14 +60,14 @@
     "std-env": "^3.10.0",
     "time-fix-plugin": "^2.0.7",
     "tinyglobby": "^0.2.15",
-    "ts-checker-rspack-plugin": "^1.2.0",
+    "ts-checker-rspack-plugin": "^1.2.1",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^2.3.11",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.2.0",
     "vue-loader": "^17.4.2",
-    "webpack-bundle-analyzer": "^5.0.1",
+    "webpack-bundle-analyzer": "^5.1.0",
     "webpack-dev-middleware": "^7.4.5",
     "webpack-hot-middleware": "^2.26.1",
     "webpackbar": "^7.0.0"
@@ -75,7 +76,7 @@
     "@nuxt/schema": "workspace:*",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "rollup": "4.53.3",
+    "rollup": "4.53.4",
     "unbuild": "3.6.1",
     "vue": "3.5.25"
   },

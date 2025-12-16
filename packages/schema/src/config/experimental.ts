@@ -1,5 +1,4 @@
-import process from 'node:process'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   future: {
@@ -226,18 +225,6 @@ export default defineResolvers({
     viteEnvironmentApi: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
-      },
-    },
-    snowEffect: {
-      $resolve: (val: unknown) => {
-        if (typeof val === 'boolean') {
-          return val
-        }
-        // Check NUXT_SNOW environment variable
-        if (process.env.NUXT_SNOW === 'false') {
-          return false
-        }
-        return true
       },
     },
   },
