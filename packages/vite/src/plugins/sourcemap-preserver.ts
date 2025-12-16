@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { defu } from 'defu'
 import type { Nuxt } from '@nuxt/schema'
 import { dirname, resolve } from 'pathe'
+import escapeStringRegexp from 'escape-string-regexp'
 
 import type { Plugin as RollupPlugin } from 'rollup'
 import type { Plugin as VitePlugin } from 'vite'
@@ -14,28 +15,33 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
     return []
   }
 
-  const nitroPlugin = {
+  const nitroPlugin = () => ({
     name: 'nuxt:sourcemap-import',
-    async load (id) {
-      id = resolve(id)
-      if (!ids.has(id)) { return }
+    load: {
+      filter: {
+        id: new RegExp('^(\\w:)?' + escapeStringRegexp(outputDir).replace(/\//g, '[\\\\/]')),
+      },
+      async handler (id) {
+        id = resolve(id)
+        if (!ids.has(id)) { return }
 
-      const [code, map] = await Promise.all([
-        readFile(id, 'utf-8').catch(() => undefined),
-        readFile(id + '.map.json', 'utf-8').catch(() => undefined),
-      ])
+        const [code, map] = await Promise.all([
+          readFile(id, 'utf-8').catch(() => undefined),
+          readFile(id + '.map.json', 'utf-8').catch(() => undefined),
+        ])
 
-      if (!code) {
-        this.warn('Failed loading file')
-        return null
-      }
+        if (!code) {
+          this.warn('Failed loading file')
+          return null
+        }
 
-      return {
-        code,
-        map,
-      }
+        return {
+          code,
+          map,
+        }
+      },
     },
-  } satisfies RollupPlugin
+  }) satisfies RollupPlugin
 
   nuxt.hook('nitro:build:before', (nitro) => {
     nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {

@@ -14,6 +14,20 @@ interface UnctxTransformPluginOptions {
 
 export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
   const transformer = createTransformer(options.transformerOptions)
+
+  const resolvedOptions = {
+    asyncFunctions: ['withAsyncContext'],
+    objectDefinitions: {},
+    ...options.transformerOptions,
+  }
+  const keys = [...resolvedOptions.asyncFunctions, ...Object.keys(resolvedOptions.objectDefinitions)]
+  if (keys.length === 0) {
+    return {
+      name: 'unctx:transform',
+    }
+  }
+  const INCLUDE_RE = new RegExp(`\\b(${keys.join('|')})\\(`)
+
   return {
     name: 'unctx:transform',
     enforce: 'post',
@@ -22,7 +36,10 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
     },
     transform: {
       filter: {
-        code: { exclude: TRANSFORM_MARKER_RE },
+        code: {
+          include: INCLUDE_RE,
+          exclude: TRANSFORM_MARKER_RE,
+        },
       },
       handler (code) {
         // TODO: needed for webpack - update transform in unctx/unplugin?
