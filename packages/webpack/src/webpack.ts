@@ -11,11 +11,11 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { DynamicBasePlugin } from './plugins/dynamic-base'
-import { ChunkErrorPlugin } from './plugins/chunk'
-import { createMFS } from './utils/mfs'
-import { client, server } from './configs'
-import { applyPresets, createWebpackConfigContext } from './utils/config'
+import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
+import { ChunkErrorPlugin } from './plugins/chunk.ts'
+import { createMFS } from './utils/mfs.ts'
+import { client, server } from './configs/index.ts'
+import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
 import { builder, webpack } from '#builder'
 

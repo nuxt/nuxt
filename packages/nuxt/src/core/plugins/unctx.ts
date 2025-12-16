@@ -2,7 +2,7 @@ import type { TransformerOptions } from 'unctx/transform'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
-import { isJS, isVue } from '../utils'
+import { isJS, isVue } from '../utils/index.ts'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 const TRANSFORM_MARKER_RE = /^\/\* _processed_nuxt_unctx_transform \*\/\n/

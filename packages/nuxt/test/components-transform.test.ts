@@ -5,7 +5,7 @@ import { kebabCase } from 'scule'
 import { join, normalize } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 
-import { TransformPlugin } from '../src/components/plugins/transform'
+import { TransformPlugin } from '../src/components/plugins/transform.ts'
 
 const pkgPath = fileURLToPath(new URL('./node_modules/package-fixture', import.meta.url))
 const virtualFilePath = join(pkgPath, 'foo', 'bar', 'baz')

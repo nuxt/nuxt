@@ -24,6 +24,7 @@ export default createConfigForNuxt({
       // Ignores have to be a separate object to be treated as global ignores
       // Don't add other attributes to this object
       ignores: [
+        '.goff/**',
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
@@ -175,7 +176,7 @@ export default createConfigForNuxt({
           {
             zones: [
               {
-                from: 'packages/nuxt/src/!(core)/**/*',
+                from: 'packages/nuxt/src/!(core)/runtime/*',
                 message: 'core should not directly import from modules.',
                 target: 'packages/nuxt/src/core',
               },
@@ -206,6 +207,22 @@ export default createConfigForNuxt({
             ],
           },
         ],
+      },
+    },
+    {
+      files: ['packages/*/src/**'],
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      name: 'local/import-extensions',
+      plugins: {
+        'import-x': importX,
+      },
+      rules: {
+        'import/extensions': ['error', 'always', {
+          ignorePackages: true,
+          js: 'always',
+          ts: 'always',
+          vue: 'always',
+        }],
       },
     },
     {
