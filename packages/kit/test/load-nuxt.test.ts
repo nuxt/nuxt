@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { x } from 'tinyexec'
 
-import { loadNuxt } from '../src/index.ts'
+import { loadNuxt } from '../src/loader/nuxt.ts'
 import { findWorkspaceDir } from 'pkg-types'
 
 const repoRoot = await findWorkspaceDir()

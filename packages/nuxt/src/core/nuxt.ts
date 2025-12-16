@@ -32,7 +32,7 @@ import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 
 import { distDir, pkgDir } from '../dirs.ts'
-import { version } from '../../package.json'
+import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
 import { resolveTypePath } from './utils/types.ts'
@@ -64,7 +64,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
   const nuxt: Nuxt = {
     __name: randomUUID(),
-    _version: version,
+    _version: pkg.version,
     _asyncLocalStorageModule: options.experimental.debugModuleMutation ? new AsyncLocalStorage() : undefined,
     hooks,
     callHook: hooks.callHook,

@@ -20,7 +20,7 @@ import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import './augments.ts'
 
-import { version as nitroBuilderVersion } from '../package.json'
+import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
@@ -142,7 +142,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     framework: {
       name: 'nuxt',
-      version: nuxtVersion || nitroBuilderVersion,
+      version: nuxtVersion || nitroBuilder.version,
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,

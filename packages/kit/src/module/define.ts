@@ -63,7 +63,7 @@ function _defineNuxtModule<
     const optionsDefaults: TOptionsDefaults =
       module.defaults instanceof Function
         ? await module.defaults(nuxt)
-        : module.defaults ?? <TOptionsDefaults> {}
+        : module.defaults ?? {} as TOptionsDefaults
 
     let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
 
@@ -138,11 +138,11 @@ function _defineNuxtModule<
     if (res === false) { return false }
 
     // Return module install result
-    return defu(res, <ModuleSetupInstallResult> {
+    return defu(res, {
       timings: {
         setup: setupTime,
       },
-    })
+    } as ModuleSetupInstallResult)
   }
 
   // Define getters for options and meta
@@ -153,5 +153,5 @@ function _defineNuxtModule<
   normalizedModule.onInstall = module.onInstall
   normalizedModule.onUpgrade = module.onUpgrade
 
-  return <NuxtModule<TOptions, TOptionsDefaults, TWith>> normalizedModule
+  return normalizedModule as NuxtModule<TOptions, TOptionsDefaults, TWith>
 }
