@@ -44,7 +44,7 @@
     "radix3": "^1.1.2",
     "std-env": "^3.10.0",
     "ufo": "^1.6.1",
-    "unctx": "^2.4.1",
+    "unctx": "^2.5.0",
     "unstorage": "^1.17.3",
     "vue": "^3.5.25",
     "vue-bundle-renderer": "^2.2.0",

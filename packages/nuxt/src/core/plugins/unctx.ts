@@ -15,19 +15,6 @@ interface UnctxTransformPluginOptions {
 export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
   const transformer = createTransformer(options.transformerOptions)
 
-  const resolvedOptions = {
-    asyncFunctions: ['withAsyncContext'],
-    objectDefinitions: {},
-    ...options.transformerOptions,
-  }
-  const keys = [...resolvedOptions.asyncFunctions, ...Object.keys(resolvedOptions.objectDefinitions)]
-  if (keys.length === 0) {
-    return {
-      name: 'unctx:transform',
-    }
-  }
-  const INCLUDE_RE = new RegExp(`\\b(${keys.join('|')})\\(`)
-
   return {
     name: 'unctx:transform',
     enforce: 'post',
@@ -36,8 +23,9 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
     },
     transform: {
       filter: {
+        ...transformer.filter,
         code: {
-          include: INCLUDE_RE,
+          ...transformer.filter.code,
           exclude: TRANSFORM_MARKER_RE,
         },
       },

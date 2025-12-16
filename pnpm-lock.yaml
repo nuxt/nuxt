@@ -325,8 +325,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       unctx:
-        specifier: ^2.4.1
-        version: 2.4.1
+        specifier: ^2.5.0
+        version: 2.5.0
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -428,8 +428,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       unctx:
-        specifier: ^2.4.1
-        version: 2.4.1
+        specifier: ^2.5.0
+        version: 2.5.0
       unstorage:
         specifier: 1.17.3
         version: 1.17.3(db0@0.3.4)(ioredis@5.8.2)
@@ -612,8 +612,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       unctx:
-        specifier: ^2.4.1
-        version: 2.4.1
+        specifier: ^2.5.0
+        version: 2.5.0
       unimport:
         specifier: 5.6.0
         version: 5.6.0
@@ -912,8 +912,8 @@ importers:
         specifier: 3.6.1
         version: 3.6.1(typescript@5.9.3)(vue-sfc-transformer@0.1.17(@vue/compiler-core@3.5.25)(esbuild@0.27.1)(vue@3.5.25(typescript@5.9.3)))(vue-tsc@3.1.8(typescript@5.9.3))(vue@3.5.25(typescript@5.9.3))
       unctx:
-        specifier: 2.4.1
-        version: 2.4.1
+        specifier: 2.5.0
+        version: 2.5.0
       unimport:
         specifier: 5.6.0
         version: 5.6.0
@@ -8020,6 +8020,9 @@ packages:
 
   unctx@2.4.1:
     resolution: {integrity: sha512-AbaYw0Nm4mK4qjhns67C+kgxR2YWiwlDBPzxrN8h8C6VtAdCgditAY5Dezu3IJy4XVqAnbrXt9oQJvsn3fyozg==}
+
+  unctx@2.5.0:
+    resolution: {integrity: sha512-p+Rz9x0R7X+CYDkT+Xg8/GhpcShTlU8n+cf9OtOEf7zEQsNcCZO1dPKNRDqvUTaq+P32PMMkxWHwfrxkqfqAYg==}
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
@@ -16194,6 +16197,13 @@ snapshots:
   uncrypto@0.1.3: {}
 
   unctx@2.4.1:
+    dependencies:
+      acorn: 8.15.0
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+      unplugin: 2.3.11
+
+  unctx@2.5.0:
     dependencies:
       acorn: 8.15.0
       estree-walker: 3.0.3
