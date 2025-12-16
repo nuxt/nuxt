@@ -137,7 +137,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
     // We use error to bypass full render if we have an early response we can make
-    if (ssrContext._renderResponse && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
+    // TODO: remove _renderResponse in nuxt v5
+    if ((ssrContext['~renderResponse'] || ssrContext._renderResponse) && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
@@ -146,13 +147,17 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   })
 
   // Render inline styles
-  const inlinedStyles = process.env.NUXT_INLINE_STYLES && !ssrContext._renderResponse && !isRenderingPayload
+  // TODO: remove _renderResponse in nuxt v5
+  const inlinedStyles = process.env.NUXT_INLINE_STYLES && !ssrContext['~renderResponse'] && !ssrContext._renderResponse && !isRenderingPayload
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
 
-  if (ssrContext._renderResponse) { return ssrContext._renderResponse }
+  if (ssrContext['~renderResponse'] || ssrContext._renderResponse) {
+    // TODO: remove _renderResponse in nuxt v5
+    return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
+  }
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
@@ -217,7 +222,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }, headEntryOptions)
   }
 
-  if (isAppManifestEnabled && ssrContext._preloadManifest && !NO_SCRIPTS) {
+  if (isAppManifestEnabled && ssrContext['~preloadManifest'] && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
         { rel: 'preload', as: 'fetch', fetchpriority: 'low', crossorigin: 'anonymous', href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) },
