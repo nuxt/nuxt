@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useRuntimeConfig } from './runtime-config'
+import { useRuntimeConfig } from './runtime-config.ts'
 
 const { useNuxt, klona } = vi.hoisted(() => ({ useNuxt: vi.fn(), klona: vi.fn() }))
 

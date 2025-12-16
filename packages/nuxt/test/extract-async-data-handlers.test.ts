@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ExtractAsyncDataHandlersPlugin } from '../src/core/plugins/extract-async-data-handlers'
-import { clean } from './utils'
+import { ExtractAsyncDataHandlersPlugin } from '../src/core/plugins/extract-async-data-handlers.ts'
+import { clean } from './utils.ts'
 
 describe('extract async data handlers plugin', () => {
   const defaultOptions = {

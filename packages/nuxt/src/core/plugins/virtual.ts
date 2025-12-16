@@ -78,16 +78,17 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
       },
     },
 
-    loadInclude (id) {
-      return PREFIX_RE.test(id) && withoutQuery(withoutPrefix(decodeURIComponent(id))) in nuxt.vfs
-    },
-
-    load (id) {
-      const key = withoutQuery(withoutPrefix(decodeURIComponent(id)))
-      return {
-        code: nuxt.vfs[key] || '',
-        map: null,
-      }
+    load: {
+      filter: {
+        id: PREFIX_RE,
+      },
+      handler (id) {
+        const key = withoutQuery(withoutPrefix(decodeURIComponent(id)))
+        return {
+          code: nuxt.vfs[key] || '',
+          map: null,
+        }
+      },
     },
   }
 })

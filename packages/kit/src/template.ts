@@ -10,18 +10,18 @@ import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
-import { distDirURL, filterInPlace } from './utils'
-import { directoryToURL } from './internal/esm'
-import { getDirectory } from './module/install'
-import { tryUseNuxt, useNuxt } from './context'
-import { resolveNuxtModule } from './resolve'
-import { getLayerDirectories } from './layers'
-import type { LayerDirectories } from './layers'
+import { distDirURL, filterInPlace } from './utils.ts'
+import { directoryToURL } from './internal/esm.ts'
+import { getDirectory } from './module/install.ts'
+import { tryUseNuxt, useNuxt } from './context.ts'
+import { resolveNuxtModule } from './resolve.ts'
+import { getLayerDirectories } from './layers.ts'
+import type { LayerDirectories } from './layers.ts'
 
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
  */
-export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
+export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
   // Normalize template
@@ -52,7 +52,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
 /**
  * Adds a virtual file that can be used within the Nuxt Nitro server build.
  */
-export function addServerTemplate (template: NuxtServerTemplate) {
+export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
   const nuxt = useNuxt()
 
   nuxt.options.nitro.virtual ||= {}
@@ -69,7 +69,7 @@ export function addServerTemplate (template: NuxtServerTemplate) {
  *
  * If no context object is passed, then it will only be added to the nuxt context.
  */
-export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean, node?: boolean, shared?: boolean }) {
+export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean, node?: boolean, shared?: boolean }): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -167,11 +167,20 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
  *
  * You can pass a filter within the options to selectively regenerate a subset of templates.
  */
-export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }) {
+export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }): Promise<void> {
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
-export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string) {
+interface LayerPaths {
+  nuxt: string[]
+  nitro: string[]
+  node: string[]
+  shared: string[]
+  sharedDeclarations: string[]
+  globalDeclarations: string[]
+}
+
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
@@ -218,7 +227,17 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
 const EXTENSION_RE = /\b(?:\.d\.[cm]?ts|\.\w+)$/g
 // Exclude bridge alias types to support Volar
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
-export async function _generateTypes (nuxt: Nuxt) {
+
+interface GenerateTypesReturn {
+  declaration: string
+  sharedTsConfig: TSConfig
+  sharedDeclaration: string
+  nodeTsConfig: TSConfig
+  nodeDeclaration: string
+  tsConfig: TSConfig
+  legacyTsConfig: TSConfig
+}
+export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> {
   const include = new Set<string>(['./nuxt.d.ts'])
   const nodeInclude = new Set<string>(['./nuxt.node.d.ts'])
   const sharedInclude = new Set<string>(['./nuxt.shared.d.ts'])
@@ -613,7 +632,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 }
 
-export async function writeTypes (nuxt: Nuxt) {
+export async function writeTypes (nuxt: Nuxt): Promise<void> {
   const { tsConfig, nodeTsConfig, nodeDeclaration, declaration, legacyTsConfig, sharedDeclaration, sharedTsConfig } = await _generateTypes(nuxt)
 
   const appTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.app.json')

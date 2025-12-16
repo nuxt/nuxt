@@ -5,9 +5,9 @@ import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import { defineEnv } from 'unenv'
 
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets } from '../utils/config'
-import { nuxt } from '../presets/nuxt'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets } from '../utils/config.ts'
+import { nuxt } from '../presets/nuxt.ts'
 import { TsCheckerPlugin, webpack } from '#builder'
 
 export async function client (ctx: WebpackConfigContext) {
