@@ -6,9 +6,9 @@ import { createUnimport, scanDirExports, toExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
-import { isDirectory, logger, resolveToAlias } from '../utils'
-import { TransformPlugin } from './transform'
-import { appCompatPresets, defaultPresets, experimentalPresets } from './presets'
+import { isDirectory, logger, resolveToAlias } from '../utils.ts'
+import { TransformPlugin } from './transform.ts'
+import { appCompatPresets, defaultPresets, experimentalPresets } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 const allNuxtPresets = [

@@ -1,3 +1,3 @@
-import './types/builder-env'
+import './types/builder-env/index.ts'
 
-export const builders = ['vite', 'webpack']
+export const builders = ['vite', 'webpack'] as const

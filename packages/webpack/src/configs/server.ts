@@ -1,9 +1,9 @@
 import { isAbsolute, resolve } from 'pathe'
 import { logger } from '@nuxt/kit'
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets } from '../utils/config'
-import { nuxt } from '../presets/nuxt'
-import { node } from '../presets/node'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets } from '../utils/config.ts'
+import { nuxt } from '../presets/nuxt.ts'
+import { node } from '../presets/node.ts'
 import { TsCheckerPlugin, webpack } from '#builder'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
