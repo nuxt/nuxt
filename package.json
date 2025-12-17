@@ -67,7 +67,7 @@
     "rollup": "4.53.4",
     "send": ">=1.2.1",
     "srvx": "0.9.8",
-    "@nuxt/test-utils": "https://pkg.pr.new/@nuxt/test-utils@f5e6f2e",
+    "@nuxt/test-utils": "https://pkg.pr.new/@nuxt/test-utils@c99eeec",
     "typescript": "5.9.3",
     "ufo": "1.6.1",
     "unbuild": "3.6.1",
