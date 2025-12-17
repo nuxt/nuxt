@@ -146,28 +146,10 @@ export function useFetch<
     watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
-  let controller: AbortController
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
+    const _$fetch: $Fetch<unknown, NitroFetchRequest> = opts.$fetch || $fetch
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
-    controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
-    controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
-
-    /**
-     * Workaround for `timeout` not working due to custom abort controller
-     * TODO: remove this when upstream issue is resolved
-     * @see https://github.com/unjs/ofetch/issues/326
-     * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
-     */
-    const timeoutLength = toValue(opts.timeout)
-    let timeoutId: NodeJS.Timeout
-    if (timeoutLength) {
-      timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
-      controller.signal.onabort = () => clearTimeout(timeoutId)
-    }
-
-    const _$fetch: $Fetch<unknown, NitroFetchRequest> = opts.$fetch || $fetch as $Fetch<unknown, NitroFetchRequest>
-
-    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
+    return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
