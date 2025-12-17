@@ -1,6 +1,5 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import destr from 'destr'
-import { $fetch } from 'ofetch'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
 import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
