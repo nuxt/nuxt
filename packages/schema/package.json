@@ -53,7 +53,7 @@
     "esbuild-loader": "4.4.0",
     "file-loader": "6.2.0",
     "h3": "2.0.1-rc.6",
-    "hookable": "6.0.0-rc.1",
+    "hookable": "5.5.3",
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.9.4",
     "nitro": "3.0.1-alpha.1",

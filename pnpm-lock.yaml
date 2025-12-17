@@ -344,8 +344,8 @@ importers:
         specifier: 7.7.1
         version: 7.7.1
       hookable:
-        specifier: 6.0.0-rc.1
-        version: 6.0.0-rc.1
+        specifier: ^5.5.3
+        version: 5.5.3
       nitro:
         specifier: https://pkg.pr.new/nitrojs/nitro@f360ffe
         version: https://pkg.pr.new/nitrojs/nitro@f360ffe(ioredis@5.8.2)(rolldown@1.0.0-beta.54)(rollup@4.53.4)(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
@@ -401,8 +401,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8
       hookable:
-        specifier: ^6.0.0-rc.1
-        version: 6.0.0-rc.1
+        specifier: ^5.5.3
+        version: 5.5.3
       impound:
         specifier: ^1.0.0
         version: 1.0.0
@@ -534,8 +534,8 @@ importers:
         specifier: 2.0.1-rc.6
         version: 2.0.1-rc.6(crossws@0.4.1(srvx@0.9.8))
       hookable:
-        specifier: ^6.0.0-rc.1
-        version: 6.0.0-rc.1
+        specifier: ^5.5.3
+        version: 5.5.3
       ignore:
         specifier: ^7.0.5
         version: 7.0.5
@@ -885,8 +885,8 @@ importers:
         specifier: 2.0.1-rc.6
         version: 2.0.1-rc.6(crossws@0.4.1(srvx@0.9.8))
       hookable:
-        specifier: 6.0.0-rc.1
-        version: 6.0.0-rc.1
+        specifier: 5.5.3
+        version: 5.5.3
       ignore:
         specifier: 7.0.5
         version: 7.0.5
@@ -2236,7 +2236,7 @@ packages:
     hasBin: true
 
   '@nuxt/test-utils@https://pkg.pr.new/@nuxt/test-utils@c99eeec':
-    resolution: {integrity: sha512-q2YWKkhgkqqEwE1pFa0M6JUa+L+GSZ65pOxrQMRhH8o2LJo6Sp/1l7mSatUSSMI4BnXr1To9mJ3sdaTMcnblJg==, tarball: https://pkg.pr.new/@nuxt/test-utils@c99eeec}
+    resolution: {tarball: https://pkg.pr.new/@nuxt/test-utils@c99eeec}
     version: 3.21.0
     engines: {node: ^20.11.1 || ^22.0.0 || >=24.0.0}
     peerDependencies:
@@ -5343,9 +5343,6 @@ packages:
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
-
-  hookable@6.0.0-rc.1:
-    resolution: {integrity: sha512-HTdlk761/7uL1OuzvMicnj5F5pGq+iITNCYuKVXakQGn95zyYl5b8u/t407RrU34Jv0vYMiqtkFXEJKHYSFViQ==}
 
   hosted-git-info@7.0.2:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
@@ -12730,8 +12727,6 @@ snapshots:
   highlight.js@10.7.3: {}
 
   hookable@5.5.3: {}
-
-  hookable@6.0.0-rc.1: {}
 
   hosted-git-info@7.0.2:
     dependencies:
