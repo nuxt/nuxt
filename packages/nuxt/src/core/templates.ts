@@ -9,8 +9,8 @@ import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import type { Nitro } from 'nitro/types'
 
-import { annotatePlugins, checkForCircularDependencies } from './app'
-import { EXTENSION_RE } from './utils'
+import { annotatePlugins, checkForCircularDependencies } from './app.ts'
+import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
 export const vueShim: NuxtTemplate = {

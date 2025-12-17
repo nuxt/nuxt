@@ -17,7 +17,7 @@ import { navigateTo } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 

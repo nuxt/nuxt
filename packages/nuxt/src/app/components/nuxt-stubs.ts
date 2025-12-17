@@ -1,6 +1,6 @@
 import { createError } from '../composables/error'
 
-function renderStubMessage (name: string) {
+function renderStubMessage (name: string): never {
   throw createError({
     fatal: true,
     status: 500,

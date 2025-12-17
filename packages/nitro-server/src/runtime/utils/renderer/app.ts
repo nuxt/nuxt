@@ -20,13 +20,13 @@ export function createSSRContext (event: H3Event): NuxtSSRContext {
     error: false,
     nuxt: undefined!, /* NuxtApp */
     payload: {},
-    _payloadReducers: Object.create(null),
+    ['~payloadReducers']: Object.create(null),
     modules: new Set(),
   }
 
   if (import.meta.prerender) {
     if (process.env.NUXT_SHARED_DATA) {
-      ssrContext._sharedPrerenderCache = sharedPrerenderCache!
+      ssrContext['~sharedPrerenderCache'] = sharedPrerenderCache!
     }
     ssrContext.payload.prerenderedAt = Date.now()
   }

@@ -1,7 +1,7 @@
 import type { Connect, Plugin, ServerOptions } from 'vite'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
-import defu from 'defu'
+import { defu } from 'defu'
 import { HTTPError, defineEventHandler, defineLazyEventHandler, handleCors } from 'h3'
 import { useNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'

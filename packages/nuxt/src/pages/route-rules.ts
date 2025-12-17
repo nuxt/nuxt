@@ -1,7 +1,7 @@
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitro/types'
 
-import { pathToNitroGlob } from './utils'
+import { pathToNitroGlob } from './utils.ts'
 
 export function globRouteRulesFromPages (pages: NuxtPage[], paths = {} as { [glob: string]: NitroRouteConfig }, prefix = '') {
   for (const page of pages) {

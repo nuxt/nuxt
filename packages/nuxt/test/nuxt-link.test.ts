@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import { withQuery } from 'ufo'
-import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
-import { defineNuxtLink } from '../src/app/components/nuxt-link'
-import { useRuntimeConfig } from '../src/app/nuxt'
+import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link.ts'
+import { defineNuxtLink } from '../src/app/components/nuxt-link.ts'
+import { useRuntimeConfig } from '../src/app/nuxt.ts'
 
 // mocks `useRuntimeConfig()`
 vi.mock('../src/app/nuxt', () => ({

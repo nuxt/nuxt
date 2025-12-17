@@ -23,8 +23,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const [clientStats, clientStatsInlined] = await Promise.all((['.output', '.output-inline'])
       .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))))
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"113k"`)
-    expect.soft(roundToKilobytes(clientStatsInlined!.totalBytes)).toMatchInlineSnapshot(`"113k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"116k"`)
+    expect.soft(roundToKilobytes(clientStatsInlined!.totalBytes)).toMatchInlineSnapshot(`"116k"`)
 
     const files = new Set([...clientStats!.files, ...clientStatsInlined!.files].map(f => f.replace(/\..*\.js/, '.js')))
 
@@ -38,7 +38,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'))
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"173k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"177k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -58,99 +58,48 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"184k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"1571k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1446k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
       .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
       .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "@babel/parser",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
-        "devalue",
-        "entities",
-        "estree-walker",
-        "hookable",
-        "radix3",
-        "source-map-js",
-        "ufo",
-        "unhead",
-        "vue",
-        "vue-bundle-renderer",
-      ]
-    `)
+    expect(packages).toMatchInlineSnapshot(`[]`)
   })
 
   it('default server bundle size (inlined vue modules)', async () => {
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"546k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"593k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"106k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
       .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
       .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "devalue",
-        "hookable",
-        "radix3",
-        "unhead",
-      ]
-    `)
+    expect(packages).toMatchInlineSnapshot(`[]`)
   })
 
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"274k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"1681k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1457k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
       .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
       .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "@babel/parser",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
-        "devalue",
-        "entities",
-        "estree-walker",
-        "hookable",
-        "radix3",
-        "source-map-js",
-        "ufo",
-        "unhead",
-        "vue",
-        "vue-bundle-renderer",
-      ]
-    `)
+    expect(packages).toMatchInlineSnapshot(`[]`)
   })
 })
 

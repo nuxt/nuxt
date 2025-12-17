@@ -6,9 +6,9 @@ import type { SchemaDefinition } from 'untyped'
 import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
-import type { ConfigSchema } from './schema'
-import type { Nuxt } from './nuxt'
-import type { AppHeadMetaObject } from './head'
+import type { ConfigSchema } from './schema.ts'
+import type { Nuxt } from './nuxt.ts'
+import type { AppHeadMetaObject } from './head.ts'
 
 export type { SchemaDefinition } from 'untyped'
 
@@ -17,7 +17,7 @@ type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? {
 
 export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
 
-const message = Symbol('message')
+const message: symbol = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
 type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
   [K in keyof T]?: K extends string
