@@ -1,10 +1,11 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 import type { NuxtPayload } from 'nuxt/app'
-
 import { useRuntimeConfig } from 'nitro/runtime-config'
-import { isJsonRequest } from '../utils/error'
 import type { H3Event } from 'nitro/h3'
+import { serverFetch } from 'nitro'
+
+import { isJsonRequest } from '../utils/error'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
@@ -56,11 +57,16 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   // HTML response (via SSR)
-  const res = !isRenderingError && await fetch(
+  const res = !isRenderingError && await serverFetch(
     withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject),
     {
       headers: event.req.headers,
       redirect: 'manual',
+    },
+    {
+      nuxt: {
+        '~internal': true,
+      },
     },
   ).catch(() => null)
 

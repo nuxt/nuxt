@@ -67,11 +67,10 @@ let entryPath: string
 export default defineEventHandler(async (event) => {
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
-    ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
+    ? getQuery<NuxtPayload['error'] & { url: string }>(event)
     : null
 
-  // TODO: add special case
-  if (ssrError && !!event.runtime /* allow internal fetch */) {
+  if (ssrError && !event.context.nuxt?.['~internal'] /* allow internal fetch */) {
     throw new HTTPError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
@@ -349,8 +348,10 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 declare module 'srvx' {
   interface ServerRequestContext {
     nuxt?: {
-      appConfig?: AppConfig
-      noSSR?: boolean
+      'appConfig'?: AppConfig
+      'noSSR'?: boolean
+      /** @internal */
+      '~internal'?: boolean
     }
   }
 }
