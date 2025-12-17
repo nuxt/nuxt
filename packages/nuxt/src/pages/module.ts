@@ -675,7 +675,10 @@ if (import.meta.hot) {
       router.isReady().then(() => {
         // Resolve the current path against the new routes to get updated meta
         const newRoute = router.resolve(router.currentRoute.value.fullPath)
-        // Patch meta directly (avoids navigation which causes errors with top-level await)
+        // Clear old meta values and assign new ones
+        for (const key of Object.keys(router.currentRoute.value.meta)) {
+          delete router.currentRoute.value.meta[key]
+        }
         Object.assign(router.currentRoute.value.meta, newRoute.meta)
       })
     }
