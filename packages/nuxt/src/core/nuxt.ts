@@ -256,7 +256,6 @@ async function initNuxt (nuxt: Nuxt) {
 
     // Add module augmentations directly to NuxtConfig
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/modules.d.ts') })
-    opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/disabled-modules.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
@@ -460,10 +459,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Init user modules
   await nuxt.callHook('modules:before')
 
-  const { paths: watchedModulePaths, resolvedModulePaths, modules, layerModuleNames } = await resolveModules(nuxt)
-
-  // Store layer module names for type generation
-  nuxt.options._layerModules = layerModuleNames
+  const { paths: watchedModulePaths, resolvedModulePaths, modules } = await resolveModules(nuxt)
 
   nuxt.options.watch.push(...watchedModulePaths)
 
@@ -924,29 +920,10 @@ async function resolveModules (nuxt: Nuxt) {
   const paths = new Set<string>()
   const resolvedModulePaths = new Set<string>()
 
-  // Get disabled modules from config
-  const disabledModules = new Set(nuxt.options.disabledModules || [])
-  const matchedDisabledModules = new Set<string>()
-
-  // Track all layer module names for type generation
-  const layerModuleNames = new Set<string>()
-
-  // Helper to check if a module is disabled
-  const isModuleDisabled = (moduleName: string | NuxtModule): boolean => {
-    if (typeof moduleName !== 'string') {
-      return false
-    }
-    if (disabledModules.has(moduleName)) {
-      matchedDisabledModules.add(moduleName)
-      return true
-    }
-    return false
-  }
-
   // Loop layers in reverse order, so that the extends are loaded first and project is the last
   const configs = nuxt.options._layers.map(layer => layer.config).reverse()
   for (const config of configs) {
-    // Skip disabled modules check for the root project (last in the reversed array)
+    // Check if this is the root project (modules from root project cannot be disabled)
     const isRootProject = config.rootDir === nuxt.options.rootDir
 
     // First register modules defined in layer's config
@@ -954,15 +931,12 @@ async function resolveModules (nuxt: Nuxt) {
     for (const module of definedModules) {
       const resolvedModule = resolveModuleWithOptions(module, nuxt)
       if (resolvedModule && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
-        // Track layer module names (for non-root layers)
-        if (!isRootProject && typeof resolvedModule.module === 'string') {
-          layerModuleNames.add(resolvedModule.module)
-        }
-        // Check if module is disabled (only for non-root layers)
-        if (!isRootProject && isModuleDisabled(resolvedModule.module)) {
-          continue
-        }
-        modules.set(resolvedModule.module, resolvedModule.options)
+        // Mark modules from layers (non-root) so they can be disabled later
+        // The actual disabled check happens in installModules after loading metadata
+        modules.set(resolvedModule.module, {
+          ...resolvedModule.options,
+          _fromLayer: !isRootProject || undefined,
+        })
         const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
@@ -981,26 +955,9 @@ async function resolveModules (nuxt: Nuxt) {
       // add path to watch
       paths.add(module)
 
-      // Track layer module names (for non-root layers)
-      if (!isRootProject) {
-        layerModuleNames.add(module)
-      }
-
-      // Check if module is disabled (only for non-root layers)
-      if (!isRootProject && isModuleDisabled(module)) {
-        continue
-      }
-
       if (!modules.has(module)) {
-        modules.set(module, {})
+        modules.set(module, { _fromLayer: !isRootProject || undefined })
       }
-    }
-  }
-
-  // Warn about disabled modules that were not found in any layer
-  for (const disabledModule of disabledModules) {
-    if (!matchedDisabledModules.has(disabledModule)) {
-      consola.warn(`Disabled module \`${disabledModule}\` was not found in any layer.`)
     }
   }
 
@@ -1010,10 +967,6 @@ async function resolveModules (nuxt: Nuxt) {
       const resolvedModule = resolveModuleWithOptions(module, nuxt)
 
       if (resolvedModule && !modules.has(resolvedModule.module) && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
-        // Skip modules that are both disabled AND from layers (not root project modules)
-        if (typeof resolvedModule.module === 'string' && isModuleDisabled(resolvedModule.module) && layerModuleNames.has(resolvedModule.module)) {
-          continue
-        }
         modules.set(resolvedModule.module, resolvedModule.options)
         const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
@@ -1027,7 +980,6 @@ async function resolveModules (nuxt: Nuxt) {
     paths,
     resolvedModulePaths,
     modules,
-    layerModuleNames: [...layerModuleNames],
   }
 }
 

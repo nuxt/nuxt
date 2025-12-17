@@ -1,25 +1,13 @@
 import { fileURLToPath } from 'node:url'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { join, normalize } from 'pathe'
+import { describe, expect, it } from 'vitest'
+import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import consola from 'consola'
 import { loadNuxt } from '../src'
 
 const fixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./disabled-modules-fixture', import.meta.url))))
-const layerDir = join(fixtureDir, 'layers/base')
 
-const consolaWarn = vi.spyOn(consola, 'warn')
-
-beforeEach(() => {
-  consolaWarn.mockClear()
-})
-
-afterEach(() => {
-  vi.clearAllMocks()
-})
-
-describe('disabledModules', () => {
-  it('loads all modules when disabledModules is not set', async () => {
+describe('disable modules with false', () => {
+  it('loads all modules when no module is disabled', async () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
     })
@@ -29,18 +17,24 @@ describe('disabledModules', () => {
       .map(m => m.meta.name ?? m.module.name)
       .filter(name => name?.startsWith('layer-module') || name?.startsWith('project-module'))
 
+    // All modules should be installed
     expect(moduleNames).toContain('layer-module-a')
     expect(moduleNames).toContain('layer-module-b')
     expect(moduleNames).toContain('layer-module-c')
     expect(moduleNames).toContain('project-module')
+
+    // All module setups should have run
+    expect(nuxt.options.appConfig.layerModuleA).toBe(true)
+    expect(nuxt.options.appConfig.layerModuleB).toBe(true)
+    expect(nuxt.options.appConfig.layerModuleC).toBe(true)
   })
 
-  it('disables a single module from layer', async () => {
+  it('disables a single module from layer with configKey: false', async () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
       overrides: {
-        disabledModules: [`${layerDir}/layer-module-a`],
-      },
+        'layer-module-a': false,
+      } as Record<string, unknown>,
     })
     await nuxt.close()
 
@@ -48,18 +42,26 @@ describe('disabledModules', () => {
       .map(m => m.meta.name ?? m.module.name)
       .filter(name => name?.startsWith('layer-module') || name?.startsWith('project-module'))
 
-    expect(moduleNames).not.toContain('layer-module-a')
+    // Module is still registered (for type generation)
+    expect(moduleNames).toContain('layer-module-a')
     expect(moduleNames).toContain('layer-module-b')
     expect(moduleNames).toContain('layer-module-c')
     expect(moduleNames).toContain('project-module')
+
+    // But disabled module's setup was NOT executed
+    expect(nuxt.options.appConfig.layerModuleA).toBeUndefined()
+    // Other modules' setup should have run
+    expect(nuxt.options.appConfig.layerModuleB).toBe(true)
+    expect(nuxt.options.appConfig.layerModuleC).toBe(true)
   })
 
   it('disables multiple modules from layer', async () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
       overrides: {
-        disabledModules: [`${layerDir}/layer-module-a`, `${layerDir}/layer-module-c`],
-      },
+        'layer-module-a': false,
+        'layer-module-c': false,
+      } as Record<string, unknown>,
     })
     await nuxt.close()
 
@@ -67,18 +69,26 @@ describe('disabledModules', () => {
       .map(m => m.meta.name ?? m.module.name)
       .filter(name => name?.startsWith('layer-module') || name?.startsWith('project-module'))
 
-    expect(moduleNames).not.toContain('layer-module-a')
+    // All modules are still registered (for type generation)
+    expect(moduleNames).toContain('layer-module-a')
     expect(moduleNames).toContain('layer-module-b')
-    expect(moduleNames).not.toContain('layer-module-c')
+    expect(moduleNames).toContain('layer-module-c')
     expect(moduleNames).toContain('project-module')
+
+    // But disabled modules' setup was NOT executed
+    expect(nuxt.options.appConfig.layerModuleA).toBeUndefined()
+    expect(nuxt.options.appConfig.layerModuleC).toBeUndefined()
+    // Other modules' setup should have run
+    expect(nuxt.options.appConfig.layerModuleB).toBe(true)
   })
 
   it('does not disable root project modules', async () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
       overrides: {
-        disabledModules: [`${fixtureDir}/project-module`],
-      },
+        // This should NOT disable the project module since it's in the root project
+        'project-module': false,
+      } as Record<string, unknown>,
     })
     await nuxt.close()
 
@@ -86,53 +96,18 @@ describe('disabledModules', () => {
       .map(m => m.meta.name ?? m.module.name)
       .filter(name => name?.startsWith('layer-module') || name?.startsWith('project-module'))
 
-    // Project module should still be installed (root project modules are not disabled)
+    // Project module should still be installed and executed (root project modules are not disabled)
     expect(moduleNames).toContain('project-module')
-    // Warn about the module not found in layers
-    expect(consolaWarn).toHaveBeenCalledWith(
-      expect.stringContaining('project-module'),
-    )
   })
 
-  it('warns when disabled module is not found in any layer', async () => {
+  it('disables all modules from layer when all are set to false', async () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
       overrides: {
-        disabledModules: ['non-existent-module'],
-      },
-    })
-    await nuxt.close()
-
-    expect(consolaWarn).toHaveBeenCalledWith(
-      expect.stringContaining('non-existent-module'),
-    )
-  })
-
-  it('populates _layerModules with module names from layers', async () => {
-    const nuxt = await loadNuxt({
-      cwd: fixtureDir,
-    })
-    await nuxt.close()
-
-    // Check that layer modules are in _layerModules (absolute paths)
-    const layerModules = nuxt.options._layerModules
-    expect(layerModules.some(m => m.includes('layer-module-a'))).toBe(true)
-    expect(layerModules.some(m => m.includes('layer-module-b'))).toBe(true)
-    expect(layerModules.some(m => m.includes('layer-module-c'))).toBe(true)
-    // Project modules should not be in _layerModules
-    expect(layerModules.some(m => m.includes('project-module'))).toBe(false)
-  })
-
-  it('disables all modules from layer when all are listed', async () => {
-    const nuxt = await loadNuxt({
-      cwd: fixtureDir,
-      overrides: {
-        disabledModules: [
-          `${layerDir}/layer-module-a`,
-          `${layerDir}/layer-module-b`,
-          `${layerDir}/layer-module-c`,
-        ],
-      },
+        'layer-module-a': false,
+        'layer-module-b': false,
+        'layer-module-c': false,
+      } as Record<string, unknown>,
     })
     await nuxt.close()
 
@@ -140,9 +115,15 @@ describe('disabledModules', () => {
       .map(m => m.meta.name ?? m.module.name)
       .filter(name => name?.startsWith('layer-module') || name?.startsWith('project-module'))
 
-    expect(moduleNames).not.toContain('layer-module-a')
-    expect(moduleNames).not.toContain('layer-module-b')
-    expect(moduleNames).not.toContain('layer-module-c')
+    // All modules are still registered (for type generation)
+    expect(moduleNames).toContain('layer-module-a')
+    expect(moduleNames).toContain('layer-module-b')
+    expect(moduleNames).toContain('layer-module-c')
     expect(moduleNames).toContain('project-module')
+
+    // But all disabled modules' setup was NOT executed
+    expect(nuxt.options.appConfig.layerModuleA).toBeUndefined()
+    expect(nuxt.options.appConfig.layerModuleB).toBeUndefined()
+    expect(nuxt.options.appConfig.layerModuleC).toBeUndefined()
   })
 })

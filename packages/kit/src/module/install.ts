@@ -124,8 +124,17 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   }
 
   for (const { nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
-    // Merge options
     const configKey = meta?.configKey as keyof NuxtOptions | undefined
+
+    // Check if module is from a layer and should be disabled
+    const isFromLayer = inlineOptions?._fromLayer === true
+    const configValue = configKey ? (nuxt.options)[configKey as keyof NuxtOptions] : undefined
+    const isDisabled = isFromLayer && configKey && configValue === false
+
+    // Remove internal _fromLayer flag from options before passing to module
+    delete inlineOptions._fromLayer
+
+    // Merge options
     const optionsFns = [
       ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
       ...meta?.name ? nuxt._moduleOptionsFunctions.get(meta.name) || [] : [],
@@ -145,8 +154,8 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
     }
 
-    await callLifecycleHooks(nuxtModule, meta, inlineOptions, nuxt)
-    await callModule(nuxtModule, meta, inlineOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt)
+    await callLifecycleHooks(nuxtModule, meta, inlineOptions, nuxt, isDisabled)
+    await callModule(nuxtModule, meta, inlineOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt, isDisabled)
   }
 
   // clean up merging options
@@ -310,7 +319,10 @@ export const normalizeModuleTranspilePath = (p: string) => {
 
 const MissingModuleMatcher = /Cannot find module\s+['"]?([^'")\s]+)['"]?/i
 
-async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt()) {
+async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt(), isDisabled = false) {
+  if (isDisabled) {
+    return
+  }
   if (!meta.name || !meta.version) {
     return
   }
@@ -340,32 +352,15 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   }
 }
 
-async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions: Record<string, unknown> | undefined, resolvedModulePath: string | undefined, moduleToInstall: ModuleToInstall, localLayerModuleDirs: string[], buildTimeModuleMeta: ModuleMeta, nuxt = useNuxt()) {
-  const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
-    ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
-    : await nuxtModule(inlineOptions || {}, nuxt) ?? {}
-  if (res === false /* setup aborted */) {
-    return
-  }
-
-  const modulePath = resolvedModulePath || moduleToInstall
-  let entryPath: string | undefined
-  if (typeof modulePath === 'string') {
-    const parsed = parseNodeModulePath(modulePath)
-    if (parsed.name) {
-      const subpath = await lookupNodeModuleSubpath(modulePath) || '.'
-      entryPath = join(parsed.name, subpath === './' ? '.' : subpath)
-    }
-    const moduleRoot = parsed.dir
-      ? parsed.dir + parsed.name
-      : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
-    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-    const directory = moduleRoot.replace(/\/?$/, '/')
-    if (moduleRoot !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
-      nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
-    }
-  }
-
+function registerInstalledModule (
+  nuxtModule: NuxtModule<any, Partial<any>, false>,
+  meta: ModuleMeta,
+  moduleToInstall: ModuleToInstall,
+  buildTimeModuleMeta: ModuleMeta,
+  entryPath: string | undefined,
+  nuxt: Nuxt,
+  timings?: Record<string, number | undefined>,
+) {
   nuxt.options._installedModules ||= []
   entryPath ||= typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall, nuxt.options.alias) : undefined
 
@@ -376,7 +371,50 @@ async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, met
   nuxt.options._installedModules.push({
     meta: defu(meta, buildTimeModuleMeta),
     module: nuxtModule,
-    timings: res.timings,
+    timings,
     entryPath,
   })
+}
+
+async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions: Record<string, unknown> | undefined, resolvedModulePath: string | undefined, moduleToInstall: ModuleToInstall, localLayerModuleDirs: string[], buildTimeModuleMeta: ModuleMeta, nuxt = useNuxt(), isDisabled?: boolean) {
+  const modulePath = resolvedModulePath || moduleToInstall
+  let entryPath: string | undefined
+  let parsed: ReturnType<typeof parseNodeModulePath> | undefined
+
+  // Parse module path and calculate entryPath
+  if (typeof modulePath === 'string') {
+    parsed = parseNodeModulePath(modulePath)
+    if (parsed.name) {
+      const subpath = await lookupNodeModuleSubpath(modulePath) || '.'
+      entryPath = join(parsed.name, subpath === './' ? '.' : subpath)
+    }
+  }
+
+  // Disabled modules register without executing
+  if (isDisabled) {
+    registerInstalledModule(nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, entryPath, nuxt)
+    return
+  }
+
+  // Execute enabled module
+  const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
+    ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
+    : await nuxtModule(inlineOptions || {}, nuxt) ?? {}
+  if (res === false /* setup aborted */) {
+    return
+  }
+
+  // Setup transpile and modulesDir for enabled modules
+  if (typeof modulePath === 'string' && parsed) {
+    const moduleRoot = parsed.dir
+      ? parsed.dir + parsed.name
+      : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
+    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
+    const directory = moduleRoot.replace(/\/?$/, '/')
+    if (moduleRoot !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
+      nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
+    }
+  }
+
+  registerInstalledModule(nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, entryPath, nuxt, res.timings)
 }
