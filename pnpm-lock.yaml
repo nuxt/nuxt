@@ -400,9 +400,6 @@ importers:
       exsolve:
         specifier: ^1.0.8
         version: 1.0.8
-      hookable:
-        specifier: ^5.5.3
-        version: 5.5.3
       impound:
         specifier: ^1.0.0
         version: 1.0.0
@@ -452,6 +449,9 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      hookable:
+        specifier: ^6.0.0-rc.1
+        version: 6.0.0-rc.1
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -5343,6 +5343,9 @@ packages:
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+
+  hookable@6.0.0-rc.1:
+    resolution: {integrity: sha512-HTdlk761/7uL1OuzvMicnj5F5pGq+iITNCYuKVXakQGn95zyYl5b8u/t407RrU34Jv0vYMiqtkFXEJKHYSFViQ==}
 
   hosted-git-info@7.0.2:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
@@ -12727,6 +12730,8 @@ snapshots:
   highlight.js@10.7.3: {}
 
   hookable@5.5.3: {}
+
+  hookable@6.0.0-rc.1: {}
 
   hosted-git-info@7.0.2:
     dependencies:

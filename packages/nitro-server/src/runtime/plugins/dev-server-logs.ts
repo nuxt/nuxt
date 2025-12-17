@@ -5,7 +5,7 @@ import { stringify } from 'devalue'
 import { withTrailingSlash } from 'ufo'
 import { toRequest } from 'nitro/h3'
 import { definePlugin } from 'nitro'
-import { HookableCore } from 'hookable'
+import { useNitroHooks } from 'nitro/app'
 import { getContext } from 'unctx'
 import type { ServerRequest } from 'srvx'
 import { captureRawStackTrace, parseRawStackTrace } from 'errx'
@@ -71,8 +71,7 @@ export default definePlugin((nitroApp) => {
     ctx.logs.push(log)
   })
 
-  // TODO: use useNitroHooks when fixed upstream in nitro
-  const nitroHooks = nitroApp.hooks ||= new HookableCore()
+  const nitroHooks = useNitroHooks()
 
   nitroHooks.hook('response', () => {
     const ctx = asyncContext.tryUse()
@@ -83,6 +82,7 @@ export default definePlugin((nitroApp) => {
   })
 
   // Pass any logs to the client
+  // @ts-expect-error will be fixed when we move to hookable v6
   nitroHooks.hook('render:html', (htmlContext) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }

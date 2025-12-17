@@ -35,7 +35,6 @@
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
     "impound": "^1.0.0",
-    "hookable": "^5.5.3",
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",
     "nitro": "^3.0.1-alpha.1",
@@ -56,6 +55,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
+    "hookable": "^6.0.0-rc.1",
     "nuxt": "workspace:*",
     "unbuild": "3.6.1",
     "vitest": "3.2.4"
