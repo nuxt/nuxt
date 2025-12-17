@@ -1,6 +1,5 @@
 import type { H3Event } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
-import { $fetch } from 'ofetch'
 import type { $Fetch } from 'nitro/types'
 
 import type { NuxtApp } from '../nuxt'

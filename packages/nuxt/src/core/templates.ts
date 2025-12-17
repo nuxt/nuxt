@@ -494,7 +494,24 @@ if (!("global" in globalThis)) {
 }
 
 export const dollarFetchTemplate: NuxtTemplate = {
-  filename: 'fetch.mjs',
+  filename: 'fetch.server.mjs',
+  getContents () {
+    return [
+      'import { $fetch } from \'ofetch\'',
+      'import { baseURL } from \'#internal/nuxt/paths\'',
+      'import { serverFetch } from "nitro";',
+      'globalThis.fetch = serverFetch',
+      'if (!globalThis.$fetch) {',
+      '  globalThis.$fetch = $fetch.create({',
+      '    baseURL: baseURL()',
+      '  })',
+      '}',
+    ].join('\n')
+  },
+}
+
+export const dollarFetchClientTemplate: NuxtTemplate = {
+  filename: 'fetch.client.mjs',
   getContents () {
     return [
       'import { $fetch } from \'ofetch\'',

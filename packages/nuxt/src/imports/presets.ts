@@ -10,10 +10,6 @@ const commonPresets: InlinePreset[] = [
       'isVue3',
     ],
   }),
-  defineUnimportPreset({
-    from: 'ofetch',
-    imports: ['$fetch'],
-  }),
 ]
 
 const granularAppPresets: InlinePreset[] = [

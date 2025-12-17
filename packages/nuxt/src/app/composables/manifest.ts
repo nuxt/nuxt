@@ -2,7 +2,6 @@ import type { MatcherExport, RouteMatcher } from 'radix3'
 import { createMatcherFromExport, createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
 import type { H3Event } from 'h3'
-import { $fetch } from 'ofetch'
 import type { NitroRouteRules } from 'nitro/types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
