@@ -8,8 +8,8 @@ import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { IS_CSS_RE, isCSS, isVue } from '../utils'
-import { resolveClientEntry } from '../utils/config'
+import { IS_CSS_RE, isCSS, isVue } from '../utils/index.ts'
+import { resolveClientEntry } from '../utils/config.ts'
 import { useNitro } from '@nuxt/kit'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
@@ -98,13 +98,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               return
             }
 
-            if (id === '#build/css' || id.endsWith('.vue') || isCSS(id)) {
-              const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
-              if (res) {
-                return {
-                  ...res,
-                  moduleSideEffects: false,
-                }
+            const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
+            if (res) {
+              return {
+                ...res,
+                moduleSideEffects: false,
               }
             }
           },

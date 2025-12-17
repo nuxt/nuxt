@@ -13,7 +13,7 @@ import { appId, multiApp } from '#internal/nuxt.config.mjs'
 export function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   return {
     body: process.env.NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
+      ? stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
@@ -25,7 +25,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext) {
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
+  const contents = opts.data ? stringify(opts.data, opts.ssrContext['~payloadReducers']) : ''
   const payload: Script = {
     'type': 'application/json',
     'innerHTML': contents,

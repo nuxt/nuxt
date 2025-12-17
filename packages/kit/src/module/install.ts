@@ -10,11 +10,11 @@ import { isRelative } from 'ufo'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { read as readRc, update as updateRc } from 'rc9'
 import semver from 'semver'
-import { directoryToURL } from '../internal/esm'
-import { useNuxt } from '../context'
-import { resolveAlias } from '../resolve'
-import { logger } from '../logger'
-import { getLayerDirectories } from '../layers'
+import { directoryToURL } from '../internal/esm.ts'
+import { useNuxt } from '../context.ts'
+import { resolveAlias } from '../resolve.ts'
+import { logger } from '../logger.ts'
+import { getLayerDirectories } from '../layers.ts'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 

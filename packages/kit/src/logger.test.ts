@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { consola } from 'consola'
-import { logger, useLogger } from './logger'
+import { logger, useLogger } from './logger.ts'
 
 vi.mock('consola', () => {
   const logger = {} as any
