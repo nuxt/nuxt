@@ -88,10 +88,10 @@ describe('useAsyncData', () => {
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
-    expect(error.value).toMatchInlineSnapshot('[Error: test]')
+    expect(error.value).toMatchInlineSnapshot('[HTTPError: test]')
     expect(status.value).toBe('error')
     expect(pending.value).toBe(false)
-    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[Error: test]')
+    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[HTTPError: test]')
 
     const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData(uniqueKey, () => ({} as any), { immediate: false })
 
