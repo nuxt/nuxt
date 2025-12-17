@@ -20,7 +20,7 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
-import { inlineRouteRulesPresets, pagesImportPresets } from '../imports/presets'
+import { inlineRouteRulesPresets, pagesImportPresets } from '../imports/presets.ts'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
