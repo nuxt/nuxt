@@ -48,7 +48,7 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
   if (import.meta.server) {
-    useNuxtApp().ssrContext!._preloadManifest = true
+    useNuxtApp().ssrContext!['~preloadManifest'] = true
   }
   return manifest || fetchManifest()
 }
@@ -61,7 +61,7 @@ export async function getRouteRules (url: string): Promise<Record<string, any>>
 export async function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : arg.path
   if (import.meta.server) {
-    useNuxtApp().ssrContext!._preloadManifest = true
+    useNuxtApp().ssrContext!['~preloadManifest'] = true
     const _routeRulesMatcher = toRouteMatcher(
       createRadixRouter({ routes: useRuntimeConfig().nitro!.routeRules }),
     )

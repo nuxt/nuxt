@@ -76,16 +76,16 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */
-  _renderResponse?: Partial<RenderResponse>
+  ['~renderResponse']?: Partial<RenderResponse>
   /** @internal */
-  _payloadReducers: Record<string, (data: any) => any>
+  ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */
-  _sharedPrerenderCache?: {
+  ['~sharedPrerenderCache']?: {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
   /** @internal */
-  _preloadManifest?: boolean
+  ['~preloadManifest']?: boolean
 }
 
 export interface NuxtPayload {

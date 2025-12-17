@@ -203,7 +203,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         const encodedLoc = location.replace(URL_QUOTE_RE, '%22')
         const encodedHeader = encodeURL(location, isExternalHost)
 
-        nuxtApp.ssrContext!._renderResponse = {
+        nuxtApp.ssrContext!['~renderResponse'] = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
           headers: { location: encodedHeader },

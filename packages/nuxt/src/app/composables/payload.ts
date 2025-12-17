@@ -153,7 +153,7 @@ export function definePayloadReducer (
   reduce: (data: any) => any,
 ) {
   if (import.meta.server) {
-    useNuxtApp().ssrContext!._payloadReducers[name] = reduce
+    useNuxtApp().ssrContext!['~payloadReducers'][name] = reduce
   }
 }
 
