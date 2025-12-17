@@ -91,7 +91,7 @@
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
     "h3": "^1.15.4",
-    "hookable": "^5.5.3",
+    "hookable": "^6.0.0-rc.1",
     "ignore": "^7.0.5",
     "impound": "^1.0.0",
     "jiti": "^2.6.1",
