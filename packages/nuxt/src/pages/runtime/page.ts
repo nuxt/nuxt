@@ -142,8 +142,10 @@ export default defineComponent({
               const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
               if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
                 nextTick(() => {
-                  pageLoadingEndHookAlreadyCalled = true
-                  nuxtApp.callHook('page:loading:end')
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    pageLoadingEndHookAlreadyCalled = true
+                    nuxtApp.callHook('page:loading:end')
+                  }
                 })
               }
 

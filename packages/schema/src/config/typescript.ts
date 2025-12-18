@@ -42,6 +42,7 @@ export default defineResolvers({
           'h3',
           'consola',
           'ofetch',
+          'crossws',
           // Key nuxt dependencies
           '@unhead/vue',
           '@nuxt/devtools',
