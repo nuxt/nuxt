@@ -2833,7 +2833,8 @@ describe('teleports', () => {
 })
 
 describe('experimental', () => {
-  it('decorators support works', async () => {
+  // TODO: not supported by oxc yet: https://github.com/oxc-project/oxc/issues/9170
+  it.fails('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
     expect(html).toContain('decorated-decorated')
     expectNoClientErrors('/experimental/decorators')
