@@ -53,7 +53,7 @@
     "@nuxt/schema": "workspace:*",
     "@rspack/core": "1.6.7",
     "@types/semver": "7.7.1",
-    "hookable": "6.0.0-rc.1",
+    "hookable": "6.0.0",
     "nitropack": "2.12.9",
     "unbuild": "3.6.1",
     "unimport": "5.6.0",
