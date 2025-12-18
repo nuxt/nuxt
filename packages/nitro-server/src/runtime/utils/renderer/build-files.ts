@@ -9,6 +9,8 @@ import { useRuntimeConfig } from 'nitro/runtime-config'
 import type { NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
+import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
+// @ts-expect-error virtual file
 import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
@@ -125,7 +127,7 @@ function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
 }
 
 export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
-  return (process.env.NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
+  return (NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
 }
 
 // @ts-expect-error file will be produced after app build
