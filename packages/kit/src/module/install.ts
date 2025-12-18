@@ -123,16 +123,15 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     throw error
   }
 
+  // config keys that accept `false` as a valid config value or are known to handle disabling internally
+  const ignoredConfigKeys = new Set(['pages', 'components', 'devtools'])
+
   for (const { nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
     const configKey = meta?.configKey as keyof NuxtOptions | undefined
 
-    // Check if module is from a layer and should be disabled
-    const isFromLayer = inlineOptions?._fromLayer === true
+    // Check if module should be disabled
     const configValue = configKey ? (nuxt.options)[configKey as keyof NuxtOptions] : undefined
-    const isDisabled = isFromLayer && configKey && configValue === false
-
-    // Remove internal _fromLayer flag from options before passing to module
-    delete inlineOptions._fromLayer
+    const isDisabled = configKey && configValue === false && !ignoredConfigKeys.has(configKey)
 
     // Merge options
     const optionsFns = [

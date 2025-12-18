@@ -29,7 +29,7 @@ describe('disable modules with false', () => {
     expect(nuxt.options.appConfig.layerModuleC).toBe(true)
   })
 
-  it('disables a single module from layer with configKey: false', async () => {
+  it('disables a single module from layer', async () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
       overrides: {
@@ -82,11 +82,10 @@ describe('disable modules with false', () => {
     expect(nuxt.options.appConfig.layerModuleB).toBe(true)
   })
 
-  it('does not disable root project modules', async () => {
+  it('disables project modules', async () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
       overrides: {
-        // This should NOT disable the project module since it's in the root project
         'project-module': false,
       } as Record<string, unknown>,
     })
@@ -96,8 +95,10 @@ describe('disable modules with false', () => {
       .map(m => m.meta.name ?? m.module.name)
       .filter(name => name?.startsWith('layer-module') || name?.startsWith('project-module'))
 
-    // Project module should still be installed and executed (root project modules are not disabled)
+    // Project module is still registered (for type generation)
     expect(moduleNames).toContain('project-module')
+    // But disabled module's setup was NOT executed
+    expect(nuxt.options.appConfig.projectModule).toBeUndefined()
   })
 
   it('disables all modules from layer when all are set to false', async () => {

@@ -725,28 +725,6 @@ export interface ConfigSchema {
   modules: (NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | undefined | null | false)[]
 
   /**
-   * Modules to disable from layers.
-   *
-   * This allows you to selectively disable modules that are defined in extended layers.
-   * Specify module names as strings
-   *
-   * @example
-   * ```js
-   * // Layer's nuxt.config.ts
-   * export default defineNuxtConfig({
-   *   modules: ['@nuxt/image', '@pinia/nuxt']
-   * })
-   *
-   * // Project's nuxt.config.ts
-   * export default defineNuxtConfig({
-   *   extends: ['./my-layer'],
-   *   disabledModules: ['@nuxt/image']
-   * })
-   * ```
-   */
-  disabledModules: string[]
-
-  /**
    * Customize default directory structure used by Nuxt.
    *
    * It is better to stick with defaults unless needed.
@@ -1541,12 +1519,6 @@ export interface ConfigSchema {
    * @private
    */
   _installedModules: Array<{ meta: ModuleMeta, module: NuxtModule, timings?: Record<string, number | undefined>, entryPath?: string }>
-
-  /**
-   *
-   * @private
-   */
-  _layerModules: Array<string>
 
   /**
    *

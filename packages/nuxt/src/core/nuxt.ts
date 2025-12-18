@@ -923,20 +923,12 @@ async function resolveModules (nuxt: Nuxt) {
   // Loop layers in reverse order, so that the extends are loaded first and project is the last
   const configs = nuxt.options._layers.map(layer => layer.config).reverse()
   for (const config of configs) {
-    // Check if this is the root project (modules from root project cannot be disabled)
-    const isRootProject = config.rootDir === nuxt.options.rootDir
-
     // First register modules defined in layer's config
     const definedModules = config.modules ?? []
     for (const module of definedModules) {
       const resolvedModule = resolveModuleWithOptions(module, nuxt)
       if (resolvedModule && (!resolvedModule.resolvedPath || !resolvedModulePaths.has(resolvedModule.resolvedPath))) {
-        // Mark modules from layers (non-root) so they can be disabled later
-        // The actual disabled check happens in installModules after loading metadata
-        modules.set(resolvedModule.module, {
-          ...resolvedModule.options,
-          _fromLayer: !isRootProject || undefined,
-        })
+        modules.set(resolvedModule.module, resolvedModule.options)
         const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
@@ -956,7 +948,7 @@ async function resolveModules (nuxt: Nuxt) {
       paths.add(module)
 
       if (!modules.has(module)) {
-        modules.set(module, { _fromLayer: !isRootProject || undefined })
+        modules.set(module, {})
       }
     }
   }
