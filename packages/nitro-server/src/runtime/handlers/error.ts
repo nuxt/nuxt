@@ -1,7 +1,6 @@
-import { joinURL, withQuery } from 'ufo'
+import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 import type { NuxtPayload } from 'nuxt/app'
-import { useRuntimeConfig } from 'nitro/runtime-config'
 import type { H3Event } from 'nitro/h3'
 import { serverFetch } from 'nitro'
 
