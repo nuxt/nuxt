@@ -1,5 +1,4 @@
-import type { RenderResponse } from 'nitropack'
-import process from 'node:process'
+import type { RenderResponse } from 'nitropack/types'
 import { getResponseStatus, getResponseStatusText } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
@@ -9,16 +8,18 @@ import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION } from '#internal/nuxt/nitro-config.mjs'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
-    body: process.env.NUXT_JSON_PAYLOADS
+    body: NUXT_JSON_PAYLOADS
       ? stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
     headers: {
-      'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
+      'content-type': NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt',
     },
   }
@@ -30,7 +31,7 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
     'type': 'application/json',
     'innerHTML': contents,
     'data-nuxt-data': appId,
-    'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR),
+    'data-ssr': !(NUXT_NO_SSR || opts.ssrContext.noSSR),
   }
   if (!multiApp) {
     payload.id = '__NUXT_DATA__'
@@ -51,7 +52,7 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
 
 export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
-  const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  const _PAYLOAD_EXTRACTION = import.meta.prerender && NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
   const nuxtData = devalue(opts.data)
   if (_PAYLOAD_EXTRACTION) {
     const singleAppPayload = `import p from "${opts.src}";window.__NUXT__={...p,...(${nuxtData})}`
