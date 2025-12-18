@@ -631,8 +631,7 @@ describe('pages', () => {
     await page.getByText('to page load hook').click()
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook')
     const loadingEndLogs = consoleLogs.filter(c => c.text.includes('page:loading:end'))
-    // TODO: investigate why this is now 2 instead of 1
-    expect(loadingEndLogs.length).toBe(2)
+    expect(loadingEndLogs.length).toBe(1)
 
     await page.close()
   })
