@@ -33,7 +33,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^1.6.7",
+    "@rspack/core": "^1.6.8",
     "autoprefixer": "^10.4.23",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.4",
@@ -60,7 +60,7 @@
     "std-env": "^3.10.0",
     "time-fix-plugin": "^2.0.7",
     "tinyglobby": "^0.2.15",
-    "ts-checker-rspack-plugin": "^1.2.1",
+    "ts-checker-rspack-plugin": "^1.2.3",
     "ufo": "^1.6.1",
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^2.3.11",
@@ -76,9 +76,9 @@
     "@nuxt/schema": "workspace:*",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "rollup": "4.53.4",
+    "rollup": "4.53.5",
     "unbuild": "3.6.1",
-    "vue": "3.5.25"
+    "vue": "3.5.26"
   },
   "peerDependencies": {
     "vue": "^3.3.4"

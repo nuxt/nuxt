@@ -32,10 +32,10 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "nitro": "3.0.1-alpha.1",
-    "rolldown": "1.0.0-beta.54",
-    "rollup": "4.53.4",
+    "rolldown": "1.0.0-beta.55",
+    "rollup": "4.53.5",
     "unbuild": "3.6.1",
-    "vue": "3.5.25"
+    "vue": "3.5.26"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -46,7 +46,7 @@
     "consola": "^3.4.2",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
-    "esbuild": "^0.27.1",
+    "esbuild": "^0.27.2",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
     "get-port-please": "^3.2.0",
