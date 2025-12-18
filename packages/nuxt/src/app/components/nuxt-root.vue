@@ -58,14 +58,7 @@ const error = useError()
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
 const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
 onErrorCaptured((err, target, info) => {
-  try {
-    const hookPromise = nuxtApp.hooks.callHook('vue:error', err, target, info)
-    if ('catch' in hookPromise) {
-      hookPromise.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
-    }
-  } catch (hookError) {
-    console.error('[nuxt] Error in `vue:error` hook', hookError)
-  }
+  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
   if (import.meta.client && BOT_RE.test(navigator.userAgent)) {
     nuxtApp.hooks.callHook('app:error', err)
     console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, err)
