@@ -33,7 +33,7 @@ export function createSSRContext (event: H3Event): NuxtSSRContext {
   return ssrContext
 }
 
-export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['error'] & { url: string }) {
+export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['error'] & { url: string }): void {
   ssrContext.error = true
   ssrContext.payload = { error }
   ssrContext.url = error.url
