@@ -377,10 +377,14 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
         const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
-        await Promise.all([
-          nuxtApp.hooks.callHook('link:prefetch', normalizedPath).catch(() => {}),
-          !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
-        ])
+        try {
+          await Promise.all([
+            !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+            nuxtApp.hooks.callHook('link:prefetch', normalizedPath),
+          ])
+        } catch {
+          // ignore errors when prefetching
+        }
       }
 
       if (import.meta.client) {
