@@ -71,7 +71,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => runWithNuxtContext(nuxt, () => initNuxt(nuxt)),
-    close: () => hooks.callHook('close', nuxt),
+    close: async () => { await hooks.callHook('close', nuxt) },
     vfs: {},
     apps: {},
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
