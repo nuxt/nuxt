@@ -39,7 +39,7 @@ You can use route middleware to throw errors and show helpful error messages:
 ```ts [middleware/error.ts]
 export default defineNuxtRouteMiddleware((to) => {
   if (to.params.id === '1') {
-    throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
+    throw createError({ status: 404, statusText: 'Page Not Found' })
   }
 })
 ```

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
+    <title>{{ messages.status }} - {{ messages.statusText }} | {{ messages.appName }}</title>
     <meta charset="utf-8"/>
     <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
     <script type="module" src="/styles.ts"></script>
@@ -65,7 +65,7 @@
   <body class="font-sans antialiased bg-white dark:bg-black text-black dark:text-white grid min-h-screen place-content-center overflow-hidden ">
     <div class="fixed left-0 right-0 spotlight z-10"></div>
     <div class="max-w-520px text-center z-20">
-      <h1 class="text-8xl sm:text-10xl font-medium mb-8">{{ messages.statusCode }}</h1>
+      <h1 class="text-8xl sm:text-10xl font-medium mb-8">{{ messages.status }}</h1>
       <p class="text-xl px-8 sm:px-0 sm:text-4xl font-light mb-16 leading-tight">{{ messages.description }}</p>
       <div class="w-full flex items-center justify-center">
         <a href="/" class="gradient-border text-md sm:text-xl py-2 px-4 sm:py-3 sm:px-6 cursor-pointer">
@@ -73,5 +73,7 @@
         </a>
      </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

@@ -139,7 +139,7 @@ function connectSocket (): Promise<Socket> {
                   // @ts-expect-error We are augmenting the error object
                   err.data = response.error.data
                   // @ts-expect-error We are augmenting the error object
-                  err.statusCode = response.error.statusCode
+                  err.statusCode = err.status = response.error.status || response.error.statusCode
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)

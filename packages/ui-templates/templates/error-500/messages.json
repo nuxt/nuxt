@@ -1,5 +1,5 @@
 {
-  "statusCode": 500,
-  "statusMessage": "Server error",
+  "status": 500,
+  "statusText": "Server error",
   "description": "This page is temporarily unavailable."
 }

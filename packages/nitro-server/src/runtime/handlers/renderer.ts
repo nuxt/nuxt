@@ -41,13 +41,6 @@ if (NUXT_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
   (globalThis as any).AsyncLocalStorage = AsyncLocalStorage
 }
 
-export interface NuxtRenderResponse {
-  body: string
-  statusCode: number
-  statusMessage?: string
-  headers: Record<string, string>
-}
-
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
@@ -67,8 +60,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {
     throw createError({
-      statusCode: 404,
-      statusMessage: 'Page Not Found: /__nuxt_error',
+      status: 404,
+      statusText: 'Page Not Found: /__nuxt_error',
+      message: 'Page Not Found: /__nuxt_error',
     })
   }
 
@@ -80,7 +74,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   ssrContext.head.push(appHead, headEntryOptions)
 
   if (ssrError) {
-    ssrError.statusCode &&= Number.parseInt(ssrError.statusCode as any)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const status = ssrError.status || ssrError.statusCode
+    if (status) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      ssrError.status = ssrError.statusCode = Number.parseInt(status as any)
+    }
     if (PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
       try {
         ssrError.data = destr(ssrError.data)

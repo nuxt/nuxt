@@ -1,6 +1,6 @@
 ---
 title: 'setResponseStatus'
-description: setResponseStatus sets the statusCode (and optionally the statusMessage) of the response.
+description: setResponseStatus sets the status (and optionally the statusText) of the response.
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -10,7 +10,7 @@ links:
 
 Nuxt provides composables and utilities for first-class server-side-rendering support.
 
-`setResponseStatus` sets the statusCode (and optionally the statusMessage) of the response.
+`setResponseStatus` sets the status (and optionally the statusText) of the response.
 
 ::important
 `setResponseStatus` can only be called in the [Nuxt context](/docs/3.x/guide/going-further/nuxt-app#the-nuxt-context).

@@ -15,8 +15,14 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-export interface NuxtError<DataT = unknown> extends H3Error<DataT> {
+export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'> {
   error?: true
+  status?: number
+  statusText?: string
+  /** @deprecated Use `status` */
+  statusCode?: H3Error<DataT>['statusCode']
+  /** @deprecated Use `statusText` */
+  statusMessage?: H3Error<DataT>['statusMessage']
 }
 
 /** @since 3.0.0 */
@@ -64,12 +70,11 @@ export const isNuxtError = <DataT = unknown>(
 ): error is NuxtError<DataT> => !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 
 /** @since 3.0.0 */
-export const createError = <DataT = unknown>(
-  error: string | Error | (Partial<NuxtError<DataT>> & {
-    status?: number
-    statusText?: string
-  }),
-) => {
+export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
+  if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>>).statusText) {
+    error.message ??= (error as Partial<NuxtError<DataT>>).statusText
+  }
+
   const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
 
   Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {
