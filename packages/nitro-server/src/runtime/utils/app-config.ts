@@ -1,12 +1,13 @@
 import type { H3Event } from 'nitro/h3'
 import { klona } from 'klona'
+import type { AppConfig } from '@nuxt/schema'
 
 // @ts-expect-error virtual file
 import _inlineAppConfig from '#internal/nuxt/app-config'
 
 // App config
 const _sharedAppConfig = _deepFreeze(klona(_inlineAppConfig))
-export function useAppConfig (event?: H3Event) {
+export function useAppConfig (event?: H3Event): AppConfig {
   // Backwards compatibility with ambient context
   if (!event) {
     return _sharedAppConfig

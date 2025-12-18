@@ -1,4 +1,5 @@
 import process from 'node:process'
+import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
@@ -28,8 +29,19 @@ const getPrecomputedDependencies: () => Promise<PrecomputedData> = () => import(
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<PrecomputedData>
 
+interface Renderer {
+  rendererContext: RendererContext
+  renderToString(ssrContext: NuxtSSRContext): Promise<{
+    html: string
+    renderResourceHeaders: () => Record<string, string>
+    renderResourceHints: () => string
+    renderStyles: () => string
+    renderScripts: () => string
+  }>
+}
+
 // -- SSR Renderer --
-export const getSSRRenderer = lazyCachedFunction(async () => {
+export const getSSRRenderer = lazyCachedFunction(async (): Promise<Renderer> => {
   // Load server bundle
   const createSSRApp = await getServerEntry()
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
@@ -59,7 +71,7 @@ export const getSSRRenderer = lazyCachedFunction(async () => {
 })
 
 // -- SPA Renderer --
-const getSPARenderer = lazyCachedFunction(async () => {
+const getSPARenderer = lazyCachedFunction(async (): Promise<Renderer> => {
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
 
   // @ts-expect-error virtual file
@@ -112,7 +124,7 @@ function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
   }
 }
 
-export function getRenderer (ssrContext: NuxtSSRContext) {
+export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
   return (process.env.NUXT_NO_SSR || ssrContext.noSSR) ? getSPARenderer() : getSSRRenderer()
 }
 

@@ -4,7 +4,7 @@ import type { HTTPEvent } from 'nitro/h3'
  * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.ts
  */
 
-export function isJsonRequest (event: HTTPEvent) {
+export function isJsonRequest (event: HTTPEvent): boolean {
   // If the client specifically requests HTML, then avoid classifying as JSON.
   if (event.req.headers.get('accept')?.includes('text/html')) {
     return false

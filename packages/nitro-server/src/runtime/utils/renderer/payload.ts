@@ -4,12 +4,12 @@ import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
-import type { NuxtSSRContext } from 'nuxt/app'
+import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
 
-export function renderPayloadResponse (ssrContext: NuxtSSRContext) {
+export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
     body: process.env.NUXT_JSON_PAYLOADS
       ? stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])
@@ -20,7 +20,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext) {
       'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
       'x-powered-by': 'Nuxt',
     },
-  } satisfies RenderResponse
+  }
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
@@ -71,7 +71,15 @@ export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: 
   ]
 }
 
-export function splitPayload (ssrContext: NuxtSSRContext) {
+interface SplitPayload {
+  initial: Omit<NuxtPayload, 'data'>
+  payload: {
+    data?: NuxtPayload['data']
+    prerenderedAt?: NuxtPayload['prerenderedAt']
+  }
+}
+
+export function splitPayload (ssrContext: NuxtSSRContext): SplitPayload {
   const { data, prerenderedAt, ...initial } = ssrContext.payload
   return {
     initial: { ...initial, prerenderedAt },
