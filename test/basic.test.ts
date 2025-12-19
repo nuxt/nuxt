@@ -1921,7 +1921,8 @@ describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
   })
 
   it('still downloads client-only styles', async () => {
-    const { page } = await renderPage('/styles')
+    const page = await createPage()
+    await page.goto(url('/styles'), { waitUntil: 'networkidle' })
     expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
 
     await page.close()
