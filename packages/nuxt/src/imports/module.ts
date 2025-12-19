@@ -1,17 +1,17 @@
 import { existsSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import type { Import, Unimport } from 'unimport'
+import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
-import { isDirectory, logger, resolveToAlias } from '../utils'
-import { TransformPlugin } from './transform'
-import { appCompatPresets, defaultPresets } from './presets'
-import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
+import { isDirectory, logger, resolveToAlias } from '../utils.ts'
+import { TransformPlugin } from './transform.ts'
+import { appCompatPresets, defaultPresets } from './presets.ts'
+import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
-import { pagesImportPresets, routeRulesPresets } from '../pages/module'
+import { pagesImportPresets, routeRulesPresets } from '../pages/module.ts'
 
 const allNuxtPresets = [
   ...pagesImportPresets,
@@ -42,7 +42,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   }),
   setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
-    const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
+    const presets: InlinePreset[] = JSON.parse(JSON.stringify(options.presets))
 
     if (options.polyfills) {
       presets.push(...appCompatPresets)

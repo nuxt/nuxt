@@ -171,5 +171,24 @@ if (isBuilt || isWindows) {
       // Verify no unexpected errors
       expect(filteredLogs).toStrictEqual([])
     })
+
+    test('HMR with top-level await', async ({ page, goto }) => {
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/top-level-await.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/top-level-await.vue'), pageContents)
+
+      // Navigate and wait for full load
+      await goto('/top-level-await')
+      await expect(page.getByTestId('content')).toHaveText('loaded')
+
+      // Trigger HMR by editing script
+      writeFileSync(
+        join(fixtureDir, 'app/pages/top-level-await.vue'),
+        pageContents.replace('console.log(\'page loaded\')', '// console.log(\'page loaded\')'),
+      )
+
+      // Wait for HMR to process and check no errors
+      await page.waitForTimeout(1000)
+      expect(page).toHaveNoErrorsOrWarnings()
+    })
   }
 }

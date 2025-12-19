@@ -1,7 +1,7 @@
 import type { Defu } from 'defu'
-import type { NuxtHooks } from './hooks'
-import type { Nuxt } from './nuxt'
-import type { NuxtCompatibility } from './compatibility'
+import type { NuxtHooks } from './hooks.ts'
+import type { Nuxt } from './nuxt.ts'
+import type { NuxtCompatibility } from './compatibility.ts'
 
 export interface ModuleMeta {
   /** Module name. */
@@ -26,6 +26,12 @@ export interface ModuleMeta {
    * @internal
    */
   rawPath?: string
+
+  /**
+   * Whether the module has been disabled in the Nuxt configuration.
+   * @internal
+   */
+  disabled?: boolean
 
   [key: string]: unknown
 }
@@ -92,7 +98,7 @@ export interface ModuleDefinition<
     resolvedOptions: TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions,
-    nuxt: Nuxt
+    nuxt: Nuxt,
   ) => ModuleSetupReturn
 }
 
@@ -110,7 +116,7 @@ export interface NuxtModule<
   ): ModuleSetupReturn
   getOptions?: (
     inlineOptions?: Partial<TOptions>,
-    nuxt?: Nuxt
+    nuxt?: Nuxt,
   ) => Promise<
     TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
@@ -124,6 +130,6 @@ export interface NuxtModule<
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions,
     nuxt: Nuxt,
-    previousVersion: string
+    previousVersion: string,
   ) => Awaitable<void>
 }

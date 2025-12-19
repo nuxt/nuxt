@@ -5,9 +5,9 @@ import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import { defineEnv } from 'unenv'
 
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets } from '../utils/config'
-import { nuxt } from '../presets/nuxt'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets } from '../utils/config.ts'
+import { nuxt } from '../presets/nuxt.ts'
 import { TsCheckerPlugin, webpack } from '#builder'
 
 export async function client (ctx: WebpackConfigContext) {
@@ -90,7 +90,7 @@ function clientHMR (ctx: WebpackConfigContext) {
   // Add HMR support
   const app = (ctx.config.entry as any).app as any
   app.unshift(
-    // https://github.com/glenjamin/webpack-hot-middleware#config
+    // https://github.com/webpack/webpack-hot-middleware#config
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`,
   )
 
@@ -104,7 +104,7 @@ function clientOptimization (_ctx: WebpackConfigContext) {
 
 function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
-  // https://github.com/webpack-contrib/webpack-bundle-analyzer
+  // https://github.com/webpack/webpack-bundle-analyzer
   if (!ctx.isDev && !ctx.nuxt.options.test && ctx.name === 'client' && ctx.userConfig.analyze && (ctx.userConfig.analyze === true || ctx.userConfig.analyze.enabled)) {
     const statsDir = resolve(ctx.options.analyzeDir)
 

@@ -9,8 +9,8 @@ import { isAbsolute } from 'pathe'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
-import { logger } from '../../utils'
-import { isSerializable } from '../utils'
+import { logger } from '../../utils.ts'
+import { isSerializable } from '../utils.ts'
 import type { ParserOptions } from 'oxc-parser'
 
 interface PageMetaPluginOptions {
@@ -332,7 +332,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 })
 
 // https://github.com/vuejs/vue-loader/pull/1911
-// https://github.com/vitejs/vite/issues/8473
+// https://github.com/vitejs/vite-plugin-vue/issues/23
 const QUERY_START_RE = /^\?/
 const MACRO_RE = /&macro=true/
 function rewriteQuery (id: string) {

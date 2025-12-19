@@ -8,7 +8,7 @@ import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
 
-import { defineNuxtModule, installModule, loadNuxt } from '../src'
+import { defineNuxtModule, installModule, loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -101,15 +101,21 @@ describe('module dependencies', { sequential: true }, () => {
     await mkdir(fakeModule, { recursive: true })
     await writeFile(join(fakeModule, 'package.json'), JSON.stringify({ name: 'some-module', version: '1.0.0', type: 'module', exports: './index.js' }))
     await writeFile(join(fakeModule, 'index.js'), `
-export default () => {
+export default Object.assign((options) => {
   globalThis.someModuleLoaded ||= 0
   globalThis.someModuleLoaded++
-}
+  globalThis.someModuleOptions = options
+}, {
+  getMeta: () => ({
+    configKey: 'someModule'
+  })
+})
     `)
   })
 
   beforeEach(() => {
     delete globalThis.someModuleLoaded
+    delete globalThis.someModuleOptions
   })
 
   afterEach(async () => {
@@ -316,8 +322,76 @@ export default () => {
       },
     })).rejects.toThrowErrorMatchingInlineSnapshot(`[TypeError: Module \`some-module\` version (\`1.0.0\`) does not satisfy \`>=2\` (requested by a module in \`nuxt.options\`).]`)
   })
+
+  it('should apply moduleDependencies config when installModule is called explicitly', async () => {
+    const setupOrder: string[] = []
+
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        // @ts-expect-error no types for someModule
+        someModule: {
+          value: 'from user',
+          moduleOverride: 'from user',
+          userDefault: 'from user',
+        },
+        modules: [
+          // Module A defines config for module C via moduleDependencies
+          defineNuxtModule({
+            meta: { name: 'module-a' },
+            moduleDependencies: {
+              'someModule': {
+                optional: true,
+                overrides: {
+                  value: 'from module-a override',
+                  moduleOverride: 'from module-a',
+                },
+                defaults: {
+                  defaultValue: 'from module-a default',
+                  userDefault: 'from module-a default',
+                },
+              },
+            },
+            setup () {
+              setupOrder.push('module-a')
+            },
+          }),
+          // Module B calls installModule on module C
+          defineNuxtModule({
+            meta: { name: 'module-b' },
+            async setup (_, nuxt) {
+              setupOrder.push('module-b')
+
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
+              await installModule('some-module', {
+                value: 'from module-b',
+                inlineValue: 'from module-b inline',
+              }, nuxt)
+            },
+          }),
+        ],
+      },
+    })
+
+    expect(setupOrder).toEqual(['module-a', 'module-b'])
+    expect(globalThis.someModuleLoaded).toBe(1)
+
+    expect(globalThis.someModuleOptions).toMatchObject({
+      // `installModule` should always override values
+      value: 'from module-b',
+      // extra values should be passed alone
+      inlineValue: 'from module-b inline',
+      // modules should be able to set default values
+      defaultValue: 'from module-a default',
+      // modules should be able to override user configuration
+      moduleOverride: 'from module-a',
+      // user configuration should be merged in
+      userDefault: 'from user',
+    })
+  })
 })
 
 declare global {
   var someModuleLoaded: number | undefined
+  var someModuleOptions: Record<string, any> | undefined
 }
