@@ -341,6 +341,39 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
+  const validManifestKeys = new Set(['prerender', 'redirect', 'appMiddleware'])
+
+  function getRouteRulesRouter () {
+    const routeRulesRouter = createRou3Router<NitroRouteRules>()
+    if (nuxt._nitro) {
+      for (const [route, rules] of Object.entries(nuxt._nitro.options.routeRules)) {
+        addRoute(routeRulesRouter, undefined, route, rules)
+      }
+    }
+    return routeRulesRouter
+  }
+
+  addTemplate({
+    filename: 'route-rules.mjs',
+    getContents () {
+      return `export default ${compileRouterToString(getRouteRulesRouter(), '', {
+        matchAll: true,
+        serialize (routeRules) {
+          return `{${Object.entries(routeRules)
+            .filter(([name, options]) => options !== undefined && validManifestKeys.has(name))
+            .map(([name, options]) => {
+              if (name === 'redirect') {
+                const redirectOptions = options as NitroRouteRules['redirect']
+                options = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions!.to
+              }
+              return `${name}: ${JSON.stringify(options)}`
+            }).join(',')
+          }}`
+        },
+      })}`
+    },
+  })
+
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
     const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
@@ -398,42 +431,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
     })
 
-    let nitro: Nitro | undefined
-    const validManifestKeys = new Set(['prerender', 'redirect', 'appMiddleware'])
-
-    function getRouteRulesRouter () {
-      const routeRulesRouter = createRou3Router<NitroRouteRules>()
-      if (nitro) {
-        for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
-          addRoute(routeRulesRouter, undefined, route, rules)
-        }
-      }
-      return routeRulesRouter
-    }
-
-    addTemplate({
-      filename: 'route-rules.mjs',
-      getContents () {
-        return `export default ${compileRouterToString(getRouteRulesRouter(), '', {
-          matchAll: true,
-          serialize (_routeRules) {
-            return `{${Object.entries(_routeRules)
-              .filter(([name, options]) => options !== undefined && validManifestKeys.has(name))
-              .map(([name, options]) => {
-                if (name === 'redirect') {
-                  const redirectOptions = options as NitroRouteRules['redirect']
-                  options = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions!.to
-                }
-                return `${name}: ${JSON.stringify(options)}`
-              }).join(',')
-            }}`
-          },
-        })}`
-      },
-    })
-
-    nuxt.hook('nitro:init', (_nitro) => {
-      nitro = _nitro
+    nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('rollup:before', async (nitro) => {
         // Add pages prerendered but not covered by route rules
         const prerenderedRoutes = new Set<string>()
