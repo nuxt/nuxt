@@ -28,6 +28,9 @@ interface ResolvedModule {
   meta: ModuleMeta | undefined
 }
 
+// config keys that accept `false` as a valid config value or are known to handle disabling internally
+const ignoredConfigKeys = new Set(['pages', 'components', 'imports', 'pages', 'devtools'])
+
 /**
  * Installs a set of modules on a Nuxt instance.
  * @internal
@@ -123,15 +126,8 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     throw error
   }
 
-  // config keys that accept `false` as a valid config value or are known to handle disabling internally
-  const ignoredConfigKeys = new Set(['pages', 'components', 'devtools'])
-
-  for (const { nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
-    const configKey = meta?.configKey as keyof NuxtOptions | undefined
-
-    // Check if module should be disabled
-    const configValue = configKey ? (nuxt.options)[configKey as keyof NuxtOptions] : undefined
-    const isDisabled = configKey && configValue === false && !ignoredConfigKeys.has(configKey)
+  for (const { nuxtModule, meta = {}, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
+    const configKey = meta.configKey as keyof NuxtOptions | undefined
 
     // Merge options
     const optionsFns = [
@@ -153,10 +149,18 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
     }
 
+    // Check if module should be disabled
+    const isDisabled = configKey && !ignoredConfigKeys.has(configKey) && nuxt.options[configKey] === false
     if (!isDisabled) {
       await callLifecycleHooks(nuxtModule, meta, inlineOptions, nuxt)
     }
-    await callModule(nuxtModule, meta, inlineOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt, isDisabled)
+    const path = typeof moduleToInstall === 'string' ? moduleToInstall : undefined
+    await callModule(nuxt, nuxtModule, inlineOptions, {
+      meta: defu({ disabled: isDisabled }, meta, buildTimeModuleMeta),
+      nameOrPath: path,
+      modulePath: resolvedModulePath || path,
+      localLayerModuleDirs,
+    })
   }
 
   // clean up merging options
@@ -204,8 +208,19 @@ export async function installModule<
     }
   }
 
-  await callLifecycleHooks(nuxtModule, meta, mergedOptions, nuxt)
-  await callModule(nuxtModule, meta, mergedOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt)
+  // Check if module should be disabled
+  const isDisabled = configKey && !ignoredConfigKeys.has(configKey) && nuxt.options[configKey] === false
+
+  if (!isDisabled) {
+    await callLifecycleHooks(nuxtModule, meta, mergedOptions, nuxt)
+  }
+  const path = typeof moduleToInstall === 'string' ? moduleToInstall : undefined
+  await callModule(nuxt, nuxtModule, mergedOptions, {
+    meta: defu({ disabled: isDisabled }, meta, buildTimeModuleMeta),
+    nameOrPath: path,
+    modulePath: resolvedModulePath || path,
+    localLayerModuleDirs,
+  })
 }
 
 export function resolveModuleWithOptions (
@@ -350,69 +365,56 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   }
 }
 
-function registerInstalledModule (
-  nuxtModule: NuxtModule<any, Partial<any>, false>,
-  meta: ModuleMeta,
-  moduleToInstall: ModuleToInstall,
-  buildTimeModuleMeta: ModuleMeta,
-  entryPath: string | undefined,
-  nuxt: Nuxt,
-  timings?: Record<string, number | undefined>,
-) {
-  nuxt.options._installedModules ||= []
-  entryPath ||= typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall, nuxt.options.alias) : undefined
-
-  if (typeof moduleToInstall === 'string' && entryPath !== moduleToInstall) {
-    buildTimeModuleMeta.rawPath = moduleToInstall
-  }
-
-  nuxt.options._installedModules.push({
-    meta: defu(meta, buildTimeModuleMeta),
-    module: nuxtModule,
-    timings,
-    entryPath,
-  })
+interface CallModuleOptions {
+  meta: ModuleMeta
+  modulePath?: string
+  nameOrPath?: string
+  localLayerModuleDirs: string[]
 }
 
-async function callModule (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions: Record<string, unknown> | undefined, resolvedModulePath: string | undefined, moduleToInstall: ModuleToInstall, localLayerModuleDirs: string[], buildTimeModuleMeta: ModuleMeta, nuxt = useNuxt(), isDisabled?: boolean) {
-  const modulePath = resolvedModulePath || moduleToInstall
-  let entryPath: string | undefined
-  let parsed: ReturnType<typeof parseNodeModulePath> | undefined
+async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>, false>, moduleOptions: Record<string, unknown> = {}, options: CallModuleOptions) {
+  const modulePath = options.modulePath
+  const nameOrPath = options.nameOrPath
+  const localLayerModuleDirs = options.localLayerModuleDirs
 
-  // Parse module path and calculate entryPath
+  const fn = () => nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
+    ? nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(moduleOptions, nuxt))
+    : nuxtModule(moduleOptions, nuxt)
+
+  const res = options.meta.disabled ? false : await fn()
+
+  let entryPath: string | undefined
   if (typeof modulePath === 'string') {
-    parsed = parseNodeModulePath(modulePath)
+    const parsed = parseNodeModulePath(modulePath)
     if (parsed.name) {
       const subpath = await lookupNodeModuleSubpath(modulePath) || '.'
       entryPath = join(parsed.name, subpath === './' ? '.' : subpath)
     }
-  }
-
-  // Disabled modules register without executing
-  if (isDisabled) {
-    registerInstalledModule(nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, entryPath, nuxt)
-    return
-  }
-
-  // Execute enabled module
-  const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
-    ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
-    : await nuxtModule(inlineOptions || {}, nuxt) ?? {}
-  if (res === false /* setup aborted */) {
-    return
-  }
-
-  // Setup transpile and modulesDir for enabled modules
-  if (typeof modulePath === 'string' && parsed) {
-    const moduleRoot = parsed.dir
-      ? parsed.dir + parsed.name
-      : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
-    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-    const directory = moduleRoot.replace(/\/?$/, '/')
-    if (moduleRoot !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
-      nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
+    if (res) {
+      const moduleRoot = parsed.dir
+        ? parsed.dir + parsed.name
+        : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
+      nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
+      const directory = moduleRoot.replace(/\/?$/, '/')
+      if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
+        nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
+      }
     }
   }
 
-  registerInstalledModule(nuxtModule, meta, moduleToInstall, buildTimeModuleMeta, entryPath, nuxt, res.timings)
+  if (nameOrPath) {
+    entryPath ||= resolveAlias(nameOrPath, nuxt.options.alias)
+
+    if (entryPath !== nameOrPath) {
+      options.meta.rawPath = nameOrPath
+    }
+  }
+
+  nuxt.options._installedModules ||= []
+  nuxt.options._installedModules.push({
+    meta: options.meta,
+    module: nuxtModule,
+    timings: (res || {} as Record<string, undefined>).timings,
+    entryPath,
+  })
 }

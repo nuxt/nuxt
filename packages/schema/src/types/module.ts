@@ -27,6 +27,12 @@ export interface ModuleMeta {
    */
   rawPath?: string
 
+  /**
+   * Whether the module has been disabled in the Nuxt configuration.
+   * @internal
+   */
+  disabled?: boolean
+
   [key: string]: unknown
 }
 
