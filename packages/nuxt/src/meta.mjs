@@ -12,7 +12,6 @@ export const runtimeDependencies = [
   'unctx',
   'cookie-es',
   'perfect-debounce',
-  'radix3',
   'ohash',
   'pathe',
   'uncrypto',

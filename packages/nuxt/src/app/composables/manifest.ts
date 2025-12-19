@@ -1,5 +1,3 @@
-import type { MatcherExport, RouteMatcher } from 'radix3'
-import { createMatcherFromExport, createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
 import type { H3Event } from 'h3'
 import type { NitroRouteRules } from 'nitropack'
@@ -8,6 +6,10 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL } from '#internal/nuxt/paths'
+// @ts-expect-error virtual file
+import _routeRulesMatcher from '#build/route-rules.mjs'
+
+const routeRulesMatcher = _routeRulesMatcher as (method: string, path: string) => Array<{ data: NitroRouteRules }>
 
 export interface NuxtAppManifestMeta {
   id: string
@@ -15,12 +17,10 @@ export interface NuxtAppManifestMeta {
 }
 
 export interface NuxtAppManifest extends NuxtAppManifestMeta {
-  matcher: MatcherExport
   prerendered: string[]
 }
 
 let manifest: Promise<NuxtAppManifest>
-let matcher: RouteMatcher
 
 function fetchManifest () {
   if (!isAppManifestEnabled) {
@@ -34,9 +34,7 @@ function fetchManifest () {
       responseType: 'json',
     })
   }
-  manifest.then((m) => {
-    matcher = createMatcherFromExport(m.matcher)
-  }).catch((e) => {
+  manifest.catch((e) => {
     console.error('[nuxt] Error fetching app manifest.', e)
   })
   return manifest
@@ -54,26 +52,14 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 }
 
 /** @since 3.7.4 */
-export async function getRouteRules (event: H3Event): Promise<NitroRouteRules>
-export async function getRouteRules (options: { path: string }): Promise<Record<string, any>>
+export function getRouteRules (event: H3Event): NitroRouteRules
+export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
-export async function getRouteRules (url: string): Promise<Record<string, any>>
-export async function getRouteRules (arg: string | H3Event | { path: string }) {
+export function getRouteRules (url: string): Record<string, any>
+export function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : arg.path
-  if (import.meta.server) {
-    useNuxtApp().ssrContext!['~preloadManifest'] = true
-    const _routeRulesMatcher = toRouteMatcher(
-      createRadixRouter({ routes: useRuntimeConfig().nitro!.routeRules }),
-    )
-    return defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(path).reverse())
-  }
-  await getAppManifest()
-  if (!matcher) {
-    console.error('[nuxt] Error creating app manifest matcher.', matcher)
-    return {}
-  }
   try {
-    return defu({} as Record<string, any>, ...matcher.matchAll(path).reverse())
+    return defu({} as Record<string, any>, ...routeRulesMatcher('', path).map(r => r.data).reverse())
   } catch (e) {
     console.error('[nuxt] Error matching route rules.', e)
     return {}

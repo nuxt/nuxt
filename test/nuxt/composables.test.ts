@@ -367,20 +367,23 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       }
     `)
   })
-  it('getRouteRules', async () => {
-    expect(await getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
-    expect(await getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
+  it('getRouteRules', () => {
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
       }
     `)
-    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
+    expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
         "redirect": "/",
       }
     `)
   })
+})
+
+describe('compiled route rules', () => {
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
     expect(await isPrerendered('/prerendered/test')).toBeFalsy()
