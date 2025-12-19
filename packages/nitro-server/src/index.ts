@@ -10,7 +10,7 @@ import { join, relative, resolve } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
-import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroOptions, NitroRouteRules } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -413,10 +413,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         }
         return `export default ${compileRouterToString(nitro.routing.routeRules._router!, '', {
           matchAll: true,
-          serialize (_routeRules) {
-            return `{${Object.entries(_routeRules)
+          serialize (routeRules) {
+            return `{${Object.entries(routeRules)
               .filter(([name, options]) => options !== undefined && validManifestKeys.has(name))
-              .map(([name, options]) => `${name}: ${JSON.stringify(options)}`).join(',')}}`
+              .map(([name, options]) => {
+                if (name === 'redirect') {
+                  const redirectOptions = options as NitroRouteRules['redirect']
+                  options = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions!.to
+                }
+                return `${name}: ${JSON.stringify(options)}`
+              }).join(',')
+            }}`
           },
         })}`
       },
