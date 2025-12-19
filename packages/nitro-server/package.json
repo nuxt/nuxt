@@ -39,6 +39,7 @@
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",
     "nitropack": "^2.12.9",
+    "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "rou3": "^0.7.12",

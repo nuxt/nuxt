@@ -10,6 +10,7 @@ import { compileRouterToString } from 'rou3/compiler'
 import { join, relative, resolve } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
 import { joinURL, withTrailingSlash } from 'ufo'
+import { hash } from 'ohash'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions, NitroRouteRules } from 'nitropack/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
@@ -355,10 +356,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     return routeRulesRouter
   }
 
+  const cachedMatchers: Record<string, string> = {}
   addTemplate({
     filename: 'route-rules.mjs',
     getContents () {
-      return `export default ${compileRouterToString(getRouteRulesRouter(), '', {
+      const key = hash(nuxt._nitro?.options.routeRules || {})
+      if (cachedMatchers[key]) {
+        return cachedMatchers[key]
+      }
+      return cachedMatchers[key] = `export default ${compileRouterToString(getRouteRulesRouter(), '', {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
