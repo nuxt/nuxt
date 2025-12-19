@@ -12,7 +12,7 @@ import { readPackageJSON } from 'pkg-types'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { hash } from 'ohash'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroConfig, NitroOptions, NitroRouteRules } from 'nitropack/types'
+import type { Nitro, NitroConfig, NitroRouteRules } from 'nitropack/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -368,35 +368,30 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
-            .filter(([name, options]) => options !== undefined && validManifestKeys.includes(name))
-            .map(([name, options]) => {
+            .filter(([name, value]) => value !== undefined && validManifestKeys.includes(name))
+            .map(([name, value]) => {
               if (name === 'redirect') {
-                const redirectOptions = options as NitroRouteRules['redirect']
-                options = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions!.to
+                const redirectOptions = value as NitroRouteRules['redirect']
+                value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions!.to
               }
-              return `${name}: ${JSON.stringify(options)}`
+              if (name === 'appMiddleware') {
+                const appMiddlewareOptions = value as NitroRouteRules['appMiddleware']
+                if (typeof appMiddlewareOptions === 'string') {
+                  value = { [appMiddlewareOptions]: true }
+                } else if (Array.isArray(appMiddlewareOptions)) {
+                  const normalizedRules: Record<string, boolean> = {}
+                  for (const middleware of appMiddlewareOptions) {
+                    normalizedRules[middleware] = true
+                  }
+                  value = normalizedRules
+                }
+              }
+              return `${name}: ${JSON.stringify(value)}`
             }).join(',')
           }}`
         },
       })}`
     },
-  })
-
-  nuxt.hook('nitro:config', (nitroConfig) => {
-    const rules = nitroConfig.routeRules
-    for (const rule in rules) {
-      if (!(rules[rule] as any).appMiddleware) { continue }
-      const value = (rules[rule] as any).appMiddleware
-      if (typeof value === 'string') {
-        (rules[rule] as NitroOptions['routeRules']).appMiddleware = { [value]: true }
-      } else if (Array.isArray(value)) {
-        const normalizedRules: Record<string, boolean> = {}
-        for (const middleware of value) {
-          normalizedRules[middleware] = true
-        }
-        (rules[rule] as NitroOptions['routeRules']).appMiddleware = normalizedRules
-      }
-    }
   })
 
   // Add app manifest handler and prerender configuration
