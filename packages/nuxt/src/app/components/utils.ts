@@ -18,7 +18,7 @@ const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
 const ROUTE_KEY_NORMAL_RE = /:\w+/g
 // TODO: consider refactoring into single utility
-// See https://github.com/nuxt/nuxt/tree/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
+// See https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
 function generateRouteKey (route: RouteLocationNormalized) {
   const source = route?.meta.key ?? route.path
     .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
@@ -139,7 +139,7 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
+        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
@@ -163,10 +163,10 @@ export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: s
   return h('div')
 }
 
-function isStartFragment (element: RendererNode) {
+export function isStartFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === '['
 }
 
-function isEndFragment (element: RendererNode) {
+export function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
 }

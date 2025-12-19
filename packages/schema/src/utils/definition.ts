@@ -1,8 +1,6 @@
 import type { InputObject } from 'untyped'
 
-import { defineUntypedSchema } from 'untyped'
-
-import type { ConfigSchema } from '../../schema/config'
+import type { ConfigSchema } from '../types/schema.ts'
 
 type KeysOf<T, Prefix extends string | unknown = unknown> = keyof T extends string
   ?
@@ -48,9 +46,5 @@ type Resolvable<Namespace> = keyof Exclude<NonNullable<Namespace>, boolean | str
   : Namespace | Resolvers<Namespace>
 
 export function defineResolvers<C extends Partial<Resolvable<ConfigSchema>>> (config: C) {
-  return defineUntypedSchema(config) /* as C */
+  return config as any
 }
-
-export type ResolvableConfigSchema = Partial<Resolvable<ConfigSchema>>
-
-export { defineUntypedSchema } from 'untyped'

@@ -1,34 +1,18 @@
 import { defineBuildConfig } from 'unbuild'
-import { stubOptions } from '../../debug/build-config'
 
 export default defineBuildConfig({
   declaration: true,
   entries: [
-    {
-      input: 'src/config/index',
-      outDir: 'schema',
-      name: 'config',
-      builder: 'untyped',
-      defaults: {
-        srcDir: '/<srcDir>/',
-        workspaceDir: '/<workspaceDir>/',
-        rootDir: '/<rootDir>/',
-        vite: {
-          base: '/',
-        },
-      },
-    },
     'src/index',
     'src/builder-env',
   ],
-  stubOptions,
   rollup: {
     dts: { respectExternal: false },
     inlineDependencies: ['untyped', 'knitwork'],
   },
   externals: [
     // Type imports
-    '@unhead/schema',
+    '@unhead/vue',
     '@vitejs/plugin-vue',
     'chokidar',
     '@vitejs/plugin-vue-jsx',
@@ -36,7 +20,6 @@ export default defineBuildConfig({
     'autoprefixer',
     'c12',
     'compatx',
-    'consola',
     'css-minimizer-webpack-plugin',
     'cssnano',
     'esbuild',
@@ -50,7 +33,7 @@ export default defineBuildConfig({
     'nitropack',
     'nuxt/app',
     'ofetch',
-    'pkg-types',
+    'oxc-transform',
     'postcss',
     'pug',
     'rollup-plugin-visualizer',
@@ -70,6 +53,5 @@ export default defineBuildConfig({
     // Implicit
     '@vue/compiler-core',
     '@vue/compiler-sfc',
-    '@vue/shared',
   ],
 })

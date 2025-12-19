@@ -1,18 +1,18 @@
 import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
-import type { Component, ComponentsDir } from 'nuxt/schema'
 
-import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
-import { logger } from '../utils'
+import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
+import { logger, resolveToAlias } from '../utils.ts'
+import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
 const GLOBAL_RE = /\.global(?:\.island)?$/
-const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
-const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
+const COMPONENT_MODE_RE = /(?<=\.)(client|server)(?:\.global|\.island)*$/
+const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
@@ -31,28 +31,25 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   const scannedPaths: string[] = []
 
   for (const dir of dirs) {
-    if (dir.enabled === false) {
-      continue
-    }
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
-    const files = (await globby(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
+    const files = (await glob(dir.pattern!, { cwd: dir.path, ignore: dir.ignore })).sort()
 
     // Check if the directory exists (globby will otherwise read it case insensitively on MacOS)
     if (files.length) {
-      const siblings = await readdir(dirname(dir.path)).catch(() => [] as string[])
-
+      const siblings = new Set(await readdir(dirname(dir.path)).catch(() => [] as string[]))
       const directory = basename(dir.path)
-      if (!siblings.includes(directory)) {
+      if (!siblings.has(directory)) {
         const directoryLowerCase = directory.toLowerCase()
-        const caseCorrected = siblings.find(sibling => sibling.toLowerCase() === directoryLowerCase)
-        if (caseCorrected) {
-          const nuxt = useNuxt()
-          const original = relative(nuxt.options.srcDir, dir.path)
-          const corrected = relative(nuxt.options.srcDir, join(dirname(dir.path), caseCorrected))
-          logger.warn(`Components not scanned from \`~/${corrected}\`. Did you mean to name the directory \`~/${original}\` instead?`)
-          continue
+        for (const sibling of siblings) {
+          if (sibling.toLowerCase() === directoryLowerCase) {
+            const nuxt = useNuxt()
+            const original = resolveToAlias(dir.path, nuxt)
+            const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
+            logger.warn(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`)
+            break
+          }
         }
       }
     }
@@ -124,6 +121,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         preload: Boolean(dir.preload),
         // specific to the file
         filePath,
+        declarationPath: filePath,
         pascalName,
         kebabName,
         chunkName,
@@ -141,11 +139,12 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        logger.warn(`Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
+        logger.warn(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`)
         continue
       }
 
-      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      const validModes = new Set(['all', component.mode])
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && validModes.has(c.mode))
       // Ignore component if component is already defined (with same mode)
       if (existingComponent) {
         const existingPriority = existingComponent.priority ?? 0

@@ -1,33 +1,29 @@
 import { describe, expect, it, vi } from 'vitest'
-import * as Parser from 'acorn'
 
-import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata'
-import { checkForCircularDependencies } from '../src/core/app'
+import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata.ts'
+import { checkForCircularDependencies } from '../src/core/app.ts'
 
 describe('plugin-metadata', () => {
-  it('should extract metadata from object-syntax plugins', async () => {
-    const properties = Object.entries({
-      name: 'test',
-      enforce: 'post',
-      hooks: { 'app:mounted': () => {} },
-      setup: () => { return { provide: { jsx: '[JSX]' } } },
-      order: 1,
+  const properties = Object.entries({
+    name: 'test',
+    enforce: 'post',
+    hooks: { 'app:mounted': () => {} },
+    setup: () => { return { provide: { jsx: '[JSX]' } } },
+    order: 1,
+  })
+  it.each(properties)('should extract metadata from object-syntax plugins', (k, value) => {
+    const obj = [...properties.filter(([key]) => key !== k), [k, value]]
+
+    const meta = extractMetadata([
+      'export default defineNuxtPlugin({',
+      ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString().replace('"[JSX]"', '() => <span>JSX</span>') : JSON.stringify(value)},`),
+      '})',
+    ].join('\n'), 'tsx')
+
+    expect(meta).toEqual({
+      'name': 'test',
+      'order': 1,
     })
-
-    for (const item of properties) {
-      const obj = [...properties.filter(([key]) => key !== item[0]), item]
-
-      const meta = await extractMetadata([
-        'export default defineNuxtPlugin({',
-        ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString().replace('"[JSX]"', '() => <span>JSX</span>') : JSON.stringify(value)},`),
-        '})',
-      ].join('\n'), 'tsx')
-
-      expect(meta).toEqual({
-        'name': 'test',
-        'order': 1,
-      })
-    }
   })
 
   const transformPlugin: any = RemovePluginMetadataPlugin({
@@ -40,14 +36,7 @@ describe('plugin-metadata', () => {
       'export const plugin = {}',
     ]
     for (const plugin of invalidPlugins) {
-      expect(transformPlugin.transform.call({
-        parse: (code: string, opts: any = {}) => Parser.parse(code, {
-          sourceType: 'module',
-          ecmaVersion: 'latest',
-          locations: true,
-          ...opts,
-        }),
-      }, plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
+      expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
     }
   })
 
@@ -59,14 +48,7 @@ describe('plugin-metadata', () => {
         setup: () => {},
       }, { order: 10, name: test })
     `
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
       "
             export default defineNuxtPlugin({
               setup: () => {},

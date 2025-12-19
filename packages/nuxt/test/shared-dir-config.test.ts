@@ -1,28 +1,25 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { normalize } from 'pathe'
+import { join } from 'pathe'
 import type { NuxtConfig } from '@nuxt/schema'
-import { loadNuxt } from '../src'
+import { loadNuxt } from '../src/index.ts'
+import { findWorkspaceDir } from 'pkg-types'
 
-const fixtureDir = normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url)))
+const repoRoot = await findWorkspaceDir()
+const fixtureDir = join(repoRoot, 'test/fixtures/basic')
 
 describe('loadNuxt', () => {
-  it('does not add shared directories to nitro auto-imports in v3', async () => {
-    const importDirs = await getNitroImportDirs({ future: { compatibilityVersion: 3 as any } })
-    expect(normalizePaths(importDirs)).toMatchInlineSnapshot(`[]`)
-  })
   it('adds shared directories for layers to nitro auto-imports in v4', async () => {
-    const importDirs = await getNitroImportDirs({ future: { compatibilityVersion: 4 } })
+    const importDirs = await getNitroImportDirs()
     expect(normalizePaths(importDirs)).toMatchInlineSnapshot(`
       [
         "<rootDir>/shared/utils",
         "<rootDir>/shared/types",
         "<rootDir>/extends/bar/shared/utils",
         "<rootDir>/extends/bar/shared/types",
-        "<rootDir>/extends/node_modules/foo/shared/utils",
-        "<rootDir>/extends/node_modules/foo/shared/types",
         "<rootDir>/layers/bar/shared/utils",
         "<rootDir>/layers/bar/shared/types",
+        "<rootDir>/extends/node_modules/foo/shared/utils",
+        "<rootDir>/extends/node_modules/foo/shared/types",
       ]
     `)
   })

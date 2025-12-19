@@ -4,6 +4,11 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
 import perfectionist from 'eslint-plugin-perfectionist'
+import { importX } from 'eslint-plugin-import-x'
+import parser from '@typescript-eslint/parser'
+import markdown from '@eslint/markdown'
+
+import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
 
 export default createConfigForNuxt({
   features: {
@@ -11,6 +16,7 @@ export default createConfigForNuxt({
       commaDangle: 'always-multiline',
     },
     tooling: true,
+    typescript: true,
   },
 })
   .prepend(
@@ -18,10 +24,12 @@ export default createConfigForNuxt({
       // Ignores have to be a separate object to be treated as global ignores
       // Don't add other attributes to this object
       ignores: [
+        '.goff/**',
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
-        'packages/nuxt/src/core/runtime/nitro/error-*',
+        'packages/nuxt/src/core/runtime/nitro/templates/error-*',
+        'packages/nitro-server/src/runtime/templates/error-*',
       ],
     },
     {
@@ -91,6 +99,24 @@ export default createConfigForNuxt({
     },
   })
 
+  .append({
+    files: ['packages/**/*.{mjs,js,ts}', '**/*.{spec,test}.{mjs,js,ts}'],
+    ignores: [
+      'packages/nuxt/src/app/types/augments.ts',
+      'test/fixtures/basic/app/plugins/this-should-not-load.spec.js',
+    ],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-deprecated': 'error',
+    },
+  })
+
   .override('nuxt/tooling/unicorn', {
     rules: {
       'unicorn/no-new-array': 'off',
@@ -119,15 +145,38 @@ export default createConfigForNuxt({
   // Append local rules
   .append(
     {
+      files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      ignores: ['packages/**/*.client.ts', 'packages/**/*.client.mts', 'packages/**/*.client.js', 'packages/**/*.client.mjs'],
+      name: 'local/requires/explicit-node-imports',
+      rules: {
+        // Ban direct use of restricted global identifiers
+        'no-restricted-globals': [
+          'error',
+          {
+            message: 'Use explicit import: import process from "node:process" (or a scoped alias). Implicit globals are banned for clarity and tree-shakability.',
+            name: 'process',
+          },
+          {
+            message: 'Use explicit import: import { performance } from "node:perf_hooks". Implicit global performance is banned in server contexts to ensure Node.js-specific usage.',
+            name: 'performance',
+          },
+        ],
+      },
+    },
+    // @ts-expect-error type issues
+    {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
+      plugins: {
+        'import-x': importX,
+      },
       rules: {
-        'import/no-restricted-paths': [
+        'import-x/no-restricted-paths': [
           'error',
           {
             zones: [
               {
-                from: 'packages/nuxt/src/!(core)/**/*',
+                from: 'packages/nuxt/src/!(core)/runtime/*',
                 message: 'core should not directly import from modules.',
                 target: 'packages/nuxt/src/core',
               },
@@ -161,6 +210,22 @@ export default createConfigForNuxt({
       },
     },
     {
+      files: ['packages/*/src/**'],
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      name: 'local/import-extensions',
+      plugins: {
+        'import-x': importX,
+      },
+      rules: {
+        'import/extensions': ['error', 'always', {
+          ignorePackages: true,
+          js: 'always',
+          ts: 'always',
+          vue: 'always',
+        }],
+      },
+    },
+    {
       files: ['packages/nuxt/src/app/**', 'test/**', '**/runtime/**', '**/*.test.ts'],
       name: 'local/disables/client-console',
       rules: {
@@ -188,23 +253,8 @@ export default createConfigForNuxt({
                   'vue/server-renderer',
                   'vue',
                   'vue-router',
-                  // other deps
-                  'devalue',
-                  'klona',
-                  // unjs ecosystem
-                  'defu',
-                  'ufo',
-                  'h3',
-                  'destr',
-                  'consola',
-                  'hookable',
-                  'unctx',
-                  'cookie-es',
-                  'perfect-debounce',
-                  'radix3',
-                  'ohash',
-                  'pathe',
-                  'uncrypto',
+                  ...runtimeDependencies,
+                  'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
                 ].map(r => `!${r}`),
@@ -255,9 +305,34 @@ export default createConfigForNuxt({
         'vue/multi-word-component-names': 'off',
       },
     },
+    {
+      files: ['**/*.md'],
+      language: 'markdown/commonmark',
+      name: 'local/docs-markdown',
+      plugins: {
+        markdown,
+      },
+      processor: 'markdown/markdown',
+    },
+    {
+      // targets code-blocks in markdown files
+      files: ['**/*.md/**/*'],
+      rules: {
+        '@stylistic/keyword-spacing': 'off',
+        '@typescript-eslint/no-empty-object-type': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        'import/first': 'off',
+        'no-console': 'off',
+        'no-unused-vars': 'off',
+        'vue/no-unused-vars': 'off',
+        'vue/require-v-for-key': 'off',
+      },
+    },
   )
 
   // Generate type definitions for the eslint config
+  // @ts-expect-error type issues in eslint
   .onResolved((configs) => {
+    // @ts-expect-error type issues in eslint
     return typegen(configs)
   })

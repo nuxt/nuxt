@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
 import type { Politeness } from 'nuxt/app'
-import { useRouteAnnouncer } from '#app/composables/route-announcer'
+import { useRouteAnnouncer } from '../composables/route-announcer'
 
 export default defineComponent({
   name: 'NuxtRouteAnnouncer',

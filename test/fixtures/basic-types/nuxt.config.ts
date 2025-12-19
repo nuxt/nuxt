@@ -1,6 +1,9 @@
-import { addTypeTemplate, installModule } from 'nuxt/kit'
+/// <reference path="./config-types.ts" />
 
-export default defineNuxtConfig({
+import { addTypeTemplate, installModule } from 'nuxt/kit'
+import { typescriptBundlerResolution, withMatrix } from '../../matrix'
+
+export default withMatrix({
   extends: [
     './extends/node_modules/foo',
   ],
@@ -10,9 +13,9 @@ export default defineNuxtConfig({
       addTypeTemplate({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
-      })
+      }, { nuxt: true, nitro: true, node: true })
       function _test () {
-        installModule('~/modules/example', {
+        installModule('~~/modules/example', {
           typeTest (val) {
             // @ts-expect-error module type defines val as boolean
             const b: string = val
@@ -23,7 +26,7 @@ export default defineNuxtConfig({
     },
     './modules/test',
     [
-      '~/modules/example',
+      '~~/modules/example',
       {
         typeTest (val) {
           // @ts-expect-error module type defines val as boolean
@@ -76,20 +79,18 @@ export default defineNuxtConfig({
       testConfig: 123,
     },
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   routeRules: {
     '/param': {
       redirect: '/param/1',
     },
   },
   future: {
-    typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler',
+    typescriptBundlerResolution,
   },
   experimental: {
     typedPages: true,
     appManifest: true,
   },
-  compatibilityDate: '2024-06-28',
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'schema:extend' (schemas) {

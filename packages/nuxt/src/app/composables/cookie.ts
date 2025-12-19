@@ -33,7 +33,8 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
 } satisfies CookieOptions<any>
 
-const store = import.meta.client && cookieStore ? window.cookieStore : undefined
+// we use globalThis to avoid crashes in web workers
+const store = import.meta.client && cookieStore ? globalThis.cookieStore : undefined
 
 /** @since 3.0.0 */
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
@@ -53,6 +54,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   const hasExpired = delay !== undefined && delay <= 0
+  const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use basic ref
@@ -74,8 +76,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       // BroadcastChannel will fail in certain situations when cookies are disabled
       // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
     }
-    const callback = () => {
-      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+    const callback = (force = false) => {
+      if (!force) {
+        if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
 
       cookies[name] = klona(cookie.value)
@@ -130,8 +134,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         callback()
       },
       { deep: opts.watch !== 'shallow' })
-    } else {
-      callback()
+    }
+
+    if (shouldSetInitialClientCookie) {
+      callback(shouldSetInitialClientCookie)
     }
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
@@ -205,7 +211,7 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 /**
  * The maximum value allowed on a timeout delay.
  *
- * Reference: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
+ * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout#maximum_delay_value
  */
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 

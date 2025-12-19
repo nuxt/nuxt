@@ -6,19 +6,31 @@ max_cache_age = "1d"
 # Ignore all private link (such as localhost) to avoid errors
 exclude_all_private = true
 # HTTP status code: 429 (Too Many Requests) will also be treated as a valid link if Lychee gets rate limited
-accept = [200, 429]
+accept = [200, 201, 204, 206, 300, 301, 302, 303, 304, 307, 308, 999]
 
 # Base URL or website root directory to check relative URLs.
-base = "https://nuxt.com"
+base_url = "https://nuxt.com/"
 
 no_progress = true
 
-# retry
+# Enable checking of fragments/anchors in links (e.g., #section-name)
+# include_fragments = true
+
+# Follow redirects
+max_redirects = 1
+
+# Set user agent to avoid bot blocking
+user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
+
+# Set reasonable timeout and retry values
+timeout = 20
+retry_wait_time = 2
 max_retries = 6
+
 # Explicitly exclude some URLs
 exclude = [
   "https://twitter.nuxt.dev/",
-  "https://github.com/nuxt/translations/discussions/4",
+  "https://www.webpagetest.org/",
   "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
   # dummy example URLs
@@ -27,14 +39,17 @@ exclude = [
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
-  'https://www.npmjs.com/package/(.*)importName(.*)',
-  # TODO: address 404s (non-prerendered files?) from nuxt.com
-  "https://nuxt.com/docs/guide/going-further/modules",
-  "https://nuxt.com/docs/guide/directory-structure/pages",
+  "https://nuxt.new/c/v4",
+  "https://nuxt.new/s/v4",
+  "https://www.npmjs.com/",
   # single-quotes are required for regexp
+  'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
   # excluded URLs from test suite
   "http://auth.com",
+  "http://example1.com/",
   "http://example2.com/",
+  "http://example3.com/",
+  "~images/main-bg.jpg",
 ]

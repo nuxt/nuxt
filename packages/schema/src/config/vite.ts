@@ -1,17 +1,9 @@
-import { consola } from 'consola'
-import defu from 'defu'
+import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
-  /**
-   * Configuration that will be passed directly to Vite.
-   *
-   * @see [Vite configuration docs](https://vite.dev/config) for more information.
-   * Please note that not all vite options are supported in Nuxt.
-   * @type {typeof import('../src/types/config').ViteConfig & { $client?: typeof import('../src/types/config').ViteConfig, $server?: typeof import('../src/types/config').ViteConfig }}
-   */
   vite: {
     root: {
       $resolve: async (val, get) => typeof val === 'string' ? val : (await get('srcDir')),
@@ -36,12 +28,12 @@ export default defineResolvers({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     },
     publicDir: {
-      // @ts-expect-error this is missing from our `vite` types deliberately, so users do not configure it
       $resolve: (val) => {
         if (val) {
-          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
+          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.')
         }
-        return false
+        // this is missing from our `vite` types deliberately, so users do not configure it
+        return false as never
       },
     },
     vue: {
@@ -114,13 +106,12 @@ export default defineResolvers({
       fs: {
         allow: {
           $resolve: async (val, get) => {
-            const [buildDir, srcDir, rootDir, workspaceDir, modulesDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir'), get('modulesDir')])
+            const [buildDir, srcDir, rootDir, workspaceDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir')])
             return [...new Set([
               buildDir,
               srcDir,
               rootDir,
               workspaceDir,
-              ...(modulesDir),
               ...Array.isArray(val) ? val : [],
             ])]
           },

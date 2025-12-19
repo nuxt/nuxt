@@ -9,8 +9,6 @@ import { navigateTo } from '../composables/router'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
-// @ts-expect-error virtual file
-import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 
 interface Route {
   /** Percentage encoded pathname section of the URL. */
@@ -37,6 +35,8 @@ interface Route {
 }
 
 function getRouteFromPath (fullPath: string | Partial<Route>) {
+  const route = fullPath && typeof fullPath === 'object' ? fullPath : {}
+
   if (typeof fullPath === 'object') {
     fullPath = stringifyParsedURL({
       pathname: fullPath.path || '',
@@ -52,11 +52,11 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     query: parseQuery(url.search),
     hash: url.hash,
     // stub properties for compat with vue-router
-    params: {},
+    params: route.params || {},
     name: undefined,
-    matched: [],
+    matched: route.matched || [],
     redirectedFrom: undefined,
-    meta: {},
+    meta: route.meta || {},
     href: fullPath,
   }
 }
@@ -247,30 +247,30 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
-          if (isAppManifestEnabled) {
-            const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
+          const routeRules = getRouteRules({ path: to.path })
+          if (routeRules.appMiddleware) {
+            for (const key in routeRules.appMiddleware) {
+              const guard = nuxtApp._middleware.named[key] as RouteGuard | undefined
+              if (!guard) { continue }
 
-            if (routeRules.appMiddleware) {
-              for (const key in routeRules.appMiddleware) {
-                const guard = nuxtApp._middleware.named[key] as RouteGuard | undefined
-                if (!guard) { return }
-
-                if (routeRules.appMiddleware[key]) {
-                  middlewareEntries.add(guard)
-                } else {
-                  middlewareEntries.delete(guard)
-                }
+              if (routeRules.appMiddleware[key]) {
+                middlewareEntries.add(guard)
+              } else {
+                middlewareEntries.delete(guard)
               }
             }
           }
 
           for (const middleware of middlewareEntries) {
+            if (import.meta.dev) {
+              nuxtApp._processingMiddleware = (middleware as any)._path || true
+            }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`,
+                  status: 404,
+                  statusText: `Page Not Found: ${initialURL}`,
                   data: {
                     path: initialURL,
                   },

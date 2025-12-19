@@ -9,10 +9,18 @@ import { useRouter } from './router'
 export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 
 /** @since 3.0.0 */
+/* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface NuxtError<DataT = unknown> extends H3Error<DataT> {}
+export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'> {
+  error?: true
+  status?: number
+  statusText?: string
+  /** @deprecated Use `status` */
+  statusCode?: H3Error<DataT>['statusCode']
+  /** @deprecated Use `statusText` */
+  statusMessage?: H3Error<DataT>['statusMessage']
+}
 
 /** @since 3.0.0 */
 export const showError = <DataT = unknown>(
@@ -24,10 +32,10 @@ export const showError = <DataT = unknown>(
   const nuxtError = createError<DataT>(error)
 
   try {
-    const nuxtApp = useNuxtApp()
     const error = useError()
 
     if (import.meta.client) {
+      const nuxtApp = useNuxtApp()
       nuxtApp.hooks.callHook('app:error', nuxtError)
     }
 
@@ -59,12 +67,11 @@ export const isNuxtError = <DataT = unknown>(
 ): error is NuxtError<DataT> => !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 
 /** @since 3.0.0 */
-export const createError = <DataT = unknown>(
-  error: string | Error | (Partial<NuxtError<DataT>> & {
-    status?: number
-    statusText?: string
-  }),
-) => {
+export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
+  if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>>).statusText) {
+    error.message ??= (error as Partial<NuxtError<DataT>>).statusText
+  }
+
   const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
 
   Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {

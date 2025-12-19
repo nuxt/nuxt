@@ -1,4 +1,4 @@
-import { defineComponent, getCurrentInstance, onErrorCaptured, ref, useId } from 'vue'
+import { defineComponent, getCurrentInstance, onErrorCaptured, shallowRef, useId } from 'vue'
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
 
 import { isPromise } from '@vue/shared'
@@ -35,7 +35,7 @@ const NuxtClientFallbackServer = defineComponent({
   },
   async setup (_, ctx) {
     const vm = getCurrentInstance()
-    const ssrFailed = ref(false)
+    const ssrFailed = shallowRef(false)
     const error = useState<boolean | undefined>(useId())
 
     onErrorCaptured((err) => {

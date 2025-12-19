@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import * as Parser from 'acorn'
 
-import { ComposableKeysPlugin, detectImportNames } from '../src/core/plugins/composable-keys'
+import { ComposableKeysPlugin, detectImportNames } from '../src/core/plugins/composable-keys.ts'
 
 describe('detectImportNames', () => {
   const keyedComposables = {
@@ -33,36 +32,22 @@ describe('composable keys plugin', () => {
     source: '#app',
     argumentLength: 2,
   }]
-  const transformPlugin = ComposableKeysPlugin({ sourcemap: false, rootDir: '/', composables }).raw({}, {} as any) as { transform: (code: string, id: string) => { code: string } | null }
+  const transformPlugin = ComposableKeysPlugin({ sourcemap: false, rootDir: '/', composables }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
   it('should add keyed hash when there is none already provided', () => {
     const code = `
 import { useAsyncData } from '#app'
 useAsyncData(() => {})
     `
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform.handler(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`
       "import { useAsyncData } from '#app'
-      useAsyncData(() => {}, '$yXewDLZblH')"
+      useAsyncData(() => {}, '$HJiaryoL2y')"
     `)
   })
 
   it('should not add hash when one exists', () => {
     const code = `useAsyncData(() => {}, 'foo')`
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
+    expect(transformPlugin.transform.handler(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should not add hash composables is imported from somewhere else', () => {
@@ -70,13 +55,6 @@ useAsyncData(() => {})
 const useAsyncData = () => {}
 useAsyncData(() => {})
     `
-    expect(transformPlugin.transform.call({
-      parse: (code: string, opts: any = {}) => Parser.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        locations: true,
-        ...opts,
-      }),
-    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
+    expect(transformPlugin.transform.handler(code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 })

@@ -7,8 +7,8 @@ import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
-import { TransformPlugin } from '../src/imports/transform'
-import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets'
+import { TransformPlugin } from '../src/imports/transform.ts'
+import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -138,6 +138,7 @@ const excludedVueHelpers = [
   'isRuntimeOnly',
   'isVNode',
   'mergeDefaults',
+  'mergeModels',
   'mergeProps',
   'openBlock',
   'popScopeId',
@@ -193,6 +194,9 @@ const excludedVueHelpers = [
   'hydrateOnIdle',
   'onWatcherCleanup',
   'getCurrentWatcher',
+  'patchProp',
+  'nodeOps',
+  'module.exports',
 ]
 
 describe('imports:vue', () => {
@@ -206,8 +210,8 @@ describe('imports:vue', () => {
   }
 })
 
-describe('imports:nuxt/scripts', () => {
-  const scripts = scriptRegistry().map(s => s.import?.name).filter(Boolean)
+describe('imports:nuxt/scripts', async () => {
+  const scripts = await scriptRegistry().then(r => r.map(s => s.import?.name).filter(Boolean))
   const globalScripts = new Set([
     'useScript',
     'useScriptEventPage',

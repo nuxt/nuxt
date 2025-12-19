@@ -52,11 +52,11 @@ describe('template', () => {
     },
   })
 
-  it.each(['error-404', 'error-500', 'error-dev', 'loading', 'welcome'])('produces correct output for %s template', async (file) => {
+  it.each(['error-404', 'error-500', 'loading', 'welcome'])('produces correct output for %s template', async (file) => {
     const contents = readFileSync(`${distDir}/${file}.vue`, 'utf-8')
 
     const scopedStyle = contents.match(/<style scoped>([\s\S]*)<\/style>/)
-    const globalStyle = contents.match(/style: \[[\s\S]*children: `([\s\S]*)`/)
+    const globalStyle = contents.match(/style: \[[\s\S]*innerHTML: `([\s\S]*)`/)
 
     expect(await formatCss(scopedStyle?.[1] || '')).toMatchSnapshot()
     expect(await formatCss(globalStyle?.[1] || '')).toMatchSnapshot()

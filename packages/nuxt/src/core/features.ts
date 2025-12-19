@@ -2,7 +2,7 @@ import { addDependency } from 'nypm'
 import { resolvePackageJSON } from 'pkg-types'
 import { useNuxt } from '@nuxt/kit'
 import { isCI, provider } from 'std-env'
-import { logger } from '../utils'
+import { logger } from '../utils.ts'
 
 const isStackblitz = provider === 'stackblitz'
 
@@ -12,9 +12,11 @@ interface EnsurePackageInstalledOptions {
   prompt?: boolean
 }
 
-async function promptToInstall (name: string, installCommand: () => Promise<void>, options: EnsurePackageInstalledOptions) {
-  if (await resolvePackageJSON(name, { url: options.searchPaths }).catch(() => null)) {
-    return true
+async function promptToInstall (name: string, installCommand: () => Promise<unknown>, options: EnsurePackageInstalledOptions) {
+  for (const parent of options.searchPaths || []) {
+    if (await resolvePackageJSON(name, { parent }).catch(() => null)) {
+      return true
+    }
   }
 
   logger.info(`Package ${name} is missing`)
@@ -46,7 +48,7 @@ async function promptToInstall (name: string, installCommand: () => Promise<void
   }
 }
 
-// TODO: refactor to Nuxi
+// TODO: refactor to @nuxt/cli
 const installPrompts = new Set<string>()
 export function installNuxtModule (name: string, options?: EnsurePackageInstalledOptions) {
   if (installPrompts.has(name)) { return }

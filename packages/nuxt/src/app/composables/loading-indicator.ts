@@ -1,6 +1,6 @@
-import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
+import { computed, getCurrentScope, onScopeDispose, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
@@ -39,9 +39,9 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400 } = opts
   const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
-  const progress = ref(0)
-  const isLoading = ref(false)
-  const error = ref(false)
+  const progress = shallowRef(0)
+  const isLoading = shallowRef(false)
+  const error = shallowRef(false)
   let done = false
   let rafId: number
 
@@ -50,6 +50,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   let resetTimeout: number | NodeJS.Timeout
 
   const start = (opts: { force?: boolean } = {}) => {
+    _clearTimeouts()
     error.value = false
     set(0, opts)
   }

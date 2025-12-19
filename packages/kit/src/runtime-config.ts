@@ -3,16 +3,16 @@ import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
 
-import defu from 'defu'
-import { useNuxt } from './context'
-import { useNitro } from './nitro'
+import { defu } from 'defu'
+import { useNuxt } from './context.ts'
+import { useNitro } from './nitro.ts'
 
 /**
  * Access 'resolved' Nuxt runtime configuration, with values updated from environment.
  *
  * This mirrors the runtime behavior of Nitro.
  */
-export function useRuntimeConfig () {
+export function useRuntimeConfig (): Record<string, any> {
   const nuxt = useNuxt()
   return applyEnv(klona(nuxt.options.nitro.runtimeConfig!), {
     prefix: 'NITRO_',
@@ -24,7 +24,7 @@ export function useRuntimeConfig () {
 /**
  * Update Nuxt runtime configuration.
  */
-export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>) {
+export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): void | Promise<void> {
   const nuxt = useNuxt()
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
@@ -36,7 +36,7 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>) {
 }
 
 /**
- * https://github.com/nitrojs/nitro/blob/main/src/runtime/internal/utils.env.ts.
+ * https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.env.ts.
 *
  * These utils will be replaced by util exposed from nitropack. See https://github.com/nitrojs/nitro/pull/2404
  * for more context and future plans.)

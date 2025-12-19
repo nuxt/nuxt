@@ -5,7 +5,7 @@
     ":pinDevDependencies",
     ":widenPeerDependencies"
   ],
-  "baseBranches": [
+  "baseBranchPatterns": [
     "main",
     "3.x"
   ],
@@ -15,9 +15,15 @@
   ],
   "packageRules": [
     {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "/webpack/",
+        "/-loader/"
+      ]
+    },
+    {
       "groupName": "vitest",
       "matchPackageNames": [
-        "vite-node",
         "vitest",
         "/^@vitest//"
       ]
@@ -30,14 +36,8 @@
       "ignoreDeps": [
         "nuxt",
         "nuxt3",
-        "@nuxt/kit"
-      ]
-    },
-    {
-      "groupName": "webpack",
-      "matchPackageNames": [
-        "webpack",
-        "memfs"
+        "@nuxt/kit",
+        "@rollup/plugin-commonjs"
       ]
     }
   ]

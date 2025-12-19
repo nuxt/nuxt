@@ -1,4 +1,11 @@
 export default defineNuxtConfig({
+  modules: [],
+  routeRules: {
+    // Should accept any string
+    '/named': { appMiddleware: 'named' },
+  },
   experimental: { appManifest: true },
-  compatibilityDate: '2024-06-28',
+  compatibilityDate: 'latest',
+  // @ts-expect-error Should show error on unknown properties
+  unknownProp: '',
 })

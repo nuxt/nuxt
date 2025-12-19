@@ -1,9 +1,11 @@
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { pathToFileURL } from 'node:url'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { resolve } from 'pathe'
-import { directoryToURL, importModule, tryImportModule } from '../internal/esm'
-import { runWithNuxtContext } from '../context'
-import type { LoadNuxtConfigOptions } from './config'
+import { resolveModulePath } from 'exsolve'
+import { interopDefault } from 'mlly'
+import { directoryToURL, importModule, tryImportModule } from '../internal/esm.ts'
+import { runWithNuxtContext } from '../context.ts'
+import type { LoadNuxtConfigOptions } from './config.ts'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   /** Load nuxt with development mode */
@@ -21,17 +23,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const rootURL = directoryToURL(opts.cwd!)
+  const resolvedPath = ['nuxt-nightly', 'nuxt'].reduce((resolvedPath, pkg) => {
+    const path = resolveModulePath(pkg, { try: true, from: [directoryToURL(opts.cwd!)] })
+    return path && path.length > resolvedPath.length ? path : resolvedPath
+  }, '')
 
-  const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt']
-    .map(pkg => resolvePackageJSON(pkg, { url: rootURL }).catch(() => null)))
-    .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
-  if (!nearestNuxtPkg) {
+  if (!resolvedPath) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
-  const pkg = await readPackageJSON(nearestNuxtPkg)
-
-  const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { url: rootURL })
+  const { loadNuxt } = await import(pathToFileURL(resolvedPath).href).then(r => interopDefault(r)) as typeof import('nuxt')
   const nuxt = await loadNuxt(opts)
   return nuxt
 }

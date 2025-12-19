@@ -3,9 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
-import { loadNuxt } from '../src'
+import { findWorkspaceDir } from 'pkg-types'
+import { loadNuxt } from '../src/index.ts'
+import type { NuxtConfig } from '../schema.ts'
 
-const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
 
 vi.stubGlobal('console', {
   ...console,
@@ -59,8 +61,8 @@ describe('loadNuxt', () => {
 
     expect(nuxt.options.css).toMatchInlineSnapshot(`
       [
-        "auto.css",
         "custom.css",
+        "auto.css",
         "final-project.css",
         "duplicate.css",
         "override.css",
@@ -105,5 +107,82 @@ describe('loadNuxt', () => {
     await nuxt.callHook('test')
 
     expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('ensures layer modules remain in order', async () => {
+    const layerFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))))
+    const nuxt = await loadNuxt({ cwd: layerFixtureDir })
+    await nuxt.close()
+
+    const modules = nuxt.options._installedModules.map(item => item.meta.name ?? item.module.name)
+
+    expect(modules).toMatchInlineSnapshot(`
+      [
+        "customLayerInlineModule",
+        "customLayerModule",
+        "customLayerAutoModule",
+        "autoLayerInlineModule",
+        "autoLayerModule",
+        "autoLayerAutoModule",
+        "projectModule",
+        "projectInlineModule",
+        "css",
+        "projectAutoModule",
+        "@nuxt/devtools",
+        "nuxt:pages",
+        "nuxt:meta",
+        "nuxt:components",
+        "nuxt:imports",
+        "nuxt:nuxt-config-schema",
+        "@nuxt/telemetry",
+      ]
+    `)
+  })
+
+  it('includes layer server directories in nitro tsconfig', async () => {
+    const layerFixtureDir = withoutTrailingSlash(
+      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
+    )
+
+    const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
+
+    const tsConfigInclude = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
+
+    const hasLayerServer = tsConfigInclude.some((p: string) =>
+      p.replace(/\\/g, '/').includes('layers/auto/server'),
+    )
+
+    expect(hasLayerServer).toBe(true)
+
+    await nuxt.close()
+  })
+
+  it('includes #server alias in nitro tsconfig paths', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+
+    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+
+    expect(tsConfigPaths).toHaveProperty('#server')
+    expect(tsConfigPaths).toHaveProperty('#server/*')
+
+    await nuxt.close()
+  })
+})
+
+const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
+  ['pages dir', {}, { enabled: true }],
+  ['pages dir empty', { dir: { pages: 'empty-dir' } }, { enabled: false }],
+  ['user config', { pages: false }, { enabled: false }],
+  ['user config', { pages: { enabled: false } }, { enabled: false }],
+  ['user config', { pages: { enabled: true, pattern: '**/*{.vue}' } }, { enabled: true, pattern: '**/*{.vue}' }],
+]
+
+const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
+describe('pages detection', () => {
+  it.each(pagesDetectionTests)('%s `%s`', async (_, overrides, result) => {
+    const nuxt = await loadNuxt({ cwd: pagesFixtureDir, overrides, ready: true })
+    // @ts-expect-error should resolve to object?
+    expect(nuxt.options.pages).toMatchObject(result)
+    await nuxt.close()
   })
 })

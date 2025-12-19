@@ -3,15 +3,9 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
+import { withMatrix } from '../../matrix'
 
-// (defined in nuxt/src/core/nitro.ts)
-declare module 'nitro/types' {
-  interface NitroRouteConfig {
-    ssr?: boolean
-  }
-}
-
-export default defineNuxtConfig({
+export default withMatrix({
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
@@ -35,11 +29,12 @@ export default defineNuxtConfig({
         }
       })
     },
-    '~/modules/subpath',
+    '~~/custom-modules/subpath',
     './modules/test',
-    '~/modules/example',
+    '~~/modules/example',
     function (_, nuxt) {
-      if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
+      // Virtual CSS modules only work with Vite, not with webpack/rspack
+      if (typeof nuxt.options.builder === 'string' && (nuxt.options.builder.includes('webpack') || nuxt.options.builder.includes('rspack'))) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')
@@ -137,7 +132,6 @@ export default defineNuxtConfig({
       needsFallback: undefined,
     },
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   build: {
     transpile: [
       (ctx) => {
@@ -160,7 +154,6 @@ export default defineNuxtConfig({
   },
   experimental: {
     decorators: true,
-    serverAppConfig: true,
     typedPages: true,
     clientFallback: true,
     restoreState: true,
@@ -168,13 +161,8 @@ export default defineNuxtConfig({
     componentIslands: {
       selectiveClient: 'deep',
     },
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
-    headNext: true,
     inlineRouteRules: true,
   },
-  compatibilityDate: '2024-06-28',
   nitro: {
     publicAssets: [
       {
@@ -194,8 +182,9 @@ export default defineNuxtConfig({
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
-      '/no-scripts': { experimentalNoScripts: true },
+      '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
+      '/route-rules/redirect': { redirect: '/' },
     },
     prerender: {
       routes: [
@@ -207,9 +196,19 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    $client: {
+      build: {
+        target: ['chrome107', 'edge107', 'firefox108', 'safari17'],
+      },
+    },
     logLevel: 'silent',
     build: {
       assetsInlineLimit: 100, // keep SVG as assets URL
+    },
+  },
+  postcss: {
+    plugins: {
+      '~~/postcss/plugin': {},
     },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
@@ -221,7 +220,7 @@ export default defineNuxtConfig({
           rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader',
         )
         for (const rule of esbuildRules) {
-          if (typeof rule === 'object' && typeof rule.options === 'object') {
+          if (typeof rule === 'object' && typeof rule?.options === 'object') {
             rule.options.target = 'es2022'
           }
         }
@@ -241,9 +240,10 @@ export default defineNuxtConfig({
         }
       }
     },
-    'vite:extendConfig' (config) {
+    'vite:extend' ({ config }) {
       config.plugins!.push({
         name: 'nuxt:server',
+        enforce: 'pre',
         configureServer (server) {
           server.middlewares.use((req, res, next) => {
             if (req.url === '/vite-plugin-without-path') {

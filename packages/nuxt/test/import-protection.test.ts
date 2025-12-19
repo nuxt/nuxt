@@ -1,8 +1,8 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { ImpoundPlugin } from 'impound'
-import { createImportProtectionPatterns } from '../src/core/plugins/import-protection'
-import type { NuxtOptions } from '../schema'
+import { createImportProtectionPatterns } from '../src/core/plugins/import-protection.ts'
+import type { NuxtOptions } from '../schema.ts'
 
 const testsToTriggerOn = [
   ['~/nuxt.config', 'app.vue', true],
@@ -22,6 +22,7 @@ const testsToTriggerOn = [
   ['nuxt/schema', 'components/Component.vue', true],
   ['/root/node_modules/@nuxt/kit', 'components/Component.vue', true],
   ['some-nuxt-module', 'components/Component.vue', true],
+  ['some-nuxt-module/runtime/something.vue', 'components/Component.vue', false],
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
   ['src/server/api/test.ts', 'components/Component.vue', true],
   ['node_modules/nitropack/node_modules/crossws/dist/adapters/bun.mjs', 'node_modules/nitropack/dist/presets/bun/runtime/bun.mjs', false],
@@ -34,7 +35,7 @@ describe('import protection', () => {
       expect(result).toBeNull()
     } else {
       expect(result).toBeDefined()
-      expect(normalize(result)).contains('unenv/runtime/mock/proxy')
+      expect(normalize(result)).contains('mocked-exports')
     }
   })
 })
@@ -44,7 +45,10 @@ const transformWithImportProtection = (id: string, importer: string, context: 'n
     cwd: '/root',
     patterns: createImportProtectionPatterns({
       options: {
-        modules: ['some-nuxt-module'],
+        _installedModules: [
+          // @ts-expect-error an incomplete module
+          { entryPath: 'some-nuxt-module' },
+        ],
         srcDir: '/root/src/',
         serverDir: '/root/src/server',
       } satisfies Partial<NuxtOptions> as NuxtOptions,

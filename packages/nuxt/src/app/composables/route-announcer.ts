@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
-import { getCurrentScope, onScopeDispose, ref } from 'vue'
-import { injectHead } from '@unhead/vue'
+import { getCurrentScope, onScopeDispose, shallowRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { injectHead } from './head'
 
 export type Politeness = 'assertive' | 'polite' | 'off'
 
@@ -20,8 +20,8 @@ export type RouteAnnouncer = {
 }
 
 function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
-  const message = ref('')
-  const politeness = ref<Politeness>(opts.politeness || 'polite')
+  const message = shallowRef('')
+  const politeness = shallowRef<Politeness>(opts.politeness || 'polite')
   const activeHead = injectHead()
 
   function set (messageValue: string = '', politenessSetting: Politeness = 'polite') {
