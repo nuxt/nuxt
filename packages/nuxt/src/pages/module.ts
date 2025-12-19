@@ -7,9 +7,9 @@ import { joinURL } from 'ufo'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 
-import type { NitroRouteConfig } from 'nitropack/types'
+import type { NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
@@ -405,9 +405,12 @@ export default defineNuxtModule({
 
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
-        const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
+        const routeRulesRouter = createRou3Router<NitroRouteRules>()
+        for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
+          addRoute(routeRulesRouter, undefined, route, rules)
+        }
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...routeRulesMatcher.matchAll(route).reverse())
+          const rules = defu({} as Record<string, any>, ...findAllRoutes(routeRulesRouter, undefined, route).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
@@ -449,25 +452,23 @@ export default defineNuxtModule({
         })
       })
     }
-    if (nuxt.options.experimental.appManifest) {
-      // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
-      // when the app manifest is enabled.
-      nuxt.hook('pages:extend', (routes) => {
-        const nitro = useNitro()
-        let resolvedRoutes: string[]
-        for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
-          if (!rule.redirect) { continue }
-          resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
-          // skip if there's already a route matching this path
-          if (resolvedRoutes.includes(path)) { continue }
-          routes.push({
-            _sync: true,
-            path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
-            file: componentStubPath,
-          })
-        }
-      })
-    }
+
+    // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
+    nuxt.hook('pages:extend', (routes) => {
+      const nitro = useNitro()
+      let resolvedRoutes: string[]
+      for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
+        if (!rule.redirect) { continue }
+        resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
+        // skip if there's already a route matching this path
+        if (resolvedRoutes.includes(path)) { continue }
+        routes.push({
+          _sync: true,
+          path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
+          file: componentStubPath,
+        })
+      }
+    })
 
     // Extract macros from pages
     const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []

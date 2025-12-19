@@ -418,9 +418,9 @@ importers:
       pkg-types:
         specifier: ^2.3.0
         version: 2.3.0
-      radix3:
-        specifier: ^1.1.2
-        version: 1.1.2
+      rou3:
+        specifier: ^0.7.12
+        version: 0.7.12
       std-env:
         specifier: ^3.10.0
         version: 3.10.0
@@ -587,9 +587,9 @@ importers:
       pkg-types:
         specifier: ^2.3.0
         version: 2.3.0
-      radix3:
-        specifier: ^1.1.2
-        version: 1.1.2
+      rou3:
+        specifier: ^0.7.12
+        version: 0.7.12
       scule:
         specifier: ^1.3.0
         version: 1.3.0
@@ -7391,6 +7391,9 @@ packages:
     resolution: {integrity: sha512-YpXaaArg0MvrnJpvduEDYIp7uGOqKXbH9NsHGQ6SxKCOsNAjZF018MmxefFUulVP2KLtiGw1UvZbr+/ekjvlDg==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
+
+  rou3@0.7.12:
+    resolution: {integrity: sha512-iFE4hLDuloSWcD7mjdCDhx2bKcIsYbtOTpfH5MHHLSKMOUyjqQXTeZVa289uuwEGEKFoE/BAPbhaU4B774nceg==}
 
   run-applescript@7.1.0:
     resolution: {integrity: sha512-DPe5pVFaAsinSaV6QjQ6gdiedWDcRCbUuiQfQa2wmWV7+xC9bGulGI8+TdRmoFkAPaBXk8CrAbnlY2ISniJ47Q==}
@@ -15544,6 +15547,8 @@ snapshots:
       '@rollup/rollup-win32-x64-gnu': 4.53.4
       '@rollup/rollup-win32-x64-msvc': 4.53.4
       fsevents: 2.3.3
+
+  rou3@0.7.12: {}
 
   run-applescript@7.1.0: {}
 
