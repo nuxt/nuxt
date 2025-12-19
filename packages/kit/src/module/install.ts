@@ -59,7 +59,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       throw err
     })
 
-    const dependencyMeta = res.nuxtModule.getModuleDependencies?.(nuxt) || {}
+    const dependencyMeta = await res.nuxtModule.getModuleDependencies?.(nuxt) || {}
     for (const [name, value] of Object.entries(dependencyMeta)) {
       if (!value.overrides && !value.defaults && !value.version && value.optional) {
         continue
