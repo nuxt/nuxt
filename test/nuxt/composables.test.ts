@@ -381,7 +381,10 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
-        "redirect": "/",
+        "redirect": {
+          "status": 307,
+          "to": "/",
+        },
       }
     `)
   })

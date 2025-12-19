@@ -33,7 +33,7 @@ describe('resolveApp', () => {
         "middleware": [
           {
             "global": true,
-            "name": "middleware-route-rule",
+            "name": "manifest-route-rule",
             "path": "<repoRoot>/packages/nuxt/src/app/middleware/route-rules.ts",
           },
         ],
