@@ -153,7 +153,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
     }
 
-    await callLifecycleHooks(nuxtModule, meta, inlineOptions, nuxt, isDisabled)
+    if (!isDisabled) {
+      await callLifecycleHooks(nuxtModule, meta, inlineOptions, nuxt)
+    }
     await callModule(nuxtModule, meta, inlineOptions, resolvedModulePath, moduleToInstall, localLayerModuleDirs, buildTimeModuleMeta, nuxt, isDisabled)
   }
 
@@ -318,10 +320,7 @@ export const normalizeModuleTranspilePath = (p: string) => {
 
 const MissingModuleMatcher = /Cannot find module\s+['"]?([^'")\s]+)['"]?/i
 
-async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt(), isDisabled = false) {
-  if (isDisabled) {
-    return
-  }
+async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta = {}, inlineOptions?: Record<string, unknown>, nuxt = useNuxt()) {
   if (!meta.name || !meta.version) {
     return
   }
