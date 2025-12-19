@@ -60,7 +60,7 @@ describe('disable modules with false', () => {
       cwd: fixtureDir,
       overrides: {
         'layer-module-a': false,
-        'layer-module-c': false,
+        'layerModuleC': false,
       } as Record<string, unknown>,
     })
     await nuxt.close()
@@ -86,7 +86,7 @@ describe('disable modules with false', () => {
     const nuxt = await loadNuxt({
       cwd: fixtureDir,
       overrides: {
-        'project-module': false,
+        'projectModule': false,
       } as Record<string, unknown>,
     })
     await nuxt.close()
@@ -106,8 +106,8 @@ describe('disable modules with false', () => {
       cwd: fixtureDir,
       overrides: {
         'layer-module-a': false,
-        'layer-module-b': false,
-        'layer-module-c': false,
+        'layerModuleB': false,
+        'layerModuleC': false,
       } as Record<string, unknown>,
     })
     await nuxt.close()
