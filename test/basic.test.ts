@@ -105,6 +105,11 @@ describe('route rules', () => {
     const html = await $fetch<string>('/route-rules/middleware')
     expect(html).toContain('Hello from routeRules!')
   })
+
+  it('should set layout defined in routeRules config', async () => {
+    const html = await $fetch<string>('/route-rules/layout')
+    expect(html).toContain('Custom Layout')
+  })
 })
 
 describe('modules', () => {

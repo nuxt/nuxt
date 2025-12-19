@@ -22,7 +22,7 @@ import { ImpoundPlugin } from 'impound'
 import { defu } from 'defu'
 import { coerce, gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
-import { genImport } from 'knitwork'
+import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features.ts'
@@ -192,6 +192,31 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
+
+  addTypeTemplate({
+    filename: 'types/nitro-layouts.d.ts',
+    getContents: ({ app }) => {
+      return [
+        `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
+        'declare module \'nitropack\' {',
+        '  interface NitroRouteConfig {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '  interface NitroRouteRules {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '}',
+        'declare module \'nitropack/types\' {',
+        '  interface NitroRouteConfig {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '  interface NitroRouteRules {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '}',
+      ].join('\n')
+    },
+  }, { nuxt: true, nitro: true, node: true })
 
   // Disable environment types entirely if `typescript.builder` is false
   if (nuxt.options.typescript.builder !== false) {

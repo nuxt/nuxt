@@ -335,7 +335,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
-  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware']
+  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout']
 
   function getRouteRulesRouter () {
     const routeRulesRouter = createRou3Router<NitroRouteRules>()
@@ -357,7 +357,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (cachedMatchers[key]) {
         return cachedMatchers[key]
       }
-      return cachedMatchers[key] = `export default ${compileRouterToString(getRouteRulesRouter(), '', {
+      const matcher = compileRouterToString(getRouteRulesRouter(), '', {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
@@ -383,7 +383,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             }).join(',')
           }}`
         },
-      })}`
+      })
+      return cachedMatchers[key] = `
+      import { defu } from 'defu'
+      const matcher = ${matcher}
+      export default (path) => defu({}, ...matcher('', path).map(r => r.data).reverse())
+      `
     },
   })
 

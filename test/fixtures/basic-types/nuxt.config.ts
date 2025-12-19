@@ -81,6 +81,9 @@ export default withMatrix({
     '/param': {
       redirect: '/param/1',
     },
+    '/layout': {
+      appLayout: 'custom',
+    },
   },
   future: {
     typescriptBundlerResolution,
