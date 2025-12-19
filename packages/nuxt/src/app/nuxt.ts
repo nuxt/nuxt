@@ -1,7 +1,7 @@
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { HookCallback, Hookable } from 'hookable'
+import type { CallFunction, HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
@@ -360,7 +360,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
   if (import.meta.server) {
     const contextCaller = async function (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
-        await nuxtApp.runWithContext(() => hook(...args.slice(1)))
+        await nuxtApp.runWithContext(() => hook(...args))
       }
     }
     // Patch callHook to preserve NuxtApp context on server
