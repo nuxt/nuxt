@@ -390,7 +390,7 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
       const subpath = await lookupNodeModuleSubpath(modulePath) || '.'
       entryPath = join(parsed.name, subpath === './' ? '.' : subpath)
     }
-    if (res) {
+    if (res !== false) {
       const moduleRoot = parsed.dir
         ? parsed.dir + parsed.name
         : await resolvePackageJSON(modulePath, { try: true }).then(r => r ? dirname(r) : modulePath)
