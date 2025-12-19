@@ -341,13 +341,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
-  const validManifestKeys = new Set(['prerender', 'redirect', 'appMiddleware'])
+  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware']
 
   function getRouteRulesRouter () {
     const routeRulesRouter = createRou3Router<NitroRouteRules>()
     if (nuxt._nitro) {
       for (const [route, rules] of Object.entries(nuxt._nitro.options.routeRules)) {
         if (route === '/__nuxt_error') { continue }
+        if (validManifestKeys.every(key => !(key in rules))) { continue }
         addRoute(routeRulesRouter, undefined, route, rules)
       }
     }
@@ -361,7 +362,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         matchAll: true,
         serialize (routeRules) {
           return `{${Object.entries(routeRules)
-            .filter(([name, options]) => options !== undefined && validManifestKeys.has(name))
+            .filter(([name, options]) => options !== undefined && validManifestKeys.includes(name))
             .map(([name, options]) => {
               if (name === 'redirect') {
                 const redirectOptions = options as NitroRouteRules['redirect']
