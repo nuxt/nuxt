@@ -1,4 +1,3 @@
-import { defu } from 'defu'
 import type { H3Event } from 'h3'
 import type { NitroRouteRules } from 'nitro/types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -9,7 +8,7 @@ import { buildAssetsURL } from '#internal/nuxt/paths'
 // @ts-expect-error virtual file
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
-const routeRulesMatcher = _routeRulesMatcher as (method: string, path: string) => Array<{ data: NitroRouteRules }>
+const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
 export interface NuxtAppManifestMeta {
   id: string
@@ -59,7 +58,7 @@ export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
   const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
-    return defu({} as Record<string, any>, ...routeRulesMatcher('', path).map(r => r.data).reverse())
+    return routeRulesMatcher(path)
   } catch (e) {
     console.error('[nuxt] Error matching route rules.', e)
     return {}

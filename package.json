@@ -62,7 +62,7 @@
     "h3": "2.0.1-rc.6",
     "jiti": "2.6.1",
     "magic-string": "0.30.21",
-    "nitro": "https://pkg.pr.new/nitrojs/nitro@f360ffe",
+    "nitro": "https://pkg.pr.new/nitrojs/nitro@00598a8",
     "nuxt": "workspace:*",
     "ofetch": "2.0.0-alpha.3",
     "postcss": "8.5.6",

@@ -12,7 +12,7 @@ import { crawlLinks } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
-const routeRulesMatcher = _routeRulesMatcher as (method: string, path: string) => Array<{ data: NitroRouteRules }>
+const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
 let routes: string[]
 
@@ -32,7 +32,7 @@ export default defineNuxtPlugin(async () => {
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 function shouldPrerender (path: string) {
-  return crawlLinks || defu({} as NitroRouteRules, ...routeRulesMatcher('', path).map(r => r.data).reverse()).prerender
+  return crawlLinks || !!routeRulesMatcher(path).prerender
 }
 
 function processRoutes (routes: readonly RouteRecordRaw[], currentPath = '/', routesToPrerender = new Set<string>()) {

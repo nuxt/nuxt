@@ -7,10 +7,10 @@ import { joinURL } from 'ufo'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
-
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
+
 import { distDir } from '../dirs.ts'
 import { resolveTypePath } from '../core/utils/types.ts'
 import { logger } from '../utils.ts'

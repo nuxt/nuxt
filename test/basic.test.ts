@@ -8,7 +8,6 @@ import { $fetch as _$fetch, createPage, fetch, setup, startServer, url, useTestC
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
-
 import type { $Fetch } from 'nitro/types'
 
 import { asyncContext, builder, isDev, isRenderingJson, isWebpack } from './matrix'
@@ -109,6 +108,11 @@ describe('route rules', () => {
   it('should run middleware defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/middleware')
     expect(html).toContain('Hello from routeRules!')
+  })
+
+  it('should set layout defined in routeRules config', async () => {
+    const html = await $fetch<string>('/route-rules/layout')
+    expect(html).toContain('Custom Layout')
   })
 })
 
