@@ -374,6 +374,23 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   })
 
+  nuxt.hook('nitro:config', (nitroConfig) => {
+    const rules = nitroConfig.routeRules
+    for (const rule in rules) {
+      if (!(rules[rule] as any).appMiddleware) { continue }
+      const value = (rules[rule] as any).appMiddleware
+      if (typeof value === 'string') {
+        (rules[rule] as NitroOptions['routeRules']).appMiddleware = { [value]: true }
+      } else if (Array.isArray(value)) {
+        const normalizedRules: Record<string, boolean> = {}
+        for (const middleware of value) {
+          normalizedRules[middleware] = true
+        }
+        (rules[rule] as NitroOptions['routeRules']).appMiddleware = normalizedRules
+      }
+    }
+  })
+
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
     const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
@@ -414,21 +431,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.hook('nitro:config', (config) => {
       config.alias ||= {}
       config.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
-
-      const rules = config.routeRules
-      for (const rule in rules) {
-        if (!(rules[rule] as any).appMiddleware) { continue }
-        const value = (rules[rule] as any).appMiddleware
-        if (typeof value === 'string') {
-          (rules[rule] as NitroOptions['routeRules']).appMiddleware = { [value]: true }
-        } else if (Array.isArray(value)) {
-          const normalizedRules: Record<string, boolean> = {}
-          for (const middleware of value) {
-            normalizedRules[middleware] = true
-          }
-          (rules[rule] as NitroOptions['routeRules']).appMiddleware = normalizedRules
-        }
-      }
     })
 
     nuxt.hook('nitro:init', (nitro) => {
