@@ -51,7 +51,7 @@ function createRunner () {
         try {
           const { message, stack } = formatViteError(errorData, id)
           _err = createError({
-            statusMessage: 'Vite Error',
+            statusText: 'Vite Error',
             message,
             stack,
           })
@@ -60,7 +60,7 @@ function createRunner () {
           const message = `[vite-node] [TransformError] ${errorData?.message || '-'}`
           consola.error(message, errorData)
           throw createError({
-            statusMessage: 'Vite Error',
+            statusText: 'Vite Error',
             message,
             stack: `${message}\nat ${id}\n` + (errorData?.stack || ''),
           })
