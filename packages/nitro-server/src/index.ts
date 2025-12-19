@@ -347,6 +347,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     const routeRulesRouter = createRou3Router<NitroRouteRules>()
     if (nuxt._nitro) {
       for (const [route, rules] of Object.entries(nuxt._nitro.options.routeRules)) {
+        if (route === '/__nuxt_error') { continue }
         addRoute(routeRulesRouter, undefined, route, rules)
       }
     }
