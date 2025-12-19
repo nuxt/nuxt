@@ -77,7 +77,7 @@ if (isBuilt || isWindows) {
     await expect(() => fetch('/some-404').then(r => r.status).catch(() => false)).toBeWithPolling(200)
   })
 
-  test('hot reloading route rules', async ({ fetch }) => {
+  test('hot reloading inline route rules', async ({ fetch }) => {
     // Check the initial header
     const file = readFileSync(join(sourceDir, 'app/pages/route-rules.vue'), 'utf8')
     writeFileSync(join(fixtureDir, 'app/pages/route-rules.vue'), file)
@@ -91,6 +91,140 @@ if (isBuilt || isWindows) {
 
     // Wait for the route rule to be hot reloaded
     await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev')
+  })
+
+  test('hot reloading extendRouteRules from module', async ({ fetch }) => {
+    const rulesPath = join(fixtureDir, 'dynamic-rules.json')
+
+    // Set initial rules
+    writeFileSync(rulesPath, JSON.stringify({ '/dynamic/**': { headers: { 'x-dynamic-rule': 'initial' } } }))
+
+    // Fetch route rules via API and verify initial value
+    await expect(() => fetch('/api/route-rules?path=/dynamic/test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-dynamic-rule'])
+      .catch(() => null),
+    ).toBeWithPolling('initial')
+
+    // Update the rules file
+    writeFileSync(rulesPath, JSON.stringify({ '/dynamic/**': { headers: { 'x-dynamic-rule': 'updated-via-extend' } } }))
+
+    // Wait for extendRouteRules HMR to apply
+    await expect(() => fetch('/api/route-rules?path=/dynamic/test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-dynamic-rule'])
+      .catch(() => null),
+    ).toBeWithPolling('updated-via-extend')
+  })
+
+  test('inline route rules override module rules', async ({ fetch }) => {
+    const rulesPath = join(fixtureDir, 'dynamic-rules.json')
+    const inlinePage = join(fixtureDir, 'app/pages/priority-test.vue')
+
+    // Set module rules for /priority-test
+    writeFileSync(rulesPath, JSON.stringify({
+      '/priority-test': { headers: { 'x-source': 'module', 'x-module-only': 'yes' } },
+    }))
+
+    // Wait for module rules to apply
+    await expect(() => fetch('/api/route-rules?path=/priority-test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-source'])
+      .catch(() => null),
+    ).toBeWithPolling('module')
+
+    // Create inline page that overrides x-source but not x-module-only
+    writeFileSync(inlinePage, `<script setup>
+defineRouteRules({ headers: { 'x-source': 'inline' } })
+</script>
+<template><div>Priority test</div></template>`)
+
+    // Inline rules (order: 100) should override module rules (order: 0)
+    await expect(() => fetch('/api/route-rules?path=/priority-test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-source'])
+      .catch(() => null),
+    ).toBeWithPolling('inline')
+
+    // Module-only header should still be present (merged)
+    const rules = await fetch('/api/route-rules?path=/priority-test').then(r => r.json()) as any
+    expect(rules.headers?.['x-module-only']).toBe('yes')
+
+    // Cleanup
+    await rm(inlinePage, { force: true })
+  })
+
+  test('module rules persist when inline rules update', async ({ fetch }) => {
+    const rulesPath = join(fixtureDir, 'dynamic-rules.json')
+    const inlinePage = join(fixtureDir, 'app/pages/persist-test.vue')
+
+    // Set module rules
+    writeFileSync(rulesPath, JSON.stringify({
+      '/persist-test': { headers: { 'x-module': 'persistent' } },
+    }))
+
+    await expect(() => fetch('/api/route-rules?path=/persist-test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-module'])
+      .catch(() => null),
+    ).toBeWithPolling('persistent')
+
+    // Create inline page
+    writeFileSync(inlinePage, `<script setup>
+defineRouteRules({ headers: { 'x-inline': 'v1' } })
+</script>
+<template><div>Persist test</div></template>`)
+
+    await expect(() => fetch('/api/route-rules?path=/persist-test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-inline'])
+      .catch(() => null),
+    ).toBeWithPolling('v1')
+
+    // Update inline rules
+    writeFileSync(inlinePage, `<script setup>
+defineRouteRules({ headers: { 'x-inline': 'v2' } })
+</script>
+<template><div>Persist test</div></template>`)
+
+    // Inline should update
+    await expect(() => fetch('/api/route-rules?path=/persist-test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-inline'])
+      .catch(() => null),
+    ).toBeWithPolling('v2')
+
+    // Module rules should persist
+    const rules = await fetch('/api/route-rules?path=/persist-test').then(r => r.json()) as any
+    expect(rules.headers?.['x-module']).toBe('persistent')
+
+    // Cleanup
+    await rm(inlinePage, { force: true })
+  })
+
+  test('removing module rules via HMR', async ({ fetch }) => {
+    const rulesPath = join(fixtureDir, 'dynamic-rules.json')
+
+    // Set initial rules
+    writeFileSync(rulesPath, JSON.stringify({
+      '/removable/**': { headers: { 'x-removable': 'exists' } },
+    }))
+
+    await expect(() => fetch('/api/route-rules?path=/removable/test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-removable'])
+      .catch(() => null),
+    ).toBeWithPolling('exists')
+
+    // Remove the rules file
+    await rm(rulesPath, { force: true })
+
+    // Rules should be removed
+    await expect(() => fetch('/api/route-rules?path=/removable/test')
+      .then(r => r.json())
+      .then((r: any) => r.headers?.['x-removable'])
+      .catch(() => null),
+    ).toBeWithPolling(undefined)
   })
 
   test('HMR for island components', async ({ page, goto }) => {

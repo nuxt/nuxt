@@ -309,6 +309,9 @@ importers:
       pkg-types:
         specifier: ^2.3.0
         version: 2.3.0
+      radix3:
+        specifier: ^1.1.2
+        version: 1.1.2
       rc9:
         specifier: ^2.1.2
         version: 2.1.2
