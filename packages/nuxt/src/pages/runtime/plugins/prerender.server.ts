@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { joinURL } from 'ufo'
-import type { NitroRouteRules } from 'nitro/types'
+import type { NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
 
 import { defineNuxtPlugin } from '#app/nuxt'
