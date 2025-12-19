@@ -124,8 +124,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Transform to inject imports in production mode
     addBuildPlugin(TransformPlugin({
-      ctx: { injectImports: (code, id, options) => ctx.injectImports(code, id, options) },
-      options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      ctx: {
+        injectImports: (code, id, options) => ctx.injectImports(code, id, options),
+      },
+      options,
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
     }))
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
