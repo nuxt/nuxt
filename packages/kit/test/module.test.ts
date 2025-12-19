@@ -8,7 +8,7 @@ import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
 
-import { defineNuxtModule, installModule, loadNuxt } from '../src'
+import { defineNuxtModule, installModule, loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 

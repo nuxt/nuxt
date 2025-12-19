@@ -18,14 +18,14 @@ import { defineEventHandler, dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
-import './augments'
+import './augments.ts'
 
-import { version as nitroBuilderVersion } from '../package.json'
-import { distDir, toArray } from './utils'
-import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon'
+import nitroBuilder from '../package.json' with { type: 'json' }
+import { distDir, toArray } from './utils.ts'
+import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection'
-import { nitroSchemaTemplate } from './templates'
+import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { nitroSchemaTemplate } from './templates.ts'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -142,7 +142,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     framework: {
       name: 'nuxt',
-      version: nuxtVersion || nitroBuilderVersion,
+      version: nuxtVersion || nitroBuilder.version,
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
@@ -191,6 +191,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // this will be overridden in vite plugin
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
+      '#internal/nuxt/nitro-config.mjs': () => [
+        `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
+        `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
+        `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
+        `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
+        `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
+        `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
+        `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
+        `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
+        `export const NUXT_PAYLOAD_EXTRACTION = ${!!nuxt.options.experimental.payloadExtraction}`,
+      ].join('\n'),
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
@@ -293,15 +304,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#internal/nuxt/paths': resolve(distDir, 'runtime/utils/paths'),
     },
     replace: {
-      'process.env.NUXT_NO_SSR': String(nuxt.options.ssr === false),
-      'process.env.NUXT_EARLY_HINTS': String(nuxt.options.experimental.writeEarlyHints !== false),
-      'process.env.NUXT_NO_SCRIPTS': String(nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)),
-      'process.env.NUXT_INLINE_STYLES': String(!!nuxt.options.features.inlineStyles),
-      'process.env.PARSE_ERROR_DATA': String(!!nuxt.options.experimental.parseErrorData),
-      'process.env.NUXT_JSON_PAYLOADS': String(!!nuxt.options.experimental.renderJsonPayloads),
-      'process.env.NUXT_ASYNC_CONTEXT': String(!!nuxt.options.experimental.asyncContext),
-      'process.env.NUXT_SHARED_DATA': String(!!nuxt.options.experimental.sharedPrerenderData),
-      'process.dev': String(nuxt.options.dev),
       '__VUE_PROD_DEVTOOLS__': String(false),
     },
     rollupConfig: {

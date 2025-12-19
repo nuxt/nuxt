@@ -7,8 +7,8 @@ import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import UnoCSS from 'unocss/vite'
 
-import { DevRenderingPlugin } from './lib/dev'
-import { RenderPlugin } from './lib/render'
+import { DevRenderingPlugin } from './lib/dev.ts'
+import { RenderPlugin } from './lib/render.ts'
 
 const rootDir = fileURLToPath(new URL('.', import.meta.url))
 const r = (...path: string[]) => resolve(rootDir, ...path)

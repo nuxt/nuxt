@@ -85,8 +85,9 @@ export default defineEventHandler(async (event) => {
       const currentValue = islandHead[key as keyof SerializableHead]
       if (Array.isArray(currentValue)) {
         currentValue.push(...value)
+      } else {
+        islandHead[key as keyof SerializableHead] = value
       }
-      islandHead[key as keyof SerializableHead] = value
     }
   }
 

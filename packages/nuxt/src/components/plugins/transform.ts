@@ -8,7 +8,7 @@ import { parseQuery } from 'vue-router'
 import { isAbsolute, normalize } from 'pathe'
 import { readPackage } from 'pkg-types'
 import { genImport } from 'knitwork'
-import type { getComponentsT } from '../module'
+import type { getComponentsT } from '../module.ts'
 import type { Nuxt } from 'nuxt/schema'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/

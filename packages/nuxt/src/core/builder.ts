@@ -5,10 +5,10 @@ import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isI
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
-import { isDirectory, logger } from '../utils'
-import { generateApp as _generateApp, createApp } from './app'
-import { checkForExternalConfigurationFiles } from './external-config-files'
-import { cleanupCaches, getVueHash } from './cache'
+import { isDirectory, logger } from '../utils.ts'
+import { generateApp as _generateApp, createApp } from './app.ts'
+import { checkForExternalConfigurationFiles } from './external-config-files.ts'
+import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {

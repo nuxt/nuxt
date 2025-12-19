@@ -12,13 +12,13 @@ import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import type { NitroRouteConfig } from 'nitropack/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
-import { distDir } from '../dirs'
-import { resolveTypePath } from '../core/utils/types'
-import { logger } from '../utils'
-import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
-import { globRouteRulesFromPages, removePagesRules } from './route-rules'
-import { PageMetaPlugin } from './plugins/page-meta'
-import { RouteInjectionPlugin } from './plugins/route-injection'
+import { distDir } from '../dirs.ts'
+import { resolveTypePath } from '../core/utils/types.ts'
+import { logger } from '../utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
+import { PageMetaPlugin } from './plugins/page-meta.ts'
+import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
@@ -672,7 +672,15 @@ if (import.meta.hot) {
       for (const route of routes) {
         router.addRoute(route)
       }
-      router.replace(router.currentRoute.value.fullPath)
+      router.isReady().then(() => {
+        // Resolve the current path against the new routes to get updated meta
+        const newRoute = router.resolve(router.currentRoute.value.fullPath)
+        // Clear old meta values and assign new ones
+        for (const key of Object.keys(router.currentRoute.value.meta)) {
+          delete router.currentRoute.value.meta[key]
+        }
+        Object.assign(router.currentRoute.value.meta, newRoute.meta)
+      })
     }
     if (routes && 'then' in routes) {
       routes.then(addRoutes)

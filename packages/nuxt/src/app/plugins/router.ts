@@ -255,7 +255,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             if (routeRules.appMiddleware) {
               for (const key in routeRules.appMiddleware) {
                 const guard = nuxtApp._middleware.named[key] as RouteGuard | undefined
-                if (!guard) { return }
+                if (!guard) { continue }
 
                 if (routeRules.appMiddleware[key]) {
                   middlewareEntries.add(guard)
@@ -274,8 +274,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             if (import.meta.server) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`,
+                  status: 404,
+                  statusText: `Page Not Found: ${initialURL}`,
                   data: {
                     path: initialURL,
                   },
