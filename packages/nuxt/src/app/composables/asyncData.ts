@@ -93,10 +93,10 @@ type _DeprecatedAsyncDataHandlerOptions = {
   signal: AbortSignal
 }
 
-export type AsyncDateHandlerContext = { signal: AbortSignal, nuxtApp: NuxtApp }
+export type AsyncDataHandlerContext = { signal: AbortSignal, nuxtApp: NuxtApp }
 
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export type AsyncDataHandler<ResT> = ((context: AsyncDateHandlerContext & _DeprecatedAsyncDataHandlerNuxtApp, options: _DeprecatedAsyncDataHandlerOptions) => Promise<ResT>)
+export type AsyncDataHandler<ResT> = ((context: AsyncDataHandlerContext & _DeprecatedAsyncDataHandlerNuxtApp, options: _DeprecatedAsyncDataHandlerOptions) => Promise<ResT>)
 
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
