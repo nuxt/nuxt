@@ -179,10 +179,10 @@ describe('extendRouteRules handle', () => {
     }
   })
 
-  it('returns a handle with remove and replace', async () => {
+  it('returns a handle with remove and update', async () => {
     const handle = await extendRouteRules('/api/**', { cors: true })
     expect(typeof handle.remove).toBe('function')
-    expect(typeof handle.replace).toBe('function')
+    expect(typeof handle.update).toBe('function')
   })
 
   it('remove() removes the rule from nitro', async () => {
@@ -258,14 +258,14 @@ describe('extendRouteRules handle', () => {
     })
   })
 
-  it('replace() replaces rules in single rebuild', async () => {
+  it('update() replaces rules in single rebuild', async () => {
     const handle = await extendRouteRules({
       '/api/**': { cors: true },
     })
 
     const callsBefore = updateConfigCalls.length
 
-    await handle.replace({
+    await handle.update({
       '/api/**': { cors: false },
       '/new/**': { prerender: true },
     })
@@ -280,11 +280,11 @@ describe('extendRouteRules handle', () => {
     })
   })
 
-  it('replace() can be called multiple times', async () => {
+  it('update() can be called multiple times', async () => {
     const handle = await extendRouteRules({ '/api/**': { cors: true } })
 
-    await handle.replace({ '/v2/**': { cors: true } })
-    await handle.replace({ '/v3/**': { cors: true } })
+    await handle.update({ '/v2/**': { cors: true } })
+    await handle.update({ '/v3/**': { cors: true } })
 
     expect(updateConfigCalls.at(-1)!.routeRules).toEqual({
       '/base/**': { ssr: true },
@@ -403,7 +403,7 @@ describe('extendRouteRules inline rules simulation', () => {
     })
   })
 
-  it('inline rules replace() preserves module rules', async () => {
+  it('inline rules update() preserves module rules', async () => {
     // Module adds rules at default order (0)
     await extendRouteRules('/api/**', { cors: true })
     await extendRouteRules('/static/**', { prerender: true })
@@ -420,7 +420,7 @@ describe('extendRouteRules inline rules simulation', () => {
 
     // Inline rules update (HMR scenario) - single rebuild
     const callsBefore = updateConfigCalls.length
-    await inlineHandle.replace({ '/page/**': { ssr: true }, '/new-page/**': { cache: { maxAge: 30 } } })
+    await inlineHandle.update({ '/page/**': { ssr: true }, '/new-page/**': { cache: { maxAge: 30 } } })
 
     // Only one rebuild
     expect(updateConfigCalls.length).toBe(callsBefore + 1)
@@ -435,7 +435,7 @@ describe('extendRouteRules inline rules simulation', () => {
     })
   })
 
-  it('multiple replace() calls work correctly', async () => {
+  it('multiple update() calls work correctly', async () => {
     // Module rules
     await extendRouteRules('/api/**', { cors: true })
 
@@ -443,7 +443,7 @@ describe('extendRouteRules inline rules simulation', () => {
     const inlineHandle = await extendRouteRules({ '/v1/**': { ssr: false } }, { order: 100 })
 
     // First HMR update
-    await inlineHandle.replace({ '/v2/**': { ssr: false } })
+    await inlineHandle.update({ '/v2/**': { ssr: false } })
 
     expect(updateConfigCalls.at(-1)!.routeRules).toEqual({
       '/config/**': { ssr: true },
@@ -452,7 +452,7 @@ describe('extendRouteRules inline rules simulation', () => {
     })
 
     // Second HMR update
-    await inlineHandle.replace({ '/v3/**': { ssr: false }, '/v3/special/**': { cache: { maxAge: 60 } } })
+    await inlineHandle.update({ '/v3/**': { ssr: false }, '/v3/special/**': { cache: { maxAge: 60 } } })
 
     expect(updateConfigCalls.at(-1)!.routeRules).toEqual({
       '/config/**': { ssr: true },
@@ -527,11 +527,11 @@ describe('extendRouteRules + getRouteRules integration', () => {
       expect(getRouteRules('/api/test')).toEqual({})
     })
 
-    it('invalidates cache when rules are replaced', async () => {
+    it('invalidates cache when rules are updated', async () => {
       const handle = await extendRouteRules('/api/**', { cors: true })
       expect(getRouteRules('/api/test')).toEqual({ cors: true })
 
-      await handle.replace({ '/api/**': { cors: false, prerender: true } })
+      await handle.update({ '/api/**': { cors: false, prerender: true } })
 
       expect(getRouteRules('/api/test')).toEqual({ cors: false, prerender: true })
     })

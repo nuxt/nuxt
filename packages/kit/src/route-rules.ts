@@ -18,18 +18,8 @@ interface RouteRuleStackEntry {
 }
 
 export interface RouteRulesHandle {
-  /**
-   * Remove all route rules added by this handle
-   */
   remove: () => Promise<void>
-  /**
-   * Replace all route rules with new rules (single rebuild)
-   */
-  replace: (rules: Record<string, NitroRouteConfig>) => Promise<void>
-}
-
-interface RouteRulesCache {
-  matcher: ReturnType<typeof toRouteMatcher>
+  update: (rules: Record<string, NitroRouteConfig>) => Promise<void>
 }
 
 /**
@@ -43,12 +33,9 @@ interface RouteRulesCache {
 export function getRouteRules (path: string): NitroRouteRules {
   const nuxt = useNuxt()
   const nitro = tryUseNitro()
-
-  // Use nitro's route rules if available (kept in sync by rebuildNitroRouteRules)
-  // Fall back to nuxt.options.nitro.routeRules before nitro init
   const rules = nitro?.options.routeRules ?? nuxt.options.nitro.routeRules
 
-  let cache = (nuxt as any)[_routeRulesMatcherKey] as RouteRulesCache | undefined
+  let cache = (nuxt as any)[_routeRulesMatcherKey] as { matcher: ReturnType<typeof toRouteMatcher> } | undefined
   if (!cache) {
     cache = { matcher: toRouteMatcher(createRadixRouter({ routes: rules })) }
     ;(nuxt as any)[_routeRulesMatcherKey] = cache
@@ -80,22 +67,13 @@ async function rebuildNitroRouteRules (nuxt: Nuxt, nitro: NonNullable<ReturnType
 }
 
 export interface ExtendRouteRulesOptions {
-  /**
-   * @deprecated Use `order` instead. When true, sets order to 10.
-   */
+  /** @deprecated Use `order` instead. When true, sets order to 10. */
   override?: boolean
   /**
    * Priority order for rule merging. Higher values take precedence.
-   * - 0: default
-   * - 10: override (deprecated shorthand)
-   * - 100: inline route rules (defineRouteRules)
    * @default 0
    */
   order?: number
-}
-
-function invalidateRouteRulesCache (nuxt: Nuxt): void {
-  delete (nuxt as any)[_routeRulesMatcherKey]
 }
 
 function addRulesToStack (
@@ -107,14 +85,12 @@ function addRulesToStack (
 ): void {
   for (const [route, rule] of Object.entries(rules)) {
     stack.push({ id: groupId, route, rule, order })
-    // Sync to nuxt.options for backwards compat (existing rules take precedence here).
-    // Actual priority is handled in rebuildNitroRouteRules via the order-sorted stack.
     for (const target of [nuxt.options, nuxt.options.nitro]) {
       target.routeRules ||= {}
       target.routeRules[route] = defu(target.routeRules[route], rule)
     }
   }
-  invalidateRouteRulesCache(nuxt)
+  delete (nuxt as any)[_routeRulesMatcherKey]
 }
 
 async function extendRouteRulesInternal (
@@ -124,54 +100,44 @@ async function extendRouteRulesInternal (
   const nuxt = useNuxt()
   const stack: RouteRuleStackEntry[] = (nuxt as any)[_routeRulesStack] ||= []
   const groupId = Symbol()
+
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const order = options?.order ?? (options?.override ? 10 : 0)
 
-  addRulesToStack(nuxt, stack, rules, groupId, order)
-
-  // Only rebuild if nitro is already initialized.
-  // Pre-init rules are synced to nuxt.options which nitro reads on startup.
-  const nitro = tryUseNitro()
-  if (nitro) {
-    await rebuildNitroRouteRules(nuxt, nitro)
+  const removeGroupFromStack = () => {
+    let removed = false
+    for (let i = stack.length - 1; i >= 0; i--) {
+      if (stack[i]!.id === groupId) {
+        stack.splice(i, 1)
+        removed = true
+      }
+    }
+    return removed
   }
 
-  return {
+  const handle: RouteRulesHandle = {
     remove: async () => {
-      let removed = false
-      for (let i = stack.length - 1; i >= 0; i--) {
-        if (stack[i]!.id === groupId) {
-          stack.splice(i, 1)
-          removed = true
-        }
-      }
-      if (removed) {
-        invalidateRouteRulesCache(nuxt)
-        const nitro = tryUseNitro()
-        if (nitro) {
-          await rebuildNitroRouteRules(nuxt, nitro)
-        }
-      }
+      if (!removeGroupFromStack()) { return }
+      delete (nuxt as any)[_routeRulesMatcherKey]
+      const nitro = tryUseNitro()
+      if (nitro) { await rebuildNitroRouteRules(nuxt, nitro) }
     },
-    replace: async (newRules: Record<string, NitroRouteConfig>) => {
-      for (let i = stack.length - 1; i >= 0; i--) {
-        if (stack[i]!.id === groupId) {
-          stack.splice(i, 1)
-        }
-      }
+    update: async (newRules: Record<string, NitroRouteConfig>) => {
+      removeGroupFromStack()
       addRulesToStack(nuxt, stack, newRules, groupId, order)
       const nitro = tryUseNitro()
-      if (nitro) {
-        await rebuildNitroRouteRules(nuxt, nitro)
-      }
+      if (nitro) { await rebuildNitroRouteRules(nuxt, nitro) }
     },
   }
+
+  await handle.update(rules)
+  return handle
 }
 
 /**
  * Extend route rules at build time
  *
- * Returns a handle with `remove()` and `replace()` methods for managing the rules.
+ * Returns a handle with `remove()` and `update()` methods for managing the rules.
  */
 export async function extendRouteRules (route: string, rule: NitroRouteConfig, options?: ExtendRouteRulesOptions): Promise<RouteRulesHandle>
 export async function extendRouteRules (rules: Record<string, NitroRouteConfig>, options?: ExtendRouteRulesOptions): Promise<RouteRulesHandle>
