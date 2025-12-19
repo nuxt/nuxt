@@ -11,7 +11,7 @@ import type { NuxtIslandResponse } from 'nuxt/app'
 
 import type { $Fetch } from 'nitro/types'
 
-import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
+import { asyncContext, builder, isDev, isRenderingJson, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const $fetch = _$fetch as $Fetch
@@ -106,7 +106,7 @@ describe('route rules', () => {
     await vi.waitFor(() => page.url() === url('/#hello'), { timeout: 5_000 })
   })
 
-  it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
+  it('should run middleware defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/middleware')
     expect(html).toContain('Hello from routeRules!')
   })
