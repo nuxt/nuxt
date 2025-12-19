@@ -1,8 +1,8 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
-import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
+import type { App, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import type { NuxtApp } from '../nuxt'
+import type { NuxtApp, NuxtPayload, NuxtSSRContext, RuntimeNuxtHooks } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
 import { clientOnlySymbol } from '../components/client-only'
@@ -12,12 +12,91 @@ import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData } from '#build/nuxt.config.mjs'
+import type { Hookable } from 'hookable'
+import type { RuntimeConfig } from '../../../schema'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>
 
-export type AsyncDataHandler<ResT> = (context: { signal: AbortSignal, nuxtApp: NuxtApp }) => Promise<ResT>
+/**
+ * @deprecated Use `useAsyncData(key, ({nuxtApp})=>{...})` instead.
+ */
+interface _DeprecatedAsyncDataHandlerNuxtApp extends NuxtApp {
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.vueApp})` instead.
+   */
+  vueApp: App<Element>
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.versions})` instead.
+   */
+  versions: Record<string, string>
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.hooks})` instead.
+   */
+  hooks: Hookable<RuntimeNuxtHooks>
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.hook})` instead.
+   */
+  hook: NuxtApp['hooks']['hook']
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.callHook})` instead.
+   */
+  callHook: NuxtApp['hooks']['callHook']
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.runWithContext})` instead.
+   */
+  runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.$config})` instead.
+   */
+  // Nuxt injections
+  $config: RuntimeConfig
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.isHydrating})` instead.
+   */
+  isHydrating?: boolean
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.deferHydration})` instead.
+   */
+  deferHydration: () => () => void | Promise<void>
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.ssrContext})` instead.
+   */
+  ssrContext?: NuxtSSRContext
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.payload})` instead.
+   */
+  payload: NuxtPayload
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.static})` instead.
+   */
+  static: {
+    /**
+     * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.data})` instead.
+     */
+    data: Record<string, any>
+  }
+  /**
+   * @deprecated use `useAsyncData(key, ({nuxtApp})=>{nuxtApp.provide})` instead.
+   */
+  provide: (name: string, value: any) => void
+}
+
+/**
+ * @deprecated use `useAsyncData(key, ({signal})=>{...})` instead.
+ */
+type _DeprecatedAsyncDataHandlerOptions = {
+  /**
+   * @deprecated use `useAsyncData(key, ({signal})=>{...})` instead.
+   */
+  signal: AbortSignal
+}
+
+export type AsyncDateHandlerContext = { signal: AbortSignal, nuxtApp: NuxtApp }
+
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export type AsyncDataHandler<ResT> = ((context: AsyncDateHandlerContext & _DeprecatedAsyncDataHandlerNuxtApp, options: _DeprecatedAsyncDataHandlerOptions) => Promise<ResT>)
 
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
@@ -150,7 +229,7 @@ export function useAsyncData<
   DefaultT = undefined,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
   ResT,
@@ -160,7 +239,7 @@ export function useAsyncData<
   DefaultT = DataT,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -178,7 +257,7 @@ export function useAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
   ResT,
@@ -189,7 +268,7 @@ export function useAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+  options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
   ResT,
@@ -459,7 +538,7 @@ export function useLazyAsyncData<
   DefaultT = undefined,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useLazyAsyncData<
   ResT,
@@ -469,7 +548,7 @@ export function useLazyAsyncData<
   DefaultT = DataT,
 > (
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -487,7 +566,7 @@ export function useLazyAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useLazyAsyncData<
   ResT,
@@ -498,7 +577,7 @@ export function useLazyAsyncData<
 > (
   key: MaybeRefOrGetter<string>,
   handler: AsyncDataHandler<ResT>,
-  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
+  options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 
 export function useLazyAsyncData<
@@ -650,12 +729,12 @@ function createAsyncData<
   // When prerendering, share payload data automatically between requests
   const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
     ? _handler
-    : (ctx) => {
+    : (ctx, deprecatedOptions) => {
         const { nuxtApp } = ctx
         const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
         if (value) { return value as Promise<ResT> }
 
-        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(ctx)))
+        const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(ctx, deprecatedOptions)))
 
         nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
         return promise
@@ -718,8 +797,9 @@ function createAsyncData<
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
             }, { once: true })
-
-            return Promise.resolve(handler({ signal: mergedSignal, nuxtApp })).then(resolve, reject)
+            // keep old signature for backward compatibility, see https://github.com/nuxt/nuxt/pull/33629
+            const ctx = Object.assign(nuxtApp, { signal: mergedSignal, nuxtApp })
+            return Promise.resolve(handler(ctx, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
             reject(err)
           }
