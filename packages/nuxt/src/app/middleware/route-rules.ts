@@ -2,9 +2,9 @@ import { hasProtocol } from 'ufo'
 import { defineNuxtRouteMiddleware } from '../composables/router'
 import { getRouteRules } from '../composables/manifest'
 
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware((to) => {
   if (import.meta.server || import.meta.test) { return }
-  const rules = await getRouteRules({ path: to.path })
+  const rules = getRouteRules({ path: to.path })
   if (rules.redirect) {
     const path = rules.redirect.includes('#') ? rules.redirect : (rules.redirect + to.hash)
     if (hasProtocol(path, { acceptRelative: true })) {
