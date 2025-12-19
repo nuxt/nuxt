@@ -470,19 +470,6 @@ export default defineNuxtModule({
       }
     })
 
-    // Set appLayout for pages
-    nuxt.hook('pages:resolved', (pages) => {
-      const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nuxt.options.routeRules }))
-
-      pages.forEach((page) => {
-        const rules = defu({}, ...routeRulesMatcher.matchAll(page.path).reverse()) as Record<string, any>
-        if (rules?.appLayout) {
-          page.meta ||= {}
-          page.meta.layout ??= rules.appLayout
-        }
-      })
-    })
-
     // Extract macros from pages
     const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
     const extractedKeys = [
@@ -639,16 +626,6 @@ export default defineNuxtModule({
           'declare module \'nuxt/app\' {',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
-          '  }',
-          '}',
-          'declare module \'nitropack/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appLayout?: LayoutKey | false',
-          '  }',
-          '}',
-          'declare module \'nitro/types\' {',
-          '  interface NitroRouteConfig {',
-          '    appLayout?: LayoutKey | false',
           '  }',
           '}',
         ].join('\n')
