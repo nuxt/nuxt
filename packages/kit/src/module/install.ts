@@ -29,7 +29,7 @@ interface ResolvedModule {
 }
 
 // config keys that accept `false` as a valid config value or are known to handle disabling internally
-const ignoredConfigKeys = new Set(['pages', 'components', 'imports', 'pages', 'devtools'])
+const ignoredConfigKeys = new Set(['components', 'imports', 'pages', 'devtools', 'telemetry'])
 
 /**
  * Installs a set of modules on a Nuxt instance.
