@@ -675,7 +675,15 @@ if (import.meta.hot) {
       for (const route of routes) {
         router.addRoute(route)
       }
-      router.replace(router.currentRoute.value.fullPath)
+      router.isReady().then(() => {
+        // Resolve the current path against the new routes to get updated meta
+        const newRoute = router.resolve(router.currentRoute.value.fullPath)
+        // Clear old meta values and assign new ones
+        for (const key of Object.keys(router.currentRoute.value.meta)) {
+          delete router.currentRoute.value.meta[key]
+        }
+        Object.assign(router.currentRoute.value.meta, newRoute.meta)
+      })
     }
     if (routes && 'then' in routes) {
       routes.then(addRoutes)
