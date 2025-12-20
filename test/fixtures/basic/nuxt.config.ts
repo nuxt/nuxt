@@ -95,8 +95,6 @@ export default withMatrix({
     // To test falsy module values
     undefined,
   ],
-  // devtools are not yet compatible with nitro v3
-  devtools: { enabled: false },
   app: {
     pageTransition: true,
     layoutTransition: true,

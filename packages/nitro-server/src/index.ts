@@ -561,6 +561,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
 
+  // TODO: remove when devtools gains support for nitro v3
+  // @ts-expect-error devtools calls storage.watch()
+  nitro.storage ||= { watch: () => {} }
+
   // Trigger Nitro reload when SPA loading template changes
   const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
   nuxt.hook('builder:watch', async (_event, relativePath) => {
