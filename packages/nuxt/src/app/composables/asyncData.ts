@@ -806,6 +806,7 @@ function createAsyncData<
                     loggedKeys.add(prop)
                     console.warn(`[nuxt] Deprecated asyncData handler signature. Use \`useAsyncData(key, ({nuxtApp})=>{nuxtApp.${String(prop)}})\` instead.`)
                   }
+                  return nuxtApp[prop]
                 }
                 return Reflect.get(target, prop, receiver)
               },
