@@ -13,7 +13,7 @@ import { onNuxtReady } from './ready'
 // @ts-expect-error virtual file
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData } from '#build/nuxt.config.mjs'
 import type { Hookable } from 'hookable'
-import type { RuntimeConfig } from '../../../schema'
+import type { RuntimeConfig } from '@nuxt/schema'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -797,8 +797,20 @@ function createAsyncData<
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
             }, { once: true })
+            const loggedKeys = new Set<string>()
             // keep old signature for backward compatibility, see https://github.com/nuxt/nuxt/pull/33629
-            const ctx = Object.assign(nuxtApp, { signal: mergedSignal, nuxtApp })
+            const ctx = new Proxy({ nuxtApp, signal: mergedSignal }, {
+              get (target, prop, receiver) {
+                if (typeof prop === 'string' && prop !== 'nuxtApp' && prop !== 'signal') {
+                  if (!loggedKeys.has(prop)) {
+                    loggedKeys.add(prop)
+                    console.warn(`[nuxt] Deprecated asyncData handler signature. Use \`useAsyncData(key, ({nuxtApp})=>{nuxtApp.${String(prop)}})\` instead.`)
+                  }
+                }
+                return Reflect.get(target, prop, receiver)
+              },
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            }) as AsyncDataHandlerContext & _DeprecatedAsyncDataHandlerNuxtApp
             return Promise.resolve(handler(ctx, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
             reject(err)
