@@ -172,6 +172,14 @@ if (isBuilt || isWindows) {
       expect(filteredLogs).toStrictEqual([])
     })
 
+    test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
+      await goto('/issues/32177')
+
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/issues/32177.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
+      await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
+    })
+
     test('HMR with top-level await', async ({ page, goto }) => {
       const pageContents = readFileSync(join(sourceDir, 'pages/top-level-await.vue'), 'utf8')
       writeFileSync(join(fixtureDir, 'pages/top-level-await.vue'), pageContents)
