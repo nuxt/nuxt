@@ -142,8 +142,10 @@ export default defineComponent({
               const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
               if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
                 nextTick(() => {
-                  pageLoadingEndHookAlreadyCalled = true
-                  nuxtApp.callHook('page:loading:end')
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    pageLoadingEndHookAlreadyCalled = true
+                    nuxtApp.callHook('page:loading:end')
+                  }
                 })
               }
 
@@ -170,13 +172,19 @@ export default defineComponent({
                     if (hasTransition) { nuxtApp._runningTransition = true }
                     nuxtApp.callHook('page:start', routeProps.Component)
                   },
-                  onResolve: () => {
-                    nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
+                  onResolve: async () => {
+                    await nextTick()
+                    try {
+                      nuxtApp._route.sync?.()
+                      await nuxtApp.callHook('page:finish', routeProps.Component)
+                      delete nuxtApp._runningTransition
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
-                        return nuxtApp.callHook('page:loading:end')
+                        await nuxtApp.callHook('page:loading:end')
                       }
-                    }).finally(done))
+                    } finally {
+                      done()
+                    }
                   },
                 }, {
                   default: () => {
@@ -232,10 +240,14 @@ export default defineComponent({
 }
 
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = routeProps.filter(Boolean).map(prop => ({
-    ...prop,
-    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
-  }))
+  const _props: TransitionProps[] = []
+  for (const prop of routeProps) {
+    if (!prop) { continue }
+    _props.push({
+      ...prop,
+      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
+    })
+  }
   return defu(..._props as [TransitionProps, TransitionProps])
 }
 

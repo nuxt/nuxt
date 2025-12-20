@@ -1,0 +1,76 @@
+import { describe, expect, it } from 'vitest'
+
+import { pageTests } from './pages.test.ts'
+import { toRou3Patterns } from '../src/pages/utils.ts'
+
+describe('nitro-ssr-routes', () => {
+  it('should resolve SSR routes correctly', () => {
+    const paths = pageTests.map(test => test.output!).filter(Boolean).flat()
+    expect(toRou3Patterns(paths)).toMatchInlineSnapshot(`
+      [
+        "/",
+        "/parent",
+        "/parent/child",
+        "/parent",
+        "/parent/child",
+        "/parent/:child",
+        "/parent-:child",
+        "/**:stories",
+        "/stories/:id",
+        "/stories/:id",
+        "/**:stories",
+        "/snake_case",
+        "/kebab-case",
+        "/:foo",
+        "/:foo",
+        "/",
+        "/:slug",
+        "/:bar",
+        "/opt/:slug",
+        "/nonopt/:slug",
+        "/optional/:opt",
+        "/:sub/route-:slug",
+        "/optional/prefix-:opt",
+        "/optional/:opt_postfix",
+        "/optional/prefix-:opt_postfix",
+        "/",
+        "/**:slug",
+        "/**:slug/:id",
+        "/:a1_1a",
+        "/:b2_2b",
+        "/:b2__2b",
+        "/:c33c",
+        "/:d44d",
+        "/",
+        "/test\\:name",
+        "/:foo",
+        "/:foo",
+        "/param",
+        "/param/sibling",
+        "/param",
+        "/param/sibling",
+        "/param",
+        "/wrapper-expose/other",
+        "/wrapper-expose/other/sibling",
+        "/wrapper-expose/other",
+        "/",
+        "/all",
+        "/page1",
+        "/page1/:id",
+        "/page1",
+        "/",
+        "/",
+        "/",
+        "/",
+        "/page-with-meta",
+        "/**:id",
+        "/**:id",
+        "/page-with-meta",
+        "/page-with-props",
+        "/",
+        "/about",
+        "/about",
+      ]
+    `)
+  })
+})

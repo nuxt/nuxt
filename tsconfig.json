@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "target": "es2022",
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
@@ -41,6 +42,8 @@
   "exclude": [
     "**/dist/**",
     "**/.nuxt/**",
+    "packages/nuxt/src/app/types/**",
+    "packages/nuxt/src/meta.d.mts",
     "**/nuxt.d.ts",
     "**/examples/**",
     "**/docs/**",

@@ -1,0 +1,177 @@
+name: team-triage
+
+on:
+  issues:
+    types:
+      - labeled
+  pull_request:
+    types:
+      - labeled
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
+permissions: {}
+
+jobs:
+  handle-discussion-label:
+    runs-on: ubuntu-latest
+    if: github.repository == 'nuxt/nuxt' && contains(github.event.label.name, 'discussion')
+    
+    steps:
+      - name: Create Discord Thread
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_DISCUSSIONS_CHANNEL_ID }}
+        with:
+          script: |
+            const item = context.payload.issue || context.payload.pull_request;
+            const itemUrl = item.html_url;
+            const itemNumber = item.number;
+            const itemType = context.payload.issue ? 'Issue' : 'Pull Request';
+            const labeledBy = context.payload.sender;
+            
+            // Sanitize user-controlled inputs to prevent injection attacks
+            const sanitizeText = (text) => {
+              if (!text) return '';
+              return text
+                .replace(/[<>@#`\*\[\]]/g, '') // Remove potentially dangerous characters
+                .replace(/\n/g, ' ') // Replace newlines with spaces
+                .trim()
+                .substring(0, 200); // Limit length
+            };
+            
+            const title = sanitizeText(item.title);
+            const requester = sanitizeText(labeledBy.login);
+            
+            const botToken = process.env.DISCORD_BOT_TOKEN;
+            const channelId = process.env.DISCORD_CHANNEL_ID;
+            
+            if (!botToken || !channelId) {
+              console.log('Discord bot token or channel ID not configured');
+              return;
+            }
+            
+            const payload = {
+              content: `**🧵 [Team discussion](${itemUrl}) requested by \`${requester}\`**`
+            };
+            
+            try {
+              // Post message using Discord bot API
+              const response = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bot ${botToken}`
+                },
+                body: JSON.stringify(payload)
+              });
+              
+              if (response.ok) {
+                const messageData = await response.json();
+                console.log('Discord message posted successfully');
+                
+                // Create thread name
+                const threadName = `#${itemNumber}: ${title}`.substring(0, 100);
+                
+                // Create thread using Discord API
+                const threadResponse = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages/${messageData.id}/threads`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bot ${botToken}`
+                  },
+                  body: JSON.stringify({
+                    name: threadName,
+                    type: 11, // PUBLIC_THREAD
+                    auto_archive_duration: 10080 // 7 days
+                  })
+                });
+                
+                if (threadResponse.ok) {
+                  console.log('Discord thread created successfully');
+                } else {
+                  const threadError = await threadResponse.text();
+                  console.log('Failed to create thread:', threadResponse.status, threadError);
+                }
+                
+              } else {
+                const errorData = await response.json();
+                console.log('Failed to create Discord message:', response.status, response.statusText);
+                console.log('Error details:', JSON.stringify(errorData, null, 2));
+              }
+            } catch (error) {
+              console.log('Error creating Discord message:', error.message);
+            }
+
+      - name: Add to Team Board Project
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          PROJECT_ACCESS_TOKEN: ${{ secrets.PROJECT_ACCESS_TOKEN }}
+          PROJECT_ID: PVT_kwDOAWR1pc4AaZWS
+          DISCUSSING_STATUS_ID: PVTSSF_lADOAWR1pc4AaZWSzgQ7T9k
+          DISCUSSING_OPTION_ID: f75ad846
+        with:
+          github-token: ${{ secrets.PROJECT_ACCESS_TOKEN }}
+          script: |
+            const projectId = process.env.PROJECT_ID;
+            const discussingStatusId = process.env.DISCUSSING_STATUS_ID;
+            
+            if (!projectId || !discussingStatusId) {
+              console.log('Project configuration not available');
+              return;
+            }
+            
+            const issue = context.payload.issue || context.payload.pull_request;
+            const issueNodeId = issue.node_id;
+            
+            try {
+              const addToProjectMutation = `
+                mutation($input: AddProjectV2ItemByIdInput!) {
+                  addProjectV2ItemById(input: $input) {
+                    item {
+                      id
+                    }
+                  }
+                }
+              `;
+              
+              const addResult = await github.graphql(addToProjectMutation, {
+                input: {
+                  projectId: projectId,
+                  contentId: issueNodeId
+                }
+              });
+              
+              const itemId = addResult.addProjectV2ItemById.item.id;
+              console.log('Added item to project with item ID:', itemId);
+              
+              // Set status to "Discussing"  
+              const updateStatusMutation = `
+                mutation($input: UpdateProjectV2ItemFieldValueInput!) {
+                  updateProjectV2ItemFieldValue(input: $input) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              `;
+              
+              await github.graphql(updateStatusMutation, {
+                input: {
+                  projectId: projectId,
+                  itemId: itemId,
+                  fieldId: discussingStatusId,
+                  value: {
+                    singleSelectOptionId: process.env.DISCUSSING_OPTION_ID
+                  }
+                }
+              });
+              
+              console.log('Updated item status to Discussing');
+              
+            } catch (error) {
+              console.log('Error managing project:', error.message);
+              // Don't fail the workflow if project management fails
+            }
+

@@ -4,8 +4,7 @@ import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { expect, test } from './test-utils'
-
-const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
+import { isBuilt, isWebpack } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
@@ -18,12 +17,11 @@ test.use({
     env: { TEST: '1' },
     nuxtConfig: {
       test: true,
-      builder: isWebpack ? 'webpack' : 'vite',
     },
   },
 })
 
-if (process.env.TEST_ENV === 'built' || isWindows) {
+if (isBuilt || isWindows) {
   test.skip('Skipped: HMR tests are skipped on Windows or in built mode', () => {})
 } else {
   test.describe.configure({ mode: 'serial' })
@@ -179,8 +177,26 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
       const pageContents = readFileSync(join(sourceDir, 'app/pages/issues/32177.vue'), 'utf8')
       writeFileSync(join(fixtureDir, 'app/pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
-      await new Promise(resolve => setTimeout(resolve, 100))
       await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
+    })
+
+    test('HMR with top-level await', async ({ page, goto }) => {
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/top-level-await.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/top-level-await.vue'), pageContents)
+
+      // Navigate and wait for full load
+      await goto('/top-level-await')
+      await expect(page.getByTestId('content')).toHaveText('loaded')
+
+      // Trigger HMR by editing script
+      writeFileSync(
+        join(fixtureDir, 'app/pages/top-level-await.vue'),
+        pageContents.replace('console.log(\'page loaded\')', '// console.log(\'page loaded\')'),
+      )
+
+      // Wait for HMR to process and check no errors
+      await page.waitForTimeout(1000)
+      expect(page).toHaveNoErrorsOrWarnings()
     })
   }
 }

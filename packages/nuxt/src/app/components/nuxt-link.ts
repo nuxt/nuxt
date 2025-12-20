@@ -16,13 +16,14 @@ import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSla
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
-import { type NuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
-import { hashMode } from '#build/router.options'
+import { hashMode } from '#build/router.options.mjs'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
@@ -30,7 +31,7 @@ const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 /**
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
- * @see https://nuxt.com/docs/api/components/nuxt-link
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
  */
 export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<RouterLinkProps, 'to'> {
   custom?: CustomProp
@@ -86,7 +87,7 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
 
 /**
  * Create a NuxtLink component with given options as defaults.
- * @see https://nuxt.com/docs/api/components/nuxt-link
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
  */
 export interface NuxtLinkOptions extends
   Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,
@@ -383,7 +384,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       if (import.meta.client) {
-        checkPropConflicts(props, 'prefetch', 'noPrefetch')
+        checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
           let idleId: number
@@ -470,7 +471,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
         ) || null
 
-        // https://router.vuejs.org/api/#custom
+        // https://router.vuejs.org/api/interfaces/routerlinkprops#custom-
         if (props.custom) {
           if (!slots.default) {
             return null
@@ -505,13 +506,27 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           } satisfies NuxtLinkDefaultSlotProps<true>)
         }
 
-        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
-        return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
+        return h('a', {
+          ref: el,
+          href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+          rel,
+          target,
+          onClick: (event) => {
+            if (isExternal.value || hasTarget.value) {
+              return
+            }
+
+            event.preventDefault()
+
+            return props.replace
+              ? router.replace(href.value)
+              : router.push(href.value)
+          },
+        }, slots.default?.())
       }
     },
-    // }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
-  }) as unknown as (new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp>) => InstanceType<DefineSetupFnComponent<
-    NuxtLinkProps<CustomProp>,
+  }) as unknown as (new<CustomProp extends boolean = false>(props: NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>) => InstanceType<DefineSetupFnComponent<
+    NuxtLinkProps<CustomProp> & VNodeProps & AllowedComponentProps & Omit<AnchorHTMLAttributes, keyof NuxtLinkProps<CustomProp>>,
     [],
     SlotsType<NuxtLinkSlots<CustomProp>>
   >>) & Record<string, any>

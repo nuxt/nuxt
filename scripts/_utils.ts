@@ -99,9 +99,9 @@ export async function loadWorkspace (dir: string) {
   }
 }
 
-export async function determineBumpType () {
+export async function determineBumpType (since?: string) {
   const config = await loadChangelogConfig(process.cwd())
-  const commits = await getLatestCommits()
+  const commits = await getLatestCommits(since)
 
   return determineSemverChange(commits, config)
 }
@@ -124,19 +124,45 @@ export async function getPreviousReleasedCommits () {
   return commits
 }
 
-export async function getLatestCommits () {
+export async function getLatestCommits (since?: string) {
   const config = await loadChangelogConfig(process.cwd())
   const latestTag = await getLatestTag()
+
+  // If filtering by date, get commits with git log --since
+  if (since) {
+    const { stdout } = await exec('git', ['log', `${latestTag}..HEAD`, '--since', since, '--pretty=format:%H'])
+    const commitHashes = new Set(stdout.trim().split('\n').filter(Boolean))
+
+    const allCommits = parseCommits(await getGitDiff(latestTag), config)
+    return allCommits.filter((commit) => {
+      // Match against full hash (shortHash is abbreviated)
+      return Array.from(commitHashes).some(hash => hash.startsWith(commit.shortHash))
+    })
+  }
 
   return parseCommits(await getGitDiff(latestTag), config)
 }
 
-export async function getContributors () {
+export async function getContributors (since?: string) {
   const contributors = [] as Array<{ name: string, username: string }>
   const emails = new Set<string>()
   const latestTag = await getLatestTag()
+
   const rawCommits = await getGitDiff(latestTag)
+
+  // Get commit hashes filtered by date if specified
+  let allowedHashes: Set<string> | null = null
+  if (since) {
+    const { stdout } = await exec('git', ['log', `${latestTag}..HEAD`, '--since', since, '--pretty=format:%H'])
+    allowedHashes = new Set(stdout.trim().split('\n').filter(Boolean))
+  }
+
   for (const commit of rawCommits) {
+    // Filter by date if specified
+    if (allowedHashes && !Array.from(allowedHashes).some(hash => hash.startsWith(commit.shortHash))) {
+      continue
+    }
+
     if (emails.has(commit.author.email) || commit.author.name === 'renovate[bot]') { continue }
     const { author } = await $fetch<{ author: { login: string, email: string } }>(`https://api.github.com/repos/nuxt/nuxt/commits/${commit.shortHash}`, {
       headers: {
@@ -144,7 +170,7 @@ export async function getContributors () {
         'Accept': 'application/vnd.github.v3+json',
         'Authorization': `token ${process.env.GITHUB_TOKEN}`,
       },
-    })
+    }).catch(() => ({ author: null }))
     if (!author) { continue }
     if (!contributors.some(c => c.username === author.login)) {
       contributors.push({ name: commit.author.name, username: author.login })

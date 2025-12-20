@@ -1,199 +1,313 @@
-import { mkdir, writeFile } from 'node:fs/promises'
-import { pathToFileURL } from 'node:url'
-import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
-import { ViteNodeServer } from 'vite-node/server'
-import { isAbsolute, join, normalize, resolve } from 'pathe'
-// import { addDevServerHandler } from '@nuxt/kit'
-import { isFileServingAllowed } from 'vite'
-import type { ModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
-import { getQuery } from 'ufo'
-import { normalizeViteManifest } from 'vue-bundle-renderer'
-import { distDir } from './dirs'
-import type { ViteBuildContext } from './vite'
-import { isCSS } from './utils'
+import process from 'node:process'
+import type { Socket } from 'node:net'
+import net from 'node:net'
+import { Buffer } from 'node:buffer'
+import { isTest } from 'std-env'
+import type { ViteNodeFetch, ViteNodeRequestMap, ViteNodeServerOptions } from './plugins/vite-node.ts'
 
-// TODO: Remove this in favor of registerViteNodeMiddleware
-// after Nitropack or h3 allows adding middleware after setup
-export function ViteNodePlugin (ctx: ViteBuildContext): VitePlugin {
-  // Store the invalidates for the next rendering
-  const invalidates = new Set<string>()
+function getViteNodeOptionsEnvVar () {
+  const envVar = process.env.NUXT_VITE_NODE_OPTIONS
+  try {
+    return JSON.parse(envVar || '{}')
+  } catch (e) {
+    console.error('vite-node-shared: Failed to parse NUXT_VITE_NODE_OPTIONS environment variable.', e)
+    return {}
+  }
+}
 
-  function markInvalidate (mod: ModuleNode) {
-    if (!mod.id) { return }
-    if (invalidates.has(mod.id)) { return }
-    invalidates.add(mod.id)
-    markInvalidates(mod.importers)
+export const viteNodeOptions: ViteNodeServerOptions = getViteNodeOptionsEnvVar()
+
+const pendingRequests = new Map<number, { resolve: (value: any) => void, reject: (reason?: any) => void }>()
+let requestIdCounter = 0
+let clientSocket: Socket | undefined
+let currentConnectPromise: Promise<Socket> | undefined
+const MAX_RETRY_ATTEMPTS = viteNodeOptions.maxRetryAttempts ?? 5
+const BASE_RETRY_DELAY_MS = viteNodeOptions.baseRetryDelay ?? 100
+const MAX_RETRY_DELAY_MS = viteNodeOptions.maxRetryDelay ?? 2000
+const REQUEST_TIMEOUT_MS = viteNodeOptions.requestTimeout ?? 60000
+
+/**
+ * Calculates exponential backoff delay with jitter.
+ * @param attempt - The current attempt number (0-based).
+ * @returns Delay in milliseconds.
+ */
+function calculateRetryDelay (attempt: number): number {
+  const exponentialDelay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt)
+  const jitter = Math.random() * 0.1 * exponentialDelay // Add 10% jitter
+  return Math.min(exponentialDelay + jitter, MAX_RETRY_DELAY_MS)
+}
+
+/**
+ * Establishes or returns an existing IPC socket connection with retry logic.
+ * @returns A promise that resolves with the connected socket.
+ */
+function connectSocket (): Promise<Socket> {
+  if (clientSocket && !clientSocket.destroyed) {
+    return Promise.resolve(clientSocket)
   }
 
-  function markInvalidates (mods?: ModuleNode[] | Set<ModuleNode>) {
-    if (!mods) { return }
-    for (const mod of mods) {
-      markInvalidate(mod)
+  if (currentConnectPromise) {
+    return currentConnectPromise
+  }
+
+  const thisPromise = new Promise<Socket>((resolve, reject) => {
+    if (!viteNodeOptions.socketPath) {
+      console.error('vite-node-shared: NUXT_VITE_NODE_OPTIONS.socketPath is not defined.')
+      return reject(new Error('Vite Node IPC socket path not configured.'))
     }
-  }
 
-  return {
-    name: 'nuxt:vite-node-server',
-    enforce: 'post',
-    configureServer (server) {
-      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
+    const attemptConnection = (attempt = 0) => {
+      const socket = net.createConnection(viteNodeOptions.socketPath)
 
-      // invalidate changed virtual modules when templates are regenerated
-      ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
-        for (const template of changedTemplates) {
-          const mods = server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
+      const INITIAL_BUFFER_SIZE = 64 * 1024 // 64KB
+      const MAX_BUFFER_SIZE = 1024 * 1024 * 1024 // 1GB
 
-          for (const mod of mods || []) {
-            markInvalidate(mod)
+      let buffer = Buffer.alloc(INITIAL_BUFFER_SIZE)
+      let writeOffset = 0
+      let readOffset = 0
+
+      // optimize socket for high-frequency IPC
+      socket.setNoDelay(true)
+      socket.setKeepAlive(true, 30000) // 30s
+
+      const cleanup = () => {
+        socket.off('connect', onConnect)
+        socket.off('data', onData)
+        socket.off('error', onError)
+        socket.off('close', onClose)
+      }
+
+      const resetBuffer = () => {
+        writeOffset = 0
+        readOffset = 0
+      }
+
+      const compactBuffer = () => {
+        if (readOffset > 0) {
+          const remainingData = writeOffset - readOffset
+          if (remainingData > 0) {
+            buffer.copy(buffer, 0, readOffset, writeOffset)
+          }
+          writeOffset = remainingData
+          readOffset = 0
+        }
+      }
+
+      const ensureBufferCapacity = (additionalBytes: number) => {
+        const requiredSize = writeOffset + additionalBytes
+
+        if (requiredSize > MAX_BUFFER_SIZE) {
+          throw new Error(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`)
+        }
+
+        if (requiredSize > buffer.length) {
+          // Try compacting first
+          compactBuffer()
+
+          // ... then if we still need more space, grow the buffer
+          if (writeOffset + additionalBytes > buffer.length) {
+            const newSize = Math.min(
+              Math.max(buffer.length * 2, requiredSize),
+              MAX_BUFFER_SIZE,
+            )
+            const newBuffer = Buffer.alloc(newSize)
+            buffer.copy(newBuffer, 0, 0, writeOffset)
+            buffer = newBuffer
           }
         }
-      })
-
-      server.watcher.on('all', (event, file) => {
-        invalidates.add(file)
-        markInvalidates(server.moduleGraph.getModulesByFile(normalize(file)))
-      })
-    },
-  }
-}
-
-// TODO: Use this when Nitropack or h3 allows adding middleware after setup
-// export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
-//   addDevServerHandler({
-//     route: '/__nuxt_vite_node__/',
-//     handler: createViteNodeApp(ctx).handler,
-//   })
-// }
-
-function getManifest (ctx: ViteBuildContext) {
-  const css = new Set<string>()
-  for (const key of ctx.ssrServer!.moduleGraph.urlToModuleMap.keys()) {
-    if (isCSS(key)) {
-      const query = getQuery(key)
-      if ('raw' in query) { continue }
-      const importers = ctx.ssrServer!.moduleGraph.urlToModuleMap.get(key)?.importers
-      if (importers && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) {
-        continue
       }
-      css.add(key)
-    }
-  }
 
-  const manifest = normalizeViteManifest({
-    '@vite/client': {
-      file: '@vite/client',
-      css: [...css],
-      module: true,
-      isEntry: true,
-    },
-    ...ctx.nuxt.options.features.noScripts === 'all'
-      ? {}
-      : {
-          [ctx.entry]: {
-            file: ctx.entry,
-            isEntry: true,
-            module: true,
-            resourceType: 'script',
-          },
-        },
+      const onConnect = () => {
+        clientSocket = socket
+        resolve(socket)
+      }
+
+      const onData = (data: Buffer) => {
+        try {
+          ensureBufferCapacity(data.length)
+          data.copy(buffer, writeOffset)
+          writeOffset += data.length
+
+          while (writeOffset - readOffset >= 4) {
+            const messageLength = buffer.readUInt32BE(readOffset)
+
+            if (writeOffset - readOffset < 4 + messageLength) {
+              return // Wait for more data
+            }
+
+            const message = buffer.subarray(readOffset + 4, readOffset + 4 + messageLength).toString('utf-8')
+            readOffset += 4 + messageLength
+
+            try {
+              const response = JSON.parse(message)
+              const requestHandlers = pendingRequests.get(response.id)
+              if (requestHandlers) {
+                const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
+                if (response.type === 'error') {
+                  const err = new Error(response.error.message)
+                  err.stack = response.error.stack
+                  // @ts-expect-error We are augmenting the error object
+                  err.data = response.error.data
+                  // @ts-expect-error We are augmenting the error object
+                  err.statusCode = err.status = response.error.status || response.error.statusCode
+                  rejectRequest(err)
+                } else {
+                  resolveRequest(response.data)
+                }
+                pendingRequests.delete(response.id)
+              }
+            } catch (parseError) {
+              console.warn('vite-node-shared: Failed to parse IPC response:', parseError)
+              // ignore malformed messages
+            }
+          }
+
+          // compact buffer periodically to prevent memory waste
+          if (readOffset > buffer.length / 2) {
+            compactBuffer()
+          }
+        } catch (error) {
+          socket.destroy(error instanceof Error ? error : new Error('Buffer management error'))
+        }
+      }
+
+      const onError = (err: Error) => {
+        cleanup()
+        resetBuffer()
+
+        if (attempt < MAX_RETRY_ATTEMPTS) {
+          const delay = calculateRetryDelay(attempt)
+          setTimeout(() => attemptConnection(attempt + 1), delay)
+        } else {
+          if (currentConnectPromise === thisPromise) {
+            reject(err)
+          }
+          for (const { reject: rejectRequest } of pendingRequests.values()) {
+            rejectRequest(err)
+          }
+          pendingRequests.clear()
+          if (clientSocket === socket) { clientSocket = undefined }
+          if (currentConnectPromise === thisPromise) { currentConnectPromise = undefined }
+        }
+      }
+
+      const onClose = () => {
+        cleanup()
+        resetBuffer()
+        for (const { reject: rejectRequest } of pendingRequests.values()) {
+          rejectRequest(new Error('IPC connection closed'))
+        }
+        pendingRequests.clear()
+        if (clientSocket === socket) { clientSocket = undefined }
+        if (currentConnectPromise === thisPromise) { currentConnectPromise = undefined }
+      }
+
+      socket.on('connect', onConnect)
+      socket.on('data', onData)
+      socket.on('error', onError)
+      socket.on('close', onClose)
+    }
+
+    attemptConnection()
   })
 
-  return manifest
+  currentConnectPromise = thisPromise
+  return currentConnectPromise
 }
 
-function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = new Set()) {
-  const app = createApp()
+/**
+ * Sends a request over the IPC socket with automatic reconnection.
+ */
+async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload: ViteNodeRequestMap[T]['request']): Promise<ViteNodeRequestMap[T]['response']> {
+  const requestId = requestIdCounter++
+  let lastError
 
-  let _node: ViteNodeServer | undefined
-  function getNode (server: ViteDevServer) {
-    return _node ||= new ViteNodeServer(server, {
-      deps: {
-        inline: [/^#/, /\?/],
-      },
-      transformMode: {
-        ssr: [/.*/],
-        web: [],
-      },
-    })
+  // retry the entire request (including reconnection) up to MAX_RETRY_ATTEMPTS times
+  for (let requestAttempt = 0; requestAttempt <= MAX_RETRY_ATTEMPTS; requestAttempt++) {
+    try {
+      const socket = await connectSocket()
+
+      return new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          pendingRequests.delete(requestId)
+          reject(new Error(`Request timeout after ${REQUEST_TIMEOUT_MS}ms for type: ${type}`))
+        }, REQUEST_TIMEOUT_MS)
+
+        pendingRequests.set(requestId, {
+          resolve: (value) => {
+            clearTimeout(timeoutId)
+            resolve(value)
+          },
+          reject: (reason) => {
+            clearTimeout(timeoutId)
+            reject(reason)
+          },
+        })
+
+        const message = JSON.stringify({ id: requestId, type, payload })
+        const messageBuffer = Buffer.from(message, 'utf-8')
+        const messageLength = messageBuffer.length
+
+        // pre-allocate single buffer for length + message to avoid Buffer.concat()
+        const fullMessage = Buffer.alloc(4 + messageLength)
+        fullMessage.writeUInt32BE(messageLength, 0)
+        messageBuffer.copy(fullMessage, 4)
+
+        try {
+          socket.write(fullMessage)
+        } catch (error) {
+          clearTimeout(timeoutId)
+          pendingRequests.delete(requestId)
+          reject(error)
+        }
+      })
+    } catch (error) {
+      lastError = error
+      if (requestAttempt < MAX_RETRY_ATTEMPTS) {
+        const delay = calculateRetryDelay(requestAttempt)
+        await new Promise(resolve => setTimeout(resolve, delay))
+        // clear current connection state to force reconnection
+        if (clientSocket) {
+          clientSocket.destroy()
+          clientSocket = undefined
+        }
+        currentConnectPromise = undefined
+      }
+    }
   }
 
-  app.use('/manifest', defineEventHandler(() => {
-    const manifest = getManifest(ctx)
-    return manifest
-  }))
-
-  app.use('/invalidates', defineEventHandler(() => {
-    const ids = Array.from(invalidates)
-    invalidates.clear()
-    return ids
-  }))
-
-  const RESOLVE_RE = /^\/(?<id>[^?]+)(?:\?importer=(?<importer>.*))?$/
-  app.use('/resolve', defineEventHandler(async (event) => {
-    const { id, importer } = event.path.match(RESOLVE_RE)?.groups || {}
-    if (!id || !ctx.ssrServer) {
-      throw createError({ statusCode: 400 })
-    }
-    return await getNode(ctx.ssrServer).resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
-  }))
-
-  app.use('/module', defineEventHandler(async (event) => {
-    const moduleId = decodeURI(event.path).substring(1)
-    if (moduleId === '/' || !ctx.ssrServer) {
-      throw createError({ statusCode: 400 })
-    }
-    if (isAbsolute(moduleId) && !isFileServingAllowed(ctx.ssrServer.config, moduleId)) {
-      throw createError({ statusCode: 403 /* Restricted */ })
-    }
-    const node = getNode(ctx.ssrServer)
-
-    const module = await node.fetchModule(moduleId).catch(async (err) => {
-      const errorData = {
-        code: 'VITE_ERROR',
-        id: moduleId,
-        stack: '',
-        ...err,
-      }
-
-      if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
-        errorData.frame = await node.transformModule(moduleId, 'web').then(({ code }) => `${err.message || ''}\n${code}`).catch(() => undefined)
-      }
-      throw createError({ data: errorData })
-    })
-    return module
-  }))
-
-  return app
+  throw lastError || new Error('Request failed after all retry attempts')
 }
 
-export type ViteNodeServerOptions = {
-  baseURL: string
-  root: string
-  entryPath: string
-  base: string
+export const viteNodeFetch: ViteNodeFetch = {
+  getManifest () {
+    return sendRequest('manifest', undefined)
+  },
+  getInvalidates () {
+    return sendRequest('invalidates', undefined)
+  },
+  resolveId (id, importer) {
+    return sendRequest('resolve', { id, importer })
+  },
+  fetchModule (moduleId) {
+    return sendRequest('module', { moduleId })
+  },
+  ensureConnected () {
+    return connectSocket()
+  },
 }
 
-export async function initViteNodeServer (ctx: ViteBuildContext) {
-  // Serialize and pass vite-node runtime options
-  const viteNodeServerOptions = {
-    baseURL: `${ctx.nuxt.options.devServer.url}__nuxt_vite_node__`,
-    root: ctx.nuxt.options.srcDir,
-    entryPath: ctx.entry,
-    base: ctx.ssrServer!.config.base || '/_nuxt/',
-  } satisfies ViteNodeServerOptions
-  process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
+// attempt to pre-establish the IPC connection to reduce latency on first request
+let preConnectAttempted = false
+function preConnect () {
+  if (preConnectAttempted || !viteNodeOptions.socketPath) {
+    return
+  }
+  preConnectAttempted = true
 
-  const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
-  const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
+  return connectSocket().catch(() => {})
+}
 
-  await mkdir(join(ctx.nuxt.options.buildDir, 'dist/server'), { recursive: true })
-
-  await writeFile(
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
-    `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
-  )
-  await writeFile(
-    resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
-    `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
-  )
+if (typeof process !== 'undefined' && !isTest) {
+  setTimeout(preConnect, 100)
 }
