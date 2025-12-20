@@ -1,5 +1,6 @@
 name: notify-nuxt-website
 on:
+  workflow_dispatch:
   push:
     branches:
       - 3.x
@@ -11,15 +12,7 @@ permissions: {}
 
 jobs:
   notify:
-    strategy:
-      matrix:
-        repo: ["nuxt/nuxt.com"]
     runs-on: ubuntu-latest
     steps:
       - name: trigger nuxt website deployment
-        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
-        with:
-          token: ${{ secrets.NUXT_WEBSITE_GITHUB_TOKEN }}
-          repository: ${{ matrix.repo }}
-          event-type: docs-updated
-          client-payload: '{"url": "${{ github.event.pull_request.html_url }}"}'
+        run: curl "${{ secrets.NUXT_WEBSITE_WEBHOOK_URL }}"

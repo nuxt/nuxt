@@ -1,4 +1,4 @@
-import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -94,17 +94,20 @@ async function _importPayload (payloadURL: string) {
 /** @since 3.0.0 */
 export async function isPrerendered (url = useRoute().path) {
   const nuxtApp = useNuxtApp()
-  // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
-  url = withoutTrailingSlash(url)
-  const manifest = await getAppManifest()
-  if (manifest.prerendered.includes(url)) {
+
+  const rules = getRouteRules({ path: url })
+  if (rules.redirect) {
+    return false
+  }
+  if (rules.prerender) {
     return true
   }
-  return nuxtApp.runWithContext(async () => {
-    const rules = await getRouteRules({ path: url })
-    return !!rules.prerender && !rules.redirect
-  })
+
+  // Note: Alternative for server is checking x-nitro-prerender header
+  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
+  url = url === '/' ? url : url.replace(/\/$/, '')
+  const manifest = await getAppManifest()
+  return manifest.prerendered.includes(url)
 }
 
 let payloadCache: NuxtPayload | null = null
@@ -153,7 +156,7 @@ export function definePayloadReducer (
   reduce: (data: any) => any,
 ) {
   if (import.meta.server) {
-    useNuxtApp().ssrContext!._payloadReducers[name] = reduce
+    useNuxtApp().ssrContext!['~payloadReducers'][name] = reduce
   }
 }
 

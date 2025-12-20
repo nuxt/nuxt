@@ -50,6 +50,9 @@ export default defineConfig({
         },
       },
       {
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
         test: {
           name: 'fixtures',
           include: ['test/*.test.ts'],
@@ -61,10 +64,13 @@ export default defineConfig({
         },
       },
       {
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
-            '#build/router.options': resolve('./test/mocks/router-options'),
+            '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/dist/app'),
@@ -93,6 +99,9 @@ export default defineConfig({
         },
       }),
       ...await Promise.all(Object.entries(projects).map(([project, config]) => defineVitestProject({
+        define: {
+          'import.meta.dev': 'globalThis.__TEST_DEV__',
+        },
         test: {
           name: project,
           dir: './test/nuxt',

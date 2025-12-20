@@ -1,12 +1,11 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
-import { withoutTrailingSlash } from 'ufo'
-import { normalize } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 
-import { loadNuxtConfig } from '../src/loader/config'
-import { _generateTypes, resolveLayerPaths } from '../src/template'
+import { loadNuxtConfig } from '../src/loader/config.ts'
+import { _generateTypes, resolveLayerPaths } from '../src/template.ts'
+import { getLayerDirectories } from 'nuxt/kit'
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
@@ -25,7 +24,7 @@ const mockNuxt = {
     modulesDir: ['/my-app/node_modules', '/node_modules'],
     modules: [],
     extensions: ['.ts', '.mjs', '.js'],
-    _layers: [{ config: { srcDir: '/my-app' } }],
+    _layers: [{ config: { rootDir: '/my-app', srcDir: '/my-app' } }],
     _installedModules: [],
     _modules: [],
   },
@@ -55,13 +54,18 @@ describe('tsConfig generation', () => {
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
-        "../modules/test/node_modules",
-        "../modules/node_modules",
-        "../node_modules/@some/module/node_modules",
-        "../node_modules",
         "../../node_modules",
         "../dist",
         "../.data",
+        "../modules/*/runtime/server/**/*",
+        "../layers/*/server/**/*",
+        "../layers/*/modules/*/runtime/server/**/*",
+        "../modules/*.*",
+        "../nuxt.config.*",
+        "../.config/nuxt.*",
+        "../layers/*/nuxt.config.*",
+        "../layers/*/.config/nuxt.*",
+        "../layers/*/modules/**/*",
       ]
     `)
   })
@@ -105,8 +109,8 @@ describe('tsConfig generation', () => {
   })
 })
 
-describe('resolveLayerPaths', () => {
-  const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+describe('resolveLayerPaths', async () => {
+  const repoRoot = await findWorkspaceDir()
 
   it('should respect custom nuxt options', async () => {
     const nuxtOptions = await loadNuxtConfig({
@@ -120,7 +124,8 @@ describe('resolveLayerPaths', () => {
         },
       },
     })
-    const paths = resolveLayerPaths(nuxtOptions.dir, nuxtOptions.buildDir, nuxtOptions.rootDir, nuxtOptions.srcDir)
+    const [layer] = getLayerDirectories({ options: nuxtOptions } as Nuxt)
+    const paths = resolveLayerPaths(layer!, nuxtOptions.buildDir)
     expect(paths).toMatchInlineSnapshot(`
       {
         "globalDeclarations": [
@@ -143,6 +148,8 @@ describe('resolveLayerPaths', () => {
         "nuxt": [
           "../app/**/*",
           "../custom-modules/*/runtime/**/*",
+          "../test/nuxt/**/*",
+          "../tests/nuxt/**/*",
           "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
         ],

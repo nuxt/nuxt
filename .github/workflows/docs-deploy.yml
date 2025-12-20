@@ -5,10 +5,11 @@ on:
     paths:
       - "docs/**"
     branches:
+      - main
       - 3.x
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 jobs:

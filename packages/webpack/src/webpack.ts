@@ -11,11 +11,11 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { DynamicBasePlugin } from './plugins/dynamic-base'
-import { ChunkErrorPlugin } from './plugins/chunk'
-import { createMFS } from './utils/mfs'
-import { client, server } from './configs'
-import { applyPresets, createWebpackConfigContext } from './utils/config'
+import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
+import { ChunkErrorPlugin } from './plugins/chunk.ts'
+import { createMFS } from './utils/mfs.ts'
+import { client, server } from './configs/index.ts'
+import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
 import { builder, webpack } from '#builder'
 
@@ -66,7 +66,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const compiler = webpack(config)
 
     // In dev, write files in memory FS
-    if (nuxt.options.dev) {
+    if (nuxt.options.dev && compiler) {
       compiler.outputFileSystem = mfs! as unknown as Compiler['outputFileSystem']
     }
 
@@ -75,18 +75,20 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
-      await new Promise(resolve => compiler.close(resolve))
+      await new Promise(resolve => compiler?.close(resolve))
     }
   })
 
   // Start Builds
   if (nuxt.options.dev) {
-    await Promise.all(compilers.map(c => compile(c)))
+    await Promise.all(compilers.map(c => c && compile(c)))
     return
   }
 
   for (const c of compilers) {
-    await compile(c)
+    if (c) {
+      await compile(c)
+    }
   }
 }
 
@@ -138,7 +140,7 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
 
     // disallow cross-site requests in no-cors mode
     if (getRequestHeader(event, 'sec-fetch-mode') === 'no-cors' && getRequestHeader(event, 'sec-fetch-site') === 'cross-site') {
-      throw createError({ statusCode: 403 })
+      throw createError({ status: 403 })
     }
 
     setHeader(event, 'Vary', 'Origin')
@@ -188,7 +190,7 @@ async function compile (compiler: Compiler) {
     const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
-      await Promise.all(compilersWatching.map(watching => pify(watching.close.bind(watching))()))
+      await Promise.all(compilersWatching.map(watching => watching && pify(watching.close.bind(watching))()))
     })
 
     // Client build

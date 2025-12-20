@@ -1,23 +1,32 @@
 import { createUnplugin } from 'unplugin'
 import { relative } from 'pathe'
-
+import { resolveAlias } from 'pathe/utils'
 import MagicString from 'magic-string'
-import { genDynamicImport, genImport } from 'knitwork'
-import { pascalCase, upperFirst } from 'scule'
-import { isJS, isVue } from '../../core/utils'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
+import { genImport } from 'knitwork'
+import { isJS, isVue } from '../../core/utils/index.ts'
+import type { ComponentsOptions } from 'nuxt/schema'
+import { parseAndWalk } from 'oxc-walker'
+import type { Argument, Expression, FunctionBody, ImportExpression } from 'oxc-parser'
 
 interface LoaderOptions {
-  getComponents (): Component[]
   srcDir: string
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   clientDelayedComponentRuntime: string
+  alias: Record<string, string>
 }
 
-const LAZY_HYDRATION_MACRO_RE = /(?:\b(?:const|let|var)\s+(\w+)\s*=\s*)?defineLazyHydrationComponent\(\s*['"]([^'"]+)['"]\s*,\s*\(\s*\)\s*=>\s*import\s*\(\s*['"]([^'"]+)['"]\s*\)\s*\)/g
-const COMPONENT_NAME = /import\(["'].*\/([^\\/]+?)\.\w+["']\)/
-const HYDRATION_STRATEGY = ['visible', 'idle', 'interaction', 'mediaQuery', 'if', 'time', 'never']
+const LAZY_HYDRATION_MACRO_RE = /\bdefineLazyHydrationComponent\s*\(/
+
+const HYDRATION_TO_FACTORY = new Map<string, string>([
+  ['visible', 'createLazyVisibleComponent'],
+  ['idle', 'createLazyIdleComponent'],
+  ['interaction', 'createLazyInteractionComponent'],
+  ['mediaQuery', 'createLazyMediaQueryComponent'],
+  ['if', 'createLazyIfComponent'],
+  ['time', 'createLazyTimeComponent'],
+  ['never', 'createLazyNeverComponent'],
+])
 
 export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -38,54 +47,51 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
 
     transform: {
       filter: {
-        code: { include: LAZY_HYDRATION_MACRO_RE },
+        code: {
+          include: LAZY_HYDRATION_MACRO_RE,
+        },
       },
-
-      handler (code) {
-        const matches = Array.from(code.matchAll(LAZY_HYDRATION_MACRO_RE))
-        if (!matches.length) { return }
-
+      handler (code, id) {
         const s = new MagicString(code)
         const names = new Set<string>()
+        type Edit = { start: number, end: number, replacement: string }
+        const edits: Edit[] = []
 
-        const components = options.getComponents()
+        parseAndWalk(code, id, (node, parent) => {
+          if (node.type !== 'CallExpression') { return }
+          if (node.callee?.type !== 'Identifier') { return }
+          if (node.callee.name !== 'defineLazyHydrationComponent') { return }
 
-        for (const match of matches) {
-          const [matchedString, variableName, hydrationStrategy] = match
+          if (parent?.type !== 'VariableDeclarator') { return }
+          if (parent.id.type !== 'Identifier') { return }
 
-          const startIndex = match.index
-          const endIndex = startIndex + matchedString.length
+          if (node.arguments.length < 2) { return }
+          const [strategyArgument, loaderArgument] = node.arguments
 
-          if (!variableName) {
-            s.remove(startIndex, endIndex)
-            continue
-          }
+          if (!isStringLiteral(strategyArgument)) { return }
+          const strategy: string = strategyArgument.value
 
-          if (!hydrationStrategy || !HYDRATION_STRATEGY.includes(hydrationStrategy)) {
-            s.remove(startIndex, endIndex)
-            continue
-          }
+          const functionName = HYDRATION_TO_FACTORY.get(strategy)
+          if (!functionName) { return }
 
-          const componentNameMatch = matchedString.match(COMPONENT_NAME)
-          if (!componentNameMatch || !componentNameMatch[1]) {
-            s.remove(startIndex, endIndex)
-            continue
-          }
+          if (loaderArgument?.type !== 'ArrowFunctionExpression') { return }
 
-          const name = componentNameMatch[1]
-          const component = findComponent(components, name)
-          if (!component) {
-            s.remove(startIndex, endIndex)
-            continue
-          }
+          const { importExpression, importLiteral } = findImportExpression(loaderArgument.body)
+          if (!importExpression || !isStringLiteral(importLiteral)) { return }
 
-          const relativePath = relative(options.srcDir, component.filePath)
-          const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
-          const replaceFunctionName = `createLazy${upperFirst(hydrationStrategy)}Component`
-          const replacement = `const ${variableName} = __${replaceFunctionName}(${JSON.stringify(relativePath)}, ${dynamicImport})`
+          const rawPath = importLiteral.value
+          const filePath = resolveAlias(rawPath, options.alias || {})
+          const relativePath = relative(options.srcDir, filePath)
 
-          s.overwrite(startIndex, endIndex, replacement)
-          names.add(replaceFunctionName)
+          const originalLoader = code.slice(loaderArgument.start, loaderArgument.end)
+          const replacement = `__${functionName}(${JSON.stringify(relativePath)}, ${originalLoader})`
+
+          edits.push({ start: node.start, end: node.end, replacement })
+          names.add(functionName)
+        })
+
+        for (const edit of edits) {
+          s.overwrite(edit.start, edit.end, edit.replacement)
         }
 
         if (names.size) {
@@ -106,7 +112,35 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
   }
 })
 
-function findComponent (components: Component[], name: string) {
-  const id = pascalCase(name)
-  return components.find(c => c.pascalName === id)
+function isStringLiteral (node: Argument | undefined) {
+  return !!node && node.type === 'Literal' && typeof node.value === 'string'
+}
+
+function findImportExpression (node: Expression | FunctionBody): { importExpression?: ImportExpression, importLiteral?: Expression } {
+  if (node.type === 'ImportExpression') {
+    return { importExpression: node, importLiteral: node.source }
+  }
+  if (node.type === 'BlockStatement') {
+    const returnStmt = node.body.find(stmt => stmt.type === 'ReturnStatement')
+    if (returnStmt && returnStmt.argument) {
+      return findImportExpression(returnStmt.argument)
+    }
+    return {}
+  }
+  if (node.type === 'ParenthesizedExpression') {
+    return findImportExpression(node.expression)
+  }
+  if (node.type === 'AwaitExpression') {
+    return findImportExpression(node.argument)
+  }
+  if (node.type === 'ConditionalExpression') {
+    return findImportExpression(node.consequent) || findImportExpression(node.alternate)
+  }
+  if (node.type === 'MemberExpression') {
+    return findImportExpression(node.object)
+  }
+  if (node.type === 'CallExpression') {
+    return findImportExpression(node.callee)
+  }
+  return {}
 }

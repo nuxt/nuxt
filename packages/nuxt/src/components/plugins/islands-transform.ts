@@ -6,7 +6,7 @@ import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
-import { isVue } from '../../core/utils'
+import { isVue } from '../../core/utils/index.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
@@ -16,12 +16,13 @@ interface ServerOnlyComponentTransformPluginOptions {
   selectiveClient?: boolean | 'deep'
 }
 
-const SCRIPT_RE = /<script[^>]*>/gi
+const SCRIPT_RE = /<script[^>]*>/i
+const SCRIPT_RE_GLOBAL = /<script[^>]*>/gi
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
-const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
-const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
+const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
+const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(?:="[^"]*")?/g
 const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
-const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
+const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(?:="[^"]*")?/g
 const KEY_RE = /:?key="[^"]"/g
 
 function wrapWithVForDiv (code: string, vfor: string): string {
@@ -56,10 +57,10 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         const startingIndex = template.index || 0
         const s = new MagicString(code)
 
-        if (!code.match(SCRIPT_RE)) {
+        if (!SCRIPT_RE.test(code)) {
           s.prepend('<script setup>' + IMPORT_CODE + '</script>')
         } else {
-          s.replace(SCRIPT_RE, (full) => {
+          s.replace(SCRIPT_RE_GLOBAL, (full) => {
             return full + IMPORT_CODE
           })
         }
@@ -166,7 +167,13 @@ function isBinding (attr: string): boolean {
 function getPropsToString (bindings: Record<string, string>): string {
   const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
   if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
+  const contentParts: string[] = []
+  for (const [name, value] of Object.entries(bindings)) {
+    if (name && (name !== '_bind' && name !== 'v-for')) {
+      contentParts.push(isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``)
+    }
+  }
+  const content = contentParts.join(',')
   const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`

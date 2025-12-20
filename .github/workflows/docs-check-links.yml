@@ -10,7 +10,7 @@ on:
       - 3.x
 
 # Remove default permissions of GITHUB_TOKEN for security
-# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
 permissions: {}
 
 jobs:
@@ -19,17 +19,17 @@ jobs:
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
       - name: Restore lychee cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         with:
           path: .lycheecache
           key: cache-lychee-${{ github.sha }}
           restore-keys: cache-lychee-
 
       # check links with Lychee
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Lychee link checker
-        uses: lycheeverse/lychee-action@5c4ee84814c983aa7164eaee476f014e53ff3963 # for v1.8.0
+        uses: lycheeverse/lychee-action@631725aa742da9b8eb5e3541942ab992832223e3 # for v1.8.0
         with:
           # arguments with file types to check
           args: >-

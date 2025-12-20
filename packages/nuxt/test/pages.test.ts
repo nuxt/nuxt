@@ -1,9 +1,9 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
-import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
-import { generateRouteKey } from '../src/pages/runtime/utils'
+import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
+import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 describe('pages:generateRoutesFromFiles', () => {
@@ -41,7 +41,7 @@ describe('pages:generateRoutesFromFiles', () => {
           const files = test.files.map(file => ({
             shouldUseServerComponents: true,
             absolutePath: file.path,
-            relativePath: file.path.replace(/^(pages|layer\/pages)\//, ''),
+            relativePath: file.path.replace(/^(?:pages|layer\/pages)\//, ''),
           })).sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
 
           result = generateRoutesFromFiles(files).map((route, index) => {
@@ -51,7 +51,7 @@ describe('pages:generateRoutesFromFiles', () => {
             }
           })
 
-          await augmentPages(result, vfs)
+          await augmentPages(result, vfs, { extraExtractionKeys: new Set(['extracted']) })
         } catch (error: any) {
           expect(error.message).toEqual(test.error)
         }
@@ -885,11 +885,13 @@ export const pageTests: Array<{
         path: `${pagesDir}/page-with-meta.vue`,
         meta: {
           test: 1,
+          extracted: { foo: 'foo' },
         },
         template: `
             <script setup lang="ts">
             definePageMeta({
-              hello: 'world'
+              hello: 'world',
+              extracted: { bar: 'bar' },
             })
             </script>
           `,
@@ -901,7 +903,7 @@ export const pageTests: Array<{
         path: '/page-with-meta',
         file: `${pagesDir}/page-with-meta.vue`,
         children: [],
-        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: 1 },
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: 1, extracted: { foo: 'foo', bar: 'bar' } },
       },
     ],
   },

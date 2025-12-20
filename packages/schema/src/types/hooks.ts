@@ -6,13 +6,14 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nitro, NitroConfig } from 'nitropack/types'
+import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
-import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
-import type { Component, ComponentsOptions } from './components'
-import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
+import type { ViteConfig } from './config.ts'
+import type { NuxtCompatibility, NuxtCompatibilityIssues } from './compatibility.ts'
+import type { Component, ComponentsOptions } from './components.ts'
+import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
 
 export type HookResult = Promise<void> | void
 
@@ -35,6 +36,7 @@ export type NuxtPage = {
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
   middleware?: string[] | string
+  rules?: NitroRouteConfig
   /**
    * Set the render mode.
    *
@@ -60,6 +62,9 @@ export type NuxtLayout = {
   file: string
 }
 
+/**
+ * @deprecated Use {@link InlinePreset}
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ImportPresetWithDeprecation extends InlinePreset {
 }
@@ -139,7 +144,7 @@ export interface NuxtHooks {
    */
   'app:templates': (app: NuxtApp) => HookResult
   /**
-   * Called after templates are compiled into the [virtual file system](https://nuxt.com/docs/guide/directory-structure/nuxt#virtual-file-system) (vfs).
+   * Called after templates are compiled into the [virtual file system](https://nuxt.com/docs/4.x/directory-structure/nuxt) (vfs).
    * @param app The configured `NuxtApp` object
    * @returns Promise
    */
@@ -222,7 +227,7 @@ export interface NuxtHooks {
    * @param presets Array containing presets objects
    * @returns Promise
    */
-  'imports:sources': (presets: ImportPresetWithDeprecation[]) => HookResult
+  'imports:sources': (presets: InlinePreset[]) => HookResult
   /**
    * Called at setup allowing modules to extend imports.
    * @param imports Array containing the imports to extend
@@ -352,13 +357,15 @@ export interface NuxtHooks {
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
+   * @deprecated
    */
-  'vite:extendConfig': (viteInlineConfig: ViteConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
+  'vite:extendConfig': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
    * Allows to read the resolved Vite config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
    * @returns Promise
+   * @deprecated
    */
   'vite:configResolved': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**

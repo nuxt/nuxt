@@ -22,6 +22,8 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
+import { NuxtPage } from '#components'
+import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -335,7 +337,7 @@ describe('loading state', () => {
   })
 })
 
-describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
+describe.skipIf(!isTestingAppManifest)('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
     // @ts-expect-error timestamp is not optional
@@ -363,20 +365,23 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
       }
     `)
   })
-  it('getRouteRules', async () => {
-    expect(await getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
-    expect(await getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
+  it('getRouteRules', () => {
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
       }
     `)
-    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
+    expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
         "redirect": "/",
       }
     `)
   })
+})
+
+describe('compiled route rules', () => {
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
     expect(await isPrerendered('/prerendered/test')).toBeFalsy()
@@ -468,6 +473,17 @@ describe('routing utilities: `encodeURL`', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
+  const nuxtApp = useNuxtApp()
+  const router = useRouter()
+
+  function waitForPageChange () {
+    return new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+  }
+
+  afterEach(() => {
+    router.clearRoutes()
+  })
+
   it('should provide a route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',
@@ -480,6 +496,55 @@ describe('routing utilities: `useRoute`', () => {
       query: {},
       redirectedFrom: undefined,
     })
+  })
+
+  it('should sync route after child suspense resolves', async () => {
+    router.addRoute({
+      name: 'parent-test',
+      path: '/parent',
+      component: defineComponent({
+        setup: () => () => h('div', ['parent', h(NuxtPage)]),
+      }),
+      children: [
+        {
+          name: 'parent',
+          path: '',
+          component: defineComponent({
+            template: '<div> parent/index </div>',
+          }),
+        },
+        {
+          name: 'parent-suspense',
+          path: 'suspense',
+          component: defineComponent({
+            template: '<div> parent/suspense </div>',
+            setup: () => new Promise(resolve => setTimeout(resolve, 1)),
+          }),
+        },
+      ],
+    })
+
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage) })
+    const route = useRoute()
+
+    await navigateTo('/parent')
+    await waitForPageChange()
+
+    expect(el.html()).toContain('<div> parent/index </div>')
+    expect(route.name).toBe('parent')
+
+    await navigateTo('/parent/suspense')
+
+    expect(el.html()).toContain('<div> parent/index </div>')
+    expect(route.name).toBe('parent')
+
+    await waitForPageChange()
+
+    expect(el.html()).toContain('<div> parent/suspense </div>')
+    expect(route.name).toBe('parent-suspense')
+
+    el.unmount()
+    router.removeRoute('parent-test')
   })
 })
 
@@ -531,7 +596,7 @@ describe('defineNuxtComponent', () => {
       }),
       render () {
         // @ts-expect-error this is not typed
-        return h('div', `Total users: ${this.users.value.length}`)
+        return h('div', `Total users: ${this.users.length}`)
       },
     })))
     const wrapper = await mountSuspended(ClientOnlyPage)
@@ -682,7 +747,7 @@ describe('callOnce', () => {
       await execute()
       expect(fn).toHaveBeenCalledTimes(1)
 
-      await nuxtApp.callHook('page:start')
+      await navigateTo('/test')
       await execute()
       expect(fn).toHaveBeenCalledTimes(2)
     })

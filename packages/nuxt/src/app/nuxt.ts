@@ -4,6 +4,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
+import type { UseContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
 import type { RenderResponse } from 'nitropack/types'
@@ -24,7 +25,7 @@ import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-export function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -72,16 +73,16 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */
-  _renderResponse?: Partial<RenderResponse>
+  ['~renderResponse']?: Partial<RenderResponse>
   /** @internal */
-  _payloadReducers: Record<string, (data: any) => any>
+  ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */
-  _sharedPrerenderCache?: {
+  ['~sharedPrerenderCache']?: {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
   /** @internal */
-  _preloadManifest?: boolean
+  ['~preloadManifest']?: boolean
 }
 
 export interface NuxtPayload {
@@ -138,6 +139,8 @@ interface _NuxtApp {
     _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
     /** @internal */
     _hash?: Record<string, string | undefined>
+    /** @internal */
+    _abortController?: AbortController
   } | undefined>
 
   /** @internal */
@@ -152,6 +155,9 @@ interface _NuxtApp {
   }
 
   /** @internal */
+  _processingMiddleware?: string | boolean
+
+  /** @internal */
   _once: {
     [key: string]: Promise<any>
   }
@@ -162,7 +168,9 @@ interface _NuxtApp {
   /** @internal */
   _appConfig: AppConfig
   /** @internal */
-  _route: RouteLocationNormalizedLoaded
+  _route: RouteLocationNormalizedLoaded & {
+    sync?: () => void
+  }
 
   /** @internal */
   _islandPromises?: Record<string, Promise<any>>
@@ -257,7 +265,7 @@ export interface CreateOptions {
 }
 
 /** @since 3.0.0 */
-export function createNuxtApp (options: CreateOptions) {
+export function createNuxtApp (options: CreateOptions): NuxtApp {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
     _id: options.id || appId || 'nuxt-app',
@@ -398,14 +406,14 @@ export function createNuxtApp (options: CreateOptions) {
 }
 
 /** @since 3.12.0 */
-export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): void {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
   }
 }
 
 /** @since 3.0.0 */
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): Promise<void> {
   if (typeof plugin === 'function') {
     const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
     if (provide && typeof provide === 'object') {
@@ -417,7 +425,7 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 }
 
 /** @since 3.0.0 */
-export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
+export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>): Promise<void> {
   const resolvedPlugins: Set<string> = new Set()
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
@@ -489,10 +497,10 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const definePayloadPlugin = defineNuxtPlugin
+export const definePayloadPlugin: typeof defineNuxtPlugin = defineNuxtPlugin
 
 /** @since 3.0.0 */
-export function isNuxtPlugin (plugin: unknown) {
+export function isNuxtPlugin (plugin: unknown): plugin is Plugin {
   return typeof plugin === 'function' && NuxtPluginIndicator in plugin
 }
 
@@ -502,7 +510,7 @@ export function isNuxtPlugin (plugin: unknown) {
  * @param setup The function to call
  * @since 3.0.0
  */
-export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>): Promise<ReturnType<T>> {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {
@@ -547,7 +555,7 @@ export function useNuxtApp (id?: string): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/4.x/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
     } else {
       throw new Error('[nuxt] instance unavailable')
     }
@@ -577,14 +585,17 @@ export function defineAppConfig<C extends AppConfigInput> (config: C): C {
 const loggedKeys = new Set<string>()
 function wrappedConfig (runtimeConfig: Record<string, unknown>) {
   if (!import.meta.dev || import.meta.server) { return runtimeConfig }
-  const keys = Object.keys(runtimeConfig).map(key => `\`${key}\``)
+  const keys: string[] = []
+  for (const key in runtimeConfig) {
+    keys.push(`\`${key}\``)
+  }
   const lastKey = keys.pop()
   return new Proxy(runtimeConfig, {
     get (target, p, receiver) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         if (!loggedKeys.has(p)) {
           loggedKeys.add(p)
-          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/guide/going-further/runtime-config for more information.`)
+          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/4.x/guide/going-further/runtime-config for more information.`)
         }
       }
       return Reflect.get(target, p, receiver)

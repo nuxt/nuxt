@@ -1,8 +1,7 @@
-import { consola } from 'consola'
-import defu from 'defu'
+import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   vite: {
@@ -29,12 +28,12 @@ export default defineResolvers({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     },
     publicDir: {
-      // @ts-expect-error this is missing from our `vite` types deliberately, so users do not configure it
       $resolve: (val) => {
         if (val) {
-          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
+          console.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.')
         }
-        return false
+        // this is missing from our `vite` types deliberately, so users do not configure it
+        return false as never
       },
     },
     vue: {

@@ -8,7 +8,7 @@ import '#build/fetch.mjs'
 import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
-import type { CreateOptions } from './nuxt'
+import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
 
@@ -21,7 +21,9 @@ import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
-let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
+export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
+
+let entry: Entry
 
 if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
@@ -36,7 +38,8 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
-    if (ssrContext?._renderResponse) { throw new Error('skipping render') }
+    // TODO: remove _renderResponse in nuxt v5
+    if (ssrContext && (ssrContext['~renderResponse'] || ssrContext._renderResponse)) { throw new Error('skipping render') }
 
     return vueApp
   }
@@ -44,7 +47,7 @@ if (import.meta.server) {
 
 if (import.meta.client) {
   // TODO: temporary webpack 5 HMR fix
-  // https://github.com/webpack-contrib/webpack-hot-middleware/issues/390
+  // https://github.com/webpack/webpack-hot-middleware/issues/390
   if (import.meta.dev && import.meta.webpackHot) {
     import.meta.webpackHot.accept()
   }
@@ -106,4 +109,4 @@ if (import.meta.client) {
   })
 }
 
-export default (ssrContext?: CreateOptions['ssrContext']) => entry(ssrContext)
+export default (ssrContext => entry(ssrContext)) as Entry
