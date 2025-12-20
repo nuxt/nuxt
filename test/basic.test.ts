@@ -1339,12 +1339,12 @@ describe('composables', () => {
 
 describe('middlewares', () => {
   it('should redirect to index with global middleware', async () => {
-    const html = await $fetch<string>('/redirect/')
+    const res = await fetch('/redirect/', { redirect: 'manual' })
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
 
-    expect(html).toContain('Hello Nuxt 3!')
+    expect(res.headers.get('location')).toEqual('/')
   })
 
   it('should allow redirection from a non-existent route with `ssr: false`', async () => {
