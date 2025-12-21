@@ -344,7 +344,7 @@ importers:
         specifier: 7.7.1
         version: 7.7.1
       hookable:
-        specifier: ^5.5.3
+        specifier: 5.5.3
         version: 5.5.3
       nitro:
         specifier: https://pkg.pr.new/nitrojs/nitro@00598a8
@@ -460,7 +460,7 @@ importers:
         version: link:../schema
       hookable:
         specifier: ^6.0.0
-        version: 6.0.0
+        version: 6.0.1
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -5375,8 +5375,8 @@ packages:
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
 
-  hookable@6.0.0:
-    resolution: {integrity: sha512-mJdm7+WIvB8VymBXXqJbqpXzi8Ahjsnx3p9mvG0kD3YS8jLw3c9VSBGaAVW1Q89M50aBVwQ92z7Gg4FoXwa3QQ==}
+  hookable@6.0.1:
+    resolution: {integrity: sha512-uKGyY8BuzN/a5gvzvA+3FVWo0+wUjgtfSdnmjtrOVwQCZPHpHDH2WRO3VZSOeluYrHoDCiXFffZXs8Dj1ULWtw==}
 
   hosted-git-info@7.0.2:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
@@ -12764,7 +12764,7 @@ snapshots:
 
   hookable@5.5.3: {}
 
-  hookable@6.0.0: {}
+  hookable@6.0.1: {}
 
   hosted-git-info@7.0.2:
     dependencies:
