@@ -85,6 +85,7 @@
     "vue": "3.5.25"
   },
   "peerDependencies": {
+    "nuxt": "workspace:*",
     "vue": "^3.3.4"
   },
   "engines": {

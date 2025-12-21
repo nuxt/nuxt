@@ -726,6 +726,9 @@ importers:
       mlly:
         specifier: ^1.8.0
         version: 1.8.0
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -1173,6 +1176,9 @@ importers:
       mlly:
         specifier: ^1.8.0
         version: 1.8.0
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
