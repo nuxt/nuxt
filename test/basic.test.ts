@@ -86,8 +86,7 @@ describe('route rules', () => {
     expect(html).toContain('<div id="__nuxt"></div>')
   })
 
-  // TODO:
-  it.fails('should allow defining route rules inline', async () => {
+  it('should allow defining route rules inline', async () => {
     const res = await fetch('/route-rules/inline')
     expect(res.status).toEqual(200)
     expect(res.headers.get('x-extend')).toEqual('added in routeRules')
