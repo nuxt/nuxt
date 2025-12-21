@@ -5,8 +5,8 @@ import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 
-import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
-import { logger, resolveToAlias } from '../utils'
+import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
+import { logger, resolveToAlias } from '../utils.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
@@ -121,6 +121,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         preload: Boolean(dir.preload),
         // specific to the file
         filePath,
+        declarationPath: filePath,
         pascalName,
         kebabName,
         chunkName,

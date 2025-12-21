@@ -4,8 +4,8 @@ import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
-import { loadNuxt } from '../src'
-import type { NuxtConfig } from '../schema'
+import { loadNuxt } from '../src/index.ts'
+import type { NuxtConfig } from '../schema.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -137,6 +137,35 @@ describe('loadNuxt', () => {
         "@nuxt/telemetry",
       ]
     `)
+  })
+
+  it('includes layer server directories in nitro tsconfig', async () => {
+    const layerFixtureDir = withoutTrailingSlash(
+      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
+    )
+
+    const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
+
+    const tsConfigInclude = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
+
+    const hasLayerServer = tsConfigInclude.some((p: string) =>
+      p.replace(/\\/g, '/').includes('layers/auto/server'),
+    )
+
+    expect(hasLayerServer).toBe(true)
+
+    await nuxt.close()
+  })
+
+  it('includes #server alias in nitro tsconfig paths', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+
+    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+
+    expect(tsConfigPaths).toHaveProperty('#server')
+    expect(tsConfigPaths).toHaveProperty('#server/*')
+
+    await nuxt.close()
   })
 })
 

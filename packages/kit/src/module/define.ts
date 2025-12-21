@@ -2,21 +2,21 @@ import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
-import { logger } from '../logger'
-import { tryUseNuxt, useNuxt } from '../context'
-import { checkNuxtCompatibility } from '../compatibility'
+import { logger } from '../logger.ts'
+import { tryUseNuxt, useNuxt } from '../context.ts'
+import { checkNuxtCompatibility } from '../compatibility.ts'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
  * any hooks that are provided, and calling an optional setup function for full control.
  */
 export function defineNuxtModule<TOptions extends ModuleOptions> (
-  definition: ModuleDefinition<TOptions, Partial<TOptions>, false> | NuxtModule<TOptions, Partial<TOptions>, false>
+  definition: ModuleDefinition<TOptions, Partial<TOptions>, false> | NuxtModule<TOptions, Partial<TOptions>, false>,
 ): NuxtModule<TOptions, TOptions, false>
 
 export function defineNuxtModule<TOptions extends ModuleOptions> (): {
   with: <TOptionsDefaults extends Partial<TOptions>> (
-    definition: ModuleDefinition<TOptions, TOptionsDefaults, true> | NuxtModule<TOptions, TOptionsDefaults, true>
+    definition: ModuleDefinition<TOptions, TOptionsDefaults, true> | NuxtModule<TOptions, TOptionsDefaults, true>,
   ) => NuxtModule<TOptions, TOptionsDefaults, true>
 }
 
@@ -63,7 +63,7 @@ function _defineNuxtModule<
     const optionsDefaults: TOptionsDefaults =
       module.defaults instanceof Function
         ? await module.defaults(nuxt)
-        : module.defaults ?? <TOptionsDefaults> {}
+        : module.defaults ?? {} as TOptionsDefaults
 
     let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
 
@@ -138,11 +138,11 @@ function _defineNuxtModule<
     if (res === false) { return false }
 
     // Return module install result
-    return defu(res, <ModuleSetupInstallResult> {
+    return defu(res, {
       timings: {
         setup: setupTime,
       },
-    })
+    } as ModuleSetupInstallResult)
   }
 
   // Define getters for options and meta
@@ -153,5 +153,5 @@ function _defineNuxtModule<
   normalizedModule.onInstall = module.onInstall
   normalizedModule.onUpgrade = module.onUpgrade
 
-  return <NuxtModule<TOptions, TOptionsDefaults, TWith>> normalizedModule
+  return normalizedModule as NuxtModule<TOptions, TOptionsDefaults, TWith>
 }

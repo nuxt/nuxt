@@ -263,11 +263,17 @@ describe('typed router integration', () => {
   it('allows typing NuxtLink', () => {
     // @ts-expect-error this named route does not exist
     h(NuxtLink, { to: { name: 'some-thing' } })
+    // @ts-expect-error this named route does not exist
+    h(NuxtLink, { href: { name: 'some-thing' } })
     // this one does
     h(NuxtLink, { to: { name: 'page' } })
+    h(NuxtLink, { href: { name: 'page' } })
     // @ts-expect-error this is an invalid param
     h(NuxtLink, { to: { name: 'param-id', params: { bob: 23 } } })
+    // @ts-expect-error this is an invalid param
+    h(NuxtLink, { href: { name: 'param-id', params: { bob: 23 } } })
     h(NuxtLink, { to: { name: 'param-id', params: { id: 4 } } })
+    h(NuxtLink, { href: { name: 'param-id', params: { id: 4 } } })
 
     // doesn't throw an error when accessing properties of component
     const _props = NuxtLink.props
@@ -624,7 +630,7 @@ describe('extends type declarations', () => {
 describe('composables inference', () => {
   it('callWithNuxt', () => {
     const bob = callWithNuxt({} as any, () => true)
-    expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
+    expectTypeOf<typeof bob>().toEqualTypeOf<Promise<boolean>>()
   })
   it('runWithContext', () => {
     const bob = useNuxtApp().runWithContext(() => true)

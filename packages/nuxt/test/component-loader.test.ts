@@ -4,8 +4,8 @@ import { rollup } from 'rollup'
 import vuePlugin from '@vitejs/plugin-vue'
 import vuePluginJsx from '@vitejs/plugin-vue-jsx'
 import type { AddComponentOptions } from '@nuxt/kit'
-import { LoaderPlugin } from '../src/components/plugins/loader'
-import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform'
+import { LoaderPlugin } from '../src/components/plugins/loader.ts'
+import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform.ts'
 
 describe('components:loader', () => {
   it('should correctly resolve components', async () => {
@@ -110,6 +110,102 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
 
       export { about as default };"
     `)
+  })
+
+  it('should auto-import JSX components with h() calls', async () => {
+    const component = `
+    import { h } from 'vue'
+    export default {
+      render() {
+        return h('div', [
+          h(MyComponent, { foo: 'bar' }),
+          h(MyComponent, null, 'Hello')
+        ])
+      }
+    }
+    `
+    const code = await transform(component, '/pages/jsx-h.tsx')
+    expect(code).toContain('import __nuxt_component_0 from \'../components/MyComponent.vue\'')
+    expect(code).toContain('h(__nuxt_component_0,')
+  })
+
+  it('should auto-import JSX components in various contexts', async () => {
+    const component = `
+    import { h, defineComponent } from 'vue'
+    export default defineComponent({
+      setup() {
+        return () => h('div', [
+          h(MyComponent),
+          h(MyComponent, {}),
+          h(MyComponent, { prop: true }),
+          h(MyComponent, null, ['children']),
+        ])
+      }
+    })
+    `
+    const code = await transform(component, '/pages/contexts.tsx')
+    expect(code).toContain('import __nuxt_component_0 from \'../components/MyComponent.vue\'')
+    // Should replace all h(MyComponent) instances
+    const matches = code.match(/h\(__nuxt_component_0/g)
+    expect(matches).toHaveLength(4)
+  })
+
+  it('should handle multiple different JSX components', async () => {
+    const component = `
+    import { h } from 'vue'
+    export default {
+      render() {
+        return h('div', [
+          h(MyComponent, { id: 1 }),
+          h(OtherComponent, { id: 2 }),
+          h(MyComponent, { id: 3 })
+        ])
+      }
+    }
+    `
+    const code = await transform(component, '/pages/multiple.tsx')
+    expect(code).toContain('import __nuxt_component_0 from \'../components/MyComponent.vue\'')
+    // MyComponent should appear twice
+    const myComponentMatches = code.match(/h\(__nuxt_component_0/g)
+    expect(myComponentMatches).toHaveLength(2)
+    // OtherComponent should not be replaced (not in components list)
+    expect(code).toContain('h(OtherComponent,')
+  })
+
+  it('should not replace h() calls with lowercase component names', async () => {
+    const component = `
+    import { h } from 'vue'
+    export default {
+      render() {
+        return h('div', [
+          h(myComponent),
+          h(myOtherComponent)
+        ])
+      }
+    }
+    `
+    const code = await transform(component, '/pages/lowercase.tsx')
+    // Should not auto-import lowercase identifiers
+    expect(code).not.toContain('import __nuxt_component')
+    expect(code).toContain('h(myComponent')
+    expect(code).toContain('h(myOtherComponent')
+  })
+
+  it('should handle JSX with lazy components in JSX syntax', async () => {
+    const component = `
+    import { defineComponent } from 'vue'
+    export default defineComponent({
+      setup() {
+        return () => <div>
+          <LazyMyComponent foo="bar" />
+        </div>
+      }
+    })
+    `
+    const code = await transform(component, '/pages/lazy-jsx.tsx')
+    expect(code).toContain('defineAsyncComponent')
+    expect(code).toContain('__nuxt_component_0_lazy')
+    expect(code).toContain('createVNode(__nuxt_component_0_lazy,')
   })
 
   it('should correctly resolve lazy hydration components', async () => {
