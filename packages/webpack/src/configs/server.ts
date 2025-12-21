@@ -39,6 +39,10 @@ function serverPreset (ctx: WebpackConfigContext) {
     splitChunks: false,
     minimize: false,
   }
+
+  if (ctx.isDev) {
+    ctx.config.output!.asyncChunks = false
+  }
 }
 
 async function serverStandalone (ctx: WebpackConfigContext) {
