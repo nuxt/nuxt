@@ -215,6 +215,7 @@ export default defineNuxtModule({
       nuxt.hook('nitro:init', (nitro) => {
         if (nuxt.options.dev || !nuxt.options.ssr || !nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
 
+        nitro.options.prerender.routes ||= []
         nitro.options.prerender.routes.push('/')
       })
       return
