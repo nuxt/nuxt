@@ -40,7 +40,15 @@ exclude = [
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
+  "https://nuxt.new/c/v3",
+  "https://nuxt.new/s/v3",
+  "https://nuxt.new/c/v4",
+  "https://nuxt.new/s/v4",
+  "https://www.npmjs.com/",
+  # TODO: fix upstream API issues
+  "https://nuxt.com/modules",
   # single-quotes are required for regexp
+  'https://res.cloudinary.com/nuxt/video/upload/(.*)',
   'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
