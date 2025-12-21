@@ -138,7 +138,7 @@ if (isBuilt || isWindows) {
       expect(page).toHaveNoErrorsOrWarnings()
     })
 
-    test.fail('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
+    test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
       await goto('/state-component')
 
       const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
