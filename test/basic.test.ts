@@ -2578,8 +2578,8 @@ describe('component islands', () => {
 
 describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   it('does not override vite plugins', async () => {
-    expect(await $fetch<string>('/vite-plugin-without-path')).toBe('vite-plugin without path')
-    expect(await $fetch<string>('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
+    expect(await $fetch<string>('/vite-plugin-without-path', { responseType: 'text' })).toBe('vite-plugin without path')
+    expect(await $fetch<string>('/__nuxt-test', { responseType: 'text' })).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
     expect(await fetch('/app.config').then(r => r.status)).toBe(404)
