@@ -706,6 +706,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.8
+        version: 1.0.8
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.104.1(esbuild@0.27.2))
@@ -724,6 +727,12 @@ importers:
       memfs:
         specifier: 4.56.2
         version: 4.56.2(tslib@2.8.1)
+      mlly:
+        specifier: ^1.8.0
+        version: 1.8.0
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -1156,6 +1165,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.8
+        version: 1.0.8
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.104.1(esbuild@0.27.2))
@@ -1180,6 +1192,12 @@ importers:
       mini-css-extract-plugin:
         specifier: ^2.10.0
         version: 2.10.0(webpack@5.104.1(esbuild@0.27.2))
+      mlly:
+        specifier: ^1.8.0
+        version: 1.8.0
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
