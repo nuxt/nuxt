@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { performance } from 'node:perf_hooks'
-import { createError } from 'h3'
+import { HTTPError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'
 import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from '#vite-node'
@@ -50,7 +50,7 @@ function createRunner () {
         let _err
         try {
           const { message, stack } = formatViteError(errorData, id)
-          _err = createError({
+          _err = new HTTPError({
             statusText: 'Vite Error',
             message,
             stack,
@@ -59,7 +59,7 @@ function createRunner () {
           consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
           const message = `[vite-node] [TransformError] ${errorData?.message || '-'}`
           consola.error(message, errorData)
-          throw createError({
+          throw new HTTPError({
             statusText: 'Vite Error',
             message,
             stack: `${message}\nat ${id}\n` + (errorData?.stack || ''),

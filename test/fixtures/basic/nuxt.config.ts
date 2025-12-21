@@ -153,6 +153,9 @@ export default withMatrix({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    nitroAutoImports: true,
+    runtimeBaseURL: true,
+    serverAppConfig: true,
     decorators: true,
     typedPages: true,
     clientFallback: true,
@@ -166,16 +169,10 @@ export default withMatrix({
   nitro: {
     publicAssets: [
       {
-        dir: '../custom-public',
+        dir: './custom-public',
         baseURL: '/custom',
       },
     ],
-    esbuild: {
-      options: {
-        // in order to test bigint serialization
-        target: 'es2022',
-      },
-    },
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/redirect/catchall': { ssr: false },

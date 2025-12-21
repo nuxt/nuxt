@@ -144,12 +144,13 @@ function connectSocket (): Promise<Socket> {
               if (requestHandlers) {
                 const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
                 if (response.type === 'error') {
+                  /** @type {Error & { stack?: string; data?: unknown; status?: number }} */
                   const err = new Error(response.error.message)
                   err.stack = response.error.stack
                   // @ts-expect-error We are augmenting the error object
                   err.data = response.error.data
                   // @ts-expect-error We are augmenting the error object
-                  err.statusCode = err.status = response.error.status || response.error.statusCode
+                  err.status = response.error.status
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)

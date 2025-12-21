@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
-import type { Nitro } from 'nitropack/types'
+import type { Nitro } from 'nitro/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
@@ -456,7 +456,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
 
       nuxt.options.dev
         ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
@@ -494,7 +494,24 @@ if (!("global" in globalThis)) {
 }
 
 export const dollarFetchTemplate: NuxtTemplate = {
-  filename: 'fetch.mjs',
+  filename: 'fetch.server.mjs',
+  getContents () {
+    return [
+      'import { $fetch } from \'ofetch\'',
+      'import { baseURL } from \'#internal/nuxt/paths\'',
+      'import { serverFetch } from "nitro";',
+      'globalThis.fetch = serverFetch',
+      'if (!globalThis.$fetch) {',
+      '  globalThis.$fetch = $fetch.create({',
+      '    baseURL: baseURL()',
+      '  })',
+      '}',
+    ].join('\n')
+  },
+}
+
+export const dollarFetchClientTemplate: NuxtTemplate = {
+  filename: 'fetch.client.mjs',
   getContents () {
     return [
       'import { $fetch } from \'ofetch\'',

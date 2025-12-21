@@ -2,6 +2,7 @@ import process from 'node:process'
 import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
+import type { NitroRuntimeConfig } from 'nitro/types'
 
 import { defu } from 'defu'
 import { useNuxt } from './context.ts'
@@ -29,7 +30,7 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): vo
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
   try {
-    return useNitro().updateConfig({ runtimeConfig })
+    return useNitro().updateConfig({ runtimeConfig: runtimeConfig as NitroRuntimeConfig })
   } catch {
     // Nitro is not yet initialised - we can safely ignore this error
   }
