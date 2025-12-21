@@ -198,15 +198,7 @@ async function initNuxt (nuxt: Nuxt) {
     getContents: ({ app }) => {
       return [
         `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-        'declare module \'nitropack\' {',
-        '  interface NitroRouteConfig {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '  interface NitroRouteRules {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '}',
-        'declare module \'nitropack/types\' {',
+        'declare module \'nitro/types\' {',
         '  interface NitroRouteConfig {',
         '    appLayout?: LayoutKey | false',
         '  }',
