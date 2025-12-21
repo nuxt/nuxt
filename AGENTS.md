@@ -4,7 +4,7 @@ This document provides comprehensive information for AI agents working on the Nu
 
 ## Project Overview
 
-Nuxt is a next-generation testing framework powered by Vite. This is a monorepo using pnpm workspaces with the following key characteristics:
+Nuxt is a next-generation testing framework powered by Vue.js. This is a monorepo using pnpm workspaces with the following key characteristics:
 
 - **Language**: TypeScript/JavaScript
 - **Package Manager**: pnpm (required)
