@@ -403,10 +403,12 @@ export default defineNuxtModule({
         ...toRou3Patterns(nuxt.apps.default?.pages || []),
       ]
 
+      nitro.options.prerender.routes ||= []
+
       // Inject page patterns that explicitly match `prerender: true` route rule
       if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...[nitro.routing.routeRules.matchAll('', route)].reverse())
+          const rules = defu({} as Record<string, any>, ...nitro.routing.routeRules.matchAll('', route).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
