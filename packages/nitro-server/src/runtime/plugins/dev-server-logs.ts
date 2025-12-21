@@ -82,6 +82,7 @@ export default definePlugin((nitroApp) => {
   })
 
   // Pass any logs to the client
+  // @ts-expect-error will be fixed when we move to hookable v6
   nitroHooks.hook('render:html', (htmlContext) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
