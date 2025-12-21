@@ -40,6 +40,7 @@
     "defu": "^6.1.4",
     "esbuild-loader": "^4.4.0",
     "escape-string-regexp": "^5.0.0",
+    "exsolve": "^1.0.8",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "h3": "^2.0.1-rc.6",

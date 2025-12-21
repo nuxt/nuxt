@@ -714,6 +714,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.8
+        version: 1.0.8
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.104.1(esbuild@0.27.2))
@@ -1155,6 +1158,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.8
+        version: 1.0.8
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.104.1(esbuild@0.27.2))
