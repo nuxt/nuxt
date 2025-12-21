@@ -47,8 +47,6 @@ import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
 import { ComposableKeysPlugin } from './plugins/composable-keys.ts'
-import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
-import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
@@ -351,11 +349,6 @@ async function initNuxt (nuxt: Nuxt) {
     rootDir: nuxt.options.rootDir,
     composables: nuxt.options.optimization.keyedComposables,
   }))
-
-  // add resolver for modules used in virtual files
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
-
-  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))

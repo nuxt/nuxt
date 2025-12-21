@@ -3,8 +3,7 @@ import { tryImportModule, useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import escapeStringRegexp from 'escape-string-regexp'
-
-import { runtimeDependencies as runtimeNuxtDependencies } from '../../meta.mjs'
+import { runtimeDependencies as runtimeNuxtDependencies } from 'nuxt/meta'
 
 export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
   let external: Set<string> = new Set()

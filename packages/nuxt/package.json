@@ -33,6 +33,7 @@
       "types": "./kit.d.ts",
       "import": "./kit.js"
     },
+    "./meta": "./meta.mjs",
     "./app": {
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
