@@ -50,10 +50,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  const layerPublicAssetsDirs: Array<{ dir: string }> = []
+  const layerPublicAssetsDirs: Array<{ dir: string, maxAge: number }> = []
   for (const dirs of layerDirs) {
     if (existsSync(dirs.public)) {
-      layerPublicAssetsDirs.push({ dir: dirs.public })
+      layerPublicAssetsDirs.push({ dir: dirs.public, maxAge: 0 })
     }
   }
 
@@ -181,6 +181,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     handlers: [
       ...nuxt.options.experimental.runtimeBaseURL
         ? [{
+            route: '',
             middleware: true,
             handler: resolve(distDir, 'runtime/middleware/base-url'),
           }]
@@ -242,7 +243,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     publicAssets: [
       nuxt.options.dev
-        ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
+        ? {
+            dir: resolve(nuxt.options.buildDir, 'dist/client'),
+            maxAge: 0,
+          }
         : {
             dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
             maxAge: 31536000 /* 1 year */,
