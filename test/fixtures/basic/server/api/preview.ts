@@ -1,5 +1,3 @@
-import { getQuery } from 'nitro/h3'
-
 const apiKeyName = 'apiKey'
 const apiKey = 'hehe'
 

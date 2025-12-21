@@ -1474,6 +1474,12 @@ export interface ConfigSchema {
      * Whether to add a middleware to handle changes of base URL at runtime (has a performance overhead)
      */
     runtimeBaseURL: boolean
+
+    /**
+     * Whether to enable a compatibility layer for Nitro auto imports.
+     * We recommend migrating to direct imports instead.
+     */
+    nitroAutoImports: boolean
   }
 
   /**

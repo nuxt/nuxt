@@ -25,6 +25,7 @@ import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/t
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { nitroSchemaTemplate } from './templates.ts'
+import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -146,12 +147,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
       dirs: [...sharedDirs],
-      presets: [
-        {
-          from: 'nitro/h3',
-          imports: ['defineEventHandler', 'defineHandler', 'eventHandler'],
-        },
-      ],
+      presets: nuxt.options.experimental.nitroAutoImports
+        ? [
+            ...v2ImportsPreset,
+            await getH3ImportsPreset(),
+          ]
+        : [],
       imports: [
         {
           as: '__buildAssetsURL',

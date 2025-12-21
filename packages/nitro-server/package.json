@@ -37,6 +37,7 @@
     "impound": "^1.0.0",
     "klona": "^2.0.6",
     "knitwork": "^1.3.0",
+    "mlly": "^1.8.0",
     "mocked-exports": "^0.1.1",
     "nitro": "^3.0.1-alpha.1",
     "ohash": "^2.0.11",

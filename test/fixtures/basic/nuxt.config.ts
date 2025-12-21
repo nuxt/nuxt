@@ -153,6 +153,7 @@ export default withMatrix({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    nitroAutoImports: true,
     runtimeBaseURL: true,
     serverAppConfig: true,
     decorators: true,
