@@ -702,6 +702,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.8
+        version: 1.0.8
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.103.0(esbuild@0.27.1))
@@ -720,6 +723,9 @@ importers:
       memfs:
         specifier: ^4.51.1
         version: 4.51.1
+      mlly:
+        specifier: ^1.8.0
+        version: 1.8.0
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -1137,6 +1143,9 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
+      exsolve:
+        specifier: ^1.0.8
+        version: 1.0.8
       file-loader:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.103.0(esbuild@0.27.1))
@@ -1161,6 +1170,9 @@ importers:
       mini-css-extract-plugin:
         specifier: ^2.9.4
         version: 2.9.4(webpack@5.103.0(esbuild@0.27.1))
+      mlly:
+        specifier: ^1.8.0
+        version: 1.8.0
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
