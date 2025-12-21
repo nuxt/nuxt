@@ -49,9 +49,12 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
   ]
 }
 
+// TODO: remove in nuxt v5
 export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = import.meta.prerender && NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  // @nuxt/devalue can't handle the null prototype of HTTPError objects
+  opts.data.error &&= Object.assign({}, opts.data.error)
   const nuxtData = devalue(opts.data)
   if (_PAYLOAD_EXTRACTION) {
     const singleAppPayload = `import p from "${opts.src}";window.__NUXT__={...p,...(${nuxtData})}`
