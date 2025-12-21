@@ -23,7 +23,7 @@ import { builder, webpack } from '#builder'
 // const plugins: string[] = []
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
-  const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
+  const webpackConfigs = await Promise.all([client, ...(nuxt.options.ssr ? [server] : [])].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     await applyPresets(ctx, preset)
@@ -75,20 +75,18 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
-      await new Promise(resolve => compiler?.close(resolve))
+      await new Promise(resolve => compiler.close(resolve))
     }
   })
 
   // Start Builds
   if (nuxt.options.dev) {
-    await Promise.all(compilers.map(c => c && compile(c)))
+    await Promise.all(compilers.map(c => compile(c)))
     return
   }
 
   for (const c of compilers) {
-    if (c) {
-      await compile(c)
-    }
+    await compile(c)
   }
 }
 
