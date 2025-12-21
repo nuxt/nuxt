@@ -1,7 +1,7 @@
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
-import VueSSRClientPlugin from '../plugins/vue/client'
-import VueSSRServerPlugin from '../plugins/vue/server'
-import type { WebpackConfigContext } from '../utils/config'
+import VueSSRClientPlugin from '../plugins/vue/client.ts'
+import VueSSRServerPlugin from '../plugins/vue/server.ts'
+import type { WebpackConfigContext } from '../utils/config.ts'
 
 import { webpack } from '#builder'
 
@@ -24,7 +24,7 @@ export function vue (ctx: WebpackConfigContext) {
   }
 
   // Feature flags
-  // https://github.com/vuejs/vue-next/tree/master/packages/vue#bundler-build-feature-flags
+  // https://github.com/vuejs/core/tree/main/packages/vue#bundler-build-feature-flags
   // TODO: Provide options to toggle
   ctx.config.plugins!.push(new webpack.DefinePlugin({
     '__VUE_OPTIONS_API__': 'true',

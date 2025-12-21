@@ -4,6 +4,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
+import type { UseContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
 import type { RenderResponse } from 'nitropack/types'
@@ -24,7 +25,7 @@ import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-export function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -72,16 +73,16 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */
-  _renderResponse?: Partial<RenderResponse>
+  ['~renderResponse']?: Partial<RenderResponse>
   /** @internal */
-  _payloadReducers: Record<string, (data: any) => any>
+  ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */
-  _sharedPrerenderCache?: {
+  ['~sharedPrerenderCache']?: {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
   /** @internal */
-  _preloadManifest?: boolean
+  ['~preloadManifest']?: boolean
 }
 
 export interface NuxtPayload {
@@ -167,7 +168,9 @@ interface _NuxtApp {
   /** @internal */
   _appConfig: AppConfig
   /** @internal */
-  _route: RouteLocationNormalizedLoaded
+  _route: RouteLocationNormalizedLoaded & {
+    sync?: () => void
+  }
 
   /** @internal */
   _islandPromises?: Record<string, Promise<any>>
@@ -262,7 +265,7 @@ export interface CreateOptions {
 }
 
 /** @since 3.0.0 */
-export function createNuxtApp (options: CreateOptions) {
+export function createNuxtApp (options: CreateOptions): NuxtApp {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
     _id: options.id || appId || 'nuxt-app',
@@ -403,14 +406,14 @@ export function createNuxtApp (options: CreateOptions) {
 }
 
 /** @since 3.12.0 */
-export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): void {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
   }
 }
 
 /** @since 3.0.0 */
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): Promise<void> {
   if (typeof plugin === 'function') {
     const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
     if (provide && typeof provide === 'object') {
@@ -422,7 +425,7 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 }
 
 /** @since 3.0.0 */
-export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
+export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>): Promise<void> {
   const resolvedPlugins: Set<string> = new Set()
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
@@ -494,10 +497,10 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const definePayloadPlugin = defineNuxtPlugin
+export const definePayloadPlugin: typeof defineNuxtPlugin = defineNuxtPlugin
 
 /** @since 3.0.0 */
-export function isNuxtPlugin (plugin: unknown) {
+export function isNuxtPlugin (plugin: unknown): plugin is Plugin {
   return typeof plugin === 'function' && NuxtPluginIndicator in plugin
 }
 
@@ -507,7 +510,7 @@ export function isNuxtPlugin (plugin: unknown) {
  * @param setup The function to call
  * @since 3.0.0
  */
-export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>): Promise<ReturnType<T>> {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {
