@@ -1,5 +1,8 @@
-import { isAbsolute, resolve } from 'pathe'
-import { logger } from '@nuxt/kit'
+import { isAbsolute, normalize, resolve } from 'pathe'
+import { directoryToURL, logger, resolveAlias, tryImportModule } from '@nuxt/kit'
+import { parseNodeModulePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
+import { runtimeDependencies as runtimeNuxtDependencies } from 'nuxt/meta'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
 import { nuxt } from '../presets/nuxt.ts'
@@ -7,6 +10,7 @@ import { node } from '../presets/node.ts'
 import { TsCheckerPlugin, webpack } from '#builder'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
+const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
 
 export async function server (ctx: WebpackConfigContext) {
   ctx.name = 'server'
@@ -37,7 +41,7 @@ function serverPreset (ctx: WebpackConfigContext) {
   }
 }
 
-function serverStandalone (ctx: WebpackConfigContext) {
+async function serverStandalone (ctx: WebpackConfigContext) {
   // TODO: Refactor this out of webpack
   const inline = [
     'src/',
@@ -52,6 +56,11 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
+
+  const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitropack/runtime/meta')>('nitropack/runtime/meta', {
+    url: new URL(import.meta.url),
+  }) || {}
+
   const external = new Set([
     'nitro/runtime',
     // TODO: remove in v5
@@ -59,6 +68,10 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nitropack/runtime',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
+    // explicit dependencies we use in our ssr renderer
+    'unhead', '@unhead/vue', '@nuxt/devalue', 'rou3', 'unstorage',
+    ...runtimeNuxtDependencies,
+    ...runtimeNitroDependencies,
   ])
   if (!ctx.nuxt.options.dev) {
     external.add('#internal/nuxt/paths')
@@ -67,11 +80,30 @@ function serverStandalone (ctx: WebpackConfigContext) {
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }
-  ctx.config.externals.push(({ request }, cb) => {
+
+  // Resolve conditions for server build
+  const conditions = [
+    ctx.nuxt.options.dev ? 'development' : 'production',
+    'node',
+    'import',
+    'require',
+  ]
+
+  ctx.config.externals.push(({ request, context }, cb) => {
     if (!request) {
       return cb(undefined, false)
     }
     if (external.has(request)) {
+      // Resolve to absolute path so nitro can handle version resolution
+      const resolved = resolveModulePath(request, {
+        from: context ? [context, ...ctx.nuxt.options.modulesDir].map(d => directoryToURL(d)) : ctx.nuxt.options.modulesDir.map(d => directoryToURL(d)),
+        suffixes: ['', 'index'],
+        conditions,
+        try: true,
+      })
+      if (resolved && isAbsolute(resolved)) {
+        return cb(undefined, resolved)
+      }
       return cb(undefined, true)
     }
     if (
@@ -83,6 +115,27 @@ function serverStandalone (ctx: WebpackConfigContext) {
       // console.log('Inline', request)
       return cb(undefined, false)
     }
+
+    if (context && request && !request.startsWith('node:') && (isAbsolute(context) || VIRTUAL_RE.test(context))) {
+      try {
+        const normalisedRequest = resolveAlias(normalize(request), ctx.nuxt.options.alias)
+        const dir = parseNodeModulePath(context).dir || ctx.nuxt.options.rootDir
+
+        const resolved = resolveModulePath(normalisedRequest, {
+          from: [dir, ...ctx.nuxt.options.modulesDir].map(d => directoryToURL(d)),
+          suffixes: ['', 'index'],
+          conditions,
+          try: true,
+        })
+
+        if (resolved && isAbsolute(resolved)) {
+          return cb(undefined, false)
+        }
+      } catch {
+        // Ignore resolution errors, fall through to externalize
+      }
+    }
+
     // console.log('Ext', request)
     return cb(undefined, true)
   })

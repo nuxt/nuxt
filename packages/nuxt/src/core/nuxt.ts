@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -47,8 +47,6 @@ import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
 import { ComposableKeysPlugin } from './plugins/composable-keys.ts'
-import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
-import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
@@ -352,11 +350,6 @@ async function initNuxt (nuxt: Nuxt) {
     composables: nuxt.options.optimization.keyedComposables,
   }))
 
-  // add resolver for modules used in virtual files
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
-
-  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
-
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
@@ -404,8 +397,11 @@ async function initNuxt (nuxt: Nuxt) {
       include: sharedPatterns,
       patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
     }
-    addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
-    addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
+    addBuildPlugin({
+      vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
+      webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
+    }, { server: false })
 
     // Add import protection
     const nuxtProtectionConfig = {
@@ -414,9 +410,13 @@ async function initNuxt (nuxt: Nuxt) {
       exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
       patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
     }
+    addBuildPlugin({
+      webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+    })
+    // TODO: remove in nuxt v5 when we can use vite env api
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-    addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
   })
 
   if (!nuxt.options.dev) {

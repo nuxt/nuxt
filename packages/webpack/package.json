@@ -40,6 +40,7 @@
     "defu": "^6.1.4",
     "esbuild-loader": "^4.4.0",
     "escape-string-regexp": "^5.0.0",
+    "exsolve": "^1.0.8",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "h3": "^1.15.4",
@@ -48,6 +49,7 @@
     "magic-string": "^0.30.21",
     "memfs": "^4.51.1",
     "mini-css-extract-plugin": "^2.9.4",
+    "mlly": "^1.8.0",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
@@ -83,6 +85,7 @@
     "vue": "3.5.25"
   },
   "peerDependencies": {
+    "nuxt": "workspace:*",
     "vue": "^3.3.4"
   },
   "engines": {
