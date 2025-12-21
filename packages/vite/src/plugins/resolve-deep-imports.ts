@@ -2,12 +2,9 @@ import { parseNodeModulePath } from 'mlly'
 import { resolveModulePath } from 'exsolve'
 import { isAbsolute, normalize, resolve } from 'pathe'
 import type { Environment, Plugin } from 'vite'
-import { directoryToURL, resolveAlias } from '@nuxt/kit'
+import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
-
-import { pkgDir } from '../../dirs.ts'
-import { logger } from '../../utils.ts'
 
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
 
@@ -63,7 +60,7 @@ export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
           }
         }
 
-        const dir = parseNodeModulePath(normalisedImporter).dir || pkgDir
+        const dir = parseNodeModulePath(normalisedImporter).dir || nuxt.options.appDir
 
         const res = await this.resolve?.(normalisedId, dir, { skipSelf: true })
         if (res !== undefined && res !== null) {

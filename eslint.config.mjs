@@ -7,8 +7,7 @@ import perfectionist from 'eslint-plugin-perfectionist'
 import { importX } from 'eslint-plugin-import-x'
 import parser from '@typescript-eslint/parser'
 import markdown from '@eslint/markdown'
-
-import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
+import { runtimeDependencies } from 'nuxt/meta'
 
 export default createConfigForNuxt({
   features: {
