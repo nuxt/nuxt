@@ -30,7 +30,7 @@ function serverPreset (ctx: WebpackConfigContext) {
 
   if (ctx.nuxt.options.sourcemap.server) {
     const prefix = ctx.nuxt.options.sourcemap.server === 'hidden' ? 'hidden-' : ''
-    ctx.config.devtool = prefix + ctx.isDev ? 'cheap-module-source-map' : 'source-map'
+    ctx.config.devtool = prefix + (ctx.isDev ? 'cheap-module-source-map' : 'source-map')
   } else {
     ctx.config.devtool = false
   }
