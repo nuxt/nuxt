@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -397,8 +397,11 @@ async function initNuxt (nuxt: Nuxt) {
       include: sharedPatterns,
       patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
     }
-    addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
-    addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
+    addBuildPlugin({
+      vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
+      webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
+    }, { server: false })
 
     // Add import protection
     const nuxtProtectionConfig = {
@@ -407,9 +410,12 @@ async function initNuxt (nuxt: Nuxt) {
       exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
       patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
     }
+    addBuildPlugin({
+      webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+    })
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-    addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
   })
 
   if (!nuxt.options.dev) {
