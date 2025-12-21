@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineHandler } from 'h3'
+import { defineEventHandler } from 'h3'
 
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
@@ -15,12 +15,12 @@ interface TestData {
   headers: Record<string, string>
 }
 
-registerEndpoint('/api/test', defineHandler(event => ({
+registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.req.method,
   headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
-registerEndpoint('/api/sleep', defineHandler((event) => {
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ method: event.req.method, headers: Object.fromEntries(event.req.headers.entries()) })
@@ -62,8 +62,8 @@ describe('useFetch', () => {
   })
 
   it('should work with reactive keys', async () => {
-    registerEndpoint('/api/initial', defineHandler(() => ({ url: '/api/initial' })))
-    registerEndpoint('/api/updated', defineHandler(() => ({ url: '/api/updated' })))
+    registerEndpoint('/api/initial', defineEventHandler(() => ({ url: '/api/initial' })))
+    registerEndpoint('/api/updated', defineEventHandler(() => ({ url: '/api/updated' })))
 
     const key = ref('/api/initial')
 
@@ -82,7 +82,7 @@ describe('useFetch', () => {
 
   it('should not trigger rerunning fetch if `watch: false`', async () => {
     let count = 0
-    registerEndpoint('/api/rerun', defineHandler(() => ({ count: count++ })))
+    registerEndpoint('/api/rerun', defineEventHandler(() => ({ count: count++ })))
 
     const q = ref('')
     const { data } = await useFetch('/api/rerun', {
@@ -101,7 +101,7 @@ describe('useFetch', () => {
   })
 
   it.runIf(process.env.PROJECT === 'nuxt-legacy')('should work with reactive keys and immediate: false', async () => {
-    registerEndpoint('/api/immediate-false', defineHandler(() => ({ url: '/api/immediate-false' })))
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
 
     const q = ref('')
     const { data } = await useFetch('/api/immediate-false', {
@@ -120,7 +120,7 @@ describe('useFetch', () => {
   })
 
   it.runIf(process.env.PROJECT === 'nuxt-legacy')('should work with reactive request path and immediate: false', async () => {
-    registerEndpoint('/api/immediate-false', defineHandler(() => ({ url: '/api/immediate-false' })))
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
 
     const q = ref('')
     const { data } = await useFetch(() => withQuery('/api/immediate-false', { q: q.value }), {
@@ -138,7 +138,7 @@ describe('useFetch', () => {
   })
 
   it('should be accessible immediately', async () => {
-    registerEndpoint('/api/watchable-fetch', defineHandler(() => ({ url: '/api/watchable-fetch' })))
+    registerEndpoint('/api/watchable-fetch', defineEventHandler(() => ({ url: '/api/watchable-fetch' })))
 
     const searchTerm = ref('')
 
@@ -159,7 +159,7 @@ describe('useFetch', () => {
   })
 
   it('should handle complex objects in body', async () => {
-    registerEndpoint('/api/complex-objects', defineHandler(() => ({ url: '/api/complex-objects' })))
+    registerEndpoint('/api/complex-objects', defineEventHandler(() => ({ url: '/api/complex-objects' })))
     const formData = new FormData()
     formData.append('file', new File([], 'test.txt'))
     const testCases = [

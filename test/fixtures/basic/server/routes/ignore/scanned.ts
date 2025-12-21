@@ -1,5 +1,3 @@
-import { defineHandler } from 'nitro/h3'
-
-export default defineHandler(() => {
+export default defineEventHandler(() => {
   return 'this should be ignored'
 })

@@ -1,4 +1,4 @@
-export default defineHandler(async () => {
+export default defineEventHandler(async () => {
   await timeout(20)
   return 'that was very long ...'
 })

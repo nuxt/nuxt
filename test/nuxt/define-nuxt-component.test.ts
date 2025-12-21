@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { defineHandler } from 'h3'
+import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 import { refreshNuxtData } from '#app/composables/asyncData'
 import { NuxtPage } from '#components'
 import { flushPromises } from '@vue/test-utils'
 
-registerEndpoint('/api/hello', defineHandler(() => 'Hello API'))
+registerEndpoint('/api/hello', defineEventHandler(() => 'Hello API'))
 
 describe('defineNuxtComponent', () => {
   it('should produce a Vue component', async () => {

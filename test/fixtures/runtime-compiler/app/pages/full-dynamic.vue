@@ -88,9 +88,7 @@ const Interactive = defineComponent({
 })
 
 // API Endpoint (server/api/full-component.get.ts)
-import { defineHandler } from 'nitro/h3'
-
-export default defineHandler(() => {
+export default defineEventHandler(() => {
   return {
     props: ['lastname', 'firstname'],
     setup: `

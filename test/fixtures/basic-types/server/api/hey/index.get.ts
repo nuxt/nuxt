@@ -1,6 +1,4 @@
-import { defineHandler } from 'nitro/h3'
-
-export default defineHandler(() => ({
+export default defineEventHandler(() => ({
   foo: 'bar',
   baz: 'qux',
 }))

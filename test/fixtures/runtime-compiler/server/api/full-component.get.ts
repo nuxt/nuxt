@@ -2,9 +2,7 @@
  * sometimes, CMS wants to give full control on components. This might not be a good practice.
  * SO MAKE SURE TO SANITIZE ALL YOUR STRINGS
  */
-import { defineHandler } from 'nitro/h3'
-
-export default defineHandler(() => {
+export default defineEventHandler(() => {
   return {
     props: ['lastname', 'firstname'],
     // don't forget to sanitize

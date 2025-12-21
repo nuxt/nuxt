@@ -1,5 +1,3 @@
-import { defineHandler } from 'nitro/h3'
-
 let counter = 0
 
 const test = () => () => {
@@ -8,4 +6,4 @@ const test = () => () => {
 }
 test()
 
-export default defineHandler(() => ({ count: counter++ }))
+export default defineEventHandler(() => ({ count: counter++ }))
