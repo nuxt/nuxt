@@ -31,18 +31,18 @@ const { data, pending } = await useAsyncData('templateString', async () => {
         Loading template from API...
       </div>
 
-      <template v-else>
+      <template v-else-if="data">
         <h3>Component Output:</h3>
         <div class="component-display">
           <show-template
             data-testid="show-template"
-            :template="data!.templateString"
+            :template="data.templateString"
             name="John"
           />
         </div>
 
         <h3>API Response (Template):</h3>
-        <pre class="api-response"><code>{{ data!.templateString }}</code></pre>
+        <pre class="api-response"><code>{{ data.templateString }}</code></pre>
 
         <h3>Implementation:</h3>
         <pre><code>
