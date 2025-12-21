@@ -414,6 +414,7 @@ async function initNuxt (nuxt: Nuxt) {
       webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
       rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
     })
+    // TODO: remove in nuxt v5 when we can use vite env api
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
   })
