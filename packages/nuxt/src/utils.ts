@@ -25,7 +25,7 @@ export function isWhitespace (char: number | string | undefined | null): boolean
   return c === 32 || c === 9 || c === 10 || c === 13 || c === 12
 }
 
-export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts']
+export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts', 'd.vue.ts', 'd.vue.mts', 'd.vue.cts']
 
 export const logger = useLogger('nuxt')
 

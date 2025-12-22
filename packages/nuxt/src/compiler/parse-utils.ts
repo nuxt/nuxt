@@ -10,7 +10,8 @@ import type {
 } from 'oxc-parser'
 import type { ParsedStaticImport } from 'mlly'
 import { resolveAlias } from '@nuxt/kit'
-import { stripExtension } from '../utils'
+
+import { stripExtension } from '../utils.ts'
 
 export function processImports (imports: ParsedStaticImport[]) {
   /**

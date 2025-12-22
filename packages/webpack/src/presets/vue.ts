@@ -1,7 +1,7 @@
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
-import VueSSRClientPlugin from '../plugins/vue/client'
-import VueSSRServerPlugin from '../plugins/vue/server'
-import type { WebpackConfigContext } from '../utils/config'
+import VueSSRClientPlugin from '../plugins/vue/client.ts'
+import VueSSRServerPlugin from '../plugins/vue/server.ts'
+import type { WebpackConfigContext } from '../utils/config.ts'
 
 import { webpack } from '#builder'
 

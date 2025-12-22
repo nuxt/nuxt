@@ -1,6 +1,6 @@
 import type { BuildEntry } from 'unbuild'
 import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin, stubOptions } from '../../debug/build-config'
+import { addRollupTimingsPlugin } from '../../debug/build-config.ts'
 
 export default defineBuildConfig({
   declaration: true,
@@ -18,7 +18,6 @@ export default defineBuildConfig({
       'compiler',
     ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm', ext: 'js' } as BuildEntry)),
   ],
-  stubOptions,
   hooks: {
     'mkdist:entry:options' (_ctx, _entry, mkdistOptions) {
       mkdistOptions.addRelativeDeclarationExtensions = true

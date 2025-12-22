@@ -72,11 +72,29 @@ const iframeStorageBridge = (nonce: string) => /* js */ `
     type: 'storage-sync-request',
     nonce: NONCE
   }, '*');
+
+  // Clipboard API is unavailable in data: URL iframe, so we use postMessage
+  document.addEventListener('DOMContentLoaded', function() {
+    window.copyErrorMessage = function(button) {
+      window.parent.postMessage({ type: 'clipboard-copy', text: button.dataset.errorText, nonce: NONCE }, '*');
+      button.classList.add('copied');
+      setTimeout(function() { button.classList.remove('copied'); }, 2000);
+    };
+  });
 })();
 `
 
 const parentStorageBridge = (nonce: string) => /* js */ `
 (function() {
+  const NONCE = ${JSON.stringify(nonce)}
+
+  // Handle clipboard copy from iframe
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'clipboard-copy' && e.data.nonce === NONCE) {
+      navigator.clipboard.writeText(e.data.text).catch(function() {});
+    }
+  });
+
   const host = document.querySelector('nuxt-error-overlay');
   if (!host) return;
   
@@ -86,8 +104,6 @@ const parentStorageBridge = (nonce: string) => /* js */ `
       clearInterval(checkShadow);
       const iframe = host.shadowRoot.getElementById('frame');
       if (!iframe) return;
-
-      const NONCE = ${JSON.stringify(nonce)}
       
       window.addEventListener('message', function(event) {
         if (!event.data || event.data.nonce !== NONCE) return;
