@@ -1,6 +1,6 @@
 import type { KeyedFunction } from '@nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
-import { KeyedFunctionsPlugin } from '../src/compiler/plugins/keyed-functions'
+import { KeyedFunctionsPlugin } from '../src/core/plugins/keyed-functions'
 import { logger } from '../src/utils'
 import type { Import } from 'unimport'
 

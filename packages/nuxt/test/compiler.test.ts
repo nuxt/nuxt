@@ -4,7 +4,7 @@ import {
   type FunctionCallMetadata,
   parseStaticExportIdentifiers,
   parseStaticFunctionCall,
-} from '../src/compiler/parse-utils'
+} from '../src/core/utils/parse-utils'
 import { parseAndWalk } from 'oxc-walker'
 
 describe('parseFunctionCall', () => {

@@ -24,8 +24,8 @@ import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
-
-import pkg from '../../package.json' with { type: 'json' }
+import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
+import type { Unimport } from 'unimport'
 
 import { installNuxtModule } from '../core/features.ts'
 import pagesModule from '../pages/module.ts'
@@ -34,6 +34,7 @@ import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 
 import { distDir, pkgDir } from '../dirs.ts'
+import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
 import { resolveTypePath } from './utils/types.ts'
@@ -47,12 +48,10 @@ import { bundleServer } from './server.ts'
 import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
+import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
-import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
-import { KeyedFunctionsPlugin } from '../compiler/plugins/keyed-functions.ts'
-import type { Unimport } from 'unimport'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()

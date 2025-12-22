@@ -1,17 +1,8 @@
-import type {
-  CallExpression,
-  ChainExpression,
-  ExportDefaultDeclaration,
-  ExportNamedDeclaration,
-  IdentifierReference,
-  MemberExpression,
-  ParenthesizedExpression,
-  TSExportAssignment,
-} from 'oxc-parser'
+import type { CallExpression, ChainExpression, ExportDefaultDeclaration, ExportNamedDeclaration, IdentifierReference, MemberExpression, ParenthesizedExpression, TSExportAssignment } from 'oxc-parser'
 import type { ParsedStaticImport } from 'mlly'
 import { resolveAlias } from '@nuxt/kit'
 
-import { stripExtension } from '../utils.ts'
+import { stripExtension } from '../../utils.ts'
 
 export function processImports (imports: ParsedStaticImport[]) {
   /**
