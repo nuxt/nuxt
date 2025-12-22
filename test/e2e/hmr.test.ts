@@ -138,6 +138,64 @@ if (isBuilt || isWindows) {
       expect(page).toHaveNoErrorsOrWarnings()
     })
 
+    test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
+      await goto('/state-component')
+
+      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pageContents = readFileSync(pagePath, 'utf8')
+
+      const button = page.getByTestId('button')
+      await expect(button).toHaveText('0')
+      await button.click()
+      await expect(button).toHaveText('1')
+
+      writeFileSync(
+        pagePath,
+        pageContents.replace('#hmr-template', '#hmr-template updated'),
+      )
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Wait for HMR to process the new route
+      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+
+      await expect.soft(button).toHaveText('1')
+    })
+
+    test('HMR on page should keep ref state when updating script', async ({ goto, page }) => {
+      await goto('/state-component')
+
+      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pageContents = readFileSync(pagePath, 'utf8')
+
+      const button = page.getByTestId('button')
+      await expect(button).toHaveText('0')
+      await button.click()
+      await expect(button).toHaveText('1')
+
+      writeFileSync(
+        pagePath,
+        pageContents.replace('#hmr-script', '#hmr-script updated'),
+      )
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Wait for HMR to process the new route
+      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+
+      await expect.soft(button).toHaveText('1')
+    })
+
     test('HMR for routes', async ({ page, goto }) => {
       await goto('/routes')
 
