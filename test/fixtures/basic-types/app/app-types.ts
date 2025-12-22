@@ -20,6 +20,15 @@ type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
+declare module 'nuxt/app' {
+  interface NuxtLayouts {
+    withFunction: {
+      someProp: number
+      function: () => void
+    }
+  }
+}
+
 describe('API routes', () => {
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
@@ -308,6 +317,11 @@ describe('layouts', () => {
     setPageLayout('invalid-layout')
     // @ts-expect-error Invalid layout props
     setPageLayout('with-props', { aProp: 'string-instead-of-number' })
+  })
+
+  it('expect setPageLayout to raise TS error when using non-serializable props values', () => {
+    // @ts-expect-error Non-serializable layout props
+    setPageLayout('withFunction', { aProp: () => {}, someProp: 5 })
   })
 })
 

@@ -11,6 +11,7 @@ import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
+import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
@@ -268,10 +269,9 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 
 /**
  * Sets the layout for the current page.
- * TODO type props
  * @since 3.0.0
  */
-export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? NuxtLayouts[Layout] : never) => {
+export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never) => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {

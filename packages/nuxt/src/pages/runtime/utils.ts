@@ -5,6 +5,12 @@ type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
 type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
 export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
 
+export type SerializableValue = string | number | boolean | null | undefined | SerializableValue[] | { [key: string]: SerializableValue }
+
+export type MakeSerializableObject<T> = {
+  [K in keyof T]: T[K] extends SerializableValue ? T[K] : T[K] extends object ? MakeSerializableObject<T[K]> : T[K]
+}
+
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
 const ROUTE_KEY_NORMAL_RE = /:\w+/g

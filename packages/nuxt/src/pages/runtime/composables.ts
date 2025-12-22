@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtError } from 'nuxt/app'
 import { useNuxtApp } from '#app/nuxt'
+import type { SerializableValue } from './utils'
 
 // Generated at runtime to be extended
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -58,7 +59,7 @@ declare module 'vue-router' {
     /**
      * @internal
      */
-    layoutProps?: Record<string, unknown>
+    layoutProps?: Record<string, SerializableValue>
   }
 }
 
