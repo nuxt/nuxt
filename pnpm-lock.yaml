@@ -341,8 +341,8 @@ importers:
         specifier: 7.7.1
         version: 7.7.1
       hookable:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 6.0.1
+        version: 6.0.1
       nitropack:
         specifier: 2.12.9
         version: 2.12.9(rolldown@1.0.0-beta.54)
@@ -531,8 +531,8 @@ importers:
         specifier: 1.15.4
         version: 1.15.4
       hookable:
-        specifier: ^5.5.3
-        version: 5.5.3
+        specifier: ^6.0.1
+        version: 6.0.1
       ignore:
         specifier: ^7.0.5
         version: 7.0.5
@@ -891,8 +891,8 @@ importers:
         specifier: 1.15.4
         version: 1.15.4
       hookable:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 6.0.1
+        version: 6.0.1
       ignore:
         specifier: 7.0.5
         version: 7.0.5
@@ -5512,6 +5512,9 @@ packages:
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+
+  hookable@6.0.1:
+    resolution: {integrity: sha512-uKGyY8BuzN/a5gvzvA+3FVWo0+wUjgtfSdnmjtrOVwQCZPHpHDH2WRO3VZSOeluYrHoDCiXFffZXs8Dj1ULWtw==}
 
   hosted-git-info@7.0.2:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
@@ -13191,6 +13194,8 @@ snapshots:
   highlight.js@10.7.3: {}
 
   hookable@5.5.3: {}
+
+  hookable@6.0.1: {}
 
   hosted-git-info@7.0.2:
     dependencies:
