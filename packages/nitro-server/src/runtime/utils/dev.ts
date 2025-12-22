@@ -72,11 +72,29 @@ const iframeStorageBridge = (nonce: string) => /* js */ `
     type: 'storage-sync-request',
     nonce: NONCE
   }, '*');
+
+  // Clipboard API is unavailable in data: URL iframe, so we use postMessage
+  document.addEventListener('DOMContentLoaded', function() {
+    window.copyErrorMessage = function(button) {
+      window.parent.postMessage({ type: 'clipboard-copy', text: button.dataset.errorText, nonce: NONCE }, '*');
+      button.classList.add('copied');
+      setTimeout(function() { button.classList.remove('copied'); }, 2000);
+    };
+  });
 })();
 `
 
 const parentStorageBridge = (nonce: string) => /* js */ `
 (function() {
+  const NONCE = ${JSON.stringify(nonce)}
+
+  // Handle clipboard copy from iframe
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'clipboard-copy' && e.data.nonce === NONCE) {
+      navigator.clipboard.writeText(e.data.text).catch(function() {});
+    }
+  });
+
   const host = document.querySelector('nuxt-error-overlay');
   if (!host) return;
   
@@ -86,8 +104,6 @@ const parentStorageBridge = (nonce: string) => /* js */ `
       clearInterval(checkShadow);
       const iframe = host.shadowRoot.getElementById('frame');
       if (!iframe) return;
-
-      const NONCE = ${JSON.stringify(nonce)}
       
       window.addEventListener('message', function(event) {
         if (!event.data || event.data.nonce !== NONCE) return;
@@ -207,7 +223,7 @@ const errorCSS = /* css */ `
 }
 `
 
-function webComponentScript (base64HTML: string) {
+function webComponentScript (base64HTML: string, startMinimized: boolean) {
   return /* js */ `
   (function() {
     try {
@@ -299,6 +315,11 @@ function webComponentScript (base64HTML: string) {
       shadow.appendChild(preview);
       shadow.appendChild(button);
       
+      if (${startMinimized}) {
+        iframe.setAttribute('inert', '');
+        button.setAttribute('aria-expanded', 'false');
+      }
+      
       // Initialize preview
       setTimeout(updatePreview, 100);
       
@@ -309,13 +330,13 @@ function webComponentScript (base64HTML: string) {
   `
 }
 
-export function generateErrorOverlayHTML (html: string) {
+export function generateErrorOverlayHTML (html: string, options?: { startMinimized?: boolean }) {
   const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('')
   const errorPage = html.replace('<head>', `<head><script>${iframeStorageBridge(nonce)}</script>`)
   const base64HTML = Buffer.from(errorPage, 'utf8').toString('base64')
   return `
     <script>${parentStorageBridge(nonce)}</script>
     <nuxt-error-overlay></nuxt-error-overlay>
-    <script>${webComponentScript(base64HTML)}</script>
+    <script>${webComponentScript(base64HTML, options?.startMinimized ?? false)}</script>
   `
 }
