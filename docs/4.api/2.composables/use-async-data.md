@@ -73,7 +73,7 @@ const { data: user } = useAsyncData(
 
 ### Make your `handler` abortable
 
-You can make your `handler` function abortable by using the `signal` provided in the second argument. This is useful for cancelling requests when they are no longer needed, such as when a user navigates away from a page. `$fetch` natively supports abort signals.
+You can make your `handler` function abortable by using the `signal` provided by the handler context. This is useful for cancelling requests when they are no longer needed, such as when a user navigates away from a page. `$fetch` natively supports abort signals.
 
 ```ts
 const { data, error } = await useAsyncData(
