@@ -5,10 +5,21 @@ type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
 type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
 export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
 
-export type SerializableValue = string | number | boolean | null | undefined | SerializableValue[] | { [key: string]: SerializableValue }
+type SerializablePrimitive = string | number | boolean | null | undefined
 
-export type MakeSerializableObject<T> = {
-  [K in keyof T]: T[K] extends SerializableValue ? T[K] : T[K] extends object ? MakeSerializableObject<T[K]> : T[K]
+/** JSON-serializable value (non-recursive definition to avoid excessive type depth) */
+export type SerializableValue = SerializablePrimitive | SerializablePrimitive[] | Record<string, unknown>
+
+/** Constrains T to only contain serializable properties. Non-serializable properties become `never`. */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export type MakeSerializableObject<T> = T extends Function | symbol ? never : {
+  [K in keyof T]: T[K] extends SerializablePrimitive
+    ? T[K]
+    : T[K] extends (infer U)[]
+      ? U extends SerializablePrimitive ? T[K] : never
+      : T[K] extends Record<string, unknown>
+        ? T[K]
+        : never
 }
 
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
