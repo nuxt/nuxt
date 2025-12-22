@@ -655,7 +655,7 @@ describe('extends type declarations', () => {
 describe('composables inference', () => {
   it('callWithNuxt', () => {
     const bob = callWithNuxt({} as any, () => true)
-    expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
+    expectTypeOf<typeof bob>().toEqualTypeOf<Promise<boolean>>()
   })
   it('runWithContext', () => {
     const bob = useNuxtApp().runWithContext(() => true)

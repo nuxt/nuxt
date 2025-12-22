@@ -4,8 +4,8 @@ import { rollup } from 'rollup'
 import vuePlugin from '@vitejs/plugin-vue'
 import vuePluginJsx from '@vitejs/plugin-vue-jsx'
 import type { AddComponentOptions } from '@nuxt/kit'
-import { LoaderPlugin } from '../src/components/plugins/loader'
-import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform'
+import { LoaderPlugin } from '../src/components/plugins/loader.ts'
+import { LazyHydrationTransformPlugin } from '../src/components/plugins/lazy-hydration-transform.ts'
 
 describe('components:loader', () => {
   it('should correctly resolve components', async () => {

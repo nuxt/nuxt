@@ -5,12 +5,14 @@ import process from 'node:process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
+import { compileRouterToString } from 'rou3/compiler'
 import { join, relative, resolve } from 'pathe'
 import { readPackageJSON } from 'pkg-types'
-import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
+import { hash } from 'ohash'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
+import type { Nitro, NitroConfig, NitroRouteRules } from 'nitropack/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -18,14 +20,14 @@ import { defineEventHandler, dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
-import './augments'
+import './augments.ts'
 
-import { version as nitroBuilderVersion } from '../package.json'
-import { distDir, toArray } from './utils'
-import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon'
+import nitroBuilder from '../package.json' with { type: 'json' }
+import { distDir, toArray } from './utils.ts'
+import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection'
-import { nitroSchemaTemplate } from './templates'
+import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { nitroSchemaTemplate } from './templates.ts'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -35,7 +37,7 @@ const logLevelMapReverse = {
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
-export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
+export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
   const excludePaths: string[] = []
@@ -142,7 +144,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     framework: {
       name: 'nuxt',
-      version: nuxtVersion || nitroBuilderVersion,
+      version: nuxtVersion || nitroBuilder.version,
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
@@ -191,6 +193,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
       // this will be overridden in vite plugin
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
+      '#internal/nuxt/nitro-config.mjs': () => [
+        `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
+        `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
+        `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
+        `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
+        `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
+        `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
+        `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
+        `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
+        `export const NUXT_PAYLOAD_EXTRACTION = ${!!nuxt.options.experimental.payloadExtraction}`,
+      ].join('\n'),
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
@@ -293,15 +306,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
       '#internal/nuxt/paths': resolve(distDir, 'runtime/utils/paths'),
     },
     replace: {
-      'process.env.NUXT_NO_SSR': String(nuxt.options.ssr === false),
-      'process.env.NUXT_EARLY_HINTS': String(nuxt.options.experimental.writeEarlyHints !== false),
-      'process.env.NUXT_NO_SCRIPTS': String(nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)),
-      'process.env.NUXT_INLINE_STYLES': String(!!nuxt.options.features.inlineStyles),
-      'process.env.PARSE_ERROR_DATA': String(!!nuxt.options.experimental.parseErrorData),
-      'process.env.NUXT_JSON_PAYLOADS': String(!!nuxt.options.experimental.renderJsonPayloads),
-      'process.env.NUXT_ASYNC_CONTEXT': String(!!nuxt.options.experimental.asyncContext),
-      'process.env.NUXT_SHARED_DATA': String(!!nuxt.options.experimental.sharedPrerenderData),
-      'process.dev': String(nuxt.options.dev),
       '__VUE_PROD_DEVTOOLS__': String(false),
     },
     rollupConfig: {
@@ -337,6 +341,63 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     ...resolveIgnorePatterns(nitroConfig.srcDir),
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
+
+  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout']
+
+  function getRouteRulesRouter () {
+    const routeRulesRouter = createRou3Router<NitroRouteRules>()
+    if (nuxt._nitro) {
+      for (const [route, rules] of Object.entries(nuxt._nitro.options.routeRules)) {
+        if (route === '/__nuxt_error') { continue }
+        if (validManifestKeys.every(key => !(key in rules))) { continue }
+        addRoute(routeRulesRouter, undefined, route, rules)
+      }
+    }
+    return routeRulesRouter
+  }
+
+  const cachedMatchers: Record<string, string> = {}
+  addTemplate({
+    filename: 'route-rules.mjs',
+    getContents () {
+      const key = hash(nuxt._nitro?.options.routeRules || {})
+      if (cachedMatchers[key]) {
+        return cachedMatchers[key]
+      }
+      const matcher = compileRouterToString(getRouteRulesRouter(), '', {
+        matchAll: true,
+        serialize (routeRules) {
+          return `{${Object.entries(routeRules)
+            .filter(([name, value]) => value !== undefined && validManifestKeys.includes(name))
+            .map(([name, value]) => {
+              if (name === 'redirect') {
+                const redirectOptions = value as NitroRouteRules['redirect']
+                value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions!.to
+              }
+              if (name === 'appMiddleware') {
+                const appMiddlewareOptions = value as NitroRouteRules['appMiddleware']
+                if (typeof appMiddlewareOptions === 'string') {
+                  value = { [appMiddlewareOptions]: true }
+                } else if (Array.isArray(appMiddlewareOptions)) {
+                  const normalizedRules: Record<string, boolean> = {}
+                  for (const middleware of appMiddlewareOptions) {
+                    normalizedRules[middleware] = true
+                  }
+                  value = normalizedRules
+                }
+              }
+              return `${name}: ${JSON.stringify(value)}`
+            }).join(',')
+          }}`
+        },
+      })
+      return cachedMatchers[key] = `
+      import { defu } from 'defu'
+      const matcher = ${matcher}
+      export default (path) => defu({}, ...matcher('', path).map(r => r.data).reverse())
+      `
+    },
+  })
 
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
@@ -378,59 +439,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
     nuxt.hook('nitro:config', (config) => {
       config.alias ||= {}
       config.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
-
-      const rules = config.routeRules
-      for (const rule in rules) {
-        if (!(rules[rule] as any).appMiddleware) { continue }
-        const value = (rules[rule] as any).appMiddleware
-        if (typeof value === 'string') {
-          (rules[rule] as NitroOptions['routeRules']).appMiddleware = { [value]: true }
-        } else if (Array.isArray(value)) {
-          const normalizedRules: Record<string, boolean> = {}
-          for (const middleware of value) {
-            normalizedRules[middleware] = true
-          }
-          (rules[rule] as NitroOptions['routeRules']).appMiddleware = normalizedRules
-        }
-      }
     })
 
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('rollup:before', async (nitro) => {
-        const routeRules = {} as Record<string, any>
-        const _routeRules = nitro.options.routeRules
-        const validManifestKeys = new Set(['prerender', 'redirect', 'appMiddleware'])
-        for (const key in _routeRules) {
-          if (key === '/__nuxt_error') { continue }
-          let hasRules = false
-          const filteredRules = {} as Record<string, any>
-          for (const routeKey in _routeRules[key]) {
-            const value = (_routeRules as any)[key][routeKey]
-            if (value && validManifestKeys.has(routeKey)) {
-              if (routeKey === 'redirect') {
-                filteredRules[routeKey] = typeof value === 'string' ? value : value.to
-              } else {
-                filteredRules[routeKey] = value
-              }
-              hasRules = true
-            }
-          }
-          if (hasRules) {
-            routeRules[key] = filteredRules
-          }
-        }
-
         // Add pages prerendered but not covered by route rules
         const prerenderedRoutes = new Set<string>()
-        const routeRulesMatcher = toRouteMatcher(
-          createRadixRouter({ routes: routeRules }),
-        )
+        const routeRulesMatcher = getRouteRulesRouter()
         if (nitro._prerenderedRoutes?.length) {
           const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
           for (const route of nitro._prerenderedRoutes) {
             if (!route.error && route.route.endsWith(payloadSuffix)) {
               const url = route.route.slice(0, -payloadSuffix.length) || '/'
-              const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
+              const rules = defu({}, ...findAllRoutes(routeRulesMatcher, undefined, url).reverse()) as Record<string, any>
               if (!rules.prerender) {
                 prerenderedRoutes.add(url)
               }
@@ -441,7 +462,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }) {
         const manifest = {
           id: buildId,
           timestamp: buildTimestamp,
-          matcher: exportMatcher(routeRulesMatcher),
           prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes],
         }
 

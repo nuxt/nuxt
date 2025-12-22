@@ -23,7 +23,7 @@ npx nuxt add <TEMPLATE> <NAME> [--cwd=<directory>] [--logLevel=<silent|info|verb
 | `NAME`     | Specify name of the generated file                                                                                                                                                                               |
 <!--/add-args-->
 
-### Options
+## Options
 
 <!--add-opts-->
 | Option                               | Default | Description                              |

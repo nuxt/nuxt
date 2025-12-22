@@ -1,6 +1,7 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { NitroRouteRules } from 'nitropack/types'
 
 import type { PageMeta } from '../../pages/runtime/composables'
 
@@ -15,6 +16,10 @@ import { useRoute as useVueRouterRoute } from '#build/pages'
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import _routeRulesMatcher from '#build/route-rules.mjs'
+
+const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -56,7 +61,7 @@ export default defineComponent({
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
-      let layout = unref(props.name) ?? route?.meta.layout as string ?? 'default'
+      let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
           console.warn(`Invalid layout \`${layout}\` selected.`)
@@ -138,7 +143,7 @@ const LayoutProvider = defineComponent({
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default'),
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
       })
     }
 
