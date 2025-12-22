@@ -107,7 +107,7 @@
     "eslint": "9.39.2",
     "eslint-plugin-import-x": "4.16.1",
     "eslint-plugin-no-only-tests": "3.3.0",
-    "eslint-plugin-perfectionist": "4.15.1",
+    "eslint-plugin-perfectionist": "5.0.0",
     "eslint-typegen": "2.3.0",
     "estree-walker": "3.0.3",
     "get-port-please": "3.2.0",
