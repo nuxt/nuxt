@@ -1,5 +1,5 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
-import type { Ref } from 'vue'
+import type { ComponentInternalInstance, Ref } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
@@ -14,10 +14,76 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
+// @ts-expect-error virtual file
+import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
+
+// #33680: Reactivate render effects for async components after first navigation
+// During SSR hydration, components with async setup can have their render effects
+// become inactive. This traverses the component tree and reactivates them.
+
+// Traverse VNode tree to find all component instances
+function traverseVNode (vnode: any, callback: (instance: ComponentInternalInstance) => void, visited = new Set()) {
+  if (!vnode || visited.has(vnode)) { return }
+  visited.add(vnode)
+
+  // If this VNode has a component, process it
+  if (vnode.component) {
+    callback(vnode.component)
+    // Traverse the component's subTree
+    traverseVNode(vnode.component.subTree, callback, visited)
+
+    // For Suspense components, also check special slots
+    const suspense = vnode.component.suspense || (vnode as any).suspense
+    if (suspense) {
+      traverseVNode(suspense.activeBranch, callback, visited)
+      traverseVNode(suspense.pendingBranch, callback, visited)
+    }
+  }
+
+  // Check Suspense-specific properties on the VNode itself
+  if ((vnode as any).ssContent) {
+    traverseVNode((vnode as any).ssContent, callback, visited)
+  }
+  if ((vnode as any).ssFallback) {
+    traverseVNode((vnode as any).ssFallback, callback, visited)
+  }
+
+  // Traverse children (for fragments, elements, etc.)
+  if (vnode.children) {
+    if (Array.isArray(vnode.children)) {
+      for (const child of vnode.children) {
+        if (child && typeof child === 'object') {
+          traverseVNode(child, callback, visited)
+        }
+      }
+    }
+  }
+
+  // Also check dynamicChildren (Vue's optimization for v-for, etc.)
+  if (vnode.dynamicChildren && Array.isArray(vnode.dynamicChildren)) {
+    for (const child of vnode.dynamicChildren) {
+      if (child && typeof child === 'object') {
+        traverseVNode(child, callback, visited)
+      }
+    }
+  }
+}
+
+function fixBrokenEffects (rootInstance: ComponentInternalInstance) {
+  traverseVNode({ component: rootInstance }, (instance) => {
+    const effect = instance.effect as unknown as { flags: number } | undefined
+    if (effect && !(effect.flags & 1)) {
+      // Effect lost its ACTIVE flag (1), reactivate it
+      effect.flags |= 1
+      // Force re-render to re-track reactive dependencies
+      ;(instance as unknown as { update?: () => void }).update?.()
+    }
+  })
+}
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -155,6 +221,25 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       })
     }
 
+    // #33680: Reactivate render effects after first navigation (see above)
+    if (import.meta.client && nuxtApp.isHydrating) {
+      const unsubscribe = router.afterEach(() => {
+        // Skip if app not mounted yet (this is the initial replace in app:created)
+        const instance = nuxtApp.vueApp._instance
+          || (nuxtApp.vueApp._container as any)?._vnode?.component
+        if (!instance) { return }
+
+        unsubscribe()
+        setTimeout(() => {
+          const rootInstance = nuxtApp.vueApp._instance
+            || (nuxtApp.vueApp._container as any)?._vnode?.component
+          if (rootInstance) {
+            fixBrokenEffects(rootInstance)
+          }
+        }, 0)
+      })
+    }
+
     try {
       if (import.meta.server) {
         await router.push(initialURL)
@@ -195,14 +280,16 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        const routeRules = getRouteRules({ path: to.path })
+        if (isAppManifestEnabled) {
+          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
 
-        if (routeRules.appMiddleware) {
-          for (const key in routeRules.appMiddleware) {
-            if (routeRules.appMiddleware[key]) {
-              middlewareEntries.add(key)
-            } else {
-              middlewareEntries.delete(key)
+          if (routeRules.appMiddleware) {
+            for (const key in routeRules.appMiddleware) {
+              if (routeRules.appMiddleware[key]) {
+                middlewareEntries.add(key)
+              } else {
+                middlewareEntries.delete(key)
+              }
             }
           }
         }
