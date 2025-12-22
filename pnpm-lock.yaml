@@ -969,8 +969,8 @@ importers:
         specifier: 10.5.0
         version: 10.5.0(vitest@4.0.16(@types/node@24.10.4)(happy-dom@20.0.11)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
       htmlnano:
-        specifier: 2.1.5
-        version: 2.1.5(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.1)(typescript@5.9.3)
+        specifier: 3.0.0
+        version: 3.0.0(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.1)(typescript@5.9.3)
       jiti:
         specifier: 2.6.1
         version: 2.6.1
@@ -5548,8 +5548,9 @@ packages:
   html-whitespace-sensitive-tag-names@3.0.1:
     resolution: {integrity: sha512-q+310vW8zmymYHALr1da4HyXUQ0zgiIwIicEfotYPWGN0OJVEN/58IJ3A4GBYcEq3LGAZqKb+ugvP0GNB9CEAA==}
 
-  htmlnano@2.1.5:
-    resolution: {integrity: sha512-IXffzXq1beGQN2rsr03aIPK/rVU1jR2uwHymlAIEf97Tl5WdpG50IsQ5nWGvSGQJ+x6U7S6yac9rRiFgAg4/xQ==}
+  htmlnano@3.0.0:
+    resolution: {integrity: sha512-DCLN93CIG5r41Sv/rWk1u6XJ89oOtpHK2OzeXL8Aqa8719HWEPpggxRdDbceQQWrZTRIsh/5pF8Rrv1JKq0lpg==}
+    hasBin: true
     peerDependencies:
       cssnano: ^7.0.0
       postcss: 8.5.6
@@ -13217,9 +13218,10 @@ snapshots:
 
   html-whitespace-sensitive-tag-names@3.0.1: {}
 
-  htmlnano@2.1.5(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.1)(typescript@5.9.3):
+  htmlnano@3.0.0(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(svgo@4.0.0)(terser@5.44.1)(typescript@5.9.3):
     dependencies:
       '@types/relateurl': 0.2.33
+      commander: 14.0.2
       cosmiconfig: 9.0.0(typescript@5.9.3)
       posthtml: 0.16.7
     optionalDependencies:
