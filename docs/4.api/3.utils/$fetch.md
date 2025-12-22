@@ -28,7 +28,7 @@ We recommend using [`useFetch`](/docs/4.x/api/composables/use-fetch) or [`useAsy
 const dataTwice = await $fetch('/api/item')
 
 // During SSR data is fetched only on the server side and transferred to the client.
-const { data } = await useAsyncData('item', () => $fetch('/api/item'))
+const { data } = await useAsyncData('item', ({ signal }) => $fetch('/api/item', { signal }))
 
 // You can also useFetch as shortcut of useAsyncData + $fetch
 const { data } = await useFetch('/api/item')
@@ -75,7 +75,7 @@ However, during Server-Side Rendering, due to security risks such as **Server-Si
 ```vue [app/pages/index.vue]
 <script setup lang="ts">
 // This will NOT forward headers or cookies during SSR
-const { data } = await useAsyncData(() => $fetch('/api/cookies'))
+const { data } = await useAsyncData(({ signal }) => $fetch('/api/cookies', { signal }))
 </script>
 ```
 
