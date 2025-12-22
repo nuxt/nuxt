@@ -51,7 +51,7 @@
     "compatx": "0.2.0",
     "css-minimizer-webpack-plugin": "7.0.4",
     "esbuild": "0.27.1",
-    "esbuild-loader": "4.4.0",
+    "esbuild-loader": "4.4.1",
     "file-loader": "6.2.0",
     "h3": "1.15.4",
     "hookable": "5.5.3",
@@ -73,7 +73,7 @@
     "vue-bundle-renderer": "2.2.0",
     "vue-loader": "17.4.2",
     "vue-router": "4.6.4",
-    "webpack": "5.103.0",
+    "webpack": "5.104.1",
     "webpack-dev-middleware": "7.4.5"
   },
   "dependencies": {
