@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { pageTests } from './pages.test'
-import { toRou3Patterns } from '../src/pages/utils'
+import { pageTests } from './pages.test.ts'
+import { toRou3Patterns } from '../src/pages/utils.ts'
 
 describe('nitro-ssr-routes', () => {
   it('should resolve SSR routes correctly', () => {

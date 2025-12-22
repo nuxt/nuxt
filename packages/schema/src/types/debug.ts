@@ -1,5 +1,5 @@
 import type { NitroOptions } from 'nitropack/types'
-import type { NuxtModule } from './module'
+import type { NuxtModule } from './module.ts'
 
 export interface NuxtDebugContext {
   /**

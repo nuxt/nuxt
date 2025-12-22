@@ -4,8 +4,8 @@ import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
-import { loadNuxt } from '../src'
-import type { NuxtConfig } from '../schema'
+import { loadNuxt } from '../src/index.ts'
+import type { NuxtConfig } from '../schema.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -153,6 +153,17 @@ describe('loadNuxt', () => {
     )
 
     expect(hasLayerServer).toBe(true)
+
+    await nuxt.close()
+  })
+
+  it('includes #server alias in nitro tsconfig paths', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+
+    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+
+    expect(tsConfigPaths).toHaveProperty('#server')
+    expect(tsConfigPaths).toHaveProperty('#server/*')
 
     await nuxt.close()
   })
