@@ -15,7 +15,7 @@ import type { Import } from 'unimport'
 
 import { isWhitespace, logger, stripExtension } from '../../utils.ts'
 import type { FunctionCallMetadata } from '../utils/parse-utils.ts'
-import {parseStaticExportIdentifiers,parseStaticFunctionCall,processImports} from '../utils/parse-utils.ts'
+import { parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
   sourcemap: boolean
