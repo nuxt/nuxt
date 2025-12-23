@@ -90,8 +90,7 @@ async function _importPayload (payloadURL: string) {
   return null
 }
 
-function _shouldLoadPrerenderedPayload (url: string) {
-  const rules = getRouteRules({ path: url })
+function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {
   if (rules.redirect) {
     return false
   }
@@ -100,39 +99,41 @@ function _shouldLoadPrerenderedPayload (url: string) {
   }
 }
 
-/**
- * @internal
- */
-export async function shouldLoadPayload (url = useRoute().path) {
-  const res = _shouldLoadPrerenderedPayload(url)
-  if (res !== undefined) {
-    return res
-  }
-
-  const rules = getRouteRules({ path: url })
-  if (rules.payload) {
-    return true
-  }
-
+async function _isPrerenderedInManifest (url: string) {
   // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
+  if (!appManifest) {
+    return false
+  }
   url = url === '/' ? url : url.replace(/\/$/, '')
   const manifest = await getAppManifest()
   return manifest.prerendered.includes(url)
 }
 
-/** @since 3.0.0 */
-export async function isPrerendered (url = useRoute().path) {
-  const res = _shouldLoadPrerenderedPayload(url)
+/**
+ * @internal
+ */
+export async function shouldLoadPayload (url = useRoute().path) {
+  const rules = getRouteRules({ path: url })
+  const res = _shouldLoadPrerenderedPayload(rules)
   if (res !== undefined) {
     return res
   }
 
-  // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
-  url = url === '/' ? url : url.replace(/\/$/, '')
-  const manifest = await getAppManifest()
-  return manifest.prerendered.includes(url)
+  if (rules.payload) {
+    return true
+  }
+
+  return await _isPrerenderedInManifest(url)
+}
+
+/** @since 3.0.0 */
+export async function isPrerendered (url = useRoute().path) {
+  const res = _shouldLoadPrerenderedPayload(getRouteRules({ path: url }))
+  if (res !== undefined) {
+    return res
+  }
+
+  return await _isPrerenderedInManifest(url)
 }
 
 let payloadCache: NuxtPayload | null = null
