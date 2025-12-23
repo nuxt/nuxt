@@ -273,19 +273,23 @@ const errorCSS = /* css */ `
   color: #fff;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   font-size: 14px;
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   z-index: calc(var(--z-base) + 2);
+  cursor: grab;
 }
 #pip-restore:focus-visible {
   outline: 2px solid #00DC82;
   outline-offset: 2px;
 }
+:host(.dragging-restore) #pip-restore {
+  cursor: grabbing;
+}
 
 #frame[hidden],
 #toggle[hidden],
+#preview[hidden],
 #pip-restore[hidden],
 #pip-close[hidden] {
   display: none !important;
@@ -343,12 +347,14 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       const pipRestoreButton = document.createElement('button');
       pipRestoreButton.id = 'pip-restore';
       pipRestoreButton.setAttribute('type', 'button');
+      pipRestoreButton.setAttribute('aria-label', 'Show error overlay');
       pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error overlay</span>';
       pipRestoreButton.hidden = true;
 
       const POS_KEYS = {
         position: 'nuxt-error-overlay:position',
-        hidden: 'nuxt-error-overlay:error-pip:hidden'
+        hiddenPretty: 'nuxt-error-overlay:error-pip:hidden',
+        hiddenPreview: 'nuxt-error-overlay:app-preview:hidden'
       };
 
       const CSS_VARS = {
@@ -369,10 +375,12 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       const MIN_GAP = 5;
       const DRAG_THRESHOLD = 2;
 
-      let dock = { edge: null, offset: null };
+      let dock = { edge: null, offset: null, align: null, gap: null };
       let storageReady = true;
-      let isHidden = false;
+      let isPrettyHidden = false;
+      let isPreviewHidden = false;
       let suppressToggleClick = false;
+      let suppressRestoreClick = false;
 
       function vvSize() {
         const v = window.visualViewport;
@@ -384,8 +392,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
         const h = parseFloat(styles.getPropertyValue('--preview-height')) || 180;
         return { w: w, h: h };
       }
-      function maxOffsetFor(edge) {
-        const size = previewSize();
+      function maxOffsetFor(edge, size) {
         const vv = vvSize();
         if (edge === 'left' || edge === 'right') {
           return Math.max(MIN_GAP, vv.h - size.h - MIN_GAP);
@@ -393,9 +400,41 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
           return Math.max(MIN_GAP, vv.w - size.w - MIN_GAP);
         }
       }
-      function clampOffset(edge, value) {
-        const max = maxOffsetFor(edge);
+      function clampOffset(edge, value, size) {
+        const max = maxOffsetFor(edge, size);
         return Math.min(Math.max(value, MIN_GAP), max);
+      }
+      function sizeForTarget(target) {
+        if (!target) return previewSize();
+        const rect = target.getBoundingClientRect();
+        if (rect.width && rect.height) {
+          return { w: rect.width, h: rect.height };
+        }
+        return previewSize();
+      }
+      function updateDockAlignment(size) {
+        if (!dock.edge || dock.offset == null) return;
+        const max = maxOffsetFor(dock.edge, size);
+        if (dock.offset <= max / 2) {
+          dock.align = 'start';
+          dock.gap = dock.offset;
+        } else {
+          dock.align = 'end';
+          dock.gap = Math.max(0, max - dock.offset);
+        }
+      }
+      function appliedOffsetFor(size) {
+        if (!dock.edge || dock.offset == null) {
+          return null;
+        }
+        const max = maxOffsetFor(dock.edge, size);
+        if (dock.align === 'end' && typeof dock.gap === 'number') {
+          return clampOffset(dock.edge, max - dock.gap, size);
+        }
+        if (dock.align === 'start' && typeof dock.gap === 'number') {
+          return clampOffset(dock.edge, dock.gap, size);
+        }
+        return clampOffset(dock.edge, dock.offset, size);
       }
       function nearestEdgeAt(x, y) {
         const { w, h } = vvSize();
@@ -432,10 +471,15 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
           return;
         }
         try {
-          const { edge, offset } = JSON.parse(raw);
+          const { edge, offset, align, gap } = JSON.parse(raw);
           if (['left','right','top','bottom'].includes(edge) && typeof offset === 'number') {
             dock.edge = edge;
-            dock.offset = clampOffset(edge, offset);
+            dock.offset = clampOffset(edge, offset, previewSize());
+            dock.align = align === 'start' || align === 'end' ? align : null;
+            dock.gap = typeof gap === 'number' ? gap : null;
+            if (!dock.align || dock.gap == null) {
+              updateDockAlignment(previewSize());
+            }
           }
         } catch {}
       }
@@ -443,7 +487,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
         if (!dock.edge || dock.offset == null) {
           return;
         }
-        safeSet(POS_KEYS.position, JSON.stringify({ edge: dock.edge, offset: dock.offset }));
+        safeSet(POS_KEYS.position, JSON.stringify({ edge: dock.edge, offset: dock.offset, align: dock.align, gap: dock.gap }));
       }
       function applyDockTo(vars, opts) {
         // Clear if not set
@@ -460,7 +504,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
         host.style.setProperty(vars.bottom, 'auto');
         host.style.setProperty(vars.right, 'auto');
         // Anchor to the chosen edge and place by offset
-        const applied = clampOffset(dock.edge, dock.offset);
+        const applied = appliedOffsetFor(previewSize());
 
         if (dock.edge === 'left') {
           host.style.setProperty(vars.left, MIN_GAP + 'px');
@@ -479,9 +523,41 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
           persistDock();
         }
       }
+      function applyDockToElement(el, opts) {
+        if (!el) return;
+        if (!dock.edge || dock.offset == null) {
+          el.style.removeProperty('left');
+          el.style.removeProperty('top');
+          el.style.removeProperty('right');
+          el.style.removeProperty('bottom');
+          return;
+        }
+        el.style.left = 'auto';
+        el.style.top = 'auto';
+        el.style.bottom = 'auto';
+        el.style.right = 'auto';
+        const applied = appliedOffsetFor(sizeForTarget(el));
+        if (dock.edge === 'left') {
+          el.style.left = MIN_GAP + 'px';
+          el.style.top = applied + 'px';
+        } else if (dock.edge === 'right') {
+          el.style.right = MIN_GAP + 'px';
+          el.style.top = applied + 'px';
+        } else if (dock.edge === 'top') {
+          el.style.top = MIN_GAP + 'px';
+          el.style.left = applied + 'px';
+        } else {
+          el.style.bottom = MIN_GAP + 'px';
+          el.style.left = applied + 'px';
+        }
+        if (!opts || opts.persist !== false) {
+          persistDock();
+        }
+      }
       function applyDockAll(opts) {
         applyDockTo(CSS_VARS.pip, opts);
         applyDockTo(CSS_VARS.preview, opts);
+        applyDockToElement(pipRestoreButton, opts);
       }
       function currentTransformOrigin() {
         if (!dock.edge) {
@@ -497,36 +573,80 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       }
 
       function loadHidden() {
-        const raw = safeGet(POS_KEYS.hidden);
-        if (raw != null) {
-          isHidden = (raw === '1' || raw === 'true');
+        const rawPretty = safeGet(POS_KEYS.hiddenPretty);
+        if (rawPretty != null) {
+          isPrettyHidden = (rawPretty === '1' || rawPretty === 'true');
+        }
+        const rawPreview = safeGet(POS_KEYS.hiddenPreview);
+        if (rawPreview != null) {
+          isPreviewHidden = (rawPreview === '1' || rawPreview === 'true');
         }
       }
-      function setHidden(v) {
-        isHidden = !!v;
-        safeSet(POS_KEYS.hidden, isHidden ? '1' : '0');
+      function setPrettyHidden(v) {
+        isPrettyHidden = !!v;
+        safeSet(POS_KEYS.hiddenPretty, isPrettyHidden ? '1' : '0');
+        updateUI();
+      }
+      function setPreviewHidden(v) {
+        isPreviewHidden = !!v;
+        safeSet(POS_KEYS.hiddenPreview, isPreviewHidden ? '1' : '0');
         updateUI();
       }
       function isMinimized() {
         return iframe.hasAttribute('inert');
       }
+      function setMinimized(v) {
+        if (v) {
+          iframe.setAttribute('inert', '');
+          button.setAttribute('aria-expanded', 'false');
+        } else {
+          iframe.removeAttribute('inert');
+          button.setAttribute('aria-expanded', 'true');
+        }
+      }
+      function setHidden(el, hidden) {
+        el.toggleAttribute('hidden', !!hidden);
+      }
+      function setRestoreLabel(kind) {
+        if (kind === 'pretty') {
+          pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error overlay</span>';
+          pipRestoreButton.setAttribute('aria-label', 'Show error overlay');
+        } else if (kind === 'preview') {
+          pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error page</span>';
+          pipRestoreButton.setAttribute('aria-label', 'Show error page');
+        }
+      }
 
       function updateUI() {
         const minimized = isMinimized();
-        const showPiP = minimized && !isHidden;
-        const pipHiddenByUser = minimized && isHidden;
-        const showToggle = !minimized || showPiP;
+        const showPiP = minimized && !isPrettyHidden;
+        const showPreview = !minimized && !isPreviewHidden;
+        const pipHiddenByUser = minimized && isPrettyHidden;
+        const previewHiddenByUser = !minimized && isPreviewHidden;
+        const showToggle = minimized ? showPiP : showPreview;
+        const showRestore = pipHiddenByUser || previewHiddenByUser;
 
-        iframe.toggleAttribute('hidden', pipHiddenByUser);
-        button.toggleAttribute('hidden', !showToggle);
-        pipRestoreButton.toggleAttribute('hidden', !pipHiddenByUser);
-        pipCloseButton.toggleAttribute('hidden', !showPiP);
-        host.classList.toggle('pip-hidden', isHidden);
+        setHidden(iframe, pipHiddenByUser);
+        setHidden(preview, !showPreview);
+        setHidden(button, !showToggle);
+        setHidden(pipCloseButton, !showToggle);
+        pipCloseButton.setAttribute('aria-label', minimized ? 'Hide error overlay' : 'Hide error page preview');
+        setHidden(pipRestoreButton, !showRestore);
+        if (pipHiddenByUser) {
+          setRestoreLabel('pretty');
+        } else if (previewHiddenByUser) {
+          setRestoreLabel('preview');
+        }
+        host.classList.toggle('pip-hidden', isPrettyHidden);
+        host.classList.toggle('preview-hidden', isPreviewHidden);
       }
 
       function loadState() {
         loadDock();
         loadHidden();
+        if (isPrettyHidden && !isMinimized()) {
+          setMinimized(true);
+        }
         updateUI();
         repaintToDock();
       }
@@ -567,15 +687,13 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       function toggleView() {
         if (isMinimized()) {
           updatePreview();
-          iframe.removeAttribute('inert');
-          button.setAttribute('aria-expanded', 'true');
+          setMinimized(false);
           liveRegion.textContent = 'Showing detailed error view';
           setTimeout(function() {
             try { iframe.contentWindow.focus(); } catch {}
           }, 100);
         } else {
-          iframe.setAttribute('inert', '');
-          button.setAttribute('aria-expanded', 'false');
+          setMinimized(true);
           liveRegion.textContent = 'Showing error page';
           repaintToDock();
           // ensure paint if no stored state yet
@@ -600,15 +718,27 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       });
       pipCloseButton.addEventListener('click', function (e) {
         e.preventDefault(); e.stopPropagation();
-        if (isMinimized())
-          setHidden(true);
+        if (isMinimized()) {
+          setPrettyHidden(true);
+        } else {
+          setPreviewHidden(true);
+        }
       });
       pipCloseButton.addEventListener('pointerdown', function (e) {
         e.stopPropagation();
       });
       pipRestoreButton.addEventListener('click', function (e) {
+        if (suppressRestoreClick) {
+          e.preventDefault();
+          suppressRestoreClick = false;
+          return;
+        }
         e.preventDefault(); e.stopPropagation();
-        setHidden(false);
+        if (isMinimized()) {
+          setPrettyHidden(false);
+        } else {
+          setPreviewHidden(false);
+        }
       });
 
       // --- unified dragging with requestAnimationFrame throttle ---
@@ -621,17 +751,23 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
         if (!dock.edge || dock.offset == null) {
           dock = cornerDefaultDock();
         }
+        const isRestoreTarget = e.currentTarget === pipRestoreButton;
         drag = {
-          kind: isMinimized() ? 'pip' : 'preview',
+          kind: isRestoreTarget ? 'restore' : (isMinimized() ? 'pip' : 'preview'),
           pointerId: e.pointerId,
           startX: e.clientX,
           startY: e.clientY,
           lastX: e.clientX,
           lastY: e.clientY,
-          moved: false
+          moved: false,
+          target: e.currentTarget
         };
-        button.setPointerCapture(e.pointerId);
-        host.classList.add(drag.kind === 'pip' ? 'dragging' : 'dragging-preview');
+        drag.target.setPointerCapture(e.pointerId);
+        if (drag.kind === 'restore') {
+          host.classList.add('dragging-restore');
+        } else {
+          host.classList.add(drag.kind === 'pip' ? 'dragging' : 'dragging-preview');
+        }
         e.preventDefault();
       }
 
@@ -653,19 +789,20 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
           rafId = null;
           // Snap to nearest edge at current pointer
           const edge = nearestEdgeAt(drag.lastX, drag.lastY);
-          const size = previewSize();
+          const size = sizeForTarget(drag.target);
           let offset;
           if (edge === 'left' || edge === 'right') {
             // Offset along vertical axis (top)
             const top = drag.lastY - (size.h / 2);
-            offset = clampOffset(edge, Math.round(top));
+            offset = clampOffset(edge, Math.round(top), size);
           } else {
             // top/bottom: offset along horizontal axis (left)
             const left = drag.lastX - (size.w / 2);
-            offset = clampOffset(edge, Math.round(left));
+            offset = clampOffset(edge, Math.round(left), size);
           }
           dock.edge = edge;
           dock.offset = offset;
+          updateDockAlignment(size);
           const origin = currentTransformOrigin();
           host.style.setProperty('--error-pip-origin', origin || 'bottom right');
           applyDockAll({ origin: origin, persist: false });
@@ -675,23 +812,35 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       function endDrag(e) {
         if (!drag || drag.pointerId !== e.pointerId) return;
         const endedKind = drag.kind;
-        button.releasePointerCapture(e.pointerId);
-        host.classList.remove(endedKind === 'pip' ? 'dragging' : 'dragging-preview');
+        drag.target.releasePointerCapture(e.pointerId);
+        if (endedKind === 'restore') {
+          host.classList.remove('dragging-restore');
+        } else {
+          host.classList.remove(endedKind === 'pip' ? 'dragging' : 'dragging-preview');
+        }
         const didMove = drag.moved;
         drag = null;
         if (didMove) {
           // Persist final dock once
           persistDock();
-          suppressToggleClick = true;
+          if (endedKind === 'restore') {
+            suppressRestoreClick = true;
+          } else {
+            suppressToggleClick = true;
+          }
           e.preventDefault();
           e.stopPropagation();
         }
       }
 
-      button.addEventListener('pointerdown', beginDrag);
-      button.addEventListener('pointermove', moveDrag);
-      button.addEventListener('pointerup', endDrag);
-      button.addEventListener('pointercancel', endDrag);
+      function bindDragTarget(el) {
+        el.addEventListener('pointerdown', beginDrag);
+        el.addEventListener('pointermove', moveDrag);
+        el.addEventListener('pointerup', endDrag);
+        el.addEventListener('pointercancel', endDrag);
+      }
+      bindDragTarget(button);
+      bindDragTarget(pipRestoreButton);
 
       // keep positions in-bounds on viewport / visualViewport changes
       function repaintToDock() {
@@ -730,8 +879,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       shadow.appendChild(pipRestoreButton);
       
       if (${startMinimized}) {
-        iframe.setAttribute('inert', '');
-        button.setAttribute('aria-expanded', 'false');
+        setMinimized(true);
         repaintToDock();
         void iframe.offsetWidth;
         updateUI();
