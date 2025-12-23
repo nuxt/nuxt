@@ -26,19 +26,12 @@ const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 export const pagesImportPresets: InlinePreset[] = [
   { imports: ['definePageMeta'], from: '#app/composables/pages' },
-  {
-    imports: ['PageMeta'],
-    type: true,
-    from: '#app/composables/pages',
-  },
+  { imports: ['PageMeta'], from: '#app/composables/pages', type: true },
   { imports: ['useLink'], from: 'vue-router' },
 ]
 
 export const routeRulesPresets: InlinePreset[] = [
-  {
-    imports: ['defineRouteRules'],
-    from: '#app/composables/pages',
-  },
+  { imports: ['defineRouteRules'], from: '#app/composables/pages' },
 ]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {

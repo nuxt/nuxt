@@ -10,6 +10,7 @@ import { isDirectory, logger, resolveToAlias } from '../utils.ts'
 import { TransformPlugin } from './transform.ts'
 import { appCompatPresets, defaultPresets } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
+
 import { pagesImportPresets, routeRulesPresets } from '../pages/module.ts'
 
 const allNuxtPresets = [
