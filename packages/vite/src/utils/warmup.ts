@@ -1,11 +1,11 @@
-import { builtinModules } from 'node:module'
+import { isBuiltin } from 'node:module'
 import { logger } from '@nuxt/kit'
 import { join, normalize, relative } from 'pathe'
 import { withoutBase } from 'ufo'
 import { isCSSRequest } from 'vite'
 import type { ViteDevServer } from 'vite'
 
-// https://github.com/vitejs/vite/tree/main/packages/vite/src/node/server/warmup.ts#L62-L70
+// https://github.com/vitejs/vite/blob/main/packages/vite/src/node/server/warmup.ts#L62-L70
 function fileToUrl (file: string, root: string) {
   const url = relative(root, file)
   // out of root, use /@fs/ prefix
@@ -24,14 +24,8 @@ function normaliseURL (url: string, base: string) {
     url = url.slice('/@id/'.length).replace('__x00__', '\0')
   }
   // strip query
-  url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')
+  url = url.replace(/[?&]import=?(?:&|$)/, '').replace(/[?&]$/, '')
   return url
-}
-
-// TODO: remove when we drop support for node 18
-const builtins = new Set(builtinModules)
-function isBuiltin (id: string) {
-  return id.startsWith('node:') || builtins.has(id)
 }
 
 // TODO: use built-in warmup logic when we update to vite 5

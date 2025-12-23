@@ -3,12 +3,12 @@ import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
 import { relative } from 'pathe'
-import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { tryUseNuxt } from '@nuxt/kit'
-import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
-import { installNuxtModule } from '../../core/features'
-import { logger } from '../../utils'
+import { QUOTE_RE, SX_RE, isVue } from '../../core/utils/index.ts'
+import { installNuxtModule } from '../../core/features.ts'
+import { logger, resolveToAlias } from '../../utils.ts'
+import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -21,7 +21,11 @@ interface LoaderOptions {
   experimentalComponentIslands?: boolean
 }
 
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)/g
+// Match both:
+// 1. _resolveComponent("ComponentName") - Vue's component resolution
+// 2. h(ComponentName, ...) - JSX h() calls with PascalCase component identifiers
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b/g
+
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -48,18 +52,20 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const s = new MagicString(code)
       // replace `_resolveComponent("...")` to direct import
       s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, ...args) => {
-        const { lazy, modifier, name } = args.pop()
+        const groups = args.pop()
+        const lazy = groups.hLazy || groups.lazy
+        const modifier = groups.hModifier || groups.modifier
+        const name = groups.hName || groups.name
         const normalComponent = findComponent(components, name, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
 
         if (component) {
-          // TODO: refactor to nuxi
+          // TODO: refactor to @nuxt/cli
           const internalInstall = ((component as any)._internal_install) as string
           if (internalInstall && nuxt?.options.test === false) {
             if (!nuxt.options.dev) {
-              const relativePath = relative(nuxt.options.rootDir, id)
-              throw new Error(`[nuxt] \`~/${relativePath}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
+              throw new Error(`[nuxt] \`${resolveToAlias(id, nuxt)}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
             }
             installNuxtModule(internalInstall)
           }
@@ -170,7 +176,8 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
   const id = pascalCase(name).replace(QUOTE_RE, '')
   // Prefer exact match
-  const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
+  const validModes = new Set(['all', mode, undefined])
+  const component = components.find(component => id === component.pascalName && validModes.has(component.mode))
   if (component) { return component }
 
   const otherModeComponent = components.find(component => id === component.pascalName)

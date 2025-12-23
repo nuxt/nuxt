@@ -1,0 +1,7 @@
+tasks:
+  play:
+    name: Start playground
+    command: pnpm play
+    triggeredBy:
+      - postDevcontainerStart
+      - manual

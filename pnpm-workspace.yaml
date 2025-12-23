@@ -3,8 +3,24 @@ packages:
   - packages/**
   - '!packages/nuxi'
   - '!packages/test-utils'
+  - '!packages/nuxt/test/package-fixture'
   - playground
   - test/fixtures/*
+
 ignoredBuiltDependencies:
-  - vue-demi
+  - '@parcel/watcher'
   - esbuild
+  - oxc-resolver
+  - unrs-resolver
+
+patchedDependencies:
+  changelogen: patches/changelogen.patch
+
+publicHoistPattern:
+  - '*-loader'
+  - 'webpack-*'
+
+shellEmulator: true
+
+verifyDepsBeforeRun: install
+

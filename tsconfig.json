@@ -6,6 +6,7 @@
     "skipLibCheck": true,
     "target": "es2022",
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
@@ -34,13 +35,15 @@
         "./packages/nuxt/src/app/*"
       ],
       "#unhead/composables": [
-        "./packages/nuxt/src/head/runtime/composables/v4"
+        "./packages/nuxt/src/head/runtime/composables"
       ]
     }
   },
   "exclude": [
     "**/dist/**",
     "**/.nuxt/**",
+    "packages/nuxt/src/app/types/**",
+    "packages/nuxt/meta.d.ts",
     "**/nuxt.d.ts",
     "**/examples/**",
     "**/docs/**",

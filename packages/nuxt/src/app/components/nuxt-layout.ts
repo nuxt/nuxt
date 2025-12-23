@@ -1,6 +1,7 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
-import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { NitroRouteRules } from 'nitropack/types'
 
 import type { PageMeta } from '../../pages/runtime/composables'
 
@@ -15,6 +16,10 @@ import { useRoute as useVueRouterRoute } from '#build/pages'
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import _routeRulesMatcher from '#build/route-rules.mjs'
+
+const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -51,10 +56,12 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     // Need to ensure (if we are not a child of `<NuxtPage>`) that we use synchronous route (not deferred)
     const injectedRoute = inject(PageRouteSymbol)
-    const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
+    const shouldUseEagerRoute = !injectedRoute /* this should never be true */
+      || injectedRoute === useRoute() /* this is only true if we are not within `<NuxtPage>` */
+    const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
-      let layout = unref(props.name) ?? route.meta.layout as string ?? 'default'
+      let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
           console.warn(`Invalid layout \`${layout}\` selected.`)
@@ -66,7 +73,7 @@ export default defineComponent({
       return layout
     })
 
-    const layoutRef = ref()
+    const layoutRef = shallowRef()
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
@@ -79,9 +86,14 @@ export default defineComponent({
       nuxtApp._isNuxtLayoutUsed = true
     }
 
+    let lastLayout: string | boolean | undefined
+
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
+      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
+
+      const previouslyRenderedLayout = lastLayout
+      lastLayout = layout.value
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapInTransition(hasLayout && transitionProps, {
@@ -89,10 +101,13 @@ export default defineComponent({
           default: () => h(
             LayoutProvider,
             {
-              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+              layoutProps: mergeProps(context.attrs, route.meta.layoutProps ?? {}, { ref: layoutRef }),
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
+              isRenderingNewLayout: (name?: string | boolean) => {
+                return (name !== previouslyRenderedLayout && name === layout.value)
+              },
               hasTransition: !!transitionProps,
             }, context.slots),
         }),
@@ -117,6 +132,10 @@ const LayoutProvider = defineComponent({
     shouldProvide: {
       type: Boolean,
     },
+    isRenderingNewLayout: {
+      type: Function as unknown as () => (name?: string | boolean) => boolean,
+      required: true,
+    },
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -124,8 +143,30 @@ const LayoutProvider = defineComponent({
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default'),
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
       })
+    }
+
+    // this route waits to update until the page has finished changing
+    const injectedRoute = inject(PageRouteSymbol)
+    const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute()
+
+    if (isNotWithinNuxtPage) {
+      // this route updates immediately
+      const vueRouterRoute = useVueRouterRoute() as ReturnType<typeof useRoute>
+      const reactiveChildRoute = {} as RouteLocationNormalizedLoaded
+      for (const _key in vueRouterRoute) {
+        const key = _key as keyof RouteLocationNormalizedLoaded
+        Object.defineProperty(reactiveChildRoute, key, {
+          enumerable: true,
+          get: () => {
+            // we want to use the eager route if we are rendering a layout for the first time
+            // and only swap back to the lazy route if the route has already changed from the first render
+            return props.isRenderingNewLayout(props.name) ? vueRouterRoute[key] : injectedRoute[key]
+          },
+        })
+      }
+      provide(PageRouteSymbol, shallowReactive(reactiveChildRoute))
     }
 
     let vnode: VNode | undefined

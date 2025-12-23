@@ -1,24 +1,36 @@
-import { existsSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
-import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
-import { distDir } from '../dirs'
-import { logger } from '../utils'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
-import { scanComponents } from './scan'
+import { distDir } from '../dirs.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
+import { lazyHydrationMacroPreset } from '../imports/presets.ts'
+import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
+import { scanComponents } from './scan.ts'
 
-import { LoaderPlugin } from './plugins/loader'
-import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
-import { TransformPlugin } from './plugins/transform'
-import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
-import { ComponentNamePlugin } from './plugins/component-names'
-import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
+import { LoaderPlugin } from './plugins/loader.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
+import { TransformPlugin } from './plugins/transform.ts'
+import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
+import { ComponentNamePlugin } from './plugins/component-names.ts'
+import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
+import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
+import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
-const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
+const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const SLASH_SEPARATOR_RE = /[\\/]/
+/**
+ * Compare two directory entries by the number of path segments.
+ *
+ * Returns a sort comparator value based on the count of path segments (split on slashes). Deeper (more segments) paths are ordered before shallower ones.
+ *
+ * @param dirA - First directory
+ * @param dirA.path - Path string
+ * @param dirB - Second directory
+ * @param dirB.path - Path string
+ * @returns A negative number if the first directory should come before the second, positive if after, or 0 if equal
+ */
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
   return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
 }
@@ -36,7 +48,7 @@ export default defineNuxtModule<ComponentsOptions>({
   defaults: {
     dirs: [],
   },
-  async setup (componentOptions, nuxt) {
+  async setup (moduleOptions, nuxt) {
     let componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[],
@@ -48,93 +60,84 @@ export default defineNuxtModule<ComponentsOptions>({
         : context.components
     }
 
+    // TODO: remove in Nuxt v5
     if (nuxt.options.experimental.normalizeComponentNames) {
       addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.client, getComponents }), { server: false })
       addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
     }
 
-    const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
-      if (Array.isArray(dir)) {
-        return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
-      }
-      if (dir === true || dir === undefined) {
-        return [
-          { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
-          { priority: options?.priority || 0, path: resolve(cwd, 'components/global'), global: true },
-          { priority: options?.priority || 0, path: resolve(cwd, 'components') },
-        ]
-      }
-      if (typeof dir === 'string') {
-        return [
-          { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) },
-        ]
-      }
-      if (!dir) {
-        return []
-      }
-      const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
-      return dirs.map(_dir => ({
-        priority: options?.priority || 0,
-        ..._dir,
-        path: resolve(cwd, resolveAlias(_dir.path)),
-      }))
-    }
-
     // Resolve dirs
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
-      const allDirs = nuxt.options._layers
-        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
-        .flat()
+      const allDirs: ComponentsDir[] = []
+      const layerCount = nuxt.options._layers.length
+      for (const [i, layer] of nuxt.options._layers.entries()) {
+        // Assign priority based on layer position: lower index = higher priority
+        // This ensures correct override order: root > auto-scanned > extends layers
+        const priority = layerCount - i
+        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority })
+        allDirs.push(...layerDirs)
+      }
 
       await nuxt.callHook('components:dirs', allDirs)
 
-      componentDirs = allDirs.filter(isPureObjectOrString).map((dir) => {
-        const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
-        const dirPath = resolveAlias(dirOptions.path)
-        const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(STARTER_DOT_RE, ''))
+      const userComponentDirs: ComponentsDir[] = []
+      const libraryComponentDirs: ComponentsDir[] = []
 
-        const present = isDirectory(dirPath)
+      for (const dir of allDirs) {
+        if (!isPureObjectOrString(dir)) {
+          continue
+        }
+
+        const dirOptions = typeof dir === 'object' ? dir : { path: dir }
+        const dirPath = resolveAlias(dirOptions.path)
+        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(STARTER_DOT_RE, ''))
+        const _transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
+        const transpile = _transpile === 'auto' ? dirPath.includes('node_modules') : _transpile
+        if (transpile) {
+          nuxt.options.build.transpile.push(dirPath)
+        }
+
+        const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
           logger.warn('Components directory not found: `' + dirPath + '`')
         }
 
-        return {
-          global: componentOptions.global,
+        const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
+
+        dirs.push({
+          global: moduleOptions.global,
           ...dirOptions,
-          // TODO: https://github.com/nuxt/framework/pull/251
-          enabled: true,
           path: dirPath,
           extensions,
-          pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
+          pattern: dirOptions.pattern || (extensions.length > 1 ? `**/*.{${extensions.join(',')}}` : `**/*.${extensions[0] || '*'}`),
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.{cts,mts,ts}', // .d.ts files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // .d.ts files
             ...(dirOptions.ignore || []),
           ],
-          transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile),
-        }
-      }).filter(d => d.enabled)
+          transpile,
+        })
+      }
 
       componentDirs = [
-        ...componentDirs.filter(dir => !dir.path.includes('node_modules')),
-        ...componentDirs.filter(dir => dir.path.includes('node_modules')),
+        ...userComponentDirs,
+        ...libraryComponentDirs,
       ]
-
-      nuxt.options.build!.transpile!.push(...componentDirs.filter(dir => dir.transpile).map(dir => dir.path))
     })
 
     // components.d.ts
+    addTemplate(componentsDeclarationTemplate)
+    // types/components.d.ts
     addTypeTemplate(componentsTypeTemplate)
     // components.plugin.mjs
     addPluginTemplate(componentsPluginTemplate)
     // component-names.mjs
     addTemplate(componentNamesTemplate)
     // components.islands.mjs
-    addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
+    addTemplate(componentsIslandsTemplate)
 
-    if (componentOptions.generateMetadata) {
+    if (moduleOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
     }
 
@@ -144,19 +147,25 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
-      const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
+      const sourceFiles = new Set<string>()
+      for (const c of getComponents()) {
+        if (c.global) {
+          sourceFiles.add(relative(nuxt.options.srcDir, c.filePath))
+        }
+      }
 
       for (const chunk of Object.values(manifest)) {
         if (chunk.isEntry) {
-          chunk.dynamicImports =
-            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
+          chunk.dynamicImports = chunk.dynamicImports?.filter(i => !sourceFiles.has(i))
         }
       }
     })
 
     // Restart dev server when component directories are added/removed
+    const restartEvents = new Set(['addDir', 'unlinkDir'])
+    // const restartPaths
     nuxt.hook('builder:watch', (event, relativePath) => {
-      if (!['addDir', 'unlinkDir'].includes(event)) {
+      if (!restartEvents.has(event)) {
         return
       }
 
@@ -221,6 +230,14 @@ export default defineNuxtModule<ComponentsOptions>({
         ...sharedLoaderOptions,
         sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
       }), { prepend: true })
+
+      addBuildPlugin(LazyHydrationMacroTransformPlugin({
+        ...sharedLoaderOptions,
+        sourcemap: !!(nuxt.options.sourcemap.server || nuxt.options.sourcemap.client),
+        alias: nuxt.options.alias,
+      }))
+
+      addImportsSources(lazyHydrationMacroPreset)
     }
 
     if (nuxt.options.experimental.componentIslands) {
@@ -241,43 +258,69 @@ export default defineNuxtModule<ComponentsOptions>({
         },
       }, { server: false })
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false, prepend: true })
 
-      // TODO: refactor this
-      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-        config.plugins ||= []
-
-        if (isClient && selectiveClient) {
-          writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          if (!nuxt.options.dev) {
-            config.plugins.push(ComponentsChunkPlugin.vite({
-              getComponents,
-              buildDir: nuxt.options.buildDir,
-            }))
-          } else {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
-              getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
-                if (c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) { return Object.assign(acc, { [c.pascalName]: `/@fs/${c.filePath}` }) }
-                const filePath = existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
-                return Object.assign(acc, { [c.pascalName]: `/@fs/${filePath}` })
-              }, {} as Record<string, string>),
-            )}`)
-          }
-        }
-      })
-
-      for (const key of ['rspack:config', 'webpack:config'] as const) {
-        nuxt.hook(key, (configs) => {
-          configs.forEach((config) => {
-            const mode = config.name === 'client' ? 'client' : 'server'
-            config.plugins ||= []
-
-            if (mode !== 'server') {
-              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-            }
-          })
+      if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
+        addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
+      } else {
+        addTemplate({
+          filename: 'component-chunk.mjs',
+          getContents: () => `export default {}`,
         })
       }
     }
   },
 })
+
+/**
+ * Normalize the various user-provided `components.dirs` shapes into a flat array of ComponentsDir entries.
+ *
+ * Handles:
+ * - Arrays (recursively flattened and sorted by path depth),
+ * - `true`/`undefined` (returns default islands, global, and components dirs under `cwd`),
+ * - Strings (resolved against `cwd` and alias resolution),
+ * - Objects (either a single dir shape or an object with a `dirs` array).
+ *
+ * Each resulting entry has its `path` resolved via `resolveAlias` and `cwd`, receives a `priority` from `options.priority` (default 0), and entries without a `path` are skipped. The final list is sorted by path depth (shallowest first).
+ *
+ * @param dir - The raw `dirs` configuration value (single entry, array, true/undefined for defaults, or an options object).
+ * @param cwd - Base directory used to resolve relative `path` values.
+ * @param options - Optional settings; currently supports `priority` to assign a priority to all returned entries.
+ * @param options.priority - Priority number to assign to all returned entries (default 0).
+ * @returns A normalized, flat, and sorted array of ComponentsDir objects ready for component scanning.
+ */
+function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
+  if (Array.isArray(dir)) {
+    return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
+  }
+  if (dir === true || dir === undefined) {
+    return [
+      { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
+      { priority: options?.priority || 0, path: resolve(cwd, 'components/global'), global: true },
+      { priority: options?.priority || 0, path: resolve(cwd, 'components') },
+    ]
+  }
+  if (typeof dir === 'string') {
+    return [
+      { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) },
+    ]
+  }
+  if (!dir) {
+    return []
+  }
+
+  const normalizedDirs: ComponentsDir[] = []
+  for (const d of ('dirs' in dir ? dir.dirs || [] : [dir])) {
+    const normalizedDir = typeof d === 'string' ? { path: d } : d
+    if (!normalizedDir.path) {
+      continue
+    }
+    normalizedDirs.push({
+      priority: options?.priority || 0,
+      ...normalizedDir,
+      path: resolve(cwd, resolveAlias(normalizedDir.path)),
+    })
+  }
+
+  return normalizedDirs.sort(compareDirByPathLength)
+}

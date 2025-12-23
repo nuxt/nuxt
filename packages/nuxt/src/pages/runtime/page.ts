@@ -141,33 +141,50 @@ export default defineComponent({
 
               const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
               if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
-                nuxtApp.callHook('page:loading:end')
-                pageLoadingEndHookAlreadyCalled = true
+                nextTick(() => {
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    pageLoadingEndHookAlreadyCalled = true
+                    nuxtApp.callHook('page:loading:end')
+                  }
+                })
               }
 
               previousPageKey = key
 
-              // Client side rendering
               const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
               const transitionProps = hasTransition && _mergeTransitionProps([
                 props.transition,
                 routeProps.route.meta.pageTransition,
                 defaultPageTransition,
-                { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } },
+                {
+                  onAfterLeave () {
+                    delete nuxtApp._runningTransition
+                    nuxtApp.callHook('page:transition:finish', routeProps.Component)
+                  },
+                },
               ])
 
               const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                   suspensible: true,
-                  onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-                  onResolve: () => {
-                    nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
+                  onPending: () => {
+                    if (hasTransition) { nuxtApp._runningTransition = true }
+                    nuxtApp.callHook('page:start', routeProps.Component)
+                  },
+                  onResolve: async () => {
+                    await nextTick()
+                    try {
+                      nuxtApp._route.sync?.()
+                      await nuxtApp.callHook('page:finish', routeProps.Component)
+                      delete nuxtApp._runningTransition
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
-                        return nuxtApp.callHook('page:loading:end')
+                        await nuxtApp.callHook('page:loading:end')
                       }
-                    }).finally(done))
+                    } finally {
+                      done()
+                    }
                   },
                 }, {
                   default: () => {
@@ -223,10 +240,14 @@ export default defineComponent({
 }
 
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = routeProps.filter(Boolean).map(prop => ({
-    ...prop,
-    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
-  }))
+  const _props: TransitionProps[] = []
+  for (const prop of routeProps) {
+    if (!prop) { continue }
+    _props.push({
+      ...prop,
+      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
+    })
+  }
   return defu(..._props as [TransitionProps, TransitionProps])
 }
 

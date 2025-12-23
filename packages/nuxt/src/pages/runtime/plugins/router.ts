@@ -1,24 +1,21 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { isSamePath, withoutBase } from 'ufo'
 
-import type { Plugin, RouteMiddleware } from 'nuxt/app'
+import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { clearError, isNuxtError, showError, useError } from '#app/composables/error'
+import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
-// @ts-expect-error virtual file
-import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
@@ -41,7 +38,7 @@ function createCurrentLocation (
     return withoutBase(pathFromHash, '')
   }
   const displayedPath = withoutBase(pathname, base)
-  const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
+  const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
 
@@ -87,7 +84,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       routes,
     })
 
-    handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    if (import.meta.hot) {
+      handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'
@@ -110,20 +109,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
-    nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
-      if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
+      if (to.matched.at(-1)?.components?.default === from.matched.at(-1)?.components?.default) {
         syncCurrentRoute()
       }
     })
 
     // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
-    const route = {} as RouteLocationNormalizedLoaded
+    const route = { sync: syncCurrentRoute } as NuxtApp['_route']
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation],
+        get: () => _route.value[key as keyof RouteLocationNormalizedLoadedGeneric],
         enumerable: true,
       })
     }
@@ -197,16 +195,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        if (isAppManifestEnabled) {
-          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
+        const routeRules = getRouteRules({ path: to.path })
 
-          if (routeRules.appMiddleware) {
-            for (const key in routeRules.appMiddleware) {
-              if (routeRules.appMiddleware[key]) {
-                middlewareEntries.add(key)
-              } else {
-                middlewareEntries.delete(key)
-              }
+        if (routeRules.appMiddleware) {
+          for (const key in routeRules.appMiddleware) {
+            if (routeRules.appMiddleware[key]) {
+              middlewareEntries.add(key)
+            } else {
+              middlewareEntries.delete(key)
             }
           }
         }
@@ -222,12 +218,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
 
           try {
+            if (import.meta.dev) {
+              nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
+            }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`,
+                  status: 404,
+                  statusText: `Page Not Found: ${initialURL}`,
                 })
                 await nuxtApp.runWithContext(() => showError(error))
                 return false
@@ -260,12 +259,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:end')
     })
 
-    router.afterEach(async (to, _from) => {
+    router.afterEach((to) => {
       if (to.matched.length === 0) {
-        await nuxtApp.runWithContext(() => showError(createError({
-          statusCode: 404,
+        return nuxtApp.runWithContext(() => showError(createError({
+          status: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`,
+          statusText: `Page not found: ${to.fullPath}`,
           data: {
             path: to.fullPath,
           },

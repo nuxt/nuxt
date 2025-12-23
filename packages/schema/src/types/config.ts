@@ -3,12 +3,12 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
-import type { ConfigSchema } from '../../schema/config'
-import type { Nuxt } from './nuxt'
-import type { AppHeadMetaObject } from './head'
+import type { ConfigSchema } from './schema.ts'
+import type { Nuxt } from './nuxt.ts'
+import type { AppHeadMetaObject } from './head.ts'
 
 export type { SchemaDefinition } from 'untyped'
 
@@ -17,7 +17,7 @@ type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? {
 
 export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
 
-const message = Symbol('message')
+const message: symbol = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
 type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
   [K in keyof T]?: K extends string
@@ -46,10 +46,13 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 }
 
 // User configuration in `nuxt.config` file
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite' | 'runtimeConfig' | 'webpack'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
+  components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
+  // Avoid DeepPartial for nitro config interface (#31908)
+  nitro?: NitroConfig
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
@@ -86,7 +89,7 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'd
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
   }
-  _layers: NuxtConfigLayer[]
+  _layers: readonly NuxtConfigLayer[]
   $schema: SchemaDefinition
 }
 
@@ -117,11 +120,14 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   /**
    * Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`.
    *
-   * You can read more in <https://nuxt.com/docs/api/nuxt-config#public>.
+   * You can read more in <https://nuxt.com/docs/4.x/api/nuxt-config#public>.
    * @deprecated
    */
   publicDir?: never
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ViteOptions extends ViteConfig {}
 
 // App Config
 export interface CustomAppConfig {
@@ -140,7 +146,7 @@ export interface AppConfigInput extends CustomAppConfig {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
+export type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
 
 type ValueOf<T> = T[keyof T]
 type Filter<T extends Record<string, any>, V> = Pick<T, ValueOf<{ [K in keyof T]: NonNullable<T[K]> extends V ? K : never }>>

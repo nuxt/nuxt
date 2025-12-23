@@ -1,5 +1,4 @@
 import pify from 'pify'
-import { resolve } from 'pathe'
 import { createError, defineEventHandler, fromNodeMiddleware, getRequestHeader, handleCors, setHeader } from 'h3'
 import type { H3CorsOptions } from 'h3'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
@@ -12,12 +11,11 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { DynamicBasePlugin } from './plugins/dynamic-base'
-import { ChunkErrorPlugin } from './plugins/chunk'
-import { createMFS } from './utils/mfs'
-import { client, server } from './configs'
-import { applyPresets, createWebpackConfigContext } from './utils/config'
-import { dynamicRequire } from './nitro/plugins/dynamic-require'
+import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
+import { ChunkErrorPlugin } from './plugins/chunk.ts'
+import { createMFS } from './utils/mfs.ts'
+import { client, server } from './configs/index.ts'
+import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
 import { builder, webpack } from '#builder'
 
@@ -25,33 +23,24 @@ import { builder, webpack } from '#builder'
 // const plugins: string[] = []
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
-  const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
+  const webpackConfigs = await Promise.all([client, ...(nuxt.options.ssr ? [server] : [])].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     await applyPresets(ctx, preset)
     return ctx.config
   }))
 
-  /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
+  /** Remove Nitro rollup plugin for handling dynamic imports from webpack chunks */
   if (!nuxt.options.dev) {
     const nitro = useNitro()
-    const dynamicRequirePlugin = dynamicRequire({
-      dir: resolve(nuxt.options.buildDir, 'dist/server'),
-      inline:
-      nitro.options.node === false || nitro.options.inlineDynamicImports,
-      ignore: [
-        'client.manifest.mjs',
-        'server.js',
-        'server.cjs',
-        'server.mjs',
-        'server.manifest.mjs',
-      ],
-    })
-    const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
-    const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
+    nitro.hooks.hook('rollup:before', (_nitro, config) => {
+      const plugins = config.plugins as InputPluginOption[]
 
-    prerenderRollupPlugins.push(dynamicRequirePlugin)
-    rollupPlugins.push(dynamicRequirePlugin)
+      const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
+      if (existingPlugin >= 0) {
+        plugins.splice(existingPlugin, 1)
+      }
+    })
   }
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)
@@ -77,7 +66,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const compiler = webpack(config)
 
     // In dev, write files in memory FS
-    if (nuxt.options.dev) {
+    if (nuxt.options.dev && compiler) {
       compiler.outputFileSystem = mfs! as unknown as Compiler['outputFileSystem']
     }
 
@@ -149,7 +138,7 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
 
     // disallow cross-site requests in no-cors mode
     if (getRequestHeader(event, 'sec-fetch-mode') === 'no-cors' && getRequestHeader(event, 'sec-fetch-site') === 'cross-site') {
-      throw createError({ statusCode: 403 })
+      throw createError({ status: 403 })
     }
 
     setHeader(event, 'Vary', 'Origin')
@@ -199,7 +188,7 @@ async function compile (compiler: Compiler) {
     const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
-      await Promise.all(compilersWatching.map(watching => pify(watching.close.bind(watching))()))
+      await Promise.all(compilersWatching.map(watching => watching && pify(watching.close.bind(watching))()))
     })
 
     // Client build

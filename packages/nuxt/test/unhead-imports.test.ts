@@ -1,13 +1,14 @@
 // @vitest-environment node
+import process from 'node:process'
 import { describe, expect, it } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
-import { UnheadImportsPlugin } from '../src/head/plugins/unhead-imports'
+import { UnheadImportsPlugin } from '../src/head/plugins/unhead-imports.ts'
 
 describe('UnheadImportsPlugin', () => {
   // Helper function to transform code
   function transform (code: string, id = 'app.vue') {
     const plugin = UnheadImportsPlugin({ rootDir: import.meta.dirname, sourcemap: false }).raw({}, {} as any) as any
-    return plugin.transformInclude(id) ? Promise.resolve(plugin.transform(code, id)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
+    return plugin.transformInclude(id) ? Promise.resolve(plugin.transform.handler(code, id)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
   }
 
   describe('transformInclude', () => {

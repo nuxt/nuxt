@@ -3,13 +3,12 @@ import { resolve } from 'pathe'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
-import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { defineEnv } from 'unenv'
 
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets } from '../utils/config'
-import { nuxt } from '../presets/nuxt'
-import { webpack } from '#builder'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets } from '../utils/config.ts'
+import { nuxt } from '../presets/nuxt.ts'
+import { TsCheckerPlugin, webpack } from '#builder'
 
 export async function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'
@@ -91,7 +90,7 @@ function clientHMR (ctx: WebpackConfigContext) {
   // Add HMR support
   const app = (ctx.config.entry as any).app as any
   app.unshift(
-    // https://github.com/glenjamin/webpack-hot-middleware#config
+    // https://github.com/webpack/webpack-hot-middleware#config
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`,
   )
 
@@ -105,7 +104,7 @@ function clientOptimization (_ctx: WebpackConfigContext) {
 
 function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
-  // https://github.com/webpack-contrib/webpack-bundle-analyzer
+  // https://github.com/webpack/webpack-bundle-analyzer
   if (!ctx.isDev && !ctx.nuxt.options.test && ctx.name === 'client' && ctx.userConfig.analyze && (ctx.userConfig.analyze === true || ctx.userConfig.analyze.enabled)) {
     const statsDir = resolve(ctx.options.analyzeDir)
 
@@ -124,7 +123,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
     if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
-      ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+      ctx.config.plugins!.push(new TsCheckerPlugin({
         logger,
       }))
     }

@@ -101,9 +101,6 @@ describe('page loading indicator', () => {
       expect(getLoadingIndicator().attributes().style).toContain('opacity: 1;')
       onLoad?.()
 
-      // ensure loading hasn't already finished
-      await nextTick(() => new Promise(r => setTimeout(r, 0)))
-
       if (isLoading.value) {
         resolve!()
         await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:loading:end', () => { resolve() }))
