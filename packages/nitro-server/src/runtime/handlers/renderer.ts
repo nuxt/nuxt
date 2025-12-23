@@ -89,7 +89,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     setSSRError(ssrContext, ssrError)
   }
 
-  // Get route options (currently to apply `ssr: false`)
+  // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = getRouteRules(event)
 
   // Whether we are prerendering route or using ISR/SWR caching
