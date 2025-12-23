@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -625,7 +625,7 @@ async function initNuxt (nuxt: Nuxt) {
   const normalizedKeyedFunctions = nuxt.options.optimization.keyedComposables.map(({ source, ...rest }) => ({
     ...rest,
     source: typeof source === 'string'
-      ? resolveModulePath(source, { try: true, from: nuxt.options.modulesDir.map(d => directoryToURL(d)) }) ?? source
+      ? resolveModulePath(resolveAlias(source, nuxt.options.alias), { try: true, from: nuxt.options.modulesDir.map(d => directoryToURL(d)) }) ?? source
       : source,
   }))
 
