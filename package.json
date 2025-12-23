@@ -74,7 +74,7 @@
     "vite": "7.3.0",
     "vue": "3.5.25",
     "vue-router": "4.6.4",
-    "webpack": "5.103.0"
+    "webpack": "5.104.1"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
@@ -112,7 +112,7 @@
     "eslint": "9.39.2",
     "eslint-plugin-import-x": "4.16.1",
     "eslint-plugin-no-only-tests": "3.3.0",
-    "eslint-plugin-perfectionist": "4.15.1",
+    "eslint-plugin-perfectionist": "5.0.0",
     "eslint-typegen": "2.3.0",
     "estree-walker": "3.0.3",
     "get-port-please": "3.2.0",
@@ -148,7 +148,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.25",
     "vue-tsc": "3.1.8",
-    "webpack": "5.103.0"
+    "webpack": "5.104.1"
   },
   "packageManager": "pnpm@10.26.0",
   "version": ""
