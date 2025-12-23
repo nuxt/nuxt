@@ -17,8 +17,6 @@ declare module 'nitropack' {
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
     appLayout?: string | false
-    isr?: number | boolean
-    swr?: number | boolean
   }
 }
 
@@ -34,8 +32,6 @@ declare module 'nitropack/types' {
     experimentalNoScripts?: boolean
     appMiddleware?: Record<string, boolean>
     appLayout?: string | false
-    isr?: number | boolean
-    swr?: number | boolean
   }
 }
 
