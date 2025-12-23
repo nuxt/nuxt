@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, extendRouteRules, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
+import type { RouteRulesHandle } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -11,7 +12,6 @@ import { addRoute, createRouter as createRou3Router, findAllRoutes } from 'rou3'
 
 import type { NitroRouteConfig, NitroRouteRules } from 'nitropack/types'
 import { defu } from 'defu'
-import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { resolveTypePath } from '../core/utils/types.ts'
 import { logger } from '../utils.ts'
@@ -65,14 +65,17 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
-    let inlineRulesCache: Record<string, NitroRouteConfig> = {}
+    let handle: RouteRulesHandle | undefined
     let updateRouteConfig: (inlineRules: Record<string, NitroRouteConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
-      nuxt.hook('nitro:init', (nitro) => {
+      nuxt.hook('nitro:init', () => {
         updateRouteConfig = async (inlineRules) => {
-          if (!isEqual(inlineRulesCache, inlineRules)) {
-            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
-            inlineRulesCache = inlineRules
+          if (handle) {
+            await handle.replace(inlineRules)
+          } else {
+            handle = await extendRouteRules(inlineRules, {
+              order: 100, // highest priority
+            })
           }
         }
       })

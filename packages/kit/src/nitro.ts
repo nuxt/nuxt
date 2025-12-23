@@ -1,7 +1,7 @@
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
-import { useNuxt } from './context.ts'
+import { tryUseNuxt, useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 
 const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
@@ -81,6 +81,16 @@ export function useNitro (): Nitro {
     throw new Error('Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.')
   }
   return (nuxt as any)._nitro
+}
+
+/**
+ * Returns the current Nitro instance if available, or undefined if Nitro has not been initialized.
+ *
+ * This is a "safe" variant of `useNitro()` that doesn't throw when called before Nitro initialization.
+ */
+export function tryUseNitro (): Nitro | undefined {
+  const nuxt = tryUseNuxt()
+  return (nuxt as any)?._nitro
 }
 
 /**

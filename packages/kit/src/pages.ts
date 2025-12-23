@@ -1,30 +1,13 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack/types'
-import { defu } from 'defu'
 import { useNuxt } from './context.ts'
 import { logger } from './logger.ts'
 import { toArray } from './utils.ts'
 
+export { extendRouteRules } from './route-rules.ts'
+export type { ExtendRouteRulesOptions, RouteRulesHandle } from './route-rules.ts'
+
 export function extendPages (cb: NuxtHooks['pages:extend']): void {
   useNuxt().hook('pages:extend', cb)
-}
-
-export interface ExtendRouteRulesOptions {
-  /**
-   * Override route rule config
-   * @default false
-   */
-  override?: boolean
-}
-
-export function extendRouteRules (route: string, rule: NitroRouteConfig, options: ExtendRouteRulesOptions = {}): void {
-  const nuxt = useNuxt()
-  for (const opts of [nuxt.options, nuxt.options.nitro]) {
-    opts.routeRules ||= {}
-    opts.routeRules[route] = options.override
-      ? defu(rule, opts.routeRules[route])
-      : defu(opts.routeRules[route], rule)
-  }
 }
 
 export interface AddRouteMiddlewareOptions {
