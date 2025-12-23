@@ -1,4 +1,4 @@
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   typescript: {
@@ -30,6 +30,7 @@ export default defineResolvers({
           'h3',
           'consola',
           'ofetch',
+          'crossws',
           // Key nuxt dependencies
           '@unhead/vue',
           '@nuxt/devtools',

@@ -3,19 +3,19 @@ import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
-import { distDir } from '../dirs'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils'
-import { lazyHydrationMacroPreset } from '../imports/presets'
-import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
-import { scanComponents } from './scan'
+import { distDir } from '../dirs.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
+import { lazyHydrationMacroPreset } from '../imports/presets.ts'
+import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
+import { scanComponents } from './scan.ts'
 
-import { LoaderPlugin } from './plugins/loader'
-import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
-import { TransformPlugin } from './plugins/transform'
-import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
-import { ComponentNamePlugin } from './plugins/component-names'
-import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
-import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform'
+import { LoaderPlugin } from './plugins/loader.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
+import { TransformPlugin } from './plugins/transform.ts'
+import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
+import { ComponentNamePlugin } from './plugins/component-names.ts'
+import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
+import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -70,8 +70,12 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs: ComponentsDir[] = []
-      for (const layer of nuxt.options._layers) {
-        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 })
+      const layerCount = nuxt.options._layers.length
+      for (const [i, layer] of nuxt.options._layers.entries()) {
+        // Assign priority based on layer position: lower index = higher priority
+        // This ensures correct override order: root > auto-scanned > extends layers
+        const priority = layerCount - i
+        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority })
         allDirs.push(...layerDirs)
       }
 
@@ -109,7 +113,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || (extensions.length > 1 ? `**/*.{${extensions.join(',')}}` : `**/*.${extensions[0] || '*'}`),
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            `**/*.{${DECLARATION_EXTENSIONS.join(',')}}`, // .d.ts files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // .d.ts files
             ...(dirOptions.ignore || []),
           ],
           transpile,

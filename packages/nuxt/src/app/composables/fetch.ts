@@ -47,7 +47,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
   ]
-  for (const _obj of [opts.params || opts.query]) {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  for (const _obj of [opts.query || opts.params]) {
     const obj = toValue(_obj)
     if (!obj) { continue }
 
@@ -119,7 +120,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
       DefaultT = undefined,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
@@ -132,7 +133,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
       DefaultT = DataT,
     > (
       request: Ref<ReqT> | ReqT | (() => ReqT),
-      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+      opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
     function useFetch<
       ResT = void,
@@ -200,8 +201,8 @@ export const createUseFetch = defineKeyedFunctionFactory({
       }
 
       if (import.meta.dev) {
-        // @ts-expect-error private property
-        _asyncDataOptions._functionName ||= factoryOptions._functionName || 'useFetch'
+        // private property
+        (_asyncDataOptions as typeof _asyncDataOptions & { _functionName?: string })._functionName ||= (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useFetch'
       }
 
       if (alwaysRunFetchOnKeyChange && !immediate) {
@@ -209,7 +210,6 @@ export const createUseFetch = defineKeyedFunctionFactory({
         function setImmediate () {
           _asyncDataOptions.immediate = true
         }
-
         watch(key, setImmediate, { flush: 'sync', once: true })
         watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
       }

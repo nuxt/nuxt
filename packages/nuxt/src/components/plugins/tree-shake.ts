@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 
 import { parseAndWalk, walk } from 'oxc-walker'
 import type { BindingPattern, BindingProperty, CallExpression, Node, ObjectExpression, Program, ReturnStatement, VariableDeclaration } from 'oxc-parser'
-import { distDir } from '../../dirs'
+import { distDir } from '../../dirs.ts'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean

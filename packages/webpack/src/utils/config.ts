@@ -1,7 +1,7 @@
 import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
-import { toArray } from './index'
+import { toArray } from './index.ts'
 
 export interface WebpackConfigContext {
   nuxt: Nuxt

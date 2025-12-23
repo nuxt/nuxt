@@ -1,6 +1,6 @@
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Compilation, Compiler, WebpackPluginInstance } from 'webpack'
-import { isJS } from './vue/util'
+import { isJS } from './vue/util.ts'
 
 const DYNAMIC_IMPORT_RE = /import\([^)]*\+\s*__webpack_require__[^+]*\)\.then/
 const DYNAMIC_IMPORT_REPLACE_RE = /import\([^)]*\+\s*(__webpack_require__[^+]*)\)\.then/g

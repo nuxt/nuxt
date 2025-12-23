@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
@@ -6,11 +7,11 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
-import consola from 'consola'
+import { consola } from 'consola'
 import onChange from 'on-change'
 import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
@@ -18,40 +19,40 @@ import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
 import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
-import defu from 'defu'
+import { defu } from 'defu'
 import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
-import { genImport } from 'knitwork'
+import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
-
-import { installNuxtModule } from '../core/features'
-import pagesModule from '../pages/module'
-import metaModule from '../head/module'
-import componentsModule from '../components/module'
-import importsModule from '../imports/module'
-import compilerModule from '../compiler/module'
-
-import { distDir, pkgDir } from '../dirs'
-import { version } from '../../package.json'
-import { scriptsStubsPreset } from '../imports/presets'
-import { logger } from '../utils'
-import { resolveTypePath } from './utils/types'
-import { createImportProtectionPatterns } from './plugins/import-protection'
-import { UnctxTransformPlugin } from './plugins/unctx'
-import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
-import { DevOnlyPlugin } from './plugins/dev-only'
-import { LayerAliasingPlugin } from './plugins/layer-aliasing'
-import { addModuleTranspiles } from './modules'
-import { bundleServer } from './server'
-import schemaModule from './schema'
-import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
-import { AsyncContextInjectionPlugin } from './plugins/async-context'
-import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
-import { ResolveExternalsPlugin } from './plugins/resolved-externals'
-import { PrehydrateTransformPlugin } from './plugins/prehydrate'
-import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers'
-import { VirtualFSPlugin } from './plugins/virtual'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
+import type { Unimport } from 'unimport'
+
+import { installNuxtModule } from '../core/features.ts'
+import pagesModule from '../pages/module.ts'
+import metaModule from '../head/module.ts'
+import componentsModule from '../components/module.ts'
+import importsModule from '../imports/module.ts'
+import compilerModule from '../compiler/module.ts'
+
+import { distDir, pkgDir } from '../dirs.ts'
+import pkg from '../../package.json' with { type: 'json' }
+import { scriptsStubsPreset } from '../imports/presets.ts'
+import { logger } from '../utils.ts'
+import { resolveTypePath } from './utils/types.ts'
+import { createImportProtectionPatterns } from './plugins/import-protection.ts'
+import { UnctxTransformPlugin } from './plugins/unctx.ts'
+import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
+import { DevOnlyPlugin } from './plugins/dev-only.ts'
+import { LayerAliasingPlugin } from './plugins/layer-aliasing.ts'
+import { addModuleTranspiles } from './modules.ts'
+import { bundleServer } from './server.ts'
+import schemaModule from './schema.ts'
+import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
+import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
+import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
+import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
+import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
+import { VirtualFSPlugin } from './plugins/virtual.ts'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -63,7 +64,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
   const nuxt: Nuxt = {
     __name: randomUUID(),
-    _version: version,
+    _version: pkg.version,
     _asyncLocalStorageModule: options.experimental.debugModuleMutation ? new AsyncLocalStorage() : undefined,
     hooks,
     callHook: hooks.callHook,
@@ -153,7 +154,7 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-export const keyDependencies = [
+export const keyDependencies: string[] = [
   '@nuxt/kit',
 ]
 
@@ -191,6 +192,31 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
+
+  addTypeTemplate({
+    filename: 'types/nitro-layouts.d.ts',
+    getContents: ({ app }) => {
+      return [
+        `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
+        'declare module \'nitropack\' {',
+        '  interface NitroRouteConfig {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '  interface NitroRouteRules {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '}',
+        'declare module \'nitropack/types\' {',
+        '  interface NitroRouteConfig {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '  interface NitroRouteRules {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '}',
+      ].join('\n')
+    },
+  }, { nuxt: true, nitro: true, node: true })
 
   // Disable environment types entirely if `typescript.builder` is false
   if (nuxt.options.typescript.builder !== false) {
@@ -319,34 +345,6 @@ async function initNuxt (nuxt: Nuxt) {
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
-  // shared folder import protection
-  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
-  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
-  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
-  const sharedProtectionConfig = {
-    cwd: nuxt.options.rootDir,
-    include: sharedPatterns,
-    patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
-  }
-  addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
-  addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
-
-  // Add import protection
-  const nuxtProtectionConfig = {
-    cwd: nuxt.options.rootDir,
-    // Exclude top-level resolutions by plugins
-    exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
-    patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
-  }
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-  addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
-
-  // add resolver for modules used in virtual files
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
-
-  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
-
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
@@ -384,6 +382,36 @@ async function initNuxt (nuxt: Nuxt) {
         composables: nuxt.options.optimization.treeShake.composables.client,
       }), { server: false })
     }
+
+    // shared folder import protection
+    const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+    const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+    const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+    const sharedProtectionConfig = {
+      cwd: nuxt.options.rootDir,
+      include: sharedPatterns,
+      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+    }
+    addBuildPlugin({
+      vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
+      webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
+    }, { server: false })
+
+    // Add import protection
+    const nuxtProtectionConfig = {
+      cwd: nuxt.options.rootDir,
+      // Exclude top-level resolutions by plugins
+      exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
+      patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
+    }
+    addBuildPlugin({
+      webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+    })
+    // TODO: remove in nuxt v5 when we can use vite env api
+    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
   })
 
   if (!nuxt.options.dev) {
@@ -586,6 +614,12 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
 
+  // will be assigned after `modules:done`
+  let unimport: Unimport | undefined
+  nuxt.hook('imports:context', (ctx) => {
+    unimport = ctx
+  })
+
   await nuxt.callHook('modules:done')
 
   await nuxt.callHook('compiler:ready')
@@ -638,13 +672,13 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
   }
 
-  if (nuxt.options.experimental.appManifest) {
-    addRouteMiddleware({
-      name: 'manifest-route-rule',
-      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
-      global: true,
-    })
+  addRouteMiddleware({
+    name: 'manifest-route-rule',
+    path: resolve(nuxt.options.appDir, 'middleware/route-rules'),
+    global: true,
+  })
 
+  if (nuxt.options.experimental.appManifest) {
     if (nuxt.options.experimental.checkOutdatedBuildInterval !== false) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
     }
@@ -728,8 +762,6 @@ export default defineNuxtPlugin({
     logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
     nuxt.options.experimental.payloadExtraction = true
   }
-  nitro.options.replace['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
-  nitro.options._config.replace!['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
 
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
@@ -777,7 +809,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
-    if (!await import('./features').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
+    if (!await import('./features.ts').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
     }))) {

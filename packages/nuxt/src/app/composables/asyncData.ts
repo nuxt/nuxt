@@ -162,7 +162,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       DefaultT = undefined,
     > (
       handler: AsyncDataHandler<ResT>,
-      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     function useAsyncData<
       ResT,
@@ -172,7 +172,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       DefaultT = DataT,
     > (
       handler: AsyncDataHandler<ResT>,
-      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -190,7 +190,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     > (
       key: MaybeRefOrGetter<string>,
       handler: AsyncDataHandler<ResT>,
-      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     function useAsyncData<
       ResT,
@@ -201,7 +201,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     > (
       key: MaybeRefOrGetter<string>,
       handler: AsyncDataHandler<ResT>,
-      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
+      opts?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>,
     ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     function useAsyncData<
       ResT,
@@ -261,8 +261,8 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
         }
       }
 
-      // @ts-expect-error private property
-      const functionName = factoryOptions._functionName || 'useAsyncData'
+      // internal property
+      const functionName = (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useAsyncData'
 
       // check and warn if different defaults/fetcher are provided
       const currentData = nuxtApp._asyncData[key.value]
@@ -418,7 +418,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
         const unsubParamsWatcher = opts.watch
           ? watch(opts.watch, () => {
               if (keyChanging) { return } // avoid double execute while the key switch is being processed
-              asyncData._execute({ cause: 'watch', dedupe: opts.dedupe })
+              nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: opts.dedupe })
             })
           : () => {}
 
@@ -617,15 +617,15 @@ function buildAsyncData<
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
   // When prerendering, share payload data automatically between requests
-  const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
+  const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?.['~sharedPrerenderCache']
     ? _handler
     : (nuxtApp, options) => {
-        const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
+        const value = nuxtApp.ssrContext!['~sharedPrerenderCache']!.get(key)
         if (value) { return value as Promise<ResT> }
 
         const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(nuxtApp, options)))
 
-        nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
+        nuxtApp.ssrContext!['~sharedPrerenderCache']!.set(key, promise)
         return promise
       }
 
@@ -672,11 +672,12 @@ function buildAsyncData<
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
+      const cleanupController = new AbortController()
       const promise: Promise<ResT | void> = new Promise<ResT>(
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], timeout)
+            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout)
             if (mergedSignal.aborted) {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
@@ -685,7 +686,7 @@ function buildAsyncData<
             mergedSignal.addEventListener('abort', () => {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-            }, { once: true })
+            }, { once: true, signal: cleanupController.signal })
 
             return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
           } catch (err) {
@@ -717,18 +718,18 @@ function buildAsyncData<
         .catch((error: any) => {
           // If the promise was replaced by another one, we do not update the asyncData
           if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
-            return
+            return nuxtApp._asyncDataPromises[key]
           }
 
           // If the asyncData was explicitly aborted internally (dedupe or clear), we do not update the asyncData
           if (asyncData._abortController?.signal.aborted) {
-            return
+            return nuxtApp._asyncDataPromises[key]
           }
 
           // if the asyncData was explicitly aborted by user, we set it back to idle state
           if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
             asyncData.status.value = 'idle'
-            return
+            return nuxtApp._asyncDataPromises[key]
           }
 
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
@@ -739,6 +740,7 @@ function buildAsyncData<
           if (pendingWhenIdle) {
             asyncData.pending.value = false
           }
+          cleanupController.abort()
 
           delete nuxtApp._asyncDataPromises[key]
         })
@@ -790,7 +792,7 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     getCachedData: options.getCachedData ? hash(options.getCachedData) : undefined,
   }
 }
-function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, timeout?: number): AbortSignal {
+function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
   const list = signals.filter(s => !!s)
   if (typeof timeout === 'number' && timeout >= 0) {
     const timeoutSignal = AbortSignal.timeout?.(timeout)
@@ -828,7 +830,7 @@ function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, time
   }
 
   for (const sig of list) {
-    sig.addEventListener?.('abort', onAbort, { once: true })
+    sig.addEventListener?.('abort', onAbort, { once: true, signal: cleanupSignal })
   }
 
   return controller.signal

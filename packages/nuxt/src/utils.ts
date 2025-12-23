@@ -47,7 +47,7 @@ export function isJavascriptExtension (path: string) {
 }
 
 export const JS_EXTENSIONS = ['js', 'ts', 'tsx', 'jsx', 'mjs', 'cjs', 'mts', 'cts']
-export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts']
+export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts', 'd.vue.ts', 'd.vue.mts', 'd.vue.cts']
 
 export const logger = useLogger('nuxt')
 
