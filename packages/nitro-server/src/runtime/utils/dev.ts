@@ -65,17 +65,33 @@ const iframeStorageBridge = (nonce: string) => /* js */ `
     window.dispatchEvent(new Event('storage-ready'));
   });
 
+  // Clipboard API is unavailable in data: URL iframe, so we use postMessage
+  document.addEventListener('DOMContentLoaded', function() {
+    window.copyErrorMessage = function(button) {
+      post('clipboard-copy', { text: button.dataset.errorText });
+      button.classList.add('copied');
+      setTimeout(function() { button.classList.remove('copied'); }, 2000);
+    };
+  });
+
   post('storage-sync-request', {});
 })();
 `
 
 const parentStorageBridge = (nonce: string) => /* js */ `
 (function () {
-  const NONCE = ${JSON.stringify(nonce)};
   const host = document.querySelector('nuxt-error-overlay');
   if (!host) return;
 
+  const NONCE = ${JSON.stringify(nonce)};
   const isValid = (data) => data && data.nonce === NONCE;
+
+  // Handle clipboard copy from iframe
+  window.addEventListener('message', function(e) {
+    if (isValid(e) && e.data.type === 'clipboard-copy') {
+      navigator.clipboard.writeText(e.data.text).catch(function() {});
+    }
+  });
 
   const collectLocalStorage = () => {
     const all = {};
