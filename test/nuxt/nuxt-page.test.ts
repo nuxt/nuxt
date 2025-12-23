@@ -153,8 +153,25 @@ describe('Route validation with history state', () => {
       expect(error.statusCode).toBe(404)
     }
 
-    expect(pushStateSpy).toHaveBeenCalled()
     expect(pushStateSpy).toHaveBeenLastCalledWith({}, '', '/forbidden-page')
+
+    // Router should still be on /valid-page (navigation was aborted)
+    const route = useRoute()
+    expect(route.path).toBe('/valid-page')
+
+    // 1. should clear the error and stay on /valid-page
+    window.history.back()
+    await new Promise(resolve => setTimeout(resolve, 10))
+    await nextTick()
+
+    expect(useRoute().path).toBe('/valid-page')
+
+    // 2. should navigate to /
+    window.history.back()
+    await new Promise(resolve => setTimeout(resolve, 10))
+    await nextTick()
+
+    expect(useRoute().path).toBe('/')
 
     pushStateSpy.mockRestore()
     el.unmount()
