@@ -2073,7 +2073,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
     await expectNoClientErrors('/prefetch/server-components')
   })
 
-  it('should prefetch everything needed when NuxtLink is used', async () => {
+  it.skipIf(!isTestingAppManifest)('should prefetch everything needed when NuxtLink is used', async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -2577,7 +2577,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
   })
 
   // TODO: looks like this test is flaky
-  it('does not fetch a prefetched payload', { retry: 3 }, async () => {
+  it.skipIf(!isTestingAppManifest)('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
@@ -2618,11 +2618,33 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
     await page.close()
   })
 
+  it('should not render payloads for non prerendered/cached routes', async () => {
+    // First request to trigger ISR caching
+    const res = await fetch('/_payload.json')
+    expect(res.status).toBe(404)
+  })
+
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
     const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
+  })
+
+  it('should render payload for ISR routes', async () => {
+    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['isr-data']).toBeDefined()
+    expect(Array.isArray(data.data['isr-data'])).toBe(true)
+  })
+
+  it('should render payload for SWR routes', async () => {
+    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['swr-data']).toBeDefined()
+    expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
 })
 

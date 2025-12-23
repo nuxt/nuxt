@@ -197,6 +197,8 @@ export default withMatrix({
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
+      '/isr': { isr: 60 },
+      '/swr': { swr: 60 },
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
