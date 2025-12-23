@@ -25,34 +25,16 @@
       "import": "./config.js",
       "require": "./config.cjs"
     },
-    "./schema": {
-      "types": "./schema.d.ts",
-      "import": "./schema.js"
-    },
-    "./kit": {
-      "types": "./kit.d.ts",
-      "import": "./kit.js"
-    },
+    "./schema": "./schema.js",
+    "./kit": "./kit.js",
     "./meta": "./meta.js",
-    "./app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
+    "./app": "./dist/app/index.js",
     "./package.json": "./package.json"
   },
   "imports": {
-    "#app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
-    "#app/nuxt": {
-      "types": "./dist/app/nuxt.d.ts",
-      "import": "./dist/app/nuxt.js"
-    },
-    "#unhead/composables": {
-      "types": "./dist/head/runtime/composables.d.ts",
-      "import": "./dist/head/runtime/composables.js"
-    }
+    "#app": "./dist/app/index.js",
+    "#app/nuxt": "./dist/app/nuxt.js",
+    "#unhead/composables": "./dist/head/runtime/composables.js"
   },
   "files": [
     "app.d.ts",
