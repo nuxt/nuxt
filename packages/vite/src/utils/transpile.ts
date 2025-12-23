@@ -41,7 +41,7 @@ export function getTranspilePatterns (envs: Envs): string[] {
       if (result) { pattern = result }
     }
     if (typeof pattern === 'string') {
-      patterns.push(pattern)
+      patterns.push(normalize(pattern))
     }
   }
 

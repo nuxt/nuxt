@@ -17,7 +17,6 @@ import { buildServer } from './server'
 import { ssr, ssrEnvironment } from './shared/server'
 import { clientEnvironment } from './shared/client'
 import { warmupViteServer } from './utils/warmup'
-import { getTranspilePatterns } from './utils/transpile'
 import { resolveCSSOptions } from './css'
 import { createViteLogger, logLevelMap } from './utils/logger'
 
@@ -280,14 +279,6 @@ async function handleEnvironments (nuxt: Nuxt, config: vite.InlineConfig) {
     await nuxt.hooks.callHook('vite:extendConfig', strippedConfig, ctx)
     await nuxt.hooks.callHook('vite:configResolved', strippedConfig, ctx)
   }
-
-  // Add transpile packages to optimizeDeps.exclude for client environment
-  // This must happen after hooks since modules may add transpile entries asynchronously
-  const clientEnv = config.environments!.client!
-  clientEnv.optimizeDeps ||= {}
-  clientEnv.optimizeDeps.exclude ||= []
-  const transpilePatterns = getTranspilePatterns({ isDev: nuxt.options.dev, isClient: true })
-  clientEnv.optimizeDeps.exclude.push(...transpilePatterns)
 
   if (!nuxt.options.dev) {
     const builder = await createBuilder(config)
