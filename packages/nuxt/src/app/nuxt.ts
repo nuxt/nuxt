@@ -365,7 +365,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     }
     // Patch callHook to preserve NuxtApp context on server
     // TODO: Refactor after https://github.com/unjs/hookable/issues/74
-    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, ...args)
+    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, args)
   }
 
   nuxtApp.callHook = nuxtApp.hooks.callHook
