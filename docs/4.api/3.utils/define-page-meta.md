@@ -32,6 +32,7 @@ interface PageMeta {
   path?: string
   props?: RouteRecordRaw['props']
   alias?: string | string[]
+  groups?: string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
   viewTransition?: boolean | 'always'
@@ -75,6 +76,12 @@ interface PageMeta {
   - **Type**: `string | string[]`
 
     Aliases for the record. Allows defining extra paths that will behave like a copy of the record. Allows having paths shorthands like `/users/:id` and `/u/:id`. All `alias` and `path` values must share the same params.
+
+  **`groups`**
+
+  - **Type**: `string[]`
+
+    Route groups the page belongs to, based on the folder structure. Automatically populated for pages within [route groups](/docs/4.x/guide/directory-structure/app/pages#route-groups).
 
   **`keepalive`**
 
