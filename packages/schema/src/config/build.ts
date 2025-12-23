@@ -2,7 +2,7 @@ import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
 import type { Nuxt } from '../types/nuxt'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   builder: {

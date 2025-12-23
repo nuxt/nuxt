@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -49,7 +49,6 @@ import { bundleServer } from './server.ts'
 import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
-import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
@@ -613,12 +612,6 @@ async function initNuxt (nuxt: Nuxt) {
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
-
-  // will be assigned after `modules:done`
-  let unimport: Unimport | undefined
-  nuxt.hook('imports:context', (ctx) => {
-    unimport = ctx
-  })
 
   await nuxt.callHook('modules:done')
 

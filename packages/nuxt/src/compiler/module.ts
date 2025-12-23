@@ -1,13 +1,13 @@
 import { addBuildPlugin, addCompilerScanPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { CompilerScanDir, NuxtCompilerOptions, ScanPlugin, ScanPluginFilter } from '@nuxt/schema'
 import { resolve } from 'pathe'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils'
-import { createScanPluginContext, matchWithStringOrRegex } from './utils'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils.ts'
+import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
-import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin } from './plugins/keyed-function-factories'
-import { distDir } from '../dirs'
+import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin } from './plugins/keyed-function-factories.ts'
+import { distDir } from '../dirs.ts'
 import type { Unimport } from 'unimport'
-import { KeyedFunctionsPlugin } from './plugins/keyed-functions'
+import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
 
 const runtimeDir = resolve(distDir, 'compiler/runtime')
 

@@ -10,16 +10,11 @@ import { findStaticImports, parseStaticImport } from 'mlly'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
 import type { KeyedFunction } from '@nuxt/schema'
-import { isWhitespace, logger, stripExtension } from '../../utils'
 import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
-import {
-  type FunctionCallMetadata,
-  parseStaticExportIdentifiers,
-  parseStaticFunctionCall,
-  processImports,
-} from '../parse-utils'
+import { isWhitespace, logger, stripExtension } from '../../utils.ts'
+import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
   sourcemap: boolean

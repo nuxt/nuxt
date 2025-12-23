@@ -1,6 +1,6 @@
 import { createCompilerScanPlugin, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
-import { JS_EXTENSIONS, isJavascriptExtension, logger, stripExtension } from '../../utils'
+import { JS_EXTENSIONS, isJavascriptExtension, logger, stripExtension } from '../../utils.ts'
 import type {
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
@@ -11,12 +11,12 @@ import type {
 } from 'oxc-parser'
 import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
-import { shouldTransformFile } from './keyed-functions'
+import { shouldTransformFile } from './keyed-functions.ts'
 import MagicString from 'magic-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
-import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../parse-utils'
+import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface ParsedKeyedFunctionFactory {
   factoryName: string
