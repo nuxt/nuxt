@@ -14,8 +14,6 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
-// @ts-expect-error virtual file
-import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
@@ -24,6 +22,9 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 // #33680: Reactivate render effects for async components after first navigation
 // During SSR hydration, components with async setup can have their render effects
 // become inactive. This traverses the component tree and reactivates them.
+
+// Vue's internal ReactiveEffect ACTIVE flag (not exported by Vue)
+const EFFECT_ACTIVE_FLAG = 1
 
 // Traverse VNode tree to find all component instances
 function traverseVNode (vnode: any, callback: (instance: ComponentInternalInstance) => void, visited = new Set()) {
@@ -73,12 +74,17 @@ function traverseVNode (vnode: any, callback: (instance: ComponentInternalInstan
   }
 }
 
+function getRootInstance (nuxtApp: NuxtApp): ComponentInternalInstance | undefined {
+  return nuxtApp.vueApp._instance
+    || (nuxtApp.vueApp._container as any)?._vnode?.component
+}
+
 function fixBrokenEffects (rootInstance: ComponentInternalInstance) {
   traverseVNode({ component: rootInstance }, (instance) => {
     const effect = instance.effect as unknown as { flags: number } | undefined
-    if (effect && !(effect.flags & 1)) {
-      // Effect lost its ACTIVE flag (1), reactivate it
-      effect.flags |= 1
+    if (effect && !(effect.flags & EFFECT_ACTIVE_FLAG)) {
+      // Effect lost its ACTIVE flag, reactivate it
+      effect.flags |= EFFECT_ACTIVE_FLAG
       // Force re-render to re-track reactive dependencies
       ;(instance as unknown as { update?: () => void }).update?.()
     }
@@ -225,14 +231,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     if (import.meta.client && nuxtApp.isHydrating) {
       const unsubscribe = router.afterEach(() => {
         // Skip if app not mounted yet (this is the initial replace in app:created)
-        const instance = nuxtApp.vueApp._instance
-          || (nuxtApp.vueApp._container as any)?._vnode?.component
-        if (!instance) { return }
+        if (!getRootInstance(nuxtApp)) { return }
 
         unsubscribe()
+        // Wait for next tick to ensure Vue has finished processing the navigation
         setTimeout(() => {
-          const rootInstance = nuxtApp.vueApp._instance
-            || (nuxtApp.vueApp._container as any)?._vnode?.component
+          const rootInstance = getRootInstance(nuxtApp)
           if (rootInstance) {
             fixBrokenEffects(rootInstance)
           }
@@ -280,16 +284,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        if (isAppManifestEnabled) {
-          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
+        const routeRules = getRouteRules({ path: to.path })
 
-          if (routeRules.appMiddleware) {
-            for (const key in routeRules.appMiddleware) {
-              if (routeRules.appMiddleware[key]) {
-                middlewareEntries.add(key)
-              } else {
-                middlewareEntries.delete(key)
-              }
+        if (routeRules.appMiddleware) {
+          for (const key in routeRules.appMiddleware) {
+            if (routeRules.appMiddleware[key]) {
+              middlewareEntries.add(key)
+            } else {
+              middlewareEntries.delete(key)
             }
           }
         }
