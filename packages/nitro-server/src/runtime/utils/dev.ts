@@ -14,7 +14,7 @@ const iframeStorageBridge = (nonce: string) => /* js */ `
       return Object.hasOwn(memoryStore, key)
         ? memoryStore[key]
         : null;
-    }
+    },
     setItem(key, value) {
       const v = String(value);
       memoryStore[key] = v;
@@ -243,7 +243,7 @@ const errorCSS = /* css */ `
 }
 #toggle:focus-visible {
   outline: 3px solid #00DC82;
-  outline-offset: 3px;
+  outline-offset: 0;
   box-shadow: 0 0 24px rgba(0, 220, 130, 0.8);
 }
 #frame[inert] ~ #toggle {
