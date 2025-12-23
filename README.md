@@ -21,14 +21,14 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - Auto imports of components, composables and utils
 - TypeScript with zero configuration
 - Go full-stack with our server/ directory
-- Extensible with [200+ modules](https://nuxt.com/modules)
+- Extensible with [300+ modules](https://nuxt.com/modules)
 - Deployment to a variety of [hosting platforms](https://nuxt.com/deploy)
 - ...[and much more](https://nuxt.com) 🚀
 
 ### Table of Contents
 
 - 🚀 [Getting Started](#getting-started)
-- 💻 [ Vue Development](#vue-development)
+- 💻 [Vue Development](#vue-development)
 - 📖 [Documentation](#documentation)
 - 🧩 [Modules](#modules)
 - ❤️ [Contribute](#contribute)
