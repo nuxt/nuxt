@@ -13,7 +13,7 @@ import { serialize } from 'seroval'
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'
 
-import { isCSS, isHotUpdate, isJS } from './util'
+import { isCSS, isHotUpdate, isJS } from './util.ts'
 
 interface PluginOptions {
   nuxt: Nuxt

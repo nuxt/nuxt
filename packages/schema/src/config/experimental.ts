@@ -1,4 +1,4 @@
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   future: {
@@ -220,6 +220,11 @@ export default defineResolvers({
     extractAsyncDataHandlers: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false
+      },
+    },
+    viteEnvironmentApi: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
   },

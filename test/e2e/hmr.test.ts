@@ -4,8 +4,7 @@ import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { expect, test } from './test-utils'
-
-const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
+import { isBuilt, isWebpack } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
@@ -18,12 +17,11 @@ test.use({
     env: { TEST: '1' },
     nuxtConfig: {
       test: true,
-      builder: isWebpack ? 'webpack' : 'vite',
     },
   },
 })
 
-if (process.env.TEST_ENV === 'built' || isWindows) {
+if (isBuilt || isWindows) {
   test.skip('Skipped: HMR tests are skipped on Windows or in built mode', () => {})
 } else {
   test.describe.configure({ mode: 'serial' })
@@ -140,6 +138,64 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       expect(page).toHaveNoErrorsOrWarnings()
     })
 
+    test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
+      await goto('/state-component')
+
+      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pageContents = readFileSync(pagePath, 'utf8')
+
+      const button = page.getByTestId('button')
+      await expect(button).toHaveText('0')
+      await button.click()
+      await expect(button).toHaveText('1')
+
+      writeFileSync(
+        pagePath,
+        pageContents.replace('#hmr-template', '#hmr-template updated'),
+      )
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Wait for HMR to process the new route
+      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+
+      await expect.soft(button).toHaveText('1')
+    })
+
+    test('HMR on page should keep ref state when updating script', async ({ goto, page }) => {
+      await goto('/state-component')
+
+      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pageContents = readFileSync(pagePath, 'utf8')
+
+      const button = page.getByTestId('button')
+      await expect(button).toHaveText('0')
+      await button.click()
+      await expect(button).toHaveText('1')
+
+      writeFileSync(
+        pagePath,
+        pageContents.replace('#hmr-script', '#hmr-script updated'),
+      )
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Wait for HMR to process the new route
+      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+
+      await expect.soft(button).toHaveText('1')
+    })
+
     test('HMR for routes', async ({ page, goto }) => {
       await goto('/routes')
 
@@ -172,6 +228,33 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
       // Verify no unexpected errors
       expect(filteredLogs).toStrictEqual([])
+    })
+
+    test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
+      await goto('/issues/32177')
+
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/issues/32177.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
+      await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
+    })
+
+    test('HMR with top-level await', async ({ page, goto }) => {
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/top-level-await.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/top-level-await.vue'), pageContents)
+
+      // Navigate and wait for full load
+      await goto('/top-level-await')
+      await expect(page.getByTestId('content')).toHaveText('loaded')
+
+      // Trigger HMR by editing script
+      writeFileSync(
+        join(fixtureDir, 'app/pages/top-level-await.vue'),
+        pageContents.replace('console.log(\'page loaded\')', '// console.log(\'page loaded\')'),
+      )
+
+      // Wait for HMR to process and check no errors
+      await page.waitForTimeout(1000)
+      expect(page).toHaveNoErrorsOrWarnings()
     })
   }
 }

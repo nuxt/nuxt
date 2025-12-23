@@ -7,8 +7,7 @@ import perfectionist from 'eslint-plugin-perfectionist'
 import { importX } from 'eslint-plugin-import-x'
 import parser from '@typescript-eslint/parser'
 import markdown from '@eslint/markdown'
-
-import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
+import { runtimeDependencies } from 'nuxt/meta'
 
 export default createConfigForNuxt({
   features: {
@@ -24,10 +23,12 @@ export default createConfigForNuxt({
       // Ignores have to be a separate object to be treated as global ignores
       // Don't add other attributes to this object
       ignores: [
+        '.goff/**',
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
+        'packages/nitro-server/src/runtime/templates/error-*',
       ],
     },
     {
@@ -142,6 +143,25 @@ export default createConfigForNuxt({
 
   // Append local rules
   .append(
+    {
+      files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      ignores: ['packages/**/*.client.ts', 'packages/**/*.client.mts', 'packages/**/*.client.js', 'packages/**/*.client.mjs'],
+      name: 'local/requires/explicit-node-imports',
+      rules: {
+        // Ban direct use of restricted global identifiers
+        'no-restricted-globals': [
+          'error',
+          {
+            message: 'Use explicit import: import process from "node:process" (or a scoped alias). Implicit globals are banned for clarity and tree-shakability.',
+            name: 'process',
+          },
+          {
+            message: 'Use explicit import: import { performance } from "node:perf_hooks". Implicit global performance is banned in server contexts to ensure Node.js-specific usage.',
+            name: 'performance',
+          },
+        ],
+      },
+    },
     // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
@@ -155,7 +175,7 @@ export default createConfigForNuxt({
           {
             zones: [
               {
-                from: 'packages/nuxt/src/!(core)/**/*',
+                from: 'packages/nuxt/src/!(core)/runtime/*',
                 message: 'core should not directly import from modules.',
                 target: 'packages/nuxt/src/core',
               },
@@ -186,6 +206,22 @@ export default createConfigForNuxt({
             ],
           },
         ],
+      },
+    },
+    {
+      files: ['packages/*/src/**'],
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      name: 'local/import-extensions',
+      plugins: {
+        'import-x': importX,
+      },
+      rules: {
+        'import/extensions': ['error', 'always', {
+          ignorePackages: true,
+          js: 'always',
+          ts: 'always',
+          vue: 'always',
+        }],
       },
     },
     {

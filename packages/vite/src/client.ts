@@ -4,29 +4,22 @@ import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
-import { defineEnv } from 'unenv'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 
-import type { ViteBuildContext } from './vite'
-import { DevStyleSSRPlugin } from './plugins/dev-style-ssr'
-import { RuntimePathsPlugin } from './plugins/runtime-paths'
-import { TypeCheckPlugin } from './plugins/type-check'
-import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
-import { ViteNodePlugin } from './plugins/vite-node'
-import { createViteLogger } from './utils/logger'
-import { StableEntryPlugin } from './plugins/stable-entry'
-import { AnalyzePlugin } from './plugins/analyze'
-import { DevServerPlugin } from './plugins/dev-server'
-import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker'
+import type { ViteBuildContext } from './vite.ts'
+import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
+import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
+import { TypeCheckPlugin } from './plugins/type-check.ts'
+import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
+import { ViteNodePlugin } from './plugins/vite-node.ts'
+import { createViteLogger } from './utils/logger.ts'
+import { StableEntryPlugin } from './plugins/stable-entry.ts'
+import { AnalyzePlugin } from './plugins/analyze.ts'
+import { DevServerPlugin } from './plugins/dev-server.ts'
+import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
+import { clientEnvironment } from './shared/client.ts'
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
-  const nodeCompat = nuxt.options.experimental.clientNodeCompat
-    ? {
-        alias: defineEnv({ nodeCompat: true, resolve: true }).env.alias,
-        define: { global: 'globalThis' },
-      }
-    : { alias: {}, define: {} }
-
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: nuxt.options.dev
@@ -35,78 +28,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     css: {
       devSourcemap: !!nuxt.options.sourcemap.client,
     },
-    define: {
-      'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
-      'process.server': false,
-      'process.client': true,
-      'process.browser': true,
-      'process.nitro': false,
-      'process.prerender': false,
-      'import.meta.server': false,
-      'import.meta.client': true,
-      'import.meta.browser': true,
-      'import.meta.nitro': false,
-      'import.meta.prerender': false,
-      'module.hot': false,
-      ...nodeCompat.define,
-    },
-    optimizeDeps: {
-      entries: [ctx.entry],
-      include: [],
-      // We exclude Vue and Nuxt common dependencies from optimization
-      // as they already ship ESM.
-      //
-      // This will help to reduce the chance for users to encounter
-      // common chunk conflicts that causing browser reloads.
-      // We should also encourage module authors to add their deps to
-      // `exclude` if they ships bundled ESM.
-      //
-      // Also since `exclude` is inert, it's safe to always include
-      // all possible deps even if they are not used yet.
-      //
-      // @see https://github.com/antfu/nuxt-better-optimize-deps#how-it-works
-      exclude: [
-        // Vue
-        'vue',
-        '@vue/runtime-core',
-        '@vue/runtime-dom',
-        '@vue/reactivity',
-        '@vue/shared',
-        '@vue/devtools-api',
-        'vue-router',
-        'vue-demi',
-
-        // Nuxt
-        'nuxt',
-        'nuxt/app',
-
-        // Nuxt Deps
-        '@unhead/vue',
-        'consola',
-        'defu',
-        'devalue',
-        'h3',
-        'hookable',
-        'klona',
-        'ofetch',
-        'pathe',
-        'ufo',
-        'unctx',
-        'unenv',
-
-        // these will never be imported on the client
-        '#app-manifest',
-      ],
-    },
     cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
-    build: {
-      sourcemap: nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
-      manifest: 'manifest.json',
-      outDir: resolve(nuxt.options.buildDir, 'dist/client'),
-      rollupOptions: {
-        input: { entry: ctx.entry },
-      },
-    },
     plugins: [
       DevStyleSSRPlugin({
         srcDir: nuxt.options.srcDir,
@@ -130,6 +52,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       },
       middlewareMode: true,
     },
+    ...clientEnvironment(nuxt, ctx.entry),
   } satisfies vite.InlineConfig, nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)

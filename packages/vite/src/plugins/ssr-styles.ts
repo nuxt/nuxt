@@ -8,11 +8,13 @@ import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { isCSS, isVue } from '../utils'
-import { resolveClientEntry } from '../utils/config'
+import { IS_CSS_RE, isCSS, isVue } from '../utils/index.ts'
+import { resolveClientEntry } from '../utils/config.ts'
 import { useNitro } from '@nuxt/kit'
+import escapeStringRegexp from 'escape-string-regexp'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
+const QUERY_RE = /\?.+$/
 
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
@@ -49,7 +51,16 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     globalCSS: nuxt.options.css,
   }
 
-  const relativeToSrcDir = (path: string) => relative(nuxt.options.srcDir, path)
+  // relative file lookup has duplicate checks
+  const relativeCache = new Map<string, string>()
+  const relativeToSrcDir = (path: string) => {
+    let cached = relativeCache.get(path)
+    if (cached === undefined) {
+      cached = relative(nuxt.options.srcDir, path)
+      relativeCache.set(path, cached)
+    }
+    return cached
+  }
 
   const warnCache = new Set<string>()
   const components = nuxt.apps.default!.components || []
@@ -58,6 +69,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // .server components without a corresponding .client component will need to be rendered as an island
     (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
   )
+  const islandPaths = new Set(islands.map(c => c.filePath))
 
   let entry: string
 
@@ -65,7 +77,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     name: 'ssr-styles',
     configResolved (config) {
       // TODO: remove when adopting vite environment api
-      if (!config.build.ssr) {
+      if (!config.build.ssr || nuxt.options.experimental.viteEnvironmentApi) {
         entry = resolveClientEntry(config)
       }
     },
@@ -75,6 +87,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         enforce: 'pre',
         resolveId: {
           order: 'pre',
+          filter: {
+            id: {
+              include: [/^#build\/css$/, /\.vue$/, IS_CSS_RE],
+            },
+          },
           async handler (id, importer, _options) {
             // We want to remove side effects (namely, emitting CSS) from `.vue` files and explicitly imported `.css` files
             // but only as long as we are going to inline that CSS.
@@ -82,13 +99,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               return
             }
 
-            if (id === '#build/css' || id.endsWith('.vue') || isCSS(id)) {
-              const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
-              if (res) {
-                return {
-                  ...res,
-                  moduleSideEffects: false,
-                }
+            const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
+            if (res) {
+              return {
+                ...res,
+                moduleSideEffects: false,
               }
             }
           },
@@ -187,109 +202,122 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
             const relativePath = relativeToSrcDir(moduleId)
             if (relativePath in cssMap) {
-              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativeToSrcDir(moduleId)) || isEntry)
+              cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativePath) || isEntry)
             }
           }
 
           return null
         },
-        async transform (code, id) {
-          if (environment.name === 'client') {
-            // We will either teleport global CSS to the 'entry' chunk on the server side
-            // or include it here in the client build so it is emitted in the CSS.
-            if (id === entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
-              const s = new MagicString(code)
-              const idClientCSSMap = clientCSSMap[id] ||= new Set()
-              if (!options.globalCSS.length) { return }
+        transform: {
+          filter: {
+            id: {
+              include: environment.name === 'client'
+                ? new RegExp('^' + escapeStringRegexp(entry) + '$')
+                : undefined,
+              exclude: environment.name === 'client' ? [] : [/\?.*macro=/, /\?.*nuxt_component=/],
+            },
+          },
+          async handler (code, id) {
+            if (environment.name === 'client') {
+              // We will either teleport global CSS to the 'entry' chunk on the server side
+              // or include it here in the client build so it is emitted in the CSS.
+              if (id === entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
+                const s = new MagicString(code)
+                const idClientCSSMap = clientCSSMap[id] ||= new Set()
+                if (!options.globalCSS.length) { return }
 
-              for (const file of options.globalCSS) {
-                const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-                const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
-                if (!resolved || !res) {
-                  if (!warnCache.has(file)) {
-                    warnCache.add(file)
-                    this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
+                for (const file of options.globalCSS) {
+                  const resolved = await this.resolve(file) ?? await this.resolve(file, id)
+                  const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+                  if (!resolved || !res) {
+                    if (!warnCache.has(file)) {
+                      warnCache.add(file)
+                      this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
+                    }
+                    s.prepend(`${genImport(file)}\n`)
+                    continue
                   }
-                  s.prepend(`${genImport(file)}\n`)
-                  continue
+                  idClientCSSMap.add(resolved.id)
                 }
-                idClientCSSMap.add(resolved.id)
-              }
-              if (s.hasChanged()) {
-                return {
-                  code: s.toString(),
-                  map: s.generateMap({ hires: true }),
+                if (s.hasChanged()) {
+                  return {
+                    code: s.toString(),
+                    map: s.generateMap({ hires: true }),
+                  }
                 }
               }
+              return
             }
-            return
-          }
 
-          const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+            const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
 
-          if (!(id in clientCSSMap) && !islands.some(c => c.filePath === pathname)) { return }
+            if (!(id in clientCSSMap) && !islandPaths.has(pathname)) { return }
 
-          const query = parseQuery(search)
-          if (query.macro || query.nuxt_component) { return }
+            const query = parseQuery(search)
+            if (query.macro || query.nuxt_component) { return }
 
-          if (!islands.some(c => c.filePath === pathname)) {
-            if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
-          }
+            if (!islandPaths.has(pathname)) {
+              if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
+            }
 
-          const relativeId = relativeToSrcDir(id)
-          const idMap = cssMap[relativeId] ||= { files: [] }
+            const relativeId = relativeToSrcDir(id)
+            const idMap = cssMap[relativeId] ||= { files: [] }
 
-          const emittedIds = new Set<string>()
+            const emittedIds = new Set<string>()
+            const idFilename = filename(id)
 
-          let styleCtr = 0
-          const ids = clientCSSMap[id] || []
-          for (const file of ids) {
-            const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-            const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
-            if (!resolved || !res) {
-              if (!warnCache.has(file)) {
-                warnCache.add(file)
-                this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
+            let styleCtr = 0
+            const ids = clientCSSMap[id] || []
+            for (const file of ids) {
+              if (emittedIds.has(file)) { continue }
+              const fileInline = file + '?inline&used'
+              const resolved = await this.resolve(file) ?? await this.resolve(file, id)
+              const res = await this.resolve(fileInline) ?? await this.resolve(fileInline, id)
+              if (!resolved || !res) {
+                if (!warnCache.has(file)) {
+                  warnCache.add(file)
+                  this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
+                }
+                continue
               }
-              continue
+              emittedIds.add(file)
+              const ref = this.emitFile({
+                type: 'chunk',
+                name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                id: fileInline,
+              })
+
+              idRefMap[relativeToSrcDir(file)] = ref
+              idMap.files.push(ref)
             }
-            if (emittedIds.has(file)) { continue }
-            const ref = this.emitFile({
-              type: 'chunk',
-              name: `${filename(id)}-styles-${++styleCtr}.mjs`,
-              id: file + '?inline&used',
-            })
 
-            idRefMap[relativeToSrcDir(file)] = ref
-            idMap.files.push(ref)
-          }
+            if (!SUPPORTED_FILES_RE.test(pathname)) { return }
 
-          if (!SUPPORTED_FILES_RE.test(pathname)) { return }
+            for (const i of findStaticImports(code)) {
+              if (!i.specifier.endsWith('.css') && parseQuery(i.specifier).type !== 'style') { continue }
 
-          for (const i of findStaticImports(code)) {
-            const { type } = parseQuery(i.specifier)
-            if (type !== 'style' && !i.specifier.endsWith('.css')) { continue }
-
-            const resolved = await this.resolve(i.specifier, id)
-            if (!resolved) { continue }
-            if (!(await this.resolve(resolved.id + '?inline&used'))) {
-              if (!warnCache.has(resolved.id)) {
-                warnCache.add(resolved.id)
-                this.warn(`[nuxt] Cannot extract styles for \`${i.specifier}\`. Its styles will not be inlined when server-rendering.`)
+              const resolved = await this.resolve(i.specifier, id)
+              if (!resolved) { continue }
+              const resolvedIdInline = resolved.id + '?inline&used'
+              if (!(await this.resolve(resolvedIdInline))) {
+                if (!warnCache.has(resolved.id)) {
+                  warnCache.add(resolved.id)
+                  this.warn(`[nuxt] Cannot extract styles for \`${i.specifier}\`. Its styles will not be inlined when server-rendering.`)
+                }
+                continue
               }
-              continue
+
+              if (emittedIds.has(resolved.id)) { continue }
+              const ref = this.emitFile({
+                type: 'chunk',
+                name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                id: resolvedIdInline,
+              })
+
+              idRefMap[relativeToSrcDir(resolved.id)] = ref
+              idMap.files.push(ref)
             }
-
-            if (emittedIds.has(resolved.id)) { continue }
-            const ref = this.emitFile({
-              type: 'chunk',
-              name: `${filename(id)}-styles-${++styleCtr}.mjs`,
-              id: resolved.id + '?inline&used',
-            })
-
-            idRefMap[relativeToSrcDir(resolved.id)] = ref
-            idMap.files.push(ref)
-          }
+          },
         },
       }
     },
@@ -297,5 +325,5 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 }
 
 function filename (name: string) {
-  return _filename(name.replace(/\?.+$/, ''))
+  return _filename(name.replace(QUERY_RE, ''))
 }

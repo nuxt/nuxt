@@ -1,0 +1,66 @@
+{
+  "name": "@nuxt/nitro-server",
+  "version": "4.2.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/nitro-server"
+  },
+  "description": "Nitro server integration for Nuxt",
+  "homepage": "https://nuxt.com",
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "unbuild",
+    "build:stub": "unbuild --stub",
+    "test:attw": "attw --pack"
+  },
+  "dependencies": {
+    "@nuxt/devalue": "^2.0.2",
+    "@nuxt/kit": "workspace:*",
+    "@unhead/vue": "^2.0.19",
+    "@vue/shared": "^3.5.26",
+    "consola": "^3.4.2",
+    "defu": "^6.1.4",
+    "destr": "^2.0.5",
+    "devalue": "^5.6.1",
+    "errx": "^0.1.0",
+    "escape-string-regexp": "^5.0.0",
+    "exsolve": "^1.0.8",
+    "h3": "^1.15.4",
+    "impound": "^1.0.0",
+    "klona": "^2.0.6",
+    "mocked-exports": "^0.1.1",
+    "nitropack": "^2.12.9",
+    "ohash": "^2.0.11",
+    "pathe": "^2.0.3",
+    "pkg-types": "^2.3.0",
+    "rou3": "^0.7.12",
+    "std-env": "^3.10.0",
+    "ufo": "^1.6.1",
+    "unctx": "^2.5.0",
+    "unstorage": "^1.17.3",
+    "vue": "^3.5.26",
+    "vue-bundle-renderer": "^2.2.0",
+    "vue-devtools-stub": "^0.1.0"
+  },
+  "peerDependencies": {
+    "nuxt": "workspace:^"
+  },
+  "devDependencies": {
+    "@nuxt/schema": "workspace:*",
+    "nuxt": "workspace:*",
+    "unbuild": "3.6.1",
+    "vitest": "3.2.4"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

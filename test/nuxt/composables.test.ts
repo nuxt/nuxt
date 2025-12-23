@@ -23,6 +23,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { NuxtPage } from '#components'
+import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -336,7 +337,7 @@ describe('loading state', () => {
   })
 })
 
-describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
+describe.skipIf(!isTestingAppManifest)('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
     // @ts-expect-error timestamp is not optional
@@ -364,20 +365,23 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
       }
     `)
   })
-  it('getRouteRules', async () => {
-    expect(await getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
-    expect(await getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
+  it('getRouteRules', () => {
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
       }
     `)
-    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
+    expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
         "redirect": "/",
       }
     `)
   })
+})
+
+describe('compiled route rules', () => {
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
     expect(await isPrerendered('/prerendered/test')).toBeFalsy()
@@ -592,7 +596,7 @@ describe('defineNuxtComponent', () => {
       }),
       render () {
         // @ts-expect-error this is not typed
-        return h('div', `Total users: ${this.users.value.length}`)
+        return h('div', `Total users: ${this.users.length}`)
       },
     })))
     const wrapper = await mountSuspended(ClientOnlyPage)

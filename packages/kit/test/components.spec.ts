@@ -3,8 +3,8 @@ import { createHooks } from 'hookable'
 import type { Component } from '@nuxt/schema'
 import { relative } from 'pathe'
 
-import { addComponentExports } from '../src/components'
-import { createResolver } from '../src/resolve'
+import { addComponentExports } from '../src/components.ts'
+import { createResolver } from '../src/resolve.ts'
 
 const mockHooks = createHooks()
 const mockNuxt = {
