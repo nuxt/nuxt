@@ -38,8 +38,9 @@
     "css-minimizer-webpack-plugin": "^7.0.4",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
-    "esbuild-loader": "^4.4.0",
+    "esbuild-loader": "^4.4.1",
     "escape-string-regexp": "^5.0.0",
+    "exsolve": "^1.0.8",
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "h3": "^1.15.4",
@@ -48,6 +49,7 @@
     "magic-string": "^0.30.21",
     "memfs": "^4.51.1",
     "mini-css-extract-plugin": "^2.9.4",
+    "mlly": "^1.8.0",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
@@ -67,7 +69,7 @@
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.2.0",
     "vue-loader": "^17.4.2",
-    "webpack": "^5.103.0",
+    "webpack": "^5.104.1",
     "webpack-bundle-analyzer": "^5.1.0",
     "webpack-dev-middleware": "^7.4.5",
     "webpack-hot-middleware": "^2.26.1",
@@ -83,6 +85,7 @@
     "vue": "3.5.25"
   },
   "peerDependencies": {
+    "nuxt": "workspace:*",
     "vue": "^3.3.4"
   },
   "engines": {

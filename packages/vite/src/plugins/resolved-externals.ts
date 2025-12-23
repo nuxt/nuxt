@@ -2,8 +2,8 @@ import type { Plugin } from 'vite'
 import { tryImportModule, useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
-
-import { runtimeDependencies as runtimeNuxtDependencies } from '../../meta.mjs'
+import escapeStringRegexp from 'escape-string-regexp'
+import { runtimeDependencies as runtimeNuxtDependencies } from 'nuxt/meta'
 
 export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
   let external: Set<string> = new Set()
@@ -39,25 +39,26 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
       }
       return {
         name: 'nuxt:resolve-externals:external',
-        async resolveId (id, importer) {
-          if (!external.has(id)) {
-            return
-          }
-
-          const res = await this.resolve?.(id, importer, { skipSelf: true })
-          if (res !== undefined && res !== null) {
-            if (res.id === id) {
-              res.id = resolveModulePath(res.id, {
-                try: true,
-                from: importer,
-                extensions: nuxt.options.extensions,
-              }) || res.id
+        resolveId: {
+          filter: {
+            id: [...external].map(dep => new RegExp('^' + escapeStringRegexp(dep) + '$')),
+          },
+          async handler (id, importer) {
+            const res = await this.resolve?.(id, importer, { skipSelf: true })
+            if (res !== undefined && res !== null) {
+              if (res.id === id) {
+                res.id = resolveModulePath(res.id, {
+                  try: true,
+                  from: importer,
+                  extensions: nuxt.options.extensions,
+                }) || res.id
+              }
+              return {
+                ...res,
+                external: 'absolute',
+              }
             }
-            return {
-              ...res,
-              external: 'absolute',
-            }
-          }
+          },
         },
       }
     },

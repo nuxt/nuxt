@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, addWebpackPlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -22,7 +22,7 @@ import { ImpoundPlugin } from 'impound'
 import { defu } from 'defu'
 import { coerce, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
-import { genImport } from 'knitwork'
+import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 
 import { installNuxtModule } from '../core/features.ts'
@@ -47,8 +47,6 @@ import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
 import { ComposableKeysPlugin } from './plugins/composable-keys.ts'
-import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
-import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
@@ -193,6 +191,31 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  addTypeTemplate({
+    filename: 'types/nitro-layouts.d.ts',
+    getContents: ({ app }) => {
+      return [
+        `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
+        'declare module \'nitropack\' {',
+        '  interface NitroRouteConfig {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '  interface NitroRouteRules {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '}',
+        'declare module \'nitropack/types\' {',
+        '  interface NitroRouteConfig {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '  interface NitroRouteRules {',
+        '    appLayout?: LayoutKey | false',
+        '  }',
+        '}',
+      ].join('\n')
+    },
+  }, { nuxt: true, nitro: true, node: true })
+
   // Disable environment types entirely if `typescript.builder` is false
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
@@ -327,11 +350,6 @@ async function initNuxt (nuxt: Nuxt) {
     composables: nuxt.options.optimization.keyedComposables,
   }))
 
-  // add resolver for modules used in virtual files
-  addVitePlugin(() => ResolveDeepImportsPlugin(nuxt))
-
-  addVitePlugin(() => ResolveExternalsPlugin(nuxt), { prepend: true })
-
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
@@ -379,8 +397,11 @@ async function initNuxt (nuxt: Nuxt) {
       include: sharedPatterns,
       patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
     }
-    addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
-    addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
+    addBuildPlugin({
+      vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
+      webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
+    }, { server: false })
 
     // Add import protection
     const nuxtProtectionConfig = {
@@ -389,9 +410,13 @@ async function initNuxt (nuxt: Nuxt) {
       exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
       patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
     }
+    addBuildPlugin({
+      webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
+      rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+    })
+    // TODO: remove in nuxt v5 when we can use vite env api
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
     addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-    addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
   })
 
   if (!nuxt.options.dev) {
@@ -644,13 +669,13 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
   }
 
-  if (nuxt.options.experimental.appManifest) {
-    addRouteMiddleware({
-      name: 'manifest-route-rule',
-      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
-      global: true,
-    })
+  addRouteMiddleware({
+    name: 'manifest-route-rule',
+    path: resolve(nuxt.options.appDir, 'middleware/route-rules'),
+    global: true,
+  })
 
+  if (nuxt.options.experimental.appManifest) {
     if (nuxt.options.experimental.checkOutdatedBuildInterval !== false) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
     }
@@ -734,8 +759,6 @@ export default defineNuxtPlugin({
     logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
     nuxt.options.experimental.payloadExtraction = true
   }
-  nitro.options.replace['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
-  nitro.options._config.replace!['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
 
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))

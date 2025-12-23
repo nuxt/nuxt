@@ -5,7 +5,17 @@ import { Buffer } from 'node:buffer'
 import { isTest } from 'std-env'
 import type { ViteNodeFetch, ViteNodeRequestMap, ViteNodeServerOptions } from './plugins/vite-node.ts'
 
-export const viteNodeOptions: ViteNodeServerOptions = JSON.parse(process.env.NUXT_VITE_NODE_OPTIONS || '{}')
+function getViteNodeOptionsEnvVar () {
+  const envVar = process.env.NUXT_VITE_NODE_OPTIONS
+  try {
+    return JSON.parse(envVar || '{}')
+  } catch (e) {
+    console.error('vite-node-shared: Failed to parse NUXT_VITE_NODE_OPTIONS environment variable.', e)
+    return {}
+  }
+}
+
+export const viteNodeOptions: ViteNodeServerOptions = getViteNodeOptionsEnvVar()
 
 const pendingRequests = new Map<number, { resolve: (value: any) => void, reject: (reason?: any) => void }>()
 let requestIdCounter = 0
@@ -139,7 +149,7 @@ function connectSocket (): Promise<Socket> {
                   // @ts-expect-error We are augmenting the error object
                   err.data = response.error.data
                   // @ts-expect-error We are augmenting the error object
-                  err.statusCode = response.error.statusCode
+                  err.statusCode = err.status = response.error.status || response.error.statusCode
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)

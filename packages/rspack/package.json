@@ -39,14 +39,16 @@
     "css-minimizer-webpack-plugin": "^7.0.4",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
-    "esbuild-loader": "^4.4.0",
+    "esbuild-loader": "^4.4.1",
     "escape-string-regexp": "^5.0.0",
+    "exsolve": "^1.0.8",
     "file-loader": "^6.2.0",
     "h3": "^1.15.4",
     "jiti": "^2.6.1",
     "knitwork": "^1.3.0",
     "magic-string": "^0.30.21",
     "memfs": "^4.51.1",
+    "mlly": "^1.8.0",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
@@ -81,6 +83,7 @@
     "vue": "3.5.25"
   },
   "peerDependencies": {
+    "nuxt": "workspace:*",
     "vue": "^3.3.4"
   },
   "engines": {
