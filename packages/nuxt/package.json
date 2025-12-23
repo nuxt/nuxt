@@ -25,38 +25,17 @@
       "import": "./config.js",
       "require": "./config.cjs"
     },
-    "./schema": {
-      "types": "./schema.d.ts",
-      "import": "./schema.js"
-    },
-    "./kit": {
-      "types": "./kit.d.ts",
-      "import": "./kit.js"
-    },
+    "./schema": "./schema.js",
+    "./kit": "./kit.js",
     "./meta": "./meta.js",
-    "./app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
-    "./app/defaults": {
-      "types": "./dist/app/defaults.d.ts",
-      "import": "./dist/app/defaults.js"
-    },
+    "./app": "./dist/app/index.js",
+    "./app/defaults": "./dist/app/defaults.js",
     "./package.json": "./package.json"
   },
   "imports": {
-    "#app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
-    "#app/nuxt": {
-      "types": "./dist/app/nuxt.d.ts",
-      "import": "./dist/app/nuxt.js"
-    },
-    "#unhead/composables": {
-      "types": "./dist/head/runtime/composables/v4.d.ts",
-      "import": "./dist/head/runtime/composables/v4.js"
-    }
+    "#app": "./dist/app/index.js",
+    "#app/nuxt": "./dist/app/nuxt.js",
+    "#unhead/composables": "./dist/head/runtime/composables/v4.js"
   },
   "files": [
     "app/defaults.d.ts",
