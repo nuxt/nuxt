@@ -5,8 +5,8 @@ import {
   type FunctionCallMetadata,
   parseStaticExportIdentifiers,
   parseStaticFunctionCall,
-} from '../src/compiler/parse-utils'
-import { createScanPluginContext } from '../src/compiler/utils'
+} from '../src/core/utils/parse-utils.ts'
+import { createScanPluginContext } from '../src/compiler/utils.ts'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import type { Node } from 'oxc-parser'
 
