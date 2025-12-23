@@ -2634,9 +2634,6 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
   })
 
   it('should render payload for ISR routes', async () => {
-    // First request to trigger ISR caching
-    await $fetch<string>('/isr')
-    // Then fetch the payload
     const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
@@ -2645,9 +2642,6 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
   })
 
   it('should render payload for SWR routes', async () => {
-    // First request to trigger SWR caching
-    await $fetch<string>('/swr')
-    // Then fetch the payload
     const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
