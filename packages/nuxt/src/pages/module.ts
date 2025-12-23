@@ -20,9 +20,26 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
-import { inlineRouteRulesPresets, pagesImportPresets } from '../imports/presets.ts'
+import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
+
+export const pagesImportPresets: InlinePreset[] = [
+  { imports: ['definePageMeta'], from: '#app/composables/pages' },
+  {
+    imports: ['PageMeta'],
+    type: true,
+    from: '#app/composables/pages',
+  },
+  { imports: ['useLink'], from: 'vue-router' },
+]
+
+export const routeRulesPresets: InlinePreset[] = [
+  {
+    imports: ['defineRouteRules'],
+    from: '#app/composables/pages',
+  },
+]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
   const context = {
@@ -424,7 +441,7 @@ export default defineNuxtModule({
 
     addImportsSources(pagesImportPresets)
     if (nuxt.options.experimental.inlineRouteRules) {
-      addImportsSources(inlineRouteRulesPresets)
+      addImportsSources(routeRulesPresets)
     }
 
     const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))

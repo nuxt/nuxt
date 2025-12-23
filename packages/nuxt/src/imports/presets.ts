@@ -12,16 +12,6 @@ const commonPresets: InlinePreset[] = [
   }),
 ]
 
-export const pagesImportPresets: InlinePreset[] = [
-  { imports: ['definePageMeta'], from: '#app/composables/pages' },
-  {
-    imports: ['PageMeta'],
-    type: true,
-    from: '#app/composables/pages',
-  },
-  { imports: ['useLink'], from: 'vue-router' },
-]
-
 const granularAppPresets: InlinePreset[] = [
   {
     from: '#app/components/nuxt-link',
@@ -119,7 +109,6 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['useHead', 'useHeadSafe', 'useServerHeadSafe', 'useServerHead', 'useSeoMeta', 'useServerSeoMeta', 'injectHead'],
     from: '#app/composables/head',
   },
-  ...pagesImportPresets,
 ]
 
 export const scriptsStubsPreset = {
@@ -280,26 +269,12 @@ export const appCompatPresets: InlinePreset[] = [
   },
 ]
 
-// #region experimental
-export const lazyHydrationMacroPreset: InlinePreset[] = [
+export const lazyHydrationMacroPreset = [
   {
     imports: ['defineLazyHydrationComponent'],
     from: '#app/composables/lazy-hydration',
   },
 ]
-
-export const inlineRouteRulesPresets: InlinePreset[] = [
-  {
-    imports: ['defineRouteRules'],
-    from: '#app/composables/pages',
-  },
-]
-
-export const experimentalPresets = [
-  ...lazyHydrationMacroPreset,
-  ...inlineRouteRulesPresets,
-]
-// #endregion
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
