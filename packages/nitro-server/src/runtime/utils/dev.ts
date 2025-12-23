@@ -381,7 +381,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
     pipCloseButton.id = 'pip-close';
     pipCloseButton.setAttribute('type', 'button');
     pipCloseButton.setAttribute('aria-label', 'Hide error preview overlay');
-    pipCloseButton.textContent = 'x';
+    pipCloseButton.innerHTML = '&times;';
     pipCloseButton.hidden = true;
     toggle.appendChild(pipCloseButton);
 
