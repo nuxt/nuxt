@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { NuxtLayout, NuxtPage } from '#components'
@@ -92,6 +92,71 @@ describe('NuxtPage should work with keepalive options', () => {
     await navigateTo('/')
     await navigateTo('/home')
     expect(visits).toBe(1)
+    el.unmount()
+  })
+})
+
+describe('Route validation with history state', () => {
+  const router = useRouter()
+
+  beforeEach(() => {
+    router.addRoute({
+      name: 'valid-page',
+      path: '/valid-page',
+      component: defineComponent({
+        name: 'valid-page',
+        setup () {
+          return () => h('div', 'Valid Page')
+        },
+      }),
+    })
+
+    router.addRoute({
+      name: 'forbidden-page',
+      path: '/forbidden-page',
+      meta: {
+        validate: route => route.path !== '/forbidden-page',
+      },
+      component: defineComponent({
+        name: 'forbidden-page',
+        setup () {
+          return () => h('div', 'Forbidden Page')
+        },
+      }),
+    })
+  })
+
+  afterEach(() => {
+    router.removeRoute('valid-page')
+    router.removeRoute('forbidden-page')
+  })
+
+  it('should push `to` route to history when validation fails (PR #33942)', async () => {
+    const el = await mountSuspended({
+      setup () {
+        return () => h(NuxtLayout, {}, { default: () => h(NuxtPage) })
+      },
+    })
+
+    await navigateTo('/valid-page')
+    await nextTick()
+
+    const pushStateSpy = vi.spyOn(window.history, 'pushState')
+
+    // Attempt to navigate to a route that will fail validation
+    // The validate middleware will catch this and push history with to.fullPath
+    try {
+      await navigateTo('/forbidden-page')
+      await nextTick()
+    } catch (error: any) {
+      // Expected to throw an error due to validation failure
+      expect(error.statusCode).toBe(404)
+    }
+
+    expect(pushStateSpy).toHaveBeenCalled()
+    expect(pushStateSpy).toHaveBeenLastCalledWith({}, '', '/forbidden-page')
+
+    pushStateSpy.mockRestore()
     el.unmount()
   })
 })
