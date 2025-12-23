@@ -26,7 +26,7 @@
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "^2.0.19",
-    "@vue/shared": "^3.5.25",
+    "@vue/shared": "^3.5.26",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
@@ -47,7 +47,7 @@
     "ufo": "^1.6.1",
     "unctx": "^2.5.0",
     "unstorage": "^1.17.3",
-    "vue": "^3.5.25",
+    "vue": "^3.5.26",
     "vue-bundle-renderer": "^2.2.0",
     "vue-devtools-stub": "^0.1.0"
   },
