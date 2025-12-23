@@ -1,120 +1,131 @@
 const iframeStorageBridge = (nonce: string) => /* js */ `
-(function() {
-  const memoryStore = {};
+(function () {
+  const NONCE = ${JSON.stringify(nonce)};
+  const memoryStore = Object.create(null);
 
-  const NONCE = ${JSON.stringify(nonce)}
-  
+  const post = (type, payload) => {
+    window.parent.postMessage({ type, nonce: NONCE, ...payload }, '*');
+  };
+
+  const isValid = (data) => data && data.nonce === NONCE;
+
   const mockStorage = {
-    getItem: function(key) {
-      return memoryStore[key] !== undefined ? memoryStore[key] : null;
+    getItem(key) {
+      return Object.hasOwn(memoryStore, key)
+        ? memoryStore[key]
+        : null;
+    }
+    setItem(key, value) {
+      const v = String(value);
+      memoryStore[key] = v;
+      post('storage-set', { key, value: v });
     },
-    setItem: function(key, value) {
-      memoryStore[key] = String(value);
-      window.parent.postMessage({
-        type: 'storage-set',
-        key: key,
-        value: String(value),
-        nonce: NONCE
-      }, '*');
-    },
-    removeItem: function(key) {
+    removeItem(key) {
       delete memoryStore[key];
-      window.parent.postMessage({
-        type: 'storage-remove',
-        key: key,
-        nonce: NONCE
-      }, '*');
+      post('storage-remove', { key });
     },
-    clear: function() {
-      for (const key in memoryStore) {
+    clear() {
+      for (const key of Object.keys(memoryStore))
         delete memoryStore[key];
-      }
-      window.parent.postMessage({
-        type: 'storage-clear',
-        nonce: NONCE
-      }, '*');
+      post('storage-clear', {});
     },
-    key: function(index) {
+    key(index) {
       const keys = Object.keys(memoryStore);
-      return keys[index] !== undefined ? keys[index] : null;
+      return keys[index] ?? null;
     },
     get length() {
       return Object.keys(memoryStore).length;
     }
   };
-  
-  try {
-    Object.defineProperty(window, 'localStorage', {
-      value: mockStorage,
-      writable: false,
-      configurable: true
-    });
-  } catch (e) {
-    window.localStorage = mockStorage;
-  }
-  
-  window.addEventListener('message', function(event) {
-    if (event.data.type === 'storage-sync-data' && event.data.nonce === NONCE) {
-      const data = event.data.data;
-      for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key)) {
-          memoryStore[key] = data[key];
-        }
-      }
-      if (typeof window.initTheme === 'function') {
-        window.initTheme();
-      }
-      window.dispatchEvent(new Event('storage-ready'));
+
+  const defineLocalStorage = () => {
+    try {
+      Object.defineProperty(window, 'localStorage', {
+        value: mockStorage,
+        writable: false,
+        configurable: true
+      });
+    } catch {
+      window.localStorage = mockStorage;
     }
+  };
+
+  defineLocalStorage();
+
+  window.addEventListener('message', (event) => {
+    const data = event.data;
+    if (!isValid(data) || data.type !== 'storage-sync-data') return;
+
+    const incoming = data.data || {};
+    for (const key of Object.keys(incoming))
+      memoryStore[key] = incoming[key];
+
+    if (typeof window.initTheme === 'function')
+      window.initTheme();
+    window.dispatchEvent(new Event('storage-ready'));
   });
-  
-  window.parent.postMessage({ 
-    type: 'storage-sync-request',
-    nonce: NONCE
-  }, '*');
+
+  post('storage-sync-request', {});
 })();
 `
 
 const parentStorageBridge = (nonce: string) => /* js */ `
-(function() {
+(function () {
+  const NONCE = ${JSON.stringify(nonce)};
   const host = document.querySelector('nuxt-error-overlay');
   if (!host) return;
-  
-  // Wait for shadow root to be attached
-  const checkShadow = setInterval(function() {
-    if (host.shadowRoot) {
-      clearInterval(checkShadow);
-      const iframe = host.shadowRoot.getElementById('frame');
-      if (!iframe) return;
 
-      const NONCE = ${JSON.stringify(nonce)}
-      
-      window.addEventListener('message', function(event) {
-        if (!event.data || event.data.nonce !== NONCE) return;
-        
-        const data = event.data;
-        
-        if (data.type === 'storage-set') {
-          localStorage.setItem(data.key, data.value);
-        } else if (data.type === 'storage-remove') {
-          localStorage.removeItem(data.key);
-        } else if (data.type === 'storage-clear') {
-          localStorage.clear();
-        } else if (data.type === 'storage-sync-request') {
-          const allData = {};
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            allData[key] = localStorage.getItem(key);
-          }
-          iframe.contentWindow.postMessage({
-            type: 'storage-sync-data',
-            data: allData,
-            nonce: NONCE
-          }, '*');
-        }
-      });
+  const isValid = (data) => data && data.nonce === NONCE;
+
+  const collectLocalStorage = () => {
+    const all = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k != null) all[k] = localStorage.getItem(k);
     }
-  }, 10);
+    return all;
+  };
+
+  const attachWhenReady = () => {
+    const root = host.shadowRoot;
+    if (!root)
+      return false;
+    const iframe = root.getElementById('frame');
+    if (!iframe || !iframe.contentWindow)
+      return false;
+
+    const handlers = {
+      'storage-set': (d) => localStorage.setItem(d.key, d.value),
+      'storage-remove': (d) => localStorage.removeItem(d.key),
+      'storage-clear': () => localStorage.clear(),
+      'storage-sync-request': () => {
+        iframe.contentWindow.postMessage({
+          type: 'storage-sync-data',
+          data: collectLocalStorage(),
+          nonce: NONCE
+        }, '*');
+      }
+    };
+
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!isValid(data)) return;
+      const fn = handlers[data.type];
+      if (fn) fn(data);
+    });
+
+    return true;
+  };
+
+  if (attachWhenReady())
+    return;
+
+  const obs = new MutationObserver(() => {
+    if (attachWhenReady())
+      obs.disconnect();
+  });
+
+  obs.observe(host, { childList: true, subtree: true });
 })();
 `
 
@@ -304,595 +315,650 @@ const errorCSS = /* css */ `
 
 function webComponentScript (base64HTML: string, startMinimized: boolean) {
   return /* js */ `
-  (function() {
-    try {
-      const host = document.querySelector('nuxt-error-overlay');
-      if (!host) return;
-      
-      const shadow = host.attachShadow({ mode: 'open' });
-      
-      // Create elements
-      const style = document.createElement('style');
-      style.textContent = ${JSON.stringify(errorCSS)};
-      
-      const iframe = document.createElement('iframe');
-      iframe.id = 'frame';
-      iframe.src = 'data:text/html;base64,${base64HTML}';
-      iframe.title = 'Detailed error stack trace';
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-      
-      const preview = document.createElement('div');
-      preview.id = 'preview';
-      
-      const button = document.createElement('div');
-      button.id = 'toggle';
-      button.setAttribute('aria-expanded', 'true');
-      button.setAttribute('role', 'button');
-      button.setAttribute('tabindex', '0');
-      button.innerHTML = '<span class="sr-only">Toggle detailed error view</span>';
-      
-      const liveRegion = document.createElement('div');
-      liveRegion.setAttribute('role', 'status');
-      liveRegion.setAttribute('aria-live', 'polite');
-      liveRegion.className = 'sr-only';
-      
-      const pipCloseButton = document.createElement('button');
-      pipCloseButton.id = 'pip-close';
-      pipCloseButton.setAttribute('type', 'button');
-      pipCloseButton.setAttribute('aria-label', 'Hide error preview overlay');
-      pipCloseButton.textContent = 'x';
-      pipCloseButton.hidden = true;
-      button.appendChild(pipCloseButton);
+(function () {
+  try {
+    // =========================
+    // Host + Shadow
+    // =========================
+    const host = document.querySelector('nuxt-error-overlay');
+    if (!host)
+      return;
+    const shadow = host.attachShadow({ mode: 'open' });
 
-      const pipRestoreButton = document.createElement('button');
-      pipRestoreButton.id = 'pip-restore';
-      pipRestoreButton.setAttribute('type', 'button');
-      pipRestoreButton.setAttribute('aria-label', 'Show error overlay');
-      pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error overlay</span>';
-      pipRestoreButton.hidden = true;
+    // =========================
+    // DOM helpers
+    // =========================
+    const el = (tag) => document.createElement(tag);
+    const on = (node, type, fn, opts) => node.addEventListener(type, fn, opts);
+    const hide = (node, v) => node.toggleAttribute('hidden', !!v);
+    const setVar = (name, value) => host.style.setProperty(name, value);
+    const unsetVar = (name) => host.style.removeProperty(name);
 
-      const POS_KEYS = {
-        position: 'nuxt-error-overlay:position',
-        hiddenPretty: 'nuxt-error-overlay:error-pip:hidden',
-        hiddenPreview: 'nuxt-error-overlay:app-preview:hidden'
-      };
+    // =========================
+    // Create DOM
+    // =========================
+    const style = el('style');
+    style.textContent = ${JSON.stringify(errorCSS)};
 
-      const CSS_VARS = {
-        pip: { 
-          left: '--error-pip-left',
-          top: '--error-pip-top',
-          right: '--error-pip-right',
-          bottom: '--error-pip-bottom',
-        },
-        preview: {
-          left: '--app-preview-left',
-          top: '--app-preview-top',
-          right: '--app-preview-right',
-          bottom: '--app-preview-bottom'
-        }
-      };
+    const iframe = el('iframe');
+    iframe.id = 'frame';
+    iframe.src = 'data:text/html;base64,${base64HTML}';
+    iframe.title = 'Detailed error stack trace';
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
 
-      const MIN_GAP = 5;
-      const DRAG_THRESHOLD = 2;
+    const preview = el('div');
+    preview.id = 'preview';
 
-      let dock = { edge: null, offset: null, align: null, gap: null };
-      let storageReady = true;
-      let isPrettyHidden = false;
-      let isPreviewHidden = false;
-      let suppressToggleClick = false;
-      let suppressRestoreClick = false;
+    const toggle = el('div');
+    toggle.id = 'toggle';
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('role', 'button');
+    toggle.setAttribute('tabindex', '0');
+    toggle.innerHTML = '<span class="sr-only">Toggle detailed error view</span>';
 
-      function vvSize() {
-        const v = window.visualViewport;
-        return v ? { w: v.width, h: v.height } : { w: window.innerWidth, h: window.innerHeight };
+    const liveRegion = el('div');
+    liveRegion.setAttribute('role', 'status');
+    liveRegion.setAttribute('aria-live', 'polite');
+    liveRegion.className = 'sr-only';
+
+    const pipCloseButton = el('button');
+    pipCloseButton.id = 'pip-close';
+    pipCloseButton.setAttribute('type', 'button');
+    pipCloseButton.setAttribute('aria-label', 'Hide error preview overlay');
+    pipCloseButton.textContent = 'x';
+    pipCloseButton.hidden = true;
+    toggle.appendChild(pipCloseButton);
+
+    const pipRestoreButton = el('button');
+    pipRestoreButton.id = 'pip-restore';
+    pipRestoreButton.setAttribute('type', 'button');
+    pipRestoreButton.setAttribute('aria-label', 'Show error overlay');
+    pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error overlay</span>';
+    pipRestoreButton.hidden = true;
+
+    // Order matters: #frame + #preview adjacency
+    shadow.appendChild(style);
+    shadow.appendChild(liveRegion);
+    shadow.appendChild(iframe);
+    shadow.appendChild(preview);
+    shadow.appendChild(toggle);
+    shadow.appendChild(pipRestoreButton);
+
+    // =========================
+    // Constants / keys
+    // =========================
+    const POS_KEYS = {
+      position: 'nuxt-error-overlay:position',
+      hiddenPretty: 'nuxt-error-overlay:error-pip:hidden',
+      hiddenPreview: 'nuxt-error-overlay:app-preview:hidden'
+    };
+
+    const CSS_VARS = {
+      pip: {
+        left: '--error-pip-left',
+        top: '--error-pip-top',
+        right: '--error-pip-right',
+        bottom: '--error-pip-bottom'
+      },
+      preview: {
+        left: '--app-preview-left',
+        top: '--app-preview-top',
+        right: '--app-preview-right',
+        bottom: '--app-preview-bottom'
       }
-      function previewSize() {
-        const styles = getComputedStyle(host);
-        const w = parseFloat(styles.getPropertyValue('--preview-width')) || 240;
-        const h = parseFloat(styles.getPropertyValue('--preview-height')) || 180;
-        return { w: w, h: h };
+    };
+
+    const MIN_GAP = 5;
+    const DRAG_THRESHOLD = 2;
+
+    // =========================
+    // Local storage safe access + state
+    // =========================
+    let storageReady = true;
+    let isPrettyHidden = false;
+    let isPreviewHidden = false;
+
+    const safeGet = (k) => {
+      try {
+        return localStorage.getItem(k);
+      } catch {
+        return null;
       }
-      function maxOffsetFor(edge, size) {
-        const vv = vvSize();
-        if (edge === 'left' || edge === 'right') {
-          return Math.max(MIN_GAP, vv.h - size.h - MIN_GAP);
-        } else {
-          return Math.max(MIN_GAP, vv.w - size.w - MIN_GAP);
-        }
-      }
-      function clampOffset(edge, value, size) {
-        const max = maxOffsetFor(edge, size);
-        return Math.min(Math.max(value, MIN_GAP), max);
-      }
-      function sizeForTarget(target) {
-        if (!target) return previewSize();
-        const rect = target.getBoundingClientRect();
-        if (rect.width && rect.height) {
-          return { w: rect.width, h: rect.height };
-        }
+    };
+
+    const safeSet = (k, v) => {
+      if (!storageReady) 
+        return;
+      try {
+        localStorage.setItem(k, v);
+      } catch {}
+    };
+
+    // =========================
+    // Sizing helpers
+    // =========================
+    const vvSize = () => {
+      const v = window.visualViewport;
+      return v ? { w: v.width, h: v.height } : { w: window.innerWidth, h: window.innerHeight };
+    };
+
+    const previewSize = () => {
+      const styles = getComputedStyle(host);
+      const w = parseFloat(styles.getPropertyValue('--preview-width')) || 240;
+      const h = parseFloat(styles.getPropertyValue('--preview-height')) || 180;
+      return { w, h };
+    };
+
+    const sizeForTarget = (target) => {
+      if (!target)
         return previewSize();
-      }
-      function updateDockAlignment(size) {
-        if (!dock.edge || dock.offset == null) return;
-        const max = maxOffsetFor(dock.edge, size);
-        if (dock.offset <= max / 2) {
-          dock.align = 'start';
-          dock.gap = dock.offset;
-        } else {
-          dock.align = 'end';
-          dock.gap = Math.max(0, max - dock.offset);
-        }
-      }
-      function appliedOffsetFor(size) {
-        if (!dock.edge || dock.offset == null) {
-          return null;
-        }
-        const max = maxOffsetFor(dock.edge, size);
-        if (dock.align === 'end' && typeof dock.gap === 'number') {
-          return clampOffset(dock.edge, max - dock.gap, size);
-        }
-        if (dock.align === 'start' && typeof dock.gap === 'number') {
-          return clampOffset(dock.edge, dock.gap, size);
-        }
-        return clampOffset(dock.edge, dock.offset, size);
-      }
-      function nearestEdgeAt(x, y) {
-        const { w, h } = vvSize();
-        const d = { left: x, right: w - x, top: y, bottom: h - y };
-        return Object.keys(d).reduce((a, b) => d[a] < d[b] ? a : b);
-      }  
-      function cornerDefaultDock() {
-        // default to bottom-right, offset is distance from left for 'top/bottom' and from top for 'left/right'
-        // we pick bottom with right as default: bottom + offset from left (so it appears bottom-right)
-        const vv = vvSize();
-        const size = previewSize();
-        // For bottom edge, offset is left coordinate
-        const offset = Math.max(MIN_GAP, vv.w - size.w - MIN_GAP);
-        return { edge: 'bottom', offset: offset };
-      }
+      const rect = target.getBoundingClientRect();
+      if (rect.width && rect.height)
+        return { w: rect.width, h: rect.height };
+      return previewSize();
+    };
 
-      function safeGet(k) { 
-        try { 
-          return localStorage.getItem(k);
-        } catch (e) {
-          return null; 
-        }
-      }
-      function safeSet(k, v) {
-        if (!storageReady) return;
-        try {
-          localStorage.setItem(k, v);
-        } catch (e) {}
-      }
+    // =========================
+    // Dock model + offset/alignment calculations
+    // =========================
+    const dock = { edge: null, offset: null, align: null, gap: null };
 
-      function loadDock() {
-        const raw = safeGet(POS_KEYS.position);
-        if (!raw) {
+    const maxOffsetFor = (edge, size) => {
+      const vv = vvSize();
+      if (edge === 'left' || edge === 'right')
+        return Math.max(MIN_GAP, vv.h - size.h - MIN_GAP);
+      return Math.max(MIN_GAP, vv.w - size.w - MIN_GAP);
+    };
+
+    const clampOffset = (edge, value, size) => {
+      const max = maxOffsetFor(edge, size);
+      return Math.min(Math.max(value, MIN_GAP), max);
+    };
+
+    const updateDockAlignment = (size) => {
+      if (!dock.edge || dock.offset == null)
+        return;
+      const max = maxOffsetFor(dock.edge, size);
+      if (dock.offset <= max / 2) {
+        dock.align = 'start';
+        dock.gap = dock.offset;
+      } else {
+        dock.align = 'end';
+        dock.gap = Math.max(0, max - dock.offset);
+      }
+    };
+
+    const appliedOffsetFor = (size) => {
+      if (!dock.edge || dock.offset == null)
+        return null;
+      const max = maxOffsetFor(dock.edge, size);
+
+      if (dock.align === 'end' && typeof dock.gap === 'number') {
+        return clampOffset(dock.edge, max - dock.gap, size);
+      }
+      if (dock.align === 'start' && typeof dock.gap === 'number') {
+        return clampOffset(dock.edge, dock.gap, size);
+      }
+      return clampOffset(dock.edge, dock.offset, size);
+    };
+
+    const nearestEdgeAt = (x, y) => {
+      const { w, h } = vvSize();
+      const d = { left: x, right: w - x, top: y, bottom: h - y };
+      return Object.keys(d).reduce((a, b) => (d[a] < d[b] ? a : b));
+    };
+
+    const cornerDefaultDock = () => {
+      const vv = vvSize();
+      const size = previewSize();
+      const offset = Math.max(MIN_GAP, vv.w - size.w - MIN_GAP);
+      return { edge: 'bottom', offset };
+    };
+
+    const currentTransformOrigin = () => {
+      if (!dock.edge) return null;
+      if (dock.edge === 'left' || dock.edge === 'top')
+        return 'top left';
+      if (dock.edge === 'right')
+        return 'top right';
+      return 'bottom left';
+    };
+
+    // =========================
+    // Persist / load dock
+    // =========================
+    const loadDock = () => {
+      const raw = safeGet(POS_KEYS.position);
+      if (!raw)
+        return;
+      try {
+        const parsed = JSON.parse(raw);
+        const { edge, offset, align, gap } = parsed || {};
+        if (!['left', 'right', 'top', 'bottom'].includes(edge))
           return;
-        }
-        try {
-          const { edge, offset, align, gap } = JSON.parse(raw);
-          if (['left','right','top','bottom'].includes(edge) && typeof offset === 'number') {
-            dock.edge = edge;
-            dock.offset = clampOffset(edge, offset, previewSize());
-            dock.align = align === 'start' || align === 'end' ? align : null;
-            dock.gap = typeof gap === 'number' ? gap : null;
-            if (!dock.align || dock.gap == null) {
-              updateDockAlignment(previewSize());
-            }
-          }
-        } catch {}
-      }
-      function persistDock() {
-        if (!dock.edge || dock.offset == null) {
-          return;
-        }
-        safeSet(POS_KEYS.position, JSON.stringify({ edge: dock.edge, offset: dock.offset, align: dock.align, gap: dock.gap }));
-      }
-      function applyDockTo(vars, opts) {
-        // Clear if not set
-        if (!dock.edge || dock.offset == null) {
-          host.style.removeProperty(vars.left);
-          host.style.removeProperty(vars.top);
-          host.style.removeProperty(vars.right);
-          host.style.removeProperty(vars.bottom);
-          return;
-        }
-        // Reset all sides to 'auto' first to avoid stale anchors
-        host.style.setProperty(vars.left, 'auto');
-        host.style.setProperty(vars.top, 'auto');
-        host.style.setProperty(vars.bottom, 'auto');
-        host.style.setProperty(vars.right, 'auto');
-        // Anchor to the chosen edge and place by offset
-        const applied = appliedOffsetFor(previewSize());
-
-        if (dock.edge === 'left') {
-          host.style.setProperty(vars.left, MIN_GAP + 'px');
-          host.style.setProperty(vars.top, applied + 'px');
-        } else if (dock.edge === 'right') {
-          host.style.setProperty(vars.right, MIN_GAP + 'px');
-          host.style.setProperty(vars.top, applied + 'px');
-        } else if (dock.edge === 'top') {
-          host.style.setProperty(vars.top, MIN_GAP + 'px');
-          host.style.setProperty(vars.left, applied + 'px');
-        } else {
-          host.style.setProperty(vars.bottom, MIN_GAP + 'px');
-          host.style.setProperty(vars.left, applied + 'px');
-        }
-        if (!opts || opts.persist !== false) {
-          persistDock();
-        }
-      }
-      function applyDockToElement(el, opts) {
-        if (!el) return;
-        if (!dock.edge || dock.offset == null) {
-          el.style.removeProperty('left');
-          el.style.removeProperty('top');
-          el.style.removeProperty('right');
-          el.style.removeProperty('bottom');
-          return;
-        }
-        el.style.left = 'auto';
-        el.style.top = 'auto';
-        el.style.bottom = 'auto';
-        el.style.right = 'auto';
-        const applied = appliedOffsetFor(sizeForTarget(el));
-        if (dock.edge === 'left') {
-          el.style.left = MIN_GAP + 'px';
-          el.style.top = applied + 'px';
-        } else if (dock.edge === 'right') {
-          el.style.right = MIN_GAP + 'px';
-          el.style.top = applied + 'px';
-        } else if (dock.edge === 'top') {
-          el.style.top = MIN_GAP + 'px';
-          el.style.left = applied + 'px';
-        } else {
-          el.style.bottom = MIN_GAP + 'px';
-          el.style.left = applied + 'px';
-        }
-        if (!opts || opts.persist !== false) {
-          persistDock();
-        }
-      }
-      function applyDockAll(opts) {
-        applyDockTo(CSS_VARS.pip, opts);
-        applyDockTo(CSS_VARS.preview, opts);
-        applyDockToElement(pipRestoreButton, opts);
-      }
-      function currentTransformOrigin() {
-        if (!dock.edge) {
-          return null;
-        }
-        if (dock.edge === 'left' || dock.edge === 'top') {
-          return 'top left';
-        }
-        if (dock.edge === 'right') {
-          return 'top right';
-        }
-        return 'bottom left';
-      }
-
-      function loadHidden() {
-        const rawPretty = safeGet(POS_KEYS.hiddenPretty);
-        if (rawPretty != null) {
-          isPrettyHidden = (rawPretty === '1' || rawPretty === 'true');
-        }
-        const rawPreview = safeGet(POS_KEYS.hiddenPreview);
-        if (rawPreview != null) {
-          isPreviewHidden = (rawPreview === '1' || rawPreview === 'true');
-        }
-      }
-      function setPrettyHidden(v) {
-        isPrettyHidden = !!v;
-        safeSet(POS_KEYS.hiddenPretty, isPrettyHidden ? '1' : '0');
-        updateUI();
-      }
-      function setPreviewHidden(v) {
-        isPreviewHidden = !!v;
-        safeSet(POS_KEYS.hiddenPreview, isPreviewHidden ? '1' : '0');
-        updateUI();
-      }
-      function isMinimized() {
-        return iframe.hasAttribute('inert');
-      }
-      function setMinimized(v) {
-        if (v) {
-          iframe.setAttribute('inert', '');
-          button.setAttribute('aria-expanded', 'false');
-        } else {
-          iframe.removeAttribute('inert');
-          button.setAttribute('aria-expanded', 'true');
-        }
-      }
-      function setHidden(el, hidden) {
-        el.toggleAttribute('hidden', !!hidden);
-      }
-      function setRestoreLabel(kind) {
-        if (kind === 'pretty') {
-          pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error overlay</span>';
-          pipRestoreButton.setAttribute('aria-label', 'Show error overlay');
-        } else if (kind === 'preview') {
-          pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error page</span>';
-          pipRestoreButton.setAttribute('aria-label', 'Show error page');
-        }
-      }
-
-      function updateUI() {
-        const minimized = isMinimized();
-        const showPiP = minimized && !isPrettyHidden;
-        const showPreview = !minimized && !isPreviewHidden;
-        const pipHiddenByUser = minimized && isPrettyHidden;
-        const previewHiddenByUser = !minimized && isPreviewHidden;
-        const showToggle = minimized ? showPiP : showPreview;
-        const showRestore = pipHiddenByUser || previewHiddenByUser;
-
-        setHidden(iframe, pipHiddenByUser);
-        setHidden(preview, !showPreview);
-        setHidden(button, !showToggle);
-        setHidden(pipCloseButton, !showToggle);
-        pipCloseButton.setAttribute('aria-label', minimized ? 'Hide error overlay' : 'Hide error page preview');
-        setHidden(pipRestoreButton, !showRestore);
-        if (pipHiddenByUser) {
-          setRestoreLabel('pretty');
-        } else if (previewHiddenByUser) {
-          setRestoreLabel('preview');
-        }
-        host.classList.toggle('pip-hidden', isPrettyHidden);
-        host.classList.toggle('preview-hidden', isPreviewHidden);
-      }
-
-      function loadState() {
-        loadDock();
-        loadHidden();
-        if (isPrettyHidden && !isMinimized()) {
-          setMinimized(true);
-        }
-        updateUI();
-        repaintToDock();
-      }
-      
-      // initial state load
-      loadState();
-
-      window.addEventListener('storage-ready', function () {
-        storageReady = true;
-        loadState();
-      });
-
-      // --- preview snapshot for background ---
-      function updatePreview() {
-        try {
-          let previewIframe = preview.querySelector('iframe');
-          if (!previewIframe) {
-            previewIframe = document.createElement('iframe');
-            previewIframe.style.cssText = 'width: 1200px; height: 900px; transform: scale(0.2); transform-origin: top left; border: none;';
-            previewIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-            preview.appendChild(previewIframe);
-          }
-          
-          const doctype = document.doctype ? '<!DOCTYPE ' + document.doctype.name + '>' : '';
-          const cleanedHTML = document.documentElement.outerHTML
-            .replace(/<nuxt-error-overlay[^>]*>.*?<\\/nuxt-error-overlay>/gs, '')
-            .replace(/<script[^>]*>.*?<\\/script>/gs, '');
-          
-          const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
-          iframeDoc.open();
-          iframeDoc.write(doctype + cleanedHTML);
-          iframeDoc.close();
-        } catch (error) {
-          console.error('Failed to update preview:', error);
-        }
-      }
-
-      function toggleView() {
-        if (isMinimized()) {
-          updatePreview();
-          setMinimized(false);
-          liveRegion.textContent = 'Showing detailed error view';
-          setTimeout(function() {
-            try { iframe.contentWindow.focus(); } catch {}
-          }, 100);
-        } else {
-          setMinimized(true);
-          liveRegion.textContent = 'Showing error page';
-          repaintToDock();
-          // ensure paint if no stored state yet
-          void iframe.offsetWidth;
-        }
-        updateUI();
-      }
-
-      button.addEventListener('click', function (e) {
-        if (suppressToggleClick) {
-          e.preventDefault();
-          suppressToggleClick = false;
-          return;
-        }
-        toggleView();
-      });
-      button.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          toggleView();
-        }
-      });
-      pipCloseButton.addEventListener('click', function (e) {
-        e.preventDefault(); e.stopPropagation();
-        if (isMinimized()) {
-          setPrettyHidden(true);
-        } else {
-          setPreviewHidden(true);
-        }
-      });
-      pipCloseButton.addEventListener('pointerdown', function (e) {
-        e.stopPropagation();
-      });
-      pipRestoreButton.addEventListener('click', function (e) {
-        if (suppressRestoreClick) {
-          e.preventDefault();
-          suppressRestoreClick = false;
-          return;
-        }
-        e.preventDefault(); e.stopPropagation();
-        if (isMinimized()) {
-          setPrettyHidden(false);
-        } else {
-          setPreviewHidden(false);
-        }
-      });
-
-      // --- unified dragging with requestAnimationFrame throttle ---
-      let drag = null;
-      let rafId = null;
-
-      function beginDrag(e) {
-        if (drag) return;
-        // Decide starting edge: use stored, or nearest to pointer
-        if (!dock.edge || dock.offset == null) {
-          dock = cornerDefaultDock();
-        }
-        const isRestoreTarget = e.currentTarget === pipRestoreButton;
-        drag = {
-          kind: isRestoreTarget ? 'restore' : (isMinimized() ? 'pip' : 'preview'),
-          pointerId: e.pointerId,
-          startX: e.clientX,
-          startY: e.clientY,
-          lastX: e.clientX,
-          lastY: e.clientY,
-          moved: false,
-          target: e.currentTarget
-        };
-        drag.target.setPointerCapture(e.pointerId);
-        if (drag.kind === 'restore') {
-          host.classList.add('dragging-restore');
-        } else {
-          host.classList.add(drag.kind === 'pip' ? 'dragging' : 'dragging-preview');
-        }
-        e.preventDefault();
-      }
-
-      function moveDrag(e) {
-        if (!drag || drag.pointerId !== e.pointerId) 
-          return;
-        drag.lastX = e.clientX;
-        drag.lastY = e.clientY;
-        const dx = drag.lastX - drag.startX;
-        const dy = drag.lastY - drag.startY;
-        if (!drag.moved && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
-          drag.moved = true;
-        }
-        if (!drag.moved) 
+        if (typeof offset !== 'number')
           return;
 
-        if (rafId) return;
-        rafId = requestAnimationFrame(function () {
-          rafId = null;
-          // Snap to nearest edge at current pointer
-          const edge = nearestEdgeAt(drag.lastX, drag.lastY);
-          const size = sizeForTarget(drag.target);
-          let offset;
-          if (edge === 'left' || edge === 'right') {
-            // Offset along vertical axis (top)
-            const top = drag.lastY - (size.h / 2);
-            offset = clampOffset(edge, Math.round(top), size);
-          } else {
-            // top/bottom: offset along horizontal axis (left)
-            const left = drag.lastX - (size.w / 2);
-            offset = clampOffset(edge, Math.round(left), size);
-          }
-          dock.edge = edge;
-          dock.offset = offset;
-          updateDockAlignment(size);
-          const origin = currentTransformOrigin();
-          host.style.setProperty('--error-pip-origin', origin || 'bottom right');
-          applyDockAll({ origin: origin, persist: false });
-        });
+        dock.edge = edge;
+        dock.offset = clampOffset(edge, offset, previewSize());
+        dock.align = align === 'start' || align === 'end' ? align : null;
+        dock.gap = typeof gap === 'number' ? gap : null;
+
+        if (!dock.align || dock.gap == null)
+          updateDockAlignment(previewSize());
+      } catch {}
+    };
+
+    const persistDock = () => {
+      if (!dock.edge || dock.offset == null)
+        return; 
+      safeSet(POS_KEYS.position, JSON.stringify({
+        edge: dock.edge,
+        offset: dock.offset,
+        align: dock.align,
+        gap: dock.gap
+      }));
+    };
+
+    // =========================
+    // Apply dock
+    // =========================
+    const dockToVars = (vars) => ({
+      set: (side, v) => host.style.setProperty(vars[side], v),
+      clear: (side) => host.style.removeProperty(vars[side])
+    });
+
+    const dockToEl = (node) => ({
+      set: (side, v) => { node.style[side] = v; },
+      clear: (side) => { node.style[side] = ''; }
+    });
+
+    const applyDock = (target, size, opts) => {
+      if (!dock.edge || dock.offset == null) {
+        target.clear('left');
+        target.clear('top');
+        target.clear('right');
+        target.clear('bottom');
+        return;
       }
 
-      function endDrag(e) {
-        if (!drag || drag.pointerId !== e.pointerId) return;
-        const endedKind = drag.kind;
-        drag.target.releasePointerCapture(e.pointerId);
-        if (endedKind === 'restore') {
-          host.classList.remove('dragging-restore');
-        } else {
-          host.classList.remove(endedKind === 'pip' ? 'dragging' : 'dragging-preview');
+      target.set('left', 'auto');
+      target.set('top', 'auto');
+      target.set('right', 'auto');
+      target.set('bottom', 'auto');
+
+      const applied = appliedOffsetFor(size);
+
+      if (dock.edge === 'left') {
+        target.set('left', MIN_GAP + 'px');
+        target.set('top', applied + 'px');
+      } else if (dock.edge === 'right') {
+        target.set('right', MIN_GAP + 'px');
+        target.set('top', applied + 'px');
+      } else if (dock.edge === 'top') {
+        target.set('top', MIN_GAP + 'px');
+        target.set('left', applied + 'px');
+      } else {
+        target.set('bottom', MIN_GAP + 'px');
+        target.set('left', applied + 'px');
+      }
+
+      if (!opts || opts.persist !== false)
+        persistDock();
+    };
+
+    const applyDockAll = (opts) => {
+      applyDock(dockToVars(CSS_VARS.pip), previewSize(), opts);
+      applyDock(dockToVars(CSS_VARS.preview), previewSize(), opts);
+      applyDock(dockToEl(pipRestoreButton), sizeForTarget(pipRestoreButton), opts);
+    };
+
+    const repaintToDock = () => {
+      if (!dock.edge || dock.offset == null)
+        return;
+      const origin = currentTransformOrigin();
+      if (origin)
+        setVar('--error-pip-origin', origin);
+      else 
+        unsetVar('--error-pip-origin');
+      applyDockAll({ persist: false });
+    };
+
+    // =========================
+    // Hidden state + UI
+    // =========================
+    const loadHidden = () => {
+      const rawPretty = safeGet(POS_KEYS.hiddenPretty);
+      if (rawPretty != null)
+        isPrettyHidden = rawPretty === '1' || rawPretty === 'true';
+      const rawPreview = safeGet(POS_KEYS.hiddenPreview);
+      if (rawPreview != null)
+        isPreviewHidden = rawPreview === '1' || rawPreview === 'true';
+    };
+
+    const setPrettyHidden = (v) => {
+      isPrettyHidden = !!v;
+      safeSet(POS_KEYS.hiddenPretty, isPrettyHidden ? '1' : '0');
+      updateUI();
+    };
+
+    const setPreviewHidden = (v) => {
+      isPreviewHidden = !!v;
+      safeSet(POS_KEYS.hiddenPreview, isPreviewHidden ? '1' : '0');
+      updateUI();
+    };
+
+    const isMinimized = () => iframe.hasAttribute('inert');
+
+    const setMinimized = (v) => {
+      if (v) {
+        iframe.setAttribute('inert', '');
+        toggle.setAttribute('aria-expanded', 'false');
+      } else {
+        iframe.removeAttribute('inert');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    };
+
+    const setRestoreLabel = (kind) => {
+      if (kind === 'pretty') {
+        pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error overlay</span>';
+        pipRestoreButton.setAttribute('aria-label', 'Show error overlay');
+      } else {
+        pipRestoreButton.innerHTML = '<span aria-hidden="true">⟲</span><span>Show error page</span>';
+        pipRestoreButton.setAttribute('aria-label', 'Show error page');
+      }
+    };
+
+    const updateUI = () => {
+      const minimized = isMinimized();
+      const showPiP = minimized && !isPrettyHidden;
+      const showPreview = !minimized && !isPreviewHidden;
+      const pipHiddenByUser = minimized && isPrettyHidden;
+      const previewHiddenByUser = !minimized && isPreviewHidden;
+      const showToggle = minimized ? showPiP : showPreview;
+      const showRestore = pipHiddenByUser || previewHiddenByUser;
+
+      hide(iframe, pipHiddenByUser);
+      hide(preview, !showPreview);
+      hide(toggle, !showToggle);
+      hide(pipCloseButton, !showToggle);
+      hide(pipRestoreButton, !showRestore);
+
+      pipCloseButton.setAttribute('aria-label', minimized ? 'Hide error overlay' : 'Hide error page preview');
+
+      if (pipHiddenByUser)
+        setRestoreLabel('pretty');
+      else if (previewHiddenByUser)
+        setRestoreLabel('preview');
+
+      host.classList.toggle('pip-hidden', isPrettyHidden);
+      host.classList.toggle('preview-hidden', isPreviewHidden);
+    };
+
+    // =========================
+    // Preview snapshot
+    // =========================
+    const updatePreview = () => {
+      try {
+        let previewIframe = preview.querySelector('iframe');
+        if (!previewIframe) {
+          previewIframe = el('iframe');
+          previewIframe.style.cssText = 'width: 1200px; height: 900px; transform: scale(0.2); transform-origin: top left; border: none;';
+          previewIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+          preview.appendChild(previewIframe);
         }
-        const didMove = drag.moved;
-        drag = null;
-        if (didMove) {
-          // Persist final dock once
-          persistDock();
-          if (endedKind === 'restore') {
-            suppressRestoreClick = true;
-          } else {
-            suppressToggleClick = true;
-          }
-          e.preventDefault();
-          e.stopPropagation();
-        }
+
+        const doctype = document.doctype ? '<!DOCTYPE ' + document.doctype.name + '>' : '';
+        const cleanedHTML = document.documentElement.outerHTML
+          .replace(/<nuxt-error-overlay[^>]*>.*?<\\/nuxt-error-overlay>/gs, '')
+          .replace(/<script[^>]*>.*?<\\/script>/gs, '');
+
+        const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(doctype + cleanedHTML);
+        iframeDoc.close();
+      } catch (err) {
+        console.error('Failed to update preview:', err);
       }
+    };
 
-      function bindDragTarget(el) {
-        el.addEventListener('pointerdown', beginDrag);
-        el.addEventListener('pointermove', moveDrag);
-        el.addEventListener('pointerup', endDrag);
-        el.addEventListener('pointercancel', endDrag);
-      }
-      bindDragTarget(button);
-      bindDragTarget(pipRestoreButton);
-
-      // keep positions in-bounds on viewport / visualViewport changes
-      function repaintToDock() {
-        if (!dock.edge || dock.offset == null) {
-          return;
-        }
-        const origin = currentTransformOrigin();
-        if (origin) {
-          host.style.setProperty('--error-pip-origin', origin);
-        } else {
-          host.style.removeProperty('--error-pip-origin');
-        }
-        applyDockAll({ origin: origin, persist: false });
-      }
-
-      window.addEventListener('resize', function () {
-        repaintToDock();
-      });
-
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', function () {
-          repaintToDock();
-        });
-
-        window.visualViewport.addEventListener('scroll', function () {
-          repaintToDock();
-        });
-      }
-
-      // Append to shadow DOM (order matters: #frame + #preview adjacency)
-      shadow.appendChild(style);
-      shadow.appendChild(liveRegion);
-      shadow.appendChild(iframe);
-      shadow.appendChild(preview);
-      shadow.appendChild(button);
-      shadow.appendChild(pipRestoreButton);
-      
-      if (${startMinimized}) {
+    // =========================
+    // View toggling
+    // =========================
+    const toggleView = () => {
+      if (isMinimized()) {
+        updatePreview();
+        setMinimized(false);
+        liveRegion.textContent = 'Showing detailed error view';
+        setTimeout(() => { 
+          try { 
+            iframe.contentWindow.focus();
+          } catch {}
+        }, 100);
+      } else {
         setMinimized(true);
+        liveRegion.textContent = 'Showing error page';
         repaintToDock();
         void iframe.offsetWidth;
-        updateUI();
       }
+      updateUI();
+    };
+
+    // =========================
+    // Dragging (unified, rAF throttled)
+    // =========================
+    let drag = null;
+    let rafId = null;
+    let suppressToggleClick = false;
+    let suppressRestoreClick = false;
+
+    const beginDrag = (e) => {
+      if (drag) 
+        return;
+
+      if (!dock.edge || dock.offset == null) {
+        const def = cornerDefaultDock();
+        dock.edge = def.edge;
+        dock.offset = def.offset;
+        updateDockAlignment(previewSize());
+      }
+
+      const isRestoreTarget = e.currentTarget === pipRestoreButton;
+
+      drag = {
+        kind: isRestoreTarget ? 'restore' : (isMinimized() ? 'pip' : 'preview'),
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        lastX: e.clientX,
+        lastY: e.clientY,
+        moved: false,
+        target: e.currentTarget
+      };
+
+      drag.target.setPointerCapture(e.pointerId);
+
+      if (drag.kind === 'restore')
+        host.classList.add('dragging-restore');
+      else 
+        host.classList.add(drag.kind === 'pip' ? 'dragging' : 'dragging-preview');
+
+      e.preventDefault();
+    };
+
+    const moveDrag = (e) => {
+      if (!drag || drag.pointerId !== e.pointerId)
+        return;
+
+      drag.lastX = e.clientX;
+      drag.lastY = e.clientY;
       
-      // Initialize preview
-      setTimeout(updatePreview, 100);
-      
-    } catch (error) {
-      console.error('Failed to initialize Nuxt error overlay:', error);
+      const dx = drag.lastX - drag.startX;
+      const dy = drag.lastY - drag.startY;
+
+      if (!drag.moved && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+        drag.moved = true;
+      }
+
+      if (!drag.moved)
+        return;
+      if (rafId)
+        return;
+
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+
+        const edge = nearestEdgeAt(drag.lastX, drag.lastY);
+        const size = sizeForTarget(drag.target);
+
+        let offset;
+        if (edge === 'left' || edge === 'right') {
+          const top = drag.lastY - (size.h / 2);
+          offset = clampOffset(edge, Math.round(top), size);
+        } else {
+          const left = drag.lastX - (size.w / 2);
+          offset = clampOffset(edge, Math.round(left), size);
+        }
+
+        dock.edge = edge;
+        dock.offset = offset;
+        updateDockAlignment(size);
+
+        const origin = currentTransformOrigin();
+        setVar('--error-pip-origin', origin || 'bottom right');
+
+        applyDockAll({ persist: false });
+      });
+    };
+
+    const endDrag = (e) => {
+      if (!drag || drag.pointerId !== e.pointerId)
+        return;
+
+      const endedKind = drag.kind;
+      drag.target.releasePointerCapture(e.pointerId);
+
+      if (endedKind === 'restore')
+        host.classList.remove('dragging-restore');
+      else 
+        host.classList.remove(endedKind === 'pip' ? 'dragging' : 'dragging-preview');
+
+      const didMove = drag.moved;
+      drag = null;
+
+      if (didMove) {
+        persistDock();
+        if (endedKind === 'restore')
+          suppressRestoreClick = true;
+        else 
+          suppressToggleClick = true;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const bindDragTarget = (node) => {
+      on(node, 'pointerdown', beginDrag);
+      on(node, 'pointermove', moveDrag);
+      on(node, 'pointerup', endDrag);
+      on(node, 'pointercancel', endDrag);
+    };
+
+    bindDragTarget(toggle);
+    bindDragTarget(pipRestoreButton);
+
+    // =========================
+    // Events (toggle / close / restore)
+    // =========================
+    on(toggle, 'click', (e) => {
+      if (suppressToggleClick) {
+        e.preventDefault();
+        suppressToggleClick = false;
+        return;
+      }
+      toggleView();
+    });
+
+    on(toggle, 'keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleView();
+      }
+    });
+
+    on(pipCloseButton, 'click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isMinimized())
+        setPrettyHidden(true);
+      else
+        setPreviewHidden(true);
+    });
+
+    on(pipCloseButton, 'pointerdown', (e) => {
+      e.stopPropagation();
+    });
+
+    on(pipRestoreButton, 'click', (e) => {
+      if (suppressRestoreClick) {
+        e.preventDefault();
+        suppressRestoreClick = false;
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (isMinimized()) 
+        setPrettyHidden(false);
+      else 
+        setPreviewHidden(false);
+    });
+
+    // =========================
+    // Lifecycle: load / sync / repaint
+    // =========================
+    const loadState = () => {
+      loadDock();
+      loadHidden();
+
+      if (isPrettyHidden && !isMinimized())
+        setMinimized(true);
+
+      updateUI();
+      repaintToDock();
+    };
+
+    loadState();
+
+    on(window, 'storage-ready', () => {
+      storageReady = true;
+      loadState();
+    });
+
+    const onViewportChange = () => repaintToDock();
+
+    on(window, 'resize', onViewportChange);
+
+    if (window.visualViewport) {
+      on(window.visualViewport, 'resize', onViewportChange);
+      on(window.visualViewport, 'scroll', onViewportChange);
     }
-  })();
-  `
+
+    // initial preview
+    setTimeout(updatePreview, 100);
+
+    // initial minimized option
+    if (${startMinimized}) {
+      setMinimized(true);
+      repaintToDock();
+      void iframe.offsetWidth;
+      updateUI();
+    }
+  } catch (err) {
+    console.error('Failed to initialize Nuxt error overlay:', err);
+  }
+})();
+`
 }
 
 export function generateErrorOverlayHTML (html: string, options?: { startMinimized?: boolean }) {
