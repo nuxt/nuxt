@@ -205,7 +205,7 @@ const errorCSS = /* css */ `
   width: var(--preview-width);
   height: var(--preview-height);
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 6px;
   pointer-events: none;
   z-index: var(--z-base);
   background: white;
@@ -221,8 +221,8 @@ const errorCSS = /* css */ `
   position: fixed;
   left: var(--app-preview-left);
   top: var(--app-preview-top);
-  right: var(--app-preview-right);
-  bottom: var(--app-preview-bottom);
+  right: calc(var(--app-preview-right) - 3px);
+  bottom: calc(var(--app-preview-bottom) - 3px);
   width: var(--preview-width);
   height: var(--preview-height);
   background: none;
@@ -249,8 +249,8 @@ const errorCSS = /* css */ `
 #frame[inert] ~ #toggle {
   left: var(--error-pip-left);
   top: var(--error-pip-top);
-  right: var(--error-pip-right);
-  bottom: var(--error-pip-bottom);
+  right: calc(var(--error-pip-right) - 3px);
+  bottom: calc(var(--error-pip-bottom) - 3px);
   cursor: grab;
 }
 :host(.dragging) #frame[inert] ~ #toggle {
