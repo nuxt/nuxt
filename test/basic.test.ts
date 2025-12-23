@@ -9,7 +9,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
-import { asyncContext, builder, isDev, isRenderingJson, isWebpack } from './matrix'
+import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 await setup({
@@ -2068,7 +2068,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
     await expectNoClientErrors('/prefetch/server-components')
   })
 
-  it('should prefetch everything needed when NuxtLink is used', async () => {
+  it.skipIf(isTestingAppManifest)('should prefetch everything needed when NuxtLink is used', async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -2579,7 +2579,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
   })
 
   // TODO: looks like this test is flaky
-  it('does not fetch a prefetched payload', { retry: 3 }, async () => {
+  it.skipIf(isTestingAppManifest)('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
