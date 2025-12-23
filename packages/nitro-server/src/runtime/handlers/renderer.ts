@@ -19,7 +19,7 @@ import { replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -89,8 +89,16 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     setSSRError(ssrContext, ssrError)
   }
 
-  // Whether we are rendering payload route
-  const isRenderingPayload = NUXT_PAYLOAD_EXTRACTION && PAYLOAD_URL_RE.test(ssrContext.url)
+  // Get route options (currently to apply `ssr: false`)
+  const routeOptions = getRouteRules(event)
+
+  // Whether we are prerendering route or using ISR/SWR caching
+  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
+    (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
+    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
+  )
+
+  const isRenderingPayload = _PAYLOAD_EXTRACTION && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
@@ -101,15 +109,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
   }
 
-  // Get route options (currently to apply `ssr: false`)
-  const routeOptions = getRouteRules(event)
-
   if (routeOptions.ssr === false) {
     ssrContext.noSSR = true
   }
 
-  // Whether we are prerendering route or using ISR/SWR caching
-  const _PAYLOAD_EXTRACTION = NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && (import.meta.prerender || routeOptions.isr !== undefined || routeOptions.swr !== undefined)
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
 
   // Render app
@@ -167,11 +170,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     return response
   }
 
-  if (_PAYLOAD_EXTRACTION) {
-    if (import.meta.prerender) {
-      // Hint nitro to prerender payload for this route
-      appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
-    }
+  if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
+    // Hint nitro to prerender payload for this route
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
@@ -260,10 +261,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       script: _PAYLOAD_EXTRACTION
         ? NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, routeOptions, src: payloadURL })
         : NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
-          : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
+          : renderPayloadScript({ ssrContext, data: ssrContext.payload, routeOptions }),
     }, {
       ...headEntryOptions,
       // this should come before another end of body scripts

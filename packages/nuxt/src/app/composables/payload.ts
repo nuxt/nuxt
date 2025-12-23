@@ -19,13 +19,11 @@ interface LoadPayloadOptions {
 /** @since 3.0.0 */
 export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
-  // TODO: allow payload extraction for non-prerendered URLs
-  const shouldLoadPayload = await isPrerendered(url)
-  if (!shouldLoadPayload) {
-    return null
+  if (await shouldLoadPayload(url)) {
+    const payloadURL = await _getPayloadURL(url, opts)
+    return await _importPayload(payloadURL) || null
   }
-  const payloadURL = await _getPayloadURL(url, opts)
-  return await _importPayload(payloadURL) || null
+  return null
 }
 let linkRelType: string | undefined
 function detectLinkRelType () {
@@ -91,10 +89,8 @@ async function _importPayload (payloadURL: string) {
   }
   return null
 }
-/** @since 3.0.0 */
-export async function isPrerendered (url = useRoute().path) {
-  const nuxtApp = useNuxtApp()
 
+function _shouldLoadPrerenderedPayload (url: string) {
   const rules = getRouteRules({ path: url })
   if (rules.redirect) {
     return false
@@ -102,9 +98,38 @@ export async function isPrerendered (url = useRoute().path) {
   if (rules.prerender) {
     return true
   }
+}
+
+/**
+ * @internal
+ */
+export async function shouldLoadPayload (url = useRoute().path) {
+  const res = _shouldLoadPrerenderedPayload(url)
+  if (res !== undefined) {
+    return res
+  }
+
+  const rules = getRouteRules({ path: url })
+  if (rules.payload) {
+    return true
+  }
 
   // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
+  if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
+  url = url === '/' ? url : url.replace(/\/$/, '')
+  const manifest = await getAppManifest()
+  return manifest.prerendered.includes(url)
+}
+
+/** @since 3.0.0 */
+export async function isPrerendered (url = useRoute().path) {
+  const res = _shouldLoadPrerenderedPayload(url)
+  if (res !== undefined) {
+    return res
+  }
+
+  // Note: Alternative for server is checking x-nitro-prerender header
+  if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
   url = url === '/' ? url : url.replace(/\/$/, '')
   const manifest = await getAppManifest()
   return manifest.prerendered.includes(url)
