@@ -1,13 +1,9 @@
-<script setup lang="ts">
-</script>
-
 <template>
-  <!-- Edit this file to play around with Nuxt but never commit changes! -->
   <div>
-    Nuxt Playground
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<script setup lang="ts"></script>
