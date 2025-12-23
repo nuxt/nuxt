@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext, useNitro } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -622,12 +622,12 @@ async function initNuxt (nuxt: Nuxt) {
   await nuxt.callHook('modules:done')
 
   // Add keys for useFetch, useAsyncData, etc.
-  const normalizedKeyedFunctions = nuxt.options.optimization.keyedComposables.map(({ source, ...rest }) => ({
+  const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
     ...rest,
     source: typeof source === 'string'
-      ? resolveModulePath(resolveAlias(source, nuxt.options.alias), { try: true, from: nuxt.options.modulesDir.map(d => directoryToURL(d)) }) ?? source
+      ? await resolvePath(source, { fallbackToOriginal: true }) ?? source
       : source,
-  }))
+  })))
 
   addBuildPlugin(KeyedFunctionsPlugin({
     sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
