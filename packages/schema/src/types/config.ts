@@ -6,9 +6,9 @@ import type { SchemaDefinition } from 'untyped'
 import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
-import type { ConfigSchema } from './schema'
-import type { Nuxt } from './nuxt'
-import type { AppHeadMetaObject } from './head'
+import type { ConfigSchema } from './schema.ts'
+import type { Nuxt } from './nuxt.ts'
+import type { AppHeadMetaObject } from './head.ts'
 
 export type { SchemaDefinition } from 'untyped'
 

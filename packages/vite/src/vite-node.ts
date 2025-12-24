@@ -1,22 +1,26 @@
-// @ts-check
 import process from 'node:process'
+import type { Socket } from 'node:net'
 import net from 'node:net'
 import { Buffer } from 'node:buffer'
 import { isTest } from 'std-env'
+import type { ViteNodeFetch, ViteNodeRequestMap, ViteNodeServerOptions } from './plugins/vite-node.ts'
 
-/** @typedef {import('node:net').Socket} Socket */
-/** @typedef {import('../plugins/vite-node').ViteNodeFetch} ViteNodeFetch */
+function getViteNodeOptionsEnvVar () {
+  const envVar = process.env.NUXT_VITE_NODE_OPTIONS
+  try {
+    return JSON.parse(envVar || '{}')
+  } catch (e) {
+    console.error('vite-node-shared: Failed to parse NUXT_VITE_NODE_OPTIONS environment variable.', e)
+    return {}
+  }
+}
 
-/** @type {import('../plugins/vite-node').ViteNodeServerOptions} */
-export const viteNodeOptions = JSON.parse(process.env.NUXT_VITE_NODE_OPTIONS || '{}')
+export const viteNodeOptions: ViteNodeServerOptions = getViteNodeOptionsEnvVar()
 
-/** @type {Map<number, { resolve: (value: any) => void, reject: (reason?: any) => void }>} */
-const pendingRequests = new Map()
+const pendingRequests = new Map<number, { resolve: (value: any) => void, reject: (reason?: any) => void }>()
 let requestIdCounter = 0
-/** @type {Socket | undefined} */
-let clientSocket
-/** @type {Promise<Socket> | undefined} */
-let currentConnectPromise
+let clientSocket: Socket | undefined
+let currentConnectPromise: Promise<Socket> | undefined
 const MAX_RETRY_ATTEMPTS = viteNodeOptions.maxRetryAttempts ?? 5
 const BASE_RETRY_DELAY_MS = viteNodeOptions.baseRetryDelay ?? 100
 const MAX_RETRY_DELAY_MS = viteNodeOptions.maxRetryDelay ?? 2000
@@ -24,10 +28,10 @@ const REQUEST_TIMEOUT_MS = viteNodeOptions.requestTimeout ?? 60000
 
 /**
  * Calculates exponential backoff delay with jitter.
- * @param {number} attempt - The current attempt number (0-based).
- * @returns {number} Delay in milliseconds.
+ * @param attempt - The current attempt number (0-based).
+ * @returns Delay in milliseconds.
  */
-function calculateRetryDelay (attempt) {
+function calculateRetryDelay (attempt: number): number {
   const exponentialDelay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt)
   const jitter = Math.random() * 0.1 * exponentialDelay // Add 10% jitter
   return Math.min(exponentialDelay + jitter, MAX_RETRY_DELAY_MS)
@@ -35,9 +39,9 @@ function calculateRetryDelay (attempt) {
 
 /**
  * Establishes or returns an existing IPC socket connection with retry logic.
- * @returns {Promise<Socket>} A promise that resolves with the connected socket.
+ * @returns A promise that resolves with the connected socket.
  */
-function connectSocket () {
+function connectSocket (): Promise<Socket> {
   if (clientSocket && !clientSocket.destroyed) {
     return Promise.resolve(clientSocket)
   }
@@ -46,7 +50,7 @@ function connectSocket () {
     return currentConnectPromise
   }
 
-  const thisPromise = new Promise((resolve, reject) => {
+  const thisPromise = new Promise<Socket>((resolve, reject) => {
     if (!viteNodeOptions.socketPath) {
       console.error('vite-node-shared: NUXT_VITE_NODE_OPTIONS.socketPath is not defined.')
       return reject(new Error('Vite Node IPC socket path not configured.'))
@@ -89,10 +93,7 @@ function connectSocket () {
         }
       }
 
-      /**
-       * @param {number} additionalBytes
-       */
-      const ensureBufferCapacity = (additionalBytes) => {
+      const ensureBufferCapacity = (additionalBytes: number) => {
         const requiredSize = writeOffset + additionalBytes
 
         if (requiredSize > MAX_BUFFER_SIZE) {
@@ -121,8 +122,7 @@ function connectSocket () {
         resolve(socket)
       }
 
-      /** @param {Buffer} data */
-      const onData = (data) => {
+      const onData = (data: Buffer) => {
         try {
           ensureBufferCapacity(data.length)
           data.copy(buffer, writeOffset)
@@ -145,12 +145,11 @@ function connectSocket () {
                 const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
                 if (response.type === 'error') {
                   const err = new Error(response.error.message)
-                  // @ts-ignore We are augmenting the error object
                   err.stack = response.error.stack
-                  // @ts-ignore
+                  // @ts-expect-error We are augmenting the error object
                   err.data = response.error.data
-                  // @ts-ignore
-                  err.statusCode = response.error.statusCode
+                  // @ts-expect-error We are augmenting the error object
+                  err.statusCode = err.status = response.error.status || response.error.statusCode
                   rejectRequest(err)
                 } else {
                   resolveRequest(response.data)
@@ -172,8 +171,7 @@ function connectSocket () {
         }
       }
 
-      /** @param {Error} err */
-      const onError = (err) => {
+      const onError = (err: Error) => {
         cleanup()
         resetBuffer()
 
@@ -219,12 +217,8 @@ function connectSocket () {
 
 /**
  * Sends a request over the IPC socket with automatic reconnection.
- * @template {keyof import('../plugins/vite-node').ViteNodeRequestMap} T
- * @param {T} type - The type of the request.
- * @param {import('../plugins/vite-node').ViteNodeRequestMap[T]['request']} [payload] - The payload for the request.
- * @returns {Promise<import('../plugins/vite-node').ViteNodeRequestMap[T]['response']>} A promise that resolves with the response data.
  */
-async function sendRequest (type, payload) {
+async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload: ViteNodeRequestMap[T]['request']): Promise<ViteNodeRequestMap[T]['response']> {
   const requestId = requestIdCounter++
   let lastError
 
@@ -285,15 +279,12 @@ async function sendRequest (type, payload) {
   throw lastError || new Error('Request failed after all retry attempts')
 }
 
-/**
- * @type {ViteNodeFetch}
- */
-export const viteNodeFetch = {
+export const viteNodeFetch: ViteNodeFetch = {
   getManifest () {
-    return sendRequest('manifest')
+    return sendRequest('manifest', undefined)
   },
   getInvalidates () {
-    return sendRequest('invalidates')
+    return sendRequest('invalidates', undefined)
   },
   resolveId (id, importer) {
     return sendRequest('resolve', { id, importer })

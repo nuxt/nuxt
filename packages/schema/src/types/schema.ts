@@ -30,15 +30,16 @@ import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
-import type { RouterConfigSerializable } from './router'
-import type { NuxtHooks } from './hooks'
-import type { ModuleMeta, NuxtModule } from './module'
-import type { NuxtDebugOptions } from './debug'
-import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt'
-import type { SerializableHtmlAttributes } from './head'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
-import type { ImportsOptions } from './imports'
-import type { ComponentsOptions } from './components'
+import type { RouterConfigSerializable } from './router.ts'
+import type { NuxtHooks } from './hooks.ts'
+import type { ModuleMeta, NuxtModule } from './module.ts'
+import type { NuxtDebugOptions } from './debug.ts'
+import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
+import type { SerializableHtmlAttributes } from './head.ts'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
+import type { ImportsOptions } from './imports.ts'
+import type { ComponentsOptions } from './components.ts'
+import type { KeyedFunction } from './compiler.ts'
 
 export interface ConfigSchema {
   /**
@@ -496,14 +497,14 @@ export interface ConfigSchema {
    * Build time optimization configuration.
    */
   optimization: {
-  /**
-   * Functions to inject a key for.
-   *
-   * As long as the number of arguments passed to the function is less than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. You will need to take steps to handle this additional key.
-   * The key will be unique based on the location of the function being invoked within the file.
-   *
-   */
-    keyedComposables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
+    /**
+     * Functions to inject a key for.
+     *
+     * As long as the number of arguments passed to the function is lower than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. You will need to take steps to handle this additional key.
+     * The key will be unique based on the location of the function being invoked within the file.
+     *
+     */
+    keyedComposables: KeyedFunction[]
 
     /**
      * Tree shake code from specific builds.
@@ -1902,7 +1903,7 @@ export interface ConfigSchema {
      * @example
      * ```js
      * import webpack from 'webpack'
-     * import { version } from './package.json'
+     * import { version } from './package.json.ts'
      * // ...
      * plugins: [
      *   new webpack.DefinePlugin({

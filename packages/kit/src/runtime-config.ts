@@ -3,9 +3,9 @@ import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
 
-import defu from 'defu'
-import { useNuxt } from './context'
-import { useNitro } from './nitro'
+import { defu } from 'defu'
+import { useNuxt } from './context.ts'
+import { useNitro } from './nitro.ts'
 
 /**
  * Access 'resolved' Nuxt runtime configuration, with values updated from environment.

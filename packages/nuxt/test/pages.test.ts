@@ -1,9 +1,9 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
-import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
-import { generateRouteKey } from '../src/pages/runtime/utils'
+import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
+import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 describe('pages:generateRoutesFromFiles', () => {
@@ -47,7 +47,7 @@ describe('pages:generateRoutesFromFiles', () => {
           result = generateRoutesFromFiles(files).map((route, index) => {
             return {
               ...route,
-              meta: test.files![index]!.meta,
+              meta: test.files![index]!.meta ?? route.meta,
             }
           })
 
@@ -937,26 +937,34 @@ export const pageTests: Array<{
       { path: `${pagesDir}/(foo)/index.vue` },
       { path: `${pagesDir}/(foo)/about.vue` },
       { path: `${pagesDir}/(bar)/about/index.vue` },
+      { path: `${pagesDir}/(bar)/about/(foo)/index.vue` },
     ],
     output: [
       {
         name: 'index',
         path: '/',
         file: `${pagesDir}/(foo)/index.vue`,
-        meta: undefined,
+        meta: { groups: ['foo'] },
         children: [],
       },
       {
         path: '/about',
         file: `${pagesDir}/(foo)/about.vue`,
-        meta: undefined,
+        meta: { groups: ['foo'] },
         children: [
-
           {
-            name: 'about',
             path: '',
             file: `${pagesDir}/(bar)/about/index.vue`,
-            children: [],
+            meta: { groups: ['bar'] },
+            children: [
+              {
+                name: 'about',
+                path: '',
+                file: `${pagesDir}/(bar)/about/(foo)/index.vue`,
+                meta: { groups: ['bar', 'foo'] },
+                children: [],
+              },
+            ],
           },
         ],
       },

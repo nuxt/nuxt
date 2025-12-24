@@ -20,7 +20,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   if (import.meta.test) { return }
 
   if (import.meta.server) {
-    nuxtApp.ssrContext!.event.context._payloadReducers = nuxtApp.ssrContext!._payloadReducers
+    nuxtApp.ssrContext!.event.context['~payloadReducers'] = nuxtApp.ssrContext!['~payloadReducers']
     return
   }
 

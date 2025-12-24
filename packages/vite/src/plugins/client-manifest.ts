@@ -9,7 +9,7 @@ import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { resolveClientEntry } from '../utils/config'
+import { resolveClientEntry } from '../utils/config.ts'
 
 export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string

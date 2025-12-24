@@ -2,10 +2,10 @@ import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { resolveModuleExportNames } from 'mlly'
 
-import { useNuxt } from './context'
-import { logger } from './logger'
-import { resolvePath } from './resolve'
-import { MODE_RE } from './utils'
+import { useNuxt } from './context.ts'
+import { logger } from './logger.ts'
+import { resolvePath } from './resolve.ts'
+import { MODE_RE } from './utils.ts'
 
 /**
  * Register a directory to be scanned for components and imported only when used.
@@ -59,7 +59,7 @@ function addComponents (addedComponents: Component[]) {
         const existingPriority = existingComponent.priority ?? 0
         const newPriority = component.priority ?? 0
 
-        if (newPriority < existingPriority) { return }
+        if (newPriority < existingPriority) { continue }
 
         // We override where new component priority is equal or higher
         // but we warn if they are equal.

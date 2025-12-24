@@ -6,12 +6,12 @@ import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
-import defu, { createDefu } from 'defu'
+import { createDefu, defu } from 'defu'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
-
-import { directoryToURL } from '../internal/esm'
 import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
+
+import { directoryToURL } from '../internal/esm.ts'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

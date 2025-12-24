@@ -12,32 +12,34 @@ import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 
-import { buildClient } from './client'
-import { buildServer } from './server'
-import { ssr, ssrEnvironment } from './shared/server'
-import { clientEnvironment } from './shared/client'
-import { warmupViteServer } from './utils/warmup'
-import { resolveCSSOptions } from './css'
-import { createViteLogger, logLevelMap } from './utils/logger'
+import { buildClient } from './client.ts'
+import { buildServer } from './server.ts'
+import { ssr, ssrEnvironment } from './shared/server.ts'
+import { clientEnvironment } from './shared/client.ts'
+import { warmupViteServer } from './utils/warmup.ts'
+import { resolveCSSOptions } from './css.ts'
+import { createViteLogger, logLevelMap } from './utils/logger.ts'
 
-import { SSRStylesPlugin } from './plugins/ssr-styles'
-import { PublicDirsPlugin } from './plugins/public-dirs'
-import { ReplacePlugin } from './plugins/replace'
-import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize'
-import { distDir } from './dirs'
-import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags'
-import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver'
-import { DevStyleSSRPlugin } from './plugins/dev-style-ssr'
-import { RuntimePathsPlugin } from './plugins/runtime-paths'
-import { TypeCheckPlugin } from './plugins/type-check'
-import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill'
-import { StableEntryPlugin } from './plugins/stable-entry'
-import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker'
-import { AnalyzePlugin } from './plugins/analyze'
-import { DevServerPlugin } from './plugins/dev-server'
-import { EnvironmentsPlugin } from './plugins/environments'
-import { ViteNodePlugin, writeDevServer } from './plugins/vite-node'
-import { ClientManifestPlugin } from './plugins/client-manifest'
+import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { PublicDirsPlugin } from './plugins/public-dirs.ts'
+import { ReplacePlugin } from './plugins/replace.ts'
+import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize.ts'
+import { distDir } from './dirs.ts'
+import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags.ts'
+import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
+import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
+import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
+import { TypeCheckPlugin } from './plugins/type-check.ts'
+import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
+import { StableEntryPlugin } from './plugins/stable-entry.ts'
+import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
+import { AnalyzePlugin } from './plugins/analyze.ts'
+import { DevServerPlugin } from './plugins/dev-server.ts'
+import { EnvironmentsPlugin } from './plugins/environments.ts'
+import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
+import { ClientManifestPlugin } from './plugins/client-manifest.ts'
+import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
+import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -188,6 +190,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ),
       },
       plugins: [
+        // add resolver for modules used in virtual files
+        ResolveDeepImportsPlugin(nuxt),
+        ResolveExternalsPlugin(nuxt),
         ...nuxt.options.experimental.viteEnvironmentApi
           ? [
               vuePlugin(viteConfig.vue),
