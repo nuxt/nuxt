@@ -649,11 +649,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Add prerender payload support
-  if (nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
-  }
-
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
@@ -773,6 +768,11 @@ export default defineNuxtPlugin({
   if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
     logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
     nuxt.options.experimental.payloadExtraction = true
+  }
+
+  // Add prerender payload support
+  if (nuxt.options.experimental.payloadExtraction) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
