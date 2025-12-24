@@ -84,6 +84,8 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       'XMLHttpRequest': 'undefined',
     },
     optimizeDeps: {
+      noDiscovery: true,
+      include: undefined,
       exclude: getTranspileStrings({ isDev: nuxt.options.dev, isClient: false }),
     },
     resolve: {
