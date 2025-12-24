@@ -71,7 +71,7 @@ function addComponents (addedComponents: Component[]) {
         const existingPriority = existingComponent.priority ?? 0
         const newPriority = component.priority ?? 0
 
-        if (newPriority < existingPriority) { return }
+        if (newPriority < existingPriority) { continue }
 
         // We override where new component priority is equal or higher
         // but we warn if they are equal.
