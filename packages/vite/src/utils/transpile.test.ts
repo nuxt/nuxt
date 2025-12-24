@@ -17,8 +17,7 @@ describe('async transpile to optimizeDeps.exclude', () => {
     await writeFile(join(fixtureDir, 'nuxt.config.ts'), `
 export default defineNuxtConfig({
   modules: [
-    async (_, nuxt) => {
-      await new Promise(r => setTimeout(r, 200))
+    (_, nuxt) => {
       nuxt.options.build.transpile.push('my-async-package')
     },
   ],
