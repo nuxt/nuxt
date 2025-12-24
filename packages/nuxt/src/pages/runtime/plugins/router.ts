@@ -13,11 +13,54 @@ import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
+import type { MaskedHistoryState } from '#app/composables/router'
 
 import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options.mjs'
+import routerOptions, { defaultUnmaskOnReload, hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
+
+// Stores mask state to restore after router initialization (when not unmasking on reload)
+let pendingMaskState: MaskedHistoryState | null = null
+
+/**
+ * Get the initial route URL, accounting for masked routes.
+ * On client-side, checks history.state for a masked route (__tempLocation).
+ * If unmaskOnReload is true, clears the mask and returns the real URL.
+ */
+function getInitialURL (
+  base: string,
+  location: Location,
+  renderedPath?: string,
+): string {
+  // Check for masked route state on client
+  if (import.meta.client) {
+    const state = window.history.state as MaskedHistoryState | null
+
+    if (state?.__tempLocation) {
+      // Check if we should unmask on reload:
+      // 1. Explicit __unmaskOnReload in state takes precedence
+      // 2. Fall back to global defaultUnmaskOnReload config
+      const shouldUnmask = state.__unmaskOnReload ?? defaultUnmaskOnReload
+      if (shouldUnmask) {
+        window.history.replaceState({}, '', state.__tempLocation)
+        return state.__tempLocation
+      }
+
+      // Store mask state to restore after router initialization
+      // Vue Router will replace history state, so we need to re-apply the mask
+      if (state.__maskUrl) {
+        pendingMaskState = state
+      }
+
+      // Use the real route from state for routing
+      return state.__tempLocation
+    }
+  }
+
+  // Fallback to normal URL resolution
+  return createCurrentLocation(base, location, renderedPath)
+}
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -93,10 +136,57 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
     nuxtApp.vueApp.use(router)
 
+    // Handle popstate for masked routes
+    // When navigating back/forward, check if the restored state has a masked route
+    if (import.meta.client) {
+      window.addEventListener('popstate', () => {
+        const state = window.history.state as MaskedHistoryState | null
+        if (state?.__tempLocation) {
+          // Navigate to the real route stored in state
+          // Use replace to avoid adding another history entry
+          const currentPath = router.currentRoute.value.fullPath
+          if (!isSamePath(currentPath, state.__tempLocation)) {
+            router.replace(state.__tempLocation)
+          }
+        }
+      })
+    }
+
     const previousRoute = shallowRef(router.currentRoute.value)
     router.afterEach((_to, from) => {
       previousRoute.value = from
     })
+
+    // Handle definePageMeta mask
+    if (import.meta.client) {
+      router.afterEach((to, _from, failure) => {
+        // Don't apply mask if navigation failed
+        if (failure) { return }
+
+        // Don't apply mask if we're already in a masked state (from navigateTo)
+        const currentState = window.history.state as MaskedHistoryState | null
+        if (currentState?.__tempLocation) { return }
+
+        // Check if the route has a mask defined in meta
+        const maskMeta = to.meta.mask
+        if (!maskMeta) { return }
+
+        // Resolve the mask URL
+        const maskUrl = typeof maskMeta === 'function' ? maskMeta(to) : maskMeta
+        if (!maskUrl || maskUrl === to.fullPath) { return }
+
+        // Apply the mask
+        // Use explicit meta.unmaskOnReload if set, otherwise fall back to global default
+        const shouldUnmaskOnReload = to.meta.unmaskOnReload ?? defaultUnmaskOnReload
+        const state: MaskedHistoryState = {
+          __tempLocation: to.fullPath,
+          __maskUrl: maskUrl,
+          // Always store the resolved value so explicit false overrides global default
+          __unmaskOnReload: shouldUnmaskOnReload,
+        }
+        window.history.replaceState(state, '', maskUrl)
+      })
+    }
 
     Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
       get: () => previousRoute.value,
@@ -104,7 +194,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const initialURL = import.meta.server
       ? nuxtApp.ssrContext!.url
-      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+      : getInitialURL(routerBase, window.location, nuxtApp.payload.path)
 
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
@@ -284,6 +374,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         })
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
+
+        // Restore mask state after router initialization (for reload with unmaskOnReload: false)
+        if (import.meta.client && pendingMaskState) {
+          window.history.replaceState(pendingMaskState, '', pendingMaskState.__maskUrl)
+          pendingMaskState = null
+        }
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
         await nuxtApp.runWithContext(() => showError(error))

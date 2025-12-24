@@ -573,6 +573,7 @@ export default defineNuxtModule({
             ...hashModes,
             nuxt.options.router.options.hashMode,
           ].join(' ?? ')}`,
+          `export const defaultUnmaskOnReload = ${nuxt.options.router.options.unmaskOnReload ?? false}`,
           'export default {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
