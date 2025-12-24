@@ -4,6 +4,7 @@ import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL } from 'ufo'
+import { getPort } from 'get-port-please'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import type { Nitro } from 'nitropack/types'
 import type { ViteBuildContext } from './vite.ts'
@@ -54,6 +55,36 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     },
     ...ssrEnvironment(nuxt, serverEntry),
   } satisfies vite.InlineConfig, nuxt.options.vite.$server || {}))
+
+  // SSR HMR port handling for monorepo setups
+  if (nuxt.options.dev) {
+    const userHmrPort = typeof nuxt.options.vite?.server?.hmr === 'object' ? nuxt.options.vite.server.hmr.port : undefined
+    // Enable HMR for SSR with proper port
+    if (serverConfig.server) {
+      // Convert hmr: false to object if needed
+      if (serverConfig.server.hmr === false || serverConfig.server.hmr === undefined) {
+        serverConfig.server.hmr = {}
+      }
+      if (typeof serverConfig.server.hmr === 'object') {
+        // Remove shared server from SSR config (it comes from CLI)
+        if ('server' in serverConfig.server.hmr) {
+          delete (serverConfig.server.hmr as any).server
+        }
+        // Use user's port or auto-assign
+        if (!serverConfig.server.hmr.port) {
+          if (userHmrPort) {
+            serverConfig.server.hmr.port = userHmrPort
+          } else {
+            const ssrHmrPortDefault = 24678 // Vite's default HMR port
+            serverConfig.server.hmr.port = await getPort({
+              port: ssrHmrPortDefault,
+              ports: Array.from({ length: 20 }, (_, i) => ssrHmrPortDefault + 1 + i),
+            })
+          }
+        }
+      }
+    }
+  }
 
   serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev })
 
