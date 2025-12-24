@@ -1,4 +1,4 @@
-import { defineComponent, inject, onUnmounted, provide, reactive } from 'vue'
+import { defineComponent, getCurrentInstance, inject, onUnmounted, provide, reactive } from 'vue'
 import type { PropType, VNodeNormalizedChildren } from 'vue'
 import type {
   BodyAttributes,
@@ -63,8 +63,11 @@ function createHeadComponentCtx (): HeadComponentCtx {
   if (prev) {
     return prev
   }
+  const key = getCurrentInstance()?.vnode.key
   const input = reactive({})
-  const entry = useHead(input)
+  const entry = useHead(input, {
+    key: key != null ? String(key) : undefined,
+  })
   const ctx: HeadComponentCtx = { input, entry }
   provide(HeadComponentCtxSymbol, ctx)
   return ctx
