@@ -625,7 +625,7 @@ describe('pages', () => {
     }
   })
 
-  it.skipIf(isDev)('prerenders pages hinted with a route rule', async () => {
+  it('prerenders pages hinted with a route rule', async () => {
     const html = await $fetch('/prerender/test')
     expect(html).toContain('should be prerendered: true')
   })
@@ -2564,7 +2564,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   })
 })
 
-describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () => {
+describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)

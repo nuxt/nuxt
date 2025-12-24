@@ -13,8 +13,7 @@ export default defineNuxtPlugin({
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
     useRouter().beforeResolve(async (to, from) => {
-      // Forcefully load payload in dev mode, to support payload extraction at page refresh.
-      if (to.path === from.path && !import.meta.dev) { return }
+      if (to.path === from.path) { return }
       const payload = await loadPayload(to.path)
       if (!payload) { return }
       if (purgeCachedData) {
