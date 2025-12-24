@@ -99,7 +99,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
   )
 
-  const isRenderingPayload = _PAYLOAD_EXTRACTION && PAYLOAD_URL_RE.test(ssrContext.url)
+  const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
