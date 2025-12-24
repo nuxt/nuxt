@@ -18,7 +18,6 @@ import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { clientEnvironment } from './shared/client.ts'
-import { getTranspilePatterns } from './utils/transpile.ts'
 
 export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
@@ -59,13 +58,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   clientConfig.customLogger = createViteLogger(clientConfig)
 
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
-
-  // Add transpile packages to optimizeDeps.exclude to prevent Vite from optimizing them at runtime
-  // This must happen after vite:extendConfig since modules may add transpile entries asynchronously
-  clientConfig.optimizeDeps ||= {}
-  clientConfig.optimizeDeps.exclude ||= []
-  const transpilePatterns = getTranspilePatterns({ isDev: nuxt.options.dev, isClient: true })
-  clientConfig.optimizeDeps.exclude.push(...transpilePatterns)
 
   clientConfig.plugins!.unshift(
     vuePlugin(clientConfig.vue),
