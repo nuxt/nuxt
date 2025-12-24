@@ -409,6 +409,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   })
 
   if (nuxt.options.experimental.payloadExtraction) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:config', (nitroConfig) => {
+        nitroConfig.prerender ||= {}
+        nitroConfig.prerender.routes ||= []
+        nitroConfig.routeRules ||= {}
+        for (const route of nitroConfig.prerender.routes) {
+          if (!route) { continue }
+          nitroConfig.routeRules[route] = defu(nitroConfig.routeRules[route], { prerender: true })
+        }
+      })
+    }
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('build:before', (nitro) => {
         for (const [route, value] of Object.entries(nitro.options.routeRules)) {
