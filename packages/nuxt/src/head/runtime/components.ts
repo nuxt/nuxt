@@ -63,10 +63,11 @@ function createHeadComponentCtx (): HeadComponentCtx {
   if (prev) {
     return prev
   }
-  const key = getCurrentInstance()?.vnode.key
+  const vnodeKey = getCurrentInstance()?.vnode.key
+  const key = vnodeKey != null && typeof vnodeKey !== 'symbol' ? String(vnodeKey) : undefined
   const input = reactive({})
   const entry = useHead(input, {
-    key: key != null ? String(key) : undefined,
+    key,
   })
   const ctx: HeadComponentCtx = { input, entry }
   provide(HeadComponentCtxSymbol, ctx)
