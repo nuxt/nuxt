@@ -1847,13 +1847,19 @@ describe.skipIf(isDev)('module identifiers', () => {
 })
 
 describe.skipIf(isDev)('inlining component styles', () => {
-  const inlinedCSS = [
+  const globalCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
     '{--global:"global";', // global css from nuxt.config
+  ]
+  const nonGlobalCSS = [
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
     '{--scoped:"scoped"}', // <style lang=css>
     '{--shared-component:"shared-component"}', // styles in a chunk shared between pages
+  ]
+  const inlinedCSS = [
+    ...globalCSS,
+    ...nonGlobalCSS,
     '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}', // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
@@ -1870,10 +1876,6 @@ describe.skipIf(isDev)('inlining component styles', () => {
   })
 
   it('should inline global css when accessing a page with `ssr: false` override via route rules', async () => {
-    const globalCSS = [
-      '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
-      '{--global:"global";', // global css from nuxt.config
-    ]
     const html = await $fetch<string>('/route-rules/spa')
     for (const style of globalCSS) {
       expect.soft(html).toContain(style)
@@ -1898,7 +1900,15 @@ describe.skipIf(isDev)('inlining component styles', () => {
     // should not include inlined CSS in generated CSS files
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
-      if (style === '{--plugin:"plugin"}') { continue }
+      if (style === '{--plugin:"plugin"}') {
+        expect.soft(css).toContain(style)
+        continue
+      }
+      // webpack can hoist component level css up to a shared css file
+      if (isWebpack && nonGlobalCSS.includes(style)) {
+        expect.soft(css).toContain(style)
+        continue
+      }
       expect.soft(css).not.toContain(style)
     }
 
@@ -1910,7 +1920,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     ]
     for (const style of unloadableCSS) {
       // TODO:
-      if (isWebpack) {
+      if (isWebpack && style === '--virtual:red') {
+        // this is not injected at all as webpack virtual modules are a bit more complex
         expect.soft(css).not.toContain(style)
         continue
       }
