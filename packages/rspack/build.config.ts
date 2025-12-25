@@ -7,6 +7,7 @@ export default defineBuildConfig({
   externals: [
     '@rspack/core',
     '#builder',
+    'webpack', /* types - unbuild bug */
     '@nuxt/schema',
   ],
   hooks: {
@@ -19,6 +20,11 @@ export default defineBuildConfig({
       input: '../webpack/src/index',
       name: 'index',
       declaration: true,
+    },
+    {
+      input: '../webpack/src/loaders/vue-module-identifier',
+      name: 'loaders/vue-module-identifier',
+      declaration: false,
     },
   ],
 })
