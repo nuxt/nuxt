@@ -1073,7 +1073,7 @@ describe('head tags', () => {
     await page.close()
   })
 
-  it('should deduplicat head tags with key', async () => {
+  it('should deduplicate head tags with key', async () => {
     const page = await createPage('/head-component')
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
