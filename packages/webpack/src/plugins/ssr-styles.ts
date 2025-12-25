@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
-import { relative } from 'pathe'
+import { isAbsolute, relative, resolve } from 'pathe'
 import { parseURL } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
@@ -76,9 +77,62 @@ export class SSRStylesPlugin {
   private nuxt: Nuxt
   private clientCSSByIssuer = new Map<string, Set<string>>()
   private chunksWithInlinedCSS = new Set<string>()
+  private globalCSSPaths = new Set<string>()
 
   constructor (nuxt: Nuxt) {
     this.nuxt = nuxt
+    this.globalCSSPaths = this.resolveGlobalCSS()
+  }
+
+  private resolveGlobalCSS (): Set<string> {
+    const req = createRequire(this.nuxt.options.rootDir)
+    const resolved = new Set<string>()
+    const entries = (this.nuxt.options.css as GlobalCSSEntry[] | undefined) || []
+
+    for (const entry of entries) {
+      const src = typeof entry === 'string' ? entry : entry?.src
+      if (!src) { continue }
+      const path = this.resolveCSSRequest(src, req)
+      if (path) {
+        resolved.add(path)
+      }
+    }
+
+    return resolved
+  }
+
+  private resolveCSSRequest (request: string, req: ReturnType<typeof createRequire>): string | null {
+    const withoutTilde = request.startsWith('~') ? request.slice(1) : request
+    const candidates = new Set<string>()
+
+    if (withoutTilde.startsWith('@/') || withoutTilde.startsWith('~/')) {
+      candidates.add(resolve(this.nuxt.options.srcDir, withoutTilde.slice(2)))
+    } else if (isAbsolute(withoutTilde)) {
+      candidates.add(withoutTilde)
+    } else {
+      candidates.add(resolve(this.nuxt.options.srcDir, withoutTilde))
+    }
+
+    try {
+      candidates.add(req.resolve(withoutTilde))
+    } catch {
+      // ignore modules that can't be found
+    }
+
+    for (const candidate of candidates) {
+      const path = resolveFilePath(candidate)
+      if (path) {
+        return path
+      }
+    }
+
+    return null
+  }
+
+  private normalizeResourcePath (resource?: string | null): string | null {
+    if (!resource) { return null }
+    const withoutQuery = resource.split('?')[0]
+    return resolveFilePath(withoutQuery)
   }
 
   apply (compiler: Compiler) {
@@ -193,13 +247,17 @@ export class SSRStylesPlugin {
       ? webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
       : webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER
 
+    const chunkCSSMeta = new Map<any, { files: string[], modules: NormalModule[] }>()
+
     compilation.hooks.processAssets.tap({ name: 'SSRStylesPlugin', stage }, () => {
       // First, associate emitted CSS assets with the modules in their chunks
       const cssAssetsByChunk = new Map<any, string[]>()
       for (const chunk of compilation.chunks) {
         const cssAssets: string[] = []
+        const chunkCSSFiles: string[] = []
         for (const file of chunk.files) {
           if (!isCSSLike(file)) { continue }
+          chunkCSSFiles.push(file)
           const asset = compilation.getAsset(file)
           const source = asset?.source
           const content = source && typeof source.source === 'function' ? source.source() : null
@@ -207,6 +265,10 @@ export class SSRStylesPlugin {
           if (text) {
             cssAssets.push(text)
           }
+        }
+        if (chunkCSSFiles.length) {
+          const chunkCSSModules = Array.from(compilation.chunkGraph.getChunkModulesIterable(chunk)).filter((mod): mod is NormalModule => 'resource' in mod && typeof mod.resource === 'string' && isCSSLike(mod.resource))
+          chunkCSSMeta.set(chunk, { files: chunkCSSFiles, modules: chunkCSSModules })
         }
         if (cssAssets.length) {
           cssAssetsByChunk.set(chunk, cssAssets)
@@ -240,6 +302,42 @@ export class SSRStylesPlugin {
         set.add(cssChunks.join('\n'))
         this.clientCSSByIssuer.set(normalized, set)
       }
+
+      if (!isServer && chunkCSSMeta.size) {
+        const inlineIssuers = new Set(this.clientCSSByIssuer.keys())
+        const rawSource = webpack.sources.RawSource
+
+        for (const [_chunk, meta] of chunkCSSMeta) {
+          if (!meta.files.length) { continue }
+
+          const keptCSS: string[] = []
+          for (const mod of meta.modules) {
+            const resourcePath = this.normalizeResourcePath(mod.resource)
+            const issuerPath = normalizePath(this.nuxt, this.findIssuerPath(compilation, mod))
+            const isClientOnly = resourcePath ? resourcePath.includes('.client.') : false
+            const isGlobal = resourcePath ? this.globalCSSPaths.has(resourcePath) : false
+            const isInlineIssuer = issuerPath ? inlineIssuers.has(issuerPath) : false
+            if (!isClientOnly && (isGlobal || isInlineIssuer)) { continue }
+
+            keptCSS.push(...this.getModuleCSS(mod, compilation))
+          }
+
+          const newCSS = keptCSS.join('\n')
+
+          for (const file of meta.files) {
+            if (!newCSS) {
+              if (compilation.getAsset(file)) {
+                compilation.updateAsset(file, new rawSource(''))
+              } else {
+                compilation.emitAsset(file, new rawSource(''))
+              }
+              continue
+            }
+
+            compilation.updateAsset(file, new rawSource(newCSS))
+          }
+        }
+      }
     })
   }
 
@@ -260,3 +358,5 @@ export class SSRStylesPlugin {
     return cssChunks
   }
 }
+
+type GlobalCSSEntry = string | { src?: string }

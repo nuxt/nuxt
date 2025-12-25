@@ -1899,11 +1899,6 @@ describe.skipIf(isDev)('inlining component styles', () => {
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
       if (style === '{--plugin:"plugin"}') { continue }
-      if (style === '{--global:"global";' && isWebpack) {
-        // webpack global css is not stripped
-        expect.soft(css).toContain(style)
-        continue
-      }
       expect.soft(css).not.toContain(style)
     }
 
