@@ -193,17 +193,21 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // this will be overridden in vite plugin
       '#internal/entry-chunk.mjs': () => `export const entryFileName = undefined`,
       '#internal/nuxt/entry-ids.mjs': () => `export default []`,
-      '#internal/nuxt/nitro-config.mjs': () => [
-        `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
-        `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
-        `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
-        `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
-        `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
-        `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
-        `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
-        `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
-        `export const NUXT_PAYLOAD_EXTRACTION = ${!!nuxt.options.experimental.payloadExtraction}`,
-      ].join('\n'),
+      '#internal/nuxt/nitro-config.mjs': () => {
+        const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
+        return [
+          `export const NUXT_NO_SSR = ${nuxt.options.ssr === false}`,
+          `export const NUXT_EARLY_HINTS = ${nuxt.options.experimental.writeEarlyHints !== false}`,
+          `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
+          `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
+          `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
+          `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
+          `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
+          `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
+          `export const NUXT_PAYLOAD_EXTRACTION = ${!!nuxt.options.experimental.payloadExtraction}`,
+          `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes}`,
+        ].join('\n')
+      },
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
@@ -386,6 +390,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
                   value = normalizedRules
                 }
               }
+              if (name === 'cache' || name === 'isr') {
+                name = 'payload'
+                value = Boolean(value)
+              }
               return `${name}: ${JSON.stringify(value)}`
             }).join(',')
           }}`
@@ -398,6 +406,38 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       `
     },
   })
+
+  if (nuxt.options.experimental.payloadExtraction) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:config', (nitroConfig) => {
+        nitroConfig.prerender ||= {}
+        nitroConfig.prerender.routes ||= []
+        nitroConfig.routeRules ||= {}
+        for (const route of nitroConfig.prerender.routes) {
+          if (!route) { continue }
+          nitroConfig.routeRules[route] = defu(nitroConfig.routeRules[route], { prerender: true })
+        }
+      })
+    }
+    nuxt.hook('nitro:init', (nitro) => {
+      nitro.hooks.hook('build:before', (nitro) => {
+        for (const [route, value] of Object.entries(nitro.options.routeRules)) {
+          if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
+            if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
+              const payloadKey = route + '/_payload.json'
+              const defaults = {} as Record<string, any>
+              for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
+                if (key in value) {
+                  defaults[key] = value[key as keyof typeof value]
+                }
+              }
+              nitro.options.routeRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
+            }
+          }
+        }
+      })
+    })
+  }
 
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
@@ -542,6 +582,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
+
+  if (nitroConfig.static && nuxt.options.dev) {
+    nitroConfig.routeRules ||= {}
+    nitroConfig.routeRules['/**'] = defu(nitroConfig.routeRules['/**'], { prerender: true })
+  }
 
   // TODO: extract to shared utility?
   const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
