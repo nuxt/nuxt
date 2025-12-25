@@ -1,7 +1,7 @@
 import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
-import type { Nuxt } from '../types/nuxt.ts'
+import type { Nuxt } from '../types/nuxt'
 import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
@@ -83,6 +83,21 @@ export default defineResolvers({
         { name: 'useAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
         { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
         { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
+        ...Array.isArray(val) ? val : [],
+      ].filter(Boolean),
+    },
+    keyedComposableFactories: {
+      $resolve: val => [
+        {
+          name: 'createUseFetch',
+          source: '#app/composables/fetch',
+          argumentLength: 3,
+        },
+        {
+          name: 'createUseAsyncData',
+          source: '#app/composables/asyncData',
+          argumentLength: 3,
+        },
         ...Array.isArray(val) ? val : [],
       ].filter(Boolean),
     },

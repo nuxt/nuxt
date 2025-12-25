@@ -132,6 +132,7 @@ describe('loadNuxt', () => {
         "nuxt:pages",
         "nuxt:meta",
         "nuxt:components",
+        "nuxt:compiler",
         "nuxt:imports",
         "nuxt:nuxt-config-schema",
         "@nuxt/telemetry",
