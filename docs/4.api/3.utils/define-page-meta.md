@@ -162,7 +162,7 @@ interface PageMeta {
 
     // Dynamic mask based on route params
     definePageMeta({
-      mask: (route) => `/photos/${route.params.id}`,
+      mask: route => `/photos/${route.params.id}`,
     })
     </script>
     ```
@@ -279,7 +279,7 @@ You can mask the URL displayed in the browser while rendering a different route.
 <script setup lang="ts">
 definePageMeta({
   // Show /photos/123 in URL bar while rendering /photos/123/modal
-  mask: (route) => `/photos/${route.params.id}`,
+  mask: route => `/photos/${route.params.id}`,
 })
 </script>
 
