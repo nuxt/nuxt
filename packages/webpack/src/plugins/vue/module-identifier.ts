@@ -1,5 +1,5 @@
 import { normalize, relative } from 'pathe'
-import type { Compiler, Module, NormalModule } from 'webpack'
+import type { Compiler, Dependency, Module, NormalModule } from 'webpack'
 import { webpack } from '#builder'
 
 export interface VueModuleIdentifierPluginOptions {
@@ -18,6 +18,8 @@ export class VueModuleIdentifierPlugin {
     const context = this.rootDir || compiler.options.context
 
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
+      compilation.dependencyTemplates.set(ModuleIdentifierDependency, new ModuleIdentifierDependencyTemplate())
+
       compilation.hooks.succeedModule.tap(pluginName, (module) => {
         const normalModule = toNormalModule(module)
         if (!normalModule || !isVueEntryModule(normalModule)) {
@@ -43,7 +45,11 @@ export class VueModuleIdentifierPlugin {
           return
         }
 
-        normalModule._source = new webpack.sources.ConcatSource(source, `\n;__exports__.__moduleIdentifier = ${JSON.stringify(moduleId)};`)
+        if (hasModuleIdentifierDependency(normalModule)) {
+          return
+        }
+
+        normalModule.addDependency(new ModuleIdentifierDependency(moduleId))
       })
     })
   }
@@ -67,8 +73,29 @@ function isVueEntryModule (module: NormalModule) {
   return module.resource.endsWith('.vue')
 }
 
-declare module 'webpack' {
-  interface NormalModule {
-    _source?: sources.ConcatSource
+class ModuleIdentifierDependency extends (webpack.Dependency as { new(): Dependency }) {
+  moduleId: string
+
+  constructor (moduleId: string) {
+    super()
+    this.moduleId = moduleId
   }
+
+  override get type () {
+    return 'nuxt module identifier'
+  }
+}
+
+type ReplaceSource = InstanceType<typeof webpack.sources.ReplaceSource>
+
+class ModuleIdentifierDependencyTemplate {
+  apply (dep: Dependency, source: ReplaceSource) {
+    const identifier = (dep as ModuleIdentifierDependency).moduleId
+    const snippet = `\n;__exports__.__moduleIdentifier = ${JSON.stringify(identifier)};`
+    source.insert(source.size(), snippet)
+  }
+}
+
+function hasModuleIdentifierDependency (module: NormalModule) {
+  return module.dependencies?.some(dep => dep instanceof ModuleIdentifierDependency)
 }
