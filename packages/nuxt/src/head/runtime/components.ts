@@ -29,7 +29,7 @@ interface HeadComponents {
   style?: (UnheadStyle | null)[]
   title?: string | null
 }
-type HeadComponentCtx = { input: HeadComponents, entry: ReturnType<typeof useHead> }
+type HeadComponentCtx = { input: HeadComponents, entry: ReturnType<typeof useHead>, update: () => void }
 const HeadComponentCtxSymbol = Symbol('head-component')
 
 const TagPositionProps = {
@@ -40,7 +40,7 @@ const TagPositionProps = {
   tagPosition: { type: String as PropType<UnheadStyle['tagPosition']> },
 }
 
-const normalizeProps = <T extends Record<string, any>>(_props: T): Partial<T> => {
+function normalizeProps<T extends Record<string, any>> (_props: T, key?: string): Partial<T> {
   const props = Object.fromEntries(
     Object.entries(_props).filter(([_, value]) => value !== undefined),
   ) as Partial<T> & { tagPosition?: UnheadStyle['tagPosition'], tagPriority: UnheadStyle['tagPriority'] }
@@ -50,7 +50,15 @@ const normalizeProps = <T extends Record<string, any>>(_props: T): Partial<T> =>
   if (typeof props.renderPriority !== 'undefined') {
     props.tagPriority = props.renderPriority
   }
-  return props
+  return {
+    ...props,
+    key,
+  }
+}
+
+function useVNodeStringKey () {
+  const vnodeKey = getCurrentInstance()?.vnode.key
+  return vnodeKey != null && typeof vnodeKey !== 'symbol' ? String(vnodeKey) : undefined
 }
 
 function useHeadComponentCtx (): HeadComponentCtx {
@@ -63,13 +71,9 @@ function createHeadComponentCtx (): HeadComponentCtx {
   if (prev) {
     return prev
   }
-  const vnodeKey = getCurrentInstance()?.vnode.key
-  const key = vnodeKey != null && typeof vnodeKey !== 'symbol' ? String(vnodeKey) : undefined
   const input = reactive({})
-  const entry = useHead(input, {
-    key,
-  })
-  const ctx: HeadComponentCtx = { input, entry }
+  const entry = useHead(input)
+  const ctx: HeadComponentCtx = { input, entry, update: () => entry.patch(input) }
   provide(HeadComponentCtxSymbol, ctx)
   return ctx
 }
@@ -138,12 +142,16 @@ export const NoScript = defineComponent({
     title: String,
   },
   setup (props, { slots }) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
     input.noscript ||= []
     const idx: keyof typeof input.noscript = input.noscript.push({}) - 1
-    onUnmounted(() => input.noscript![idx] = null)
+    onUnmounted(() => {
+      input.noscript![idx] = null
+      update()
+    })
+    const key = useVNodeStringKey()
     return () => {
-      const noscript = normalizeProps(props) as Noscript
+      const noscript = normalizeProps(props, key) as Noscript
       const slotVnodes = slots.default?.()
       const textContent: VNodeNormalizedChildren[] = []
       if (slotVnodes) {
@@ -157,6 +165,7 @@ export const NoScript = defineComponent({
         noscript.innerHTML = textContent.join('')
       }
       input.noscript![idx] = noscript
+      update()
       return null
     }
   },
@@ -194,12 +203,19 @@ export const Link = defineComponent({
     target: String as PropType<Target>,
   },
   setup (props) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
     input.link ||= []
     const idx: keyof typeof input.link = input.link.push({}) - 1
-    onUnmounted(() => input.link![idx] = null)
+    const key = useVNodeStringKey()
+
+    onUnmounted(() => {
+      input.link![idx] = null
+      update()
+    })
+
     return () => {
-      input.link![idx] = normalizeProps(props) as UnheadLink
+      input.link![idx] = normalizeProps(props, key) as UnheadLink
+      update()
       return null
     }
   },
@@ -215,10 +231,15 @@ export const Base = defineComponent({
     target: String as PropType<Target>,
   },
   setup (props) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.base = null)
+    const { input, update } = useHeadComponentCtx()
+    const key = useVNodeStringKey()
+    onUnmounted(() => {
+      input.base = null
+      update()
+    })
     return () => {
-      input.base = normalizeProps(props) as UnheadBase
+      input.base = normalizeProps(props, key) as UnheadBase
+      update()
       return null
     }
   },
@@ -229,8 +250,11 @@ export const Title = defineComponent({
   name: 'Title',
   inheritAttrs: false,
   setup (_, { slots }) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.title = null)
+    const { input, update } = useHeadComponentCtx()
+    onUnmounted(() => {
+      input.title = null
+      update()
+    })
     return () => {
       const defaultSlot = slots.default?.()
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
@@ -239,6 +263,7 @@ export const Title = defineComponent({
           console.error('<Title> can take only one string in its default slot.')
         }
       }
+      update()
       return null
     }
   },
@@ -257,17 +282,22 @@ export const Meta = defineComponent({
     property: String,
   },
   setup (props) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
+    const key = useVNodeStringKey()
     input.meta ||= []
     const idx: keyof typeof input.meta = input.meta.push({}) - 1
-    onUnmounted(() => input.meta![idx] = null)
+    onUnmounted(() => {
+      input.meta![idx] = null
+      update()
+    })
     return () => {
-      const meta = { 'http-equiv': props.httpEquiv, ...normalizeProps(props) } as UnheadMeta
+      const meta = { 'http-equiv': props.httpEquiv, ...normalizeProps(props, key) } as UnheadMeta
       // fix casing for http-equiv
       if ('httpEquiv' in meta) {
         delete meta.httpEquiv
       }
       input.meta![idx] = meta
+      update()
       return null
     }
   },
@@ -291,12 +321,16 @@ export const Style = defineComponent({
     },
   },
   setup (props, { slots }) {
-    const { input } = useHeadComponentCtx()
+    const { input, update } = useHeadComponentCtx()
+    const key = useVNodeStringKey()
     input.style ||= []
     const idx: keyof typeof input.style = input.style.push({}) - 1
-    onUnmounted(() => input.style![idx] = null)
+    onUnmounted(() => {
+      input.style![idx] = null
+      update()
+    })
     return () => {
-      const style = normalizeProps(props) as UnheadStyle
+      const style = normalizeProps(props, key) as UnheadStyle
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {
         if (import.meta.dev && typeof textContent !== 'string') {
@@ -305,6 +339,7 @@ export const Style = defineComponent({
         input.style![idx] = style
         style.textContent = textContent
       }
+      update()
       return null
     }
   },
@@ -331,10 +366,14 @@ export const Html = defineComponent({
     xmlns: String,
   },
   setup (_props, ctx) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.htmlAttrs = null)
+    const { input, update } = useHeadComponentCtx()
+    onUnmounted(() => {
+      input.htmlAttrs = null
+      update()
+    })
     return () => {
       input.htmlAttrs = { ..._props, ...ctx.attrs } as HtmlAttributes
+      update()
       return ctx.slots.default?.()
     }
   },
@@ -346,10 +385,14 @@ export const Body = defineComponent({
   inheritAttrs: false,
   props: globalProps,
   setup (_props, ctx) {
-    const { input } = useHeadComponentCtx()
-    onUnmounted(() => input.bodyAttrs = null)
+    const { input, update } = useHeadComponentCtx()
+    onUnmounted(() => {
+      input.bodyAttrs = null
+      update()
+    })
     return () => {
       input.bodyAttrs = { ..._props, ...ctx.attrs } as BodyAttributes
+      update()
       return ctx.slots.default?.()
     }
   },
