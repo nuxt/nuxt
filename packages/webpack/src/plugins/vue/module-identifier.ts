@@ -25,6 +25,9 @@ export class VueModuleIdentifierPlugin {
         compilation.dependencyTemplates.set(ModuleIdentifierDependency, new ModuleIdentifierDependencyTemplate())
       }
 
+      // Track Vue modules that need identifiers (for rspack fallback)
+      const vueModules = new Map<NormalModule, string>()
+
       compilation.hooks.succeedModule.tap(pluginName, (module) => {
         const normalModule = toNormalModule(module)
         if (!normalModule || !isVueEntryModule(normalModule)) {
@@ -56,11 +59,39 @@ export class VueModuleIdentifierPlugin {
           }
           normalModule.addDependency(new ModuleIdentifierDependency(moduleId))
         } else {
-          // Rspack fallback: directly append to source
-          const snippet = `\n;__exports__.__moduleIdentifier = ${JSON.stringify(moduleId)};`
-          ;(normalModule as any)._source = new webpack.sources.ConcatSource(source, snippet)
+          // Store for later injection during processAssets (rspack fallback)
+          vueModules.set(normalModule, moduleId)
         }
       })
+
+      // For rspack, inject identifiers during code generation
+      if (!supportsDepTemplates) {
+        (compilation as any).hooks.processAssets.tap({
+          name: pluginName,
+          stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS,
+        }, () => {
+          for (const [module, moduleId] of vueModules) {
+            const codeGenResult = (compilation as any).codeGenerationResults.get(module)
+            if (!codeGenResult) {
+              continue
+            }
+
+            const source = codeGenResult.sources.get('javascript')
+            if (!source) {
+              continue
+            }
+
+            const code = source.source().toString()
+            if (!code.includes('__exports__')) {
+              continue
+            }
+
+            const snippet = `\n;__exports__.__moduleIdentifier = ${JSON.stringify(moduleId)};`
+            const newSource = new webpack.sources.ConcatSource(source, snippet)
+            codeGenResult.sources.set('javascript', newSource)
+          }
+        })
+      }
     })
   }
 }
