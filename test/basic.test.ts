@@ -1073,6 +1073,21 @@ describe('head tags', () => {
     await page.close()
   })
 
+  it('should deduplicat head tags with key', async () => {
+    const page = await createPage('/head-component')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    expect(await page.locator('link[data-hid="dedupe-key"]').count()).toBe(1)
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('href')).toBe('client')
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('rel')).toBe('x-test')
+
+    await page.close()
+
+    const html = await $fetch<string>('/head-component')
+    expect((html.match(/data-hid="dedupe-key"/g) || []).length).toBe(1)
+    expect(html).toContain('<link rel="x-test" href="server" data-hid="dedupe-key">')
+  })
+
   // TODO: Doesn't adds header in test environment
   // it.todo('should render stylesheet link tag (SPA mode)', async () => {
   //   const html = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
