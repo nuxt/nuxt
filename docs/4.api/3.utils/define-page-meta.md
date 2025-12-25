@@ -41,6 +41,8 @@ interface PageMeta {
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+  mask?: string | ((route: RouteLocationNormalizedLoaded) => string)
+  unmaskOnReload?: boolean
   [key: string]: unknown
 }
 ```
@@ -145,6 +147,35 @@ interface PageMeta {
 
     Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/4.x/guide/recipes/custom-routing#using-routeroptions)) for more info.
 
+  **`mask`**
+
+  - **Type**: `string | ((route: RouteLocationNormalizedLoaded) => string)`
+
+    Display a different URL in the browser's address bar when this page is navigated to. The actual route is used for rendering while the masked URL is shown to the user. This is useful for modals, overlays, or other UI patterns where you want a clean shareable URL.
+
+    ```vue
+    <script setup lang="ts">
+    // Static mask
+    definePageMeta({
+      mask: '/photos',
+    })
+
+    // Dynamic mask based on route params
+    definePageMeta({
+      mask: (route) => `/photos/${route.params.id}`,
+    })
+    </script>
+    ```
+
+    :read-more{to="/docs/4.x/guide/recipes/route-masking"}
+
+  **`unmaskOnReload`**
+
+  - **Type**: `boolean`
+  - **Default**: `false` (or global `router.options.unmaskOnReload` value)
+
+    Controls whether the real URL should be shown after a page reload. By default, the masked URL persists across reloads. Set to `true` to reveal the actual route URL when the page is refreshed.
+
   **`[key: string]`**
 
   - **Type**: `any`
@@ -239,3 +270,24 @@ definePageMeta({
 })
 </script>
 ```
+
+### Route Masking
+
+You can mask the URL displayed in the browser while rendering a different route. This is useful for modals or overlays where you want a clean, shareable URL:
+
+```vue [app/pages/photos/[id]/modal.vue]
+<script setup lang="ts">
+definePageMeta({
+  // Show /photos/123 in URL bar while rendering /photos/123/modal
+  mask: (route) => `/photos/${route.params.id}`,
+})
+</script>
+
+<template>
+  <div class="modal">
+    <!-- Modal content -->
+  </div>
+</template>
+```
+
+:read-more{to="/docs/4.x/guide/recipes/route-masking"}
