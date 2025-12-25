@@ -1,7 +1,7 @@
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
+import { resolveModulePath } from 'exsolve'
 import VueSSRClientPlugin from '../plugins/vue/client.ts'
 import VueSSRServerPlugin from '../plugins/vue/server.ts'
-import { VueModuleIdentifierPlugin } from '../plugins/vue/module-identifier.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 
 import { webpack } from '#builder'
@@ -22,7 +22,16 @@ export function vue (ctx: WebpackConfigContext) {
     ctx.config.plugins!.push(new VueSSRServerPlugin({
       filename: `${ctx.name}.manifest.json`,
     }))
-    ctx.config.plugins!.push(new VueModuleIdentifierPlugin({ srcDir: ctx.nuxt.options.srcDir }))
+
+    const loaderPath = resolveModulePath('#vue-module-identifier', { from: import.meta.url })
+    ctx.config.module!.rules!.push({
+      test: /\.vue$/i,
+      enforce: 'post',
+      use: [{
+        loader: loaderPath,
+        options: { srcDir: ctx.nuxt.options.srcDir },
+      }],
+    })
   }
 
   // Feature flags
