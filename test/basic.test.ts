@@ -1475,7 +1475,10 @@ describe('route masking', () => {
     // Wait for page to be fully loaded
     await page.waitForSelector('h1:has-text("Mask Test Modal")')
 
-    // With unmaskOnReload: true (default in test fixture), URL should show real route after reload
+    // With unmaskOnReload: true (default in test fixture), URL should show the real route after reload
+    expect(page.url()).toContain('/mask-test/modal')
+    expect(page.url()).not.toContain('/mask-test/clean')
+
     // The modal page should still be displayed correctly
     const heading = await page.locator('h1:has-text("Mask Test Modal")').textContent()
     expect(heading).toBe('Mask Test Modal')
