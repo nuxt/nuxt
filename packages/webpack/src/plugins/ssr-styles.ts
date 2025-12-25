@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import { isAbsolute, relative, resolve } from 'pathe'
-import { parseURL } from 'ufo'
+import { parseURL, withTrailingSlash } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
 import { useNitro } from '@nuxt/kit'
@@ -10,6 +10,8 @@ import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
 import { createHash } from 'node:crypto'
+
+const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
 const isVueFile = (id: string) => /\.vue(?:\?|$)/.test(id)
 const isCSSLike = (name: string) => /\.(?:css|scss|sass|less|styl(?:us)?|postcss|pcss)(?:\?|$)/.test(name)
@@ -84,6 +86,74 @@ export class SSRStylesPlugin {
     this.globalCSSPaths = this.resolveGlobalCSS()
   }
 
+  private escapeTemplateLiteral (str: string) {
+    return str.replace(/[`\\$]/g, m => m === '$' ? '\\$' : `\\${m}`)
+  }
+
+  private isBuildAsset (url: string) {
+    const buildDir = withTrailingSlash(this.nuxt.options.app.buildAssetsDir || '/_nuxt/')
+    return url.startsWith(buildDir)
+  }
+
+  private isPublicAsset (url: string, nitro: ReturnType<typeof useNitro>) {
+    const cleaned = url.replace(/[?#].*$/, '')
+    for (const dir of nitro.options.publicAssets) {
+      const base = withTrailingSlash(dir.baseURL || '/')
+      if (!url.startsWith(base)) { continue }
+      const path = cleaned.replace(base, withTrailingSlash(dir.dir))
+      if (existsSync(path)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  private rewriteStyle (css: string, nitro: ReturnType<typeof useNitro>) {
+    let changed = false
+    let needsPublicAsset = false
+    let needsBuildAsset = false
+    let lastIndex = 0
+    let out = '`'
+
+    for (const match of css.matchAll(CSS_URL_RE)) {
+      const index = match.index ?? 0
+      const before = css.slice(lastIndex, index)
+      if (before) {
+        out += this.escapeTemplateLiteral(before)
+      }
+
+      const full = match[0]
+      const rawUrl = match[2] || ''
+      const stripped = rawUrl.replace(/[?#].*$/, '')
+
+      if (this.isPublicAsset(stripped, nitro)) {
+        needsPublicAsset = true
+        changed = true
+        out += '${publicAssetsURL(' + JSON.stringify(rawUrl) + ')}'
+      } else if (this.isBuildAsset(stripped)) {
+        needsBuildAsset = true
+        changed = true
+        out += '${buildAssetsURL(' + JSON.stringify(rawUrl) + ')}'
+      } else {
+        out += this.escapeTemplateLiteral(full)
+      }
+
+      lastIndex = index + full.length
+    }
+
+    const tail = css.slice(lastIndex)
+    if (tail) {
+      out += this.escapeTemplateLiteral(tail)
+    }
+    out += '`'
+
+    return {
+      code: changed ? out : JSON.stringify(css),
+      needsPublicAsset,
+      needsBuildAsset,
+    }
+  }
+
   private resolveGlobalCSS (): Set<string> {
     const req = createRequire(this.nuxt.options.rootDir)
     const resolved = new Set<string>()
@@ -155,6 +225,7 @@ export class SSRStylesPlugin {
     const { webpack } = compilation.compiler
     const stage = webpack.Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE
     compilation.hooks.processAssets.tap({ name: 'SSRStylesPlugin', stage }, () => {
+      const nitro = useNitro()
       // Start with client CSS as baseline, then add server-specific CSS from bundle parsing
       // Client CSS includes styles from mini-css-extract-plugin that may not appear in server bundle
       const collected = new Map<string, Set<string>>(this.clientCSSByIssuer)
@@ -205,9 +276,22 @@ export class SSRStylesPlugin {
       for (const [rel, cssSet] of collected.entries()) {
         if (!cssSet.size) { continue }
         const stylesArray = Array.from(cssSet)
+        const transformed = stylesArray.map(style => this.rewriteStyle(style, nitro))
+        const needsPublicAssets = transformed.some(t => t.needsPublicAsset)
+        const needsBuildAssets = transformed.some(t => t.needsBuildAsset)
+        const imports: string[] = []
+        if (needsPublicAssets || needsBuildAssets) {
+          const names = [] as string[]
+          if (needsBuildAssets) { names.push('buildAssetsURL') }
+          if (needsPublicAssets) { names.push('publicAssetsURL') }
+          imports.push(`import { ${names.join(', ')} } from '#internal/nuxt/paths'`)
+        }
+        const moduleSource = [
+          ...imports,
+          `export default ${genArrayFromRaw(transformed.map(t => t.code))}`,
+        ].filter(Boolean).join('\n')
         const styleModuleName = `${sanitizeStyleAssetName(rel)}-styles.mjs`
-        const source = `export default ${genArrayFromRaw(stylesArray.map(s => JSON.stringify(s)))}`
-        compilation.emitAsset(styleModuleName, new rawSource(source))
+        compilation.emitAsset(styleModuleName, new rawSource(moduleSource))
         emitted[rel] = styleModuleName
         this.chunksWithInlinedCSS.add(rel)
       }
@@ -222,7 +306,6 @@ export class SSRStylesPlugin {
       compilation.emitAsset('styles.mjs', new rawSource(stylesSource))
 
       const entryIds = Array.from(this.chunksWithInlinedCSS).filter(id => entryModules.has(id))
-      const nitro = useNitro()
       nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(entryIds)}`
       nitro.options._config.virtual ||= {}
       nitro.options._config.virtual['#internal/nuxt/entry-ids.mjs'] = nitro.options.virtual['#internal/nuxt/entry-ids.mjs']
