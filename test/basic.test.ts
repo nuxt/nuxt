@@ -1073,6 +1073,21 @@ describe('head tags', () => {
     await page.close()
   })
 
+  it('should deduplicate head tags with key', async () => {
+    const page = await createPage('/head-component')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    expect(await page.locator('link[data-hid="dedupe-key"]').count()).toBe(1)
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('href')).toBe('client')
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('rel')).toBe('x-test')
+
+    await page.close()
+
+    const html = await $fetch<string>('/head-component')
+    expect((html.match(/data-hid="dedupe-key"/g) || []).length).toBe(1)
+    expect(html).toContain('<link rel="x-test" href="server" data-hid="dedupe-key">')
+  })
+
   // TODO: Doesn't adds header in test environment
   // it.todo('should render stylesheet link tag (SPA mode)', async () => {
   //   const html = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
@@ -1943,6 +1958,20 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
     expect(html).toContain('--inline-only')
     expect(html).not.toContain('inline-only.css')
     expect(html).toContain('assets/plugin.css')
+  })
+})
+
+describe.skipIf(isDev)('module identifiers', () => {
+  it('injects SSR module identifiers for inline styles', async () => {
+    const { page } = await renderPage('/ssr-modules')
+
+    const modulesJson = await page.getAttribute('#ssr-modules', 'data-modules')
+    const modules: string[] = modulesJson ? JSON.parse(modulesJson) : []
+
+    expect(modules.length).toBeGreaterThan(0)
+    expect(modules.every(id => typeof id === 'string' && id.length > 0)).toBe(true)
+
+    await page.close()
   })
 })
 

@@ -12,7 +12,8 @@
   "type": "module",
   "types": "./dist/index.d.ts",
   "imports": {
-    "#builder": "./builder.mjs"
+    "#builder": "./builder.mjs",
+    "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
   },
   "exports": {
     ".": {
