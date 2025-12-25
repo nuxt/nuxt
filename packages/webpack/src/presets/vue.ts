@@ -22,7 +22,7 @@ export function vue (ctx: WebpackConfigContext) {
     ctx.config.plugins!.push(new VueSSRServerPlugin({
       filename: `${ctx.name}.manifest.json`,
     }))
-    ctx.config.plugins!.push(new VueModuleIdentifierPlugin({ rootDir: ctx.nuxt.options.rootDir }))
+    ctx.config.plugins!.push(new VueModuleIdentifierPlugin({ srcDir: ctx.nuxt.options.srcDir }))
   }
 
   // Feature flags

@@ -3,19 +3,19 @@ import type { Compiler, Dependency, Module, NormalModule } from 'webpack'
 import { webpack } from '#builder'
 
 export interface VueModuleIdentifierPluginOptions {
-  rootDir?: string
+  srcDir?: string
 }
 
 export class VueModuleIdentifierPlugin {
-  private rootDir?: string
+  private srcDir?: string
 
   constructor (options: VueModuleIdentifierPluginOptions = {}) {
-    this.rootDir = options.rootDir
+    this.srcDir = options.srcDir
   }
 
   apply (compiler: Compiler) {
     const pluginName = 'VueModuleIdentifierPlugin'
-    const context = this.rootDir || compiler.options.context
+    const context = this.srcDir || compiler.options.context
 
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
       compilation.dependencyTemplates.set(ModuleIdentifierDependency, new ModuleIdentifierDependencyTemplate())
