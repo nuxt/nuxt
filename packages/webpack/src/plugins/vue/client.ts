@@ -6,7 +6,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 
 import { normalizeWebpackManifest, precomputeDependencies } from 'vue-bundle-renderer'
-import { join, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import { serialize } from 'seroval'
 
@@ -31,6 +31,7 @@ export default class VueSSRClientPlugin {
   apply (compiler: Compiler) {
     compiler.hooks.afterEmit.tap('VueSSRClientPlugin', async (compilation: Compilation) => {
       const stats = compilation.getStats().toJson()
+      const context = this.nuxt.options.srcDir
 
       const initialFiles = new Set<string>()
       for (const { assets } of Object.values(stats.entrypoints!)) {
@@ -83,6 +84,14 @@ export default class VueSSRClientPlugin {
           continue
         }
         const id = m.identifier!.replace(/\s\w+$/, '') // remove appended hash
+
+        // Module identifier format: /path/loaders!resource?query
+        const resourceMatch = id.match(/([^!]*\.vue)(?:\?|$)/)
+        // Extract relative resource path
+        const relativeId = resourceMatch && resourceMatch[1]
+          ? normalize(relative(context, resourceMatch[1])).replace(/^\.\//, '').replace(/\\/g, '/')
+          : id
+
         const filesSet = new Set<number>()
         for (const file of chunk.files) {
           const index = fileToIndex(file)
@@ -103,14 +112,18 @@ export default class VueSSRClientPlugin {
         }
 
         const files = Array.from(filesSet)
-        webpackManifest.modules[hash(id)] = files
+        webpackManifest.modules[relativeId] = files
 
         // In production mode, modules may be concatenated by scope hoisting
         // Include ConcatenatedModule for not losing module-component mapping
         if (Array.isArray(m.modules)) {
           for (const concatenatedModule of m.modules) {
-            const id = hash(concatenatedModule.identifier!.replace(/\s\w+$/, ''))
-            webpackManifest.modules[id] ||= files
+            const id = concatenatedModule.identifier!.replace(/\s\w+$/, '')
+            const resourceMatch = id.match(/([^!]*\.vue)(?:\?|$)/)
+            const relativeId = resourceMatch && resourceMatch[1]
+              ? normalize(relative(context, resourceMatch[1])).replace(/^\.\//, '').replace(/\\/g, '/')
+              : id
+            webpackManifest.modules[relativeId] ||= files
           }
         }
 
