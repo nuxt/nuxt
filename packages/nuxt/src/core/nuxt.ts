@@ -617,7 +617,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Track components used to render for webpack
-  if (nuxt.options.builder === '@nuxt/webpack-builder') {
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
