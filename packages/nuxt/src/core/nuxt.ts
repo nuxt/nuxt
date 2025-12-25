@@ -649,11 +649,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Add prerender payload support
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
-  }
-
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
@@ -775,7 +770,8 @@ export default defineNuxtPlugin({
     nuxt.options.experimental.payloadExtraction = true
   }
 
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+  // Add prerender payload support
+  if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
 

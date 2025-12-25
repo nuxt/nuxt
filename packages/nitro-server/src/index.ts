@@ -408,18 +408,31 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   })
 
   if (nuxt.options.experimental.payloadExtraction) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:config', (nitroConfig) => {
+        nitroConfig.prerender ||= {}
+        nitroConfig.prerender.routes ||= []
+        nitroConfig.routeRules ||= {}
+        for (const route of nitroConfig.prerender.routes) {
+          if (!route) { continue }
+          nitroConfig.routeRules[route] = defu(nitroConfig.routeRules[route], { prerender: true })
+        }
+      })
+    }
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('build:before', (nitro) => {
         for (const [route, value] of Object.entries(nitro.options.routeRules)) {
-          if ((value.isr || value.cache) && !route.endsWith('*') && !route.endsWith('/_payload.json')) {
-            const payloadKey = route + '/_payload.json'
-            const defaults = {} as Record<string, any>
-            for (const key of ['isr', 'cache']) {
-              if (key in value) {
-                defaults[key] = value[key as keyof typeof value]
+          if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
+            if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
+              const payloadKey = route + '/_payload.json'
+              const defaults = {} as Record<string, any>
+              for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
+                if (key in value) {
+                  defaults[key] = value[key as keyof typeof value]
+                }
               }
+              nitro.options.routeRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
             }
-            nitro.options.routeRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
           }
         }
       })
@@ -569,6 +582,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
+
+  if (nitroConfig.static && nuxt.options.dev) {
+    nitroConfig.routeRules ||= {}
+    nitroConfig.routeRules['/**'] = defu(nitroConfig.routeRules['/**'], { prerender: true })
+  }
 
   // TODO: extract to shared utility?
   const excludedAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', '#imports', 'vue-demi', /^#app/, '~', '@', '~~', '@@']
