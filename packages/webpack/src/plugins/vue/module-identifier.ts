@@ -18,7 +18,12 @@ export class VueModuleIdentifierPlugin {
     const context = this.srcDir || compiler.options.context
 
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
-      compilation.dependencyTemplates.set(ModuleIdentifierDependency, new ModuleIdentifierDependencyTemplate())
+      // Rspack doesn't support dependencyTemplates API
+      const supportsDepTemplates = 'dependencyTemplates' in compilation
+
+      if (supportsDepTemplates) {
+        compilation.dependencyTemplates.set(ModuleIdentifierDependency, new ModuleIdentifierDependencyTemplate())
+      }
 
       compilation.hooks.succeedModule.tap(pluginName, (module) => {
         const normalModule = toNormalModule(module)
@@ -45,11 +50,16 @@ export class VueModuleIdentifierPlugin {
           return
         }
 
-        if (hasModuleIdentifierDependency(normalModule)) {
-          return
+        if (supportsDepTemplates) {
+          if (hasModuleIdentifierDependency(normalModule)) {
+            return
+          }
+          normalModule.addDependency(new ModuleIdentifierDependency(moduleId))
+        } else {
+          // Rspack fallback: directly append to source
+          const snippet = `\n;__exports__.__moduleIdentifier = ${JSON.stringify(moduleId)};`
+          ;(normalModule as any)._source = new webpack.sources.ConcatSource(source, snippet)
         }
-
-        normalModule.addDependency(new ModuleIdentifierDependency(moduleId))
       })
     })
   }
