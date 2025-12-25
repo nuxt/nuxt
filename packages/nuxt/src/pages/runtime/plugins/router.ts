@@ -20,45 +20,23 @@ import routerOptions, { defaultUnmaskOnReload, hashMode } from '#build/router.op
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
-// Stores mask state to restore after router initialization (when not unmasking on reload)
+// Stores mask state for post-hydration handling
 let pendingMaskState: MaskedHistoryState | null = null
+// Stores the real route to navigate to after hydration
+let pendingRealRoute: string | null = null
+// Whether to show the real URL after navigation (unmaskOnReload: true) or keep mask (false)
+let shouldShowRealUrl: boolean = false
 
 /**
- * Get the initial route URL, accounting for masked routes.
- * On client-side, checks history.state for a masked route (__tempLocation).
- * If unmaskOnReload is true, clears the mask and returns the real URL.
+ * Get the initial route URL.
+ * For masked routes, we always use the masked URL for hydration compatibility.
+ * The real route navigation happens after hydration.
  */
 function getInitialURL (
   base: string,
   location: Location,
   renderedPath?: string,
 ): string {
-  // Check for masked route state on client
-  if (import.meta.client) {
-    const state = window.history.state as MaskedHistoryState | null
-
-    if (state?.__tempLocation) {
-      // Check if we should unmask on reload:
-      // 1. Explicit __unmaskOnReload in state takes precedence
-      // 2. Fall back to global defaultUnmaskOnReload config
-      const shouldUnmask = state.__unmaskOnReload ?? defaultUnmaskOnReload
-      if (shouldUnmask) {
-        window.history.replaceState({}, '', state.__tempLocation)
-        return state.__tempLocation
-      }
-
-      // Store mask state to restore after router initialization
-      // Vue Router will replace history state, so we need to re-apply the mask
-      if (state.__maskUrl) {
-        pendingMaskState = state
-      }
-
-      // Use the real route from state for routing
-      return state.__tempLocation
-    }
-  }
-
-  // Fallback to normal URL resolution
   return createCurrentLocation(base, location, renderedPath)
 }
 
@@ -93,6 +71,30 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     if (hashMode && !routerBase.includes('#')) {
       // allow the user to provide a `#` in the middle: `/base/#/app`
       routerBase += '#'
+    }
+
+    // Handle masked routes BEFORE Vue Router is created
+    // Strategy: Always hydrate with masked URL (matches server), then navigate to real route after hydration
+    // This avoids hydration mismatches in ALL cases
+    if (import.meta.client) {
+      const state = window.history.state as MaskedHistoryState | null
+      if (state?.__tempLocation && state.__maskUrl) {
+        const shouldUnmask = state.__unmaskOnReload ?? defaultUnmaskOnReload
+
+        // Store for post-hydration navigation
+        pendingMaskState = state
+        pendingRealRoute = state.__tempLocation
+        shouldShowRealUrl = shouldUnmask
+
+        // Clear Vue Router's state properties but keep our mask properties
+        // This ensures Vue Router initializes with the masked URL (matching server)
+        const cleanState: MaskedHistoryState = {
+          __tempLocation: state.__tempLocation,
+          __maskUrl: state.__maskUrl,
+          __unmaskOnReload: state.__unmaskOnReload,
+        }
+        window.history.replaceState(cleanState, '', state.__maskUrl)
+      }
     }
 
     const history = routerOptions.history?.(routerBase) ?? (import.meta.client
@@ -374,17 +376,36 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         })
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
-
-        // Restore mask state after router initialization (for reload with unmaskOnReload: false)
-        if (import.meta.client && pendingMaskState) {
-          window.history.replaceState(pendingMaskState, '', pendingMaskState.__maskUrl)
-          pendingMaskState = null
-        }
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
         await nuxtApp.runWithContext(() => showError(error))
       }
     })
+
+    // Handle post-hydration navigation for masked routes
+    // This MUST happen AFTER hydration to avoid hydration mismatch
+    if (import.meta.client && pendingRealRoute && pendingMaskState) {
+      const targetRoute = pendingRealRoute
+      const maskState = pendingMaskState
+      const showRealUrl = shouldShowRealUrl
+      // Clear immediately to prevent double-navigation
+      pendingRealRoute = null
+      pendingMaskState = null
+      shouldShowRealUrl = false
+
+      nuxtApp.hook('app:suspense:resolve', async () => {
+        // Navigate to the real route (this renders the actual page content)
+        await router.replace(targetRoute)
+
+        if (showRealUrl) {
+          // unmaskOnReload: true - show the real URL
+          window.history.replaceState({}, '', targetRoute)
+        } else {
+          // unmaskOnReload: false - keep the mask, restore mask state
+          window.history.replaceState(maskState, '', maskState.__maskUrl)
+        }
+      })
+    }
 
     return { provide: { router } }
   },
