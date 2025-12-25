@@ -1,6 +1,7 @@
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
 import VueSSRClientPlugin from '../plugins/vue/client.ts'
 import VueSSRServerPlugin from '../plugins/vue/server.ts'
+import { VueModuleIdentifierPlugin } from '../plugins/vue/module-identifier.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 
 import { webpack } from '#builder'
@@ -12,7 +13,7 @@ export function vue (ctx: WebpackConfigContext) {
   ctx.config.module!.rules!.push({
     test: /\.vue$/i,
     loader: 'vue-loader',
-    options: ctx.userConfig.loaders.vue,
+    options: { ...ctx.userConfig.loaders.vue, isServerBuild: ctx.isServer },
   })
 
   if (ctx.isClient) {
@@ -21,6 +22,7 @@ export function vue (ctx: WebpackConfigContext) {
     ctx.config.plugins!.push(new VueSSRServerPlugin({
       filename: `${ctx.name}.manifest.json`,
     }))
+    ctx.config.plugins!.push(new VueModuleIdentifierPlugin({ rootDir: ctx.nuxt.options.rootDir }))
   }
 
   // Feature flags
