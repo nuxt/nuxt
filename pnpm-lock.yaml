@@ -681,6 +681,9 @@ importers:
       '@rspack/core':
         specifier: ^1.6.8
         version: 1.6.8
+      '@vue/compiler-sfc':
+        specifier: 3.5.26
+        version: 3.5.26
       autoprefixer:
         specifier: ^10.4.23
         version: 10.4.23(postcss@8.5.6)
@@ -1125,6 +1128,9 @@ importers:
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
+      '@vue/compiler-sfc':
+        specifier: 3.5.26
+        version: 3.5.26
       autoprefixer:
         specifier: ^10.4.23
         version: 10.4.23(postcss@8.5.6)

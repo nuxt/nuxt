@@ -1846,7 +1846,7 @@ describe.skipIf(isDev)('module identifiers', () => {
   })
 })
 
-describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
+describe.skipIf(isDev)('inlining component styles', () => {
   const inlinedCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
     '{--global:"global";', // global css from nuxt.config
@@ -1880,7 +1880,7 @@ describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
     }
   })
 
-  it('should emit assets referenced in inlined CSS', async () => {
+  it.skipIf(isWebpack /* file is inlined */)('should emit assets referenced in inlined CSS', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
@@ -1899,24 +1899,44 @@ describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
       if (style === '{--plugin:"plugin"}') { continue }
+      if (style === '{--global:"global";' && isWebpack) {
+        // webpack global css is not stripped
+        expect.soft(css).toContain(style)
+        continue
+      }
       expect.soft(css).not.toContain(style)
     }
 
     // should include unloadable CSS in generated CSS file
-    expect.soft(css).toContain('--virtual:red')
-    expect.soft(css).toContain('--functional:"functional"')
-    expect.soft(css).toContain('--client-only:"client-only"')
+    const unloadableCSS = [
+      '--virtual:red',
+      '--functional:"functional"',
+      '--client-only:"client-only"',
+    ]
+    for (const style of unloadableCSS) {
+      // TODO:
+      if (isWebpack) {
+        expect.soft(css).not.toContain(style)
+        continue
+      }
+      expect.soft(css).toContain(style)
+    }
   })
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
     const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
     expect(cssFiles?.length).toBeGreaterThan(0)
-    expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
-      [
-        "<link rel="stylesheet" href="/_nuxt/entry.css"",
-      ]
-    `)
+    if (isWebpack) {
+      // TODO: use non-hash name for webpack css files in test fixture
+      expect(cssFiles).toHaveLength(2)
+    } else {
+      expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+        [
+          "<link rel="stylesheet" href="/_nuxt/entry.css"",
+        ]
+      `)
+    }
   })
 
   it('still downloads client-only styles', async () => {
@@ -2158,6 +2178,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html: string = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
   })
@@ -2189,6 +2210,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
@@ -2205,6 +2227,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -2234,6 +2257,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
     }
   })
@@ -2455,8 +2479,7 @@ describe('component islands', () => {
       }
     }
 
-    // TODO: fix rendering of styles in webpack
-    if (!isDev && !isWebpack) {
+    if (!isDev) {
       expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
           "style": [
@@ -2466,7 +2489,7 @@ describe('component islands', () => {
           ],
         }
       `)
-    } else if (isDev && !isWebpack) {
+    } else {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
