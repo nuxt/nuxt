@@ -28,6 +28,16 @@ export default class VueSSRClientPlugin {
     this.nuxt = options.nuxt
   }
 
+  private getRelativeModuleId (identifier: string, context: string): string {
+    const id = identifier.replace(/\s\w+$/, '') // remove appended hash
+    // Module identifier format: /path/loaders!resource?query
+    const resourceMatch = id.match(/([^!]*\.vue)(?:\?|$)/)
+    // Extract relative resource path
+    return resourceMatch && resourceMatch[1]
+      ? normalize(relative(context, resourceMatch[1])).replace(/^\.\//, '').replace(/\\/g, '/')
+      : id
+  }
+
   apply (compiler: Compiler) {
     compiler.hooks.afterEmit.tap('VueSSRClientPlugin', async (compilation: Compilation) => {
       const stats = compilation.getStats().toJson()
@@ -83,14 +93,7 @@ export default class VueSSRClientPlugin {
         if (!chunk || !chunk.files || !cid) {
           continue
         }
-        const id = m.identifier!.replace(/\s\w+$/, '') // remove appended hash
-
-        // Module identifier format: /path/loaders!resource?query
-        const resourceMatch = id.match(/([^!]*\.vue)(?:\?|$)/)
-        // Extract relative resource path
-        const relativeId = resourceMatch && resourceMatch[1]
-          ? normalize(relative(context, resourceMatch[1])).replace(/^\.\//, '').replace(/\\/g, '/')
-          : id
+        const relativeId = this.getRelativeModuleId(m.identifier!, context)
 
         const filesSet = new Set<number>()
         for (const file of chunk.files) {
@@ -118,11 +121,7 @@ export default class VueSSRClientPlugin {
         // Include ConcatenatedModule for not losing module-component mapping
         if (Array.isArray(m.modules)) {
           for (const concatenatedModule of m.modules) {
-            const id = concatenatedModule.identifier!.replace(/\s\w+$/, '')
-            const resourceMatch = id.match(/([^!]*\.vue)(?:\?|$)/)
-            const relativeId = resourceMatch && resourceMatch[1]
-              ? normalize(relative(context, resourceMatch[1])).replace(/^\.\//, '').replace(/\\/g, '/')
-              : id
+            const relativeId = this.getRelativeModuleId(concatenatedModule.identifier!, context)
             webpackManifest.modules[relativeId] ||= files
           }
         }
