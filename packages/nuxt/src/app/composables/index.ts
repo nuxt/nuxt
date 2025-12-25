@@ -14,7 +14,7 @@ export type { CookieOptions, CookieRef } from './cookie'
 export { onPrehydrate, prerenderRoutes, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus, useResponseHeader } from './ssr'
 export { onNuxtReady } from './ready'
 export { abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBeforeRouteLeave, onBeforeRouteUpdate, setPageLayout, navigateTo, useRoute, useRouter } from './router'
-export type { AddRouteMiddlewareOptions, RouteMiddleware } from './router'
+export type { AddRouteMiddlewareOptions, MaskedHistoryState, NavigateToOptions, RouteMiddleware } from './router'
 export { preloadComponents, prefetchComponents, preloadRouteComponents } from './preload'
 export { isPrerendered, loadPayload, preloadPayload, definePayloadReducer, definePayloadReviver } from './payload'
 // eslint-disable-next-line @typescript-eslint/no-deprecated

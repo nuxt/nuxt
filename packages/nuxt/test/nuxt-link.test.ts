@@ -349,3 +349,21 @@ describe('nuxt-link:propsOrAttributes', () => {
     })
   })
 })
+
+describe('nuxt-link:mask', () => {
+  it('renders as anchor with mask URL in href', () => {
+    // When mask is provided:
+    // - Renders as <a> (not RouterLink) to control href attribute
+    // - href shows the MASK URL (for SEO, copy link, etc.)
+    // - Click handler navigates to real route and applies mask
+    const link = nuxtLink({ to: '/photos/1/modal', mask: '/photos/1' })
+    expect(link.type).toBe(EXTERNAL) // <a> tag
+    expect(link.props.href).toBe('/photos/1') // mask URL in href
+  })
+
+  it('accepts `unmaskOnReload` prop alongside `mask`', () => {
+    const link = nuxtLink({ to: '/modal', mask: '/clean', unmaskOnReload: true })
+    expect(link.type).toBe(EXTERNAL)
+    expect(link.props.href).toBe('/clean')
+  })
+})
