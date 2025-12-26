@@ -22,6 +22,8 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
+
+import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import { isTestingAppManifest } from '../matrix'
 
@@ -389,6 +391,22 @@ describe('compiled route rules', () => {
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+  })
+
+  it('should determine if payload should be loaded based on route rules', async () => {
+    // wildcard routes with prerender: true should load payloads
+    const shouldLoadPre = await shouldLoadPayload('/pre/thing')
+    expect(shouldLoadPre).toBe(true)
+
+    // specific prerendered routes should load payloads
+    const shouldLoadSpecific = await shouldLoadPayload('/specific-prerendered')
+    expect(shouldLoadSpecific).toBe(true)
+
+    // routes with redirect should not load payloads
+    const redirectRoute = getRouteRules({ path: '/pre/test' })
+    expect(redirectRoute.redirect).toBe('/')
+    const shouldLoadRedirect = await shouldLoadPayload('/pre/test')
+    expect(shouldLoadRedirect).toBe(false)
   })
 })
 

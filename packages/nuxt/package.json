@@ -25,38 +25,17 @@
       "import": "./config.js",
       "require": "./config.cjs"
     },
-    "./schema": {
-      "types": "./schema.d.ts",
-      "import": "./schema.js"
-    },
-    "./kit": {
-      "types": "./kit.d.ts",
-      "import": "./kit.js"
-    },
+    "./schema": "./schema.js",
+    "./kit": "./kit.js",
     "./meta": "./meta.js",
-    "./app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
+    "./app": "./dist/app/index.js",
     "./package.json": "./package.json"
   },
   "imports": {
-    "#app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
-    "#app/nuxt": {
-      "types": "./dist/app/nuxt.d.ts",
-      "import": "./dist/app/nuxt.js"
-    },
-    "#unhead/composables": {
-      "types": "./dist/head/runtime/composables.d.ts",
-      "import": "./dist/head/runtime/composables.js"
-    },
-    "#pages/composables": {
-      "types": "./dist/pages/runtime/composables.d.ts",
-      "import": "./dist/pages/runtime/composables.js"
-    }
+    "#app": "./dist/app/index.js",
+    "#app/nuxt": "./dist/app/nuxt.js",
+    "#unhead/composables": "./dist/head/runtime/composables.js",
+    "#pages/composables": "./dist/pages/runtime/composables.js"
   },
   "files": [
     "app.d.ts",
@@ -76,7 +55,7 @@
   },
   "dependencies": {
     "@dxup/nuxt": "^0.3.2",
-    "@nuxt/cli": "^3.31.2",
+    "@nuxt/cli": "^3.31.3",
     "@nuxt/devtools": "^3.1.1",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
@@ -84,8 +63,8 @@
     "@nuxt/telemetry": "^2.6.6",
     "@nuxt/vite-builder": "workspace:*",
     "@unhead/vue": "^2.0.19",
-    "@vue/shared": "^3.5.25",
-    "c12": "^3.3.2",
+    "@vue/shared": "^3.5.26",
+    "c12": "^3.3.3",
     "chokidar": "^5.0.0",
     "compatx": "^0.2.0",
     "consola": "^3.4.2",
@@ -110,9 +89,9 @@
     "ofetch": "^1.5.1",
     "ohash": "^2.0.11",
     "on-change": "^6.0.1",
-    "oxc-minify": "^0.103.0",
-    "oxc-parser": "^0.103.0",
-    "oxc-transform": "^0.103.0",
+    "oxc-minify": "^0.105.0",
+    "oxc-parser": "^0.105.0",
+    "oxc-transform": "^0.105.0",
     "oxc-walker": "^0.6.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.0.0",
@@ -130,16 +109,16 @@
     "unplugin": "^2.3.11",
     "unplugin-vue-router": "^0.19.1",
     "untyped": "^2.0.0",
-    "vue": "^3.5.25",
+    "vue": "^3.5.26",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@nuxt/scripts": "0.13.1",
+    "@nuxt/scripts": "0.13.2",
     "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.8",
     "@vitejs/plugin-vue": "6.0.3",
     "@vitejs/plugin-vue-jsx": "5.1.2",
-    "@vue/compiler-sfc": "3.5.25",
+    "@vue/compiler-sfc": "3.5.26",
     "unbuild": "3.6.1",
     "vite": "7.3.0",
     "vitest": "3.2.4",

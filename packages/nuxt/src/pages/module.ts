@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addImportsSources, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
+import { genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { joinURL } from 'ufo'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
@@ -619,10 +619,22 @@ export default defineNuxtModule({
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
       getContents: ({ app }) => {
+        const imports = new Set<string>()
+        const interfaceKeyValues = new Map<string, string>()
+        for (const layout of Object.values(app.layouts)) {
+          const varName = genSafeVariableName(layout.name)
+          imports.add(genImport(layout.file, varName))
+          interfaceKeyValues.set(layout.name, varName)
+        }
+
         return [
+          ...Array.from(imports),
           'import type { ComputedRef, MaybeRef } from \'vue\'',
-          `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
           'declare module \'nuxt/app\' {',
+          '  interface NuxtLayouts {',
+          ...Array.from(interfaceKeyValues.entries()).map(([key, value]) => `    '${key}': InstanceType<typeof ${value}>['$props'],`),
+          '}',
+          '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
