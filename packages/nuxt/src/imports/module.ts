@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNuxt, useNitro } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile } from 'unimport'
@@ -114,12 +114,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       await nuxt.callHook('imports:context', ctx)
     })
 
-    let nitroCtx: Unimport | undefined
-
-    nuxt.hook('nitro:init', (nitro) => {
-      nitroCtx = nitro.unimport
-    })
-
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
@@ -185,16 +179,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.hook('modules:done', () => regenerateImports())
 
     // Generate types
-    addDeclarationTemplates(
-      {
-        generateTypeDeclarations: options => ctx.generateTypeDeclarations(options),
-        getImports: () => ctx.getImports(),
-      },
-      {
-        getImports: () => nitroCtx?.getImports() ?? Promise.resolve([]),
-      },
-      options,
-    )
+    addDeclarationTemplates({
+      generateTypeDeclarations: options => ctx.generateTypeDeclarations(options),
+      getImports: () => ctx.getImports(),
+    }, options)
 
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, relativePath) => {
@@ -214,7 +202,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   },
 })
 
-function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTypeDeclarations'>, nitroCtx: Pick<Unimport, 'getImports'>, options: Partial<ImportsOptions>) {
+function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTypeDeclarations'>, options: Partial<ImportsOptions>) {
   const nuxt = useNuxt()
 
   const resolvedImportPathMap = new Map<string, string>()
@@ -284,10 +272,11 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       if (!options.autoImport) {
         return GENERATED_BY_COMMENT + AUTO_IMPORTS_DISABLED_COMMENT
       }
+      const nitro = useNitro()
 
       const nuxtImports = await ctx.getImports()
 
-      const nitroImports = await nitroCtx.getImports()
+      const nitroImports = await nitro.unimport?.getImports() ?? []
       const nitroImportsByName = new Map<string, Import>(nitroImports.map(i => [i.as || i.name, i]))
 
       const sharedImports: Import[] = []
