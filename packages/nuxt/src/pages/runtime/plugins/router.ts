@@ -20,13 +20,6 @@ import routerOptions, { defaultUnmaskOnReload, hashMode } from '#build/router.op
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
-// Stores mask state for post-hydration handling
-let pendingMaskState: MaskedHistoryState | null = null
-// Stores the real route to navigate to after hydration
-let pendingRealRoute: string | null = null
-// Whether to show the real URL after navigation (unmaskOnReload: true) or keep mask (false)
-let shouldShowRealUrl: boolean = false
-
 /**
  * Get the initial route URL.
  * For masked routes, we always use the masked URL for hydration compatibility.
@@ -67,6 +60,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
   async setup (nuxtApp) {
+    // Stores mask state for post-hydration handling
+    let pendingMaskState: MaskedHistoryState | null = null
+    // Stores the real route to navigate to after hydration
+    let pendingRealRoute: string | null = null
+    // Whether to show the real URL after navigation (unmaskOnReload: true) or keep mask (false)
+    let shouldShowRealUrl: boolean = false
+
     let routerBase = useRuntimeConfig().app.baseURL
     if (hashMode && !routerBase.includes('#')) {
       // allow the user to provide a `#` in the middle: `/base/#/app`
@@ -397,11 +397,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         // Navigate to the real route (this renders the actual page content)
         await router.replace(targetRoute)
 
-        if (showRealUrl) {
-          // unmaskOnReload: true - show the real URL
-          window.history.replaceState({}, '', targetRoute)
-        } else {
-          // unmaskOnReload: false - keep the mask, restore mask state
+        // unmaskOnReload: false - restore the mask (Vue Router already set real URL if unmaskOnReload: true)
+        if (!showRealUrl) {
           window.history.replaceState(maskState, '', maskState.__maskUrl)
         }
       })
