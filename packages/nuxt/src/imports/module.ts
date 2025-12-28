@@ -288,13 +288,22 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       const nuxtImports = await ctx.getImports()
 
       const nitroImports = await nitroCtx.getImports()
-      const nitroImportNames = new Set(nitroImports.map(i => i.as || i.name))
+      const nitroImportsByName = new Map<string, Import>(nitroImports.map(i => [i.as || i.name, i]))
 
-      const sharedImports = nuxtImports.filter((i) => {
-        if (i.dtsDisabled) { return }
+      const sharedImports: Import[] = []
+
+      for (const i of nuxtImports) {
         const importName = i.as || i.name
-        return nitroImportNames.has(importName)
-      })
+        const nitroImport = nitroImportsByName.get(importName)
+        if (!nitroImport || i.dtsDisabled || nitroImport.dtsDisabled) { continue }
+
+        sharedImports.push(i)
+
+        // add the nitro import too to create a union, if it differs
+        if (i.from !== nitroImport.from) {
+          sharedImports.push(nitroImport)
+        }
+      }
 
       await cacheImportPaths(sharedImports)
 
