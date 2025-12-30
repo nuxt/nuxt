@@ -92,7 +92,7 @@ export interface ModuleDefinition<
   hooks?: Partial<NuxtHooks>
   moduleDependencies?: ModuleDependencies | ((nuxt: Nuxt) => Awaitable<ModuleDependencies>)
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
-  onUpgrade?: (nuxt: Nuxt, options: TOptions, previousVersion: string) => Awaitable<void>
+  onUpgrade?: (options: TOptions, nuxt: Nuxt, previousVersion: string) => Awaitable<void>
   setup?: (
     this: void,
     resolvedOptions: TWith extends true
