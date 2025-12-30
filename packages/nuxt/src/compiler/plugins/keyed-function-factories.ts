@@ -1,4 +1,4 @@
-import { createCompilerScanPlugin, resolveAlias } from '@nuxt/kit'
+import { resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXTENSIONS, isJavascriptExtension, logger, stripExtension } from '../../utils.ts'
 import type {
@@ -15,7 +15,7 @@ import { shouldTransformFile } from './keyed-functions.ts'
 import MagicString from 'magic-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
-import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
+import type { KeyedFunction, KeyedFunctionFactory, ScanPlugin } from '@nuxt/schema'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface ParsedKeyedFunctionFactory {
@@ -240,7 +240,7 @@ interface KeyedFunctionFactoriesScanPluginOptions {
  * Scans raw source files for factory functions that need auto-injected keys
  * so that it can register them for key injection.
  */
-export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactoriesScanPluginOptions) => createCompilerScanPlugin(() => {
+export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactoriesScanPluginOptions): ScanPlugin => {
   const keyedFunctionsCreatedByFactories: KeyedFunction[] = []
 
   // DO NOT USE IN SCAN - this is a global copy that doesn't include local import renames
@@ -306,7 +306,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
       nuxt.options.optimization.keyedComposables.push(...keyedFunctionsCreatedByFactories)
     },
   }
-})
+}
 
 // -------- unplugin for replacing keyed factory macros --------
 

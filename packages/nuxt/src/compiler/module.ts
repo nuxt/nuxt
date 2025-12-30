@@ -1,4 +1,4 @@
-import { addBuildPlugin, addCompilerScanPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { CompilerScanDir, NuxtCompilerOptions, ScanPlugin, ScanPluginFilter } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils.ts'
@@ -27,10 +27,14 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
 
     nuxt.hook('compiler:ready', async () => {
       // scan raw source files for keyed function factories to register their created functions for key injection
-      addCompilerScanPlugin(KeyedFunctionFactoriesScanPlugin({
-        factories: nuxt.options.optimization.keyedComposableFactories,
-        alias: nuxt.options.alias,
-      }))
+      nuxt.options.compiler ||= {}
+      nuxt.options.compiler.plugins ||= []
+      nuxt.options.compiler.plugins.push(
+        KeyedFunctionFactoriesScanPlugin({
+          factories: nuxt.options.optimization.keyedComposableFactories,
+          alias: nuxt.options.alias,
+        }),
+      )
 
       // replace keyed function factory compiler macro placeholders with actual factories (createUseFetch -> createUseFetch.__nuxt_factory)
       addBuildPlugin(KeyedFunctionFactoriesPlugin({
@@ -102,8 +106,6 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         }))
       }
 
-      await nuxt.callHook('compiler:dirs', _scanDirs)
-
       // normalize scan directories
       const dirPaths = new Set<string>()
 
@@ -142,8 +144,6 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         const files = await resolveFiles(dir.path, dir.pattern, { ignore: dir.ignore })
         _filePaths.push(...files)
       }))
-
-      await nuxt.callHook('compiler:files', _filePaths)
 
       // normalized absolute file paths with resolved aliases, etc.
       // However, it is NOT GUARANTEED that these files exist, since modules may insert anything
