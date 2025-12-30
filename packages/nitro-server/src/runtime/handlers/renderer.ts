@@ -151,7 +151,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
-    _err.stack = await ssrFixStacktrace(_err.stack)
+    if (import.meta.dev) {
+      _err.stack = await ssrFixStacktrace(_err.stack)
+    }
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
   })
