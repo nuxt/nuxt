@@ -440,6 +440,18 @@ describe('useRuntimeHook', () => {
 })
 
 describe('routing utilities: `navigateTo`', () => {
+  const nuxtApp = useNuxtApp()
+
+  const router = useRouter()
+
+  function waitForPageChange () {
+    return new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+  }
+
+  afterEach(() => {
+    router.clearRoutes()
+  })
+
   it('navigateTo should disallow navigation to external URLs by default', () => {
     expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
@@ -464,6 +476,30 @@ describe('routing utilities: `navigateTo`', () => {
       }
     `)
     nuxtApp._processingMiddleware = false
+  })
+
+  it.todo('#28425', async () => {
+    router.addRoute({
+      name: 'slug',
+      path: '/28425/:slug',
+      component: defineComponent({
+        template: '<div> slug page </div>',
+        async setup () {
+          await new Promise(res => setTimeout(res, 200))
+        },
+      }),
+    })
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage) })
+    const route = useRoute()
+    await navigateTo('/28425/p1') // remove this line to prevent the issue.
+    await navigateTo('/28425/p1')
+    await navigateTo('/28425/p2')
+    await navigateTo('/28425/p3')
+    await waitForPageChange()
+    expect(el.html()).toContain('<div> slug page </div>')
+    expect(route.fullPath).toMatchInlineSnapshot(`"/28425/p3"`)
+    el.unmount()
+    router.removeRoute('slug')
   })
 })
 
