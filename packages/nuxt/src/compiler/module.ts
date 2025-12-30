@@ -59,12 +59,6 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       }))
     })
 
-    nuxt.hook('imports:extend', (imports) => {
-      imports.push(
-        { name: 'defineKeyedFunctionFactory', as: 'defineKeyedFunctionFactory', from: resolve(runtimeDir, 'index') },
-      )
-    })
-
     async function runScanPlugins () {
       const autoImports = await unimport?.getImports() || []
       // sources do not have aliases resolved
