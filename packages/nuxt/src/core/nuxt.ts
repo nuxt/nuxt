@@ -587,7 +587,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Track components used to render for webpack
-  if (nuxt.options.builder === '@nuxt/webpack-builder') {
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
@@ -627,11 +627,6 @@ async function initNuxt (nuxt: Nuxt) {
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
     })
-  }
-
-  // Add prerender payload support
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
 
   // Add experimental cross-origin prefetch support using Speculation Rules API
@@ -755,7 +750,8 @@ export default defineNuxtPlugin({
     nuxt.options.experimental.payloadExtraction = true
   }
 
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+  // Add prerender payload support
+  if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
 

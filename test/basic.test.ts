@@ -9,7 +9,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
-import { asyncContext, builder, isDev, isRenderingJson, isWebpack } from './matrix'
+import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 await setup({
@@ -1073,6 +1073,21 @@ describe('head tags', () => {
     await page.close()
   })
 
+  it('should deduplicate head tags with key', async () => {
+    const page = await createPage('/head-component')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    expect(await page.locator('link[data-hid="dedupe-key"]').count()).toBe(1)
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('href')).toBe('client')
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('rel')).toBe('x-test')
+
+    await page.close()
+
+    const html = await $fetch<string>('/head-component')
+    expect((html.match(/data-hid="dedupe-key"/g) || []).length).toBe(1)
+    expect(html).toContain('<link rel="x-test" href="server" data-hid="dedupe-key">')
+  })
+
   // TODO: Doesn't adds header in test environment
   // it.todo('should render stylesheet link tag (SPA mode)', async () => {
   //   const html = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
@@ -1410,6 +1425,7 @@ describe('layouts', () => {
 
     expect(html).toContain('with-dynamic-layout')
     expect(html).toContain('Custom Layout:')
+    expect(html).toContain('set from sets-layouts middleware')
     await expectNoClientErrors('/with-dynamic-layout')
   })
   it('should work with a computed layout', async () => {
@@ -1831,6 +1847,20 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
   })
 })
 
+describe.skipIf(isDev)('module identifiers', () => {
+  it('injects SSR module identifiers for inline styles', async () => {
+    const { page } = await renderPage('/ssr-modules')
+
+    const modulesJson = await page.getAttribute('#ssr-modules', 'data-modules')
+    const modules: string[] = modulesJson ? JSON.parse(modulesJson) : []
+
+    expect(modules.length).toBeGreaterThan(0)
+    expect(modules.every(id => typeof id === 'string' && id.length > 0)).toBe(true)
+
+    await page.close()
+  })
+})
+
 describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
   const inlinedCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
@@ -2068,7 +2098,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
     await expectNoClientErrors('/prefetch/server-components')
   })
 
-  it('should prefetch everything needed when NuxtLink is used', async () => {
+  it.skipIf(!isTestingAppManifest)('should prefetch everything needed when NuxtLink is used', async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -2563,7 +2593,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   })
 })
 
-describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () => {
+describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
@@ -2579,7 +2609,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
   })
 
   // TODO: looks like this test is flaky
-  it('does not fetch a prefetched payload', { retry: 3 }, async () => {
+  it.skipIf(!isTestingAppManifest)('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
@@ -2620,11 +2650,33 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
     await page.close()
   })
 
+  it('should not render payloads for non prerendered/cached routes', async () => {
+    // First request to trigger ISR caching
+    const res = await fetch('/_payload.json')
+    expect(res.status).toBe(404)
+  })
+
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
     const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
+  })
+
+  it('should render payload for ISR routes', async () => {
+    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['isr-data']).toBeDefined()
+    expect(Array.isArray(data.data['isr-data'])).toBe(true)
+  })
+
+  it('should render payload for SWR routes', async () => {
+    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['swr-data']).toBeDefined()
+    expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
 })
 
