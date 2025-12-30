@@ -95,7 +95,7 @@ const formattedDate = computed(() => {
   return (formatter.value as Intl.RelativeTimeFormat).format(Math.round(value), unit)
 })
 
-const isoDate = computed(() => date.value.toISOString())
+const isoDate = computed(() => Number.isNaN(date.value.getTime()) ? date.value.toString() : date.value.toISOString())
 const title = computed(() => props.title === true ? isoDate.value : typeof props.title === 'string' ? props.title : undefined)
 const dataset: Record<string, string | number | boolean | Date | undefined> = {}
 
