@@ -41,6 +41,10 @@ export interface ViteNodeRequestMap {
     request: { moduleId: string }
     response: FetchResult
   }
+  fixStacktrace: {
+    request: { stack: string }
+    response: string
+  }
 }
 
 type RequestOf = {
@@ -62,6 +66,8 @@ export interface ViteNodeFetch {
   resolveId(id: string, importer?: string): Promise<ResolveIdResponse | null>
   /** Fetches a module. */
   fetchModule(moduleId: string): Promise<FetchResult>
+  /** Fixes a stack trace using Vite's sourcemaps. */
+  fixStacktrace(stack: string): Promise<string>
   /** Ensures the IPC socket is connected. */
   ensureConnected(): Promise<Socket>
 }
@@ -316,6 +322,13 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             sendResponse<typeof request.type>(socket, request.id, response)
             return
           }
+          case 'fixStacktrace': {
+            const err = new Error('stack trace holder')
+            err.stack = request.payload.stack
+            ssrServer.ssrFixStacktrace(err)
+            sendResponse<typeof request.type>(socket, request.id, err.stack || '')
+            return
+          }
           default:
             // @ts-expect-error this should never happen
             throw createError({ status: 400, message: `Unknown request type: ${request.type}` })
@@ -516,7 +529,7 @@ export async function writeDevServer (nuxt: Nuxt): Promise<void> {
   await mkdir(serverDist, { recursive: true })
 
   await Promise.all([
-    writeFile(join(serverDist, 'server.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
+    writeFile(join(serverDist, 'server.mjs'), `export { default, ssrFixStacktrace, ssrGetSourceMap } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
     writeFile(join(serverDist, 'client.precomputed.mjs'), `export default undefined`),
     writeFile(join(serverDist, 'client.manifest.mjs'), `
 import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))}
