@@ -630,6 +630,16 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it('renders pages with special characters in route', async () => {
+    const html = await $fetch('/non-ascii/ç')
+    expect(html).toMatchInlineSnapshot()
+  })
+
+  it.skipIf(isDev)('prerenders pages with special characters', async () => {
+    const html = await $fetch('/prerender/ç')
+    expect(html).toContain('should be prerendered: true')
+  })
+
   it('should trigger page:loading:end only once', async () => {
     const { page, consoleLogs } = await renderPage('/')
 
