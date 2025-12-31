@@ -39,7 +39,7 @@
     "css-minimizer-webpack-plugin": "^7.0.4",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
-    "esbuild-loader": "^4.4.1",
+    "esbuild-loader": "^4.4.2",
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
     "h3": "^1.15.4",
