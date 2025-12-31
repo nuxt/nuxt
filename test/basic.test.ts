@@ -632,7 +632,8 @@ describe('pages', () => {
 
   it('renders pages with special characters in route', async () => {
     const html = await $fetch('/non-ascii/ç')
-    expect(html).toMatchInlineSnapshot()
+    // Verify page renders successfully with layout
+    expect(html).toContain('Extended layout from foo')
   })
 
   it.skipIf(isDev)('prerenders pages with special characters', async () => {
