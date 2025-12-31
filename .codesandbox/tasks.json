@@ -1,0 +1,138 @@
+{
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "command": "pnpm install",
+      "name": "Installing Dependencies"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {
+    "build": {
+      "name": "build",
+      "command": "pnpm build"
+    },
+    "build:stub": {
+      "name": "build:stub",
+      "command": "pnpm build:stub"
+    },
+    "dev": {
+      "name": "dev",
+      "command": "pnpm dev",
+      "runAtStart": true
+    },
+    "dev:prepare": {
+      "name": "dev:prepare",
+      "command": "pnpm dev:prepare"
+    },
+    "debug:build": {
+      "name": "debug:build",
+      "command": "pnpm debug:build"
+    },
+    "debug:dev": {
+      "name": "debug:dev",
+      "command": "pnpm debug:dev"
+    },
+    "lint": {
+      "name": "lint",
+      "command": "pnpm lint"
+    },
+    "lint:fix": {
+      "name": "lint:fix",
+      "command": "pnpm lint:fix"
+    },
+    "lint:docs": {
+      "name": "lint:docs",
+      "command": "pnpm lint:docs"
+    },
+    "lint:docs:fix": {
+      "name": "lint:docs:fix",
+      "command": "pnpm lint:docs:fix"
+    },
+    "lint:knip": {
+      "name": "lint:knip",
+      "command": "pnpm lint:knip"
+    },
+    "play": {
+      "name": "play",
+      "command": "pnpm play"
+    },
+    "play:build": {
+      "name": "play:build",
+      "command": "pnpm play:build"
+    },
+    "play:generate": {
+      "name": "play:generate",
+      "command": "pnpm play:generate"
+    },
+    "play:preview": {
+      "name": "play:preview",
+      "command": "pnpm play:preview"
+    },
+    "test": {
+      "name": "test",
+      "command": "pnpm test"
+    },
+    "test:prepare": {
+      "name": "test:prepare",
+      "command": "pnpm test:prepare"
+    },
+    "test:fixtures": {
+      "name": "test:fixtures",
+      "command": "pnpm test:fixtures"
+    },
+    "test:fixtures:dev": {
+      "name": "test:fixtures:dev",
+      "command": "pnpm test:fixtures:dev"
+    },
+    "test:fixtures:webpack": {
+      "name": "test:fixtures:webpack",
+      "command": "pnpm test:fixtures:webpack"
+    },
+    "test:runtime": {
+      "name": "test:runtime",
+      "command": "pnpm test:runtime"
+    },
+    "test:types": {
+      "name": "test:types",
+      "command": "pnpm test:types"
+    },
+    "test:unit": {
+      "name": "test:unit",
+      "command": "pnpm test:unit"
+    },
+    "test:attw": {
+      "name": "test:attw",
+      "command": "pnpm test:attw"
+    },
+    "test:e2e": {
+      "name": "test:e2e",
+      "command": "pnpm test:e2e"
+    },
+    "test:e2e:debug": {
+      "name": "test:e2e:debug",
+      "command": "pnpm test:e2e:debug"
+    },
+    "test:e2e:ui": {
+      "name": "test:e2e:ui",
+      "command": "pnpm test:e2e:ui"
+    },
+    "test:e2e:dev": {
+      "name": "test:e2e:dev",
+      "command": "pnpm test:e2e:dev"
+    },
+    "test:e2e:webpack": {
+      "name": "test:e2e:webpack",
+      "command": "pnpm test:e2e:webpack"
+    },
+    "typecheck": {
+      "name": "typecheck",
+      "command": "pnpm typecheck"
+    },
+    "typecheck:docs": {
+      "name": "typecheck:docs",
+      "command": "pnpm typecheck:docs"
+    }
+  }
+}
