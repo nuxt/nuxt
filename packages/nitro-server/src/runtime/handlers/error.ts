@@ -6,12 +6,21 @@ import type { NuxtPayload } from 'nuxt/app'
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
 import { generateErrorOverlayHTML } from '../utils/dev'
+import { getViteNodeRunner } from '../utils/renderer/build-files'
+
+let runner: { fixStacktrace(error: Error): Error } | undefined
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (event.handled || isJsonRequest(event)) {
     // let Nitro handle JSON errors
     return
   }
+
+  if (import.meta.dev) {
+    runner ||= await getViteNodeRunner()
+    runner!.fixStacktrace(error)
+  }
+
   // invoke default Nitro error handler (which will log appropriately if required)
   const defaultRes = await defaultHandler(error, event, { json: true })
 

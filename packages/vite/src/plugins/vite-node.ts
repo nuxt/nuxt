@@ -522,6 +522,7 @@ export type ViteNodeServerOptions = {
 
 export async function writeDevServer (nuxt: Nuxt): Promise<void> {
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
+  const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
 
   const serverDist = join(nuxt.options.buildDir, 'dist/server')
@@ -529,7 +530,8 @@ export async function writeDevServer (nuxt: Nuxt): Promise<void> {
   await mkdir(serverDist, { recursive: true })
 
   await Promise.all([
-    writeFile(join(serverDist, 'server.mjs'), `export { default, ssrFixStacktrace, ssrGetSourceMap } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
+    writeFile(join(serverDist, 'vite-node-runner.mjs'), `export { default} from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`),
+    writeFile(join(serverDist, 'server.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
     writeFile(join(serverDist, 'client.precomputed.mjs'), `export default undefined`),
     writeFile(join(serverDist, 'client.manifest.mjs'), `
 import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))}

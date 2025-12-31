@@ -49,18 +49,6 @@ const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
 let entryPath: string
 
-async function getSsrFixStacktrace() {
-  // @ts-expect-error file will be produced after app build
-  const ssrFixStacktrace = await import('#build/dist/server/server.mjs').then(r => r?.ssrFixStacktrace)
-  return ssrFixStacktrace
-}
-
-const ssrFixStacktrace = async (stack?: string): Promise<string | undefined> => {
-  if (!stack) { return }
-  const fixStacktrace = await getSsrFixStacktrace()
-  return fixStacktrace(stack)
-}
-
 export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
 
@@ -151,9 +139,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
-    if (import.meta.dev) {
-      _err.stack = await ssrFixStacktrace(_err.stack)
-    }
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
     throw _err
   })
@@ -173,9 +158,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
-    if (import.meta.dev) {
-      ssrContext.payload.error.stack = await ssrFixStacktrace(ssrContext.payload.error.stack)
-    }
     throw ssrContext.payload.error
   }
 

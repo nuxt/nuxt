@@ -7,6 +7,7 @@ export default defineBuildConfig({
     'src/index',
     'src/vite-node',
     'src/vite-node-entry',
+    'src/vite-node-runner',
   ],
   hooks: {
     'rollup:options' (ctx, options) {
