@@ -112,6 +112,14 @@ export class SSRStylesPlugin {
     })
   }
 
+  private shouldInline (mod: Module) {
+    const shouldInline = this.nuxt.options.features.inlineStyles
+    if (typeof shouldInline === 'boolean') {
+      return shouldInline
+    }
+    return shouldInline(mod.identifier())
+  }
+
   private escapeTemplateLiteral (str: string) {
     return str.replace(/[`\\$]/g, m => m === '$' ? '\\$' : `\\${m}`)
   }
@@ -437,6 +445,9 @@ export class SSRStylesPlugin {
 
       for (const [chunk, cssAssets] of cssAssetsByChunk) {
         for (const mod of compilation.chunkGraph.getChunkModulesIterable(chunk)) {
+          if (!this.shouldInline(mod)) {
+            continue
+          }
           const issuerPath = this.findIssuerPath(compilation, mod) || ('resource' in mod && typeof mod.resource === 'string' ? mod.resource : null)
           const normalized = normalizePath(this.nuxt, issuerPath)
           if (!normalized) { continue }
@@ -449,6 +460,9 @@ export class SSRStylesPlugin {
       }
 
       for (const mod of compilation.modules) {
+        if (!this.shouldInline(mod)) {
+          continue
+        }
         const issuerPath = this.findIssuerPath(compilation, mod)
         const normalized = normalizePath(this.nuxt, issuerPath)
         if (!normalized) {
