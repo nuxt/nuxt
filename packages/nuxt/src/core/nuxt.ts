@@ -295,6 +295,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/shared-imports.d.ts') })
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     paths ||= await resolveTypescriptPaths(nuxt)
