@@ -261,6 +261,13 @@ export interface NuxtHooks {
    */
   'components:extend': (components: Component[]) => HookResult
 
+  // Nuxt Compiler
+  /**
+   * Called when the Nuxt compiler is ready to be used.
+   * @returns Promise
+   */
+  'compiler:ready': () => HookResult
+
   // Nitropack
   /**
    * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.

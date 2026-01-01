@@ -86,6 +86,21 @@ export default defineResolvers({
         ...Array.isArray(val) ? val : [],
       ].filter(Boolean),
     },
+    keyedComposableFactories: {
+      $resolve: val => [
+        {
+          name: 'createUseFetch',
+          source: '#app/composables/fetch',
+          argumentLength: 3,
+        },
+        {
+          name: 'createUseAsyncData',
+          source: '#app/composables/asyncData',
+          argumentLength: 3,
+        },
+        ...Array.isArray(val) ? val : [],
+      ].filter(Boolean),
+    },
     treeShake: {
       composables: {
         server: {
