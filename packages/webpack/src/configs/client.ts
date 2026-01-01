@@ -1,5 +1,5 @@
 import querystring from 'node:querystring'
-import { resolve } from 'pathe'
+import { normalize, resolve } from 'pathe'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger, resolveAlias } from '@nuxt/kit'
 import type { Module } from 'webpack'
@@ -111,7 +111,7 @@ function clientOptimization (ctx: WebpackConfigContext) {
   for (const css of ctx.options.css) {
     if (typeof css === 'string') {
       const resolved = resolveAlias(css, ctx.options.alias)
-      globalCSSPaths.add(resolved)
+      globalCSSPaths.add(normalize(resolved))
     }
   }
 
@@ -126,7 +126,7 @@ function clientOptimization (ctx: WebpackConfigContext) {
       enforce: true,
       test: (module: Module) => {
         if (module.type !== 'css/mini-extract') { return false }
-        const identifier = typeof module.identifier === 'function' ? module.identifier() : ''
+        const identifier = normalize(module.identifier())
         for (const globalPath of globalCSSPaths) {
           if (identifier.includes(globalPath)) {
             return true
