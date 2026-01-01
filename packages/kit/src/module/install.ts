@@ -245,7 +245,7 @@ export function resolveModuleWithOptions (
     try: true,
     from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
     suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-    extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+    extensions: ['.js', '.mjs', '.ts', '.cjs', '.tsx', '.jsx', '.mts', '.cts'],
   })
 
   return {
@@ -282,7 +282,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     const src = resolveModuleURL(nuxtModule, {
       from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
       suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-      extensions: ['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts'],
+      extensions: ['.js', '.mjs', '.ts', '.cjs', '.tsx', '.jsx', '.mts', '.cts'],
     })
     const resolvedModulePath = fileURLToPath(src)
     const resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
