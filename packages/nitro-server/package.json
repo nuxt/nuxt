@@ -25,7 +25,7 @@
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
-    "@unhead/vue": "^2.0.19",
+    "@unhead/vue": "^2.1.1",
     "@vue/shared": "^3.5.26",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
