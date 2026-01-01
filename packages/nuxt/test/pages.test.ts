@@ -617,6 +617,33 @@ export const pageTests: Array<{
     ],
   },
   {
+    description: 'should handle unicode and special characters in page paths',
+    files: [
+      { path: `${pagesDir}/测试.vue` },
+      { path: `${pagesDir}/文档.vue` },
+      { path: `${pagesDir}/文档/介绍.vue` },
+      { path: `${pagesDir}/خاص:جديد.vue` },
+    ],
+    output: [
+      { name: '测试', path: '/测试', file: `${pagesDir}/测试.vue`, children: [] },
+      { name: '文档', path: '/文档', file: `${pagesDir}/文档.vue`, children: [
+        { name: '文档-介绍', path: '介绍', file: `${pagesDir}/文档/介绍.vue`, children: [] },
+      ] },
+      { name: 'خاص:جديد', path: '/خاص\\:جديد', file: `${pagesDir}/خاص:جديد.vue`, children: [] },
+    ],
+  },
+  {
+    description: 'should escape special chars in static paths',
+    files: [
+      { path: `${pagesDir}/a&b.vue` },
+      { path: `${pagesDir}/a\\b.vue` },
+    ],
+    output: [
+      { name: 'a&b', path: '/a&b', file: `${pagesDir}/a&b.vue`, children: [] },
+      { name: 'a\\b', path: '/a\\\\b', file: `${pagesDir}/a\\b.vue`, children: [] },
+    ],
+  },
+  {
     description: 'should not merge required param as a child of optional param',
     files: [
       { path: `${pagesDir}/[[foo]].vue` },
