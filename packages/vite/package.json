@@ -19,7 +19,8 @@
   },
   "imports": {
     "#vite-node": "./dist/vite-node.mjs",
-    "#vite-node-entry": "./dist/vite-node-entry.mjs"
+    "#vite-node-entry": "./dist/vite-node-entry.mjs",
+    "#vite-node-runner": "./dist/vite-node-runner.mjs"
   },
   "files": [
     "dist"
