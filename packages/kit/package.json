@@ -28,7 +28,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^3.3.2",
+    "c12": "^3.3.3",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
@@ -47,16 +47,16 @@
     "semver": "^7.7.3",
     "tinyglobby": "^0.2.15",
     "ufo": "^1.6.1",
-    "unctx": "^2.4.1",
+    "unctx": "^2.5.0",
     "untyped": "^2.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.6.7",
+    "@rspack/core": "1.7.0",
     "@types/lodash-es": "4.17.12",
     "@types/semver": "7.7.1",
     "hookable": "5.5.3",
-    "lodash-es": "4.17.21",
+    "lodash-es": "4.17.22",
     "nitropack": "2.12.9",
     "unbuild": "3.6.1",
     "unimport": "5.6.0",
