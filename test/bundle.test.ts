@@ -80,6 +80,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/shared",
         "devalue",
         "entities",
+        "entities/dist/commonjs",
         "estree-walker",
         "hookable",
         "source-map-js",
@@ -98,7 +99,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"557k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"96.7k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"97.0k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -139,6 +140,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/shared",
         "devalue",
         "entities",
+        "entities/dist/commonjs",
         "estree-walker",
         "hookable",
         "source-map-js",
