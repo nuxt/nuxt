@@ -52,6 +52,7 @@ import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
+import { getVueHash } from './cache.ts'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -160,6 +161,13 @@ export const keyDependencies: string[] = [
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
+  // Compute deterministic buildId for production builds
+  if (!nuxt.options.dev && !nuxt.options.test && !nuxt.options._prepare) {
+    const { hash } = await getVueHash(nuxt)
+    nuxt.options.buildId = hash
+    nuxt.options.runtimeConfig.app.buildId = hash
+  }
+
   const layerDirs = getLayerDirectories(nuxt)
 
   // Register user hooks
