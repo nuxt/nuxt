@@ -83,6 +83,23 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
    * Overrides the global `trailingSlash` option if provided.
    */
   trailingSlash?: 'append' | 'remove'
+  /**
+   * Display a different URL in the browser while navigating to this route.
+   * The actual route will be stored in history state and used for rendering.
+   *
+   * @example
+   * ```vue
+   * <NuxtLink to="/photos/5/modal" mask="/photos/5">
+   *   Open Photo
+   * </NuxtLink>
+   * ```
+   */
+  mask?: string
+  /**
+   * When true, the real URL will be shown after page refresh instead of the mask.
+   * @default false
+   */
+  unmaskOnReload?: boolean
 }
 
 /**
@@ -242,7 +259,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
       route: link?.route ?? computed(() => router.resolve(to.value)),
       async navigate (_e?: MouseEvent) {
-        await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
+        await navigateTo(href.value, {
+          replace: props.replace,
+          external: isExternal.value || hasTarget.value,
+          mask: props.mask,
+          unmaskOnReload: props.unmaskOnReload,
+        })
       },
     } satisfies ReturnType<typeof useLink> & {
       to: ComputedRef<RouteLocationRaw>
@@ -349,6 +371,18 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         default: undefined,
         required: false,
       },
+
+      // Route masking
+      mask: {
+        type: String as PropType<NuxtLinkProps['mask']>,
+        default: undefined,
+        required: false,
+      },
+      unmaskOnReload: {
+        type: Boolean as PropType<NuxtLinkProps['unmaskOnReload']>,
+        default: undefined,
+        required: false,
+      },
     },
     useLink: useNuxtLink,
     setup (props, { slots }) {
@@ -421,7 +455,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
+        // Use RouterLink for internal links without mask
+        // When mask is set, we need to use our own navigate function
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value) && !props.mask) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -508,7 +544,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
         return h('a', {
           ref: el,
-          href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+          href: props.mask || href.value || null, // Show mask URL in href if set
           rel,
           target,
           onClick: (event) => {
@@ -518,9 +554,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
             event.preventDefault()
 
-            return props.replace
-              ? router.replace(href.value)
-              : router.push(href.value)
+            return navigate()
           },
         }, slots.default?.())
       }

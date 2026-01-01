@@ -125,6 +125,44 @@ export interface NavigateToOptions {
    */
   external?: boolean
   open?: OpenOptions
+  /**
+   * Display a different URL in the browser while navigating to this route.
+   * The actual route will be stored in history state and used for rendering.
+   * This is useful for modals or overlays where you want a shareable URL
+   * that differs from the internal route structure.
+   *
+   * @example
+   * ```ts
+   * // Navigate to /photos/5/modal but show /photos/5 in URL bar
+   * navigateTo('/photos/5/modal', { mask: '/photos/5' })
+   * ```
+   */
+  mask?: string
+  /**
+   * When true, the real URL will be shown after page refresh instead of the mask.
+   * By default, the mask persists across page refreshes.
+   * @default false
+   */
+  unmaskOnReload?: boolean
+}
+
+/**
+ * History state structure for masked routes.
+ * @internal
+ */
+export interface MaskedHistoryState {
+  /**
+   * The actual route path that should be used for rendering.
+   */
+  __tempLocation: string
+  /**
+   * The masked URL that should be displayed in the browser.
+   */
+  __maskUrl?: string
+  /**
+   * When true, the mask should be removed on page reload.
+   */
+  __unmaskOnReload?: boolean
 }
 
 const URL_QUOTE_RE = /"/g
@@ -242,6 +280,26 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       return new Promise(() => {})
     }
     return Promise.resolve()
+  }
+
+  // Handle route masking on client-side
+  if (import.meta.client && options?.mask) {
+    const navigationPromise = options.replace ? router.replace(to) : router.push(to)
+
+    return navigationPromise.then((failure) => {
+      // Only apply mask if navigation was successful
+      if (!failure) {
+        const realPath = router.currentRoute.value.fullPath
+        const state: MaskedHistoryState = {
+          __tempLocation: realPath,
+          __maskUrl: options.mask,
+          // Only store __unmaskOnReload if explicitly set (to override global default)
+          ...(options.unmaskOnReload !== undefined && { __unmaskOnReload: options.unmaskOnReload }),
+        }
+        window.history.replaceState(state, '', options.mask)
+      }
+      return failure
+    })
   }
 
   return options?.replace ? router.replace(to) : router.push(to)

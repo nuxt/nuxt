@@ -121,6 +121,12 @@ export default withMatrix({
       },
     },
   },
+  router: {
+    options: {
+      // For route masking tests: reveal real URL after page reload
+      unmaskOnReload: true,
+    },
+  },
   appConfig: {
     fromNuxtConfig: true,
     nested: {
