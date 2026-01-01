@@ -63,7 +63,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
 
   nuxtApp.hook('vue:error', () => {
-    abortTransition?.()
+    finishTransition?.()
+    resetTransitionState()
+  })
+
+  nuxtApp.hook('app:error', () => {
+    // Finish the transition instead of aborting to allow smooth animation to error page
+    finishTransition?.()
     resetTransitionState()
   })
 
