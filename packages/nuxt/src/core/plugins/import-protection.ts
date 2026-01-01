@@ -49,9 +49,10 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
   }
 
   if (options.context === 'nuxt-app' || options.context === 'shared') {
+    // Block all imports from the server directory (use rootDir, not srcDir, because `~~` alias resolves to rootDir)
     patterns.push([
-      new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
-      `Importing from server is not allowed in ${context}.`,
+      new RegExp('(^|\\/)' + escapeRE(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir || 'server'))) + '(\\/|$)'),
+      `Importing from server is not allowed in ${context}. Use the \`shared/\` directory for code that needs to run on both server and client.`,
     ])
     patterns.push([
       /^#server(\/|$)/,

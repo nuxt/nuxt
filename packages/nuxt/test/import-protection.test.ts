@@ -25,6 +25,10 @@ const testsToTriggerOn = [
   ['some-nuxt-module/runtime/something.vue', 'components/Component.vue', false],
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
   ['src/server/api/test.ts', 'components/Component.vue', true],
+  // All server subdirectories should be protected (not just api/routes/middleware/plugins)
+  ['src/server/utils/helper.ts', 'components/Component.vue', true],
+  ['/root/src/server/utils/secret.ts', 'components/Component.vue', true],
+  ['/root/src/server/services/db.ts', 'components/Component.vue', true],
   ['node_modules/nitropack/node_modules/crossws/dist/adapters/bun.mjs', 'node_modules/nitropack/dist/presets/bun/runtime/bun.mjs', false],
 ] as const
 
@@ -49,6 +53,7 @@ const transformWithImportProtection = (id: string, importer: string, context: 'n
           // @ts-expect-error an incomplete module
           { entryPath: 'some-nuxt-module' },
         ],
+        rootDir: '/root',
         srcDir: '/root/src/',
         serverDir: '/root/src/server',
       } satisfies Partial<NuxtOptions> as NuxtOptions,
