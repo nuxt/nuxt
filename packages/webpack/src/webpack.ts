@@ -13,6 +13,7 @@ import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { ChunkErrorPlugin } from './plugins/chunk.ts'
+import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
@@ -48,6 +49,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
+  const ssrStylesPlugin = nuxt.options.ssr && !nuxt.options.dev && nuxt.options.features.inlineStyles ? new SSRStylesPlugin(nuxt) : null
+
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
       sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
@@ -55,6 +58,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
+    }
+    if (ssrStylesPlugin) {
+      config.plugins!.push(ssrStylesPlugin)
     }
   }
 
