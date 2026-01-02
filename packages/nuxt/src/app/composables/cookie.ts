@@ -29,7 +29,15 @@ export interface CookieRef<T> extends Ref<T> {}
 const CookieDefaults = {
   path: '/',
   watch: true,
-  decode: val => destr(decodeURIComponent(val)),
+  decode: (val) => {
+    const decoded = decodeURIComponent(val)
+    const parsed = destr(decoded)
+    // destr can return Infinity or precision-loss numbers - keep original string
+    if (typeof parsed === 'number' && (!Number.isFinite(parsed) || String(parsed) !== decoded)) {
+      return decoded
+    }
+    return parsed
+  },
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
 } satisfies CookieOptions<any>
 
