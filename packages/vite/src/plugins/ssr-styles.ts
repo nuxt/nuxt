@@ -30,19 +30,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
       if (!chunk) { continue }
-      chunk.css &&= []
       if (chunk.isEntry && chunk.src) {
         entryIds.add(chunk.src)
-      }
-    }
-
-    // Entry chunks aggregate CSS from inlined components - clear to prevent duplication
-    const shouldInline = nuxt.options.features.inlineStyles
-    if (shouldInline !== false) {
-      for (const chunk of Object.values(manifest)) {
-        if (chunk.isEntry && chunk.src) {
-          chunk.css &&= []
-        }
+      } else {
+        chunk.css &&= []
       }
     }
 
@@ -103,7 +94,21 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           async handler (id, importer, _options) {
             // We want to remove side effects (namely, emitting CSS) from `.vue` files and explicitly imported `.css` files
             // but only as long as we are going to inline that CSS.
-            if ((options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(importer)))) {
+            if (options.shouldInline === false) {
+              return
+            }
+
+            // Only disable side effects for CSS imports from:
+            // 1. Vue components that will have inlined styles
+            // 2. Entry file (global CSS is inlined via separate mechanism)
+            // CSS imported from other files (plugins, etc.) should retain side effects
+            const isFromEntry = importer === entry
+            const isFromVue = importer && isVue(importer)
+            if (!isFromEntry && !isFromVue) {
+              return
+            }
+
+            if (typeof options.shouldInline === 'function' && !options.shouldInline(importer)) {
               return
             }
 
