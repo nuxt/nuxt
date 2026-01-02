@@ -26,15 +26,23 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
+
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
-      if (!chunk) {
-        continue
-      }
+      if (!chunk) { continue }
+      chunk.css &&= []
       if (chunk.isEntry && chunk.src) {
         entryIds.add(chunk.src)
-      } else {
-        chunk.css &&= []
+      }
+    }
+
+    // Entry chunks aggregate CSS from inlined components - clear to prevent duplication
+    const shouldInline = nuxt.options.features.inlineStyles
+    if (shouldInline !== false) {
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.isEntry && chunk.src) {
+          chunk.css &&= []
+        }
       }
     }
 

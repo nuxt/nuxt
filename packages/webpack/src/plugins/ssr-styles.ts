@@ -87,12 +87,15 @@ export class SSRStylesPlugin {
 
     // Remove CSS entries from manifest for global CSS and files that will have inlined styles
     nuxt.hook('build:manifest', (manifest) => {
+      const shouldInline = nuxt.options.features.inlineStyles
       for (const [id, chunk] of Object.entries(manifest)) {
         if (chunk.isEntry && chunk.src) {
-          // Track entry modules
           this.chunksWithInlinedCSS.add(chunk.src)
+          // Entry aggregates CSS from inlined components - clear to prevent duplication
+          if (shouldInline !== false) {
+            chunk.css &&= []
+          }
         } else if (this.chunksWithInlinedCSS.has(id)) {
-          // Remove CSS for chunks with inlined styles
           chunk.css &&= []
         }
 
