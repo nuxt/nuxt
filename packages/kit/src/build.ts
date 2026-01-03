@@ -34,6 +34,12 @@ export interface ExtendConfigOptions {
    * Prepends the plugin to the array with `unshift()` instead of `push()`.
    */
   prepend?: boolean
+  /**
+   * Also install plugin for web worker builds (Vite only).
+   * @see https://vite.dev/config/worker-options#worker-plugins
+   * @default false
+   */
+  worker?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -172,6 +178,12 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     if (options.server !== false && options.client !== false) {
       const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
       config.plugins[method](...plugin)
+
+      // Also add to worker.plugins for production builds (not applied automatically by Vite)
+      if (options.worker) {
+        const prev = (config.worker ??= {}).plugins
+        config.worker.plugins = () => [...(prev?.() ?? []), ...plugin]
+      }
       return
     }
 
