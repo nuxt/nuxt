@@ -821,7 +821,7 @@ export interface ConfigSchema {
    * </style>
    * ```
    */
-  alias: Record<string, string>
+  alias: Record<string, string> & { [key: `${string}/*`]: never }
 
   /**
    * Pass options directly to `node-ignore` (which is used by Nuxt to ignore files).
