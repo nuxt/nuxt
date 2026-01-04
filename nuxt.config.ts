@@ -1,5 +1,6 @@
 // For pnpm typecheck:docs to generate correct types
 
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { addPluginTemplate, addRouteMiddleware, addVitePlugin } from 'nuxt/kit'
 
