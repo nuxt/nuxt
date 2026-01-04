@@ -79,6 +79,7 @@ const transformWithImportProtection = (id: string, importer: string, context: 'n
           // @ts-expect-error an incomplete module
           { entryPath: 'some-nuxt-module' },
         ],
+        rootDir: '/root/',
         srcDir: '/root/src/',
         serverDir: '/root/src/server',
       } satisfies Partial<NuxtOptions> as NuxtOptions,
@@ -98,6 +99,7 @@ const transformWithImportProtectionNuxt4 = (id: string, importer: string, contex
           // @ts-expect-error an incomplete module
           { entryPath: 'some-nuxt-module' },
         ],
+        rootDir: '/root/',
         srcDir: '/root/app/',
         serverDir: '/root/server',
       } satisfies Partial<NuxtOptions> as NuxtOptions,
