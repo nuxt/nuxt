@@ -114,6 +114,27 @@ await navigateTo('https://nuxt.com', {
 </script>
 ```
 
+### Route Masking
+
+You can display a different URL in the browser's address bar while navigating to a specific route. This is useful for modals, overlays, or other UI patterns where you want a clean, shareable URL.
+
+```vue
+<script setup lang="ts">
+// Navigate to /photos/5/modal but show /photos/5 in URL bar
+await navigateTo('/photos/5/modal', {
+  mask: '/photos/5',
+})
+
+// With unmaskOnReload: true, the real URL is shown after page refresh
+await navigateTo('/photos/5/modal', {
+  mask: '/photos/5',
+  unmaskOnReload: true,
+})
+</script>
+```
+
+:read-more{to="/docs/4.x/guide/recipes/route-masking"}
+
 ## Type
 
 ```ts [Signature]
@@ -127,6 +148,8 @@ interface NavigateToOptions {
   redirectCode?: number
   external?: boolean
   open?: OpenOptions
+  mask?: string
+  unmaskOnReload?: boolean
 }
 
 type OpenOptions = {
@@ -228,3 +251,32 @@ An object accepting the following properties:
       | `noreferrer`              | `boolean` | Prevents the Referer header from being sent and implicitly enables `noopener`.                 |
 
       Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open#windowfeatures) for more detailed information on the **windowFeatures** properties.
+
+- `mask`
+
+  - **Type**: `string`
+
+  - Allows displaying a different URL in the browser's address bar while navigating to the specified route. The actual route is stored in the browser's history state and used for rendering, while the masked URL is shown to the user.
+
+    This is useful for modals, overlays, or other UI patterns where you want a shareable URL that differs from the internal route structure.
+
+    ```ts
+    // Navigate to /photos/5/modal but show /photos/5 in the URL bar
+    await navigateTo('/photos/5/modal', { mask: '/photos/5' })
+    ```
+
+    :read-more{to="/docs/4.x/guide/recipes/route-masking"}
+
+- `unmaskOnReload`
+
+  - **Type**: `boolean`
+  - **Default**: `false` (or global `router.options.unmaskOnReload` value)
+
+  - Controls whether the real URL should be shown after a page reload. By default, the masked URL persists across reloads. Set to `true` to reveal the actual route URL when the page is refreshed.
+
+    ```ts
+    await navigateTo('/photos/5/modal', {
+      mask: '/photos/5',
+      unmaskOnReload: true, // Show /photos/5/modal after reload
+    })
+    ```

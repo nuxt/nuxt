@@ -53,6 +53,28 @@ export interface PageMeta {
   props?: RouteRecordRaw['props']
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+  /**
+   * Display a different URL in the browser when this page is active.
+   * Useful for modals or overlays where you want a shareable URL
+   * that differs from the internal route structure.
+   *
+   * Can be a string or a function that receives the route and returns a string.
+   *
+   * @example
+   * ```ts
+   * // In pages/photos/[id]/modal.vue
+   * definePageMeta({
+   *   mask: (route) => `/photos/${route.params.id}`
+   * })
+   * ```
+   */
+  mask?: string | ((route: RouteLocationNormalizedLoaded) => string | undefined)
+  /**
+   * When true, the real URL will be shown after page refresh instead of the mask.
+   * By default, the mask persists across page refreshes.
+   * @default false
+   */
+  unmaskOnReload?: boolean
 }
 
 declare module 'vue-router' {

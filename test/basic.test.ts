@@ -1405,6 +1405,120 @@ describe('middlewares', () => {
   })
 })
 
+describe('route masking', () => {
+  it('navigateTo with mask should set history state and display mask URL', async () => {
+    const { page } = await renderPage('/mask-test')
+
+    // Click button to navigate with mask
+    await page.getByTestId('navigate-mask').click()
+
+    // Wait for mask to be applied (URL changes to mask URL)
+    await page.waitForFunction(() => window.location.pathname.includes('clean'))
+
+    // The browser URL should be the mask URL
+    const browserUrl = page.url()
+    expect(browserUrl).toContain('/mask-test/clean')
+
+    // Check that we're on the modal page (real route was loaded)
+    await page.waitForSelector('h1:has-text("Mask Test Modal")')
+    const heading = await page.locator('h1:has-text("Mask Test Modal")').textContent()
+    expect(heading).toBe('Mask Test Modal')
+
+    // The history state should have the real route stored
+    const historyState = await page.evaluate(() => window.history.state)
+    expect(historyState.__tempLocation).toContain('/mask-test/modal')
+    expect(historyState.__maskUrl).toContain('/mask-test/clean')
+
+    await page.close()
+  })
+
+  it('NuxtLink with mask prop should work like navigateTo with mask', async () => {
+    const { page } = await renderPage('/mask-test')
+
+    // Click NuxtLink with mask
+    await page.getByTestId('nuxt-link-mask').click()
+
+    // Wait for mask to be applied
+    await page.waitForFunction(() => window.location.pathname.includes('link-clean'))
+
+    // The browser URL should be the mask URL
+    const browserUrl = page.url()
+    expect(browserUrl).toContain('/mask-test/link-clean')
+
+    // Check that we're on the modal page (real route was loaded)
+    await page.waitForSelector('h1:has-text("Mask Test Modal")')
+
+    // The history state should have the real route stored
+    const historyState = await page.evaluate(() => window.history.state)
+    expect(historyState.__tempLocation).toContain('/mask-test/modal')
+    expect(historyState.__maskUrl).toContain('/mask-test/link-clean')
+
+    await page.close()
+  })
+
+  it('browser back should restore previous URL after masked navigation', async () => {
+    const { page } = await renderPage('/mask-test')
+
+    // Navigate with mask
+    await page.getByTestId('navigate-mask').click()
+    await page.waitForFunction(() => window.location.pathname.includes('clean'))
+
+    // Verify we're on modal page with masked URL
+    await page.waitForSelector('h1:has-text("Mask Test Modal")')
+    expect(page.url()).toContain('/mask-test/clean')
+
+    // Go back
+    await page.goBack()
+
+    // Should be back on index page with original URL
+    await page.waitForSelector('h1:has-text("Mask Test Index")')
+    expect(page.url()).toContain('/mask-test')
+    expect(page.url()).not.toContain('/clean')
+    expect(page.url()).not.toContain('/modal')
+
+    await page.close()
+  })
+
+  it('page reload after masked navigation should work without hydration errors', async () => {
+    const { page } = await renderPage('/mask-test')
+
+    // Navigate with mask
+    await page.getByTestId('navigate-mask').click()
+    await page.waitForFunction(() => window.location.pathname.includes('clean'))
+    await page.waitForSelector('h1:has-text("Mask Test Modal")')
+
+    // Collect any console errors during reload
+    const consoleErrors: string[] = []
+    page.on('console', (msg) => {
+      if (msg.type() === 'error' || msg.type() === 'warning') {
+        consoleErrors.push(msg.text())
+      }
+    })
+
+    // Reload the page
+    await page.reload()
+
+    // Wait for page to be fully loaded
+    await page.waitForSelector('h1:has-text("Mask Test Modal")')
+
+    // With unmaskOnReload: true (default in test fixture), URL should show the real route after reload
+    expect(page.url()).toContain('/mask-test/modal')
+    expect(page.url()).not.toContain('/mask-test/clean')
+
+    // The modal page should still be displayed correctly
+    const heading = await page.locator('h1:has-text("Mask Test Modal")').textContent()
+    expect(heading).toBe('Mask Test Modal')
+
+    // Check for hydration mismatch errors
+    const hydrationErrors = consoleErrors.filter(e =>
+      e.includes('hydration') || e.includes('Hydration') || e.includes('mismatch'),
+    )
+    expect(hydrationErrors).toHaveLength(0)
+
+    await page.close()
+  })
+})
+
 describe('plugins', () => {
   it('basic plugin', async () => {
     const html = await $fetch<string>('/plugins')
