@@ -1,6 +1,7 @@
 {
   "name": "nuxt-playground",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
@@ -10,6 +11,6 @@
     "nuxt": "workspace:*"
   },
   "engines": {
-    "node": "^20.11.1 || >=22.0.0"
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

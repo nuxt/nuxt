@@ -1,2 +1,2 @@
-export { createNuxt, loadNuxt } from './core/nuxt'
-export { build } from './core/builder'
+export { createNuxt, loadNuxt } from './core/nuxt.ts'
+export { build } from './core/builder.ts'

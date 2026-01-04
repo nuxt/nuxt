@@ -3,14 +3,20 @@ import type { Unimport } from 'unimport'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 
-import { isJS, isVue } from '../core/utils'
-import { installNuxtModule } from '../core/features'
+import { isJS, isVue } from '../core/utils/index.ts'
+import { installNuxtModule } from '../core/features.ts'
 import type { ImportsOptions } from 'nuxt/schema'
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const IMPORTS_RE = /(['"])#imports\1/
 
-export const TransformPlugin = ({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<ImportsOptions>, sourcemap?: boolean }) => createUnplugin(() => {
+interface TransformPluginOptions {
+  ctx: Pick<Unimport, 'injectImports'>
+  options: Partial<ImportsOptions>
+  sourcemap?: boolean
+}
+
+export const TransformPlugin = ({ ctx, options, sourcemap }: TransformPluginOptions) => createUnplugin(() => {
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',

@@ -1,3 +1,4 @@
+import process from 'node:process'
 import type * as vite from 'vite'
 import { createLogger } from 'vite'
 import { logger } from '@nuxt/kit'
@@ -5,7 +6,7 @@ import { colorize } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
 import type { NuxtOptions } from '@nuxt/schema'
 import { relative } from 'pathe'
-import { useResolveFromPublicAssets } from '../plugins/public-dirs'
+import { useResolveFromPublicAssets } from '../plugins/public-dirs.ts'
 
 let duplicateCount = 0
 let lastType: vite.LogType | null = null

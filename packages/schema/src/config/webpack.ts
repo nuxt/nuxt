@@ -1,5 +1,6 @@
+import process from 'node:process'
 import { defu } from 'defu'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   webpack: {

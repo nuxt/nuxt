@@ -1,9 +1,8 @@
 import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
-import { consola } from 'consola'
-import type { Nuxt } from '../types/nuxt'
-import { defineResolvers } from '../utils/definition'
+import type { Nuxt } from '../types/nuxt.ts'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   builder: {
@@ -39,7 +38,7 @@ export default defineResolvers({
   logLevel: {
     $resolve: (val) => {
       if (val && typeof val === 'string' && !['silent', 'info', 'verbose'].includes(val)) {
-        consola.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
+        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
       return val && typeof val === 'string' ? val as 'silent' | 'info' | 'verbose' : (isTest ? 'silent' : 'info')
     },
@@ -77,13 +76,13 @@ export default defineResolvers({
   optimization: {
     keyedComposables: {
       $resolve: val => [
-        { name: 'callOnce', argumentLength: 3 },
-        { name: 'defineNuxtComponent', argumentLength: 2 },
-        { name: 'useState', argumentLength: 2 },
-        { name: 'useFetch', argumentLength: 3 },
-        { name: 'useAsyncData', argumentLength: 3 },
-        { name: 'useLazyAsyncData', argumentLength: 3 },
-        { name: 'useLazyFetch', argumentLength: 3 },
+        { name: 'callOnce', argumentLength: 3, source: '#app/composables/once' },
+        { name: 'defineNuxtComponent', argumentLength: 2, source: '#app/composables/component' },
+        { name: 'useState', argumentLength: 2, source: '#app/composables/state' },
+        { name: 'useFetch', argumentLength: 3, source: '#app/composables/fetch' },
+        { name: 'useAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
+        { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
+        { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
         ...Array.isArray(val) ? val : [],
       ].filter(Boolean),
     },

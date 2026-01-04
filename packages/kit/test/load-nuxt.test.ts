@@ -1,13 +1,12 @@
-import { fileURLToPath } from 'node:url'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { join, normalize } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
+import { join } from 'pathe'
 import { x } from 'tinyexec'
 
-import { loadNuxt } from '../src'
+import { loadNuxt } from '../src/loader/nuxt.ts'
+import { findWorkspaceDir } from 'pkg-types'
 
-const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
 
 describe('loadNuxt', () => {
   const tempDir = join(repoRoot, 'temp')

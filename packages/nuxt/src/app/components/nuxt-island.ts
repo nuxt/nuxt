@@ -6,10 +6,10 @@ import { appendResponseHeader } from 'h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
-import type { FetchResponse } from 'ofetch'
 
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
@@ -93,8 +93,7 @@ export default defineComponent({
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
+    const eventFetch = import.meta.server ? event!.fetch : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -195,8 +194,7 @@ export default defineComponent({
 
       if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
-      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
-
+      const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
@@ -207,8 +205,11 @@ export default defineComponent({
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
+      if (!r.ok) {
+        throw createError({ status: r.status, statusText: r.statusText })
+      }
       try {
-        const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+        const result = await r.json()
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')

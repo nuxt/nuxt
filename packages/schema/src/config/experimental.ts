@@ -1,8 +1,11 @@
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   future: {
-    compatibilityVersion: 4,
+    compatibilityVersion: {
+      // force resolution to `4` no matter what users pass
+      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 4,
+    },
     multiApp: false,
     typescriptBundlerResolution: {
       async $resolve (val, get) {
@@ -27,13 +30,11 @@ export default defineResolvers({
         if (
           val === false ||
           (await get('dev')) ||
-          (await get('ssr')) === false ||
-          // @ts-expect-error TODO: handled normalised types
-          (await get('builder')) === '@nuxt/webpack-builder'
+          (await get('ssr')) === false
         ) {
           return false
         }
-        // Enabled by default for vite prod with ssr (for vue components)
+        // Enabled by default for prod with ssr (for vue components)
         return val ?? ((id?: string) => !!id && id.includes('.vue'))
       },
     },
@@ -211,6 +212,17 @@ export default defineResolvers({
     pendingWhenIdle: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false
+      },
+    },
+    entryImportMap: true,
+    extractAsyncDataHandlers: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
+    viteEnvironmentApi: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
   },
