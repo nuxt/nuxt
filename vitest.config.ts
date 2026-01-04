@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { resolve } from 'pathe'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
