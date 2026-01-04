@@ -17,7 +17,7 @@
     "prerender": "pnpm build && jiti ./lib/prerender"
   },
   "devDependencies": {
-    "@unocss/reset": "66.5.10",
+    "@unocss/reset": "66.5.12",
     "@vue/shared": "3.5.26",
     "beasties": "0.3.5",
     "html-validate": "10.5.0",
@@ -30,7 +30,7 @@
     "svgo": "4.0.0",
     "tinyexec": "1.0.2",
     "tinyglobby": "0.2.15",
-    "unocss": "66.5.10",
+    "unocss": "66.5.12",
     "vite": "7.3.0"
   }
 }
