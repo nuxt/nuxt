@@ -28,7 +28,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^3.3.2",
+    "c12": "^3.3.3",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.6.7",
+    "@rspack/core": "1.7.0",
     "@types/semver": "7.7.1",
     "hookable": "5.5.3",
     "nitropack": "2.12.9",
