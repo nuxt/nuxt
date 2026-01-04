@@ -154,6 +154,7 @@ describe('Route validation with history state', () => {
     }
 
     expect(pushStateSpy).toHaveBeenLastCalledWith({}, '', '/forbidden-page')
+    expect(window.location.pathname).toBe('/forbidden-page')
 
     // Router should still be on /valid-page (navigation was aborted)
     const route = useRoute()
@@ -174,6 +175,39 @@ describe('Route validation with history state', () => {
     expect(useRoute().path).toBe('/')
 
     pushStateSpy.mockRestore()
+    el.unmount()
+  })
+
+  it('should update URL when navigating from invalid route to another valid route', async () => {
+    const el = await mountSuspended({
+      setup () {
+        return () => h(NuxtLayout, {}, { default: () => h(NuxtPage) })
+      },
+    })
+
+    await navigateTo('/valid-page')
+    await nextTick()
+    expect(useRoute().path).toBe('/valid-page')
+    expect(window.location.pathname).toBe('/valid-page')
+
+    try {
+      await navigateTo('/forbidden-page')
+      await nextTick()
+    } catch (error: any) {
+      // Expected to throw due to validation failure
+      expect(error.statusCode).toBe(404)
+    }
+
+    const route = useRoute()
+    expect(route.path).toBe('/valid-page')
+    expect(window.location.pathname).toBe('/forbidden-page')
+
+    await navigateTo('/')
+    await nextTick()
+
+    expect(useRoute().path).toBe('/')
+    expect(window.location.pathname).toBe('/')
+
     el.unmount()
   })
 })
