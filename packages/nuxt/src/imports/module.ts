@@ -289,9 +289,10 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
         sharedImports.push(i)
 
         // add the nitro import too to create a union, if it differs
-        if (i.from !== nitroImport.from) {
-          sharedImports.push(nitroImport)
-        }
+        // TODO: uncomment when https://github.com/unjs/unimport/pull/489 is merged
+        // if (i.from !== nitroImport.from) {
+        //   sharedImports.push(nitroImport)
+        // }
       }
 
       await cacheImportPaths(sharedImports)
