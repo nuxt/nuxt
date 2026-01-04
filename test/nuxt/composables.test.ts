@@ -445,12 +445,8 @@ describe('routing utilities: `navigateTo`', () => {
   const router = useRouter()
 
   function waitForPageChange () {
-    return new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
   }
-
-  afterEach(() => {
-    router.clearRoutes()
-  })
 
   it('navigateTo should disallow navigation to external URLs by default', () => {
     expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
@@ -478,7 +474,7 @@ describe('routing utilities: `navigateTo`', () => {
     nuxtApp._processingMiddleware = false
   })
 
-  it.todo('#28425', async () => {
+  it('#28425', async () => {
     router.addRoute({
       name: 'slug',
       path: '/28425/:slug',
@@ -538,7 +534,8 @@ describe('routing utilities: `useRoute`', () => {
     router.clearRoutes()
   })
 
-  it('should provide a route', () => {
+  it('should provide a route', async () => {
+    await navigateTo('/')
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
