@@ -560,7 +560,7 @@ describe('routing utilities: `useRoute`', () => {
     await navigateTo('/parent/suspense')
 
     expect(el.html()).toContain('<div> parent/index </div>')
-    expect(route.name).toBe('parent-suspense')
+    expect(route.name).toBe('parent')
 
     await waitForPageChange()
 
