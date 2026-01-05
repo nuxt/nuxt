@@ -130,7 +130,6 @@ async function createDevMiddleware (compiler: Compiler) {
       return body
     }
     await hotHandler(event)
-    // await fetchNodeRequestHandler(hotMiddleware, event.req.url)
   }))
 
   return devMiddleware
