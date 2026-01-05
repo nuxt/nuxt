@@ -4,16 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch as _$fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
-import type { $Fetch } from 'nitro/types'
 
 import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
-
-const $fetch = _$fetch as $Fetch
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -2648,8 +2645,8 @@ describe('component islands', () => {
 
 describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   it('does not override vite plugins', async () => {
-    expect(await $fetch<string>('/vite-plugin-without-path', { responseType: 'text' })).toBe('vite-plugin without path')
-    expect(await $fetch<string>('/__nuxt-test', { responseType: 'text' })).toBe('vite-plugin with __nuxt prefix')
+    expect(await $fetch('/vite-plugin-without-path', { responseType: 'text' })).toBe('vite-plugin without path')
+    expect(await $fetch('/__nuxt-test', { responseType: 'text' })).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
     expect(await fetch('/app.config').then(r => r.status)).toBe(404)
@@ -2658,7 +2655,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
 
 describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
-    const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(typeof data.prerenderedAt).toEqual('number')
 
@@ -2720,14 +2717,14 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   })
 
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
-    const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
   })
 
   it('should render payload for ISR routes', async () => {
-    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/isr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['isr-data']).toBeDefined()
@@ -2735,7 +2732,7 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   })
 
   it('should render payload for SWR routes', async () => {
-    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/swr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-data']).toBeDefined()
