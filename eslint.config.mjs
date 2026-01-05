@@ -144,7 +144,7 @@ export default createConfigForNuxt({
   // Append local rules
   .append(
     {
-      files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      files: ['*.{js,ts}', 'scripts/**/*.{js,ts}', 'packages/**/*.{mts,ts,mjs,js}'],
       ignores: ['packages/**/*.client.ts', 'packages/**/*.client.mts', 'packages/**/*.client.js', 'packages/**/*.client.mjs'],
       name: 'local/requires/explicit-node-imports',
       rules: {

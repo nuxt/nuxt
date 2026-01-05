@@ -85,11 +85,14 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     })
   }
 
-  const html = await res.text()
+  let html = await res.text()
 
-  const responseHtml = import.meta.dev && !import.meta.test && typeof html === 'string'
-    ? html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string, { startMinimized: 300 <= error.status && error.status < 500 })}</body>`)
-    : html
+  if (import.meta.dev && !import.meta.test && typeof html === 'string') {
+    const prettyResponse = await defaultHandler(error, event, { json: false })
+    if (typeof prettyResponse.body === 'string') {
+      html = html.replace('</body>', `${generateErrorOverlayHTML((await defaultHandler(error, event, { json: false })).body as string, { startMinimized: 300 <= error.status && error.status < 500 })}</body>`)
+    }
+  }
 
   const setCookies = new Set(headers.getSetCookie())
   mergeHeaders(headers, res.headers, setCookies)
@@ -97,7 +100,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     mergeHeaders(headers, (event as H3Event).res.headers, setCookies)
   }
 
-  return new Response(responseHtml, {
+  return new Response(html, {
     headers,
     status: res.status && res.status !== 200 ? res.status : defaultRes.status,
     statusText: res.statusText || defaultRes.statusText,

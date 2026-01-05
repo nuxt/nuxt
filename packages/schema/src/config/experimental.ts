@@ -30,13 +30,11 @@ export default defineResolvers({
         if (
           val === false ||
           (await get('dev')) ||
-          (await get('ssr')) === false ||
-          // @ts-expect-error TODO: handled normalised types
-          (await get('builder')) === '@nuxt/webpack-builder'
+          (await get('ssr')) === false
         ) {
           return false
         }
-        // Enabled by default for vite prod with ssr (for vue components)
+        // Enabled by default for prod with ssr (for vue components)
         return val ?? ((id?: string) => !!id && id.includes('.vue'))
       },
     },

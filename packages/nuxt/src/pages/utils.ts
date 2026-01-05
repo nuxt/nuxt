@@ -1,7 +1,7 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative } from 'pathe'
-import { encodePath, joinURL, withLeadingSlash } from 'ufo'
+import { joinURL, withLeadingSlash } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -121,6 +121,9 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
+    // Array for collecting route groups
+    const routeGroups: string[] = []
+
     const lastSegment = segments[segments.length - 1]!
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
@@ -137,8 +140,12 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 
       const tokens = parseSegment(segment!, file.absolutePath)
 
-      // Skip group segments
+      // Skip group segments after collecting their names
       if (tokens.every(token => token.type === SegmentTokenType.group)) {
+        const groupNames = tokens.map(t => t.value)
+
+        routeGroups.push(...groupNames)
+
         continue
       }
 
@@ -160,6 +167,12 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       } else if (segmentName !== 'index') {
         route.path += routePath
       }
+    }
+
+    // Add route groups to meta
+    if (routeGroups.length > 0) {
+      route.meta ||= {}
+      route.meta.groups = routeGroups
     }
 
     parent.push(route)
@@ -347,7 +360,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
   return klona(extractedData)
 }
 
-const COLON_RE = /:/g
+const ESCAPE_CHARS_RE = /[\\:]/g
 function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
   return tokens.reduce((path, token) => {
     switch (token.type) {
@@ -361,7 +374,7 @@ function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): st
         return path
       case SegmentTokenType.static:
       default:
-        return path + encodePath(token.value).replace(COLON_RE, '\\:')
+        return path + token.value.replace(ESCAPE_CHARS_RE, '\\$&')
     }
   }, '/')
 }

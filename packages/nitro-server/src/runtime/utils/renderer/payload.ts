@@ -1,4 +1,4 @@
-import type { RenderResponse } from 'nitro/types'
+import type { MatchedRouteRules, RenderResponse } from 'nitro/types'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
@@ -8,7 +8,7 @@ import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 // @ts-expect-error virtual file
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_PAYLOAD_EXTRACTION } from '#internal/nuxt/nitro-config.mjs'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
@@ -50,9 +50,12 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
 }
 
 // TODO: remove in nuxt v5
-export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
+export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: MatchedRouteRules, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
-  const _PAYLOAD_EXTRACTION = import.meta.prerender && NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  const _PAYLOAD_EXTRACTION = !opts.ssrContext.noSSR && (
+    (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
+    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (opts.routeOptions.isr || opts.routeOptions.cache))
+  )
   // @nuxt/devalue can't handle the null prototype of HTTPError objects
   opts.data.error &&= Object.assign({}, opts.data.error)
   const nuxtData = devalue(opts.data)

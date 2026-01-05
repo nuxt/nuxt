@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
+import { genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { joinURL } from 'ufo'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
@@ -359,7 +359,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
+      if (nitro.options.prerender.crawlLinks || nitro.routing.routeRules.routes.some(r => r.data.prerender)) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -372,6 +372,9 @@ export default defineNuxtModule({
 
     function processPages (pages: NuxtPage[], currentPath = '/') {
       for (const page of pages) {
+        // Skip internal stub routes (redirects, test routes) from prerendering
+        if (page._sync) { continue }
+
         // Add root of optional dynamic paths and catchalls
         if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) {
           prerenderRoutes.add(currentPath)
@@ -456,14 +459,14 @@ export default defineNuxtModule({
     nuxt.hook('pages:extend', (routes) => {
       const nitro = useNitro()
       let resolvedRoutes: string[]
-      for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
-        if (!rule.redirect) { continue }
+      for (const route of nitro.routing.routeRules.routes) {
+        if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path
-        if (resolvedRoutes.includes(path)) { continue }
+        if (resolvedRoutes.includes(route.route)) { continue }
         routes.push({
           _sync: true,
-          path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
+          path: route.route.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
           file: componentStubPath,
         })
       }
@@ -619,10 +622,22 @@ export default defineNuxtModule({
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
       getContents: ({ app }) => {
+        const imports = new Set<string>()
+        const interfaceKeyValues = new Map<string, string>()
+        for (const layout of Object.values(app.layouts)) {
+          const varName = genSafeVariableName(layout.name)
+          imports.add(genImport(layout.file, varName))
+          interfaceKeyValues.set(layout.name, varName)
+        }
+
         return [
+          ...Array.from(imports),
           'import type { ComputedRef, MaybeRef } from \'vue\'',
-          `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
           'declare module \'nuxt/app\' {',
+          '  interface NuxtLayouts {',
+          ...Array.from(interfaceKeyValues.entries()).map(([key, value]) => `    '${key}': InstanceType<typeof ${value}>['$props'],`),
+          '}',
+          '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',

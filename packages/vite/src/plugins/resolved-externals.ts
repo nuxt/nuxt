@@ -19,7 +19,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
 
       external = new Set([
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', '@unhead/vue', '@nuxt/devalue', 'rou3', 'unstorage',
+        'unhead', '@unhead/vue', '@nuxt/devalue', 'unstorage',
         // ensure we only have one version of vue if nitro is going to inline anyway
         ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
         ...runtimeNuxtDependencies,

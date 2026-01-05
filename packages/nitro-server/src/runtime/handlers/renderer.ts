@@ -7,7 +7,7 @@ import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { useNitroHooks } from 'nitro/app'
+import { getRouteRules, useNitroHooks } from 'nitro/app'
 import { relative } from 'pathe'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
@@ -22,7 +22,7 @@ import { replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -84,8 +84,16 @@ export default defineEventHandler(async (event) => {
     setSSRError(ssrContext, ssrError)
   }
 
-  // Whether we are rendering payload route
-  const isRenderingPayload = NUXT_PAYLOAD_EXTRACTION && PAYLOAD_URL_RE.test(ssrContext.url)
+  // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
+  const routeOptions = getRouteRules(event.req.method, event.url.pathname).routeRules || {}
+
+  // Whether we are prerendering route or using ISR/SWR caching
+  const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
+    (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
+    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
+  )
+
+  const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
@@ -95,15 +103,10 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Get route options (currently to apply `ssr: false`)
-  const routeOptions = event.req.context?.routeRules
-
   if (!routeOptions?.ssr) {
     ssrContext.noSSR = true
   }
 
-  // Whether we are prerendering route
-  const _PAYLOAD_EXTRACTION = import.meta.prerender && NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME) + '?' + ssrContext.runtimeConfig.app.buildId : undefined
 
   // Render app
@@ -161,7 +164,7 @@ export default defineEventHandler(async (event) => {
     return returnResponse(event, response)
   }
 
-  if (_PAYLOAD_EXTRACTION) {
+  if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
     // Hint nitro to prerender payload for this route
     event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
@@ -252,10 +255,10 @@ export default defineEventHandler(async (event) => {
       script: _PAYLOAD_EXTRACTION
         ? NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, routeOptions, src: payloadURL })
         : NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
-          : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
+          : renderPayloadScript({ ssrContext, data: ssrContext.payload, routeOptions }),
     }, {
       ...headEntryOptions,
       // this should come before another end of body scripts
