@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import process from 'node:process'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
@@ -26,6 +26,8 @@ const merger = createDefu((obj, key, value) => {
 })
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
+  expandWithEnvFilesContent()
+
   // Automatically detect and import layers from `~~/layers/` directory
   const localLayers = (await glob('layers/*', {
     onlyDirectories: true, cwd: opts.cwd || process.cwd(),
@@ -47,6 +49,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       ...opts,
     }),
   )
+
+  expandWithEnvFilesContent()
 
   // Fill config
   nuxtConfig.rootDir ||= cwd
@@ -111,7 +115,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     _layers.push(layer)
   }
 
-  ;(nuxtConfig as any)._layers = _layers
+  ; (nuxtConfig as any)._layers = _layers
 
   // Ensure at least one layer remains (without nuxt.config)
   if (!_layers.length) {
@@ -154,6 +158,23 @@ async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
     globalSelf[key].count--
     if (!globalSelf[key].count) {
       delete globalSelf[key]
+    }
+  }
+}
+
+function expandWithEnvFilesContent () {
+  for (const key in process.env) {
+    if (key.endsWith('_FILE')) {
+      const valueKey = key.slice(0, -'_FILE'.length)
+      if (process.env[valueKey] !== undefined) {
+        continue
+      }
+      const filePath = process.env[key]
+      if (filePath && existsSync(filePath)) {
+        try {
+          process.env[valueKey] = readFileSync(filePath, 'utf-8').trim()
+        } catch { }
+      }
     }
   }
 }
