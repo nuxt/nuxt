@@ -1091,9 +1091,6 @@ importers:
       seroval:
         specifier: ^1.4.2
         version: 1.4.2
-      srvx:
-        specifier: 0.9.8
-        version: 0.9.8
       std-env:
         specifier: ^3.10.0
         version: 3.10.0
