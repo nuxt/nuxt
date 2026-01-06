@@ -5,6 +5,13 @@ import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitropack/types'
 import type { NuxtError } from 'nuxt/app'
 import { useNuxtApp } from '#app/nuxt'
+import type { SerializableValue } from './utils'
+
+// Generated at runtime to be extended
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NuxtLayouts {
+
+}
 
 export interface PageMeta {
   [key: string]: unknown
@@ -37,6 +44,8 @@ export interface PageMeta {
   name?: string
   /** You may define a path matcher, if you have a more complex pattern than can be expressed with the file name. */
   path?: string
+  /** Route groups based on the file path, like `/(protected)/users/profile` -> ['protected'] */
+  groups?: string[]
   /**
    * Allows accessing the route `params` as props passed to the page component.
    * @see https://router.vuejs.org/guide/essentials/passing-props
@@ -47,8 +56,13 @@ export interface PageMeta {
 }
 
 declare module 'vue-router' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface RouteMeta extends UnwrapRef<PageMeta> {}
+
+  interface RouteMeta extends UnwrapRef<PageMeta> {
+    /**
+     * @internal
+     */
+    layoutProps?: Record<string, SerializableValue>
+  }
 }
 
 const warnRuntimeUsage = (method: string) => {

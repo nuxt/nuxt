@@ -7,8 +7,7 @@ import perfectionist from 'eslint-plugin-perfectionist'
 import { importX } from 'eslint-plugin-import-x'
 import parser from '@typescript-eslint/parser'
 import markdown from '@eslint/markdown'
-
-import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
+import { runtimeDependencies } from 'nuxt/meta'
 
 export default createConfigForNuxt({
   features: {
@@ -145,7 +144,7 @@ export default createConfigForNuxt({
   // Append local rules
   .append(
     {
-      files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      files: ['*.{js,ts}', 'scripts/**/*.{js,ts}', 'packages/**/*.{mts,ts,mjs,js}'],
       ignores: ['packages/**/*.client.ts', 'packages/**/*.client.mts', 'packages/**/*.client.js', 'packages/**/*.client.mjs'],
       name: 'local/requires/explicit-node-imports',
       rules: {

@@ -9,7 +9,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
-import { asyncContext, builder, isDev, isRenderingJson, isWebpack } from './matrix'
+import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 await setup({
@@ -630,6 +630,17 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it('renders pages with special characters in route', async () => {
+    const html = await $fetch('/non-ascii/ç')
+    // Verify page renders successfully with layout
+    expect(html).toContain('Extended layout from foo')
+  })
+
+  it.skipIf(isDev)('prerenders pages with special characters', async () => {
+    const html = await $fetch('/prerender/ç')
+    expect(html).toContain('should be prerendered: true')
+  })
+
   it('should trigger page:loading:end only once', async () => {
     const { page, consoleLogs } = await renderPage('/')
 
@@ -1073,6 +1084,21 @@ describe('head tags', () => {
     await page.close()
   })
 
+  it('should deduplicate head tags with key', async () => {
+    const page = await createPage('/head-component')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    expect(await page.locator('link[data-hid="dedupe-key"]').count()).toBe(1)
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('href')).toBe('client')
+    expect(await page.locator('link[data-hid="dedupe-key"]').getAttribute('rel')).toBe('x-test')
+
+    await page.close()
+
+    const html = await $fetch<string>('/head-component')
+    expect((html.match(/data-hid="dedupe-key"/g) || []).length).toBe(1)
+    expect(html).toContain('<link rel="x-test" href="server" data-hid="dedupe-key">')
+  })
+
   // TODO: Doesn't adds header in test environment
   // it.todo('should render stylesheet link tag (SPA mode)', async () => {
   //   const html = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
@@ -1410,6 +1436,7 @@ describe('layouts', () => {
 
     expect(html).toContain('with-dynamic-layout')
     expect(html).toContain('Custom Layout:')
+    expect(html).toContain('set from sets-layouts middleware')
     await expectNoClientErrors('/with-dynamic-layout')
   })
   it('should work with a computed layout', async () => {
@@ -1831,14 +1858,34 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
   })
 })
 
-describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
-  const inlinedCSS = [
+describe.skipIf(isDev)('module identifiers', () => {
+  it('injects SSR module identifiers for inline styles', async () => {
+    const { page } = await renderPage('/ssr-modules')
+
+    const modulesJson = await page.getAttribute('#ssr-modules', 'data-modules')
+    const modules: string[] = modulesJson ? JSON.parse(modulesJson) : []
+
+    expect(modules.length).toBeGreaterThan(0)
+    expect(modules.every(id => typeof id === 'string' && id.length > 0)).toBe(true)
+
+    await page.close()
+  })
+})
+
+describe.skipIf(isDev)('inlining component styles', () => {
+  const globalCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
     '{--global:"global";', // global css from nuxt.config
+  ]
+  const nonGlobalCSS = [
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
     '{--scoped:"scoped"}', // <style lang=css>
     '{--shared-component:"shared-component"}', // styles in a chunk shared between pages
+  ]
+  const inlinedCSS = [
+    ...globalCSS,
+    ...nonGlobalCSS,
     '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}', // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
@@ -1855,17 +1902,13 @@ describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
   })
 
   it('should inline global css when accessing a page with `ssr: false` override via route rules', async () => {
-    const globalCSS = [
-      '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
-      '{--global:"global";', // global css from nuxt.config
-    ]
     const html = await $fetch<string>('/route-rules/spa')
     for (const style of globalCSS) {
       expect.soft(html).toContain(style)
     }
   })
 
-  it('should emit assets referenced in inlined CSS', async () => {
+  it.skipIf(isWebpack /* file is inlined */)('should emit assets referenced in inlined CSS', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
@@ -1883,25 +1926,49 @@ describe.skipIf(isDev || isWebpack)('inlining component styles', () => {
     // should not include inlined CSS in generated CSS files
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
-      if (style === '{--plugin:"plugin"}') { continue }
+      if (style === '{--plugin:"plugin"}') {
+        expect.soft(css).toContain(style)
+        continue
+      }
+      // webpack can hoist component level css up to a shared css file
+      if (isWebpack && nonGlobalCSS.includes(style)) {
+        expect.soft(css).toContain(style)
+        continue
+      }
       expect.soft(css).not.toContain(style)
     }
 
     // should include unloadable CSS in generated CSS file
-    expect.soft(css).toContain('--virtual:red')
-    expect.soft(css).toContain('--functional:"functional"')
-    expect.soft(css).toContain('--client-only:"client-only"')
+    const unloadableCSS = [
+      '--virtual:red',
+      '--functional:"functional"',
+      '--client-only:"client-only"',
+    ]
+    for (const style of unloadableCSS) {
+      // TODO:
+      if (isWebpack && style === '--virtual:red') {
+        // this is not injected at all as webpack virtual modules are a bit more complex
+        expect.soft(css).not.toContain(style)
+        continue
+      }
+      expect.soft(css).toContain(style)
+    }
   })
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
     const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
     expect(cssFiles?.length).toBeGreaterThan(0)
-    expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
-      [
-        "<link rel="stylesheet" href="/_nuxt/entry.css"",
-      ]
-    `)
+    if (isWebpack) {
+      // TODO: use non-hash name for webpack css files in test fixture
+      expect(cssFiles).toHaveLength(2)
+    } else {
+      expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+        [
+          "<link rel="stylesheet" href="/_nuxt/entry.css"",
+        ]
+      `)
+    }
   })
 
   it('still downloads client-only styles', async () => {
@@ -2068,7 +2135,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
     await expectNoClientErrors('/prefetch/server-components')
   })
 
-  it('should prefetch everything needed when NuxtLink is used', async () => {
+  it.skipIf(!isTestingAppManifest)('should prefetch everything needed when NuxtLink is used', async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -2143,6 +2210,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html: string = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
   })
@@ -2174,6 +2242,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
@@ -2190,6 +2259,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -2219,6 +2289,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
+      if (url.startsWith('data:')) { continue }
       expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
     }
   })
@@ -2440,8 +2511,7 @@ describe('component islands', () => {
       }
     }
 
-    // TODO: fix rendering of styles in webpack
-    if (!isDev && !isWebpack) {
+    if (!isDev) {
       expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
         {
           "style": [
@@ -2451,7 +2521,7 @@ describe('component islands', () => {
           ],
         }
       `)
-    } else if (isDev && !isWebpack) {
+    } else {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
       result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
@@ -2563,7 +2633,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   })
 })
 
-describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () => {
+describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
@@ -2579,7 +2649,7 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
   })
 
   // TODO: looks like this test is flaky
-  it('does not fetch a prefetched payload', { retry: 3 }, async () => {
+  it.skipIf(!isTestingAppManifest)('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
@@ -2620,11 +2690,33 @@ describe.skipIf(isDev || isWindows || !isRenderingJson)('payload rendering', () 
     await page.close()
   })
 
+  it('should not render payloads for non prerendered/cached routes', async () => {
+    // First request to trigger ISR caching
+    const res = await fetch('/_payload.json')
+    expect(res.status).toBe(404)
+  })
+
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
     const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
+  })
+
+  it('should render payload for ISR routes', async () => {
+    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['isr-data']).toBeDefined()
+    expect(Array.isArray(data.data['isr-data'])).toBe(true)
+  })
+
+  it('should render payload for SWR routes', async () => {
+    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
+    const data = parsePayload(payload)
+    expect(data.data).toBeDefined()
+    expect(data.data['swr-data']).toBeDefined()
+    expect(Array.isArray(data.data['swr-data'])).toBe(true)
   })
 })
 

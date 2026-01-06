@@ -32,10 +32,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       SourcemapPreserverPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'ssr'),
     ],
-    optimizeDeps: {
-      noDiscovery: true,
-      include: undefined,
-    },
     environments: {
       ssr: {
         resolve: {

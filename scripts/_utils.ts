@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { promises as fsp } from 'node:fs'
 import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'

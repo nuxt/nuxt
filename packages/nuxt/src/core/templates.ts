@@ -8,6 +8,7 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import type { Nitro } from 'nitropack/types'
+import { useNitro } from '@nuxt/kit'
 
 import { annotatePlugins, checkForCircularDependencies } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
@@ -520,11 +521,14 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
       ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
     )
+    const nitro = useNitro()
+    const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
+    const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (nitro.options.static || hasCachedRoutes || nitro.options.prerender.routes.length > 0 || Object.values(nitro.options.routeRules).some(r => r.prerender))
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const componentIslands = ${shouldEnableComponentIslands}`,
-      `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}`,
+      `export const payloadExtraction = ${payloadExtraction}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
       `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,

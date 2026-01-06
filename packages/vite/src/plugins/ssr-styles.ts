@@ -222,10 +222,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               // We will either teleport global CSS to the 'entry' chunk on the server side
               // or include it here in the client build so it is emitted in the CSS.
               if (id === entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
-                const s = new MagicString(code)
                 const idClientCSSMap = clientCSSMap[id] ||= new Set()
                 if (!options.globalCSS.length) { return }
 
+                const s = new MagicString(code)
                 for (const file of options.globalCSS) {
                   const resolved = await this.resolve(file) ?? await this.resolve(file, id)
                   const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
