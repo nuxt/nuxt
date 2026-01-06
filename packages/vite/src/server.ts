@@ -32,6 +32,20 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'ssr'),
+      {
+        name: 'nuxt:server-hmr-port',
+        async config (serverConfig) {
+          serverConfig.server ||= {}
+          serverConfig.server.hmr ||= {}
+          if (nuxt.options.dev && typeof serverConfig.server.hmr !== 'boolean') {
+            const hmrPortDefault = 24678
+            serverConfig.server.hmr.port ||= await getPort({
+              verbose: false,
+              portRange: [hmrPortDefault, hmrPortDefault + 20],
+            })
+          }
+        },
+      },
     ],
     environments: {
       ssr: {
@@ -48,19 +62,10 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       },
       // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
       preTransformRequests: false,
+      hmr: false,
     },
     ...ssrEnvironment(nuxt, serverEntry),
   } satisfies vite.InlineConfig, nuxt.options.vite.$server || {}))
-
-  serverConfig.server ||= {}
-  serverConfig.server.hmr ||= {}
-  if (nuxt.options.dev && typeof serverConfig.server.hmr !== 'boolean') {
-    const hmrPortDefault = 24678
-    serverConfig.server.hmr.port ||= await getPort({
-      verbose: false,
-      portRange: [hmrPortDefault, hmrPortDefault + 20],
-    })
-  }
 
   serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev })
 
