@@ -4,9 +4,9 @@ import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
 import type { H3Event } from 'h3'
-import destr from 'destr'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
+import { parseJSON } from '../utils/json'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
@@ -31,8 +31,8 @@ const CookieDefaults = {
   watch: true,
   decode: (val) => {
     const decoded = decodeURIComponent(val)
-    const parsed = destr(decoded)
-    // destr can return Infinity or precision-loss numbers - keep original string
+    const parsed = parseJSON(decoded)
+    // parseJSON can return Infinity or precision-loss numbers - keep original string
     if (typeof parsed === 'number' && (!Number.isFinite(parsed) || String(parsed) !== decoded)) {
       return decoded
     }
