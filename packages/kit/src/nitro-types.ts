@@ -1,7 +1,11 @@
 import type * as NitroV2 from 'nitropack/types'
 import type * as NitroV3 from 'nitro/types'
 
-type isNitroV2 = 'options' extends keyof NitroV2.Nitro ? true : false
+type isNitroV2 = 'options' extends keyof NitroV2.Nitro
+  ? '___INVALID' extends keyof NitroV2.Nitro
+    ? false
+    : true
+  : false
 
 export type Nitro = isNitroV2 extends true ? NitroV2.Nitro : NitroV3.Nitro
 export type NitroDevEventHandler = isNitroV2 extends true ? NitroV2.NitroDevEventHandler : NitroV3.NitroDevEventHandler
