@@ -174,7 +174,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           imports: [
             'H3Event',
             'H3Error',
-          ] as const,
+          ],
         },
         {
           from: 'h3',
@@ -185,9 +185,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             'EventHandlerResponse',
             'EventHandlerObject',
             'H3EventContext',
-          ] as const,
+          ],
         },
-      ],
+      ] as const,
       exclude: [...excludePattern, /[\\/]\.git[\\/]/],
     },
     esbuild: {
