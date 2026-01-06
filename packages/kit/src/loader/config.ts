@@ -25,7 +25,7 @@ const merger = createDefu((obj, key, value) => {
   }
 })
 
-export async function loadNuxtConfig(opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
+export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   expandWithEnvFilesContent()
 
   // Automatically detect and import layers from `~~/layers/` directory
@@ -132,7 +132,7 @@ export async function loadNuxtConfig(opts: LoadNuxtConfigOptions): Promise<NuxtO
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
 }
 
-async function loadNuxtSchema(cwd: string) {
+async function loadNuxtSchema (cwd: string) {
   const url = directoryToURL(cwd)
   const urls: Array<URL | string> = [url]
   const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
@@ -143,7 +143,7 @@ async function loadNuxtSchema(cwd: string) {
   return await import(schemaPath).then(r => r.NuxtConfigSchema)
 }
 
-async function withDefineNuxtConfig<T>(fn: () => Promise<T>) {
+async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
   const key = 'defineNuxtConfig'
   const globalSelf = globalThis as any
 
@@ -162,7 +162,7 @@ async function withDefineNuxtConfig<T>(fn: () => Promise<T>) {
   }
 }
 
-function expandWithEnvFilesContent() {
+function expandWithEnvFilesContent () {
   for (const key in process.env) {
     if (key.endsWith('_FILE')) {
       const valueKey = key.slice(0, -'_FILE'.length)
