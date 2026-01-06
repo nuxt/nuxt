@@ -33,7 +33,7 @@
     "@nuxt/schema": "workspace:*",
     "nitro": "3.0.1-alpha.1",
     "rolldown": "1.0.0-beta.58",
-    "rollup": "4.54.0",
+    "rollup": "4.55.1",
     "unbuild": "3.6.1",
     "vue": "3.5.26"
   },

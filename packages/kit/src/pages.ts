@@ -1,8 +1,9 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
+
 import { useNuxt } from './context.ts'
 import { logger } from './logger.ts'
+import type { NitroRouteConfig } from './nitro-types.ts'
 import { toArray } from './utils.ts'
 
 export function extendPages (cb: NuxtHooks['pages:extend']): void {

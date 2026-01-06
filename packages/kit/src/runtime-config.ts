@@ -2,11 +2,11 @@ import process from 'node:process'
 import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
-import type { NitroRuntimeConfig } from 'nitro/types'
 
 import { defu } from 'defu'
 import { useNuxt } from './context.ts'
 import { useNitro } from './nitro.ts'
+import type { NitroRuntimeConfig } from './nitro-types.ts'
 
 /**
  * Access 'resolved' Nuxt runtime configuration, with values updated from environment.
