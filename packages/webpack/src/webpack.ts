@@ -11,11 +11,12 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { DynamicBasePlugin } from './plugins/dynamic-base'
-import { ChunkErrorPlugin } from './plugins/chunk'
-import { createMFS } from './utils/mfs'
-import { client, server } from './configs'
-import { applyPresets, createWebpackConfigContext } from './utils/config'
+import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
+import { ChunkErrorPlugin } from './plugins/chunk.ts'
+import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { createMFS } from './utils/mfs.ts'
+import { client, server } from './configs/index.ts'
+import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
 import { builder, webpack } from '#builder'
 
@@ -23,7 +24,7 @@ import { builder, webpack } from '#builder'
 // const plugins: string[] = []
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
-  const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
+  const webpackConfigs = await Promise.all([client, ...(nuxt.options.ssr ? [server] : [])].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     await applyPresets(ctx, preset)
@@ -48,6 +49,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
 
+  const ssrStylesPlugin = nuxt.options.ssr && !nuxt.options.dev && nuxt.options.features.inlineStyles ? new SSRStylesPlugin(nuxt) : null
+
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
       sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
@@ -55,6 +58,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
+    }
+    if (ssrStylesPlugin) {
+      config.plugins!.push(ssrStylesPlugin)
     }
   }
 
@@ -75,20 +81,18 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('close', async () => {
     for (const compiler of compilers) {
-      await new Promise(resolve => compiler?.close(resolve))
+      await new Promise(resolve => compiler.close(resolve))
     }
   })
 
   // Start Builds
   if (nuxt.options.dev) {
-    await Promise.all(compilers.map(c => c && compile(c)))
+    await Promise.all(compilers.map(c => compile(c)))
     return
   }
 
   for (const c of compilers) {
-    if (c) {
-      await compile(c)
-    }
+    await compile(c)
   }
 }
 
@@ -140,7 +144,7 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
 
     // disallow cross-site requests in no-cors mode
     if (getRequestHeader(event, 'sec-fetch-mode') === 'no-cors' && getRequestHeader(event, 'sec-fetch-site') === 'cross-site') {
-      throw createError({ statusCode: 403 })
+      throw createError({ status: 403 })
     }
 
     setHeader(event, 'Vary', 'Origin')

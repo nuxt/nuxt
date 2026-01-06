@@ -22,6 +22,8 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
+
+import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import { isTestingAppManifest } from '../matrix'
 
@@ -365,26 +367,45 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       }
     `)
   })
-  it('getRouteRules', async () => {
-    expect(await getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
-    expect(await getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
+  it('getRouteRules', () => {
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
       }
     `)
-    expect(await getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
+    expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
         "redirect": "/",
       }
     `)
   })
+})
+
+describe('compiled route rules', () => {
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
     expect(await isPrerendered('/prerendered/test')).toBeFalsy()
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+  })
+
+  it('should determine if payload should be loaded based on route rules', async () => {
+    // wildcard routes with prerender: true should load payloads
+    const shouldLoadPre = await shouldLoadPayload('/pre/thing')
+    expect(shouldLoadPre).toBe(true)
+
+    // specific prerendered routes should load payloads
+    const shouldLoadSpecific = await shouldLoadPayload('/specific-prerendered')
+    expect(shouldLoadSpecific).toBe(true)
+
+    // routes with redirect should not load payloads
+    const redirectRoute = getRouteRules({ path: '/pre/test' })
+    expect(redirectRoute.redirect).toBe('/')
+    const shouldLoadRedirect = await shouldLoadPayload('/pre/test')
+    expect(shouldLoadRedirect).toBe(false)
   })
 })
 
@@ -593,7 +614,7 @@ describe('defineNuxtComponent', () => {
       }),
       render () {
         // @ts-expect-error this is not typed
-        return h('div', `Total users: ${this.users.value.length}`)
+        return h('div', `Total users: ${this.users.length}`)
       },
     })))
     const wrapper = await mountSuspended(ClientOnlyPage)

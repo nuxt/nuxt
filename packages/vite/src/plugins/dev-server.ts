@@ -1,7 +1,7 @@
 import type { Connect, Plugin, ServerOptions } from 'vite'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
-import defu from 'defu'
+import { defu } from 'defu'
 import { createError, defineEventHandler, defineLazyEventHandler, handleCors, setHeader } from 'h3'
 import { useNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
@@ -45,8 +45,8 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           serverDefaults.hmr ??= {}
           const hmrPortDefault = 24678 // Vite's default HMR port
           serverDefaults.hmr.port = await getPort({
-            port: hmrPortDefault,
-            ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i),
+            verbose: false,
+            portRange: [hmrPortDefault, hmrPortDefault + 20],
           })
         }
         if (nuxt.options.devServer.https) {
@@ -177,7 +177,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
           const ended = event.node.res.writableEnded || event.handled
           if (!ended && event.path.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => event.path.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(event.path))) {
-            throw createError({ statusCode: 404 })
+            throw createError({ status: 404 })
           }
         })
       })

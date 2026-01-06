@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { pageTests } from './pages.test'
-import { toRou3Patterns } from '../src/pages/utils'
+import { pageTests } from './pages.test.ts'
+import { toRou3Patterns } from '../src/pages/utils.ts'
 
 describe('nitro-ssr-routes', () => {
   it('should resolve SSR routes correctly', () => {
@@ -43,6 +43,12 @@ describe('nitro-ssr-routes', () => {
         "/:d44d",
         "/",
         "/test\\:name",
+        "/测试",
+        "/文档",
+        "/文档/介绍",
+        "/خاص\\:____",
+        "/a&b",
+        "/a\\\\b",
         "/:foo",
         "/:foo",
         "/param",
@@ -68,6 +74,7 @@ describe('nitro-ssr-routes', () => {
         "/page-with-meta",
         "/page-with-props",
         "/",
+        "/about",
         "/about",
         "/about",
       ]
