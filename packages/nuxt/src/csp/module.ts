@@ -2,9 +2,9 @@ import { addServerPlugin, defineNuxtModule } from '@nuxt/kit'
 import { resolve } from 'pathe'
 
 import defu from 'defu'
-import { defaultCSPConfig, defuReplaceArray, hashBundledAssets } from './utils'
-import type { ContentSecurityPolicyConfig } from './types'
-import { distDir } from '../dirs'
+import { defaultCSPConfig, defuReplaceArray, hashBundledAssets } from './utils/index.ts'
+import type { ContentSecurityPolicyConfig } from './types/index.ts'
+import { distDir } from '../dirs.ts'
 
 export default defineNuxtModule<Partial<ContentSecurityPolicyConfig>>({
   meta: {
