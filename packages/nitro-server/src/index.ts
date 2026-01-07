@@ -146,30 +146,32 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       name: 'nuxt',
       version: nuxtVersion || nitroBuilder.version,
     },
-    imports: {
-      autoImport: nuxt.options.imports.autoImport as boolean,
-      dirs: [...sharedDirs],
-      imports: [
-        {
-          as: '__buildAssetsURL',
-          name: 'buildAssetsURL',
-          from: resolve(distDir, 'runtime/utils/paths'),
+    imports: nuxt.options.experimental.nitroAutoImports === false
+      ? false
+      : {
+          autoImport: nuxt.options.imports.autoImport as boolean,
+          dirs: [...sharedDirs],
+          imports: [
+            {
+              as: '__buildAssetsURL',
+              name: 'buildAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              as: '__publicAssetsURL',
+              name: 'publicAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
+              as: 'defineAppConfig',
+              name: 'defineAppConfig',
+              from: resolve(distDir, 'runtime/utils/config'),
+              priority: -1,
+            },
+          ],
+          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
         },
-        {
-          as: '__publicAssetsURL',
-          name: 'publicAssetsURL',
-          from: resolve(distDir, 'runtime/utils/paths'),
-        },
-        {
-          // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
-          as: 'defineAppConfig',
-          name: 'defineAppConfig',
-          from: resolve(distDir, 'runtime/utils/config'),
-          priority: -1,
-        },
-      ],
-      exclude: [...excludePattern, /[\\/]\.git[\\/]/],
-    },
     esbuild: {
       options: { exclude: excludePattern },
     },
@@ -324,8 +326,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
+  // TODO: _remove_ useAppConfig auto import when this is disabled in nuxt v4
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  if (nuxt.options.experimental.serverAppConfig && nitroConfig.imports) {
+  if (nuxt.options.experimental.serverAppConfig === true && nitroConfig.imports) {
     nitroConfig.imports.imports ||= []
     nitroConfig.imports.imports.push({
       name: 'useAppConfig',
@@ -581,6 +584,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }
 
+  // Hoist types for nitro implicit dependencies
+  nuxt.options.typescript.hoist.push(
+    // Nitro auto-imported/augmented dependencies
+    'nitro/types',
+    'nitro/runtime',
+    // TODO: remove in v5
+    'nitropack/types',
+    'nitropack/runtime',
+    'nitropack',
+    'defu',
+    'h3',
+    'consola',
+    'ofetch',
+    'crossws',
+  )
+
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
 
@@ -619,6 +638,24 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     compatibilityDate: nuxt.options.compatibilityDate,
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  if (nuxt.options.experimental.serverAppConfig === false && nitro.options.imports) {
+    nitro.options.imports.presets ||= []
+    nitro.options.imports.presets = nitro.options.imports.presets.map(preset => typeof preset === 'string' || !('imports' in preset)
+      ? preset
+      : ({
+          ...preset,
+          imports: preset.imports.filter(i => i !== 'useAppConfig'),
+        }))
+  }
+
+  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
+  // Add prerender payload support
+  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
+    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    nuxt.options.experimental.payloadExtraction = true
+  }
 
   // Trigger Nitro reload when SPA loading template changes
   const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
