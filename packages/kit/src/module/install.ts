@@ -350,7 +350,7 @@ async function callLifecycleHooks(nuxtModule: NuxtModule<any, Partial<any>, fals
     if (!previousVersion) {
       await nuxtModule.onInstall?.(nuxt)
     } else if (semver.gt(meta.version, previousVersion)) {
-      await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion)
+      await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion as string)
     }
     if (previousVersion !== meta.version) {
       updateRc(

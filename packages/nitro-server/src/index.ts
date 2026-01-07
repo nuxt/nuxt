@@ -245,7 +245,7 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
           ],
         },
-      ) as any,
+      ) as unknown as TSConfig,
     },
     publicAssets: [
       nuxt.options.dev
@@ -327,7 +327,7 @@ export async function bundle(nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       plugins: [],
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
-  } satisfies NitroConfig)
+  } satisfies NitroConfig as any)
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig && nitroConfig.imports) {
@@ -847,7 +847,7 @@ async function spaLoadingTemplatePath(nuxt: Nuxt) {
     return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
   }
 
-  const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
+  const possiblePaths = nuxt.options._layers.map(layer => resolve((layer.config as any).srcDir, (layer.config as any).dir?.app || 'app', 'spa-loading-template.html'))
 
   return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }

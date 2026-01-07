@@ -364,51 +364,55 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
+  const commonCompilerOptions: TSConfig['compilerOptions'] = {
+    /* Base options: */
+    esModuleInterop: true,
+    skipLibCheck: true,
+    target: 'ESNext',
+    allowJs: true,
+    resolveJsonModule: true,
+    moduleDetection: 'force',
+    isolatedModules: true,
+    verbatimModuleSyntax: true,
+    /* Strictness */
+    strict: nuxt.options.typescript?.strict ?? true,
+    noUncheckedIndexedAccess: true,
+    forceConsistentCasingInFileNames: true,
+    noImplicitOverride: true,
+    /* Decorator support */
+    ...useDecorators
+      ? {
+        experimentalDecorators: false,
+      }
+      : {},
+    /* If NOT transpiling with TypeScript: */
+    module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
+    noEmit: true,
+    /* If your code runs in the DOM: */
+    lib: [
+      'ESNext',
+      ...useDecorators ? ['esnext.decorators'] : [],
+      'dom',
+      'dom.iterable',
+      'webworker',
+    ],
+    /* JSX support for Vue */
+    jsx: 'preserve',
+    jsxImportSource: 'vue',
+    /* Possibly consider removing the following in future */
+    moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node', /* implied by module: preserve */
+    useDefineForClassFields: true, /* implied by target: es2022+ */
+    noImplicitThis: true, /* enabled with `strict` */
+    allowSyntheticDefaultImports: true,
+  }
+
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
-      /* Base options: */
-      esModuleInterop: true,
-      skipLibCheck: true,
-      target: 'ESNext',
-      allowJs: true,
-      resolveJsonModule: true,
-      moduleDetection: 'force',
-      isolatedModules: true,
-      verbatimModuleSyntax: true,
-      /* Strictness */
-      strict: nuxt.options.typescript?.strict ?? true,
-      noUncheckedIndexedAccess: true,
-      forceConsistentCasingInFileNames: true,
-      noImplicitOverride: true,
-      /* Decorator support */
-      ...useDecorators
-        ? {
-          experimentalDecorators: false,
-        }
-        : {},
-      /* If NOT transpiling with TypeScript: */
-      module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
-      noEmit: true,
-      /* If your code runs in the DOM: */
-      lib: [
-        'ESNext',
-        ...useDecorators ? ['esnext.decorators'] : [],
-        'dom',
-        'dom.iterable',
-        'webworker',
-      ],
-      /* JSX support for Vue */
-      jsx: 'preserve',
-      jsxImportSource: 'vue',
+      ...commonCompilerOptions,
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
       paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node', /* implied by module: preserve */
-      useDefineForClassFields: true, /* implied by target: es2022+ */
-      noImplicitThis: true, /* enabled with `strict` */
-      allowSyntheticDefaultImports: true,
     },
     include: [...include],
     exclude: [...exclude],
@@ -417,7 +421,7 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
   // This describes the environment where we load `nuxt.config.ts` (and modules)
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
-      noEmit: true,
+      ...commonCompilerOptions,
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
@@ -430,7 +434,7 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
   // This describes the environment where we load `nuxt.config.ts` (and modules)
   const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
-      noEmit: true,
+      ...commonCompilerOptions,
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
