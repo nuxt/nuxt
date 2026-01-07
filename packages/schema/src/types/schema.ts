@@ -1664,14 +1664,14 @@ export interface ConfigSchema {
     /**
      * You can extend the generated `.nuxt/tsconfig.node.json` using this option.
      *
-     * This allows node-specific TypeScript configuration that will be merged with the global `typescript.tsConfig` (which it overrides).
+     * These options will be merged with (and take priority over) the global `typescript.tsConfig`.
      */
     nodeTsConfig: TSConfig
 
     /**
      * You can extend the generated `.nuxt/tsconfig.shared.json` using this option.
      *
-     * This allows shared TypeScript configuration that will be merged with the global `typescript.tsConfig` (which it overrides).
+     * These options will be merged with (and take priority over) the global `typescript.tsConfig`.
      */
     sharedTsConfig: TSConfig
 
