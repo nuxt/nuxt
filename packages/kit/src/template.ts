@@ -388,14 +388,6 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
     /* If NOT transpiling with TypeScript: */
     module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
     noEmit: true,
-    /* If your code runs in the DOM: */
-    lib: [
-      'ESNext',
-      ...useDecorators ? ['esnext.decorators'] : [],
-      'dom',
-      'dom.iterable',
-      'webworker',
-    ],
     /* JSX support for Vue */
     jsx: 'preserve',
     jsxImportSource: 'vue',
@@ -409,6 +401,14 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       ...commonCompilerOptions,
+      /* If your code runs in the DOM: */
+      lib: [
+        'ESNext',
+        ...useDecorators ? ['esnext.decorators'] : [],
+        'dom',
+        'dom.iterable',
+        'webworker',
+      ],
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
@@ -422,6 +422,7 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       ...commonCompilerOptions,
+      lib: ['ESNext'],
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
@@ -435,6 +436,7 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
   const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       ...commonCompilerOptions,
+      lib: ['ESNext'],
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
