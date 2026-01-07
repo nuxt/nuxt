@@ -7,7 +7,6 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
-import type { Nitro } from 'nitropack/types'
 import { useNitro } from '@nuxt/kit'
 
 import { annotatePlugins, checkForCircularDependencies } from './app.ts'
