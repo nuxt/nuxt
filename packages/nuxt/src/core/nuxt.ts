@@ -345,9 +345,6 @@ async function initNuxt(nuxt: Nuxt) {
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
-  // Add plugin normalization plugin
-  addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
-
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
