@@ -21,7 +21,7 @@ import type { LayerDirectories } from './layers.ts'
 /**
  * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
  */
-export function addTemplate<T>(_template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
+export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
   // Normalize template
@@ -52,7 +52,7 @@ export function addTemplate<T>(_template: NuxtTemplate<T> | string): ResolvedNux
 /**
  * Adds a virtual file that can be used within the Nuxt Nitro server build.
  */
-export function addServerTemplate(template: NuxtServerTemplate): NuxtServerTemplate {
+export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
   const nuxt = useNuxt()
 
   nuxt.options.nitro.virtual ||= {}
@@ -69,7 +69,7 @@ export function addServerTemplate(template: NuxtServerTemplate): NuxtServerTempl
  *
  * If no context object is passed, then it will only be added to the nuxt context.
  */
-export function addTypeTemplate<T>(_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean, node?: boolean, shared?: boolean }): ResolvedNuxtTemplate<T> {
+export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { nitro?: boolean, nuxt?: boolean, node?: boolean, shared?: boolean }): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -120,7 +120,7 @@ export function addTypeTemplate<T>(_template: NuxtTypeTemplate<T>, context?: { n
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate<T>(template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
+export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -167,7 +167,7 @@ export function normalizeTemplate<T>(template: NuxtTemplate<T> | string, buildDi
  *
  * You can pass a filter within the options to selectively regenerate a subset of templates.
  */
-export async function updateTemplates(options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }): Promise<void> {
+export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }): Promise<void> {
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
@@ -180,7 +180,7 @@ interface LayerPaths {
   globalDeclarations: string[]
 }
 
-export function resolveLayerPaths(dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
@@ -237,7 +237,7 @@ interface GenerateTypesReturn {
   tsConfig: TSConfig
   legacyTsConfig: TSConfig
 }
-export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
+export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> {
   const include = new Set<string>(['./nuxt.d.ts'])
   const nodeInclude = new Set<string>(['./nuxt.node.d.ts'])
   const sharedInclude = new Set<string>(['./nuxt.shared.d.ts'])
@@ -382,8 +382,8 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
     /* Decorator support */
     ...useDecorators
       ? {
-        experimentalDecorators: false,
-      }
+          experimentalDecorators: false,
+        }
       : {},
     /* If NOT transpiling with TypeScript: */
     module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
@@ -523,7 +523,7 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
     exclude: [...legacyExclude],
   })
 
-  async function resolveConfig(tsConfig: TSConfig) {
+  async function resolveConfig (tsConfig: TSConfig) {
     for (const alias in tsConfig.compilerOptions!.paths) {
       const paths = tsConfig.compilerOptions!.paths[alias]
       tsConfig.compilerOptions!.paths[alias] = [...new Set(await Promise.all(paths.map(async (path: string) => {
@@ -596,7 +596,7 @@ export async function _generateTypes(nuxt: Nuxt): Promise<GenerateTypesReturn> {
   }
 }
 
-export async function writeTypes(nuxt: Nuxt): Promise<void> {
+export async function writeTypes (nuxt: Nuxt): Promise<void> {
   const { tsConfig, nodeTsConfig, nodeDeclaration, declaration, legacyTsConfig, sharedDeclaration, sharedTsConfig } = await _generateTypes(nuxt)
 
   const appTsConfigPath = resolve(nuxt.options.buildDir, 'tsconfig.app.json')
@@ -620,7 +620,7 @@ export async function writeTypes(nuxt: Nuxt): Promise<void> {
   ])
 }
 
-function sortTsPaths(paths: Record<string, string[]>) {
+function sortTsPaths (paths: Record<string, string[]>) {
   for (const pathKey in paths) {
     if (pathKey.startsWith('#build')) {
       const pathValue = paths[pathKey]!
@@ -631,7 +631,7 @@ function sortTsPaths(paths: Record<string, string[]>) {
   }
 }
 
-function renderAttrs(obj: Record<string, string>) {
+function renderAttrs (obj: Record<string, string>) {
   const attrs: string[] = []
   for (const key in obj) {
     attrs.push(renderAttr(key, obj[key]))
@@ -639,15 +639,15 @@ function renderAttrs(obj: Record<string, string>) {
   return attrs.join(' ')
 }
 
-function renderAttr(key: string, value?: string) {
+function renderAttr (key: string, value?: string) {
   return value ? `${key}="${value}"` : ''
 }
 
 const RELATIVE_WITH_DOT_RE = /^([^.])/
-function relativeWithDot(from: string, to: string) {
+function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
 }
 
-function withTrailingSlash(dir: string) {
+function withTrailingSlash (dir: string) {
   return dir.replace(/[^/]$/, '$&/')
 }
