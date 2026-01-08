@@ -66,6 +66,7 @@ describe('nitro-ssr-routes', () => {
         "/page1",
         "/",
         "/",
+        "/products",
         "/",
         "/",
         "/page-with-meta",
