@@ -134,6 +134,7 @@ describe('loadNuxt', () => {
         "nuxt:components",
         "nuxt:imports",
         "nuxt:nuxt-config-schema",
+        "nuxt:csp",
         "@nuxt/telemetry",
       ]
     `)

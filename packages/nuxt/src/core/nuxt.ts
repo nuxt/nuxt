@@ -32,6 +32,7 @@ import pagesModule from '../pages/module.ts'
 import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
+import cspModule from '../csp/module.ts'
 
 import { distDir, pkgDir } from '../dirs.ts'
 import pkg from '../../package.json' with { type: 'json' }
@@ -832,6 +833,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     },
   }])
   options._modules.push(schemaModule)
+  options._modules.push(cspModule)
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push(

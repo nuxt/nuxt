@@ -36,7 +36,7 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
+import type { AppConfig, ContentSecurityPolicyConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction } from './compiler.ts'
@@ -71,6 +71,11 @@ export interface ConfigSchema {
    * ```
    */
   pages: boolean | { enabled?: boolean, pattern?: string | string[] }
+
+  /**
+   * Configure Nuxt's content security policy (CSP) settings.
+   */
+  csp: ContentSecurityPolicyConfig
 
   /**
    * Manually disable nuxt telemetry.

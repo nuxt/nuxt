@@ -27,4 +27,6 @@ export default defineResolvers({
   telemetry: undefined,
 
   devtools: {},
+
+  csp: {},
 })
