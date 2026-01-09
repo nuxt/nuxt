@@ -1,10 +1,9 @@
 import type { Ref } from 'vue'
 import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
-import { HTTPError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
-import { clearError, showError } from '../composables/error'
+import { clearError, createError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 
 // @ts-expect-error virtual file
@@ -270,7 +269,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server) {
               if (result === false || result instanceof Error) {
-                const error = result || new HTTPError({
+                const error = result || createError({
                   status: 404,
                   statusText: `Page Not Found: ${initialURL}`,
                   data: {
