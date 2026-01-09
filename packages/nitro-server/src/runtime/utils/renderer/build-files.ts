@@ -1,4 +1,3 @@
-import process from 'node:process'
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
@@ -63,6 +62,7 @@ export const getSSRRenderer = lazyCachedFunction(async (): Promise<Renderer> => 
   async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1]) {
     const html = await _renderToString(input, context)
     // In development with vite-node, the manifest is on-demand and will be available after rendering
+    // eslint-disable-next-line no-restricted-globals
     if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
       renderer.rendererContext.updateManifest(await getClientManifest())
     }

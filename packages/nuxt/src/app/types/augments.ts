@@ -33,6 +33,7 @@ declare global {
   }
 
   // TODO: typed fetch
+  // @ts-expect-error type is coming in from `nitropack` v2
   const $fetch: $Fetch
 }
 

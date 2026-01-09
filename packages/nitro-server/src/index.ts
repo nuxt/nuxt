@@ -13,7 +13,7 @@ import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler } from 'nitro/h3'
+import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -331,16 +331,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  if (nuxt.options.experimental.serverAppConfig && nitroConfig.imports) {
-    nitroConfig.imports.imports ||= []
-    nitroConfig.imports.imports.push({
-      name: 'useAppConfig',
-      from: resolve(distDir, 'runtime/utils/app-config'),
-      priority: -1,
-    })
-  }
-
   // add error handler
   if (!nitroConfig.errorHandler && (nuxt.options.dev || !nuxt.options.experimental.noVueServer)) {
     nitroConfig.errorHandler = resolve(distDir, 'runtime/handlers/error')
@@ -576,6 +566,34 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }
 
+  // Hoist types for nitro implicit dependencies
+  nuxt.options.typescript.hoist.push(
+    // Nitro auto-imported/augmented dependencies
+    'nitro',
+    'nitro/app',
+    'nitro/builder',
+    'nitro/cache',
+    'nitro/config',
+    'nitro/context',
+    'nitro/database',
+    'nitro/h3',
+    'nitro/meta',
+    'nitro/runtime-config',
+    'nitro/storage',
+    'nitro/task',
+    'nitro/types',
+    // TODO: remove in v5
+    'nitropack/types',
+    'nitropack/runtime',
+    'nitropack',
+    'srvx',
+    'defu',
+    'h3',
+    'consola',
+    'ofetch',
+    'crossws',
+  )
+
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
 
@@ -618,6 +636,23 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // TODO: remove when devtools gains support for nitro v3
   // @ts-expect-error devtools calls storage.watch()
   nitro.storage ||= { watch: () => {} }
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  if (nuxt.options.experimental.serverAppConfig === true && nitroConfig.imports) {
+    nitroConfig.imports.imports ||= []
+    nitroConfig.imports.imports.push({
+      name: 'useAppConfig',
+      from: resolve(distDir, 'runtime/utils/app-config'),
+      priority: -1,
+    })
+  }
+
+  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
+  // Add prerender payload support
+  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
+    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
+    nuxt.options.experimental.payloadExtraction = true
+  }
 
   // Trigger Nitro reload when SPA loading template changes
   const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
@@ -830,7 +865,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 
-    nuxt.hook('server:devHandler', (h) => { devMiddlewareHandler.set(h) })
+    nuxt.hook('server:devHandler', (h, options) => {
+      devMiddlewareHandler.set(defineEventHandler((event) => {
+        if (options.cors(event.url.pathname)) {
+          const isPreflight = handleCors(event, nuxt.options.devServer.cors)
+          if (isPreflight) {
+            return null
+          }
+          event.res.headers.set('Vary', 'Origin')
+        }
+        return h(event)
+      }))
+    })
     nuxt.server = createDevServer(nitro)
 
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))

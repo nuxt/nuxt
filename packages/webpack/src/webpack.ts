@@ -1,6 +1,6 @@
 import pify from 'pify'
-import { HTTPError, defineEventHandler, fromNodeMiddleware, handleCors } from 'h3'
-import type { CorsOptions } from 'h3'
+import type { H3Event as H3V1Event } from 'h3'
+import type { H3Event as H3V2Event } from 'h3-next'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
@@ -121,34 +121,27 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  const devHandler = wdmToH3Handler(devMiddleware, nuxt.options.devServer.cors)
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const hotHandler = fromNodeMiddleware(hotMiddleware as any)
+  const devHandler = wdmToH3Handler(devMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
     const body = await devHandler(event)
     if (body !== undefined) {
       return body
     }
-    await hotHandler(event)
-  }))
+    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    await new Promise<void>((resolve, reject) => hotMiddleware(req as IncomingMessage, res as ServerResponse, err => err ? reject(err) : resolve()))
+  }), { cors: () => true })
 
   return devMiddleware
 }
 
 // TODO: implement upstream in `webpack-dev-middleware`
-function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>, corsOptions: CorsOptions) {
+function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
   return defineEventHandler(async (event) => {
-    const isPreflight = handleCors(event, corsOptions)
-    if (isPreflight) {
-      return null
-    }
-
     // disallow cross-site requests in no-cors mode
-    if (event.req.headers.get('sec-fetch-mode') === 'no-cors' && event.req.headers.get('sec-fetch-site') === 'cross-site') {
-      throw new HTTPError({ status: 403 })
+    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    if (req.headers['sec-fetch-mode'] === 'no-cors' && req.headers['sec-fetch-site'] === 'cross-site') {
+      throw { status: 403 }
     }
-
-    event.res.headers.set('Vary', 'Origin')
 
     event.context.webpack = {
       ...event.context.webpack,
@@ -156,18 +149,18 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
     }
     const body = await new Promise((resolve, reject) => {
       // @ts-expect-error handle injected methods
-      event.res.stream = (stream) => {
+      res.stream = (stream) => {
         resolve(stream)
       }
       // @ts-expect-error handle injected methods
-      event.res.send = (data) => {
+      res.send = (data) => {
         resolve(data)
       }
       // @ts-expect-error handle injected methods
-      event.res.finish = (data) => {
+      res.finish = (data) => {
         resolve(data)
       }
-      devMiddleware(event.runtime!.node!.req as IncomingMessage, event.runtime!.node!.res as ServerResponse, (err) => {
+      devMiddleware(req as IncomingMessage, res as ServerResponse, (err) => {
         if (err) {
           reject(err)
         } else {
@@ -232,8 +225,16 @@ async function compile (compiler: Compiler) {
   }
 }
 
+type GenericHandler = (event: H3V1Event | H3V2Event) => unknown | Promise<unknown>
+
+function defineEventHandler (handler: GenericHandler): GenericHandler {
+  return Object.assign(handler, { __is_handler__: true })
+}
+
 declare module 'srvx' {
   interface ServerRequestContext {
-    webpack?: Record<string, unknown>
+    webpack?: {
+      devMiddleware?: webpackDevMiddleware.Context<IncomingMessage, ServerResponse>
+    }
   }
 }

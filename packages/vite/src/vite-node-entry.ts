@@ -1,16 +1,17 @@
 import process from 'node:process'
 import { performance } from 'node:perf_hooks'
-import { HTTPError } from 'h3'
 import { ViteNodeRunner } from 'vite-node/client'
 import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from '#vite-node'
 import type { NuxtSSRContext } from 'nuxt/app'
 
+import type { ErrorPartial } from './types'
+
 const runner = createRunner()
 
 let render: (ssrContext: NuxtSSRContext) => Promise<any>
 
-export default async (ssrContext: NuxtSSRContext) => {
+export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   // eslint-disable-next-line nuxt/prefer-import-meta,@typescript-eslint/no-deprecated
@@ -50,20 +51,20 @@ function createRunner () {
         let _err
         try {
           const { message, stack } = formatViteError(errorData, id)
-          _err = new HTTPError({
+          _err = {
             statusText: 'Vite Error',
             message,
             stack,
-          })
+          } satisfies ErrorPartial
         } catch (formatError) {
           consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
           const message = `[vite-node] [TransformError] ${errorData?.message || '-'}`
           consola.error(message, errorData)
-          throw new HTTPError({
+          throw {
             statusText: 'Vite Error',
             message,
             stack: `${message}\nat ${id}\n` + (errorData?.stack || ''),
-          })
+          } satisfies ErrorPartial
         }
         throw _err
       })

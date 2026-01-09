@@ -155,7 +155,6 @@ export default withMatrix({
   experimental: {
     nitroAutoImports: true,
     runtimeBaseURL: true,
-    serverAppConfig: true,
     decorators: true,
     typedPages: true,
     clientFallback: true,
