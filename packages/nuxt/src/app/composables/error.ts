@@ -1,4 +1,3 @@
-import { HTTPError } from 'h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
@@ -55,13 +54,41 @@ export const isNuxtError = <DataT = unknown>(error: unknown): error is NuxtError
   return !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 }
 
-export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
+export class NuxtError<DataT = unknown> extends Error {
   readonly [NUXT_ERROR_SIGNATURE] = true
+  readonly status: number
+  readonly statusText: string
   readonly fatal: boolean
+  readonly unhandled?: boolean
+  readonly data?: DataT
+  override readonly cause?: unknown
+
+  /** @deprecated Use `status` instead */
+  get statusCode () { return this.status }
+  /** @deprecated Use `statusText` instead */
+  get statusMessage () { return this.statusText }
 
   constructor (message = '', opts: Partial<NuxtError<DataT>> = {}) {
-    super(message, opts)
+    super(message, { cause: opts.cause })
+    this.name = 'NuxtError'
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.status = opts.status ?? opts.statusCode ?? 500
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this.statusText = opts.statusText ?? opts.statusMessage ?? ''
     this.fatal = opts.fatal ?? !!opts.unhandled
+    this.unhandled = opts.unhandled
+    this.data = opts.data
+  }
+
+  toJSON () {
+    return {
+      message: this.message,
+      status: this.status,
+      statusText: this.statusText,
+      fatal: this.fatal,
+      unhandled: this.unhandled,
+      data: this.unhandled ? undefined : this.data,
+    }
   }
 }
 

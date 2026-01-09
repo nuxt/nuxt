@@ -139,18 +139,20 @@ describe('errors', () => {
     expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
       {
         "data": undefined,
-        "message": "HTTPError 404",
+        "fatal": false,
+        "message": "",
         "status": 404,
-        "statusText": undefined,
+        "statusText": "",
         "unhandled": undefined,
       }
     `)
     expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
       {
         "data": undefined,
+        "fatal": false,
         "message": "Message",
         "status": 500,
-        "statusText": undefined,
+        "statusText": "",
         "unhandled": undefined,
       }
     `)
@@ -166,7 +168,7 @@ describe('errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
     showError('new error')
-    expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
+    expect(error.value).toMatchInlineSnapshot('[NuxtError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
   })
@@ -575,7 +577,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[HTTPError: Page not found]')
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[NuxtError: Page not found]')
     expect(error.value).toBe(undefined)
   })
   it('should block navigation if no error is provided', () => {
