@@ -34,7 +34,7 @@ export function addServerHandler (handler: NitroEventHandler): void {
  *
  */
 export function addDevServerHandler (handler: NitroDevEventHandler): void {
-  useNuxt().options.devServerHandlers.push(handler)
+  useNuxt().options.devServerHandlers.push(handler as any)
 }
 
 /**
