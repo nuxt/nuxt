@@ -863,7 +863,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nuxt.hook('server:devHandler', (h, options) => {
       devMiddlewareHandler.set(defineEventHandler((event) => {
-        if (options?.cors?.()) {
+        if (options.cors(event.path)) {
           const isPreflight = handleCors(event, nuxt.options.devServer.cors)
           if (isPreflight) {
             return null
