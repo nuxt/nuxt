@@ -331,6 +331,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  if (nuxt.options.experimental.serverAppConfig === true && nitroConfig.imports) {
+    nitroConfig.imports.imports ||= []
+    nitroConfig.imports.imports.push({
+      name: 'useAppConfig',
+      from: resolve(distDir, 'runtime/utils/app-config'),
+      priority: -1,
+    })
+  }
+
   // add error handler
   if (!nitroConfig.errorHandler && (nuxt.options.dev || !nuxt.options.experimental.noVueServer)) {
     nitroConfig.errorHandler = resolve(distDir, 'runtime/handlers/error')
@@ -636,16 +646,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // TODO: remove when devtools gains support for nitro v3
   // @ts-expect-error devtools calls storage.watch()
   nitro.storage ||= { watch: () => {} }
-
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  if (nuxt.options.experimental.serverAppConfig === true && nitroConfig.imports) {
-    nitroConfig.imports.imports ||= []
-    nitroConfig.imports.imports.push({
-      name: 'useAppConfig',
-      from: resolve(distDir, 'runtime/utils/app-config'),
-      priority: -1,
-    })
-  }
 
   // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
   // Add prerender payload support
