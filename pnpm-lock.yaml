@@ -909,9 +909,6 @@ importers:
       mini-css-extract-plugin:
         specifier: 2.10.0
         version: 2.10.0(webpack@5.104.1(esbuild@0.27.2))
-      nitropack:
-        specifier: 2.13.1
-        version: 2.13.1(rolldown@1.0.0-beta.60)
       ofetch:
         specifier: 1.5.1
         version: 1.5.1

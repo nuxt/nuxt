@@ -245,7 +245,7 @@ describe('useFetch', () => {
     expect(data.value).toEqual({ custom: 'GET' })
   })
 
-  it('should use default value with lazy', async () => {
+  it('should use default value with lazy', () => {
     const { data, pending } = useLazyFetch<TestData>('/api/test', { default: () => ({ method: 'default', headers: {} }) })
     expect(pending.value).toBe(true)
     expect(data.value).toEqual({ method: 'default', headers: {} })

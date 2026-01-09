@@ -13,7 +13,7 @@ let render: (ssrContext: NuxtSSRContext) => Promise<any>
 export default async (ssrContext: NuxtSSRContext) => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
-  // eslint-disable-next-line nuxt/prefer-import-meta,@typescript-eslint/no-deprecated
+  // eslint-disable-next-line nuxt/prefer-import-meta
   process.server = true
   import.meta.server = true
 

@@ -7,8 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, runWithNuxtContext, useNitro } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, directoryToURL, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -216,7 +215,7 @@ async function initNuxt (nuxt: Nuxt) {
         '}',
       ].join('\n')
     },
-  }, { nuxt: true, nitro: true, node: true })
+  }, { nuxt: true, nitro: true })
 
   // Disable environment types entirely if `typescript.builder` is false
   if (nuxt.options.typescript.builder !== false) {
@@ -791,14 +790,6 @@ export default defineNuxtPlugin({
   // Init nitro
   await bundleServer(nuxt)
 
-  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
-  // Add prerender payload support
-  const nitro = useNitro()
-  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
-    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-    nuxt.options.experimental.payloadExtraction = true
-  }
-
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
@@ -908,11 +899,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   // Ensure we share key config between Nuxt and Nitro
-  createPortalProperties(options.nitro.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
-  createPortalProperties(options.nitro.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  const nitroOptions = options.nitro
+  createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
+  createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
 
   // prevent replacement of options.nitro
-  const nitroOptions = options.nitro
   Object.defineProperties(options, {
     nitro: {
       configurable: false,

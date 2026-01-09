@@ -43,8 +43,6 @@ export default defineBuildConfig({
     'hookable',
     'ignore',
     'mini-css-extract-plugin',
-    'nitro',
-    'nitropack',
     'nuxt/app',
     'ofetch',
     'oxc-transform',

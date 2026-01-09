@@ -142,11 +142,13 @@ export default defineResolvers({
     },
   },
   experimental: {
+    runtimeBaseURL: false,
     /**
      * Enable to use experimental decorators in Nuxt and Nitro.
      *
      * @see https://github.com/tc39/proposal-decorators
      */
+    runtimeBaseURL: false,
     decorators: false,
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
@@ -178,6 +180,8 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : true
       },
     },
+
+    serverAppConfig: true,
 
     /**
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
@@ -813,6 +817,11 @@ export default defineResolvers({
     viteEnvironmentApi: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
+    nitroAutoImports: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
   },

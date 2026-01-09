@@ -43,15 +43,6 @@ export default defineResolvers({
     hoist: {
       $resolve: (val) => {
         const defaults = [
-          // Nitro auto-imported/augmented dependencies
-          'nitropack/types',
-          'nitropack/runtime',
-          'nitropack',
-          'defu',
-          'h3',
-          'consola',
-          'ofetch',
-          'crossws',
           // Key nuxt dependencies
           '@unhead/vue',
           '@nuxt/devtools',

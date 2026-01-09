@@ -11,7 +11,8 @@ export type { AppHeadMetaObject, MetaObject, MetaObjectRaw } from './types/head.
 export type { ModuleDefinition, ModuleDependencies, ModuleDependencyMeta, ModuleMeta, ModuleOptions, ModuleSetupReturn, ModuleSetupInstallResult, NuxtModule, ResolvedModuleOptions } from './types/module.ts'
 export type { Nuxt, NuxtApp, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate } from './types/nuxt.ts'
 export type { RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router.ts'
-export type { NuxtDebugContext, NuxtDebugModuleMutationRecord } from './types/debug.ts'
+export type { ConfigSchema } from './types/schema.ts'
+export type { NuxtDebugContext, NuxtDebugOptions, NuxtDebugModuleMutationRecord } from './types/debug.ts'
 
 // Schema
 export { default as NuxtConfigSchema } from './config/index.ts'
