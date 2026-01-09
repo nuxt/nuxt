@@ -151,10 +151,8 @@ export default defineComponent({
         }
       }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
-      const key = `${props.name}_${hashId.value}`
-      nuxtApp.payload.data[key] ||= {}
-      // clear all data-island-uid to avoid conflicts when saving into payloads
-      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
+      // Don't cache DOM HTML - it has teleported content that causes duplication (#33809) and stale UIDs (#30767)
+      // Clean HTML is already cached via setPayload() during fetch
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
