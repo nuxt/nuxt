@@ -40,7 +40,7 @@ declare module '@nuxt/schema' {
      * @param handler the Vite or Webpack event handler
      * @returns Promise
      */
-    'server:devHandler': (handler: EventHandler) => HookResult
+    'server:devHandler': (handler: EventHandler, options: { cors: (path: string) => boolean }) => HookResult
 
     /**
      * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
