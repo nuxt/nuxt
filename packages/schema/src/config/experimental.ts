@@ -62,6 +62,7 @@ export default defineResolvers({
     },
   },
   experimental: {
+    runtimeBaseURL: false,
     decorators: false,
     asyncEntry: {
       $resolve: val => typeof val === 'boolean' ? val : false,
@@ -70,7 +71,7 @@ export default defineResolvers({
     // TODO: Remove when nitro has support for mocking traced dependencies
     // https://github.com/nitrojs/nitro/issues/1118
     externalVue: true,
-    serverAppConfig: false,
+    serverAppConfig: true,
     emitRouteChunkError: {
       $resolve: (val) => {
         if (val === true) {
@@ -223,6 +224,11 @@ export default defineResolvers({
     viteEnvironmentApi: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
+    nitroAutoImports: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
   },
