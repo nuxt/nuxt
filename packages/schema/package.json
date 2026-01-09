@@ -10,18 +10,11 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.mjs"
-    },
-    "./builder-env": {
-      "types": "./dist/builder-env.d.ts",
-      "import": "./dist/builder-env.mjs"
-    },
+    ".": "./dist/index.mjs",
+    "./builder-env": "./dist/builder-env.mjs",
     "./package.json": "./package.json"
   },
   "files": [
@@ -31,8 +24,8 @@
     "env.d.ts"
   ],
   "scripts": {
-    "prepack": "unbuild",
-    "build:stub": "unbuild --stub",
+    "prepack": "obuild",
+    "build:stub": "obuild --stub",
     "test:attw": "attw --pack"
   },
   "devDependencies": {
@@ -62,7 +55,7 @@
     "rollup-plugin-visualizer": "6.0.5",
     "sass-loader": "16.0.6",
     "scule": "1.3.0",
-    "unbuild": "3.6.1",
+    "obuild": "0.4.14",
     "unctx": "2.5.0",
     "unimport": "5.6.0",
     "untyped": "2.0.0",
