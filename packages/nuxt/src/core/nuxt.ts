@@ -34,6 +34,7 @@ import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 
 import { distDir, pkgDir } from '../dirs.ts'
+import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
@@ -248,6 +249,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
+  nuxt['~runtimeDependencies'] = [...runtimeDependencies]
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
