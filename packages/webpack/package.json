@@ -79,8 +79,8 @@
     "@rspack/core": "1.7.1",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "rollup": "4.55.1",
     "obuild": "0.4.14",
+    "rollup": "4.55.1",
     "vue": "3.5.26"
   },
   "peerDependencies": {

@@ -29,9 +29,9 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "nitropack": "2.12.9",
+    "obuild": "0.4.14",
     "rolldown": "1.0.0-beta.58",
     "rollup": "4.55.1",
-    "obuild": "0.4.14",
     "vue": "3.5.26"
   },
   "dependencies": {
