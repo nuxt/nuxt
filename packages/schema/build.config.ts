@@ -7,12 +7,7 @@ export default defineBuildConfig({
       input: ['src/index', 'src/builder-env'],
       dts: { oxc: true },
       rolldown: {
-        external: [
-          'nuxt/app',
-          '#app',
-          '#build',
-          '#internal',
-        ],
+        external: ['nuxt/app'],
       },
     },
   ],
