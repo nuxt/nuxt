@@ -522,9 +522,6 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
-      destr:
-        specifier: ^2.0.5
-        version: 2.0.5
       devalue:
         specifier: ^5.6.1
         version: 5.6.1
