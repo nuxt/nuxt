@@ -8,6 +8,7 @@ export default defineBuildConfig({
       dts: { oxc: true },
       rolldown: {
         external: [
+          'nuxt/app',
           '#app',
           '#build',
           '#internal',
