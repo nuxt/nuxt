@@ -16,7 +16,7 @@ import type { Nitro, NitroConfig, NitroRouteRules } from 'nitropack/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler } from 'h3'
+import { defineEventHandler, dynamicEventHandler, handleCors, setHeader } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -861,7 +861,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 
-    nuxt.hook('server:devHandler', (h) => { devMiddlewareHandler.set(h) })
+    nuxt.hook('server:devHandler', (h, options) => {
+      devMiddlewareHandler.set(defineEventHandler((event) => {
+        if (options.cors(event.path)) {
+          const isPreflight = handleCors(event, nuxt.options.devServer.cors)
+          if (isPreflight) {
+            return null
+          }
+          setHeader(event, 'Vary', 'Origin')
+        }
+        return h(event)
+      }))
+    })
     nuxt.server = createDevServer(nitro)
 
     const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
