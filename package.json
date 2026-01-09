@@ -12,7 +12,6 @@
     "build:stub": "pnpm dev:prepare",
     "dev": "pnpm play",
     "dev:prepare": "pnpm --filter './packages/**' build:stub && nuxt prepare",
-    "debug:build": "TIMINGS_DEBUG=true pnpm build",
     "debug:dev": "rm -rf **/node_modules/.cache/jiti && pnpm nuxt dev",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",
