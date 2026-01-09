@@ -5,7 +5,7 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
-import type { Nitro } from 'nitropack/types'
+import type { Nitro } from 'nitro/types'
 import { getPort } from 'get-port-please'
 
 import type { ViteBuildContext } from './vite.ts'
