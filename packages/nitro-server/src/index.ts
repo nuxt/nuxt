@@ -20,6 +20,7 @@ import { defineEventHandler, dynamicEventHandler, handleCors, setHeader } from '
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
+import { runtimeDependencies } from 'nitropack/runtime/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
@@ -694,6 +695,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
   await nuxt.callHook('nitro:init', nitro)
+
+  nuxt['~runtimeDependencies'] ||= []
+  nuxt['~runtimeDependencies']!.push(
+    ...runtimeDependencies,
+    'unhead', '@unhead/vue', '@nuxt/devalue', 'unstorage',
+    // ensure we only have one version of vue if nitro is going to inline anyway
+    ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
+  )
 
   // Connect vfs storages
   nitro.vfs = nuxt.vfs = nitro.vfs || nuxt.vfs || {}
