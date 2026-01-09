@@ -1,35 +1,8 @@
-import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin } from '../../debug/build-config.ts'
+import { defineBuildConfig } from 'obuild/config'
 
 export default defineBuildConfig({
-  declaration: true,
-  rollup: {
-    dts: {
-      respectExternal: false,
-    },
-  },
   entries: [
-    'src/index',
-    'src/loaders/vue-module-identifier',
-  ],
-  hooks: {
-    'rollup:options' (ctx, options) {
-      addRollupTimingsPlugin(options)
-    },
-  },
-  dependencies: [
-    '@nuxt/kit',
-    'unplugin',
-    'postcss',
-    'postcss-loader',
-    'vue-loader',
-    'css-loader',
-    'file-loader',
-    'url-loader',
-    'vue',
-  ],
-  externals: [
-    '#builder',
-    '@nuxt/schema',
+    { type: 'bundle', input: 'src/index', dts: { oxc: true } },
+    { type: 'bundle', input: 'src/loaders/vue-module-identifier', dts: false },
   ],
 })
