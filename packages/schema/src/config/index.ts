@@ -1,5 +1,3 @@
-import type { ResolvableConfigSchema } from '../utils/definition'
-
 import adhoc from './adhoc.ts'
 import app from './app.ts'
 import build from './build.ts'
@@ -16,6 +14,7 @@ import router from './router.ts'
 import typescript from './typescript.ts'
 import vite from './vite.ts'
 import webpack from './webpack.ts'
+import type { InputObject } from 'untyped'
 
 export default {
   ...adhoc,
@@ -34,4 +33,4 @@ export default {
   ...oxc,
   ...vite,
   ...webpack,
-} satisfies ResolvableConfigSchema
+} as InputObject

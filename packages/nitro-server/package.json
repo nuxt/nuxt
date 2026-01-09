@@ -10,7 +10,7 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": "./dist/index.mjs"
   },
@@ -18,8 +18,8 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild",
-    "build:stub": "unbuild --stub",
+    "prepack": "obuild",
+    "build:stub": "obuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -57,7 +57,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "nuxt": "workspace:*",
-    "unbuild": "3.6.1",
+    "obuild": "0.4.14",
     "vitest": "3.2.4"
   },
   "engines": {

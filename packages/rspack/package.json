@@ -10,16 +10,13 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "imports": {
     "#builder": "./builder.mjs",
     "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
   },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    },
+    ".": "./dist/index.mjs",
     "./dist/*": "./dist/*"
   },
   "files": [
@@ -27,8 +24,8 @@
     "builder.mjs"
   ],
   "scripts": {
-    "prepack": "unbuild",
-    "build:stub": "unbuild --stub",
+    "prepack": "obuild",
+    "build:stub": "obuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
@@ -80,8 +77,8 @@
     "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
+    "obuild": "0.4.14",
     "rollup": "4.55.2",
-    "unbuild": "3.6.1",
     "vue": "3.5.27"
   },
   "peerDependencies": {

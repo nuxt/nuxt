@@ -17,7 +17,7 @@ type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? {
 export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
 
 const message: symbol = Symbol('message')
-export type RuntimeValue<T, B extends string> = T & { [message]?: B }
+export type RuntimeValue<T, B extends string> = T & { [message]?: B } | T
 type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
   [K in keyof T]?: K extends string
     ? unknown extends T[K]

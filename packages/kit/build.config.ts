@@ -1,5 +1,4 @@
 import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin } from '../../debug/build-config.ts'
 
 export default defineBuildConfig({
   declaration: true,
@@ -9,14 +8,10 @@ export default defineBuildConfig({
   rollup: {
     inlineDependencies: ['lodash-es'],
   },
-  hooks: {
-    'rollup:options' (ctx, options) {
-      addRollupTimingsPlugin(options)
-    },
-  },
   externals: [
     '@rspack/core',
     '@nuxt/schema',
+    'nitro',
     'nitropack',
     'webpack',
     'vite',

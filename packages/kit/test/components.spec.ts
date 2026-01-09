@@ -1,10 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHooks } from 'hookable'
 import type { Component } from '@nuxt/schema'
 import { relative } from 'pathe'
 
 import { addComponent, addComponentExports } from '../src/components.ts'
 import { createResolver } from '../src/resolve.ts'
+import * as context from '../src/context.ts'
 
 const mockNuxt = {
   version: '3.0.0',
@@ -16,17 +17,18 @@ const mockNuxt = {
   hook: undefined as unknown,
 }
 
-vi.mock('../src/context', async original => ({
-  ...await original(),
-  tryUseNuxt: () => mockNuxt,
-  useNuxt: () => mockNuxt,
-}))
-
 describe('addComponentExports', () => {
   let mockHooks: ReturnType<typeof createHooks>
+
   beforeEach(() => {
     mockHooks = createHooks()
     mockNuxt.hook = mockHooks.hook.bind(mockHooks)
+    vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt as any)
+    vi.spyOn(context, 'useNuxt').mockReturnValue(mockNuxt as any)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('should add components exports', async () => {

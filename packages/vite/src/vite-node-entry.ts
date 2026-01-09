@@ -10,7 +10,7 @@ const runner = createRunner()
 
 let render: (ssrContext: NuxtSSRContext) => Promise<any>
 
-export default async (ssrContext: NuxtSSRContext) => {
+export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   // eslint-disable-next-line nuxt/prefer-import-meta
