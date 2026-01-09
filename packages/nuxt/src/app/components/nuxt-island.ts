@@ -151,8 +151,10 @@ export default defineComponent({
         }
       }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
-      // Don't cache DOM HTML - it has teleported content that causes duplication (#33809) and stale UIDs (#30767)
-      // Clean HTML is already cached via setPayload() during fetch
+      const key = `${props.name}_${hashId.value}`
+      // Ensure payload is initialized (already set by SSR setPayload())
+      // Don't overwrite .html if it exists from SSR as DOM HTML has teleports (#33809)
+      nuxtApp.payload.data[key] ||= {}
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
