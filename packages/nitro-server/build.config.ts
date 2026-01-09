@@ -1,8 +1,14 @@
-import { defineBuildConfig } from 'obuild/config'
+import { defineBuildConfig } from 'unbuild'
 
 export default defineBuildConfig({
+  declaration: true,
   entries: [
-    { type: 'bundle', input: 'src/index', dts: { oxc: true } },
-    { type: 'transform', input: 'src/runtime/', outDir: 'dist/runtime' },
+    'src/index',
+    { input: 'src/runtime/', outDir: 'dist/runtime', ext: 'js' },
+  ],
+  externals: [
+    '@nuxt/schema',
+    'nuxt',
+    'nitropack',
   ],
 })
