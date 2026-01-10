@@ -1147,6 +1147,15 @@ describe('navigate', () => {
     expect(status).toEqual(302)
     expect(headers.get('location') || '').toEqual(encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com'))
   })
+
+  it('should preserve percent-encoding in query params when redirecting', async () => {
+    const { status, headers } = await fetch('/navigate-to-encoded-query', { redirect: 'manual' })
+
+    expect(status).toEqual(302)
+    // The callback parameter should contain the forward slash as-is (percent-encoded in the header)
+    // This test verifies that navigateTo properly handles query params with special characters
+    expect(headers.get('location')).toEqual('/redirect-target?callback=%2Fother')
+  })
 })
 
 describe('preserves current instance', () => {
