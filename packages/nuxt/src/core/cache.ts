@@ -41,29 +41,60 @@ export async function getVueHash (nuxt: Nuxt) {
 
   const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
 
+  const manifestCacheFile = cacheFile.replace('.tar', '-manifest.tar')
+  const buildIdCacheFile = cacheFile.replace('.tar', '.buildid')
+  const outputManifestDir = resolve(nuxt.options.rootDir, '.output/public/_nuxt/builds')
+
   return {
     hash,
     async collectCache () {
       const start = Date.now()
       await writeCache(nuxt.options.buildDir, nuxt.options.buildDir, cacheFile)
+
+      // Cache manifest files (latest.json, meta/{buildId}.json) to preserve buildId across cached builds
+      if (existsSync(outputManifestDir)) {
+        await writeCache(outputManifestDir, outputManifestDir, manifestCacheFile)
+      }
+
+      // Cache buildId for runtimeConfig restoration
+      await mkdir(dirname(buildIdCacheFile), { recursive: true })
+      await writeFile(buildIdCacheFile, nuxt.options.buildId)
+
       const elapsed = Date.now() - start
       consola.success(`Cached Vue client and server builds in \`${elapsed}ms\`.`)
     },
     async restoreCache () {
       const start = Date.now()
-      const res = await restoreCache(nuxt.options.buildDir, cacheFile)
-      const elapsed = Date.now() - start
-      if (res) {
-        consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
+      const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
+      if (!res) {
+        return false
       }
-      return res
+
+      // Restore manifest files
+      if (existsSync(manifestCacheFile)) {
+        await mkdir(outputManifestDir, { recursive: true })
+        await restoreCacheFromFile(outputManifestDir, manifestCacheFile)
+      }
+
+      // Restore buildId to ensure runtimeConfig matches cached manifest
+      if (existsSync(buildIdCacheFile)) {
+        const cachedBuildId = (await readFile(buildIdCacheFile, 'utf-8')).trim()
+        if (/^[\w-]+$/.test(cachedBuildId)) {
+          nuxt.options.buildId = cachedBuildId
+          nuxt.options.runtimeConfig.app.buildId = cachedBuildId
+        }
+      }
+
+      const elapsed = Date.now() - start
+      consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
+      return true
     },
   }
 }
 
 export async function cleanupCaches (nuxt: Nuxt) {
   const start = Date.now()
-  const caches = await glob(['*/*.tar'], {
+  const caches = await glob(['*/*.tar', '*/*.buildid'], {
     cwd: getCacheDir(nuxt),
     absolute: true,
   })
@@ -237,16 +268,24 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
   }
 }
 
-async function restoreCache (cwd: string, cacheFile: string) {
+async function restoreCacheFromFile (cwd: string, cacheFile: string) {
   if (!existsSync(cacheFile)) {
     return false
   }
 
+  const resolvedCwd = resolve(cwd) + '/'
   const files = parseTar(await readFile(cacheFile))
   for (const file of files) {
     let fd: FileHandle | undefined = undefined
     try {
       const filePath = resolve(cwd, file.name)
+
+      // Prevent path traversal attacks
+      if (!filePath.startsWith(resolvedCwd)) {
+        consola.warn(`Skipping unsafe cache path: ${file.name}`)
+        continue
+      }
+
       await mkdir(dirname(filePath), { recursive: true })
 
       fd = await open(filePath, 'w')
