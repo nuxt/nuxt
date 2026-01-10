@@ -68,6 +68,8 @@ export default defineComponent({
     let vnode: VNode
 
     const done = nuxtApp.deferHydration()
+    let isSuspensePending = false
+    let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
       useRouter().beforeEach(removeErrorHook)
@@ -149,6 +151,12 @@ export default defineComponent({
                 })
               }
 
+              // force suspense remount and restart async tracking
+              // if suspense is already pending and page key changed
+              if (isSuspensePending && previousPageKey !== key) {
+                suspenseKey++
+              }
+
               previousPageKey = key
 
               const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
@@ -167,14 +175,17 @@ export default defineComponent({
               const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
+                  key: suspenseKey,
                   suspensible: true,
                   onPending: () => {
+                    isSuspensePending = true
                     if (hasTransition) { nuxtApp._runningTransition = true }
                     nuxtApp.callHook('page:start', routeProps.Component)
                   },
                   onResolve: async () => {
-                    await nextTick()
+                    isSuspensePending = false
                     try {
+                      await nextTick()
                       nuxtApp._route.sync?.()
                       await nuxtApp.callHook('page:finish', routeProps.Component)
                       delete nuxtApp._runningTransition
