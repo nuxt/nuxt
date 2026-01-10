@@ -364,31 +364,43 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
-  const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
+  const commonCompilerOptions: TSConfig['compilerOptions'] = {
+    /* Base options: */
+    esModuleInterop: true,
+    skipLibCheck: true,
+    target: 'ESNext',
+    allowJs: true,
+    resolveJsonModule: true,
+    moduleDetection: 'force',
+    isolatedModules: true,
+    verbatimModuleSyntax: true,
+    /* Strictness */
+    strict: nuxt.options.typescript?.strict ?? true,
+    noUncheckedIndexedAccess: true,
+    forceConsistentCasingInFileNames: true,
+    noImplicitOverride: true,
+    /* Decorator support */
+    ...useDecorators
+      ? {
+          experimentalDecorators: false,
+        }
+      : {},
+    /* If NOT transpiling with TypeScript: */
+    module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
+    noEmit: true,
+    /* JSX support for Vue */
+    jsx: 'preserve',
+    jsxImportSource: 'vue',
+    /* Possibly consider removing the following in future */
+    moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node', /* implied by module: preserve */
+    useDefineForClassFields: true, /* implied by target: es2022+ */
+    noImplicitThis: true, /* enabled with `strict` */
+    allowSyntheticDefaultImports: true,
+  }
+
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
-      /* Base options: */
-      esModuleInterop: true,
-      skipLibCheck: true,
-      target: 'ESNext',
-      allowJs: true,
-      resolveJsonModule: true,
-      moduleDetection: 'force',
-      isolatedModules: true,
-      verbatimModuleSyntax: true,
-      /* Strictness */
-      strict: nuxt.options.typescript?.strict ?? true,
-      noUncheckedIndexedAccess: true,
-      forceConsistentCasingInFileNames: true,
-      noImplicitOverride: true,
-      /* Decorator support */
-      ...useDecorators
-        ? {
-            experimentalDecorators: false,
-          }
-        : {},
-      /* If NOT transpiling with TypeScript: */
-      module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
-      noEmit: true,
+      ...commonCompilerOptions,
       /* If your code runs in the DOM: */
       lib: [
         'ESNext',
@@ -397,86 +409,38 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
         'dom.iterable',
         'webworker',
       ],
-      /* JSX support for Vue */
-      jsx: 'preserve',
-      jsxImportSource: 'vue',
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
       paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node', /* implied by module: preserve */
-      useDefineForClassFields: true, /* implied by target: es2022+ */
-      noImplicitThis: true, /* enabled with `strict` */
-      allowSyntheticDefaultImports: true,
     },
     include: [...include],
     exclude: [...exclude],
   } satisfies TSConfig)
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
-  const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
+  const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
+      ...commonCompilerOptions,
+      lib: ['ESNext'],
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
       paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
     },
     include: [...nodeInclude],
     exclude: [...nodeExclude],
   } satisfies TSConfig)
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
-  const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, {
+  const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
-      /* Base options: */
-      esModuleInterop: tsConfig.compilerOptions?.esModuleInterop,
-      skipLibCheck: tsConfig.compilerOptions?.skipLibCheck,
-      target: tsConfig.compilerOptions?.target,
-      allowJs: tsConfig.compilerOptions?.allowJs,
-      resolveJsonModule: tsConfig.compilerOptions?.resolveJsonModule,
-      moduleDetection: tsConfig.compilerOptions?.moduleDetection,
-      isolatedModules: tsConfig.compilerOptions?.isolatedModules,
-      verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
-      /* Strictness */
-      strict: tsConfig.compilerOptions?.strict,
-      noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
-      forceConsistentCasingInFileNames: tsConfig.compilerOptions?.forceConsistentCasingInFileNames,
-      noImplicitOverride: tsConfig.compilerOptions?.noImplicitOverride,
-      /* If NOT transpiling with TypeScript: */
-      module: tsConfig.compilerOptions?.module,
-      noEmit: true,
+      ...commonCompilerOptions,
+      lib: ['ESNext'],
       /* remove auto-scanning for types */
       types: [],
       /* add paths object for filling-in later */
       paths: {},
-      /* Possibly consider removing the following in future */
-      moduleResolution: tsConfig.compilerOptions?.moduleResolution,
-      useDefineForClassFields: tsConfig.compilerOptions?.useDefineForClassFields,
-      noImplicitThis: tsConfig.compilerOptions?.noImplicitThis,
-      allowSyntheticDefaultImports: tsConfig.compilerOptions?.allowSyntheticDefaultImports,
     },
     include: [...sharedInclude],
     exclude: [...sharedExclude],

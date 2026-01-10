@@ -145,7 +145,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         defaults.push(options.defaults)
       }
       if (configKey) {
-        ;(nuxt.options[configKey] as any) = defu(...overrides, nuxt.options[configKey], ...defaults)
+        ; (nuxt.options[configKey] as any) = defu(...overrides, nuxt.options[configKey], ...defaults)
       }
     }
 
@@ -204,7 +204,7 @@ export async function installModule<
         defaults.push(options.defaults)
       }
       mergedOptions = defu(inlineOptions, ...overrides, nuxt.options[configKey], ...defaults) as any
-      ;(nuxt.options[configKey] as any) = mergedOptions
+      ; (nuxt.options[configKey] as any) = mergedOptions
     }
   }
 
@@ -350,7 +350,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
     if (!previousVersion) {
       await nuxtModule.onInstall?.(nuxt)
     } else if (semver.gt(meta.version, previousVersion)) {
-      await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion)
+      await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion as string)
     }
     if (previousVersion !== meta.version) {
       updateRc(
