@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addImportsSources, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -24,15 +24,14 @@ import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
-const runtimeDir = resolve(distDir, 'pages/runtime')
-
 export const pagesImportPresets: InlinePreset[] = [
-  { imports: ['definePageMeta'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['definePageMeta'], from: '#app/composables/pages' },
+  { imports: ['PageMeta'], from: '#app/composables/pages', type: true },
   { imports: ['useLink'], from: 'vue-router' },
 ]
 
 export const routeRulesPresets: InlinePreset[] = [
-  { imports: ['defineRouteRules'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['defineRouteRules'], from: '#app/composables/pages' },
 ]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
@@ -62,6 +61,8 @@ export default defineNuxtModule({
     pattern: `**/*{${nuxt.options.extensions.join(',')}}` as string | string[],
   }),
   async setup (_options, nuxt) {
+    const runtimeDir = resolve(distDir, 'pages/runtime')
+
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
@@ -437,12 +438,10 @@ export default defineNuxtModule({
       nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
-    nuxt.hook('imports:sources', (sources) => {
-      sources.push(...pagesImportPresets)
-      if (nuxt.options.experimental.inlineRouteRules) {
-        sources.push(...routeRulesPresets)
-      }
-    })
+    addImportsSources(pagesImportPresets)
+    if (nuxt.options.experimental.inlineRouteRules) {
+      addImportsSources(routeRulesPresets)
+    }
 
     const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
     if (nuxt.options.test && nuxt.options.dev) {
