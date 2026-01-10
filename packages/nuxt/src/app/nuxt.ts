@@ -1,5 +1,5 @@
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
-import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
+import type { App, EffectScope, MaybeRefOrGetter, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
@@ -141,6 +141,13 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+  } | undefined>
+
+  /** @internal */
+  _state: Record<string, {
+    data: Ref<unknown>
+    /** @internal */
+    _default: () => MaybeRefOrGetter<unknown>
   } | undefined>
 
   /** @internal */
@@ -312,6 +319,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     },
     _asyncDataPromises: {},
     _asyncData: shallowReactive({}),
+    _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
