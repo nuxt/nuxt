@@ -375,6 +375,64 @@ describe('client components', () => {
 
     expectNoConsoleIssue()
   })
+
+  it('should not duplicate client components when refetching after initial render #33809', async () => {
+    const mockPath = '/nuxt-client-33809.js'
+    const componentId = 'LikeButton-33809'
+
+    vi.doMock(mockPath, () => ({
+      default: defineComponent({
+        name: 'LikeButton',
+        setup () {
+          return () => h('button', 'Like')
+        },
+      }),
+    }))
+
+    // Simulates clean HTML from island endpoint (placeholder is empty)
+    const cleanHtml = `<div data-island-uid>Page<div style="display: contents;" data-island-uid data-island-component="${componentId}"></div></div>`
+
+    const stubFetch = vi.fn(() => {
+      return Promise.resolve({
+        id: '33809',
+        html: cleanHtml,
+        state: {},
+        head: { link: [], style: [] },
+        components: {
+          [componentId]: {
+            html: '<button>Like</button>',
+            props: {},
+            chunk: mockPath,
+          },
+        },
+        json () { return this },
+        ok: true,
+      })
+    })
+
+    vi.stubGlobal('fetch', stubFetch)
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'TestPage',
+        props: { force: true },
+      },
+      attachTo: 'body',
+    })
+
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(wrapper.findAll('button')).toHaveLength(1)
+
+    // Refresh (simulates navigation back to the page)
+    await wrapper.vm.$.exposed!.refresh()
+    await nextTick()
+
+    // Should still be exactly 1 button, not duplicated
+    expect(wrapper.findAll('button')).toHaveLength(1)
+
+    vi.mocked(fetch).mockReset()
+    expectNoConsoleIssue()
+  })
 })
 
 function removeDataIslandUid (html: string) {

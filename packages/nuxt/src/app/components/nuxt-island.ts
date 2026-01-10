@@ -152,9 +152,9 @@ export default defineComponent({
       }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
+      // Ensure payload is initialized (already set by SSR setPayload())
+      // Don't overwrite .html if it exists from SSR as DOM HTML has teleports (#33809)
       nuxtApp.payload.data[key] ||= {}
-      // clear all data-island-uid to avoid conflicts when saving into payloads
-      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
