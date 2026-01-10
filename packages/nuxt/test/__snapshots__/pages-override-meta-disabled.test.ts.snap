@@ -553,6 +553,17 @@
       "redirect": "mockMeta?.redirect",
     },
   ],
+  "should handle unicode characters in alias paths": [
+    {
+      "alias": "["/товары","/produits","/製品"].concat(mockMeta?.alias || [])",
+      "component": "() => import("pages/products.vue")",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "products"",
+      "path": "mockMeta?.path ?? "/products"",
+      "props": "mockMeta?.props ?? false",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "should merge route.meta with meta from file": [
     {
       "alias": "mockMeta?.alias || []",
