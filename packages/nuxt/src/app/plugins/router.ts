@@ -119,9 +119,11 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       hooks[hook].push(guard)
       return () => hooks[hook].splice(hooks[hook].indexOf(guard), 1)
     }
+
     const baseURL = useRuntimeConfig().app.baseURL
 
     const route: Route = reactive(getRouteFromPath(initialURL))
+
     async function handleNavigation (url: string | Partial<Route>, replace?: boolean): Promise<void> {
       try {
         // Resolve route
@@ -139,15 +141,22 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         for (const handler of hooks['resolve:before']) {
           await handler(to, route)
         }
+
         // Perform navigation
         Object.assign(route, to)
-        if (import.meta.client) {
+        if (import.meta.server && nuxtApp.ssrContext!.url !== to.fullPath) {
+          await nuxtApp.runWithContext(
+            () => navigateTo(to),
+          )
+        } else if (import.meta.client) {
           window.history[replace ? 'replaceState' : 'pushState']({}, '', joinURL(baseURL, to.fullPath))
+
           if (!nuxtApp.isHydrating) {
             // Clear any existing errors
             await nuxtApp.runWithContext(clearError)
           }
         }
+
         // Run afterEach hooks
         for (const middleware of hooks['navigate:after']) {
           await middleware(to, route)
@@ -156,6 +165,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         if (import.meta.dev && !hooks.error.length) {
           console.warn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`', err)
         }
+
         for (const handler of hooks.error) {
           await handler(err)
         }
