@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useRuntimeConfig } from './runtime-config'
+import * as context from './context.ts'
+import { useRuntimeConfig } from './runtime-config.ts'
 
-const { useNuxt, klona } = vi.hoisted(() => ({ useNuxt: vi.fn(), klona: vi.fn() }))
-
-vi.mock('./context', () => ({ useNuxt }))
-vi.mock('klona', () => ({ klona }))
+const mockKlona = vi.fn()
+vi.mock('klona', () => ({
+  klona: mockKlona,
+}))
 
 const testCases = [
   {
@@ -64,11 +65,12 @@ const testCases = [
 describe('useRuntimeConfig', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
+    vi.restoreAllMocks()
   })
 
   it.each(testCases)('$description', ({ runtimeConfig, envExpansion, env, expected }) => {
-    useNuxt.mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } } } })
-    klona.mockReturnValue(runtimeConfig)
+    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } } } } as any)
+    mockKlona.mockReturnValue(runtimeConfig)
     Object.entries(env).forEach(([key, value]) => vi.stubEnv(key, value))
 
     expect(useRuntimeConfig()).toEqual(expected)

@@ -29,11 +29,13 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
 
   patterns.push([/(^|node_modules\/)@vue\/composition-api/])
 
-  for (const mod of nuxt.options.modules.filter(m => typeof m === 'string')) {
-    patterns.push([
-      new RegExp(`^${escapeRE(mod)}$`),
-      'Importing directly from module entry-points is not allowed.',
-    ])
+  for (const mod of nuxt.options._installedModules) {
+    if (mod.entryPath) {
+      patterns.push([
+        new RegExp(`^${escapeRE(mod.entryPath)}$`),
+        'Importing directly from module entry-points is not allowed.',
+      ])
+    }
   }
 
   for (const i of [/(^|node_modules\/)@nuxt\/(cli|kit|test-utils)/, /(^|node_modules\/)nuxi/, /(^|node_modules\/)nitro(?:pack)?(?:-nightly)?(?:$|\/)(?!(?:dist\/)?(?:node_modules|presets|runtime|types))/, /(^|node_modules\/)nuxt\/(config|kit|schema)/]) {
@@ -50,6 +52,10 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
     patterns.push([
       new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
       `Importing from server is not allowed in ${context}.`,
+    ])
+    patterns.push([
+      /^#server(\/|$)/,
+      `Server aliases are not allowed in ${context}.`,
     ])
   }
 

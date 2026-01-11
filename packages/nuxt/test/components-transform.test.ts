@@ -5,7 +5,7 @@ import { kebabCase } from 'scule'
 import { join, normalize } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 
-import { TransformPlugin } from '../src/components/plugins/transform'
+import { TransformPlugin } from '../src/components/plugins/transform.ts'
 
 const pkgPath = fileURLToPath(new URL('./node_modules/package-fixture', import.meta.url))
 const virtualFilePath = join(pkgPath, 'foo', 'bar', 'baz')
@@ -106,15 +106,19 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
       },
     },
   } as Nuxt
-  const plugin = TransformPlugin(stubNuxt, {
+  const plugins = TransformPlugin(stubNuxt, {
     mode,
     getComponents: () => components,
     serverComponentRuntime: '<repo>/nuxt/src/components/runtime/server-component',
   }).vite()
 
   return async (code: string, id: string) => {
-    const result = await (plugin as any).transform!(code, id)
-    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(repoRoot), '<repo>/')
+    let transformResult: string | undefined
+    for (const plugin of plugins as any[]) {
+      const result = await plugin.transform.handler(transformResult || code, id)
+      transformResult = (typeof result === 'string' ? result : result?.code) || transformResult
+    }
+    return transformResult?.replaceAll(normalize(repoRoot), '<repo>/')
   }
 }
 

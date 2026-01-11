@@ -16,8 +16,8 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const defaultRes = await defaultHandler(error, event, { json: true })
 
   // let Nitro handle redirect if appropriate
-  const statusCode = error.statusCode || 500
-  if (statusCode === 404 && defaultRes.status === 302) {
+  const status = (error as any).status || error.statusCode || 500
+  if (status === 404 && defaultRes.status === 302) {
     setResponseHeaders(event, defaultRes.headers)
     setResponseStatus(event, defaultRes.status, defaultRes.statusText)
     return send(event, JSON.stringify(defaultRes.body, null, 2))
@@ -28,7 +28,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     defaultRes.body.stack = defaultRes.body.stack.join('\n')
   }
 
-  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'statusCode' | 'statusMessage' | 'message' | 'stack'> & { url: string, data: any }
+  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'error' | 'status' | 'statusText' | 'message' | 'stack'> & { url: string, data: any }
   // remove proto/hostname/port from URL
   const url = new URL(errorObject.url)
   errorObject.url = withoutBase(url.pathname, useRuntimeConfig(event).app.baseURL) + url.search + url.hash
@@ -36,7 +36,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   errorObject.message ||= 'Server Error'
   // we will be rendering this error internally so we can pass along the error.data safely
   errorObject.data ||= error.data
-  errorObject.statusMessage ||= error.statusMessage
+  errorObject.statusText ||= (error as any).statusText || error.statusMessage
 
   delete defaultRes.headers['content-type'] // this would be set to application/json
   delete defaultRes.headers['content-security-policy'] // this would disable JS execution in the error page
@@ -83,9 +83,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
 
-  if (import.meta.dev && !import.meta.test) {
+  if (import.meta.dev && !import.meta.test && typeof html === 'string') {
     const prettyResponse = await defaultHandler(error, event, { json: false })
-    return send(event, html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body as string, { startMinimized: 300 <= statusCode && statusCode < 500 })}</body>`))
+    if (typeof prettyResponse.body === 'string') {
+      return send(event, html.replace('</body>', `${generateErrorOverlayHTML(prettyResponse.body, { startMinimized: 300 <= status && status < 500 })}</body>`))
+    }
   }
 
   return send(event, html)

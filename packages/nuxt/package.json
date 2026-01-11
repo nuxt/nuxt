@@ -1,6 +1,6 @@
 {
   "name": "nuxt",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -25,33 +25,16 @@
       "import": "./config.js",
       "require": "./config.cjs"
     },
-    "./schema": {
-      "types": "./schema.d.ts",
-      "import": "./schema.js"
-    },
-    "./kit": {
-      "types": "./kit.d.ts",
-      "import": "./kit.js"
-    },
-    "./app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
+    "./schema": "./schema.js",
+    "./kit": "./kit.js",
+    "./meta": "./meta.js",
+    "./app": "./dist/app/index.js",
     "./package.json": "./package.json"
   },
   "imports": {
-    "#app": {
-      "types": "./dist/app/index.d.ts",
-      "import": "./dist/app/index.js"
-    },
-    "#app/nuxt": {
-      "types": "./dist/app/nuxt.d.ts",
-      "import": "./dist/app/nuxt.js"
-    },
-    "#unhead/composables": {
-      "types": "./dist/head/runtime/composables.d.ts",
-      "import": "./dist/head/runtime/composables.js"
-    }
+    "#app": "./dist/app/index.js",
+    "#app/nuxt": "./dist/app/nuxt.js",
+    "#unhead/composables": "./dist/head/runtime/composables.js"
   },
   "files": [
     "app.d.ts",
@@ -61,31 +44,33 @@
     "dist",
     "config.*",
     "kit.*",
+    "meta.*",
     "schema.*"
   ],
   "scripts": {
     "prepack": "unbuild",
+    "build:stub": "unbuild --stub",
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "@dxup/nuxt": "^0.2.1",
-    "@nuxt/cli": "^3.30.0",
-    "@nuxt/devtools": "^3.1.0",
+    "@dxup/nuxt": "^0.3.2",
+    "@nuxt/cli": "^3.31.3",
+    "@nuxt/devtools": "^3.1.1",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.6",
     "@nuxt/vite-builder": "workspace:*",
-    "@unhead/vue": "^2.0.19",
-    "@vue/shared": "^3.5.24",
-    "c12": "^3.3.2",
-    "chokidar": "^4.0.3",
+    "@unhead/vue": "^2.1.1",
+    "@vue/shared": "^3.5.26",
+    "c12": "^3.3.3",
+    "chokidar": "^5.0.0",
     "compatx": "^0.2.0",
     "consola": "^3.4.2",
     "cookie-es": "^2.0.0",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
-    "devalue": "^5.4.2",
+    "devalue": "^5.6.1",
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
@@ -103,14 +88,14 @@
     "ofetch": "^1.5.1",
     "ohash": "^2.0.11",
     "on-change": "^6.0.1",
-    "oxc-minify": "^0.97.0",
-    "oxc-parser": "^0.97.0",
-    "oxc-transform": "^0.97.0",
-    "oxc-walker": "^0.5.2",
+    "oxc-minify": "^0.107.0",
+    "oxc-parser": "^0.107.0",
+    "oxc-transform": "^0.107.0",
+    "oxc-walker": "^0.6.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.0.0",
     "pkg-types": "^2.3.0",
-    "radix3": "^1.1.2",
+    "rou3": "^0.7.12",
     "scule": "^1.3.0",
     "semver": "^7.7.3",
     "std-env": "^3.10.0",
@@ -118,23 +103,23 @@
     "ufo": "^1.6.1",
     "ultrahtml": "^1.6.0",
     "uncrypto": "^0.1.3",
-    "unctx": "^2.4.1",
-    "unimport": "^5.5.0",
-    "unplugin": "^2.3.10",
-    "unplugin-vue-router": "^0.16.1",
+    "unctx": "^2.5.0",
+    "unimport": "^5.6.0",
+    "unplugin": "^2.3.11",
+    "unplugin-vue-router": "^0.19.2",
     "untyped": "^2.0.0",
-    "vue": "^3.5.24",
-    "vue-router": "^4.6.3"
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@nuxt/scripts": "0.13.0",
+    "@nuxt/scripts": "0.13.2",
     "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.8",
-    "@vitejs/plugin-vue": "6.0.1",
-    "@vitejs/plugin-vue-jsx": "5.1.1",
-    "@vue/compiler-sfc": "3.5.24",
+    "@vitejs/plugin-vue": "6.0.3",
+    "@vitejs/plugin-vue-jsx": "5.1.3",
+    "@vue/compiler-sfc": "3.5.26",
     "unbuild": "3.6.1",
-    "vite": "7.2.2",
+    "vite": "7.3.0",
     "vitest": "3.2.4",
     "vue-bundle-renderer": "2.2.0",
     "vue-sfc-transformer": "0.1.17"
