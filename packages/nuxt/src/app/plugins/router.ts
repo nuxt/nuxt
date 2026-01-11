@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
-import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
+import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withLeadingSlash, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
@@ -39,7 +39,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
 
   if (typeof fullPath === 'object') {
     fullPath = stringifyParsedURL({
-      pathname: fullPath.path || '',
+      pathname: withLeadingSlash(fullPath.path || ''),
       search: stringifyQuery(fullPath.query || {}),
       hash: fullPath.hash || '',
     })
@@ -144,6 +144,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
         // Perform navigation
         Object.assign(route, to)
+
         if (import.meta.server && nuxtApp.ssrContext!.url !== to.fullPath) {
           await nuxtApp.runWithContext(
             () => navigateTo(to),
