@@ -789,8 +789,8 @@ importers:
         specifier: ^17.4.2
         version: 17.4.2(@vue/compiler-sfc@3.5.26)(vue@3.5.26(typescript@5.9.3))(webpack@5.104.1)
       webpack-bundle-analyzer:
-        specifier: ^5.1.0
-        version: 5.1.0
+        specifier: ^5.1.1
+        version: 5.1.1
       webpack-dev-middleware:
         specifier: ^7.4.5
         version: 7.4.5(webpack@5.104.1)
@@ -1245,8 +1245,8 @@ importers:
         specifier: 5.104.1
         version: 5.104.1
       webpack-bundle-analyzer:
-        specifier: ^5.1.0
-        version: 5.1.0
+        specifier: ^5.1.1
+        version: 5.1.1
       webpack-dev-middleware:
         specifier: ^7.4.5
         version: 7.4.5(webpack@5.104.1)
@@ -9016,8 +9016,8 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
-  webpack-bundle-analyzer@5.1.0:
-    resolution: {integrity: sha512-WAWwIoIUx4yC2AEBqXbDkcmh/LzAaenv0+nISBflP5l+XIXO9/x6poWarGA3RTrfavk9H3oWQ64Wm0z26/UGKA==}
+  webpack-bundle-analyzer@5.1.1:
+    resolution: {integrity: sha512-UzoaIA0Aigo5lUvoUkIkSoHtUK5rBJh9e2vW3Eqct0jc/L8hcruBCz/jsXEvB1hDU1G3V94jo2EJqPcFKeSSeQ==}
     engines: {node: '>= 20.9.0'}
     hasBin: true
 
@@ -10250,7 +10250,7 @@ snapshots:
   '@nuxtjs/mdc@0.19.2':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@shikijs/core': 3.20.0
+      '@shikijs/core': 3.21.0
       '@shikijs/langs': 3.20.0
       '@shikijs/themes': 3.20.0
       '@shikijs/transformers': 3.20.0
@@ -17830,7 +17830,7 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
-  webpack-bundle-analyzer@5.1.0:
+  webpack-bundle-analyzer@5.1.1:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
       acorn: 8.15.0
