@@ -1104,7 +1104,7 @@ importers:
         specifier: 1.15.4
         version: 1.15.4
       h3-next:
-        specifier: npm:h3@^2.0.1-rc.7
+        specifier: npm:h3@2.0.1-rc.7
         version: h3@2.0.1-rc.7(crossws@0.4.1(srvx@0.10.0))
       nitropack:
         specifier: 2.12.9
@@ -10250,7 +10250,7 @@ snapshots:
   '@nuxtjs/mdc@0.19.2':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@shikijs/core': 3.20.0
+      '@shikijs/core': 3.21.0
       '@shikijs/langs': 3.20.0
       '@shikijs/themes': 3.20.0
       '@shikijs/transformers': 3.20.0
