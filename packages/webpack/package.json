@@ -61,7 +61,7 @@
     "std-env": "^3.10.0",
     "time-fix-plugin": "^2.0.7",
     "tinyglobby": "^0.2.15",
-    "ufo": "^1.6.1",
+    "ufo": "^1.6.2",
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^2.3.11",
     "url-loader": "^4.1.1",
@@ -75,7 +75,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.7.1",
+    "@rspack/core": "1.7.2",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
     "h3": "1.15.4",
