@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   triage:
-    uses: nuxt/.github/.github/workflows/triage-edited.yml@main
+    uses: nuxt/.github/.github/workflows/triage-edited.yml@b3b9f7dac45b3dbaaac266077f01690ea61e4137
     permissions:
       contents: read
       issues: write
