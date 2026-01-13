@@ -7,7 +7,7 @@ on:
 jobs:
   transfer-spam:
     if: github.event.label.name == 'spam'
-    uses: nuxt/.github/.github/workflows/triage-spam-transfer.yml@b3b9f7dac45b3dbaaac266077f01690ea61e4137
+    uses: nuxt/.github/.github/workflows/triage-spam-transfer.yml@main
     with:
       spam-repo-id: ${{ vars.TRIAGE_SPAM_REPO_ID }}
     permissions:

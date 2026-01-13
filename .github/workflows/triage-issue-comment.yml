@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   triage:
-    uses: nuxt/.github/.github/workflows/triage-comment.yml@b3b9f7dac45b3dbaaac266077f01690ea61e4137
+    uses: nuxt/.github/.github/workflows/triage-comment.yml@main
     permissions:
       contents: read
       issues: write
