@@ -1,0 +1,22 @@
+name: triage
+
+on:
+  issues:
+    types: [opened]
+
+concurrency:
+  group: issue-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    uses: nuxt/.github/.github/workflows/triage-opened.yml@main
+    with:
+      enable-translation: true
+      enable-body-translation: true
+      spam-repo-id: ${{ vars.TRIAGE_SPAM_REPO_ID }}
+      project-name: 'Nuxt'
+    permissions:
+      contents: read
+      issues: write
+      models: read
