@@ -1306,7 +1306,7 @@ describe('useAsyncData', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/32154
-  it.fails('should not cause error with v-once after navigation', async () => {
+  it('should not cause error with v-once after navigation', async () => {
     const router = useRouter()
 
     const WrapperComponent = defineComponent({

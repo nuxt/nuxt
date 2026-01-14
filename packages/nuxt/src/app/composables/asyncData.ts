@@ -1,4 +1,5 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
+import { pauseTracking, resetTracking } from '@vue/reactivity'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -260,7 +261,9 @@ export function useAsyncData<
   function createInitialFetch () {
     const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
     if (!nuxtApp._asyncData[key.value]?._init) {
-      initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+      // Preserve previous data to avoid null reference errors with v-once components (#32154)
+      const previousData = nuxtApp._asyncData[key.value]?.data.value
+      initialFetchOptions.cachedData = previousData ?? options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
       nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
     }
     return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
@@ -619,7 +622,13 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (nuxtApp._asyncData[key]) {
-    nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
+    // Pause tracking to prevent reactive triggers in unmounting components (#32154)
+    pauseTracking()
+    try {
+      nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
+    } finally {
+      resetTracking()
+    }
     nuxtApp._asyncData[key]!.error.value = undefined
     if (pendingWhenIdle) {
       nuxtApp._asyncData[key]!.pending.value = false
