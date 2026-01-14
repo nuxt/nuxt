@@ -60,7 +60,7 @@
     "seroval": "^1.4.2",
     "std-env": "^3.10.0",
     "time-fix-plugin": "^2.0.7",
-    "ufo": "^1.6.1",
+    "ufo": "^1.6.2",
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^2.3.11",
     "url-loader": "^4.1.1",
@@ -74,11 +74,11 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.7.0",
+    "@rspack/core": "1.7.2",
     "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "rollup": "4.54.0",
+    "rollup": "4.55.1",
     "unbuild": "3.6.1",
     "vue": "3.5.26"
   },
