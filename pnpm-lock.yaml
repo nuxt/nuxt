@@ -1350,6 +1350,16 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/layout-reactivity:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   test/fixtures/minimal:
     dependencies:
       nuxt:
