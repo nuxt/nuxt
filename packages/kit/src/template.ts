@@ -375,6 +375,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       moduleDetection: 'force',
       isolatedModules: true,
       verbatimModuleSyntax: true,
+      allowArbitraryExtensions: true,
       /* Strictness */
       strict: nuxt.options.typescript?.strict ?? true,
       noUncheckedIndexedAccess: true,
