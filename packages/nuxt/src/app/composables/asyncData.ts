@@ -1,5 +1,4 @@
-import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
-import { pauseTracking, resetTracking } from '@vue/reactivity'
+import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -261,8 +260,10 @@ export function useAsyncData<
   function createInitialFetch () {
     const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
     if (!nuxtApp._asyncData[key.value]?._init) {
-      // Preserve previous data to avoid null reference errors with v-once components (#32154)
-      const previousData = nuxtApp._asyncData[key.value]?.data.value
+      // use _lastValue for v-once fix (#32154), but skip for immediate:false which expects fresh data
+      const previousData = options.immediate !== false
+        ? (nuxtApp._asyncData[key.value]?._lastValue ?? nuxtApp._asyncData[key.value]?.data.value)
+        : undefined
       initialFetchOptions.cachedData = previousData ?? options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
       nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
     }
@@ -612,7 +613,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
-function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
+function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, silent = false): void {
   if (key in nuxtApp.payload.data) {
     nuxtApp.payload.data[key] = undefined
   }
@@ -622,12 +623,14 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (nuxtApp._asyncData[key]) {
-    // Pause tracking to prevent reactive triggers in unmounting components (#32154)
-    pauseTracking()
-    try {
+    // preserve data before clearing for re-initialization (#32154)
+    nuxtApp._asyncData[key]!._lastValue = nuxtApp._asyncData[key]!.data.value
+    if (silent) {
+      // bypass reactivity to avoid triggering stale effects during scope disposal (#32154)
+      // @ts-expect-error accessing Vue internal property
+      nuxtApp._asyncData[key]!.data._value = unref(nuxtApp._asyncData[key]!._default())
+    } else {
       nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
-    } finally {
-      resetTracking()
     }
     nuxtApp._asyncData[key]!.error.value = undefined
     if (pendingWhenIdle) {
@@ -656,7 +659,7 @@ export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: 
   isPending: () => boolean
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController, _lastValue?: DataT | DefaultT }
 
 function createAsyncData<
   ResT,
@@ -812,12 +815,8 @@ function createAsyncData<
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
-        nextTick(() => {
-          if (!nuxtApp._asyncData[key]?._init) {
-            clearNuxtDataByKey(nuxtApp, key)
-            asyncData.execute = () => Promise.resolve()
-          }
-        })
+        clearNuxtDataByKey(nuxtApp, key, true /* silent */)
+        asyncData.execute = () => Promise.resolve()
       }
     },
   }
