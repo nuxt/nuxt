@@ -149,7 +149,7 @@ type HydrationStrategies = {
   hydrateWhen?: boolean
   hydrateNever?: true
 }
-type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
+type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }, {}, {}, {}, {}, SlotsType<{ fallback: {} }>> & T
 `
 export const componentsDeclarationTemplate = {
   filename: 'components.d.ts' as const,
