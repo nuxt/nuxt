@@ -145,6 +145,8 @@ interface _NuxtApp {
     _abortController?: AbortController
     /** @internal */
     _lastValue?: unknown
+    /** @internal */
+    _explicitClear?: boolean
   } | undefined>
 
   /** @internal */

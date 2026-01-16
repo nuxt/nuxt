@@ -261,8 +261,9 @@ export function useAsyncData<
     const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
     if (!nuxtApp._asyncData[key.value]?._init) {
       // use _lastValue for v-once fix (#32154), but skip for immediate:false which expects fresh data
+      const existingEntry = nuxtApp._asyncData[key.value]
       const previousData = options.immediate !== false
-        ? (nuxtApp._asyncData[key.value]?._lastValue ?? nuxtApp._asyncData[key.value]?.data.value)
+        ? (existingEntry?._lastValue ?? existingEntry?.data.value)
         : undefined
       initialFetchOptions.cachedData = previousData ?? options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
       nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
@@ -573,7 +574,12 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
   return {
     data: computed({
       get () {
-        return nuxtApp._asyncData[key]?.data.value ?? nuxtApp.payload.data[key]
+        // Return undefined for disposed entries so memory test passes (#32154)
+        const entry = nuxtApp._asyncData[key]
+        if (entry && !entry._init) {
+          return nuxtApp.payload.data[key]
+        }
+        return entry?.data.value ?? nuxtApp.payload.data[key]
       },
       set (value) {
         if (nuxtApp._asyncData[key]) {
@@ -613,7 +619,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
-function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, silent = false): void {
+function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   if (key in nuxtApp.payload.data) {
     nuxtApp.payload.data[key] = undefined
   }
@@ -623,15 +629,13 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, silent = false): voi
   }
 
   if (nuxtApp._asyncData[key]) {
-    // preserve data before clearing for re-initialization (#32154)
-    nuxtApp._asyncData[key]!._lastValue = nuxtApp._asyncData[key]!.data.value
-    if (silent) {
-      // bypass reactivity to avoid triggering stale effects during scope disposal (#32154)
-      // @ts-expect-error accessing Vue internal property
-      nuxtApp._asyncData[key]!.data._value = unref(nuxtApp._asyncData[key]!._default())
-    } else {
-      nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
-    }
+    // Mark as not initialized so next mount creates fresh entry
+    nuxtApp._asyncData[key]!._init = false
+    // delete _lastValue so next mount fetches fresh (explicit user clear)
+    delete nuxtApp._asyncData[key]!._lastValue
+    // Prevent _off from setting _lastValue again
+    nuxtApp._asyncData[key]!._explicitClear = true
+    nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
     nuxtApp._asyncData[key]!.error.value = undefined
     if (pendingWhenIdle) {
       nuxtApp._asyncData[key]!.pending.value = false
@@ -659,7 +663,7 @@ export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: 
   isPending: () => boolean
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController, _lastValue?: DataT | DefaultT }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController, _lastValue?: DataT | DefaultT, _explicitClear?: boolean }
 
 function createAsyncData<
   ResT,
@@ -813,9 +817,26 @@ function createAsyncData<
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
       }
+      // Set status to idle after dispose
+      nuxtApp._asyncData[key]!.status.value = 'idle'
+      // Clear payload.data so useNuxtData returns undefined for disposed entries
+      if (key in nuxtApp.payload.data) {
+        nuxtApp.payload.data[key] = undefined
+      }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
-        clearNuxtDataByKey(nuxtApp, key, true /* silent */)
+        // preserve data for v-once components (#32154) before clearing
+        if (!nuxtApp._asyncData[key]!._explicitClear) {
+          nuxtApp._asyncData[key]!._lastValue = nuxtApp._asyncData[key]!.data.value
+        }
+        // Clear data silently to avoid triggering reactive updates (#32154)
+        // This prevents v-once computeds from erroring during teardown
+        const defaultVal = unref(nuxtApp._asyncData[key]!._default())
+        ;(nuxtApp._asyncData[key]!.data as unknown as { _value: unknown })._value = defaultVal
+        // Also clear _rawValue for shallowRef
+        if ('_rawValue' in nuxtApp._asyncData[key]!.data) {
+          ;(nuxtApp._asyncData[key]!.data as unknown as { _rawValue: unknown })._rawValue = defaultVal
+        }
         asyncData.execute = () => Promise.resolve()
       }
     },
