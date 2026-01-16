@@ -3108,6 +3108,29 @@ describe('lazy import components', () => {
   })
 })
 
+describe('lazy component fallback slot', () => {
+  it('should show fallback slot while lazy component is loading', async () => {
+    const { page } = await renderPage('/lazy-fallback')
+
+    // The page should load
+    await page.locator('.lazy-fallback-page').waitFor()
+
+    // Wait for the slow component to load
+    await page.locator('.slow-component-loaded').first().waitFor({ timeout: 5000 })
+
+    // Verify the slow component eventually loads in both containers
+    expect(await page.locator('#with-fallback .slow-component-loaded').count()).toBe(1)
+    expect(await page.locator('#without-fallback .slow-component-loaded').count()).toBe(1)
+  })
+
+  it('should show fallback slot for lazy hydration components', async () => {
+    const { page } = await renderPage('/lazy-fallback')
+
+    // Wait for the hydration component to also load
+    await page.locator('#hydration-with-fallback .slow-component-loaded').waitFor({ timeout: 5000 })
+  })
+})
+
 describe('scrollToTop', () => {
   it('should not scroll to top when `scrollToTop` is `false`', async () => {
     const { page } = await renderPage('/route-scroll-behavior/scroll-to-top')
