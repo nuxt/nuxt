@@ -5,7 +5,9 @@
     <div id="with-fallback">
       <LazySlowLoadingComponent>
         <template #fallback>
-          <div class="loading-fallback">Loading slow component...</div>
+          <div class="loading-fallback">
+            Loading slow component...
+          </div>
         </template>
       </LazySlowLoadingComponent>
     </div>
@@ -17,7 +19,9 @@
     <div id="hydration-with-fallback">
       <LazySlowLoadingComponent :hydrate-on-idle="true">
         <template #fallback>
-          <div class="hydration-loading-fallback">Hydration loading...</div>
+          <div class="hydration-loading-fallback">
+            Hydration loading...
+          </div>
         </template>
       </LazySlowLoadingComponent>
     </div>
