@@ -717,6 +717,16 @@ describe('useCookie', () => {
     useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
     expect(document.cookie).toContain('cookie-readonly=foo')
   })
+
+  it('should work with any value, when encode and decode is set', () => {
+    const encode = vi.fn((val: Intl.Locale) => val.toString())
+    const decode = vi.fn((val: string) => new Intl.Locale(val))
+
+    const locale = useCookie('locale', { watch: true, default: () => new Intl.Locale('de-DE'), encode, decode })
+    expect(locale.value.language).toBe('de')
+    locale.value = new Intl.Locale('fr-FR')
+    expect(locale.value.language).toBe('fr')
+  })
 })
 
 describe('callOnce', () => {
