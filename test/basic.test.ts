@@ -1998,7 +1998,7 @@ describe('server components/islands', () => {
     // test fallback slot with v-for
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     // test islands update
-    await page.locator('.box').getByText('"number": 101,').waitFor()
+    await page.locator('.box').getByText('"number": 101,').first().waitFor()
     const requests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200),
