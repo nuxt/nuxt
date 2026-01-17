@@ -209,6 +209,39 @@ describe('useState', () => {
   it('registers state in payload', () => {
     useState('key', () => 'value')
     expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$skey', 'value'])
+    useState('keyNumber', () => 1)
+    expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$skeyNumber', 1])
+  })
+
+  it('should accept serializer options', () => {
+    const state = useState('transform', () => 1, {
+      serializer: {
+        write (v) {
+          return String(v)
+        },
+        read (v) {
+          return Number(v)
+        },
+      },
+    })
+    expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$stransform', '1'])
+    expect(state.value).toBe(1)
+
+    const nonPojo = useState('serialize-non-pojo', () => new Intl.Locale('de-DE'), {
+      serializer: {
+        write (v) {
+          return v.maximize().toString()
+        },
+        read (v) {
+          return new Intl.Locale(v)
+        },
+      },
+    })
+    expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$sserialize-non-pojo', 'de-Latn-DE'])
+    expect(nonPojo.value.baseName).toBe('de-Latn-DE')
+    nonPojo.value = new Intl.Locale('fr-FR', { calendar: 'gregory' })
+    expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$sserialize-non-pojo', 'fr-Latn-FR-u-ca-gregory'])
+    expect(nonPojo.value.baseName).toBe('fr-Latn-FR')
   })
 })
 
