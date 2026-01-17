@@ -719,10 +719,7 @@ describe('useCookie', () => {
   })
 
   it('should work with any value, when encode and decode is set', () => {
-    const encode = vi.fn((val: Intl.Locale) => val.toString())
-    const decode = vi.fn((val: string) => new Intl.Locale(val))
-
-    const locale = useCookie('locale', { watch: true, default: () => new Intl.Locale('de-DE'), encode, decode })
+    const locale = useCookie('locale', { watch: true, default: () => new Intl.Locale('de-DE'), encode: (val: Intl.Locale) => val.toString(), decode: (val: string) => new Intl.Locale(val) })
     expect(locale.value.language).toBe('de')
     locale.value = new Intl.Locale('fr-FR')
     expect(locale.value.language).toBe('fr')
