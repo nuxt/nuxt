@@ -78,7 +78,7 @@
     "@rspack/core": "1.7.2",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "h3": "1.15.4",
+    "h3": "1.15.5",
     "h3-next": "npm:h3@2.0.1-rc.7",
     "obuild": "0.4.14",
     "rollup": "4.55.1",
