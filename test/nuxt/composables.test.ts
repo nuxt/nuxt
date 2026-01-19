@@ -26,6 +26,7 @@ import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import { isTestingAppManifest } from '../matrix'
+import { flushPromises } from '@vue/test-utils'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -723,7 +724,7 @@ describe('useCookie', () => {
     expect(json.value).toBe('{"hello": "world"}')
   })
 
-  it.fails('should not parse json by default when decoded by change event', () => {
+  it('should not parse json by default when decoded by change event', async () => {
     const j1 = useCookie('j1', { default: () => '{"hello": "world"}' })
     expect.soft(j1.value).not.toEqual({ hello: 'world' })
     expect.soft(j1.value).toBe('{"hello": "world"}')
@@ -733,6 +734,8 @@ describe('useCookie', () => {
     j1.value = '{"hello": "welt"}'
     expect.soft(j1.value).not.toEqual({ hello: 'welt' })
     expect.soft(j1.value).toBe('{"hello": "welt"}')
+    await nextTick()
+    await flushPromises()
     expect.soft(j2.value).not.toEqual({ hello: 'welt' })
     expect.soft(j2.value).toBe('{"hello": "welt"}')
   })
