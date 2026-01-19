@@ -725,10 +725,16 @@ describe('useCookie', () => {
 
   it.fails('should not parse json by default when decoded by change event', () => {
     const j1 = useCookie('j1', { default: () => '{"hello": "world"}' })
+    expect.soft(j1.value).not.toEqual({ hello: 'world' })
+    expect.soft(j1.value).toBe('{"hello": "world"}')
     const j2 = useCookie('j1')
-    expect(j2.value).toBe('{"hello": "world"}')
+    expect.soft(j2.value).not.toEqual({ hello: 'world' })
+    expect.soft(j2.value).toBe('{"hello": "world"}')
     j1.value = '{"hello": "welt"}'
-    expect(j2.value).toBe('{"hello": "welt"}')
+    expect.soft(j1.value).not.toEqual({ hello: 'welt' })
+    expect.soft(j1.value).toBe('{"hello": "welt"}')
+    expect.soft(j2.value).not.toEqual({ hello: 'welt' })
+    expect.soft(j2.value).toBe('{"hello": "welt"}')
   })
 })
 
