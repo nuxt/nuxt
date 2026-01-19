@@ -62,11 +62,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   const hasExpired = delay !== undefined && delay <= 0
   const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
-  const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   const isEqual = (a: T, b: T) => {
     return opts.encode(a) === opts.encode(b)
   }
+
+  const clone = (val: T): T => {
+    return opts.decode(opts.encode(val)) as T // cast here because CookieDefaults is not generic
+  }
+
+  const cookieValue = clone(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use basic ref
   const cookie = import.meta.client && delay && !hasExpired
@@ -93,15 +98,15 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
 
-      cookies[name] = klona(cookie.value)
+      cookies[name] = clone(cookie.value)
       channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
     const handleChange = (data: { value?: any, refresh?: boolean }) => {
-      const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
+      const value = (data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)) as T // cast here because CookieDefaults is not generic
       watchPaused = true
       cookie.value = value
-      cookies[name] = klona(value)
+      cookies[name] = clone(value)
       nextTick(() => { watchPaused = false })
     }
 

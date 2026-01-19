@@ -661,7 +661,7 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(0)
   })
 
-  it('cookie decode function should be invoked once', () => {
+  it('cookie decode function should be invoked once for decode and once for clone', () => {
     // Pre-set cookies
     document.cookie = 'foo=Foo'
     document.cookie = 'bar=%7B%22s2%22%3A0%7D'
@@ -677,7 +677,7 @@ describe('useCookie', () => {
     })
     bazCookie.value.s2++
     expect(bazCookie.value.s2).toEqual(1)
-    expect(barCallCount).toBe(1)
+    expect(barCallCount).toBe(2)
 
     let quxCallCount = 0
     const quxCookie = useCookie<{ s3: number }>('qux', {
@@ -690,7 +690,7 @@ describe('useCookie', () => {
     })
     quxCookie.value.s3++
     expect(quxCookie.value.s3).toBe(0)
-    expect(quxCallCount).toBe(2)
+    expect(quxCallCount).toBe(4)
   })
 
   it('should not watch custom cookie refs when shallow', () => {
