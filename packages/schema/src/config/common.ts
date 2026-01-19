@@ -229,6 +229,8 @@ export default defineResolvers({
         '**/*.d.{cts,mts,ts}', // ignore type declarations
         '**/*.d.vue.{cts,mts,ts}',
         '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        '**/node-compile-cache',
+        '**/test-results',
         '**/*.sock',
         relative(rootDir, analyzeDir),
         relative(rootDir, buildDir),
