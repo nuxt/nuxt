@@ -717,6 +717,19 @@ describe('useCookie', () => {
     useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
     expect(document.cookie).toContain('cookie-readonly=foo')
   })
+
+  it('should not parse json by default', () => {
+    const json = useCookie('json', { default: () => '{"hello": "world"}' })
+    expect(json.value).toBe('{"hello": "world"}')
+  })
+
+  it.fails('should not parse json by default when decoded by change event', () => {
+    const j1 = useCookie('j1', { default: () => '{"hello": "world"}' })
+    const j2 = useCookie('j1')
+    expect(j2.value).toBe('{"hello": "world"}')
+    j1.value = '{"hello": "welt"}'
+    expect(j2.value).toBe('{"hello": "welt"}')
+  })
 })
 
 describe('callOnce', () => {
