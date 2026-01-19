@@ -46,3 +46,13 @@ export function useState<T> (key: string, init?: () => T | Ref<T>): Ref<T>
 - `key`: A unique key ensuring that data fetching is properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file and line number of the instance of [`useState`](/docs/3.x/api/composables/use-state) will be generated for you.
 - `init`: A function that provides initial value for the state when not initiated. This function can also return a `Ref`.
 - `T`: (typescript only) Specify the type of state
+
+## Troubleshooting
+
+### `Cannot stringify arbitrary non-POJOs`
+
+This error occurs when you try to store a non-serializable payload with `useState`, such as class instances.
+
+If you want to store class instances with `useState` that are not supported by Nuxt, you can use [`definePayloadPlugin`](/docs/4.x/api/composables/use-nuxt-app#custom-reducerreviver) to add a custom serializer and deserializer for your classes.
+
+:read-more{to="/docs/4.x/api/composables/use-nuxt-app#payload"}
