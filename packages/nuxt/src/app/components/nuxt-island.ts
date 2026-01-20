@@ -10,6 +10,8 @@ import { joinURL, withQuery } from 'ufo'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
+import { getRouteRules } from '../composables/manifest'
+import { useRoute } from '../composables/router'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
@@ -207,10 +209,14 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
+      const rules = import.meta.client ? getRouteRules({ path: useRoute().path }) : {}
+      const shouldCache = rules.prerender || rules.cache
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
-      }))
+      }), {
+        ...(import.meta.client && shouldCache ? { cache: 'force-cache' as RequestCache } : {}),
+      })
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }

@@ -2,6 +2,8 @@ import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import destr from 'destr'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
+import { getRouteRules } from '../composables/manifest'
+import { useRoute } from '../composables/router'
 import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
@@ -21,13 +23,19 @@ if (componentIslands) {
   revivers.push(['Island', ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating) {
-      nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
-        responseType: 'json',
-        ...params ? { params } : {},
-      }).then((r) => {
-        nuxtApp.payload.data[key] = { __cached: true, ...r as Record<string, unknown> }
-        return nuxtApp.payload.data[key]
-      })
+      const rules = getRouteRules({ path: useRoute().path })
+      const shouldCache = rules.prerender || rules.cache
+      if (shouldCache) {
+        // Prerendered/cached routes: memory cache (bounded set)
+        nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
+          responseType: 'json',
+          ...params ? { params } : {},
+        }).then((r) => {
+          nuxtApp.payload.data[key] = { __cached: true, ...r as Record<string, unknown> }
+          return nuxtApp.payload.data[key]
+        })
+      }
+      // Dynamic routes: no memory cache (rely on browser HTTP cache)
     }
     const cached = nuxtApp.payload.data[key]
     // Reuse cached island data with html on navigation back (#33809)
