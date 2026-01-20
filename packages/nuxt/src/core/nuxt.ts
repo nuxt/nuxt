@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -34,6 +34,7 @@ import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 
 import { distDir, pkgDir } from '../dirs.ts'
+import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
@@ -248,6 +249,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
+  nuxt['~runtimeDependencies'] = [...runtimeDependencies]
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
@@ -295,6 +297,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/shared-imports.d.ts') })
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     paths ||= await resolveTypescriptPaths(nuxt)
@@ -762,14 +765,6 @@ export default defineNuxtPlugin({
   // Init nitro
   await bundleServer(nuxt)
 
-  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
-  // Add prerender payload support
-  const nitro = useNitro()
-  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
-    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-    nuxt.options.experimental.payloadExtraction = true
-  }
-
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
@@ -864,11 +859,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   // Ensure we share key config between Nuxt and Nitro
-  createPortalProperties(options.nitro.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
-  createPortalProperties(options.nitro.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  const nitroOptions = options.nitro
+  createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
+  createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
 
   // prevent replacement of options.nitro
-  const nitroOptions = options.nitro
   Object.defineProperties(options, {
     nitro: {
       configurable: false,

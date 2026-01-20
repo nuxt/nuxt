@@ -375,6 +375,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       moduleDetection: 'force',
       isolatedModules: true,
       verbatimModuleSyntax: true,
+      allowArbitraryExtensions: true,
       /* Strictness */
       strict: nuxt.options.typescript?.strict ?? true,
       noUncheckedIndexedAccess: true,
@@ -426,6 +427,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
       verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
+      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
       /* Strictness */
       strict: tsConfig.compilerOptions?.strict,
       noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
@@ -460,6 +462,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
       verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
+      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
       /* Strictness */
       strict: tsConfig.compilerOptions?.strict,
       noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,

@@ -10,6 +10,7 @@ import { Transition } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
+import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -1253,5 +1254,74 @@ describe('useAsyncData', () => {
     }
 
     vi.useRealTimers()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/32154
+  it.fails('should not cause error with v-once after navigation', async () => {
+    const router = useRouter()
+
+    const WrapperComponent = defineComponent({
+      name: 'WrapperComponent',
+      setup (_, { slots }) {
+        return () => h('div', slots.default?.())
+      },
+    })
+
+    const HomePage = defineComponent({
+      name: 'HomePage',
+      components: { WrapperComponent },
+      async setup () {
+        const { data } = await useAsyncData('v-once-home-page', () => Promise.resolve({ foo: 'bar' }))
+        const foo = computed(() => data.value!.foo)
+        return { foo }
+      },
+      template: `<div><WrapperComponent v-once>{{ foo }}</WrapperComponent></div>`,
+    })
+
+    const OtherPage = defineComponent({
+      name: 'OtherPage',
+      setup () {
+        return () => h('div', 'Other Page')
+      },
+    })
+
+    router.addRoute({ name: 'v-once-home', path: '/v-once-home', component: HomePage })
+    router.addRoute({ name: 'v-once-other', path: '/v-once-other', component: OtherPage })
+
+    const errors: Error[] = []
+    const errorHandler = (err: unknown) => {
+      errors.push(err as Error)
+    }
+
+    try {
+      const el = await mountSuspended({ render: () => h(NuxtPage) }, {
+        global: {
+          config: {
+            errorHandler,
+          },
+        },
+      })
+
+      await navigateTo('/v-once-home')
+      await flushPromises()
+      expect(el.html()).toContain('bar')
+
+      await navigateTo('/v-once-other')
+      await flushPromises()
+      expect(el.html()).toContain('Other Page')
+
+      await navigateTo('/v-once-home')
+      await flushPromises()
+
+      // we should not get 'TypeError: Cannot read properties of undefined (reading 'foo')'
+      expect(errors[0]).toBeUndefined()
+      expect(el.html()).toContain('bar')
+
+      el.unmount()
+    } finally {
+      // Clean up routes
+      router.removeRoute('v-once-home')
+      router.removeRoute('v-once-other')
+    }
   })
 })

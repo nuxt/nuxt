@@ -6,7 +6,6 @@ import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { createError } from 'h3'
 import { join, normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
@@ -21,6 +20,7 @@ import { resolveModulePath } from 'exsolve'
 
 import { isCSS } from '../utils/index.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
+import type { ErrorPartial } from '../types.ts'
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
@@ -280,7 +280,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           case 'resolve': {
             const { id: resolveId, importer } = request.payload
             if (!resolveId) {
-              throw createError({ status: 400, message: 'Missing id for resolve' })
+              throw { status: 400, message: 'Missing id for resolve' } satisfies ErrorPartial
             }
             const ssrNode = nuxt.options.experimental.viteEnvironmentApi
               ? ssrServer.environments.ssr.pluginContainer
@@ -291,7 +291,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           }
           case 'module': {
             if (request.payload.moduleId === '/') {
-              throw createError({ status: 400, message: 'Invalid moduleId' })
+              throw { status: 400, message: 'Invalid moduleId' } satisfies ErrorPartial
             }
             const ssrNode = nuxt.options.experimental.viteEnvironmentApi
               ? ssrServer.environments.ssr
@@ -317,7 +317,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                   // Ignore transform errors
                   }
                 }
-                throw createError({ data: errorData, message: err.message || 'Error fetching module' })
+                throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
               }) as Exclude<FetchResult, { cache: true }>
             sendResponse<typeof request.type>(socket, request.id, response)
             return
@@ -331,7 +331,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           }
           default:
             // @ts-expect-error this should never happen
-            throw createError({ status: 400, message: `Unknown request type: ${request.type}` })
+            throw { status: 400, message: `Unknown request type: ${request.type}` } satisfies ErrorPartial
         }
       } catch (error: any) {
         sendError(socket, request.id, error)

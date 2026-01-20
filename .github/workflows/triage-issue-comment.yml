@@ -1,0 +1,17 @@
+name: triage
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: llm-triage-comment-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  triage:
+    uses: nuxt/.github/.github/workflows/triage-comment.yml@main
+    permissions:
+      contents: read
+      issues: write
+      models: read
