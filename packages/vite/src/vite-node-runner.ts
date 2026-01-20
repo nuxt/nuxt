@@ -5,7 +5,7 @@ import { viteNodeFetch, viteNodeOptions } from '#vite-node'
 import process from 'node:process'
 import type { ErrorPartial } from './types'
 
-const runner = createRunner()
+const runner: ViteNodeRunner = createRunner()
 
 function createRunner () {
   return new ViteNodeRunner({
