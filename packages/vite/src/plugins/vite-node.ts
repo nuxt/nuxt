@@ -41,10 +41,6 @@ export interface ViteNodeRequestMap {
     request: { moduleId: string }
     response: FetchResult
   }
-  fixStacktrace: {
-    request: { stack: string }
-    response: string
-  }
 }
 
 type RequestOf = {
@@ -66,8 +62,6 @@ export interface ViteNodeFetch {
   resolveId(id: string, importer?: string): Promise<ResolveIdResponse | null>
   /** Fetches a module. */
   fetchModule(moduleId: string): Promise<FetchResult>
-  /** Fixes a stack trace using Vite's sourcemaps. */
-  fixStacktrace(stack: string): Promise<string>
   /** Ensures the IPC socket is connected. */
   ensureConnected(): Promise<Socket>
 }
@@ -320,13 +314,6 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                 throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
               }) as Exclude<FetchResult, { cache: true }>
             sendResponse<typeof request.type>(socket, request.id, response)
-            return
-          }
-          case 'fixStacktrace': {
-            const err = new Error('stack trace holder')
-            err.stack = request.payload.stack
-            ssrServer.ssrFixStacktrace(err)
-            sendResponse<typeof request.type>(socket, request.id, err.stack || '')
             return
           }
           default:

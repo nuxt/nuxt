@@ -290,9 +290,6 @@ export const viteNodeFetch: ViteNodeFetch = {
   fetchModule (moduleId) {
     return sendRequest('module', { moduleId })
   },
-  fixStacktrace (stack) {
-    return sendRequest('fixStacktrace', { stack })
-  },
   ensureConnected () {
     return connectSocket()
   },
