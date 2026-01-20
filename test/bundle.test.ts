@@ -61,7 +61,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"60.0k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"32.9k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -69,7 +69,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "devalue",
         "ufo",
         "vue-bundle-renderer",
       ]
@@ -83,17 +82,13 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"27.1k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
       .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
       .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "devalue",
-      ]
-    `)
+    expect(packages).toMatchInlineSnapshot(`[]`)
   })
 
   it('default server bundle size (pages)', async () => {
@@ -103,7 +98,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"60.0k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"32.9k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -111,7 +106,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "devalue",
         "ufo",
         "vue-bundle-renderer",
       ]
