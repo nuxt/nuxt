@@ -42,11 +42,11 @@
     "esbuild-loader": "^4.4.2",
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
-    "h3": "^1.15.4",
+    "h3": "^1.15.5",
     "jiti": "^2.6.1",
     "knitwork": "^1.3.0",
     "magic-string": "^0.30.21",
-    "memfs": "^4.51.1",
+    "memfs": "^4.56.2",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pify": "^6.1.0",
@@ -59,8 +59,8 @@
     "seroval": "^1.4.2",
     "std-env": "^3.10.0",
     "time-fix-plugin": "^2.0.7",
-    "ts-checker-rspack-plugin": "^1.2.3",
-    "ufo": "^1.6.2",
+    "ts-checker-rspack-plugin": "^1.2.4",
+    "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
     "unplugin": "^2.3.11",
     "url-loader": "^4.1.1",
@@ -76,9 +76,9 @@
     "@types/pify": "6.1.0",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "rollup": "4.55.1",
+    "rollup": "4.55.2",
     "unbuild": "3.6.1",
-    "vue": "3.5.26"
+    "vue": "3.5.27"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
