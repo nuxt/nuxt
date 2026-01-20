@@ -20,7 +20,7 @@ const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
 
 // @ts-expect-error file will be produced after app build
-export const getViteNodeRunner = (): ViteNodeRunner => import.meta.dev && import('#build/dist/server/vite-node-runner.mjs').then(r => r.default || r)
+export const getViteNodeRunner = () => import.meta.dev ? import('#build/dist/server/vite-node-runner.mjs').then(r => r.default || r) : undefined
 
 // @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
