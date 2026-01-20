@@ -8,7 +8,7 @@ import { isJsonRequest } from '../utils/error'
 import { generateErrorOverlayHTML } from '../utils/dev'
 import { getViteNodeRunner } from '../utils/renderer/build-files'
 
-let runner: { fixStacktrace(error: Error): Error } | undefined
+let runner: { ssrFixStacktrace(error: Error): Promise<Error> } | undefined
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (event.handled || isJsonRequest(event)) {
@@ -18,7 +18,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   if (import.meta.dev) {
     runner ||= await getViteNodeRunner()
-    runner!.fixStacktrace(error)
+    await runner!.ssrFixStacktrace(error)
   }
 
   // invoke default Nitro error handler (which will log appropriately if required)
