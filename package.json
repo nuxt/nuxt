@@ -49,7 +49,6 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "@rollup/plugin-commonjs": "28.0.9",
     "@types/node": "24.10.9",
     "@unhead/vue": "2.1.2",
     "@vue/compiler-core": "3.5.27",
