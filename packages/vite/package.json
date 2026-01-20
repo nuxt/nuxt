@@ -27,11 +27,11 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "nitropack": "2.13.0",
-    "rolldown": "1.0.0-beta.59",
-    "rollup": "4.55.1",
+    "nitropack": "2.13.1",
+    "rolldown": "1.0.0-beta.60",
+    "rollup": "4.55.2",
     "unbuild": "3.6.1",
-    "vue": "3.5.26"
+    "vue": "3.5.27"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -61,10 +61,10 @@
     "rollup-plugin-visualizer": "^6.0.5",
     "seroval": "^1.4.2",
     "std-env": "^3.10.0",
-    "ufo": "^1.6.2",
+    "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
     "vite": "^7.3.1",
-    "vite-node": "^5.2.0",
+    "vite-node": "^5.3.0",
     "vite-plugin-checker": "^0.12.0",
     "vue-bundle-renderer": "^2.2.0"
   },
