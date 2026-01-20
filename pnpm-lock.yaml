@@ -14,7 +14,7 @@ overrides:
   '@nuxt/schema': workspace:*
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
-  '@rollup/plugin-commonjs': 28.0.6
+  '@rollup/plugin-commonjs': 28.0.9
   '@types/node': 24.10.9
   '@unhead/vue': 2.1.2
   '@vue/compiler-core': 3.5.27
@@ -138,8 +138,8 @@ importers:
         specifier: 2.0.5
         version: 2.0.5
       devalue:
-        specifier: 5.6.1
-        version: 5.6.1
+        specifier: 5.6.2
+        version: 5.6.2
       eslint:
         specifier: 9.39.2
         version: 9.39.2(jiti@2.6.1)
@@ -162,8 +162,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 1.15.4
-        version: 1.15.4
+        specifier: 1.15.5
+        version: 1.15.5
       happy-dom:
         specifier: 20.3.4
         version: 20.3.4
@@ -390,8 +390,8 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5
       devalue:
-        specifier: ^5.6.1
-        version: 5.6.1
+        specifier: ^5.6.2
+        version: 5.6.2
       errx:
         specifier: ^0.1.0
         version: 0.1.0
@@ -402,8 +402,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8
       h3:
-        specifier: ^1.15.4
-        version: 1.15.4
+        specifier: ^1.15.5
+        version: 1.15.5
       impound:
         specifier: ^1.0.0
         version: 1.0.0
@@ -517,8 +517,8 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5
       devalue:
-        specifier: ^5.6.1
-        version: 5.6.1
+        specifier: ^5.6.2
+        version: 5.6.2
       errx:
         specifier: ^0.1.0
         version: 0.1.0
@@ -529,8 +529,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8
       h3:
-        specifier: ^1.15.4
-        version: 1.15.4
+        specifier: ^1.15.5
+        version: 1.15.5
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -707,8 +707,8 @@ importers:
         specifier: ^6.2.0
         version: 6.2.0(webpack@5.104.1(esbuild@0.27.2))
       h3:
-        specifier: ^1.15.4
-        version: 1.15.4
+        specifier: ^1.15.5
+        version: 1.15.5
       jiti:
         specifier: ^2.6.1
         version: 2.6.1
@@ -880,8 +880,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.104.1(esbuild@0.27.2))
       h3:
-        specifier: 1.15.4
-        version: 1.15.4
+        specifier: 1.15.5
+        version: 1.15.5
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -1042,8 +1042,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       h3:
-        specifier: ^1.15.4
-        version: 1.15.4
+        specifier: ^1.15.5
+        version: 1.15.5
       jiti:
         specifier: ^2.6.1
         version: 2.6.1
@@ -1160,8 +1160,8 @@ importers:
         specifier: ^9.1.0
         version: 9.1.0(tslib@2.8.1)(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.2))
       h3:
-        specifier: ^1.15.4
-        version: 1.15.4
+        specifier: ^1.15.5
+        version: 1.15.5
       jiti:
         specifier: ^2.6.1
         version: 2.6.1
@@ -3128,8 +3128,8 @@ packages:
       rollup:
         optional: true
 
-  '@rollup/plugin-commonjs@28.0.6':
-    resolution: {integrity: sha512-XSQB1K7FUU5QP+3lOQmVCE3I0FcbbNvmNT4VJSj93iUjayaARrTQeoRdiYQoftAJBLrR9t2agwAd3ekaTgHNlw==}
+  '@rollup/plugin-commonjs@28.0.9':
+    resolution: {integrity: sha512-PIR4/OHZ79romx0BVVll/PkwWpJ7e5lsqFa3gFfcrFPWwLXLV39JVUzQV9RKjWerE7B845Hqjj9VYlQeieZ2dA==}
     engines: {node: '>=16.0.0 || 14 >= 14.17'}
     peerDependencies:
       rollup: 4.55.2
@@ -4989,8 +4989,8 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  devalue@5.6.1:
-    resolution: {integrity: sha512-jDwizj+IlEZBunHcOuuFVBnIMPAEHvTsJj0BcIp94xYguLRVBcXO853px/MyIJvbVzWdsGvrRweIUWJw8hBP7A==}
+  devalue@5.6.2:
+    resolution: {integrity: sha512-nPRkjWzzDQlsejL1WVifk5rvcFi/y1onBRxjaFMjZeR9mFpqu2gmAZ9xUB9/IEanEP/vBtGeGganC/GO1fmufg==}
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
@@ -5654,9 +5654,6 @@ packages:
   gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
-  h3@1.15.4:
-    resolution: {integrity: sha512-z5cFQWDffyOe4vQ9xIqNfCZdV4p//vy6fBnr8Q1AWnVZ0teurKMG66rLj++TKwKPUP3u7iMUvrvKaEUiQw2QWQ==}
 
   h3@1.15.5:
     resolution: {integrity: sha512-xEyq3rSl+dhGX2Lm0+eFQIAzlDN6Fs0EcC4f7BNUmzaRX/PTzeuM+Tr2lHB8FoXggsQIeXLj8EDVgs5ywxyxmg==}
@@ -10027,7 +10024,7 @@ snapshots:
       '@vueuse/core': 14.1.0(vue@3.5.27(typescript@5.9.3))
       consola: 3.4.2
       defu: 6.1.4
-      h3: 1.15.4
+      h3: 1.15.5
       magic-string: 0.30.21
       ofetch: 1.5.1
       ohash: 2.0.11
@@ -10089,7 +10086,7 @@ snapshots:
       exsolve: 1.0.8
       fake-indexeddb: 6.2.5
       get-port-please: 3.2.0
-      h3: 1.15.4
+      h3: 1.15.5
       h3-next: h3@2.0.1-rc.7
       local-pkg: 1.1.2
       magic-string: 0.30.21
@@ -10648,7 +10645,7 @@ snapshots:
     optionalDependencies:
       rollup: 4.55.2
 
-  '@rollup/plugin-commonjs@28.0.6(rollup@4.55.2)':
+  '@rollup/plugin-commonjs@28.0.9(rollup@4.55.2)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.55.2)
       commondir: 1.0.1
@@ -12724,7 +12721,7 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  devalue@5.6.1: {}
+  devalue@5.6.2: {}
 
   devlop@1.1.0:
     dependencies:
@@ -13482,18 +13479,6 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3@1.15.4:
-    dependencies:
-      cookie-es: 1.2.2
-      crossws: 0.3.5
-      defu: 6.1.4
-      destr: 2.0.5
-      iron-webcrypto: 1.2.1
-      node-mock-http: 1.0.4
-      radix3: 1.1.2
-      ufo: 1.6.3
-      uncrypto: 0.1.3
-
   h3@1.15.5:
     dependencies:
       cookie-es: 1.2.2
@@ -14211,7 +14196,7 @@ snapshots:
       crossws: 0.3.5
       defu: 6.1.4
       get-port-please: 3.2.0
-      h3: 1.15.4
+      h3: 1.15.5
       http-shutdown: 1.2.2
       jiti: 2.6.1
       mlly: 1.8.0
@@ -14875,7 +14860,7 @@ snapshots:
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@rollup/plugin-alias': 6.0.0(rollup@4.55.2)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.55.2)
+      '@rollup/plugin-commonjs': 28.0.9(rollup@4.55.2)
       '@rollup/plugin-inject': 5.0.5(rollup@4.55.2)
       '@rollup/plugin-json': 6.1.0(rollup@4.55.2)
       '@rollup/plugin-node-resolve': 16.0.3(rollup@4.55.2)
@@ -16701,7 +16686,7 @@ snapshots:
   unbuild@3.6.1(typescript@5.9.3)(vue-sfc-transformer@0.1.17(@vue/compiler-core@3.5.27)(esbuild@0.27.2)(vue@3.5.27(typescript@5.9.3)))(vue-tsc@3.2.2(typescript@5.9.3))(vue@3.5.27(typescript@5.9.3)):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.55.2)
-      '@rollup/plugin-commonjs': 28.0.6(rollup@4.55.2)
+      '@rollup/plugin-commonjs': 28.0.9(rollup@4.55.2)
       '@rollup/plugin-json': 6.1.0(rollup@4.55.2)
       '@rollup/plugin-node-resolve': 16.0.3(rollup@4.55.2)
       '@rollup/plugin-replace': 6.0.3(rollup@4.55.2)
