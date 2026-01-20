@@ -25,12 +25,19 @@ if (componentIslands) {
         responseType: 'json',
         ...params ? { params } : {},
       }).then((r) => {
-        nuxtApp.payload.data[key] = r
-        return r
+        nuxtApp.payload.data[key] = { __cached: true, ...r as Record<string, unknown> }
+        return nuxtApp.payload.data[key]
       })
+    }
+    const cached = nuxtApp.payload.data[key]
+    // Reuse cached island data with html on navigation back (#33809)
+    if (cached?.html) {
+      cached.__cached = true
+      return cached
     }
     return {
       html: '',
+      __cached: true,
       ...result,
     }
   }])
