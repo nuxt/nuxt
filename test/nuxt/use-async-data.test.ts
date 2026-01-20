@@ -502,7 +502,7 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
   })
 
-  it.fails('should only refresh asyncdata once when watched dependency is updated', async () => {
+  it.fails('should resolve to latest value when watched dependency is rapidly updated', async () => {
     const route = ref('/')
     const promiseFn = vi.fn(() => Promise.resolve(route.value))
     const component = defineComponent({
