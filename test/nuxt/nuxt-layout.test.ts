@@ -189,6 +189,31 @@ describe('NuxtLayout', () => {
     expect.soft(routeChanges).toBe(3)
   })
 
+  it('should update NuxtPage when nested NuxtLayout has name=false', async () => {
+    // Test for https://github.com/nuxt/nuxt/issues/34074
+    // Mount component with nested layouts where inner layout has name=false
+    const nestedEl = await mountSuspended({
+      // @ts-expect-error dynamically-added layout is not typed
+      setup: () => () => h(NuxtLayout, { name: 'layout-1' }, {
+        default: () => h(NuxtLayout, { name: false }, {
+          default: () => h(NuxtPage),
+        }),
+      }),
+    })
+
+    await navigateTo('/layout-1')
+    await flushPromises()
+
+    // Check that the page content shows the current route
+    expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-1')
+
+    await navigateTo('/layout-2')
+    await flushPromises()
+
+    // Page content (h3) should update even with name=false on inner layout
+    expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-2')
+  })
+
   it.todo('should not change layout before child page resolves', async () => {
     await navigateTo('/layout-1')
     await flushPromises()
