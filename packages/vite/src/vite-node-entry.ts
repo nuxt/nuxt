@@ -7,7 +7,6 @@ import runner from '#vite-node-runner'
 
 let render: (ssrContext: NuxtSSRContext) => Promise<any>
 
-export const ssrFixStacktrace = import.meta.dev ? viteNodeFetch.fixStacktrace : undefined
 export default async (ssrContext: NuxtSSRContext) => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
