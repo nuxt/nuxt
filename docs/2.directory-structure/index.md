@@ -54,6 +54,10 @@ The [`content/`](/docs/3.x/directory-structure/content) directory is enabled by 
 
 The [`modules/`](/docs/3.x/directory-structure/modules) directory is the directory that contains the local modules of the Nuxt application. Modules are used to extend the functionality of the Nuxt application.
 
+## Layers Directory
+
+The [`layers/`](/docs/4.x/directory-structure/layers) directory allows you to organize and share reusable code, components, composables, and configurations. Layers within this directory are automatically registered in your project.
+
 ## Nuxt Files
 
 - [`nuxt.config.ts`](/docs/3.x/directory-structure/nuxt-config) file is the main configuration file for the Nuxt application.
