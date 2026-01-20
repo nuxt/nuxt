@@ -384,6 +384,14 @@ export function useAsyncData<
     const unsubParamsWatcher = options.watch
       ? watch(options.watch, () => {
           if (keyChanging) { return } // avoid double execute while the key switch is being processed
+          // if the 0ms debounce is pending (same tick) force flush the debounce post watcher flush
+          // @ts-expect-error _execute is not typed as DebouncedResult
+          if (nuxtApp._asyncData[key.value]?._execute.isPending()) {
+            queuePostFlushCb(() => {
+              // @ts-expect-error _execute is not typed as DebouncedResult
+              nuxtApp._asyncData[key.value]?._execute.flush()
+            })
+          }
           nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: options.dedupe })
         })
       : () => {}

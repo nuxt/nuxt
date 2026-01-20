@@ -502,7 +502,7 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
   })
 
-  it.fails('should resolve to latest value when watched dependency is rapidly updated', async () => {
+  it('should resolve to latest value when watched dependency is rapidly updated', async () => {
     const route = ref('/')
     const promiseFn = vi.fn(() => Promise.resolve(route.value))
     const component = defineComponent({
@@ -524,10 +524,9 @@ describe('useAsyncData', () => {
         await nextTick()
       }
     }
-    await nextTick()
-    await nextTick()
-    await nextTick()
-    expect(c.html()).toBe('<div>/about/19</div>')
+    await vi.waitFor(() => {
+      expect(c.html()).toBe('<div>/about/19</div>')
+    })
   })
 
   it('should work correctly with nested components accessing the same asyncData', async () => {
