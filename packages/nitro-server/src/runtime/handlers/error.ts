@@ -16,7 +16,8 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   if (import.meta.dev) {
-    runner ||= await import('../utils/renderer/build-files').then(({ getViteNodeRunner }) => getViteNodeRunner())
+    // @ts-expect-error file produced after build
+    runner ||= import('#build/dist/server/vite-node-runner.mjs').then(r => r.default || r)
     await runner!.ssrFixStacktrace(error)
   }
 
