@@ -141,7 +141,7 @@ if (isBuilt || isWindows) {
     test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
       await goto('/state-component')
 
-      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pagePath = join(fixtureDir, 'pages/state-component.vue')
       const pageContents = readFileSync(pagePath, 'utf8')
 
       const button = page.getByTestId('button')
@@ -170,7 +170,7 @@ if (isBuilt || isWindows) {
     test('HMR on page should keep ref state when updating script', async ({ goto, page }) => {
       await goto('/state-component')
 
-      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pagePath = join(fixtureDir, 'pages/state-component.vue')
       const pageContents = readFileSync(pagePath, 'utf8')
 
       const button = page.getByTestId('button')
@@ -235,10 +235,10 @@ if (isBuilt || isWindows) {
 
       await expect(page.getByTestId('example')).toHaveText('test.vue')
 
-      renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
+      renameSync(join(fixtureDir, 'components/example/test.vue'), join(fixtureDir, 'components/example/example-test.vue'))
 
       writeFileSync(
-        join(fixtureDir, 'app/components/example/example-test.vue'),
+        join(fixtureDir, 'components/example/example-test.vue'),
         `<template><div data-testid="example">example-test.vue</div></template>`,
       )
 
@@ -252,8 +252,8 @@ if (isBuilt || isWindows) {
     test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
       await goto('/issues/32177')
 
-      const pageContents = readFileSync(join(sourceDir, 'app/pages/issues/32177.vue'), 'utf8')
-      writeFileSync(join(fixtureDir, 'app/pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
+      const pageContents = readFileSync(join(sourceDir, 'pages/issues/32177.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
       await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
     })
 
