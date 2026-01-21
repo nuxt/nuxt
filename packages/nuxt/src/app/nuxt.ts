@@ -25,6 +25,13 @@ import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
+// TODO: export from `perfect-debounce`
+type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: ArgumentsT) => Promise<ReturnT>) & {
+  cancel: () => void
+  flush: () => Promise<ReturnT> | undefined
+  isPending: () => boolean
+}
+
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
@@ -136,7 +143,7 @@ interface _NuxtApp {
     /** @internal */
     _init: boolean
     /** @internal */
-    _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+    _execute: DebouncedReturn<[(opts?: AsyncDataExecuteOptions) => Promise<void>], void>
     /** @internal */
     _hash?: Record<string, string | undefined>
     /** @internal */
