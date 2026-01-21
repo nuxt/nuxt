@@ -16,7 +16,7 @@ import { createSSRContext, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { replaceIslandTeleports } from '../utils/renderer/islands'
 
-import { defineRenderHandler, getRouteRules, useNitroApp } from '#internal/nitro'
+import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runtime'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file

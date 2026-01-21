@@ -1,9 +1,11 @@
+/** Error dump for /Users/daniel/code/nuxt/nuxt-3.x/packages/nitro-server/src/runtime/utils/renderer/app.ts */
+
 import type { H3Event } from 'h3'
 import { decodePath } from 'ufo'
 import { useRuntimeConfig } from 'nitropack/runtime'
 import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
-import { sharedPrerenderCache } from '../cache'
+import { sharedPrerenderCache } from "../cache.mjs"
 // @ts-expect-error virtual file
 import unheadOptions from '#internal/unhead-options.mjs'
 // @ts-expect-error virtual file

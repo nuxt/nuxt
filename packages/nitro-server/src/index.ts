@@ -805,7 +805,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
 
       nitro.options.renderer = undefined
-      nitro.options.errorHandler = '#internal/nitro/error'
+      nitro.options.errorHandler = 'nitropack/runtime/error'
     })
   }
 

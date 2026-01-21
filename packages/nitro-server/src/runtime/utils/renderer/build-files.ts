@@ -4,7 +4,7 @@ import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
 import type { NuxtSSRContext } from 'nuxt/app'
-import { useRuntimeConfig } from '#internal/nitro'
+import { useRuntimeConfig } from 'nitropack/runtime'
 
 // @ts-expect-error virtual file
 import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'

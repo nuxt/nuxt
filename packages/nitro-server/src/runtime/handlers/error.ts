@@ -2,10 +2,10 @@ import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import { appendResponseHeader, getRequestHeaders, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 import type { NuxtPayload } from 'nuxt/app'
+import { useRuntimeConfig } from 'nitropack/runtime/config'
+import { useNitroApp } from 'nitropack/runtime/app'
 
 import { isJsonRequest } from '../utils/error'
-import { useRuntimeConfig } from '#internal/nitro'
-import { useNitroApp } from '#internal/nitro/app'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
