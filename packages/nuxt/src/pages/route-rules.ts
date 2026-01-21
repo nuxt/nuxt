@@ -1,5 +1,5 @@
 import type { NuxtPage } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitropack/types'
 
 import { pathToNitroGlob } from './utils.ts'
 

@@ -33,6 +33,33 @@ declare module 'nitropack' {
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
 }
+declare module 'nitropack/types' {
+  interface NitroRuntimeConfigApp {
+    buildAssetsDir: string
+    cdnURL: string
+  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig {
+    ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRouteRules {
+    ssr?: boolean
+    noScripts?: boolean
+    /** @deprecated Use `noScripts` instead */
+    experimentalNoScripts?: boolean
+    appMiddleware?: Record<string, boolean>
+    appLayout?: string | false
+  }
+  interface NitroRuntimeHooks {
+    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
 declare module '@nuxt/schema' {
   interface NuxtHooks {
     /**
@@ -202,7 +229,7 @@ declare module 'nuxt/schema' {
      * Each handler accepts the following options:
      * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
      *
-     * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
+     * @see [`server/` directory documentation](https://nuxt.com/docs/3.x/directory-structure/server)
      *
      * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
      *

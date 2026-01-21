@@ -1,4 +1,4 @@
-import type { RenderResponse } from 'nitropack'
+import type { RenderResponse } from 'nitropack/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'h3'

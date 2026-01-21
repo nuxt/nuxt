@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import type { NitroRouteRules } from 'nitropack'
+import type { NitroRouteRules } from 'nitropack/types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
