@@ -348,6 +348,14 @@
       "path": ""/خاص\\:جديد"",
     },
   ],
+  "should handle unicode characters in alias paths": [
+    {
+      "alias": "["/товары","/produits","/製品"]",
+      "component": "() => import("pages/products.vue")",
+      "name": ""products"",
+      "path": ""/products"",
+    },
+  ],
   "should merge route.meta with meta from file": [
     {
       "component": "() => import("pages/page-with-meta.vue")",
