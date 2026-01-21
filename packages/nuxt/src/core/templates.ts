@@ -262,7 +262,24 @@ export const schemaTemplate: NuxtTemplate = {
     ]).join('\n')
 
     return [
-      'import { NuxtModule, ModuleDependencyMeta, RuntimeConfig } from \'@nuxt/schema\'',
+      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
+      'import { NuxtModule, ModuleDependencyMeta } from \'@nuxt/schema\'',
+      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
+        {
+          interfaceName: 'SharedRuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
+      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
+        {
+          interfaceName: 'SharedPublicRuntimeConfig',
+          addExport: false,
+          addDefaults: false,
+          allowExtraKeys: false,
+          indentation: 2,
+        }),
       'declare module \'@nuxt/schema\' {',
       '  interface ModuleDependencies {',
       moduleDependencies,
@@ -275,6 +292,8 @@ export const schemaTemplate: NuxtTemplate = {
       // So here we only generate tags for `nuxt/schema`
       ...moduleOptionsInterface({ addJSDocTags: false, unresolved: true }),
       '  }',
+      '  interface RuntimeConfig extends UserRuntimeConfig {}',
+      '  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}',
       '}',
       'declare module \'nuxt/schema\' {',
       '  interface ModuleDependencies {',
@@ -286,26 +305,12 @@ export const schemaTemplate: NuxtTemplate = {
       '  interface NuxtConfig {',
       ...moduleOptionsInterface({ addJSDocTags: true, unresolved: true }),
       '  }',
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-        {
-          interfaceName: 'RuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-        {
-          interfaceName: 'PublicRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
+      '  interface RuntimeConfig extends SharedRuntimeConfig {}',
+      '  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}',
       '}',
       `declare module 'vue' {
         interface ComponentCustomProperties {
-          $config: RuntimeConfig
+          $config: UserRuntimeConfig
         }
       }`,
     ].join('\n')
