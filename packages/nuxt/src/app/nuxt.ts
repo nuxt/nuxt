@@ -16,7 +16,7 @@ import type { NuxtAppLiterals } from 'nuxt/app'
 import type { NuxtIslandContext } from './types'
 import type { RouteMiddleware } from './composables/router'
 import type { NuxtError } from './composables/error'
-import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
@@ -24,13 +24,6 @@ import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
-
-// TODO: export from `perfect-debounce`
-type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: ArgumentsT) => Promise<ReturnT>) & {
-  cancel: () => void
-  flush: () => Promise<ReturnT> | undefined
-  isPending: () => boolean
-}
 
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
@@ -143,7 +136,7 @@ interface _NuxtApp {
     /** @internal */
     _init: boolean
     /** @internal */
-    _execute: DebouncedReturn<[(opts?: AsyncDataExecuteOptions) => Promise<void>], void>
+    _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>
     /** @internal */
     _hash?: Record<string, string | undefined>
     /** @internal */
