@@ -133,7 +133,13 @@ export default defineResolvers({
     importMap: {
       $resolve: (val) => {
         if (val && typeof val === 'object' && !Array.isArray(val)) {
-          return val as Record<string, string>
+          const result: Record<string, string> = {}
+          for (const [key, value] of Object.entries(val)) {
+            if (typeof value === 'string') {
+              result[key] = value
+            }
+          }
+          return result
         }
         return {}
       },
