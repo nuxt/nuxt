@@ -148,7 +148,6 @@ export default defineResolvers({
      *
      * @see https://github.com/tc39/proposal-decorators
      */
-    runtimeBaseURL: false,
     decorators: false,
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
