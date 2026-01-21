@@ -289,6 +289,24 @@ export interface ConfigSchema {
      * Customize Nuxt SPA loading template element attributes.
      */
     spaLoaderAttrs: SerializableHtmlAttributes
+
+    /**
+     * Additional entries to include in the import map.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     importMap: {
+     *       'lodash': 'https://cdn.example.com/lodash.esm.js'
+     *     }
+     *   }
+     * })
+     * ```
+     */
+    importMap: NuxtAppConfig['importMap']
   }
 
   /**
