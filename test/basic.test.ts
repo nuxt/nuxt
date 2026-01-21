@@ -2306,6 +2306,13 @@ describe.skipIf(isDev)('dynamic paths', () => {
     expect(html).toContain('<script type="importmap">{"imports":{"#entry":"./assets')
   })
 
+  it.skipIf(isDev || isWebpack)('should include custom import map entries from app.importMap', async () => {
+    await startServer()
+
+    const html = await $fetch<string>('/')
+    expect(html).toContain(',"lodash":"https://cdn.example.com/lodash.esm.js"}}</script>')
+  })
+
   it('restore server', async () => {
     await startServer()
   })
