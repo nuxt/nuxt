@@ -627,79 +627,79 @@ describe('composables', () => {
 
   it('correctly infers DataT from transform when using getCachedData with explicit types (#29567)', () => {
     type ApiResponseFoo = { foo: string }
-    
+
     // This should infer DataT as string from transform, not from getCachedData
     const { data } = useAsyncData(
       'test-foo',
-      async () => Promise.resolve<ApiResponseFoo>({ foo: 'hello, world' }),
+      () => Promise.resolve<ApiResponseFoo>({ foo: 'hello, world' }),
       {
-        transform: (response) => response.foo,
+        transform: response => response.foo,
         getCachedData: (key: string) => {
           const nuxtApp = useNuxtApp()
           return (nuxtApp._asyncData[key]?.data as unknown as string) ?? undefined
         },
-      }
+      },
     )
-    
+
     // DataT should be string (from transform), not ApiResponseFoo
     expectTypeOf(data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
-    
+
     // The handler should accept ApiResponseFoo, not string
     useAsyncData(
       'test-foo-2',
-      async () => Promise.resolve<ApiResponseFoo>({ foo: 'test' }),
+      () => Promise.resolve<ApiResponseFoo>({ foo: 'test' }),
       {
-        transform: (response) => response.foo,
+        transform: response => response.foo,
         getCachedData: (key: string) => {
           const nuxtApp = useNuxtApp()
           return (nuxtApp._asyncData[key]?.data as unknown as string) ?? undefined
         },
-      }
+      },
     )
   })
 
   it('works with getCachedData without explicit parameter types', () => {
     type ApiResponse = { value: number }
-    
+
     const { data } = useAsyncData(
       'test-no-explicit',
-      async () => Promise.resolve<ApiResponse>({ value: 42 }),
+      () => Promise.resolve<ApiResponse>({ value: 42 }),
       {
-        transform: (response) => response.value,
+        transform: response => response.value,
         getCachedData: (key) => {
           // Without explicit types, should still work
           return useNuxtApp().payload.data[key] as number | undefined
         },
-      }
+      },
     )
-    
+
     expectTypeOf(data).toEqualTypeOf<Ref<number | DefaultAsyncDataValue>>()
   })
 
   it('works with getCachedData using nuxtApp parameter', () => {
     type ApiResponse = { count: number }
-    
+
     const { data } = useAsyncData(
       'test-nuxtapp-param',
-      async () => Promise.resolve<ApiResponse>({ count: 10 }),
+      () => Promise.resolve<ApiResponse>({ count: 10 }),
       {
-        transform: (response) => response.count,
+        transform: response => response.count,
         getCachedData: (key: string, nuxtApp) => {
           // Using nuxtApp parameter directly
           return (nuxtApp._asyncData[key]?.data as unknown as number) ?? undefined
         },
-      }
+      },
     )
-    
+
     expectTypeOf(data).toEqualTypeOf<Ref<number | DefaultAsyncDataValue>>()
   })
 
   it('works with async transform function', () => {
     type ApiResponse = { data: string }
-    
+
     const { data } = useAsyncData(
       'test-async-transform',
-      async () => Promise.resolve<ApiResponse>({ data: 'test' }),
+      () => Promise.resolve<ApiResponse>({ data: 'test' }),
       {
         transform: async (response) => {
           await Promise.resolve()
@@ -708,9 +708,9 @@ describe('composables', () => {
         getCachedData: (key: string) => {
           return useNuxtApp().payload.data[key] as string | undefined
         },
-      }
+      },
     )
-    
+
     expectTypeOf(data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
   })
 })
