@@ -16,7 +16,7 @@ import type { NuxtAppLiterals } from 'nuxt/app'
 import type { NuxtIslandContext } from './types'
 import type { RouteMiddleware } from './composables/router'
 import type { NuxtError } from './composables/error'
-import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
@@ -136,7 +136,7 @@ interface _NuxtApp {
     /** @internal */
     _init: boolean
     /** @internal */
-    _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+    _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>
     /** @internal */
     _hash?: Record<string, string | undefined>
     /** @internal */

@@ -502,6 +502,33 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(2)
   })
 
+  it('should resolve to latest value when watched dependency is rapidly updated', async () => {
+    const route = ref('/')
+    const promiseFn = vi.fn(() => Promise.resolve(route.value))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [route] })
+        return () => h('div', [data.value])
+      },
+    })
+
+    await mountSuspended(component)
+
+    await mountSuspended(component)
+
+    const c = await mountSuspended(component)
+
+    for (let i = 0; i < 20; i++) {
+      route.value = `/about/${i}`
+      if (i % 7 === 0) {
+        await nextTick()
+      }
+    }
+    await vi.waitFor(() => {
+      expect(c.html()).toBe('<div>/about/19</div>')
+    })
+  })
+
   it('should work correctly with nested components accessing the same asyncData', async () => {
     const useCustomData = () => useAsyncData(uniqueKey, async () => {
       await Promise.resolve()
