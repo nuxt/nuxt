@@ -44,7 +44,9 @@ const props = defineProps<{
 
 <template>
   <div>
-    <aside v-if="sidebar">Sidebar</aside>
+    <aside v-if="sidebar">
+      Sidebar
+    </aside>
     <main>
       <h1>{{ title }}</h1>
       <slot />
