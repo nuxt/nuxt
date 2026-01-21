@@ -13,6 +13,7 @@ export default (nitroApp: NitroApp) => {
 
   nitroApp.hooks.hook('render:response', (_, { event }) => {
     const headerValue = headerStringFromObject(cspConfig.value)
-    setResponseHeader(event, 'content-security-policy', headerValue)
+    const headerName = cspConfig.reportOnly ? 'content-security-policy-report-only' : 'content-security-policy'
+    setResponseHeader(event, headerName, headerValue)
   })
 }
