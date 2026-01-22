@@ -1,0 +1,8 @@
+{
+  "name": "fixture-lazy-hydration",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "nuxt": "workspace:*"
+  }
+}
