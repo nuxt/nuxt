@@ -1118,21 +1118,42 @@ describe('useAsyncData', () => {
   it('should work when AbortSignal.reason is unavailable (older browsers)', async () => {
     vi.useFakeTimers()
 
+    const originalAbortSignalAny = AbortSignal.any
+
     // Mock older AbortController without .reason property
-    class OldAbortController {
-      signal: any = {
-        aborted: false,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
+    class OldAbortSignal {
+      aborted = false
+      private listeners: Array<{ event: string, callback: () => void }> = []
+
+      addEventListener (event: string, callback: () => void, _options?: { once?: boolean, signal?: AbortSignal }) {
+        this.listeners.push({ event, callback })
       }
 
-      abort () {
-        this.signal.aborted = true
+      removeEventListener (event: string, callback: () => void) {
+        this.listeners = this.listeners.filter(l => !(l.event === event && l.callback === callback))
+      }
+
+      dispatchAbort () {
+        this.aborted = true
         // No reason property in old browsers
+        for (const listener of this.listeners.filter(l => l.event === 'abort')) {
+          listener.callback()
+        }
+      }
+    }
+
+    class OldAbortController {
+      signal = new OldAbortSignal()
+
+      abort () {
+        this.signal.dispatchAbort()
       }
     }
 
     vi.stubGlobal('AbortController', OldAbortController)
+    // Also remove AbortSignal.any to force polyfill usage
+    // @ts-expect-error - deliberately removing method
+    AbortSignal.any = undefined
 
     const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 1000)))
 
@@ -1144,6 +1165,7 @@ describe('useAsyncData', () => {
 
     expect(status.value).toBe('idle')
 
+    AbortSignal.any = originalAbortSignalAny
     vi.unstubAllGlobals()
     vi.useRealTimers()
   })
