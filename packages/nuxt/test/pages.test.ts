@@ -855,6 +855,7 @@ export const pageTests: Array<{
         name: 'products',
         path: '/products',
         file: `${pagesDir}/products.vue`,
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
         alias: ['/товары', '/produits', '/製品'],
         children: [],
       },

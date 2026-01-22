@@ -353,6 +353,7 @@
     {
       "alias": "["/товары","/produits","/製品"]",
       "component": "() => import("pages/products.vue")",
+      "meta": "mockMeta || {}",
       "name": ""products"",
       "path": ""/products"",
     },
