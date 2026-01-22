@@ -86,6 +86,8 @@ export interface NuxtSSRContext extends SSRContext {
   }
   /** @internal */
   ['~preloadManifest']?: boolean
+  /** @internal */
+  ['~lazyHydratedModules']?: Set<string>
 }
 
 export interface NuxtPayload {

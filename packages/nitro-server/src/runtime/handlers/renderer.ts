@@ -251,6 +251,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
+    // Remove lazy hydrated modules from ssrContext.modules so they don't get preloaded
+    // (CSS links are already added above, this only affects JS preloads)
+    if (ssrContext['~lazyHydratedModules']) {
+      for (const id of ssrContext['~lazyHydratedModules']) {
+        ssrContext.modules?.delete(id)
+      }
+    }
+
     // TODO: add priorities based on Capo
     ssrContext.head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
