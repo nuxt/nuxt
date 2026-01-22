@@ -56,7 +56,7 @@ The [`modules/`](/docs/3.x/directory-structure/modules) directory is the directo
 
 ## Layers Directory
 
-The [`layers/`](/docs/4.x/directory-structure/layers) directory allows you to organize and share reusable code, components, composables, and configurations. Layers within this directory are automatically registered in your project.
+The [`layers/`](/docs/3.x/directory-structure/layers) directory allows you to organize and share reusable code, components, composables, and configurations. Layers within this directory are automatically registered in your project.
 
 ## Nuxt Files
 

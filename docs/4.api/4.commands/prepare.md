@@ -19,21 +19,21 @@ The `prepare` command creates a [`.nuxt`](/docs/3.x/directory-structure/nuxt) di
 ## Arguments
 
 <!--prepare-args-->
-Argument | Description
---- | ---
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/prepare-args-->
 
 ## Options
 
 <!--prepare-opts-->
-Option | Default | Description
---- | --- | ---
-`--dotenv` |  | Path to `.env` file to load, relative to the root directory
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
-`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
+| Option                               | Default | Description                                                                                                                                          |
+|--------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--dotenv`                           |         | Path to `.env` file to load, relative to the root directory                                                                                          |
+| `--cwd=<directory>`                  |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)                                                                     |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level                                                                                                                         |
+| `--envName`                          |         | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server) |
+| `-e, --extends=<layer-name>`         |         | Extend from a Nuxt layer                                                                                                                             |
 <!--/prepare-opts-->
 
 ::note

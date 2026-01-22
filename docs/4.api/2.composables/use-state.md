@@ -53,6 +53,6 @@ export function useState<T> (key: string, init?: () => T | Ref<T>): Ref<T>
 
 This error occurs when you try to store a non-serializable payload with `useState`, such as class instances.
 
-If you want to store class instances with `useState` that are not supported by Nuxt, you can use [`definePayloadPlugin`](/docs/4.x/api/composables/use-nuxt-app#custom-reducerreviver) to add a custom serializer and deserializer for your classes.
+If you want to store class instances with `useState` that are not supported by Nuxt, you can use [`definePayloadPlugin`](/docs/3.x/api/composables/use-nuxt-app#custom-reducerreviver) to add a custom serializer and deserializer for your classes.
 
-:read-more{to="/docs/4.x/api/composables/use-nuxt-app#payload"}
+:read-more{to="/docs/3.x/api/composables/use-nuxt-app#payload"}

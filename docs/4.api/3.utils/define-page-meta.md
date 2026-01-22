@@ -81,7 +81,7 @@ interface PageMeta {
 
   - **Type**: `string[]`
 
-    Route groups the page belongs to, based on the folder structure. Automatically populated for pages within [route groups](/docs/4.x/guide/directory-structure/app/pages#route-groups).
+    Route groups the page belongs to, based on the folder structure. Automatically populated for pages within [route groups](/docs/3.x/guide/directory-structure/app/pages#route-groups).
 
   **`keepalive`**
 

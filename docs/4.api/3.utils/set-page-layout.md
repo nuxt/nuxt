@@ -23,7 +23,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
 You can pass props to the layout by providing an object as the second argument:
 
-```ts [app/middleware/admin-layout.ts]
+```ts [middleware/admin-layout.ts]
 export default defineNuxtRouteMiddleware((to) => {
   setPageLayout('admin', {
     sidebar: true,
@@ -34,7 +34,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
 The layout can then receive these props:
 
-```vue [app/layouts/admin.vue]
+```vue [layouts/admin.vue]
 <script setup lang="ts">
 const props = defineProps<{
   sidebar?: boolean

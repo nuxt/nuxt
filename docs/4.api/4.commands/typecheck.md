@@ -19,20 +19,20 @@ The `typecheck` command runs [`vue-tsc`](https://github.com/vuejs/language-tools
 ## Arguments
 
 <!--typecheck-args-->
-Argument | Description
---- | ---
-`ROOTDIR="."` | Specifies the working directory (default: `.`)
+| Argument      | Description                                    |
+|---------------|------------------------------------------------|
+| `ROOTDIR="."` | Specifies the working directory (default: `.`) |
 <!--/typecheck-args-->
 
 ## Options
 
 <!--typecheck-opts-->
-Option | Default | Description
---- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--dotenv` |  | Path to `.env` file to load, relative to the root directory
-`-e, --extends=<layer-name>` |  | Extend from a Nuxt layer
+| Option                               | Default | Description                                                                      |
+|--------------------------------------|---------|----------------------------------------------------------------------------------|
+| `--cwd=<directory>`                  |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`) |
+| `--logLevel=<silent\|info\|verbose>` |         | Specify build-time log level                                                     |
+| `--dotenv`                           |         | Path to `.env` file to load, relative to the root directory                      |
+| `-e, --extends=<layer-name>`         |         | Extend from a Nuxt layer                                                         |
 <!--/typecheck-opts-->
 
 ::note
