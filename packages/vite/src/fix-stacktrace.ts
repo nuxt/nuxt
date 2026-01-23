@@ -1,7 +1,7 @@
 import type { NitroApp } from 'nitropack/types'
 import type { ViteNodeRunner } from 'vite-node/client'
 
-export default (nitroApp: NitroApp) => {
+export default (nitroApp: NitroApp): void => {
   let runner: ViteNodeRunner
   nitroApp.hooks.hook('error', async (error) => {
     // @ts-expect-error post-build file
