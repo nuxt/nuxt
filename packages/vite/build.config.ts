@@ -4,10 +4,10 @@ export default defineBuildConfig({
   entries: [
     {
       type: 'bundle',
-      input: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner'],
+      input: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner', 'src/fix-stacktrace'],
       dts: { oxc: true },
       rolldown: {
-        external: ['#vite-node'],
+        external: ['#vite-node', '#build/dist/server/runner.mjs'],
       },
     },
   ],

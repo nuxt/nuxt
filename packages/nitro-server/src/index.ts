@@ -580,7 +580,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
-      exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
+      exclude: [
+        /node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/,
+        // Allow @nuxt/vite runtime plugins to import #build aliases for dev-only functionality
+        /(packages|@nuxt)[\\/]vite(?:-nightly)?[\\/](src|dist)[\\/]/,
+        ...sharedPatterns,
+      ],
     }),
   )
 

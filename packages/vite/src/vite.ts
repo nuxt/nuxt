@@ -47,6 +47,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.options.modulesDir.push(distDir)
 
+  // Register Nitro plugin to fix SSR error stacktraces in dev mode
+  if (nuxt.options.dev) {
+    const nitro = useNitro()
+    nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
+    nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
+    nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
+  }
+
   let allowDirs = [
     nuxt.options.appDir,
     nuxt.options.workspaceDir,

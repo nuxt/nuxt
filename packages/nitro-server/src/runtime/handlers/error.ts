@@ -7,18 +7,10 @@ import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { isJsonRequest } from '../utils/error'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
-let runner: { ssrFixStacktrace(error: Error): Promise<Error> } | undefined
-
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
   if (event.handled || isJsonRequest(event)) {
     // let Nitro handle JSON errors
     return
-  }
-
-  if (import.meta.dev) {
-    // @ts-expect-error file produced after build
-    runner ||= await import('#build/dist/server/server.mjs').then(r => r.runner)
-    await runner!.ssrFixStacktrace(error)
   }
 
   // invoke default Nitro error handler (which will log appropriately if required)

@@ -7,8 +7,6 @@ import runner from '#vite-node-runner'
 
 let render: (ssrContext: NuxtSSRContext) => Promise<any>
 
-export { runner }
-
 export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
