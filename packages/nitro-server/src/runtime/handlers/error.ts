@@ -12,7 +12,6 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     // let Nitro handle JSON errors
     return
   }
-
   // invoke default Nitro error handler (which will log appropriately if required)
   const defaultRes = await defaultHandler(error, event, { json: true })
 
