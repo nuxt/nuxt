@@ -1,6 +1,5 @@
 import { computed, getCurrentInstance, getCurrentScope, inject, isShallow, nextTick, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, queuePostFlushCb, ref, shallowRef, toRef, toValue, unref, watch } from 'vue'
 import type { MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
-import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -131,6 +130,66 @@ export interface _AsyncData<DataT, ErrorT> {
   clear: () => void
   error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
+}
+
+export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
+  fn: (...args: ArgumentsT) => PromiseLike<ReturnT> | ReturnT,
+) {
+  let leadingValue: PromiseLike<ReturnT> | ReturnT
+
+  let active: boolean
+
+  let resolveList: Array<(val: unknown) => void> = []
+
+  let currentPromise: Promise<ReturnT> | undefined
+
+  let trailingArgs: any[] | undefined
+
+  const applyFn = (_this, args) => {
+    currentPromise = _applyPromised(fn, _this, args)
+    currentPromise.finally(() => {
+      currentPromise = undefined
+      if (trailingArgs && !active) {
+        const promise = applyFn(_this, trailingArgs)
+        trailingArgs = undefined
+        return promise
+      }
+    })
+    return currentPromise
+  }
+
+  return function (...args: ArgumentsT) {
+    trailingArgs = args
+
+    if (currentPromise) {
+      return currentPromise
+    }
+    return new Promise<ReturnT>((resolve) => {
+      const shouldCallNow = !active
+
+      active = true
+      queuePostFlushCb(() => {
+        active = false
+        const promise = leadingValue
+        trailingArgs = undefined
+        for (const _resolve of resolveList) {
+          _resolve(promise)
+        }
+        resolveList = []
+      })
+
+      if (shouldCallNow) {
+        leadingValue = applyFn(this, args)
+        resolve(leadingValue)
+      } else {
+        resolveList.push(resolve)
+      }
+    })
+  }
+}
+
+async function _applyPromised (fn: () => any, _this: unknown, args: any[]) {
+  return await fn.apply(_this, args)
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
@@ -384,12 +443,6 @@ export function useAsyncData<
     const unsubParamsWatcher = options.watch
       ? watch(options.watch, () => {
           if (keyChanging) { return } // avoid double execute while the key switch is being processed
-          // if the 0ms debounce is pending (same tick) force flush the debounce post watcher flush
-          if (nuxtApp._asyncData[key.value]?._execute.isPending()) {
-            queuePostFlushCb(() => {
-              nuxtApp._asyncData[key.value]?._execute.flush()
-            })
-          }
           nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: options.dedupe })
         })
       : () => {}
@@ -640,14 +693,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-// TODO: export from `perfect-debounce`
-export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: ArgumentsT) => Promise<ReturnT>) & {
-  cancel: () => void
-  flush: () => Promise<ReturnT> | undefined
-  isPending: () => boolean
-}
-
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
 
 function createAsyncData<
   ResT,
@@ -791,7 +837,7 @@ function createAsyncData<
       nuxtApp._asyncDataPromises[key] = promise
       return nuxtApp._asyncDataPromises[key]!
     },
-    _execute: debounce((...args) => asyncData.execute(...args), 0, { leading: true }),
+    _execute: debounceTick((...args) => asyncData.execute(...args)),
     _default: options.default!,
     _deps: 0,
     _init: true,
