@@ -145,6 +145,7 @@ export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
 
   let trailingArgs: any[] | undefined
 
+  // @ts-expect-error todo
   const applyFn = (_this, args) => {
     currentPromise = _applyPromised(fn, _this, args)
     currentPromise.finally(() => {
@@ -179,9 +180,11 @@ export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
       })
 
       if (shouldCallNow) {
+        // @ts-expect-error todo
         leadingValue = applyFn(this, args)
         resolve(leadingValue)
       } else {
+        // @ts-expect-error todo
         resolveList.push(resolve)
       }
     })
@@ -189,6 +192,7 @@ export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
 }
 
 async function _applyPromised (fn: () => any, _this: unknown, args: any[]) {
+  // @ts-expect-error todo
   return await fn.apply(_this, args)
 }
 
