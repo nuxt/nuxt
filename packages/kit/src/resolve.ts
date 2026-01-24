@@ -6,10 +6,10 @@ import { type GlobOptions, glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { parseNodeModulePath } from 'mlly'
-import { directoryToURL } from './internal/esm'
-import { tryUseNuxt } from './context'
-import { isIgnored } from './ignore'
-import { type RequirePicked, toArray } from './utils'
+import { directoryToURL } from './internal/esm.ts'
+import { tryUseNuxt } from './context.ts'
+import { isIgnored } from './ignore.ts'
+import { type RequirePicked, toArray } from './utils.ts'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */

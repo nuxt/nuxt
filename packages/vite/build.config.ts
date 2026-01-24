@@ -1,21 +1,14 @@
-import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin } from '../../debug/build-config.ts'
+import { defineBuildConfig } from 'obuild/config'
 
 export default defineBuildConfig({
-  declaration: true,
   entries: [
-    'src/index',
-    { input: 'src/runtime/', outDir: 'dist/runtime', format: 'esm' },
-  ],
-  hooks: {
-    'rollup:options' (ctx, options) {
-      addRollupTimingsPlugin(options)
+    {
+      type: 'bundle',
+      input: ['src/index', 'src/vite-node', 'src/vite-node-entry'],
+      dts: { oxc: true },
+      rolldown: {
+        external: ['#vite-node'],
+      },
     },
-  },
-  dependencies: [
-    'vue',
-  ],
-  externals: [
-    '@nuxt/schema',
   ],
 })

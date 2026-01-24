@@ -181,10 +181,13 @@ export default withMatrix({
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      '/route-rules/layout': { appLayout: 'custom' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
+      '/isr': { isr: 60 },
+      '/swr': { swr: 60 },
     },
     prerender: {
       routes: [

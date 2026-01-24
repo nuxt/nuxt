@@ -1,9 +1,9 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
-import type { RouterViewSlotProps } from '../src/pages/runtime/utils'
-import { generateRouteKey } from '../src/pages/runtime/utils'
+import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
+import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 describe('pages:generateRoutesFromFiles', () => {
@@ -47,7 +47,7 @@ describe('pages:generateRoutesFromFiles', () => {
           result = generateRoutesFromFiles(files).map((route, index) => {
             return {
               ...route,
-              meta: test.files![index]!.meta,
+              meta: test.files![index]!.meta ?? route.meta,
             }
           })
 
@@ -616,6 +616,33 @@ export const pageTests: Array<{
     ],
   },
   {
+    description: 'should handle unicode and special characters in page paths',
+    files: [
+      { path: `${pagesDir}/测试.vue` },
+      { path: `${pagesDir}/文档.vue` },
+      { path: `${pagesDir}/文档/介绍.vue` },
+      { path: `${pagesDir}/خاص:جديد.vue` },
+    ],
+    output: [
+      { name: '测试', path: '/测试', file: `${pagesDir}/测试.vue`, children: [] },
+      { name: '文档', path: '/文档', file: `${pagesDir}/文档.vue`, children: [
+        { name: '文档-介绍', path: '介绍', file: `${pagesDir}/文档/介绍.vue`, children: [] },
+      ] },
+      { name: 'خاص:جديد', path: '/خاص\\:جديد', file: `${pagesDir}/خاص:جديد.vue`, children: [] },
+    ],
+  },
+  {
+    description: 'should escape special chars in static paths',
+    files: [
+      { path: `${pagesDir}/a&b.vue` },
+      { path: `${pagesDir}/a\\b.vue` },
+    ],
+    output: [
+      { name: 'a&b', path: '/a&b', file: `${pagesDir}/a&b.vue`, children: [] },
+      { name: 'a\\b', path: '/a\\\\b', file: `${pagesDir}/a\\b.vue`, children: [] },
+    ],
+  },
+  {
     description: 'should not merge required param as a child of optional param',
     files: [
       { path: `${pagesDir}/[[foo]].vue` },
@@ -809,6 +836,30 @@ export const pageTests: Array<{
     ],
   },
   {
+    description: 'should handle unicode characters in alias paths',
+    files: [
+      {
+        path: `${pagesDir}/products.vue`,
+        template: `
+            <script setup lang="ts">
+            definePageMeta({
+              alias: ['/товары', '/produits', '/製品']
+            })
+            </script>
+          `,
+      },
+    ],
+    output: [
+      {
+        name: 'products',
+        path: '/products',
+        file: `${pagesDir}/products.vue`,
+        alias: ['/товары', '/produits', '/製品'],
+        children: [],
+      },
+    ],
+  },
+  {
     description: 'route without file',
     output: [
       {
@@ -937,26 +988,34 @@ export const pageTests: Array<{
       { path: `${pagesDir}/(foo)/index.vue` },
       { path: `${pagesDir}/(foo)/about.vue` },
       { path: `${pagesDir}/(bar)/about/index.vue` },
+      { path: `${pagesDir}/(bar)/about/(foo)/index.vue` },
     ],
     output: [
       {
         name: 'index',
         path: '/',
         file: `${pagesDir}/(foo)/index.vue`,
-        meta: undefined,
+        meta: { groups: ['foo'] },
         children: [],
       },
       {
         path: '/about',
         file: `${pagesDir}/(foo)/about.vue`,
-        meta: undefined,
+        meta: { groups: ['foo'] },
         children: [
-
           {
-            name: 'about',
             path: '',
             file: `${pagesDir}/(bar)/about/index.vue`,
-            children: [],
+            meta: { groups: ['bar'] },
+            children: [
+              {
+                name: 'about',
+                path: '',
+                file: `${pagesDir}/(bar)/about/(foo)/index.vue`,
+                meta: { groups: ['bar', 'foo'] },
+                children: [],
+              },
+            ],
           },
         ],
       },

@@ -2,8 +2,8 @@ import { pathToFileURL } from 'node:url'
 import { interopDefault } from 'mlly'
 import { resolveModulePath } from 'exsolve'
 import { createJiti } from 'jiti'
-import { getUserCaller, warn } from './trace'
-import { resolveAlias } from '../resolve'
+import { getUserCaller, warn } from './trace.ts'
+import { resolveAlias } from '../resolve.ts'
 
 export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */

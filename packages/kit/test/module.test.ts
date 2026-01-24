@@ -8,7 +8,7 @@ import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
 
-import { defineNuxtModule, installModule, loadNuxt } from '../src'
+import { defineNuxtModule, installModule, loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -132,6 +132,27 @@ export default Object.assign((options) => {
             moduleDependencies: {
               'some-module': {},
               'non-existent-module': { optional: true },
+            },
+          }),
+        ],
+      },
+    })
+
+    expect(globalThis.someModuleLoaded).toBe(1)
+  })
+
+  it('should resolve moduleDependencies provided as async functions', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'foo' },
+            async moduleDependencies () {
+              await Promise.resolve()
+              return {
+                'some-module': {},
+              }
             },
           }),
         ],

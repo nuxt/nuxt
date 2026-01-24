@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite'
 import { transform } from 'esbuild'
-import defu from 'defu'
+import { defu } from 'defu'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { RenderedModule } from 'rollup'
 

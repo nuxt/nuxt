@@ -1,9 +1,10 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack/types'
 import { defu } from 'defu'
-import { useNuxt } from './context'
-import { logger } from './logger'
-import { toArray } from './utils'
+
+import { useNuxt } from './context.ts'
+import { logger } from './logger.ts'
+import type { NitroRouteConfig } from './nitro-types.ts'
+import { toArray } from './utils.ts'
 
 export function extendPages (cb: NuxtHooks['pages:extend']): void {
   useNuxt().hook('pages:extend', cb)
@@ -22,8 +23,8 @@ export function extendRouteRules (route: string, rule: NitroRouteConfig, options
   for (const opts of [nuxt.options, nuxt.options.nitro]) {
     opts.routeRules ||= {}
     opts.routeRules[route] = options.override
-      ? defu(rule, opts.routeRules[route])
-      : defu(opts.routeRules[route], rule)
+      ? defu(rule, opts.routeRules[route] as any)
+      : defu(opts.routeRules[route] as any, rule)
   }
 }
 

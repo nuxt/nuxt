@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto'
 import { afterAll, describe, expect, it } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
-import { createApp, resolveApp } from '../src/core/app'
-import { loadNuxt } from '../src'
+import { createApp, resolveApp } from '../src/core/app.ts'
+import { loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -35,7 +35,7 @@ describe('resolveApp', () => {
           {
             "global": true,
             "name": "manifest-route-rule",
-            "path": "<repoRoot>/packages/nuxt/src/app/middleware/manifest-route-rule.ts",
+            "path": "<repoRoot>/packages/nuxt/src/app/middleware/route-rules.ts",
           },
         ],
         "plugins": [
