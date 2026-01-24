@@ -37,6 +37,17 @@ const logLevelMapReverse = {
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
+
+// Essential imports that must be available regardless of nitroAutoImports setting.
+// These are internal functions required for Nuxt's core functionality (e.g., app.config.ts).
+function getCoreNitroImports () {
+  return [
+    { as: '__buildAssetsURL', name: 'buildAssetsURL', from: resolve(distDir, 'runtime/utils/paths') },
+    { as: '__publicAssetsURL', name: 'publicAssetsURL', from: resolve(distDir, 'runtime/utils/paths') },
+    // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
+    { as: 'defineAppConfig', name: 'defineAppConfig', from: resolve(distDir, 'runtime/utils/config'), priority: -1 },
+  ]
+}
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
@@ -148,29 +159,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       version: nuxtVersion || nitroBuilder.version,
     },
     imports: nuxt.options.experimental.nitroAutoImports === false
-      ? false
+      ? {
+          imports: getCoreNitroImports(),
+          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+        }
       : {
           autoImport: nuxt.options.imports.autoImport as boolean,
           dirs: [...sharedDirs],
-          imports: [
-            {
-              as: '__buildAssetsURL',
-              name: 'buildAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              as: '__publicAssetsURL',
-              name: 'publicAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
-              as: 'defineAppConfig',
-              name: 'defineAppConfig',
-              from: resolve(distDir, 'runtime/utils/config'),
-              priority: -1,
-            },
-          ],
+          imports: getCoreNitroImports(),
           presets: [
             {
               from: 'h3',

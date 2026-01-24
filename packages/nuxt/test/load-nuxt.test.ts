@@ -167,6 +167,23 @@ describe('loadNuxt', () => {
 
     await nuxt.close()
   })
+
+  it('provides defineAppConfig import when nitroAutoImports is disabled (#34142)', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        experimental: { nitroAutoImports: false },
+      },
+    })
+
+    const nitroImports = (nuxt as any)._nitro?.options.imports?.imports ?? []
+    const hasDefineAppConfig = nitroImports.some((i: { name: string }) => i.name === 'defineAppConfig')
+
+    expect(hasDefineAppConfig).toBe(true)
+
+    await nuxt.close()
+  })
 })
 
 const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
