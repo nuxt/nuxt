@@ -2,7 +2,7 @@ export const runtimeDependencies = [
   // other deps
   'devalue',
   'klona',
-  // unjs ecosystem
+  // h3js and unjs ecosystem
   'defu',
   'ufo',
   'h3',
