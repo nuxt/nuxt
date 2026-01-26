@@ -619,8 +619,8 @@ importers:
         specifier: 5.6.0
         version: 5.6.0
       unplugin:
-        specifier: ^2.3.11
-        version: 2.3.11
+        specifier: ^3.0.0
+        version: 3.0.0
       unplugin-vue-router:
         specifier: ^0.19.2
         version: 0.19.2(@vue/compiler-sfc@3.5.27)(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
@@ -776,8 +776,8 @@ importers:
         specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
       unplugin:
-        specifier: ^2.3.11
-        version: 2.3.11
+        specifier: ^3.0.0
+        version: 3.0.0
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.104.1))(webpack@5.104.1)
@@ -1229,8 +1229,8 @@ importers:
         specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
       unplugin:
-        specifier: ^2.3.11
-        version: 2.3.11
+        specifier: ^3.0.0
+        version: 3.0.0
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.104.1))(webpack@5.104.1)
