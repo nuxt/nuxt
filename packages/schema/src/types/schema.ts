@@ -1559,8 +1559,8 @@ export interface ConfigSchema {
     /**
      * Whether to enable a compatibility layer for Nitro auto imports.
      * We recommend migrating to direct imports instead.
-     * @default false
-     * @default true with compatibilityVersion >= 5
+     * @default true
+     * @default false with compatibilityVersion >= 5
      */
     nitroAutoImports: boolean
   }
