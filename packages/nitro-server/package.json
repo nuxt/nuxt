@@ -57,7 +57,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "nuxt": "workspace:*",
-    "obuild": "0.4.20",
+    "obuild": "0.4.14",
     "vitest": "3.2.4"
   },
   "engines": {
