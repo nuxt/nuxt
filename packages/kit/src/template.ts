@@ -383,12 +383,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
   const declaration = [
-    ...references.map((ref) => {
-      if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
-      }
-      return `/// <reference ${renderAttrs(ref)} />`
-    }),
+    ...references.map(ref => renderReference(ref, nuxt.options.buildDir)),
     ...declarations,
     '',
     'export {}',
@@ -432,16 +427,11 @@ function sortTsPaths (paths: Record<string, string[]>) {
   }
 }
 
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
+function renderReference (ref: TSReference, baseDir: string) {
+  const stuff = 'path' in ref
+    ? `path="${isAbsolute(ref.path) ? relative(baseDir, ref.path) : ref.path}"`
+    : `types="${ref.types}"`
+  return `/// <reference ${stuff} />`
 }
 
 const RELATIVE_WITH_DOT_RE = /^([^.])/

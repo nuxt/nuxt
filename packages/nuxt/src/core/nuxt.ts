@@ -260,10 +260,10 @@ async function initNuxt (nuxt: Nuxt) {
     })
   })
 
-  const serverBuilderTypePath = typeof nuxt.options.server.builder === 'string'
+  const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
     ? nuxt.options.server.builder === '@nuxt/nitro-server'
-      ? resolveModulePath(nuxt.options.server.builder, { from: import.meta.url })
-      : nuxt.options.server.builder
+      ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
+      : { types: nuxt.options.server.builder }
     : undefined
 
   // Add nuxt types
@@ -281,13 +281,20 @@ async function initNuxt (nuxt: Nuxt) {
     // Add module augmentations directly to NuxtConfig
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+    opts.references.push({ path: resolveModulePath('@nuxt/vite-builder', { from: import.meta.url }).replace('.mjs', '.d.mts') })
 
     if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
       opts.references.push({ types: nuxt.options.builder })
     }
 
-    if (serverBuilderTypePath) {
-      opts.references.push({ types: serverBuilderTypePath })
+    const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
+      ? nuxt.options.server.builder === '@nuxt/nitro-server'
+        ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
+        : { types: nuxt.options.server.builder }
+      : undefined
+
+    if (serverBuilderReference) {
+      opts.references.push(serverBuilderReference)
     }
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
@@ -307,8 +314,8 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
 
-    if (serverBuilderTypePath) {
-      opts.references.push({ types: serverBuilderTypePath })
+    if (serverBuilderReference) {
+      opts.references.push(serverBuilderReference)
     }
   })
 

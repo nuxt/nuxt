@@ -8,14 +8,9 @@ export const nitroSchemaTemplate: NuxtTemplate = {
     const declarations = [] as string[]
     await nuxt.callHook('nitro:prepare:types', { references, declarations })
 
-    const sourceDir = join(nuxt.options.buildDir, 'types')
+    const typesDir = join(nuxt.options.buildDir, 'types')
     const lines = [
-      ...references.map((ref) => {
-        if ('path' in ref && isAbsolute(ref.path)) {
-          ref.path = relative(sourceDir, ref.path)
-        }
-        return `/// <reference ${renderAttrs(ref)} />`
-      }),
+      ...references.map(ref => renderReference(ref, typesDir)),
       ...declarations,
     ]
 
@@ -57,14 +52,10 @@ declare module 'nitropack' {
 `
   },
 }
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
-}
 
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
+function renderReference (ref: TSReference, baseDir: string) {
+  const stuff = 'path' in ref
+    ? `path="${isAbsolute(ref.path) ? relative(baseDir, ref.path) : ref.path}"`
+    : `types="${ref.types}"`
+  return `/// <reference ${stuff} />`
 }
