@@ -29,11 +29,11 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "h3": "1.15.5",
-    "h3-next": "npm:h3@2.0.1-rc.9",
+    "h3-next": "npm:h3@2.0.1-rc.11",
     "nitropack": "2.13.1",
-    "obuild": "0.4.14",
-    "rolldown": "1.0.0-beta.60",
-    "rollup": "4.55.2",
+    "obuild": "0.4.20",
+    "rolldown": "1.0.0-rc.1",
+    "rollup": "4.56.0",
     "vue": "3.5.27"
   },
   "dependencies": {
@@ -58,7 +58,7 @@
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.6",
     "rollup-plugin-visualizer": "^6.0.5",
-    "seroval": "^1.4.2",
+    "seroval": "^1.5.0",
     "std-env": "^3.10.0",
     "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
