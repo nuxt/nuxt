@@ -106,10 +106,9 @@
     "unctx": "^2.5.0",
     "unimport": "^5.6.0",
     "unplugin": "^2.3.11",
-    "unplugin-vue-router": "^0.19.2",
     "untyped": "^2.0.0",
     "vue": "^3.5.27",
-    "vue-router": "^4.6.4"
+    "vue-router": "5.0.0-beta.2"
   },
   "devDependencies": {
     "@nuxt/scripts": "0.13.2",

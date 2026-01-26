@@ -1174,7 +1174,7 @@ export interface ConfigSchema {
     localLayerAliases: boolean
 
     /**
-     * Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router).
+     * Enable the new experimental typed router using vue-router.
      *
      * @default false
      */
