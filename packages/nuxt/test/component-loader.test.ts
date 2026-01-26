@@ -24,9 +24,10 @@ describe('components:loader', () => {
     const code = await transform(sfc, '/pages/index.vue')
     expect(code).toMatchInlineSnapshot(`
       "import __nuxt_component_0 from '../components/MyComponent.vue';
-      import { defineAsyncComponent, resolveComponent, createElementBlock, openBlock, Fragment, createVNode, unref } from 'vue';
+      import { createLazyComponent } from '../client-runtime.mjs';
+      import { resolveComponent, createElementBlock, openBlock, Fragment, createVNode, unref } from 'vue';
 
-      const __nuxt_component_0_lazy = defineAsyncComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy = createLazyComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
 
 
       const _sfc_main = {
@@ -98,9 +99,10 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     const code = await transform(component, '/pages/about.tsx')
     expect(code).toMatchInlineSnapshot(`
       "import __nuxt_component_0 from '../components/MyComponent.vue';
-      import { defineAsyncComponent, defineComponent, createVNode, resolveComponent } from 'vue';
+      import { createLazyComponent } from '../client-runtime.mjs';
+      import { defineComponent, createVNode, resolveComponent } from 'vue';
 
-      const __nuxt_component_0_lazy = defineAsyncComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_lazy = createLazyComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       var about = /* @__PURE__ */ defineComponent({
         setup() {
           const NamedComponent = __nuxt_component_0;
@@ -203,7 +205,7 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     })
     `
     const code = await transform(component, '/pages/lazy-jsx.tsx')
-    expect(code).toContain('defineAsyncComponent')
+    expect(code).toContain('createLazyComponent')
     expect(code).toContain('__nuxt_component_0_lazy')
     expect(code).toContain('createVNode(__nuxt_component_0_lazy,')
   })

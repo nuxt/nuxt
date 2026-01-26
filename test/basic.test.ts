@@ -1998,7 +1998,7 @@ describe('server components/islands', () => {
     // test fallback slot with v-for
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     // test islands update
-    await page.locator('.box').getByText('"number": 101,').waitFor()
+    await page.locator('.box').getByText('"number": 101,').first().waitFor()
     const requests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200),
@@ -3105,6 +3105,42 @@ describe('lazy import components', () => {
 
       await page.close()
     })
+  })
+})
+
+describe('lazy component fallback slot', () => {
+  it('should show fallback slot while lazy component is loading', async () => {
+    const { page } = await renderPage('/lazy-fallback')
+
+    // The page should load
+    await page.locator('.lazy-fallback-page').waitFor()
+
+    // Assert fallback slot is visible for the component with fallback (or component already loaded)
+    await page.locator('#with-fallback .loading-fallback, #with-fallback .slow-component-loaded').first().waitFor()
+
+    // The container without fallback should not have fallback content
+    expect(await page.locator('#without-fallback .loading-fallback').count()).toBe(0)
+
+    // Wait for the slow component to load
+    await page.locator('.slow-component-loaded').first().waitFor({ timeout: 5000 })
+
+    // Verify the slow component eventually loads in both containers
+    expect(await page.locator('#with-fallback .slow-component-loaded').count()).toBe(1)
+    expect(await page.locator('#without-fallback .slow-component-loaded').count()).toBe(1)
+
+    await page.close()
+  })
+
+  it('should show fallback slot for lazy hydration components', async () => {
+    const { page } = await renderPage('/lazy-fallback')
+
+    // Assert hydration fallback slot is visible before component loads (or component already loaded)
+    await page.locator('#hydration-with-fallback .hydration-loading-fallback, #hydration-with-fallback .slow-component-loaded').first().waitFor()
+
+    // Wait for the hydration component to load
+    await page.locator('#hydration-with-fallback .slow-component-loaded').waitFor({ timeout: 5000 })
+
+    await page.close()
   })
 })
 

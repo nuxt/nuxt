@@ -1,6 +1,13 @@
 import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps } from 'vue'
-import type { AsyncComponentLoader, ComponentObjectPropsOptions, ExtractPropTypes, HydrationStrategy } from 'vue'
+import type { AsyncComponentLoader, Component, ComponentObjectPropsOptions, ExtractPropTypes, HydrationStrategy } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
+
+function createLoadingComponent (slots: { fallback?: () => any }): Component | undefined {
+  if (!slots.fallback) { return undefined }
+  return defineComponent({
+    render: () => slots.fallback!(),
+  })
+}
 
 function defineLazyComponent<P extends ComponentObjectPropsOptions> (props: P, defineStrategy: (props: ExtractPropTypes<P>) => HydrationStrategy | undefined) {
   return (id: string, loader: AsyncComponentLoader) => defineComponent({
@@ -17,11 +24,32 @@ function defineLazyComponent<P extends ComponentObjectPropsOptions> (props: P, d
           ssrContext!['~lazyHydratedModules'].add(id)
         })
       }
+      // Create loading component from fallback slot if provided
+      const loadingComponent = createLoadingComponent(ctx.slots)
       // wrap the async component in a second component to avoid loading the chunk too soon
-      const child = defineAsyncComponent({ loader })
+      const child = defineAsyncComponent({ loader, loadingComponent, delay: 0 })
       const comp = defineAsyncComponent({
         hydrate: defineStrategy(props as ExtractPropTypes<P>),
         loader: () => Promise.resolve(child),
+      })
+      const onVnodeMounted = () => { ctx.emit('hydrated') }
+      return () => h(comp, mergeProps(ctx.attrs, { onVnodeMounted }), ctx.slots)
+    },
+  })
+}
+
+/* @__NO_SIDE_EFFECTS__ */
+export function createLazyComponent (loader: AsyncComponentLoader) {
+  return defineComponent({
+    inheritAttrs: false,
+    emits: ['hydrated'],
+    setup (_props, ctx) {
+      // Create loading component from fallback slot if provided
+      const loadingComponent = createLoadingComponent(ctx.slots)
+      const comp = defineAsyncComponent({
+        loader,
+        loadingComponent,
+        delay: 0,
       })
       const onVnodeMounted = () => { ctx.emit('hydrated') }
       return () => h(comp, mergeProps(ctx.attrs, { onVnodeMounted }), ctx.slots)
