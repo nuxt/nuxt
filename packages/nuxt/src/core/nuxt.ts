@@ -262,7 +262,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
     ? nuxt.options.server.builder === '@nuxt/nitro-server'
-      ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }) }
+      ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
       : { types: nuxt.options.server.builder }
     : undefined
 
@@ -285,7 +285,7 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
-    opts.nodeReferences.push({ path: resolveModulePath('@nuxt/vite-builder', { from: import.meta.url }) })
+    opts.nodeReferences.push({ path: resolveModulePath('@nuxt/vite-builder', { from: import.meta.url }).replace('.mjs', '.d.mts') })
     if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
       opts.nodeReferences.push({ types: nuxt.options.builder })
     }
