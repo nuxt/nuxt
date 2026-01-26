@@ -89,6 +89,69 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     }
 
     let ctx: Unimport
+    const viteServers = new Set<any>()
+
+    // Track all Vite servers (client + SSR)
+    nuxt.hook('vite:serverCreated', (server) => {
+      viteServers.add(server)
+    })
+
+    // Vite plugin to detect and handle export type changes BEFORE HMR
+    nuxt.hook('vite:configResolved', (viteConfig) => {
+      if (!viteConfig.plugins) { return }
+      viteConfig.plugins.push({
+        name: 'nuxt:composables-hmr',
+        handleHotUpdate: async (hmrContext) => {
+          // Only handle composable files
+          if (!composablesDirs.some(dir => hmrContext.file.startsWith(dir + '/'))) {
+            return
+          }
+
+          // Get current imports to compare
+          const currentImports = await ctx.getImports()
+          const oldImports = currentImports.filter(i => i.from === hmrContext.file)
+
+          // Scan the updated file
+          const newImports = await scanDirExports([hmrContext.file], {
+            fileFilter: file => !isIgnored(file),
+          })
+
+          // Check if export type changed (default ↔ named)
+          let exportTypeChanged = false
+          for (const newImport of newImports) {
+            const oldImport = oldImports.find(i => (i.as || i.name) === (newImport.as || newImport.name))
+            if (oldImport && oldImport.name !== newImport.name) {
+              exportTypeChanged = true
+              break
+            }
+          }
+
+          if (exportTypeChanged) {
+            // Invalidate module cache recursively in all Vite servers (client + SSR)
+            for (const server of viteServers) {
+              const visited = new Set()
+              const invalidateRecursively = (mod: any) => {
+                if (!mod || visited.has(mod)) { return }
+                visited.add(mod)
+                mod.importers.forEach((importer: any) => invalidateRecursively(importer))
+                server.moduleGraph.invalidateModule(mod)
+              }
+
+              const modules = server.moduleGraph.getModulesByFile(hmrContext.file)
+              if (modules) {
+                modules.forEach((mod: any) => invalidateRecursively(mod))
+              }
+            }
+
+            // Trigger full reload - the changed export type cannot be handled with HMR
+            hmrContext.server.ws.send({ type: 'full-reload', path: '*' })
+            return []
+          }
+
+          return
+        },
+      })
+    })
 
     // initialise unimport only after all modules
     // have had a chance to register their hooks
