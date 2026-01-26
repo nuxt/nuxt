@@ -813,8 +813,8 @@ importers:
         specifier: 1.15.5
         version: 1.15.5
       h3-next:
-        specifier: npm:h3@2.0.1-rc.11
-        version: h3@2.0.1-rc.11(crossws@0.4.3(srvx@0.10.1))
+        specifier: npm:h3@2.0.1-rc.8
+        version: h3@2.0.1-rc.8(crossws@0.4.3(srvx@0.10.1))
       obuild:
         specifier: 0.4.20
         version: 0.4.20(magicast@0.5.1)(oxc-resolver@11.16.2)(typescript@5.9.3)(vue-tsc@3.2.4(typescript@5.9.3))
@@ -1103,8 +1103,8 @@ importers:
         specifier: 1.15.5
         version: 1.15.5
       h3-next:
-        specifier: npm:h3@2.0.1-rc.11
-        version: h3@2.0.1-rc.11(crossws@0.4.3(srvx@0.10.1))
+        specifier: npm:h3@2.0.1-rc.8
+        version: h3@2.0.1-rc.8(crossws@0.4.3(srvx@0.10.1))
       nitropack:
         specifier: 2.13.1
         version: 2.13.1(rolldown@1.0.0-rc.1)
@@ -1272,8 +1272,8 @@ importers:
         specifier: 1.15.5
         version: 1.15.5
       h3-next:
-        specifier: npm:h3@2.0.1-rc.11
-        version: h3@2.0.1-rc.11(crossws@0.4.3(srvx@0.10.1))
+        specifier: npm:h3@2.0.1-rc.8
+        version: h3@2.0.1-rc.8(crossws@0.4.3(srvx@0.10.1))
       obuild:
         specifier: 0.4.20
         version: 0.4.20(magicast@0.5.1)(oxc-resolver@11.16.2)(typescript@5.9.3)(vue-tsc@3.2.4(typescript@5.9.3))
@@ -5996,8 +5996,8 @@ packages:
   h3@1.15.5:
     resolution: {integrity: sha512-xEyq3rSl+dhGX2Lm0+eFQIAzlDN6Fs0EcC4f7BNUmzaRX/PTzeuM+Tr2lHB8FoXggsQIeXLj8EDVgs5ywxyxmg==}
 
-  h3@2.0.1-rc.11:
-    resolution: {integrity: sha512-2myzjCqy32c1As9TjZW9fNZXtLqNedjFSrdFy2AjFBQQ3LzrnGoDdFDYfC0tV2e4vcyfJ2Sfo/F6NQhO2Ly/Mw==}
+  h3@2.0.1-rc.8:
+    resolution: {integrity: sha512-IIMQG7qnXx1Ls75suuMHH4xtcvTFxsUguDIZB+dgdYr1RftLj59FkeWF1dOr+jnejDs8Eo+ZKV1CMqogFeqGRQ==}
     engines: {node: '>=20.11.1'}
     peerDependencies:
       crossws: ^0.4.1
@@ -10504,7 +10504,7 @@ snapshots:
       fake-indexeddb: 6.2.5
       get-port-please: 3.2.0
       h3: 1.15.5
-      h3-next: h3@2.0.1-rc.11(crossws@0.4.3(srvx@0.10.1))
+      h3-next: h3@2.0.1-rc.8(crossws@0.4.3(srvx@0.10.1))
       local-pkg: 1.1.2
       magic-string: 0.30.21
       node-fetch-native: 1.6.7
@@ -14012,7 +14012,7 @@ snapshots:
       ufo: 1.6.3
       uncrypto: 0.1.3
 
-  h3@2.0.1-rc.11(crossws@0.4.3(srvx@0.10.1)):
+  h3@2.0.1-rc.8(crossws@0.4.3(srvx@0.10.1)):
     dependencies:
       rou3: 0.7.12
       srvx: 0.10.1

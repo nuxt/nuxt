@@ -29,7 +29,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "h3": "1.15.5",
-    "h3-next": "npm:h3@2.0.1-rc.11",
+    "h3-next": "npm:h3@2.0.1-rc.8",
     "nitropack": "2.13.1",
     "obuild": "0.4.20",
     "rolldown": "1.0.0-rc.1",
