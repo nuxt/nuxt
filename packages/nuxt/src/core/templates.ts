@@ -13,6 +13,25 @@ import { annotatePlugins, checkForCircularDependencies } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
+const charMap: Record<string, string> = {
+  '<': '\\u003C',
+  '>': '\\u003E',
+  '/': '\\u002F',
+  '\\': '\\\\',
+  '\b': '\\b',
+  '\f': '\\f',
+  '\n': '\\n',
+  '\r': '\\r',
+  '\t': '\\t',
+  '\0': '\\0',
+  '\u2028': '\\u2028',
+  '\u2029': '\\u2029',
+}
+
+function escapeUnsafeChars (str: string): string {
+  return str.replace(/[<>/\\\b\f\n\r\t\0\u2028\u2029]/g, x => charMap[x] || x)
+}
+
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
   getContents: ({ nuxt }) => {
@@ -459,7 +478,7 @@ export const publicPathTemplate: NuxtTemplate = {
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
-        ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
+        ? `const getAppConfig = () => (${escapeUnsafeChars(JSON.stringify(nuxt.options.app))})`
         : 'const getAppConfig = () => useRuntimeConfig().app',
 
       'export const baseURL = () => getAppConfig().baseURL',
