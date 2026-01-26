@@ -330,4 +330,4 @@ export default createConfigForNuxt({
   )
 
   // Generate type definitions for the eslint config
-  .onResolved((configs) => typegen(configs))
+  .onResolved(configs => typegen(configs))
