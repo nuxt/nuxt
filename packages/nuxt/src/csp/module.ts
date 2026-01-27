@@ -5,6 +5,7 @@ import defu from 'defu'
 import { defaultCSPConfig, defuReplaceArray, hashBundledAssets } from './utils/index.ts'
 import type { ContentSecurityPolicyConfig } from './types/index.ts'
 import { distDir } from '../dirs.ts'
+import { logger } from '../utils.ts'
 
 export default defineNuxtModule<Partial<ContentSecurityPolicyConfig>>({
   meta: {
@@ -14,6 +15,11 @@ export default defineNuxtModule<Partial<ContentSecurityPolicyConfig>>({
   defaults: defaultCSPConfig,
   setup (options, nuxt) {
     const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...nuxt.options.csp }, { ...defaultCSPConfig })
+
+    // Warn if reportOnly is used with ssg.meta, as meta tags don't support Content-Security-Policy-Report-Only
+    if (contentSecurityPolicyConfig.reportOnly && contentSecurityPolicyConfig.ssg?.meta) {
+      logger.warn('`reportOnly` is ignored for SSG meta tags. The `Content-Security-Policy-Report-Only` header is not supported inside a `<meta>` element.')
+    }
 
     nuxt.options.nitro.virtual = defu(
       {

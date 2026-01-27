@@ -64,6 +64,7 @@ export const defaultCSPConfig: ContentSecurityPolicyConfig = {
     'script-src': ['\'self\'', 'https:', '\'unsafe-inline\'', '\'strict-dynamic\'', '\'nonce-{{nonce}}\''],
     'upgrade-insecure-requests': true,
   },
+  reportOnly: false,
   nonce: true,
   sri: true,
   ssg: {
