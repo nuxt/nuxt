@@ -10,6 +10,8 @@ import { joinURL, withQuery } from 'ufo'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
+import { getRouteRules } from '../composables/manifest'
+import { useRoute } from '../composables/router'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
@@ -99,6 +101,7 @@ export default defineComponent({
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {
       const toRevive: Partial<NuxtIslandResponse> = {}
+      if (result.html) { toRevive.html = result.html }
       if (result.props) { toRevive.props = result.props }
       if (result.slots) { toRevive.slots = result.slots }
       if (result.components) { toRevive.components = result.components }
@@ -111,6 +114,7 @@ export default defineComponent({
             : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
           result: toRevive,
         },
+        __cached: true,
         ...result,
       }
     }
@@ -152,9 +156,9 @@ export default defineComponent({
       }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
+      // Ensure payload is initialized (already set by SSR setPayload())
+      // Don't overwrite .html if it exists from SSR as DOM HTML has teleports (#33809)
       nuxtApp.payload.data[key] ||= {}
-      // clear all data-island-uid to avoid conflicts when saving into payloads
-      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
@@ -192,7 +196,11 @@ export default defineComponent({
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
-      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
+      const cached = nuxtApp.payload.data[key]?.html
+        ? nuxtApp.payload.data[key]
+        : nuxtApp.static.data[key]
+      // Require truthy html for cache to be valid - refetch if html is missing/empty (#33809)
+      if (!force && cached?.html) { return cached }
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
@@ -201,10 +209,14 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
+      const rules = import.meta.client ? getRouteRules({ path: useRoute().path }) : {}
+      const shouldCache = rules.prerender || rules.cache
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
-      }))
+      }), {
+        ...(import.meta.client && shouldCache ? { cache: 'force-cache' as RequestCache } : {}),
+      })
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }

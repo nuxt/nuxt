@@ -2124,6 +2124,37 @@ describe('server components/islands', () => {
         : '_payload.js',
     )
   })
+
+  it('should not duplicate client components on navigation back #33809', { timeout: 60000 }, async () => {
+    const { page } = await renderPage('/island-nav-test')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for island to hydrate
+    await page.locator('.island-with-client').waitFor()
+    await page.locator('.client-button').first().waitFor({ timeout: 10000 })
+
+    // Initial: 1 button
+    expect(await page.locator('.client-button').count()).toBe(1)
+
+    // Navigate away
+    await page.click('#to-other')
+    await page.waitForURL('**/island-nav-other')
+    await page.waitForLoadState('networkidle')
+
+    // Navigate back
+    await page.click('#back')
+    await page.waitForURL('**/island-nav-test')
+    await page.waitForLoadState('networkidle')
+
+    // Wait for island to re-render after navigation
+    await page.locator('.island-with-client').waitFor()
+    await page.locator('.client-button').first().waitFor({ timeout: 10000 })
+
+    // Should still be 1 button, not duplicated
+    expect(await page.locator('.client-button').count()).toBe(1)
+
+    await page.close()
+  })
 })
 
 describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
