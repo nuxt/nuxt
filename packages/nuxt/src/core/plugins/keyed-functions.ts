@@ -97,6 +97,8 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   // TODO: come up with a better way to include files importing a `default` export (imported name can be arbitrary)
   const CODE_INCLUDE_RE = new RegExp(`\\b(${[...namesToSourcesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
 
+  const nuxtSrcPath = stripExtension(resolveAlias('#app', options.alias))
+
   return {
     name: 'nuxt:compiler:keyed-functions',
     enforce: 'post',
@@ -157,6 +159,14 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
             const fnMeta = sourcesToMetas.get(source)
             if (fnMeta) { return fnMeta }
+
+            // TODO: remove in Nuxt 5
+            if (source.startsWith(nuxtSrcPath)) {
+              for (const [fnSource, meta] of sourcesToMetas) {
+                if (meta.name !== functionName || !fnSource.startsWith(nuxtSrcPath)) { continue }
+                return meta
+              }
+            }
 
             const backwardsCompatibleFnMeta = sourcesToMetas.get('') // functions without a source or with a regex fall under ''
             if (backwardsCompatibleFnMeta?.source === undefined) {
@@ -295,6 +305,8 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   || (!fnMeta.source && stripExtension(_resolvePath(autoImportsToSources.get(parsedCall.name) ?? '')) === importSourceResolved)
                   // or the specified function's source RegExp matches the import source
                   || (fnMeta.source instanceof RegExp && fnMeta.source.test(importSourceResolved))
+                  // or the function is from the Nuxt source (`#app` barrel export, for example)
+                  || (typeof fnMeta.source === 'string' && fnMeta.source.startsWith(nuxtSrcPath))
                 )
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration
