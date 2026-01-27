@@ -1,0 +1,14 @@
+name: triage
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  transfer-spam:
+    if: github.event.label.name == 'spam'
+    uses: nuxt/.github/.github/workflows/triage-spam-transfer.yml@main
+    with:
+      spam-repo-id: ${{ vars.TRIAGE_SPAM_REPO_ID }}
+    permissions:
+      issues: write
