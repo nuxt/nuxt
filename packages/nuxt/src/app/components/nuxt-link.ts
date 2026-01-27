@@ -524,7 +524,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
               // Focus the target element for hash links to restore accessibility behavior
               // that was prevented by event.preventDefault()
               if (import.meta.client && isHashLinkWithoutHashMode(to.value)) {
-                const hash = (to.value as string).slice(1)
+                const rawHash = (to.value as string).slice(1)
+                let hash = rawHash
+                try {
+                  hash = decodeURIComponent(rawHash)
+                } catch {
+                  // ignore errors
+                }
                 const el = document.getElementById(hash)
                 el?.focus()
               }
