@@ -172,7 +172,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    appendResponseHeader(event, 'x-nitro-prerender', encodeURI(joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME)))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
