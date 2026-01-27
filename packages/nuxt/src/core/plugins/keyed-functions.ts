@@ -161,7 +161,11 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             if (fnMeta) { return fnMeta }
 
             // TODO: remove in Nuxt 5
-            if (source.startsWith(nuxtSrcPath)) {
+            if (
+              source.startsWith(nuxtSrcPath)
+              // ensure that the path has been resolved
+              && nuxtSrcPath !== '#app'
+            ) {
               for (const [fnSource, meta] of sourcesToMetas) {
                 if (meta.name !== functionName || !fnSource.startsWith(nuxtSrcPath)) { continue }
                 return meta

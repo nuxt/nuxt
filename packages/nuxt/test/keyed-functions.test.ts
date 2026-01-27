@@ -521,12 +521,7 @@ import { useKeyTwo } from '#application' // deliberately using an alias starting
 useKey()
 useKeyTwo()
 `
-    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`
-      "import { useKey } from 'some-other-source'
-      import { useKeyTwo } from '#application' // deliberately using an alias starting with #app
-      useKey()
-      useKeyTwo('$HJiaryoL2y' /* nuxt-injected */)"
-    `)
+    expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should add hash when renamed in import', async () => {
