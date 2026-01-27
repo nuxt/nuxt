@@ -80,5 +80,17 @@ export const createError = <DataT = unknown>(error: string | Error | Partial<Nux
     writable: false,
   })
 
+  // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
+  Object.defineProperty(nuxtError, 'status', {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    get: () => nuxtError.statusCode,
+    configurable: true,
+  })
+  Object.defineProperty(nuxtError, 'statusText', {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    get: () => nuxtError.statusMessage,
+    configurable: true,
+  })
+
   return nuxtError
 }
