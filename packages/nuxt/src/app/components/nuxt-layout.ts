@@ -1,4 +1,4 @@
-import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, TransitionProps, VNode } from 'vue'
+import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { NitroRouteRules } from 'nitropack/types'
@@ -90,7 +90,7 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      const transitionProps: TransitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
+      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
