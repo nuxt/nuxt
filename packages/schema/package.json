@@ -74,6 +74,10 @@
     "pkg-types": "^2.3.0",
     "std-env": "^3.10.0"
   },
+  "peerDependencies": {
+    "mlly": "^1.8.0",
+    "oxc-walker": "^0.6.0"
+  },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   }

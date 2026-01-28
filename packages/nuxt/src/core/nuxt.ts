@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolvePath, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -25,13 +25,13 @@ import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
-import type { Unimport } from 'unimport'
 
 import { installNuxtModule } from '../core/features.ts'
 import pagesModule from '../pages/module.ts'
 import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
+import compilerModule from '../compiler/module.ts'
 
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -49,7 +49,6 @@ import { bundleServer } from './server.ts'
 import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
-import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
@@ -616,28 +615,9 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
 
-  // will be assigned after `modules:done`
-  let unimport: Unimport | undefined
-  nuxt.hook('imports:context', (ctx) => {
-    unimport = ctx
-  })
-
   await nuxt.callHook('modules:done')
 
-  // Add keys for useFetch, useAsyncData, etc.
-  const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
-    ...rest,
-    source: typeof source === 'string'
-      ? await resolvePath(source, { fallbackToOriginal: true }) ?? source
-      : source,
-  })))
-
-  addBuildPlugin(KeyedFunctionsPlugin({
-    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    keyedFunctions: normalizedKeyedFunctions,
-    alias: nuxt.options.alias,
-    getAutoImports: unimport!.getImports,
-  }))
+  await nuxt.callHook('compiler:ready')
 
   // remove duplicate css after modules are done
   nuxt.options.css = nuxt.options.css
@@ -822,6 +802,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
+  options._modules.push(compilerModule)
   const importIncludes: RegExp[] = []
   for (const layer of options._layers) {
     if (layer.cwd && layer.cwd.includes('node_modules')) {

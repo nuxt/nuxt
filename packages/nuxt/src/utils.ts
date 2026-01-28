@@ -15,6 +15,22 @@ export function isDirectorySync (path: string) {
   try { return statSync(path).isDirectory() } catch { return false }
 }
 
+const LEADING_DOT_RE = /^\.+/g
+
+/**
+ * Normalizes a file extension from a string to just the extension part (without the dot).
+ * In case the string does not contain a dot, it returns the string as is.
+ *
+ * @example
+ * normalizeExtension('.ts') // 'ts'
+ * normalizeExtension('.d.ts') // 'd.ts'
+ * normalizeExtension('ts') // 'ts'
+ * normalizeExtension('d.ts') // 'ts'
+ */
+export function normalizeExtension (input: string) {
+  return input.replace(LEADING_DOT_RE, '')
+}
+
 export function stripExtension (path: string) {
   return path.replace(/\.[^./\\]+$/, '')
 }
@@ -25,6 +41,12 @@ export function isWhitespace (char: number | string | undefined | null): boolean
   return c === 32 || c === 9 || c === 10 || c === 13 || c === 12
 }
 
+export function isJavascriptExtension (path: string) {
+  if (!path) { return false }
+  return JS_EXTENSIONS.some(ext => path.endsWith(`.${ext}`))
+}
+
+export const JS_EXTENSIONS = ['js', 'ts', 'tsx', 'jsx', 'mjs', 'cjs', 'mts', 'cts']
 export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts', 'd.vue.ts', 'd.vue.mts', 'd.vue.cts']
 
 export const logger = useLogger('nuxt')
