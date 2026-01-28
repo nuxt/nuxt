@@ -3,10 +3,8 @@ import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
-import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitropack/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
@@ -26,7 +24,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 // thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if RawVueCompilerOptions is available.
 export type VueTSConfig = 0 extends 1 & RawVueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: RawVueCompilerOptions }
 
-export type NuxtPage = {
+export interface NuxtPage {
   name?: string
   path: string
   props?: RouteRecordRaw['props']
@@ -36,7 +34,6 @@ export type NuxtPage = {
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
   middleware?: string[] | string
-  rules?: NitroRouteConfig
   /**
    * Set the render mode.
    *
@@ -216,13 +213,6 @@ export interface NuxtHooks {
   'pages:routerOptions': (context: { files: Array<{ path: string, optional?: boolean }> }) => HookResult
 
   /**
-   * Called when the dev middleware is being registered on the Nitro dev server.
-   * @param handler the Vite or Webpack event handler
-   * @returns Promise
-   */
-  'server:devHandler': (handler: EventHandler) => HookResult
-
-  /**
    * Called at setup allowing modules to extend sources.
    * @param presets Array containing presets objects
    * @returns Promise
@@ -261,50 +251,19 @@ export interface NuxtHooks {
    */
   'components:extend': (components: Component[]) => HookResult
 
-  // Nuxt Compiler
-  /**
-   * Called when the Nuxt compiler is ready to be used.
-   * @returns Promise
-   */
-  'compiler:ready': () => HookResult
-
-  // Nitropack
-  /**
-   * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
-   * @param options Objects containing `references`, `declarations`
-   * @returns Promise
-   */
-  'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
-  /**
-   * Called before initializing Nitro, allowing customization of Nitro's configuration.
-   * @param nitroConfig The nitro config to be extended
-   * @returns Promise
-   */
-  'nitro:config': (nitroConfig: NitroConfig) => HookResult
-  /**
-   * Called after Nitro is initialized, which allows registering Nitro hooks and interacting directly with Nitro.
-   * @param nitro The created nitro object
-   * @returns Promise
-   */
-  'nitro:init': (nitro: Nitro) => HookResult
-  /**
-   * Called before building the Nitro instance.
-   * @param nitro The created nitro object
-   * @returns Promise
-   */
-  'nitro:build:before': (nitro: Nitro) => HookResult
-  /**
-   * Called after copying public assets. Allows modifying public assets before Nitro server is built.
-   * @param nitro The created nitro object
-   * @returns Promise
-   */
-  'nitro:build:public-assets': (nitro: Nitro) => HookResult
   /**
    * Allows extending the routes to be pre-rendered.
    * @param ctx Nuxt context
    * @returns Promise
    */
   'prerender:routes': (ctx: { routes: Set<string> }) => HookResult
+
+  // Nuxt Compiler
+  /**
+   * Called when the Nuxt compiler is ready to be used.
+   * @returns Promise
+   */
+  'compiler:ready': () => HookResult
 
   // @nuxt/cli
   /**

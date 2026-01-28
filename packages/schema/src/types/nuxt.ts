@@ -157,34 +157,35 @@ export interface NuxtApp {
 
 export interface Nuxt {
   // Private fields.
-  __name: string
-  _version: string
-  _ignore?: Ignore
-  _dependencies?: Set<string>
-  _debug?: NuxtDebugContext
+  '__name': string
+  '_version': string
+  '_ignore'?: Ignore
+  '_dependencies'?: Set<string>
+  '~runtimeDependencies'?: string[]
+  '_debug'?: NuxtDebugContext
   /** Async local storage for current running Nuxt module instance. */
-  _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
+  '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
   /**
    * Module options functions collected from moduleDependencies.
    * @internal
    */
-  _moduleOptionsFunctions?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
+  '_moduleOptionsFunctions'?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
 
   /** The resolved Nuxt configuration. */
-  options: NuxtOptions
-  hooks: Hookable<NuxtHooks>
-  hook: Nuxt['hooks']['hook']
-  callHook: Nuxt['hooks']['callHook']
-  addHooks: Nuxt['hooks']['addHooks']
-  runWithContext: <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
+  'options': NuxtOptions
+  'hooks': Hookable<NuxtHooks>
+  'hook': Nuxt['hooks']['hook']
+  'callHook': Nuxt['hooks']['callHook']
+  'addHooks': Nuxt['hooks']['addHooks']
+  'runWithContext': <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
 
-  ready: () => Promise<void>
-  close: () => Promise<void>
+  'ready': () => Promise<void>
+  'close': () => Promise<void>
 
   /** The production or development server. */
-  server?: any
+  'server'?: any
 
-  vfs: Record<string, string>
+  'vfs': Record<string, string>
 
-  apps: Record<string, NuxtApp>
+  'apps': Record<string, NuxtApp>
 }

@@ -371,6 +371,9 @@ export default defineNuxtModule({
 
     function processPages (pages: NuxtPage[], currentPath = '/') {
       for (const page of pages) {
+        // Skip internal stub routes (redirects, test routes) from prerendering
+        if (page._sync) { continue }
+
         // Add root of optional dynamic paths and catchalls
         if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) {
           prerenderRoutes.add(currentPath)

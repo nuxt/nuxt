@@ -150,6 +150,21 @@ describe('errors', () => {
     `)
   })
 
+  // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
+  it('supports status/statusText getters', () => {
+    const error = createError({ status: 404, statusText: 'Not Found' })
+    expect(error.status).toBe(404)
+    expect(error.statusText).toBe('Not Found')
+    // backwards compat
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(error.statusCode).toBe(404)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(error.statusMessage).toBe('Not Found')
+    // non-enumerable (no duplicate in toJSON)
+    expect(Object.keys(error.toJSON())).not.toContain('status')
+    expect(Object.keys(error.toJSON())).not.toContain('statusText')
+  })
+
   it('isNuxtError', () => {
     const error = createError({ statusCode: 404 })
     expect(isNuxtError(error)).toBe(true)
@@ -440,6 +455,14 @@ describe('useRuntimeHook', () => {
 })
 
 describe('routing utilities: `navigateTo`', () => {
+  const nuxtApp = useNuxtApp()
+
+  const router = useRouter()
+
+  function waitForPageChange () {
+    return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
+  }
+
   it('navigateTo should disallow navigation to external URLs by default', () => {
     expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
@@ -464,6 +487,30 @@ describe('routing utilities: `navigateTo`', () => {
       }
     `)
     nuxtApp._processingMiddleware = false
+  })
+
+  it('#28425', async () => {
+    router.addRoute({
+      name: 'slug',
+      path: '/28425/:slug',
+      component: defineComponent({
+        template: '<div> slug page </div>',
+        async setup () {
+          await new Promise(res => setTimeout(res, 200))
+        },
+      }),
+    })
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage) })
+    const route = useRoute()
+    await navigateTo('/28425/p1') // remove this line to prevent the issue.
+    await navigateTo('/28425/p1')
+    await navigateTo('/28425/p2')
+    await navigateTo('/28425/p3')
+    await waitForPageChange()
+    expect(el.html()).toContain('<div> slug page </div>')
+    expect(route.fullPath).toMatchInlineSnapshot(`"/28425/p3"`)
+    el.unmount()
+    router.removeRoute('slug')
   })
 })
 
@@ -502,7 +549,8 @@ describe('routing utilities: `useRoute`', () => {
     router.clearRoutes()
   })
 
-  it('should provide a route', () => {
+  it('should provide a route', async () => {
+    await navigateTo('/')
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
