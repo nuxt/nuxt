@@ -206,7 +206,7 @@ export const Link = defineComponent({
     const { input, update } = useHeadComponentCtx()
     input.link ||= []
     const idx: keyof typeof input.link = input.link.push({}) - 1
-    const key = useVNodeStringKey()
+    const vnodeKey = useVNodeStringKey()
 
     onUnmounted(() => {
       input.link![idx] = null
@@ -214,6 +214,11 @@ export const Link = defineComponent({
     })
 
     return () => {
+      // Auto-generate key for rel="alternate" deduplication
+      let key = vnodeKey
+      if (!key && props.rel === 'alternate') {
+        key = `alternate:${props.hreflang ?? 'x-default'}:${props.href ?? ''}`
+      }
       input.link![idx] = normalizeProps(props, key) as UnheadLink
       update()
       return null
