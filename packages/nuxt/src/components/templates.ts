@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport, genDynamicTypeImport } from 'knitwork'
+import { genDynamicImport } from 'knitwork'
 import { distDir } from '../dirs.ts'
 import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
@@ -119,9 +119,11 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string) {
     }
     // Use declarationPath if provided, otherwise fall back to filePath
     const filePath = c.declarationPath || c.filePath
-    let type = genDynamicTypeImport(isAbsolute(filePath)
-      ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
-      : filePath.replace(NON_VUE_RE, ''), c.export)
+    let type = `typeof ${
+      genDynamicImport(isAbsolute(filePath)
+        ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
+        : filePath.replace(NON_VUE_RE, ''), { wrapper: false })
+    }['${c.export}']`
 
     if (c.mode === 'server') {
       if (app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')) {
