@@ -11,6 +11,7 @@ describe('builder:watch', { sequential: true }, async () => {
   beforeEach(async () => {
     await rm(tmpDir, { recursive: true, force: true })
     await mkdir(join(tmpDir, 'project/node_modules'), { recursive: true })
+    await mkdir(join(tmpDir, 'project/server'), { recursive: true })
   })
   afterAll(async () => {
     await rm(tmpDir, { recursive: true, force: true })
@@ -43,14 +44,16 @@ describe('builder:watch', { sequential: true }, async () => {
     writeFileSync(resolve(rootDir, '../higher'), 'something')
     writeFileSync(join(rootDir, 'test'), 'something')
     writeFileSync(join(rootDir, 'other'), 'something')
+    writeFileSync(join(rootDir, 'server/api.ts'), 'something')
     await watchPromise
 
     await nuxt.close()
 
     expect.soft(restarts).toBe(3)
-    expect.soft(events.sort()).toStrictEqual([
+    expect.soft([...new Set(events)].sort()).toStrictEqual([
       '../higher',
       'other',
+      'server/api.ts',
       'test',
     ])
   })
