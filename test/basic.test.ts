@@ -641,6 +641,11 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it('renders unicode routes correctly', async () => {
+    const html = await $fetch('/random/日本語')
+    expect(html).toContain('Japanese random route')
+  })
+
   it('should trigger page:loading:end only once', async () => {
     const { page, consoleLogs } = await renderPage('/')
 
