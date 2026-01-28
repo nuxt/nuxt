@@ -35,13 +35,11 @@ export default <RouterConfig> {
       return _calculatePosition(to, from, savedPosition, hashScrollBehaviour)
     }
 
-    const hookToWait: keyof RuntimeNuxtHooks = from.meta.layout !== to.meta.layout
-      ? nuxtApp._runningTransition
+    const hookToWait: keyof RuntimeNuxtHooks = nuxtApp._runningTransition
+      ? from.meta.layout !== to.meta.layout
         ? 'layout:transition:finish'
-        : 'page:loading:end'
-      : nuxtApp._runningTransition
-        ? 'page:transition:finish'
-        : 'page:loading:end'
+        : 'page:transition:finish'
+      : 'page:loading:end'
 
     return new Promise((resolve) => {
       nuxtApp.hooks.hookOnce(hookToWait, () => {
