@@ -32,7 +32,7 @@ describe('routeRules from page meta', () => {
 
   it('extracts route rules from pages', () => {
     const pages = getPages()
-    const result = globRouteRulesFromPages(pages)
+    const result = globRouteRulesFromPages(pages).paths
     expect(result).toEqual({
       '/': { prerender: true },
       '/some/nested/page': { prerender: true },
@@ -52,5 +52,17 @@ describe('routeRules from page meta', () => {
       },
       { path: '/contact' },
     ])
+  })
+
+  it('allows rou3 to match /path/** with a /path route rule', () => {
+    const pages = [
+      ...getPages(),
+      {
+        path: '/path',
+        rules: { prerender: true },
+      },
+    ]
+    const result = globRouteRulesFromPages(pages)
+    expect(result.paths['/path']).toEqual({ prerender: true })
   })
 })
