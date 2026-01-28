@@ -50,10 +50,10 @@ export async function build (nuxt: Nuxt): Promise<void> {
   if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
     const { restoreCache, collectCache } = await getVueHash(nuxt)
     if (await restoreCache()) {
-      await nuxt.callHook('build:done')
+      // Skip build:done to avoid triggering Nitro rebuild which would regenerate manifest
       return await nuxt.callHook('close', nuxt)
     }
-    nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
+    nuxt.hooks.hookOnce('build:done', () => collectCache())
     nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
   }
 
