@@ -1,4 +1,4 @@
-import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
+import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, TransitionProps, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { NitroRouteRules } from 'nitropack/types'
@@ -90,10 +90,20 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
+      const transitionProps: TransitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
+
+      if (hasLayout && transitionProps) {
+        nuxtApp._runningTransition = true
+
+        transitionProps.onAfterLeave = () => {
+          delete nuxtApp._runningTransition
+
+          nuxtApp.callHook('layout:transition:finish')
+        }
+      }
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapInTransition(hasLayout && transitionProps, {
