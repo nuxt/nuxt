@@ -18,6 +18,7 @@ import layouts from '#build/layouts'
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import _routeRulesMatcher from '#build/route-rules.mjs'
+import type { NuxtAppConfig } from '../../../schema'
 
 const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
@@ -90,10 +91,24 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
+      let transitionProps = route?.meta.layoutTransition ?? (defaultLayoutTransition as NuxtAppConfig['layoutTransition'] | undefined)
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
+
+      if (hasLayout && transitionProps) {
+        if (transitionProps === true) {
+          transitionProps = {}
+        }
+
+        nuxtApp._runningTransition = true
+
+        transitionProps.onAfterLeave = () => {
+          delete nuxtApp._runningTransition
+
+          nuxtApp.callHook('layout:transition:finish')
+        }
+      }
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapInTransition(hasLayout && transitionProps, {
