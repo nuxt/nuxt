@@ -102,7 +102,14 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(getLayerDirectories(nuxt).flatMap(dirs => [dirs.app, dirs.server].filter(Boolean)), {
+  const watcher = chokidarWatch(getLayerDirectories(nuxt).flatMap((dirs) => {
+    const paths = [dirs.app].filter(Boolean)
+    // Only add server if it's not inside app (avoid double-watching)
+    if (dirs.server && !(dirs.app && !relative(dirs.app, dirs.server).startsWith('..'))) {
+      paths.push(dirs.server)
+    }
+    return paths
+  }), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -251,7 +258,8 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
     if (dirs.app && !isIgnored(dirs.app)) {
       pathsToWatch.add(dirs.app)
     }
-    if (dirs.server && !isIgnored(dirs.server)) {
+    // Only add server if it's not inside app (avoid double-watching)
+    if (dirs.server && !isIgnored(dirs.server) && !(dirs.app && !relative(dirs.app, dirs.server).startsWith('..'))) {
       pathsToWatch.add(dirs.server)
     }
   }
