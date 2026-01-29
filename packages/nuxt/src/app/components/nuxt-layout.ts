@@ -91,16 +91,12 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      let transitionProps = route?.meta.layoutTransition ?? (defaultLayoutTransition as NuxtAppConfig['layoutTransition'] | undefined)
+      const transitionProps = route?.meta.layoutTransition ?? (defaultLayoutTransition as NuxtAppConfig['layoutTransition'] | undefined)
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
 
-      if (hasLayout && transitionProps) {
-        if (transitionProps === true) {
-          transitionProps = {}
-        }
-
+      if (hasLayout && typeof transitionProps === 'object') {
         nuxtApp._runningTransition = true
 
         transitionProps.onAfterLeave = () => {
