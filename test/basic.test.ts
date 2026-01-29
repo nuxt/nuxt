@@ -646,6 +646,19 @@ describe('pages', () => {
     expect(html).toContain('Japanese random route')
   })
 
+  it.skipIf(isDev)('reactive query params in prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/query-reactivity?active=true')
+
+    // Check query value shows up
+    expect(await page.innerText('div')).toContain('true')
+
+    // Check style is reactive
+    expect(await page.$eval('div', e => getComputedStyle(e).color))
+      .toBe('rgb(255, 0, 0)') // red when active=true
+
+    await page.close()
+  })
+
   it('should trigger page:loading:end only once', async () => {
     const { page, consoleLogs } = await renderPage('/')
 
