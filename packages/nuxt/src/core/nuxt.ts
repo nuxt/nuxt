@@ -260,10 +260,10 @@ async function initNuxt (nuxt: Nuxt) {
     })
   })
 
-  const serverBuilderTypePath = typeof nuxt.options.server.builder === 'string'
+  const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
     ? nuxt.options.server.builder === '@nuxt/nitro-server'
-      ? resolveModulePath(nuxt.options.server.builder, { from: import.meta.url })
-      : nuxt.options.server.builder
+      ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
+      : { types: nuxt.options.server.builder }
     : undefined
 
   // Add nuxt types
@@ -285,14 +285,14 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
-    opts.nodeReferences.push({ types: relative(nuxt.options.buildDir, resolveModulePath('@nuxt/vite-builder', { from: import.meta.url })) })
+    opts.nodeReferences.push({ path: resolveModulePath('@nuxt/vite-builder', { from: import.meta.url }).replace('.mjs', '.d.mts') })
     if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
       opts.nodeReferences.push({ types: nuxt.options.builder })
     }
 
-    if (serverBuilderTypePath) {
-      opts.references.push({ types: serverBuilderTypePath })
-      opts.nodeReferences.push({ types: serverBuilderTypePath })
+    if (serverBuilderReference) {
+      opts.references.push(serverBuilderReference)
+      opts.nodeReferences.push(serverBuilderReference)
     }
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
@@ -320,8 +320,8 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
 
-    if (serverBuilderTypePath) {
-      opts.references.push({ types: serverBuilderTypePath })
+    if (serverBuilderReference) {
+      opts.references.push(serverBuilderReference)
     }
   })
 
