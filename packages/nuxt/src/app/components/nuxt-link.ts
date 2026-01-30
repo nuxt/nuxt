@@ -23,7 +23,7 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
-import { hashMode } from '#build/router.options'
+import { hashMode } from '#build/router.options.mjs'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
@@ -511,16 +511,30 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
           rel,
           target,
-          onClick: (event) => {
+          onClick: async (event) => {
             if (isExternal.value || hasTarget.value) {
               return
             }
 
             event.preventDefault()
 
-            return props.replace
-              ? router.replace(href.value)
-              : router.push(href.value)
+            try {
+              return await (props.replace ? router.replace(href.value) : router.push(href.value))
+            } finally {
+              // Focus the target element for hash links to restore accessibility behavior
+              // that was prevented by event.preventDefault()
+              if (import.meta.client && isHashLinkWithoutHashMode(to.value)) {
+                const rawHash = (to.value as string).slice(1)
+                let hash = rawHash
+                try {
+                  hash = decodeURIComponent(rawHash)
+                } catch {
+                  // ignore errors
+                }
+                const el = document.getElementById(hash)
+                el?.focus()
+              }
+            }
           },
         }, slots.default?.())
       }

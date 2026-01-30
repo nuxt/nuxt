@@ -6,12 +6,12 @@ import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
-import defu, { createDefu } from 'defu'
+import { createDefu, defu } from 'defu'
 import { basename, join, relative } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
-import { directoryToURL } from '../internal/esm'
-import { withTrailingSlash } from 'ufo'
+import { directoryToURL } from '../internal/esm.ts'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -30,7 +30,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const localLayers = (await glob('layers/*', {
     onlyDirectories: true, cwd: opts.cwd || process.cwd(),
   }))
-    .map((d: string) => d.endsWith('/') ? d.substring(0, d.length - 1) : d)
+    .map((d: string) => withTrailingSlash(d))
     .sort((a, b) => b.localeCompare(a))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
@@ -77,7 +77,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   const processedLayers = new Set<string>()
-  const localRelativePaths = new Set(localLayers)
+  const localRelativePaths = new Set(localLayers.map(layer => withoutTrailingSlash(layer)))
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     // Create a shallow copy to avoid mutating the cached ESM config object

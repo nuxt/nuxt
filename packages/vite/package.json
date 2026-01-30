@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "4.2.2",
+  "version": "4.3.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -10,43 +10,45 @@
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
+    ".": "./dist/index.mjs"
+  },
+  "imports": {
+    "#vite-node": "./dist/vite-node.mjs",
+    "#vite-node-entry": "./dist/vite-node-entry.mjs"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild",
-    "build:stub": "unbuild --stub",
+    "prepack": "obuild",
+    "build:stub": "obuild --stub",
     "test:attw": "attw --pack"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "nitropack": "2.12.9",
-    "rolldown": "1.0.0-beta.53",
-    "rollup": "4.53.3",
-    "unbuild": "3.6.1",
-    "vue": "3.5.25"
+    "h3": "1.15.5",
+    "h3-next": "npm:h3@2.0.1-rc.8",
+    "nitropack": "2.13.1",
+    "obuild": "0.4.14",
+    "rolldown": "1.0.0-rc.1",
+    "rollup": "4.56.0",
+    "vue": "3.5.27"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.3",
-    "@vitejs/plugin-vue": "^6.0.2",
-    "@vitejs/plugin-vue-jsx": "^5.1.2",
-    "autoprefixer": "^10.4.22",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vitejs/plugin-vue-jsx": "^5.1.3",
+    "autoprefixer": "^10.4.23",
     "consola": "^3.4.2",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
-    "esbuild": "^0.27.1",
+    "esbuild": "^0.27.2",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
     "get-port-please": "^3.2.0",
-    "h3": "^1.15.4",
     "jiti": "^2.6.1",
     "knitwork": "^1.3.0",
     "magic-string": "^0.30.21",
@@ -56,12 +58,12 @@
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.6",
     "rollup-plugin-visualizer": "^6.0.5",
-    "seroval": "^1.4.0",
+    "seroval": "^1.5.0",
     "std-env": "^3.10.0",
-    "ufo": "^1.6.1",
+    "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
-    "vite": "^7.2.7",
-    "vite-node": "^5.2.0",
+    "vite": "^7.3.1",
+    "vite-node": "^5.3.0",
     "vite-plugin-checker": "^0.12.0",
     "vue-bundle-renderer": "^2.2.0"
   },

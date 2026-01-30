@@ -384,6 +384,12 @@ export function useAsyncData<
     const unsubParamsWatcher = options.watch
       ? watch(options.watch, () => {
           if (keyChanging) { return } // avoid double execute while the key switch is being processed
+          // if the 0ms debounce is pending (same tick) force flush the debounce post watcher flush
+          if (nuxtApp._asyncData[key.value]?._execute.isPending()) {
+            queuePostFlushCb(() => {
+              nuxtApp._asyncData[key.value]?._execute.flush()
+            })
+          }
           nuxtApp._asyncData[key.value]?._execute({ cause: 'watch', dedupe: options.dedupe })
         })
       : () => {}
@@ -634,7 +640,14 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
+// TODO: export from `perfect-debounce`
+export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: ArgumentsT) => Promise<ReturnT>) & {
+  cancel: () => void
+  flush: () => Promise<ReturnT> | undefined
+  isPending: () => boolean
+}
+
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController }
 
 function createAsyncData<
   ResT,
@@ -648,15 +661,15 @@ function createAsyncData<
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
   // When prerendering, share payload data automatically between requests
-  const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
+  const handler: AsyncDataHandler<ResT> = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?.['~sharedPrerenderCache']
     ? _handler
     : (nuxtApp, options) => {
-        const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
+        const value = nuxtApp.ssrContext!['~sharedPrerenderCache']!.get(key)
         if (value) { return value as Promise<ResT> }
 
         const promise = Promise.resolve().then(() => nuxtApp.runWithContext(() => _handler(nuxtApp, options)))
 
-        nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
+        nuxtApp.ssrContext!['~sharedPrerenderCache']!.set(key, promise)
         return promise
       }
 

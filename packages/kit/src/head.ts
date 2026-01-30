@@ -1,5 +1,5 @@
 import type { NuxtAppConfig } from '@nuxt/schema'
-import { useNuxt } from './context'
+import { useNuxt } from './context.ts'
 import { defu } from 'defu'
 
 export function setGlobalHead (head: NuxtAppConfig['head']): void {

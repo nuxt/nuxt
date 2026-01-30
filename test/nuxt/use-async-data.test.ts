@@ -10,6 +10,7 @@ import { Transition } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxtData } from '#app/composables/asyncData'
+import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -499,6 +500,33 @@ describe('useAsyncData', () => {
     route.value = '/about'
     await nextTick()
     expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should resolve to latest value when watched dependency is rapidly updated', async () => {
+    const route = ref('/')
+    const promiseFn = vi.fn(() => Promise.resolve(route.value))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [route] })
+        return () => h('div', [data.value])
+      },
+    })
+
+    await mountSuspended(component)
+
+    await mountSuspended(component)
+
+    const c = await mountSuspended(component)
+
+    for (let i = 0; i < 20; i++) {
+      route.value = `/about/${i}`
+      if (i % 7 === 0) {
+        await nextTick()
+      }
+    }
+    await vi.waitFor(() => {
+      expect(c.html()).toBe('<div>/about/19</div>')
+    })
   })
 
   it('should work correctly with nested components accessing the same asyncData', async () => {
@@ -1090,21 +1118,42 @@ describe('useAsyncData', () => {
   it('should work when AbortSignal.reason is unavailable (older browsers)', async () => {
     vi.useFakeTimers()
 
+    const originalAbortSignalAny = AbortSignal.any
+
     // Mock older AbortController without .reason property
-    class OldAbortController {
-      signal: any = {
-        aborted: false,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
+    class OldAbortSignal {
+      aborted = false
+      private listeners: Array<{ event: string, callback: () => void }> = []
+
+      addEventListener (event: string, callback: () => void, _options?: { once?: boolean, signal?: AbortSignal }) {
+        this.listeners.push({ event, callback })
       }
 
-      abort () {
-        this.signal.aborted = true
+      removeEventListener (event: string, callback: () => void) {
+        this.listeners = this.listeners.filter(l => !(l.event === event && l.callback === callback))
+      }
+
+      dispatchAbort () {
+        this.aborted = true
         // No reason property in old browsers
+        for (const listener of this.listeners.filter(l => l.event === 'abort')) {
+          listener.callback()
+        }
+      }
+    }
+
+    class OldAbortController {
+      signal = new OldAbortSignal()
+
+      abort () {
+        this.signal.dispatchAbort()
       }
     }
 
     vi.stubGlobal('AbortController', OldAbortController)
+    // Also remove AbortSignal.any to force polyfill usage
+    // @ts-expect-error - deliberately removing method
+    AbortSignal.any = undefined
 
     const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 1000)))
 
@@ -1116,6 +1165,7 @@ describe('useAsyncData', () => {
 
     expect(status.value).toBe('idle')
 
+    AbortSignal.any = originalAbortSignalAny
     vi.unstubAllGlobals()
     vi.useRealTimers()
   })
@@ -1253,5 +1303,74 @@ describe('useAsyncData', () => {
     }
 
     vi.useRealTimers()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/32154
+  it.fails('should not cause error with v-once after navigation', async () => {
+    const router = useRouter()
+
+    const WrapperComponent = defineComponent({
+      name: 'WrapperComponent',
+      setup (_, { slots }) {
+        return () => h('div', slots.default?.())
+      },
+    })
+
+    const HomePage = defineComponent({
+      name: 'HomePage',
+      components: { WrapperComponent },
+      async setup () {
+        const { data } = await useAsyncData('v-once-home-page', () => Promise.resolve({ foo: 'bar' }))
+        const foo = computed(() => data.value!.foo)
+        return { foo }
+      },
+      template: `<div><WrapperComponent v-once>{{ foo }}</WrapperComponent></div>`,
+    })
+
+    const OtherPage = defineComponent({
+      name: 'OtherPage',
+      setup () {
+        return () => h('div', 'Other Page')
+      },
+    })
+
+    router.addRoute({ name: 'v-once-home', path: '/v-once-home', component: HomePage })
+    router.addRoute({ name: 'v-once-other', path: '/v-once-other', component: OtherPage })
+
+    const errors: Error[] = []
+    const errorHandler = (err: unknown) => {
+      errors.push(err as Error)
+    }
+
+    try {
+      const el = await mountSuspended({ render: () => h(NuxtPage) }, {
+        global: {
+          config: {
+            errorHandler,
+          },
+        },
+      })
+
+      await navigateTo('/v-once-home')
+      await flushPromises()
+      expect(el.html()).toContain('bar')
+
+      await navigateTo('/v-once-other')
+      await flushPromises()
+      expect(el.html()).toContain('Other Page')
+
+      await navigateTo('/v-once-home')
+      await flushPromises()
+
+      // we should not get 'TypeError: Cannot read properties of undefined (reading 'foo')'
+      expect(errors[0]).toBeUndefined()
+      expect(el.html()).toContain('bar')
+
+      el.unmount()
+    } finally {
+      // Clean up routes
+      router.removeRoute('v-once-home')
+      router.removeRoute('v-once-other')
+    }
   })
 })

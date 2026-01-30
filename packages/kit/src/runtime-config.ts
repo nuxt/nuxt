@@ -3,9 +3,9 @@ import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
 
-import defu from 'defu'
-import { useNuxt } from './context'
-import { useNitro } from './nitro'
+import { defu } from 'defu'
+import { useNuxt } from './context.ts'
+import { useNitro } from './nitro.ts'
 
 /**
  * Access 'resolved' Nuxt runtime configuration, with values updated from environment.
@@ -29,7 +29,7 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): vo
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
   try {
-    return useNitro().updateConfig({ runtimeConfig })
+    return useNitro().updateConfig({ runtimeConfig: runtimeConfig as Record<string, any> })
   } catch {
     // Nitro is not yet initialised - we can safely ignore this error
   }

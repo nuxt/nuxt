@@ -1,10 +1,12 @@
-import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
-import { useNuxt } from './context'
-import { toArray } from './utils'
+
+import { useNuxt } from './context.ts'
+import type { Nitro, NitroDevEventHandler, NitroEventHandler } from './nitro-types.ts'
+import { toArray } from './utils.ts'
 
 const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
+type HANDLER_METHOD_RE = 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace'
 /**
  * normalize handler object
  *
@@ -13,7 +15,7 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
   const [, method = undefined] = handler.handler.match(HANDLER_METHOD_RE) || []
   return {
-    method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace',
+    method: method?.toUpperCase() as Uppercase<HANDLER_METHOD_RE> | undefined,
     ...handler,
     handler: normalize(handler.handler),
   }
@@ -24,7 +26,7 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
  *
  */
 export function addServerHandler (handler: NitroEventHandler): void {
-  useNuxt().options.serverHandlers.push(normalizeHandlerMethod(handler))
+  useNuxt().options.serverHandlers.push(normalizeHandlerMethod(handler) as any)
 }
 
 /**
@@ -32,7 +34,7 @@ export function addServerHandler (handler: NitroEventHandler): void {
  *
  */
 export function addDevServerHandler (handler: NitroDevEventHandler): void {
-  useNuxt().options.devServerHandlers.push(handler)
+  useNuxt().options.devServerHandlers.push(handler as any)
 }
 
 /**

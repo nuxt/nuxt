@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase } from 'ufo'
+import { decodePath, isSamePath, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
@@ -14,10 +14,8 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
-// @ts-expect-error virtual file
-import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
@@ -37,9 +35,9 @@ function createCurrentLocation (
     let pathFromHash = hash.slice(slicePos)
     // prepend the starting slash to hash so the url starts with /#
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
-    return withoutBase(pathFromHash, '')
+    return decodePath(withoutBase(pathFromHash, ''))
   }
-  const displayedPath = withoutBase(pathname, base)
+  const displayedPath = decodePath(withoutBase(pathname, base))
   const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
@@ -197,16 +195,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        if (isAppManifestEnabled) {
-          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
+        const routeRules = getRouteRules({ path: to.path })
 
-          if (routeRules.appMiddleware) {
-            for (const key in routeRules.appMiddleware) {
-              if (routeRules.appMiddleware[key]) {
-                middlewareEntries.add(key)
-              } else {
-                middlewareEntries.delete(key)
-              }
+        if (routeRules.appMiddleware) {
+          for (const key in routeRules.appMiddleware) {
+            if (routeRules.appMiddleware[key]) {
+              middlewareEntries.add(key)
+            } else {
+              middlewareEntries.delete(key)
             }
           }
         }
@@ -229,8 +225,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`,
+                  status: 404,
+                  statusText: `Page Not Found: ${initialURL}`,
                 })
                 await nuxtApp.runWithContext(() => showError(error))
                 return false
@@ -266,9 +262,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     router.afterEach((to) => {
       if (to.matched.length === 0) {
         return nuxtApp.runWithContext(() => showError(createError({
-          statusCode: 404,
+          status: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`,
+          statusText: `Page not found: ${to.fullPath}`,
           data: {
             path: to.fullPath,
           },
