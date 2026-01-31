@@ -24,7 +24,6 @@
     {
       "groupName": "vitest",
       "matchPackageNames": [
-        "vite-node",
         "vitest",
         "/^@vitest//"
       ]
@@ -37,7 +36,6 @@
       "ignoreDeps": [
         "nuxt",
         "nuxt3",
-        "@unhead/vue",
         "@nuxt/kit"
       ]
     }

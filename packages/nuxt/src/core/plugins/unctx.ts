@@ -2,7 +2,7 @@ import type { TransformerOptions } from 'unctx/transform'
 import { createTransformer } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
-import { isJS, isVue } from '../utils'
+import { isJS, isVue } from '../utils/index.ts'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 const TRANSFORM_MARKER_RE = /^\/\* _processed_nuxt_unctx_transform \*\/\n/
@@ -14,6 +14,7 @@ interface UnctxTransformPluginOptions {
 
 export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
   const transformer = createTransformer(options.transformerOptions)
+
   return {
     name: 'unctx:transform',
     enforce: 'post',
@@ -22,7 +23,11 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
     },
     transform: {
       filter: {
-        code: { exclude: TRANSFORM_MARKER_RE },
+        ...transformer.filter,
+        code: {
+          ...transformer.filter.code,
+          exclude: TRANSFORM_MARKER_RE,
+        },
       },
       handler (code) {
         // TODO: needed for webpack - update transform in unctx/unplugin?

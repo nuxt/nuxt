@@ -1,9 +1,11 @@
 <template>
-  <ErrorTemplate v-bind="{ statusCode, statusMessage, description, stack }" />
+  <ErrorTemplate v-bind="{ status, statusText, statusCode: status, statusMessage: statusText, description, stack }" />
 </template>
 
 <script setup>
 import { defineAsyncComponent } from 'vue'
+// eslint-disable-next-line vue/prefer-import-from-vue
+import { escapeHtml } from '@vue/shared'
 
 const props = defineProps({
   error: Object,
@@ -13,7 +15,7 @@ const props = defineProps({
 const _error = props.error
 
 // TODO: extract to a separate utility
-const stacktrace = _error.stack
+const stacktrace = import.meta.dev && _error.stack
   ? _error.stack
       .split('\n')
       .splice(1)
@@ -28,14 +30,14 @@ const stacktrace = _error.stack
           line.includes('internal') ||
           line.includes('new Promise'),
         }
-      }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
+      }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${escapeHtml(i.text)}</span>`).join('\n')
   : ''
 
 // Error page props
-const statusCode = Number(_error.statusCode || 500)
-const is404 = statusCode === 404
+const status = Number(_error.statusCode || 500)
+const is404 = status === 404
 
-const statusMessage = _error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
+const statusText = _error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
 const description = _error.message || _error.toString()
 const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
 

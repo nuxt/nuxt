@@ -1,59 +1,14 @@
-import { defineBuildConfig } from 'unbuild'
-import { stubOptions } from '../../debug/build-config'
+import { defineBuildConfig } from 'obuild/config'
 
 export default defineBuildConfig({
-  declaration: true,
   entries: [
-    'src/index',
-    'src/builder-env',
-  ],
-  stubOptions,
-  rollup: {
-    dts: { respectExternal: false },
-    inlineDependencies: ['untyped', 'knitwork'],
-  },
-  externals: [
-    // Type imports
-    '@unhead/vue',
-    '@vitejs/plugin-vue',
-    'chokidar',
-    '@vitejs/plugin-vue-jsx',
-    '@vue/language-core',
-    'autoprefixer',
-    'c12',
-    'compatx',
-    'css-minimizer-webpack-plugin',
-    'cssnano',
-    'esbuild',
-    'esbuild-loader',
-    'file-loader',
-    'h3',
-    'hookable',
-    'ignore',
-    'mini-css-extract-plugin',
-    'nitro',
-    'nitropack',
-    'nuxt/app',
-    'ofetch',
-    'oxc-transform',
-    'postcss',
-    'pug',
-    'rollup-plugin-visualizer',
-    'sass-loader',
-    'scule',
-    'unctx',
-    'unimport',
-    'vite',
-    'vue',
-    'vue-bundle-renderer',
-    'vue-loader',
-    'vue-router',
-    'webpack',
-    'webpack-bundle-analyzer',
-    'webpack-dev-middleware',
-    'webpack-hot-middleware',
-    // Implicit
-    '@vue/compiler-core',
-    '@vue/compiler-sfc',
+    {
+      type: 'bundle',
+      input: ['src/index', 'src/builder-env'],
+      dts: { oxc: true },
+      rolldown: {
+        external: ['nuxt/app'],
+      },
+    },
   ],
 })

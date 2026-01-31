@@ -22,12 +22,17 @@ async function createServer (handler: ServerHandler) {
   }
 }
 
-vi.mock('#build/nuxt.config.mjs', async (original) => {
+vi.mock('#build/nuxt.config.mjs', () => {
   return {
-    // @ts-expect-error virtual file
-    ...(await original()),
     remoteComponentIslands: true,
     selectiveClient: true,
+    renderJsonPayloads: true,
+    componentIslands: true,
+    payloadExtraction: false,
+    appManifest: false,
+    appId: 'nuxt-app',
+    multiApp: false,
+    appBaseURL: '/',
   }
 })
 

@@ -17,7 +17,7 @@ no_progress = true
 # include_fragments = true
 
 # Follow redirects
-max_redirects = 10
+max_redirects = 1
 
 # Set user agent to avoid bot blocking
 user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
@@ -39,7 +39,13 @@ exclude = [
   "https://myawesome-lib.css/",
   "https://awesome-lib.css/",
   "https://mycdn.org/",
+  "https://nuxt.new/c/v4",
+  "https://nuxt.new/s/v4",
+  "https://www.npmjs.com/",
+  # TODO: fix upstream API issues
+  "https://nuxt.com/modules",
   # single-quotes are required for regexp
+  'https://res.cloudinary.com/nuxt/video/upload/(.*)',
   'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
@@ -47,5 +53,6 @@ exclude = [
   "http://auth.com",
   "http://example1.com/",
   "http://example2.com/",
+  "http://example3.com/",
   "~images/main-bg.jpg",
 ]

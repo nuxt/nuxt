@@ -29,7 +29,15 @@ export interface CookieRef<T> extends Ref<T> {}
 const CookieDefaults = {
   path: '/',
   watch: true,
-  decode: val => destr(decodeURIComponent(val)),
+  decode: (val) => {
+    const decoded = decodeURIComponent(val)
+    const parsed = destr(decoded)
+    // destr can return Infinity or precision-loss numbers - keep original string
+    if (typeof parsed === 'number' && (!Number.isFinite(parsed) || String(parsed) !== decoded)) {
+      return decoded
+    }
+    return parsed
+  },
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
 } satisfies CookieOptions<any>
 
@@ -211,7 +219,7 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 /**
  * The maximum value allowed on a timeout delay.
  *
- * Reference: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
+ * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout#maximum_delay_value
  */
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 

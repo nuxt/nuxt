@@ -42,7 +42,7 @@ export function useRequestHeader (header: string) {
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): H3Event$Fetch | typeof global.$fetch {
+export function useRequestFetch (): H3Event$Fetch | typeof globalThis.$fetch {
   if (import.meta.client) {
     return globalThis.$fetch
   }

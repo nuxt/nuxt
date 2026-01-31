@@ -1,17 +1,17 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
-import { isAbsolute, join, relative, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import type { JSValue } from 'untyped'
 import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
-import type { Nitro } from 'nitropack/types'
+import { useNitro } from '@nuxt/kit'
 
-import { annotatePlugins, checkForCircularDependencies } from './app'
-import { EXTENSION_RE } from './utils'
-import type { NuxtOptions, NuxtTemplate, TSReference } from 'nuxt/schema'
+import { annotatePlugins, checkForCircularDependencies } from './app.ts'
+import { EXTENSION_RE } from './utils/index.ts'
+import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -274,14 +274,14 @@ export const schemaNodeTemplate: NuxtTemplate = {
           `     * Configuration for \`${importName}\``,
           ...options.addJSDocTags && link ? [`     * @see ${link}`] : [],
           `     */`,
-          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O, unknown, boolean> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
+          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O, unknown, boolean> ? ${options.unresolved ? 'Partial<O>' : 'O'} | false : Record<string, any> | false`,
         ]
       }),
       modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
-    const moduleDependencies = modules.flatMap(([_configKey, importName]) => [
-      `    [${genString(importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? O : Record<string, unknown>>`,
+    const moduleDependencies = modules.flatMap(([_configKey, importName, mod]) => [
+      `    [${genString(mod.meta.name || importName)}]?: ModuleDependencyMeta<typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? O | false : Record<string, unknown>> | false`,
     ]).join('\n')
 
     return [
@@ -364,98 +364,6 @@ export const middlewareTemplate: NuxtTemplate = {
           ],
 
     ].join('\n')
-  },
-}
-
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
-}
-
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
-export const nitroSchemaTemplate: NuxtTemplate = {
-  filename: 'types/nitro-nuxt.d.ts',
-  async getContents ({ nuxt }) {
-    const references = [] as TSReference[]
-    const declarations = [] as string[]
-    await nuxt.callHook('nitro:prepare:types', { references, declarations })
-
-    const sourceDir = join(nuxt.options.buildDir, 'types')
-    const lines = [
-      ...references.map((ref) => {
-        if ('path' in ref && isAbsolute(ref.path)) {
-          ref.path = relative(sourceDir, ref.path)
-        }
-        return `/// <reference ${renderAttrs(ref)} />`
-      }),
-      ...declarations,
-    ]
-
-    return /* typescript */`
-${lines.join('\n')}
-
-import type { RuntimeConfig } from 'nuxt/schema'
-import type { H3Event } from 'h3'
-import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
-
-declare module 'nitropack' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRuntimeConfig extends RuntimeConfig {}
-  interface NitroRouteConfig {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-  interface NitroRuntimeHooks {
-    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
-    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
-  }
-}
-declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRuntimeConfig extends RuntimeConfig {}
-  interface NitroRouteConfig {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use \`noScripts\` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-  interface NitroRuntimeHooks {
-    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
-    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
-  }
-}
-`
   },
 }
 
@@ -612,11 +520,14 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
       ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
     )
+    const nitro = useNitro()
+    const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
+    const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (nitro.options.static || hasCachedRoutes || (nitro.options.prerender.routes && nitro.options.prerender.routes.length > 0) || Object.values(nitro.options.routeRules).some(r => r.prerender))
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const componentIslands = ${shouldEnableComponentIslands}`,
-      `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}`,
+      `export const payloadExtraction = ${payloadExtraction}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
       `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,
@@ -633,7 +544,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
-      `export const crawlLinks = ${!!((ctx.nuxt as any)._nitro as Nitro).options.prerender.crawlLinks}`,
+      `export const crawlLinks = ${!!nitro.options.prerender.crawlLinks}`,
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,

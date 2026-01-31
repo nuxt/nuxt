@@ -206,7 +206,7 @@ export default defineComponent({
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
       if (!r.ok) {
-        throw createError({ statusCode: r.status, statusMessage: r.statusText })
+        throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
         const result = await r.json()

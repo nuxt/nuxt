@@ -1,10 +1,10 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase } from 'ufo'
+import { decodePath, isSamePath, withoutBase } from 'ufo'
 
-import type { Plugin, RouteMiddleware } from 'nuxt/app'
+import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
@@ -14,10 +14,8 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { encodeURL, navigateTo } from '#app/composables/router'
 
-// @ts-expect-error virtual file
-import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
@@ -37,9 +35,9 @@ function createCurrentLocation (
     let pathFromHash = hash.slice(slicePos)
     // prepend the starting slash to hash so the url starts with /#
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
-    return withoutBase(pathFromHash, '')
+    return decodePath(withoutBase(pathFromHash, ''))
   }
-  const displayedPath = withoutBase(pathname, base)
+  const displayedPath = decodePath(withoutBase(pathname, base))
   const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
@@ -111,20 +109,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
-    nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
-      if (to.matched[to.matched.length - 1]?.components?.default === from.matched[from.matched.length - 1]?.components?.default) {
+      if (to.matched.at(-1)?.components?.default === from.matched.at(-1)?.components?.default) {
         syncCurrentRoute()
       }
     })
 
     // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
-    const route = {} as RouteLocationNormalizedLoaded
+    const route = { sync: syncCurrentRoute } as NuxtApp['_route']
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation],
+        get: () => _route.value[key as keyof RouteLocationNormalizedLoadedGeneric],
         enumerable: true,
       })
     }
@@ -198,16 +195,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        if (isAppManifestEnabled) {
-          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
+        const routeRules = getRouteRules({ path: to.path })
 
-          if (routeRules.appMiddleware) {
-            for (const key in routeRules.appMiddleware) {
-              if (routeRules.appMiddleware[key]) {
-                middlewareEntries.add(key)
-              } else {
-                middlewareEntries.delete(key)
-              }
+        if (routeRules.appMiddleware) {
+          for (const key in routeRules.appMiddleware) {
+            if (routeRules.appMiddleware[key]) {
+              middlewareEntries.add(key)
+            } else {
+              middlewareEntries.delete(key)
             }
           }
         }
@@ -230,8 +225,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`,
+                  status: 404,
+                  statusText: `Page Not Found: ${initialURL}`,
                 })
                 await nuxtApp.runWithContext(() => showError(error))
                 return false
@@ -267,9 +262,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     router.afterEach((to) => {
       if (to.matched.length === 0) {
         return nuxtApp.runWithContext(() => showError(createError({
-          statusCode: 404,
+          status: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`,
+          statusText: `Page not found: ${to.fullPath}`,
           data: {
             path: to.fullPath,
           },

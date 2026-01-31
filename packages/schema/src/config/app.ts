@@ -1,8 +1,9 @@
+import process from 'node:process'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
-import { defineResolvers } from '../utils/definition'
-import type { AppHeadMetaObject } from '../types/head'
-import type { NuxtAppConfig } from '../types/config'
+import { defineResolvers } from '../utils/definition.ts'
+import type { AppHeadMetaObject } from '../types/head.ts'
+import type { NuxtAppConfig } from '../types/config.ts'
 
 export default defineResolvers({
   vue: {
