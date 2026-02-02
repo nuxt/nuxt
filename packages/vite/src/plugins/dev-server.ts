@@ -3,11 +3,12 @@ import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import { getPort } from 'get-port-please'
 import { defu } from 'defu'
 import type { H3Event as H3V2Event } from 'h3-next'
-import { createError } from 'h3'
 import type { H3Event as H3V1Event } from 'h3'
 import { useNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+
+import type { ErrorPartial } from '../types'
 
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
@@ -183,7 +184,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
         if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
-          throw createError({ statusCode: 404 })
+          throw { status: 404, unhandled: false } satisfies ErrorPartial
         }
       })
       await nuxt.callHook('server:devHandler', viteMiddleware, {
