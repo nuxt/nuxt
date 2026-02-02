@@ -1,4 +1,5 @@
 import pify from 'pify'
+import { createError } from 'h3'
 import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
@@ -140,7 +141,7 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
     // disallow cross-site requests in no-cors mode
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
     if (req.headers['sec-fetch-mode'] === 'no-cors' && req.headers['sec-fetch-site'] === 'cross-site') {
-      throw { status: 403 }
+      throw createError({ statusCode: 403 })
     }
 
     event.context.webpack = {
