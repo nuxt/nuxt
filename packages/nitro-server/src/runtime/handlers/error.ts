@@ -33,8 +33,10 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // remove proto/hostname/port from URL
   const url = new URL(errorObject.url)
   errorObject.url = withoutBase(url.pathname, useRuntimeConfig(event).app.baseURL) + url.search + url.hash
-  // add default server message
-  errorObject.message ||= 'Server Error'
+  // add default server message (keep sanitized for unhandled errors)
+  errorObject.message = (error as any).unhandled
+    ? (errorObject.message || 'Server Error')
+    : (error.message || errorObject.message || 'Server Error')
   // we will be rendering this error internally so we can pass along the error.data safely
   errorObject.data ||= error.data
   errorObject.statusText ||= (error as any).statusText || error.statusMessage
