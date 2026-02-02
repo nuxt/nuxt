@@ -62,7 +62,7 @@
     "ts-checker-rspack-plugin": "^1.2.4",
     "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
-    "unplugin": "^2.3.11",
+    "unplugin": "^3.0.0",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.2.0",
     "vue-loader": "^17.4.2",
