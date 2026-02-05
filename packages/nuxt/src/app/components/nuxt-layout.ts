@@ -99,6 +99,7 @@ export default defineComponent({
         {
           onAfterLeave () {
             delete nuxtApp._runningTransition
+
             nuxtApp.callHook('layout:transition:finish')
           },
         },
@@ -113,7 +114,11 @@ export default defineComponent({
           onPending: () => {
             if (hasTransition) { nuxtApp._runningTransition = true }
           },
-          onResolve: () => { nextTick(done) },
+          onResolve: async () => {
+            await nextTick(done)
+
+            delete nuxtApp._runningTransition
+          },
         },
         {
           default: () => h(
