@@ -29,6 +29,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
 
   router.beforeResolve(async (to, from) => {
+    if (to.matched.length === 0) { return }
+
     const viewTransitionMode = to.meta.viewTransition ?? defaultViewTransition
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
@@ -60,6 +62,16 @@ export default defineNuxtPlugin((nuxtApp) => {
     await nuxtApp.callHook('page:view-transition:start', transition)
 
     return ready
+  })
+
+  router.onError(() => {
+    abortTransition?.()
+    resetTransitionState()
+  })
+
+  nuxtApp.hook('app:error', () => {
+    abortTransition?.()
+    resetTransitionState()
   })
 
   nuxtApp.hook('vue:error', () => {
