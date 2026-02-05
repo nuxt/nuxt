@@ -1,5 +1,5 @@
-import type { FetchError, FetchOptions } from 'ofetch'
-import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
+import type { FetchError, FetchOptions, ResponseType as _ResponseType } from 'ofetch'
+import type { $Fetch, H3Event$Fetch, NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack/types'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
@@ -22,11 +22,11 @@ type ComputedOptions<T extends Record<string, any>> = {
   [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
 }
 
-interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
+interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>, DataT = any> extends FetchOptions<_ResponseType, DataT> {
   method?: M
 }
 
-type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
+type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>, DataT = any> = ComputedOptions<NitroFetchOptions<R, M, DataT>>
 
 export interface UseFetchOptions<
   ResT,
@@ -35,7 +35,7 @@ export interface UseFetchOptions<
   DefaultT = undefined,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
@@ -43,7 +43,7 @@ export interface UseFetchOptions<
 
 /**
  * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * See {@link https://nuxt.com/docs/4.x/api/composables/use-fetch}
  * @since 3.0.0
  * @param request The URL to fetch
  * @param opts extends $fetch options and useAsyncData options
@@ -59,14 +59,8 @@ export function useFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -78,7 +72,7 @@ export function useFetch<
   DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useFetch<
   ResT = void,
@@ -115,6 +109,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     ...fetchOptions
   } = opts
 
@@ -134,6 +129,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
+    timeout,
     watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
   }
 
@@ -151,25 +147,7 @@ export function useFetch<
     watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
-  let controller: AbortController
-
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, () => {
-    controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
-    controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
-
-    /**
-     * Workaround for `timeout` not working due to custom abort controller
-     * TODO: remove this when upstream issue is resolved
-     * @see https://github.com/unjs/ofetch/issues/326
-     * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
-     */
-    const timeoutLength = toValue(opts.timeout)
-    let timeoutId: NodeJS.Timeout
-    if (timeoutLength) {
-      timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
-      controller.signal.onabort = () => clearTimeout(timeoutId)
-    }
-
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
     let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
@@ -180,7 +158,7 @@ export function useFetch<
       }
     }
 
-    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
+    return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
@@ -188,7 +166,7 @@ export function useFetch<
 
 /**
  * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
+ * See {@link https://nuxt.com/docs/4.x/api/composables/use-lazy-fetch}
  * @since 3.0.0
  * @param request The URL to fetch
  * @param opts extends $fetch options and useAsyncData options
@@ -204,14 +182,8 @@ export function useLazyFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
-/**
- * Fetch data from an API endpoint with an SSR-friendly composable.
- * See {@link https://nuxt.com/docs/api/composables/use-lazy-fetch}
- * @param request The URL to fetch
- * @param opts extends $fetch options and useAsyncData options
- */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -223,7 +195,7 @@ export function useLazyFetch<
   DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useLazyFetch<
   ResT = void,
@@ -259,7 +231,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
   ]
-  for (const _obj of [opts.params || opts.query]) {
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  for (const _obj of [opts.query || opts.params]) {
     const obj = toValue(_obj)
     if (!obj) { continue }
 

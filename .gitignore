@@ -30,6 +30,7 @@ dist
 .output
 .output-*
 .gen
+.test
 
 # Junit reports
 reports
@@ -48,6 +49,10 @@ coverage
 !.idea/nuxt.iml
 !.idea/modules.xml
 !.idea/inspectionProfiles/Project_Default.xml
+
+# AI config 
+.agents
+.claude
 
 # OSX
 .DS_Store
@@ -83,3 +88,5 @@ test-results/
 playwright-report
 
 temp
+
+packages/ui-templates/node-compile-cache/

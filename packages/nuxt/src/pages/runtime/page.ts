@@ -68,6 +68,8 @@ export default defineComponent({
     let vnode: VNode
 
     const done = nuxtApp.deferHydration()
+    let isSuspensePending = false
+    let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
       useRouter().beforeEach(removeErrorHook)
@@ -142,9 +144,17 @@ export default defineComponent({
               const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
               if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
                 nextTick(() => {
-                  pageLoadingEndHookAlreadyCalled = true
-                  nuxtApp.callHook('page:loading:end')
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    pageLoadingEndHookAlreadyCalled = true
+                    nuxtApp.callHook('page:loading:end')
+                  }
                 })
+              }
+
+              // force suspense remount and restart async tracking
+              // if suspense is already pending and page key changed
+              if (isSuspensePending && previousPageKey !== key) {
+                suspenseKey++
               }
 
               previousPageKey = key
@@ -155,9 +165,6 @@ export default defineComponent({
                 routeProps.route.meta.pageTransition,
                 defaultPageTransition,
                 {
-                  onBeforeLeave () {
-                    nuxtApp._runningTransition = true
-                  },
                   onAfterLeave () {
                     delete nuxtApp._runningTransition
                     nuxtApp.callHook('page:transition:finish', routeProps.Component)
@@ -168,15 +175,27 @@ export default defineComponent({
               const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
+                  key: suspenseKey,
                   suspensible: true,
-                  onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-                  onResolve: () => {
-                    nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
+                  onPending: () => {
+                    isSuspensePending = true
+                    if (hasTransition) { nuxtApp._runningTransition = true }
+                    nuxtApp.callHook('page:start', routeProps.Component)
+                  },
+                  onResolve: async () => {
+                    isSuspensePending = false
+                    try {
+                      await nextTick()
+                      nuxtApp._route.sync?.()
+                      await nuxtApp.callHook('page:finish', routeProps.Component)
+                      delete nuxtApp._runningTransition
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
-                        return nuxtApp.callHook('page:loading:end')
+                        await nuxtApp.callHook('page:loading:end')
                       }
-                    }).finally(done))
+                    } finally {
+                      done()
+                    }
                   },
                 }, {
                   default: () => {
@@ -232,10 +251,14 @@ export default defineComponent({
 }
 
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = routeProps.filter(Boolean).map(prop => ({
-    ...prop,
-    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
-  }))
+  const _props: TransitionProps[] = []
+  for (const prop of routeProps) {
+    if (!prop) { continue }
+    _props.push({
+      ...prop,
+      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
+    })
+  }
   return defu(..._props as [TransitionProps, TransitionProps])
 }
 

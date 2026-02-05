@@ -2,15 +2,15 @@ import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { resolveModuleExportNames } from 'mlly'
 
-import { useNuxt } from './context'
-import { logger } from './logger'
-import { resolvePath } from './resolve'
-import { MODE_RE } from './utils'
+import { useNuxt } from './context.ts'
+import { logger } from './logger.ts'
+import { resolvePath } from './resolve.ts'
+import { MODE_RE } from './utils.ts'
 
 /**
  * Register a directory to be scanned for components and imported only when used.
  */
-export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
+export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}): void {
   const nuxt = useNuxt()
   nuxt.options.components ||= []
   dir.priority ||= 0
@@ -24,7 +24,7 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 /**
  * This utility takes a file path or npm package that is scanned for named exports, which are get added automatically
  */
-export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & { prefix?: string }) {
+export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & { prefix?: string }): void {
   const nuxt = useNuxt()
   const components: Component[] = []
   nuxt.hook('components:dirs', async () => {
@@ -42,7 +42,7 @@ export function addComponentExports (opts: Omit<AddComponentOptions, 'name'> & {
 /**
  * Register a component by its name and filePath.
  */
-export function addComponent (opts: AddComponentOptions) {
+export function addComponent (opts: AddComponentOptions): void {
   const component = normalizeComponent(opts)
   addComponents([component])
 }
@@ -59,7 +59,7 @@ function addComponents (addedComponents: Component[]) {
         const existingPriority = existingComponent.priority ?? 0
         const newPriority = component.priority ?? 0
 
-        if (newPriority < existingPriority) { return }
+        if (newPriority < existingPriority) { continue }
 
         // We override where new component priority is equal or higher
         // but we warn if they are equal.

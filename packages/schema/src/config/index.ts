@@ -1,20 +1,20 @@
-import type { ResolvableConfigSchema } from '../utils/definition'
-
-import adhoc from './adhoc'
-import app from './app'
-import build from './build'
-import common from './common'
-import dev from './dev'
-import esbuild from './esbuild'
-import experimental from './experimental'
-import generate from './generate'
-import internal from './internal'
-import nitro from './nitro'
-import postcss from './postcss'
-import router from './router'
-import typescript from './typescript'
-import vite from './vite'
-import webpack from './webpack'
+import adhoc from './adhoc.ts'
+import app from './app.ts'
+import build from './build.ts'
+import common from './common.ts'
+import dev from './dev.ts'
+import esbuild from './esbuild.ts'
+import oxc from './oxc.ts'
+import experimental from './experimental.ts'
+import generate from './generate.ts'
+import internal from './internal.ts'
+import nitro from './nitro.ts'
+import postcss from './postcss.ts'
+import router from './router.ts'
+import typescript from './typescript.ts'
+import vite from './vite.ts'
+import webpack from './webpack.ts'
+import type { InputObject } from 'untyped'
 
 export default {
   ...adhoc,
@@ -30,6 +30,7 @@ export default {
   ...router,
   ...typescript,
   ...esbuild,
+  ...oxc,
   ...vite,
   ...webpack,
-} satisfies ResolvableConfigSchema
+} as InputObject

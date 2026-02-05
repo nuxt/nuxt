@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 import { klona } from 'klona'
-import type { AppConfig } from 'nuxt/schema'
 import { useNuxtApp } from './nuxt'
+import type { AppConfig } from 'nuxt/schema'
 // @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
@@ -21,6 +21,12 @@ function isPojoOrArray (val: unknown): val is object {
 }
 
 function deepDelete (obj: any, newObj: any) {
+  if (Array.isArray(obj) && Array.isArray(newObj)) {
+    obj.length = 0
+    obj.push(...newObj)
+    return
+  }
+
   for (const key in obj) {
     const val = newObj[key]
     if (!(key in newObj)) {
@@ -39,7 +45,12 @@ function deepAssign (obj: any, newObj: any) {
     const val = newObj[key]
     if (isPojoOrArray(val)) {
       const defaultVal = Array.isArray(val) ? [] : {}
-      obj[key] ||= defaultVal
+      if (Array.isArray(obj[key]) !== Array.isArray(val)) {
+        obj[key] = defaultVal
+      } else {
+        obj[key] ??= defaultVal
+      }
+
       deepAssign(obj[key], val)
     } else {
       obj[key] = val
@@ -53,7 +64,7 @@ export function useAppConfig (): AppConfig {
   return nuxtApp._appConfig
 }
 
-export function _replaceAppConfig (newConfig: AppConfig) {
+export function _replaceAppConfig (newConfig: AppConfig): void {
   const appConfig = useAppConfig()
 
   deepAssign(appConfig, newConfig)
@@ -65,7 +76,7 @@ export function _replaceAppConfig (newConfig: AppConfig) {
  *
  * Will preserve existing properties.
  */
-export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
+export function updateAppConfig (appConfig: DeepPartial<AppConfig>): void {
   const _appConfig = useAppConfig()
   deepAssign(_appConfig, appConfig)
 }

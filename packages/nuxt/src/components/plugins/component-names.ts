@@ -1,9 +1,9 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
-import type { Component } from 'nuxt/schema'
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { parseAndWalk } from 'oxc-walker'
 
-import { SX_RE, isVue } from '../../core/utils'
+import { SX_RE, isVue } from '../../core/utils/index.ts'
+import type { Component } from 'nuxt/schema'
 
 interface NameDevPluginOptions {
   sourcemap: boolean
@@ -47,7 +47,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
               return
             }
 
-            const { start, end } = withLocations(node.declaration)
+            const { start, end } = node.declaration
             s.overwrite(start, end, `Object.assign(${code.slice(start, end)}, { __name: ${JSON.stringify(component.pascalName)} })`)
             this.skip()
           })

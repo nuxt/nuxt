@@ -4,10 +4,10 @@ import type { Identifier, ImportSpecifier } from 'estree'
 import { normalize, relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
-import { isJS, isVue } from '../../core/utils'
-import { distDir } from '../../dirs'
-import { logger } from '../../utils'
+import { parseAndWalk } from 'oxc-walker'
+import { isJS, isVue } from '../../core/utils/index.ts'
+import { distDir } from '../../dirs.ts'
+import { logger } from '../../utils.ts'
 
 interface UnheadImportsPluginOptions {
   sourcemap: boolean
@@ -15,6 +15,7 @@ interface UnheadImportsPluginOptions {
 }
 
 const UNHEAD_LIB_RE = /node_modules[/\\](?:@unhead[/\\][^/\\]+|unhead)[/\\]/
+const NUXT_HEAD_RE = /node_modules[/\\]nuxt[/\\]dist[/\\]head[/\\]runtime[/\\]/
 
 function toImports (specifiers: ImportSpecifier[]) {
   return specifiers.map((specifier) => {
@@ -42,7 +43,8 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         (isJS(id) || isVue(id, { type: ['script'] })) &&
         !id.startsWith('virtual:') &&
         !id.startsWith(normalize(distDir)) &&
-        !UNHEAD_LIB_RE.test(id)
+        !UNHEAD_LIB_RE.test(id) &&
+        !NUXT_HEAD_RE.test(id)
       )
     },
     transform: {
@@ -55,7 +57,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         parseAndWalk(code, id, function (node) {
           if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
             importsToAdd.push(...node.specifiers as ImportSpecifier[])
-            const { start, end } = withLocations(node)
+            const { start, end } = node
             s.remove(start, end)
           }
         })

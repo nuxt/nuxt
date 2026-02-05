@@ -2,8 +2,8 @@ import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
-import { distDir } from '../dirs'
-import { UnheadImportsPlugin } from './plugins/unhead-imports'
+import { distDir } from '../dirs.ts'
+import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
@@ -18,7 +18,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
 
-    const isNuxtV4 = nuxt.options._majorVersion === 4 || nuxt.options.future?.compatibilityVersion === 4
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
     for (const componentName of components) {
@@ -40,7 +39,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       ]
     }
 
-    nuxt.options.alias['#unhead/composables'] = resolve(runtimeDir, 'composables', isNuxtV4 ? 'v4' : 'v3')
+    nuxt.options.alias['#unhead/composables'] = resolve(runtimeDir, 'composables')
     addBuildPlugin(UnheadImportsPlugin({
       sourcemap: !!nuxt.options.sourcemap.server,
       rootDir: nuxt.options.rootDir,
@@ -54,7 +53,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       filename: 'unhead-options.mjs',
       getContents () {
         // disableDefaults is enabled to avoid server component issues
-        if (isNuxtV4 && !options.legacy) {
+        if (!options.legacy) {
           return `
 export default {
   disableDefaults: true,

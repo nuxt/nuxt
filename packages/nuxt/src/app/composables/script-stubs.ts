@@ -2,12 +2,12 @@ import type { UseScriptInput } from '@unhead/vue/scripts'
 import { createError } from './error'
 
 function renderStubMessage (name: string) {
-  const message = `\`${name}\` is provided by @nuxt/scripts. Check your console to install it or run 'npx nuxi@latest module add @nuxt/scripts' to install it.`
+  const message = `\`${name}\` is provided by @nuxt/scripts. Check your console to install it or run 'npx nuxt module add @nuxt/scripts' to install it.`
   if (import.meta.client) {
     throw createError({
       fatal: true,
-      statusCode: 500,
-      statusMessage: message,
+      status: 500,
+      statusText: message,
     })
   }
 }
@@ -129,4 +129,22 @@ export function useScriptUmamiAnalytics (...args: unknown[]) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptSnapchatPixel (...args: unknown[]) {
   renderStubMessage('useScriptSnapchatPixel')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptRybbitAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptRybbitAnalytics')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptDatabuddyAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptDatabuddyAnalytics')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptRedditPixel (...args: unknown[]) {
+  renderStubMessage('useScriptRedditPixel')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptPayPal (...args: unknown[]) {
+  renderStubMessage('useScriptPayPal')
 }
