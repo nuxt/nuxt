@@ -14,8 +14,7 @@ import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
 import { isWhitespace, logger, stripExtension } from '../../utils.ts'
-import type { FunctionCallMetadata } from '../utils/parse-utils.ts'
-import { parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../utils/parse-utils.ts'
+import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
   sourcemap: boolean
@@ -109,7 +108,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
         const id = stripExtension(_id)
 
-        const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)))
+        const { directImports, namespaces } = processImports(findStaticImports(script).map(i => parseStaticImport(i)), options.alias)
 
         // consider exports when processing a file that exports a keyed function
         const shouldConsiderExports = sources.has(id)

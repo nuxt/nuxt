@@ -833,6 +833,12 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
+      mlly:
+        specifier: ^1.8.0
+        version: 1.8.0
+      oxc-walker:
+        specifier: ^0.6.0
+        version: 0.6.0(oxc-parser@0.105.0)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3

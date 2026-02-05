@@ -6,6 +6,9 @@ import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks.ts
 import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
+import type { Awaitable, MaybeArray } from '../utils/definition.ts'
+import type { parseAndWalk } from 'oxc-walker'
+import type { ParsedStaticImport } from 'mlly'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -70,6 +73,72 @@ export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtPluginTemplate<Options = TemplateDefaultOptions> extends _TemplatePlugin<Options> { }
+
+export interface ScanPluginHandlerContext {
+  /**
+   * The identifier of the file being scanned. (usually the file path)
+   */
+  id: string
+  /**
+   * The string contents of the file being scanned.
+   */
+  code: string
+  /**
+   * The global Nuxt instance.
+   */
+  nuxt: Nuxt
+  /**
+   * A map of auto-imported identifiers to their source module.
+   * The source paths DO NOT have aliases resolved.
+   */
+  autoImportsToSources: Map<string, string>
+}
+
+/**
+ * A context object scoped to the current file, shared across all plugins that scan it.
+ */
+interface ScanPluginHandlerThisContext {
+  /**
+   * A shared walk function from `oxc-walker` that re-uses the same AST in all plugins for the same file.
+   * Only the first invocation of this function will parse the file.
+   */
+  walkParsed: (options: Parameters<typeof parseAndWalk>[2]) => ReturnType<typeof parseAndWalk>
+  /**
+   * A shared utility to get the parsed static imports from `mlly` that re-uses the same result in all plugins
+   * for the same file.
+   * Only the first invocation of this function will parse the file.
+   */
+  getParsedStaticImports: () => ParsedStaticImport[]
+}
+
+type ScanPluginHandler = (this: ScanPluginHandlerThisContext, ctx: ScanPluginHandlerContext) => Awaitable<void>
+
+export interface ScanPlugin {
+  name: string
+  filter?: {
+    /**
+     * Filter the files by their identifier.
+     */
+    id?: ScanPluginFilter
+    /**
+     * Filter the files by their contents.
+     */
+    code?: ScanPluginFilter
+  }
+  scan: ScanPluginHandler
+  /**
+   * This function is called after the scan is complete.
+   * It can be used to perform any final actions like adding build plugins or modifying
+   * the Nuxt instance before proceeding with the build.
+   */
+  afterScan?: (nuxt: Nuxt) => Awaitable<void>
+}
+
+type FilterPattern = MaybeArray<RegExp | string>
+type ScanPluginPatternFilter =
+  | { include: FilterPattern, exclude?: FilterPattern }
+  | { include?: FilterPattern, exclude: FilterPattern }
+export type ScanPluginFilter<T = string> = ((input: T) => boolean) | ScanPluginPatternFilter
 
 export interface NuxtApp {
   mainComponent?: string | null

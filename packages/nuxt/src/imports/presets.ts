@@ -30,7 +30,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/component',
   },
   {
-    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
+    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData', 'createUseAsyncData'],
     from: '#app/composables/asyncData',
   },
   {
@@ -50,7 +50,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/error',
   },
   {
-    imports: ['useFetch', 'useLazyFetch'],
+    imports: ['useFetch', 'useLazyFetch', 'createUseFetch'],
     from: '#app/composables/fetch',
   },
   {
