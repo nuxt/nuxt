@@ -42,7 +42,7 @@ function createCurrentLocation (
   return path + (path.includes('?') ? '' : search) + hash
 }
 
-const PCT_ENCODE_RE = /%[0-9A-Fa-f]{2}/
+const PCT_ENCODE_RE = /%[0-9A-F]{2}/i
 function normalizeRouteStr (value: string) {
   return PCT_ENCODE_RE.test(value) ? decodePath(value) : value
 }

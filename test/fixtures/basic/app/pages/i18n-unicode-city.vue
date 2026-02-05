@@ -5,5 +5,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div id="city-ok">CITY_PAGE_OK</div>
+  <div id="city-ok">
+    CITY_PAGE_OK
+  </div>
 </template>
