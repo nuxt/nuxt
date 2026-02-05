@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack/types'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
-import { getQuery as getURLQuery, joinURL } from 'ufo'
+import { encodePath, getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
@@ -172,7 +172,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    // Encode the path for the header since ssrContext.url is decoded
+    appendResponseHeader(event, 'x-nitro-prerender', encodePath(joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME)))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
@@ -250,6 +251,13 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (!NO_SCRIPTS) {
     // 4. Resource Hints
+    // Remove lazy hydrated modules from ssrContext.modules so they don't get preloaded
+    // (CSS links are already added above, this only affects JS preloads)
+    if (ssrContext['~lazyHydratedModules']) {
+      for (const id of ssrContext['~lazyHydratedModules']) {
+        ssrContext.modules?.delete(id)
+      }
+    }
     ssrContext.head.push({
       link: getPreloadLinks(ssrContext, renderer.rendererContext) as Link[],
     }, headEntryOptions)

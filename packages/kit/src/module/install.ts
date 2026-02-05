@@ -77,7 +77,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       if (value.version) {
         const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
         const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
-        if (pkg?.version && !semver.satisfies(pkg.version, value.version)) {
+        if (pkg?.version && !semver.satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)
         }
@@ -350,7 +350,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
     if (!previousVersion) {
       await nuxtModule.onInstall?.(nuxt)
     } else if (semver.gt(meta.version, previousVersion)) {
-      await nuxtModule.onUpgrade?.(inlineOptions, nuxt, previousVersion)
+      await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion)
     }
     if (previousVersion !== meta.version) {
       updateRc(
