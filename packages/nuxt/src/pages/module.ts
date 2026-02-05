@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
+import { genImport, genObjectFromRawEntries, genObjectKey, genSafeVariableName, genString } from 'knitwork'
 import { joinURL } from 'ufo'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
@@ -636,7 +636,7 @@ export default defineNuxtModule({
           'import type { ComputedRef, MaybeRef } from \'vue\'',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',
-          ...Array.from(interfaceKeyValues.entries()).map(([key, value]) => `    '${key}': InstanceType<typeof ${value}>['$props'],`),
+          ...Array.from(interfaceKeyValues.entries()).map(([key, value]) => `    ${genObjectKey(key)}: InstanceType<typeof ${value}>['$props'],`),
           '}',
           '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
