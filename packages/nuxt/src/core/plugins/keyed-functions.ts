@@ -23,6 +23,8 @@ interface KeyedFunctionsOptions {
   alias: Record<string, string>
   // TODO: remove in Nuxt 5
   getAutoImports: () => Promise<Import[]>
+  // TODO: remove in Nuxt 5
+  appDir: string
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
@@ -97,8 +99,6 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   // TODO: come up with a better way to include files importing a `default` export (imported name can be arbitrary)
   const CODE_INCLUDE_RE = new RegExp(`\\b(${[...namesToSourcesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
 
-  const nuxtSrcPath = stripExtension(resolveAlias('#app', options.alias))
-
   return {
     name: 'nuxt:compiler:keyed-functions',
     enforce: 'post',
@@ -161,13 +161,9 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             if (fnMeta) { return fnMeta }
 
             // TODO: remove in Nuxt 5
-            if (
-              source.startsWith(nuxtSrcPath)
-              // ensure that the path has been resolved
-              && nuxtSrcPath !== '#app'
-            ) {
+            if (source.startsWith(options.appDir)) {
               for (const [fnSource, meta] of sourcesToMetas) {
-                if (meta.name !== functionName || !fnSource.startsWith(nuxtSrcPath)) { continue }
+                if (meta.name !== functionName || !fnSource.startsWith(options.appDir)) { continue }
                 return meta
               }
             }
@@ -310,7 +306,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   // or the specified function's source RegExp matches the import source
                   || (fnMeta.source instanceof RegExp && fnMeta.source.test(importSourceResolved))
                   // or the function is from the Nuxt source (`#app` barrel export, for example)
-                  || (typeof fnMeta.source === 'string' && fnMeta.source.startsWith(nuxtSrcPath))
+                  || (typeof fnMeta.source === 'string' && fnMeta.source.startsWith(options.appDir))
                 )
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration
