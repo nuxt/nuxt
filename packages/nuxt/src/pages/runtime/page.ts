@@ -74,7 +74,6 @@ export default defineComponent({
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
       useRouter().beforeEach(removeErrorHook)
     }
-
     if (import.meta.client && props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {
         if (next !== prev) {
@@ -94,6 +93,8 @@ export default defineComponent({
       })
       onBeforeUnmount(() => {
         unsub()
+        // Ensure hydration completes if unmounted before Suspense resolves (e.g., layout change)
+        done()
       })
     }
 
