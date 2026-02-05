@@ -99,10 +99,16 @@ export default defineComponent({
       if (hasLayout && typeof transitionProps === 'object') {
         nuxtApp._runningTransition = true
 
-        transitionProps.onAfterLeave = () => {
+        const existingOnAfterLeave = transitionProps.onAfterLeave
+
+        transitionProps.onAfterLeave = (el: Element) => {
           delete nuxtApp._runningTransition
 
           nuxtApp.callHook('layout:transition:finish')
+
+          if (typeof existingOnAfterLeave === 'function') {
+            existingOnAfterLeave(el)
+          }
         }
       }
 
