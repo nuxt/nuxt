@@ -691,7 +691,7 @@ if (import.meta.hot) {
       }
       for (const route of router.getRoutes()) {
         route._initial = true
-      } 2
+      }
       for (const route of addedRoutes) {
         router.addRoute(route)
       }
