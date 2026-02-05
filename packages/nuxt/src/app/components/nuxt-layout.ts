@@ -91,7 +91,7 @@ export default defineComponent({
     return () => {
       const hasLayout = !!layout.value && layout.value in layouts
 
-      const hasTransition = hasLayout && !!(route?.meta.layoutTransition || defaultLayoutTransition)
+      const hasTransition = hasLayout && !!(route?.meta.layoutTransition ?? defaultLayoutTransition)
 
       const transitionProps = hasTransition && _mergeTransitionProps([
         route?.meta.layoutTransition,
