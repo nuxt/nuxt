@@ -131,7 +131,7 @@ export default defineComponent({
 
               if (isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
               // if leaving a route with an existing child route, render the old vnode
-                if (hasSameChildren) {
+                if (hasSameChildren || vnode) {
                   return vnode
                 }
                 // If _leaving_ null child route, return null vnode

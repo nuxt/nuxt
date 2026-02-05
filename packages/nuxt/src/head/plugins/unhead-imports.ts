@@ -15,6 +15,7 @@ interface UnheadImportsPluginOptions {
 }
 
 const UNHEAD_LIB_RE = /node_modules[/\\](?:@unhead[/\\][^/\\]+|unhead)[/\\]/
+const NUXT_HEAD_RE = /node_modules[/\\]nuxt[/\\]dist[/\\]head[/\\]runtime[/\\]/
 
 function toImports (specifiers: ImportSpecifier[]) {
   return specifiers.map((specifier) => {
@@ -42,7 +43,8 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         (isJS(id) || isVue(id, { type: ['script'] })) &&
         !id.startsWith('virtual:') &&
         !id.startsWith(normalize(distDir)) &&
-        !UNHEAD_LIB_RE.test(id)
+        !UNHEAD_LIB_RE.test(id) &&
+        !NUXT_HEAD_RE.test(id)
       )
     },
     transform: {

@@ -50,6 +50,10 @@ coverage
 !.idea/modules.xml
 !.idea/inspectionProfiles/Project_Default.xml
 
+# AI config 
+.agents
+.claude
+
 # OSX
 .DS_Store
 .AppleDouble

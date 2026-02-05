@@ -286,18 +286,28 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
         const nitroImport = nitroImportsByName.get(importName)
         if (!nitroImport || i.dtsDisabled || nitroImport.dtsDisabled) { continue }
 
-        sharedImports.push(i)
+        // Only include if both contexts import from the same source
+        // to avoid polluting shared space with nitro- or nuxt-only types (as a side-effect)
+        if (i.from !== nitroImport.from) { continue }
 
-        // add the nitro import too to create a union, if it differs
-        // TODO: uncomment when https://github.com/unjs/unimport/pull/489 is merged
-        // if (i.from !== nitroImport.from) {
-        //   sharedImports.push(nitroImport)
-        // }
+        sharedImports.push(i)
       }
 
       await cacheImportPaths(sharedImports)
 
-      return GENERATED_BY_COMMENT + toTypeDeclarationFile(sharedImports, { resolvePath: r })
+      // Utilities that exist in both Nuxt and Nitro contexts but with different implementations.
+      // These are safe to use in the shared context.
+      const handCraftedDeclarations = `
+  const useRuntimeConfig: (event?: import('h3').H3Event) => import('nuxt/schema').RuntimeConfig
+  const useAppConfig: () => import('nuxt/schema').AppConfig
+  const defineAppConfig: <C extends import('nuxt/schema').AppConfigInput>(config: C) => C
+  const createError: typeof import('h3')['createError']
+  const setResponseStatus: typeof import('h3')['setResponseStatus']`
+
+      return GENERATED_BY_COMMENT + toTypeDeclarationFile(sharedImports, { resolvePath: r }).replace(
+        /^declare global \{$/m,
+        `declare global {${handCraftedDeclarations}`,
+      )
     },
   })
 }
