@@ -1,5 +1,5 @@
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import { genDynamicImport, genDynamicTypeImport } from 'knitwork'
+import { genDynamicImport, genDynamicTypeImport, genObjectKey } from 'knitwork'
 import { distDir } from '../dirs.ts'
 import type { NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
@@ -190,8 +190,8 @@ import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {
-${componentTypes.map(([pascalName, type]) => `  '${pascalName}': ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `  'Lazy${pascalName}': LazyComponent<${type}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(pascalName)}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `  ${genObjectKey(`Lazy${pascalName}`)}: LazyComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {
