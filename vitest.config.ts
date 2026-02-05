@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { resolve } from 'pathe'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
@@ -70,7 +71,7 @@ export default defineConfig({
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
-            '#build/router.options': resolve('./test/mocks/router-options'),
+            '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/dist/app'),

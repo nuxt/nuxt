@@ -19,13 +19,11 @@ interface LoadPayloadOptions {
 /** @since 3.0.0 */
 export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
-  // TODO: allow payload extraction for non-prerendered URLs
-  const shouldLoadPayload = await isPrerendered(url)
-  if (!shouldLoadPayload) {
-    return null
+  if (await shouldLoadPayload(url)) {
+    const payloadURL = await _getPayloadURL(url, opts)
+    return await _importPayload(payloadURL) || null
   }
-  const payloadURL = await _getPayloadURL(url, opts)
-  return await _importPayload(payloadURL) || null
+  return null
 }
 let linkRelType: string | undefined
 function detectLinkRelType () {
@@ -91,20 +89,51 @@ async function _importPayload (payloadURL: string) {
   }
   return null
 }
-/** @since 3.0.0 */
-export async function isPrerendered (url = useRoute().path) {
-  const nuxtApp = useNuxtApp()
-  // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
-  url = url === '/' ? url : url.replace(/\/$/, '')
-  const manifest = await getAppManifest()
-  if (manifest.prerendered.includes(url)) {
+
+function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {
+  if (rules.redirect) {
+    return false
+  }
+  if (rules.prerender) {
     return true
   }
-  return nuxtApp.runWithContext(async () => {
-    const rules = await getRouteRules({ path: url })
-    return !!rules.prerender && !rules.redirect
-  })
+}
+
+async function _isPrerenderedInManifest (url: string) {
+  // Note: Alternative for server is checking x-nitro-prerender header
+  if (!appManifest) {
+    return false
+  }
+  url = url === '/' ? url : url.replace(/\/$/, '')
+  const manifest = await getAppManifest()
+  return manifest.prerendered.includes(url)
+}
+
+/**
+ * @internal
+ */
+export async function shouldLoadPayload (url = useRoute().path) {
+  const rules = getRouteRules({ path: url })
+  const res = _shouldLoadPrerenderedPayload(rules)
+  if (res !== undefined) {
+    return res
+  }
+
+  if (rules.payload) {
+    return true
+  }
+
+  return await _isPrerenderedInManifest(url)
+}
+
+/** @since 3.0.0 */
+export async function isPrerendered (url = useRoute().path) {
+  const res = _shouldLoadPrerenderedPayload(getRouteRules({ path: url }))
+  if (res !== undefined) {
+    return res
+  }
+
+  return await _isPrerenderedInManifest(url)
 }
 
 let payloadCache: NuxtPayload | null = null
@@ -153,7 +182,7 @@ export function definePayloadReducer (
   reduce: (data: any) => any,
 ) {
   if (import.meta.server) {
-    useNuxtApp().ssrContext!._payloadReducers[name] = reduce
+    useNuxtApp().ssrContext!['~payloadReducers'][name] = reduce
   }
 }
 

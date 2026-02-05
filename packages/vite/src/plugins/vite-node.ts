@@ -6,8 +6,7 @@ import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { createError } from 'h3'
-import { join, normalize, resolve } from 'pathe'
+import { join, normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
@@ -17,10 +16,11 @@ import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
 import { provider } from 'std-env'
+import { resolveModulePath } from 'exsolve'
 
-import { distDir } from '../dirs'
-import { isCSS } from '../utils'
-import { resolveClientEntry, resolveServerEntry } from '../utils/config'
+import { isCSS } from '../utils/index.ts'
+import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
+import type { ErrorPartial } from '../types.ts'
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
@@ -274,7 +274,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           case 'resolve': {
             const { id: resolveId, importer } = request.payload
             if (!resolveId) {
-              throw createError({ statusCode: 400, message: 'Missing id for resolve' })
+              throw { status: 400, message: 'Missing id for resolve' } satisfies ErrorPartial
             }
             const ssrNode = nuxt.options.experimental.viteEnvironmentApi
               ? ssrServer.environments.ssr.pluginContainer
@@ -285,7 +285,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
           }
           case 'module': {
             if (request.payload.moduleId === '/') {
-              throw createError({ statusCode: 400, message: 'Invalid moduleId' })
+              throw { status: 400, message: 'Invalid moduleId' } satisfies ErrorPartial
             }
             const ssrNode = nuxt.options.experimental.viteEnvironmentApi
               ? ssrServer.environments.ssr
@@ -311,14 +311,14 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
                   // Ignore transform errors
                   }
                 }
-                throw createError({ data: errorData, message: err.message || 'Error fetching module' })
+                throw { data: errorData, message: err.message || 'Error fetching module' } satisfies ErrorPartial
               }) as Exclude<FetchResult, { cache: true }>
             sendResponse<typeof request.type>(socket, request.id, response)
             return
           }
           default:
             // @ts-expect-error this should never happen
-            throw createError({ statusCode: 400, message: `Unknown request type: ${request.type}` })
+            throw { status: 400, message: `Unknown request type: ${request.type}` } satisfies ErrorPartial
         }
       } catch (error: any) {
         sendError(socket, request.id, error)
@@ -474,8 +474,8 @@ function sendError (socket: net.Socket, id: number, error: any) {
     error: {
       message: error.message,
       stack: error.stack,
-      statusCode: error.statusCode,
-      statusMessage: error.statusMessage,
+      status: error.status,
+      statusText: error.statusText,
       data: error.data,
     },
   }
@@ -507,9 +507,9 @@ export type ViteNodeServerOptions = {
   requestTimeout?: number
 }
 
-export async function writeDevServer (nuxt: Nuxt) {
-  const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
-  const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
+export async function writeDevServer (nuxt: Nuxt): Promise<void> {
+  const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
+  const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
 
   const serverDist = join(nuxt.options.buildDir, 'dist/server')
 
@@ -518,6 +518,9 @@ export async function writeDevServer (nuxt: Nuxt) {
   await Promise.all([
     writeFile(join(serverDist, 'server.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`),
     writeFile(join(serverDist, 'client.precomputed.mjs'), `export default undefined`),
-    writeFile(join(serverDist, 'client.manifest.mjs'), `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`),
+    writeFile(join(serverDist, 'client.manifest.mjs'), `
+import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))}
+export default () => viteNodeFetch.getManifest()
+    `),
   ])
 }

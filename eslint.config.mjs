@@ -7,8 +7,7 @@ import perfectionist from 'eslint-plugin-perfectionist'
 import { importX } from 'eslint-plugin-import-x'
 import parser from '@typescript-eslint/parser'
 import markdown from '@eslint/markdown'
-
-import { runtimeDependencies } from './packages/nuxt/src/meta.mjs'
+import { runtimeDependencies } from 'nuxt/meta'
 
 export default createConfigForNuxt({
   features: {
@@ -24,6 +23,7 @@ export default createConfigForNuxt({
       // Ignores have to be a separate object to be treated as global ignores
       // Don't add other attributes to this object
       ignores: [
+        '.goff/**',
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
@@ -144,7 +144,7 @@ export default createConfigForNuxt({
   // Append local rules
   .append(
     {
-      files: ['packages/**/*.ts', 'packages/**/*.mts', 'packages/**/*.js', 'packages/**/*.mjs'],
+      files: ['*.{js,ts}', 'scripts/**/*.{js,ts}', 'packages/**/*.{mts,ts,mjs,js}'],
       ignores: ['packages/**/*.client.ts', 'packages/**/*.client.mts', 'packages/**/*.client.js', 'packages/**/*.client.mjs'],
       name: 'local/requires/explicit-node-imports',
       rules: {
@@ -175,7 +175,7 @@ export default createConfigForNuxt({
           {
             zones: [
               {
-                from: 'packages/nuxt/src/!(core)/**/*',
+                from: 'packages/nuxt/src/!(core)/runtime/*',
                 message: 'core should not directly import from modules.',
                 target: 'packages/nuxt/src/core',
               },
@@ -206,6 +206,22 @@ export default createConfigForNuxt({
             ],
           },
         ],
+      },
+    },
+    {
+      files: ['packages/*/src/**'],
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      name: 'local/import-extensions',
+      plugins: {
+        'import-x': importX,
+      },
+      rules: {
+        'import/extensions': ['error', 'always', {
+          ignorePackages: true,
+          js: 'always',
+          ts: 'always',
+          vue: 'always',
+        }],
       },
     },
     {
@@ -314,8 +330,4 @@ export default createConfigForNuxt({
   )
 
   // Generate type definitions for the eslint config
-  // @ts-expect-error type issues in eslint
-  .onResolved((configs) => {
-    // @ts-expect-error type issues in eslint
-    return typegen(configs)
-  })
+  .onResolved(configs => typegen(configs))

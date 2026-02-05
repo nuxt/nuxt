@@ -9,10 +9,10 @@ import type { DotenvOptions, SourceOptions } from 'c12'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { Options } from 'ignore'
 import type { ChokidarOptions } from 'chokidar'
-import type { H3CorsOptions } from 'h3'
+// @ts-expect-error compatibility import for h3 (v1 + v2)
+import type { CorsOptions, H3CorsOptions } from 'h3'
 import type { NuxtLinkOptions } from 'nuxt/app'
 import type { FetchOptions } from 'ofetch'
-import type { NitroConfig, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -30,15 +30,16 @@ import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
-import type { RouterConfigSerializable } from './router'
-import type { NuxtHooks } from './hooks'
-import type { ModuleMeta, NuxtModule } from './module'
-import type { NuxtDebugOptions } from './debug'
-import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt'
-import type { SerializableHtmlAttributes } from './head'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config'
-import type { ImportsOptions } from './imports'
-import type { ComponentsOptions } from './components'
+import type { RouterConfigSerializable } from './router.ts'
+import type { NuxtHooks } from './hooks.ts'
+import type { ModuleMeta, NuxtModule } from './module.ts'
+import type { NuxtDebugOptions } from './debug.ts'
+import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
+import type { SerializableHtmlAttributes } from './head.ts'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
+import type { ImportsOptions } from './imports.ts'
+import type { ComponentsOptions } from './components.ts'
+import type { KeyedFunction } from './compiler.ts'
 
 export interface ConfigSchema {
   /**
@@ -496,14 +497,14 @@ export interface ConfigSchema {
    * Build time optimization configuration.
    */
   optimization: {
-  /**
-   * Functions to inject a key for.
-   *
-   * As long as the number of arguments passed to the function is less than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. You will need to take steps to handle this additional key.
-   * The key will be unique based on the location of the function being invoked within the file.
-   *
-   */
-    keyedComposables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
+    /**
+     * Functions to inject a key for.
+     *
+     * As long as the number of arguments passed to the function is lower than `argumentLength`, an additional magic string will be injected that can be used to deduplicate requests between server and client. You will need to take steps to handle this additional key.
+     * The key will be unique based on the location of the function being invoked within the file.
+     *
+     */
+    keyedComposables: KeyedFunction[]
 
     /**
      * Tree shake code from specific builds.
@@ -981,7 +982,11 @@ export interface ConfigSchema {
     /**
      * Set CORS options for the dev server
      */
-    cors: H3CorsOptions
+    cors: 'origin' extends keyof H3CorsOptions
+      ? 'origin' extends keyof CorsOptions
+        ? CorsOptions | H3CorsOptions
+        : H3CorsOptions
+      : CorsOptions
   }
 
   /**
@@ -1039,22 +1044,25 @@ export interface ConfigSchema {
   }
 
   experimental: {
-  /**
-   * Enable to use experimental decorators in Nuxt and Nitro.
-   *
-   *
-   * @see https://github.com/tc39/proposal-decorators
-   */
+    /**
+     * Enable to use experimental decorators in Nuxt and Nitro.
+     *
+     * @default false
+     * @see https://github.com/tc39/proposal-decorators
+     */
     decorators: boolean
 
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
+     *
+     * @default false
      */
     asyncEntry: boolean
 
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      *
+     * @default true
      * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
      */
     externalVue: boolean
@@ -1062,6 +1070,7 @@ export interface ConfigSchema {
     /**
      * Enable accessing `appConfig` from server routes.
      *
+     * @default true
      * @deprecated This option is not recommended.
      */
     serverAppConfig: boolean
@@ -1073,6 +1082,7 @@ export interface ConfigSchema {
      * Setting `automatic-immediate` will lead Nuxt to perform a reload of the current route right when a chunk fails to load (instead of waiting for navigation).
      * You can disable automatic handling by setting this to `false`, or handle chunk errors manually by setting it to `manual`.
      *
+     * @default 'automatic'
      * @see [Nuxt PR #19038](https://github.com/nuxt/nuxt/pull/19038)
      */
     emitRouteChunkError: false | 'manual' | 'automatic' | 'automatic-immediate'
@@ -1081,6 +1091,8 @@ export interface ConfigSchema {
      * By default the route object returned by the auto-imported `useRoute()` composable is kept in sync with the current page in view in `<NuxtPage>`. This is not true for `vue-router`'s exported `useRoute` or for the default `$route` object available in your Vue templates.
      *
      * By enabling this option a mixin will be injected to keep the `$route` template object in sync with Nuxt's managed `useRoute()`.
+     *
+     * @default true
      */
     templateRouteInjection: boolean
 
@@ -1089,37 +1101,50 @@ export interface ConfigSchema {
      *
      * To avoid hydration errors, it will be applied only after the Vue app has been mounted, meaning there may be a flicker on initial load.
      * Consider carefully before enabling this as it can cause unexpected behavior, and consider providing explicit keys to `useState` as auto-generated keys may not match across builds.
+     *
+     * @default false
      */
     restoreState: boolean
 
     /**
      * Render JSON payloads with support for revivifying complex types.
+     *
+     * @default true
      */
     renderJsonPayloads: boolean
 
     /**
      * Disable vue server renderer endpoint within nitro.
+     *
+     * @default false
      */
     noVueServer: boolean
 
     /**
      * When this option is enabled (by default) payload of pages that are prerendered are extracted
+     *
+     * @default true
      */
     payloadExtraction: boolean | undefined
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
+     *
+     * @default false
      */
     clientFallback: boolean
 
     /**
      * Enable cross-origin prefetch using the Speculation Rules API.
+     *
+     * @default false
      */
     crossOriginPrefetch: boolean
 
     /**
      * Enable View Transition API integration with client-side router.
      *
+     * @default false
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
      */
     viewTransition: boolean | 'always'
@@ -1127,6 +1152,7 @@ export interface ConfigSchema {
     /**
      * Write early hints when using node server.
      *
+     * @default false
      * @note nginx does not support 103 Early hints in the current version.
      */
     writeEarlyHints: boolean
@@ -1135,21 +1161,29 @@ export interface ConfigSchema {
      * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
      *
      * By default it is set to 'auto', which means it will be enabled only when there are islands, server components or server pages in your app.
+     *
+     * @default 'auto'
      */
     componentIslands: true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false
 
     /**
      * Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories.
+     *
+     * @default true
      */
     localLayerAliases: boolean
 
     /**
      * Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router).
+     *
+     * @default false
      */
     typedPages: boolean
 
     /**
      * Use app manifests to respect route rules on client-side.
+     *
+     * @default true
      */
     appManifest: boolean
 
@@ -1157,6 +1191,7 @@ export interface ConfigSchema {
      * Set the time interval (in ms) to check for new builds. Disabled when `experimental.appManifest` is `false`.
      *
      * Set to `false` to disable.
+     * @default 3600000 (1 hour)
      */
     checkOutdatedBuildInterval: number | false
 
@@ -1170,12 +1205,15 @@ export interface ConfigSchema {
      * @see [chokidar](https://github.com/paulmillr/chokidar)
      *
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
+     *
+     * @default 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
      */
     watcher: 'chokidar' | 'parcel' | 'chokidar-granular'
 
     /**
      * Enable native async context to be accessible for nested composables
      *
+     * @default false
      * @see [Nuxt PR #20918](https://github.com/nuxt/nuxt/pull/20918)
      */
     asyncContext: boolean
@@ -1185,6 +1223,7 @@ export interface ConfigSchema {
      *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way. - Uses the hash hydration plugin to reduce initial hydration
      *
+     * @default true
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
     headNext: boolean
@@ -1194,6 +1233,8 @@ export interface ConfigSchema {
      *
      * Rules are converted (based on the path) and applied for server requests. For example, a rule defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests. A rule in `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
      * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you should set `routeRules` directly within your `nuxt.config`.
+     *
+     * @default false
      */
     inlineRouteRules: boolean
 
@@ -1202,6 +1243,7 @@ export interface ConfigSchema {
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
+     * @default 'after-resolve'
      * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
      */
     scanPageMeta: boolean | 'after-resolve'
@@ -1210,6 +1252,8 @@ export interface ConfigSchema {
      * Configure additional keys to extract from the page metadata when using `scanPageMeta`.
      *
      * This allows modules to access additional metadata from the page metadata. It's recommended to augment the NuxtPage types with your keys.
+     *
+     * @default []
      */
     extraPageMetaExtractionKeys: string[]
 
@@ -1218,6 +1262,7 @@ export interface ConfigSchema {
      *
      * It is particularly important when enabling this feature to make sure that any unique key of your data is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch` should do this automatically for you.)
      *
+     * @default true
      * @example
      * ```ts
      * // This would be unsafe in a dynamic page (e.g. `[slug].vue`) because the route slug makes a difference
@@ -1237,12 +1282,16 @@ export interface ConfigSchema {
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
      *
+     * @default true
      * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
      */
     cookieStore: boolean
 
     /**
      * Enable experimental Vite Environment API
+     * @see [Vite Environment API](https://vite.dev/guide/api-environment#environment-api)
+     * @default false
+     * @default true with compatibilityVersion >= 5
      */
     viteEnvironmentApi: boolean
 
@@ -1252,10 +1301,14 @@ export interface ConfigSchema {
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the `app/` directory.
      */
     defaults: {
+      /**
+       * @default { componentName: 'NuxtLink', prefetch: true, prefetchOn: { visibility: true }}
+       */
       nuxtLink: NuxtLinkOptions
 
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
+       * @default { deep: false }
        */
       useAsyncData: {
         deep: boolean
@@ -1267,6 +1320,7 @@ export interface ConfigSchema {
     /**
      * Automatically polyfill Node.js imports in the client build using `unenv`.
      *
+     * @default false
      * @see [unenv](https://github.com/unjs/unenv)
      *
      * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
@@ -1283,6 +1337,8 @@ export interface ConfigSchema {
      * Wait for a single animation frame before navigation, which gives an opportunity for the browser to repaint, acknowledging user interaction.
      *
      * It can reduce INP when navigating on prerendered routes.
+     *
+     * @default true
      */
     navigationRepaint: boolean
 
@@ -1290,17 +1346,20 @@ export interface ConfigSchema {
      * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
      *
      * This only works for source files within `srcDir` and `serverDir` for the Vue/Nitro parts of your app.
+     * @default false
      */
     buildCache: boolean
 
     /**
      * Ensure that auto-generated Vue component names match the full component name you would use to auto-import the component.
+     * @default true
      */
     normalizeComponentNames: boolean
 
     /**
      * Keep showing the spa-loading-template until suspense:resolve
      *
+     * @default 'body'
      * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)
      */
     spaLoadingTemplateLocation: 'body' | 'within'
@@ -1320,6 +1379,8 @@ export interface ConfigSchema {
      *   }
      * })
      * ```
+     *
+     * @default {isDev}
      *
      * @see [PR #29922](https://github.com/nuxt/nuxt/pull/29922)
      *
@@ -1341,6 +1402,7 @@ export interface ConfigSchema {
      *
      * When enabled, Nuxt will track which modules modify configuration options, making it easier to trace unexpected configuration changes.
      *
+     * @default false
      * @example
      * ```ts
      * // nuxt.config.ts
@@ -1361,6 +1423,7 @@ export interface ConfigSchema {
      *
      * This feature intelligently determines when to hydrate lazy components based on visibility, idle time, or other triggers, improving performance by deferring hydration of components until they're needed.
      *
+     * @default true
      * @example
      * ```ts
      * // nuxt.config.ts
@@ -1387,6 +1450,7 @@ export interface ConfigSchema {
      *
      * By default, Nuxt attempts to resolve imports in templates relative to the module that added them. Setting this to `false` disables this behavior, which may be useful if you're experiencing resolution conflicts in certain environments.
      *
+     * @default true
      * @example
      * ```ts
      * // nuxt.config.ts
@@ -1406,7 +1470,7 @@ export interface ConfigSchema {
      * Whether to clean up Nuxt static and asyncData caches on route navigation.
      *
      * Nuxt will automatically purge cached data from `useAsyncData` and `nuxtApp.static.data`. This helps prevent memory leaks and ensures fresh data is loaded when needed, but it is possible to disable it.
-     *
+     * @default true
      * @example
      * ```ts
      * // nuxt.config.ts
@@ -1424,6 +1488,8 @@ export interface ConfigSchema {
 
     /**
      * Whether to call and use the result from `getCachedData` on manual refresh for `useAsyncData` and `useFetch`.
+     *
+     * @default true
      */
     granularCachedData: boolean
 
@@ -1431,26 +1497,36 @@ export interface ConfigSchema {
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
      *
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
+     *
+     * @default false
      */
     alwaysRunFetchOnKeyChange: boolean
 
     /**
      * Whether to parse `error.data` when rendering a server error page.
+     *
+     * @default true
      */
     parseErrorData: boolean
 
     /**
      * Whether Nuxt should stop if a Nuxt module is incompatible.
+     *
+     * @default false
      */
     enforceModuleCompatibility: boolean
 
     /**
      * For `useAsyncData` and `useFetch`, whether `pending` should be `true` when data has not yet started to be fetched.
+     *
+     * @default false
      */
     pendingWhenIdle: boolean
 
     /**
      * Whether to improve chunk stability by using an import map to resolve the entry chunk of the bundle.
+     *
+     * @default true
      */
     entryImportMap: boolean
 
@@ -1460,6 +1536,7 @@ export interface ConfigSchema {
      * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
      * into separate chunks and dynamically imported, allowing for better code splitting and caching.
      *
+     * @default false
      * @experimental This is an experimental feature and API may change in the future.
      */
     extractAsyncDataHandlers: boolean
@@ -1467,9 +1544,25 @@ export interface ConfigSchema {
     /**
      * Whether to enable `@dxup/nuxt` module for better TypeScript DX.
      *
+     * @default false
      * @see https://github.com/KazariEX/dxup
      */
     typescriptPlugin: boolean
+    /**
+     * Whether to add a middleware to handle changes of base URL at runtime (has a performance overhead)
+     *
+     * This option only has effect when using Nitro v3+.
+     * @default false
+     */
+    runtimeBaseURL: boolean
+
+    /**
+     * Whether to enable a compatibility layer for Nitro auto imports.
+     * We recommend migrating to direct imports instead.
+     * @default true
+     * @default false with compatibilityVersion >= 5
+     */
+    nitroAutoImports: boolean
   }
 
   /**
@@ -1532,48 +1625,6 @@ export interface ConfigSchema {
   server: {
     builder?: '@nuxt/nitro-server' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
   }
-
-  /**
-   * Configuration for Nitro.
-   *
-   * @see [Nitro configuration docs](https://nitro.build/config)
-   */
-  nitro: NitroConfig
-
-  /**
-   * Global route options applied to matching server routes.
-   *
-   * @experimental This is an experimental feature and API may change in the future.
-   *
-   * @see [Nitro route rules documentation](https://nitro.build/config#routerules)
-   */
-  routeRules: NitroConfig['routeRules']
-
-  /**
-   * Nitro server handlers.
-   *
-   * Each handler accepts the following options:
-   * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
-   *
-   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
-   *
-   * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
-   *
-   * @example
-   * ```js
-   * serverHandlers: [
-   *   { route: '/path/foo/**:name', handler: '~/server/foohandler.ts' }
-   * ]
-   * ```
-   */
-  serverHandlers: NitroEventHandler[]
-
-  /**
-   * Nitro development-only server handlers.
-   *
-   * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
-   */
-  devServerHandlers: NitroDevEventHandler[]
 
   postcss: {
   /**
@@ -1902,7 +1953,7 @@ export interface ConfigSchema {
      * @example
      * ```js
      * import webpack from 'webpack'
-     * import { version } from './package.json'
+     * import { version } from './package.json.ts'
      * // ...
      * plugins: [
      *   new webpack.DefinePlugin({

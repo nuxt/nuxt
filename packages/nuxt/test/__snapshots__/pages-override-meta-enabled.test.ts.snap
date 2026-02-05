@@ -87,6 +87,18 @@
       "path": ""/wrapper-expose/other"",
     },
   ],
+  "should escape special chars in static paths": [
+    {
+      "component": "() => import("pages/a/b.vue")",
+      "name": ""a\\b"",
+      "path": ""/a\\\\b"",
+    },
+    {
+      "component": "() => import("pages/a&b.vue")",
+      "name": ""a&b"",
+      "path": ""/a&b"",
+    },
+  ],
   "should extract serializable values and override fallback when normalized with `overrideMeta: true`": [
     {
       "alias": "["sweet-home"]",
@@ -272,17 +284,28 @@
     {
       "children": [
         {
+          "children": [
+            {
+              "component": "() => import("pages/(bar)/about/(foo)/index.vue")",
+              "meta": "{"groups":["bar","foo"]}",
+              "name": ""about"",
+              "path": """",
+            },
+          ],
           "component": "() => import("pages/(bar)/about/index.vue")",
-          "name": ""about"",
+          "meta": "{"groups":["bar"]}",
+          "name": "mockMeta?.name",
           "path": """",
         },
       ],
       "component": "() => import("pages/(foo)/about.vue")",
+      "meta": "{"groups":["foo"]}",
       "name": "mockMeta?.name",
       "path": ""/about"",
     },
     {
       "component": "() => import("pages/(foo)/index.vue")",
+      "meta": "{"groups":["foo"]}",
       "name": ""index"",
       "path": ""/"",
     },
@@ -299,6 +322,38 @@
       "component": "() => import("pages/index/index.vue")",
       "name": ""index"",
       "path": ""/"",
+    },
+  ],
+  "should handle unicode and special characters in page paths": [
+    {
+      "children": [
+        {
+          "component": "() => import("pages/文档/介绍.vue")",
+          "name": ""文档-介绍"",
+          "path": ""介绍"",
+        },
+      ],
+      "component": "() => import("pages/文档.vue")",
+      "name": ""文档"",
+      "path": ""/文档"",
+    },
+    {
+      "component": "() => import("pages/测试.vue")",
+      "name": ""测试"",
+      "path": ""/测试"",
+    },
+    {
+      "component": "() => import("pages/خاص:جديد.vue")",
+      "name": ""خاص:جديد"",
+      "path": ""/خاص\\:جديد"",
+    },
+  ],
+  "should handle unicode characters in alias paths": [
+    {
+      "alias": "["/товары","/produits","/製品"]",
+      "component": "() => import("pages/products.vue")",
+      "name": ""products"",
+      "path": ""/products"",
     },
   ],
   "should merge route.meta with meta from file": [
