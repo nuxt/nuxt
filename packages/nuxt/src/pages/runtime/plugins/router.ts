@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, RouteRecordRaw, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { decodePath, isSamePath, withoutBase } from 'ufo'
 
@@ -42,6 +42,38 @@ function createCurrentLocation (
   return path + (path.includes('?') ? '' : search) + hash
 }
 
+const PCT_ENCODE_RE = /%[0-9A-Fa-f]{2}/
+function normalizeRouteStr (value: string) {
+  return PCT_ENCODE_RE.test(value) ? decodePath(value) : value
+}
+
+function normalizeVueRouterRoutes (routes: readonly RouteRecordRaw[]): RouteRecordRaw[] {
+  return routes.map((route) => {
+    const normalized: RouteRecordRaw = {
+      ...route,
+      path: normalizeRouteStr(route.path),
+    }
+
+    if ('alias' in route) {
+      const alias = route.alias
+      normalized.alias = typeof alias === 'string'
+        ? normalizeRouteStr(alias)
+        : Array.isArray(alias)
+          ? alias.map(normalizeRouteStr)
+          : alias
+      if (normalized.alias === undefined) {
+        delete (normalized as any).alias
+      }
+    }
+
+    if (route.children) {
+      normalized.children = normalizeVueRouterRoutes(route.children)
+    }
+
+    return normalized
+  })
+}
+
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
@@ -58,6 +90,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     )
 
     const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
+    const normalizedRoutes = normalizeVueRouterRoutes(routes)
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
@@ -81,7 +114,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
       },
       history,
-      routes,
+      routes: normalizedRoutes,
     })
 
     if (import.meta.hot) {

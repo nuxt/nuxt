@@ -10,7 +10,7 @@ import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
 import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
-import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+import { expectNoClientErrors, expectNoErrorsOrWarnings, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -644,6 +644,24 @@ describe('pages', () => {
   it('renders unicode routes correctly', async () => {
     const html = await $fetch('/random/日本語')
     expect(html).toContain('Japanese random route')
+  })
+
+  it('matches both encoded and decoded URLs for unicode paths', async () => {
+    expect(await $fetch('/es/citt%C3%A0')).toContain('CITY_PAGE_OK')
+    expect(await $fetch('/es/città')).toContain('CITY_PAGE_OK')
+  })
+
+  it('navigates client-side to decoded unicode path without warnings', async () => {
+    const { page, pageErrors, consoleLogs } = await renderPage('/i18n-unicode-link')
+
+    await page.getByRole('link', { name: 'Go ES city' }).click()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/es/città')
+
+    expect(await page.locator('#city-ok').textContent()).toContain('CITY_PAGE_OK')
+    expect(pageErrors).toEqual([])
+    expectNoErrorsOrWarnings(consoleLogs)
+
+    await page.close()
   })
 
   it('should trigger page:loading:end only once', async () => {
