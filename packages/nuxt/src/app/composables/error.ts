@@ -15,7 +15,9 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'> {
+// #34138 - `Omit` breaks the Error inheritance chain, causing `@typescript-eslint/only-throw-error` to fail
+// Adding `Error` explicitly restores throwability. TODO: remove `Error` in Nuxt 5 when `Omit` is no longer needed
+export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'>, Error {
   error?: true
   status?: number
   statusText?: string
