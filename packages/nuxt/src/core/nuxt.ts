@@ -671,6 +671,7 @@ async function initNuxt (nuxt: Nuxt) {
     keyedFunctions: normalizedKeyedFunctions,
     alias: nuxt.options.alias,
     getAutoImports: unimport!.getImports,
+    appDir: nuxt.options.appDir,
   }))
 
   // remove duplicate css after modules are done
