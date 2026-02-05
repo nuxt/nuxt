@@ -88,12 +88,14 @@ export default defineComponent({
 
     let pageLoadingEndHookAlreadyCalled = false
     if (import.meta.client) {
-      // Ensure hydration completes if unmounted before Suspense resolves (e.g., layout change)
-      onBeforeUnmount(done)
       const unsub = useRouter().beforeResolve(() => {
         pageLoadingEndHookAlreadyCalled = false
       })
-      onBeforeUnmount(unsub)
+      onBeforeUnmount(() => {
+        unsub()
+        // Ensure hydration completes if unmounted before Suspense resolves (e.g., layout change)
+        done()
+      })
     }
 
     return () => {
