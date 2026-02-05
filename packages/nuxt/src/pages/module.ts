@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genObjectFromRawEntries, genObjectKey, genSafeVariableName, genString } from 'knitwork'
+import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
@@ -623,20 +623,16 @@ export default defineNuxtModule({
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
       getContents: ({ app }) => {
-        const imports = new Set<string>()
-        const interfaceKeyValues = new Map<string, string>()
-        for (const layout of Object.values(app.layouts)) {
-          const varName = genSafeVariableName(layout.name)
-          imports.add(genImport(layout.file, varName))
-          interfaceKeyValues.set(layout.name, varName)
-        }
-
         return [
-          ...Array.from(imports),
           'import type { ComputedRef, MaybeRef } from \'vue\'',
+          '',
+          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
+          '  : T extends (props: infer P, ...args: any) => any ? P',
+          '  : {}',
+          '',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',
-          ...Array.from(interfaceKeyValues.entries()).map(([key, value]) => `    ${genObjectKey(key)}: InstanceType<typeof ${value}>['$props'],`),
+          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<typeof ${genInlineTypeImport(layout.file)}>,`),
           '}',
           '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
