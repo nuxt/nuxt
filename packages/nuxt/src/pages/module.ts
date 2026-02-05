@@ -689,10 +689,17 @@ if (import.meta.hot) {
       import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
       return
     }
+    const addedRoutes = router.getRoutes().filter(r => !r._initial)
     router.clearRoutes()
     const routes = generateRoutes(mod.default || mod)
     function addRoutes (routes) {
       for (const route of routes) {
+        router.addRoute(route)
+      }
+      for (const route of router.getRoutes()) {
+        route._initial = true
+      }
+      for (const route of addedRoutes) {
         router.addRoute(route)
       }
       router.isReady().then(() => {
@@ -718,6 +725,9 @@ export function handleHotUpdate(_router, _generateRoutes) {
     import.meta.hot.data ||= {}
     import.meta.hot.data.router = _router
     import.meta.hot.data.generateRoutes = _generateRoutes
+    for (const route of _router.getRoutes()) {
+      route._initial = true
+    }
   }
 }
 `
