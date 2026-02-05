@@ -100,7 +100,7 @@ const formattedDate = computed(() => {
 })
 
 const isInvalidDate = computed(() => Number.isNaN(date.value.getTime()))
-const isoDate = computed(() => isInvalidDate.value ? date.value.toString() : date.value.toISOString())
+const isoDate = computed(() => isInvalidDate.value ? undefined : date.value.toISOString())
 const title = computed(() => props.title === true ? isoDate.value : typeof props.title === 'string' ? props.title : undefined)
 const dataset: Record<string, string | number | boolean | Date | undefined> = {}
 
@@ -123,8 +123,11 @@ if (import.meta.server) {
       return name
     }
 
-    const date = new Date(el.getAttribute('datetime')!)
-
+    const datetime = el.getAttribute('datetime')
+    if (!datetime) {
+      return
+    }
+    const date = new Date(datetime)
     if (Number.isNaN(date.getTime())) {
       return
     }

@@ -166,7 +166,7 @@ describe('<NuxtTime>', () => {
   })
 
   describe('invalid date handling', () => {
-    it('should display "Invalid Date" for invalid date without relative mode', async () => {
+    it('should display "Invalid Date" and omit datetime attribute for invalid date without relative mode', async () => {
       const thing = await mountSuspended(
         defineComponent({
           render: () =>
@@ -177,11 +177,11 @@ describe('<NuxtTime>', () => {
         }),
       )
       expect(thing.html()).toMatchInlineSnapshot(
-        `"<time datetime="Invalid Date">Invalid Date</time>"`,
+        `"<time>Invalid Date</time>"`,
       )
     })
 
-    it('should display "Invalid Date" for invalid date with relative mode', async () => {
+    it('should display "Invalid Date" and omit datetime attribute for invalid date with relative mode', async () => {
       const thing = await mountSuspended(
         defineComponent({
           render: () =>
@@ -193,7 +193,7 @@ describe('<NuxtTime>', () => {
         }),
       )
       expect(thing.html()).toMatchInlineSnapshot(
-        `"<time datetime="Invalid Date">Invalid Date</time>"`,
+        `"<time>Invalid Date</time>"`,
       )
     })
 
