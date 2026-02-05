@@ -36,9 +36,9 @@ export default <RouterConfig> {
     }
 
     const hookToWait: keyof RuntimeNuxtHooks = nuxtApp._runningTransition
-      ? from.meta.layout !== to.meta.layout
-        ? 'layout:transition:finish'
-        : 'page:transition:finish'
+      ? (from.meta.layout ?? 'default') !== (to.meta.layout ?? 'default')
+          ? 'layout:transition:finish'
+          : 'page:transition:finish'
       : 'page:loading:end'
 
     return new Promise((resolve) => {
