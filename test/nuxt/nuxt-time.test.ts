@@ -164,4 +164,62 @@ describe('<NuxtTime>', () => {
 
     vi.restoreAllMocks()
   })
+
+  describe('invalid date handling', () => {
+    it('should display "Invalid Date" for invalid date without relative mode', async () => {
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: 'invalid-date-string',
+              locale: 'en-GB',
+            }),
+        }),
+      )
+      expect(thing.html()).toMatchInlineSnapshot(
+        `"<time datetime="Invalid Date">Invalid Date</time>"`,
+      )
+    })
+
+    it('should display "Invalid Date" for invalid date with relative mode', async () => {
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: 'xyz',
+              relative: true,
+              locale: 'en-GB',
+            }),
+        }),
+      )
+      expect(thing.html()).toMatchInlineSnapshot(
+        `"<time datetime="Invalid Date">Invalid Date</time>"`,
+      )
+    })
+
+    it('should fallback to current date when datetime is falsy', async () => {
+      // When datetime is falsy (null, undefined, empty string), it falls back to new Date()
+      const beforeMount = Date.now()
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: null as unknown as string,
+              locale: 'en-GB',
+              dateStyle: 'short',
+              timeZone: 'UTC',
+            }),
+        }),
+      )
+      const afterMount = Date.now()
+      const html = thing.html()
+
+      // Extract the datetime attribute value
+      const datetimeMatch = html.match(/datetime="([^"]+)"/)
+      expect(datetimeMatch).toBeTruthy()
+      const renderedDate = new Date(datetimeMatch![1]!)
+      expect(renderedDate.getTime()).toBeGreaterThanOrEqual(beforeMount)
+      expect(renderedDate.getTime()).toBeLessThanOrEqual(afterMount)
+    })
+  })
 })
