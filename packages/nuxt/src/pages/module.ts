@@ -632,7 +632,7 @@ export default defineNuxtModule({
           '',
           'declare module \'nuxt/app\' {',
           '  interface NuxtLayouts {',
-          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<typeof ${genInlineTypeImport(layout.file)}>,`),
+          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<${genInlineTypeImport(layout.file)}>,`),
           '}',
           '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
