@@ -15,7 +15,7 @@ This composable is available in Nuxt v3.12+.
 ## Description
 
 A composable which observes the page title changes and updates the announcer message accordingly. Used by [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) and controllable.
-It hooks into Unhead's [`dom:rendered`](https://unhead.unjs.io/docs/typescript/head/api/hooks/dom-rendered) to read the page's title and set it as the announcer message.
+It hooks into Unhead's `dom:rendered` hook to read the page's title and set it as the announcer message.
 
 ## Parameters
 
