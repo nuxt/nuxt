@@ -29,6 +29,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
 
   router.beforeResolve(async (to, from) => {
+    if (to.matched.length === 0) { return }
+
     const viewTransitionMode = to.meta.viewTransition ?? defaultViewTransition
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
@@ -62,14 +64,18 @@ export default defineNuxtPlugin((nuxtApp) => {
     return ready
   })
 
-  nuxtApp.hook('vue:error', () => {
-    finishTransition?.()
+  router.onError(() => {
+    abortTransition?.()
     resetTransitionState()
   })
 
   nuxtApp.hook('app:error', () => {
-    // Finish the transition instead of aborting to allow smooth animation to error page
-    finishTransition?.()
+    abortTransition?.()
+    resetTransitionState()
+  })
+
+  nuxtApp.hook('vue:error', () => {
+    abortTransition?.()
     resetTransitionState()
   })
 
