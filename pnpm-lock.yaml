@@ -1012,9 +1012,6 @@ importers:
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
-      '@rollup/plugin-replace':
-        specifier: ^6.0.3
-        version: 6.0.3(rollup@4.56.0)
       '@vitejs/plugin-vue':
         specifier: ^6.0.4
         version: 6.0.4(vite@8.0.0-beta.13(@types/node@24.10.9)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.27(typescript@5.9.3))

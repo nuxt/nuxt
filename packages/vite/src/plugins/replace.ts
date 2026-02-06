@@ -1,11 +1,11 @@
 import type { Plugin } from 'vite'
-import rollupReplacePlugin from '@rollup/plugin-replace'
+import { replacePlugin } from 'rolldown/plugins'
 
 export function ReplacePlugin (): Plugin {
   return {
     name: 'nuxt:replace',
     enforce: 'post',
-    async applyToEnvironment (environment) {
+    applyToEnvironment (environment) {
       const config = environment.getTopLevelConfig()
 
       const replaceOptions: Record<string, string> = Object.create(null)
@@ -18,13 +18,7 @@ export function ReplacePlugin (): Plugin {
         }
       }
 
-      if (config.isProduction) {
-        const { replacePlugin } = await import('rolldown/plugins')
-        return replacePlugin(replaceOptions, { preventAssignment: true })
-      } else {
-        // TODO: can we use rolldown plugin for this?
-        return rollupReplacePlugin({ ...replaceOptions, preventAssignment: true })
-      }
+      return replacePlugin(replaceOptions, { preventAssignment: true })
     },
   }
 }
