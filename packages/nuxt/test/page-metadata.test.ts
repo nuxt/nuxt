@@ -798,7 +798,7 @@ const hoisted = ref('hoisted')
     `)
   })
 
-  it('should transform layout writen in object syntax', () => {
+  it('should transform layout written in object syntax', () => {
     const sfc = `
 <script setup lang="ts">
 definePageMeta({
