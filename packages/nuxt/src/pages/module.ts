@@ -636,7 +636,10 @@ export default defineNuxtModule({
           '}',
           '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
-          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
+          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false> | {',
+          '      name: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
+          '      props?: Record<string, any>',
+          '    }',
           '  }',
           '}',
         ].join('\n')

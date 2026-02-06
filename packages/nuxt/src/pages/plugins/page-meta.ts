@@ -250,18 +250,38 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             if (meta.type === 'ObjectExpression') {
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
-                  const { serializable } = isSerializable(metaCode, prop.value)
-                  if (!serializable) {
-                    continue
+                if (prop.type === 'Property' && prop.key.type === 'Identifier') {
+                  if (options.extractedKeys?.includes(prop.key.name)) {
+                    const { serializable } = isSerializable(metaCode, prop.value)
+                    if (!serializable) {
+                      continue
+                    }
+                    const nextProperty = meta.properties[i + 1]
+                    if (nextProperty) {
+                      m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
+                    } else if (code[prop.end] === ',') {
+                      m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
+                    } else {
+                      m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                    }
                   }
-                  const nextProperty = meta.properties[i + 1]
-                  if (nextProperty) {
-                    m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
-                  } else if (code[prop.end] === ',') {
-                    m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
-                  } else {
-                    m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                  if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
+                    for (const layoutProp of prop.value.properties) {
+                      if (layoutProp.type === 'Property' && layoutProp.key.type === 'Identifier') {
+                        if (layoutProp.key.name === 'name') {
+                          m.overwrite(
+                            prop.value.start - meta.start,
+                            prop.value.end - meta.start,
+                            code.slice(layoutProp.value.start, layoutProp.value.end),
+                          )
+                        } else if (layoutProp.key.name === 'props') {
+                          m.appendLeft(
+                            prop.start - meta.start,
+                            `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                          )
+                        }
+                      }
+                    }
                   }
                 }
               }
