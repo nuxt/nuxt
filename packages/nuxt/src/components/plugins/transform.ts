@@ -134,7 +134,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
           // If package defines a "#components" import mapping, assume is used internally by the package.
           if (isAbsolute(id) && (/node_modules[\\/](?!\.virtual)/.test(id) || !id.includes(rootDirWithSlash))) {
             const pkg = await readPackage(id, { try: true })
-            if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
+            if (isObject(pkg) && isObject(pkg.imports) && Object.keys(pkg.imports).some(k => k.includes('#components'))) {
               return
             }
           }
