@@ -5,7 +5,7 @@ import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
-import { isAbsolute, normalize, relative } from 'pathe'
+import { isAbsolute, normalize } from 'pathe'
 import { readPackage } from 'pkg-types'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module.ts'
@@ -30,6 +30,8 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     virtualImports: ['#components'],
     injectAtEnd: true,
   })
+
+  const rootDirWithSlash = nuxt.options.rootDir.replace(/\/?$/, '/')
 
   function getComponentsImports (): Import[] {
     const components = options.getComponents(options.mode)
@@ -130,9 +132,8 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
         },
         async handler (code, id) {
           // If package defines a "#components" import mapping, assume is used internally by the package.
-          if (isAbsolute(id) && (/node_modules[\\/](?!\.virtual)/.test(id) || relative(nuxt.options.rootDir, id).startsWith('..'))) {
-            let pkg
-            try { pkg = await readPackage(id) } catch { /* package.json not found */ }
+          if (isAbsolute(id) && (/node_modules[\\/](?!\.virtual)/.test(id) || !id.includes(rootDirWithSlash))) {
+            const pkg = await readPackage(id, { try: true })
             if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
               return
             }
