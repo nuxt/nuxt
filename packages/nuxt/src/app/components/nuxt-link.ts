@@ -15,7 +15,7 @@ import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkPro
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
+import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
@@ -519,7 +519,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             event.preventDefault()
 
             try {
-              return await (props.replace ? router.replace(href.value) : router.push(href.value))
+              const encodedHref = encodeRoutePath(href.value)
+              return await (props.replace ? router.replace(encodedHref) : router.push(encodedHref))
             } finally {
               // Focus the target element for hash links to restore accessibility behavior
               // that was prevented by event.preventDefault()

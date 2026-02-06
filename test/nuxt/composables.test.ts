@@ -20,7 +20,7 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
-import { encodeURL, resolveRouteObject } from '#app/composables/router'
+import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 
 import { shouldLoadPayload } from '#app/composables/payload'
@@ -534,6 +534,58 @@ describe('routing utilities: `encodeURL`', () => {
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
     expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
+  })
+})
+
+describe('routing utilities: `encodeRoutePath`', () => {
+  it('should encode decoded unicode paths', () => {
+    expect(encodeRoutePath('/café')).toBe(`/${encodeURIComponent('café')}`)
+    expect(encodeRoutePath('/测试')).toBe(`/${encodeURIComponent('测试')}`)
+    expect(encodeRoutePath('/товары')).toBe(`/${encodeURIComponent('товары')}`)
+  })
+
+  it('should not double-encode already-encoded paths', () => {
+    const encoded = `/${encodeURIComponent('café')}`
+    expect(encodeRoutePath(encoded)).toBe(encoded)
+    expect(encodeRoutePath('/%E6%B5%8B%E8%AF%95')).toBe('/%E6%B5%8B%E8%AF%95')
+  })
+
+  it('should preserve query and hash', () => {
+    expect(encodeRoutePath('/café?q=foo')).toBe(`/${encodeURIComponent('café')}?q=foo`)
+    expect(encodeRoutePath('/café?q=foo#bar')).toBe(`/${encodeURIComponent('café')}?q=foo#bar`)
+  })
+
+  it('should encode special characters in path segments', () => {
+    expect(encodeRoutePath('/a&b')).toBe(`/a${encodeURIComponent('&')}b`)
+    expect(encodeRoutePath('/normal')).toBe('/normal')
+  })
+})
+
+describe('routing utilities: `navigateTo` path encoding', () => {
+  it('should encode decoded unicode paths for vue-router', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    await navigateTo('/café')
+    expect(push).toHaveBeenCalledWith(`/${encodeURIComponent('café')}`)
+    push.mockRestore()
+  })
+
+  it('should not double-encode already-encoded paths', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    const encoded = `/${encodeURIComponent('café')}`
+    await navigateTo(encoded)
+    expect(push).toHaveBeenCalledWith(encoded)
+    push.mockRestore()
+  })
+
+  it('should not encode object locations', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    const to = { path: '/test', query: { foo: 'bar' } }
+    await navigateTo(to)
+    expect(push).toHaveBeenCalledWith(to)
+    push.mockRestore()
   })
 })
 
