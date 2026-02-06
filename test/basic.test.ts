@@ -1433,6 +1433,14 @@ describe('layouts', () => {
     expect(html).toContain('with-layout.vue')
     expect(html).toContain('Custom Layout:')
   })
+  it('should work with props', async () => {
+    const html = await $fetch<string>('/with-layout-props')
+
+    expect(html).toContain('with-layout-props.vue')
+    expect(html).toContain('Custom Layout:')
+    expect(html).toContain('set props from page meta')
+    await expectNoClientErrors('/with-layout-props')
+  })
   it('should work with a dynamically set layout', async () => {
     const html = await $fetch<string>('/with-dynamic-layout')
 
