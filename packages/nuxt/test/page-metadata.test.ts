@@ -814,10 +814,11 @@ definePageMeta({
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
     expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "const __nuxt_page_meta = {
-        layoutProps: {
+        layout: 'foo',
+      layoutProps: {
             bar: 'bar',
           },
-      layout: 'foo',
+
       }
       export default __nuxt_page_meta"
     `)
