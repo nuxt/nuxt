@@ -1,4 +1,3 @@
-import * as vite from 'vite'
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
@@ -34,7 +33,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       sourcemap: nuxt.options.sourcemap.server ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.server : false,
       outDir: resolve(nuxt.options.buildDir, 'dist/server'),
       ssr: true,
-      rollupOptions: {
+      rolldownOptions: {
         input: { server: serverEntry },
         external: [
           'nitro/runtime',
@@ -50,17 +49,6 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
-          ...((vite as any).rolldownVersion
-            // Wait for https://github.com/rolldown/rolldown/issues/206
-            ? {}
-            : {
-                generatedCode: {
-                  symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
-                  constBindings: true,
-                  // temporary fix for https://github.com/rollup/rollup/issues/5975
-                  arrowFunctions: true,
-                },
-              }),
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {

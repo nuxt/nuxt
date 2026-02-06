@@ -1,4 +1,3 @@
-import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { defineResolvers } from '../utils/definition.ts'
@@ -79,19 +78,11 @@ export default defineResolvers({
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        $resolve: async (val, get) => defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options')),
-      },
       exclude: {
         $resolve: val => [
           ...Array.isArray(val) ? val : [],
           'vue-demi',
         ],
-      },
-    },
-    esbuild: {
-      $resolve: async (val, get) => {
-        return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
       },
     },
     clearScreen: true,

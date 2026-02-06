@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { performance } from 'node:perf_hooks'
 import { createBuilder, createServer, mergeConfig } from 'vite'
-import * as vite from 'vite'
+import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
@@ -68,14 +68,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
-  if ((vite as any).rolldownVersion) {
-    // esbuild is not used in `rolldown-vite`
-    if (viteConfig.esbuild) {
-      delete viteConfig.esbuild
-    }
-    if (viteConfig.optimizeDeps?.esbuildOptions) {
-      delete viteConfig.optimizeDeps.esbuildOptions
-    }
+  // Vite 8 uses Oxc instead of esbuild - remove legacy esbuild config
+  if (viteConfig.esbuild) {
+    delete viteConfig.esbuild
+  }
+  if (viteConfig.optimizeDeps?.esbuildOptions) {
+    delete viteConfig.optimizeDeps.esbuildOptions
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
@@ -166,7 +164,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       },
       build: {
         copyPublicDir: false,
-        rollupOptions: {
+        rolldownOptions: {
           output: {
             sourcemapIgnoreList: (relativeSourcePath) => {
               return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
@@ -179,15 +177,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           },
         },
 
-        // @ts-expect-error non-public property
-        watch: (vite.rolldownVersion
-          // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
-          ? { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] }
-          : {
-              chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
-              exclude: nuxt.options.ignore,
-            }
-        ),
+        // TODO: https://github.com/rolldown/rolldown/issues/5799 for ignored fn
+        watch: { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] },
       },
       plugins: [
         // add resolver for modules used in virtual files

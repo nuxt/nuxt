@@ -1,6 +1,5 @@
 import type { Plugin } from 'vite'
-import replacePlugin from '@rollup/plugin-replace'
-import * as vite from 'vite'
+import rollupReplacePlugin from '@rollup/plugin-replace'
 
 export function ReplacePlugin (): Plugin {
   return {
@@ -19,11 +18,12 @@ export function ReplacePlugin (): Plugin {
         }
       }
 
-      if (config.isProduction && (vite as any).rolldownVersion) {
+      if (config.isProduction) {
         const { replacePlugin } = await import('rolldown/plugins')
         return replacePlugin(replaceOptions, { preventAssignment: true })
       } else {
-        return replacePlugin({ ...replaceOptions, preventAssignment: true })
+        // TODO: can we use rolldown plugin for this?
+        return rollupReplacePlugin({ ...replaceOptions, preventAssignment: true })
       }
     },
   }
