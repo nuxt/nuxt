@@ -270,9 +270,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                   if (serializable) {
                     omitProp(prop, i)
                   }
-                }
-
-                if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
+                } else if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
                   for (const layoutProp of prop.value.properties) {
                     if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
                       continue
