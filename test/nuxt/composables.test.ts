@@ -150,6 +150,21 @@ describe('errors', () => {
     `)
   })
 
+  // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
+  it('supports status/statusText getters', () => {
+    const error = createError({ status: 404, statusText: 'Not Found' })
+    expect(error.status).toBe(404)
+    expect(error.statusText).toBe('Not Found')
+    // backwards compat
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(error.statusCode).toBe(404)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(error.statusMessage).toBe('Not Found')
+    // non-enumerable (no duplicate in toJSON)
+    expect(Object.keys(error.toJSON())).not.toContain('status')
+    expect(Object.keys(error.toJSON())).not.toContain('statusText')
+  })
+
   it('isNuxtError', () => {
     const error = createError({ statusCode: 404 })
     expect(isNuxtError(error)).toBe(true)

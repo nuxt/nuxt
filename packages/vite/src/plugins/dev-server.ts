@@ -184,7 +184,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
         if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
-          throw { status: 404 } satisfies ErrorPartial
+          throw { status: 404, unhandled: false } satisfies ErrorPartial
         }
       })
       await nuxt.callHook('server:devHandler', viteMiddleware, {

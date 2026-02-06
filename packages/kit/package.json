@@ -47,10 +47,10 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.7.2",
+    "@rspack/core": "1.7.3",
     "@types/semver": "7.7.1",
     "hookable": "5.5.3",
-    "nitro": "3.0.1-alpha.1",
+    "nitro": "3.0.1-alpha.2",
     "nitropack": "2.13.1",
     "obuild": "0.4.14",
     "unimport": "5.6.0",

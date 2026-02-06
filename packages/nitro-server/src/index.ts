@@ -92,7 +92,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Resolve aliases in user-provided input - so `~/server/test` will work
+  // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
 

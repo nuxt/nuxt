@@ -63,7 +63,7 @@ describe('keyed functions plugin', () => {
     },
   ]
 
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports) }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should add hash when there is none already provided', async () => {
     const code = `
@@ -150,7 +150,7 @@ useRenamedDefault()`
 
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
 
-    KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports) }).raw({}, {} as any)
+    KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/' }).raw({}, {} as any)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
       /\[nuxt:compiler\] \[keyed-functions\] Duplicate function name `useKeyTwo` with the same source `#app` found. Overwriting the existing entry./,
@@ -810,7 +810,7 @@ describe('core keyed functions', () => {
     { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
     { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]) }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ sourcemap: false, keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]), appDir: '/nuxt/dist/app/' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should detect string type keys and not add a hash', async () => {
     const code = `
