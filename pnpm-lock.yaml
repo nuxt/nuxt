@@ -213,6 +213,9 @@ importers:
       playwright-core:
         specifier: 1.58.0
         version: 1.58.0
+      rolldown:
+        specifier: 1.0.0-rc.3
+        version: 1.0.0-rc.3
       rollup:
         specifier: 4.56.0
         version: 4.56.0

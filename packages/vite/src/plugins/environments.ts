@@ -61,14 +61,6 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
           },
         }
       }
-
-      if (name === 'ssr') {
-        // Disable manual chunks and advancedChunks for SSR environment to avoid splitting issues
-        if (config.build?.rolldownOptions?.output && !Array.isArray(config.build.rolldownOptions.output)) {
-          delete config.build.rolldownOptions.output.manualChunks
-          delete config.build.rolldownOptions.output.advancedChunks
-        }
-      }
     },
     applyToEnvironment (environment) {
       if (environment.name === 'client') {

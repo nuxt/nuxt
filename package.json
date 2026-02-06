@@ -130,6 +130,7 @@
     "pathe": "2.0.3",
     "pkg-pr-new": "0.0.62",
     "playwright-core": "1.58.0",
+    "rolldown": "1.0.0-rc.3",
     "rollup": "4.56.0",
     "semver": "7.7.3",
     "sherif": "1.10.0",

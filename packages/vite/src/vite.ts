@@ -68,14 +68,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
-  // Vite 8 uses Oxc instead of esbuild - remove legacy esbuild config
-  if (viteConfig.esbuild) {
-    delete viteConfig.esbuild
-  }
-  if (viteConfig.optimizeDeps?.esbuildOptions) {
-    delete viteConfig.optimizeDeps.esbuildOptions
-  }
-
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
