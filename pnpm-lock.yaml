@@ -7,7 +7,7 @@ settings:
 overrides:
   '@babel/core': 7.29.0
   '@babel/helper-plugin-utils': 7.28.6
-  '@nuxt/cli': 3.32.0
+  '@nuxt/cli': 3.33.0
   '@nuxt/kit': workspace:*
   '@nuxt/nitro-server': workspace:*
   '@nuxt/rspack-builder': workspace:*
@@ -63,8 +63,8 @@ importers:
         specifier: 7.5.1
         version: 7.5.1
       '@nuxt/cli':
-        specifier: 3.32.0
-        version: 3.32.0(cac@6.7.14)(magicast@0.5.1)
+        specifier: 3.33.0
+        version: 3.33.0(@nuxt/schema@packages+schema)(cac@6.7.14)(magicast@0.5.1)
       '@nuxt/eslint-config':
         specifier: 1.14.0
         version: 1.14.0(@typescript-eslint/utils@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -469,8 +469,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2
       '@nuxt/cli':
-        specifier: 3.32.0
-        version: 3.32.0(cac@6.7.14)(magicast@0.5.1)
+        specifier: 3.33.0
+        version: 3.33.0(@nuxt/schema@packages+schema)(cac@6.7.14)(magicast@0.5.1)
       '@nuxt/devtools':
         specifier: ^3.1.1
         version: 3.1.1(vite@7.3.1(@types/node@24.10.11)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.27(typescript@5.9.3))
@@ -625,8 +625,8 @@ importers:
         specifier: 5.6.0
         version: 5.6.0
       unplugin:
-        specifier: ^2.3.11
-        version: 2.3.11
+        specifier: ^3.0.0
+        version: 3.0.0
       unplugin-vue-router:
         specifier: ^0.19.2
         version: 0.19.2(@vue/compiler-sfc@3.5.27)(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
@@ -779,8 +779,8 @@ importers:
         specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
       unplugin:
-        specifier: ^2.3.11
-        version: 2.3.11
+        specifier: ^3.0.0
+        version: 3.0.0
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.104.1))(webpack@5.104.1)
@@ -1247,8 +1247,8 @@ importers:
         specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
       unplugin:
-        specifier: ^2.3.11
-        version: 2.3.11
+        specifier: ^3.0.0
+        version: 3.0.0
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.104.1))(webpack@5.104.1)
@@ -1610,8 +1610,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@bomb.sh/tab@0.0.11':
-    resolution: {integrity: sha512-RSqyreeicYBALcMaNxIUJTBknftXsyW45VRq5gKDNwKroh0Re5SDoWwXZaphb+OTEzVdpm/BA8Uq6y0P+AtVYw==}
+  '@bomb.sh/tab@0.0.12':
+    resolution: {integrity: sha512-dYRwg4MqfHR5/BcTy285XOGRhjQFmNpaJBZ0tl2oU+RY595MQ5ApTF6j3OvauPAooHL6cfoOZMySQrOQztT8RQ==}
     hasBin: true
     peerDependencies:
       cac: ^6.7.14
@@ -2330,10 +2330,15 @@ packages:
     resolution: {integrity: sha512-pwK+BfEBZJbKdNYpHHRTNBwBoqrN/iIMO0AiGvYsp3Hoaq0WbgGSWQR6SCldZovoDpY3yje5lkFUe6gsDgJ2vg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  '@nuxt/cli@3.32.0':
-    resolution: {integrity: sha512-n2f3SRjPlhthPvo2qWjLRRiTrUtB6WFwg0BGsvtqcqZVeQpNEU371zuKWBaFrWgqDZHV1r/aD9jrVCo+C8Pmrw==}
+  '@nuxt/cli@3.33.0':
+    resolution: {integrity: sha512-Hn5tgzZIHaiLG3IgvBzK722tQ0RZvkpNXD6UCVnN+PdkiMh+UJjw6nTktvQlv8eloNCaPOrpWNIXO9z3xoX5Yg==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
+    peerDependencies:
+      '@nuxt/schema': workspace:*
+    peerDependenciesMeta:
+      '@nuxt/schema':
+        optional: true
 
   '@nuxt/devalue@2.0.2':
     resolution: {integrity: sha512-GBzP8zOc7CGWyFQS6dv1lQz8VVpz5C2yRszbXufwG/9zhStTIH50EtD87NmWbTMwXDvZLNg8GIpb1UFdH93JCA==}
@@ -3760,9 +3765,6 @@ packages:
   '@shikijs/core@3.20.0':
     resolution: {integrity: sha512-f2ED7HYV4JEk827mtMDwe/yQ25pRiXZmtHjWF8uzZKuKiEsJR7Ce1nuQ+HhV9FzDcbIo4ObBCD9GPTzNuy9S1g==}
 
-  '@shikijs/core@3.21.0':
-    resolution: {integrity: sha512-AXSQu/2n1UIQekY8euBJlvFYZIw0PHY63jUzGbrOma4wPxzznJXTXkri+QcHeBNaFxiiOljKxxJkVSoB3PjbyA==}
-
   '@shikijs/core@3.22.0':
     resolution: {integrity: sha512-iAlTtSDDbJiRpvgL5ugKEATDtHdUVkqgHDm/gbD2ZS9c88mx7G1zSYjjOxp5Qa0eaW0MAQosFRmJSk354PRoQA==}
 
@@ -3803,9 +3805,6 @@ packages:
 
   '@shikijs/types@3.20.0':
     resolution: {integrity: sha512-lhYAATn10nkZcBQ0BlzSbJA3wcmL5MXUUF8d2Zzon6saZDlToKaiRX60n2+ZaHJCmXEcZRWNzn+k9vplr8Jhsw==}
-
-  '@shikijs/types@3.21.0':
-    resolution: {integrity: sha512-zGrWOxZ0/+0ovPY7PvBU2gIS9tmhSUUt30jAcNV0Bq0gb2S98gwfjIs1vxlmH5zM7/4YxLamT6ChlqqAJmPPjA==}
 
   '@shikijs/types@3.22.0':
     resolution: {integrity: sha512-491iAekgKDBFE67z70Ok5a8KBMsQ2IJwOWw3us/7ffQkIBCyOQfm/aNwVMBUriP02QshIfgHCBSIYAl3u2eWjg==}
@@ -5914,6 +5913,9 @@ packages:
     resolution: {integrity: sha512-trLf4SzuuUxfusZADLINj+dE8clK1frKdmqiJNb1Es75fmI5oY6X2mxLVUciLLjxqw/xr72Dhy+lER6dGd02FQ==}
     engines: {node: '>=10'}
 
+  fzf@0.5.2:
+    resolution: {integrity: sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -5946,6 +5948,10 @@ packages:
 
   giget@2.0.0:
     resolution: {integrity: sha512-L5bGsVkxJbJgdnwyuheIunkGatUF/zssUoxxjACCseZYAVbaqdh9Tsmmlkl8vYan09H7sbvKt4pS8GqKLBrEzA==}
+    hasBin: true
+
+  giget@3.1.2:
+    resolution: {integrity: sha512-T2qUpKBHeUTwHcIhydgnJzhL0Hj785ms+JkxaaWQH9SDM/llXeewnOkfJcFShAHjWI+26hOChwUfCoupaXLm8g==}
     hasBin: true
 
   git-up@8.1.1:
@@ -9718,10 +9724,10 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@bomb.sh/tab@0.0.11(cac@6.7.14)(citty@0.1.6)':
+  '@bomb.sh/tab@0.0.12(cac@6.7.14)(citty@0.2.0)':
     optionalDependencies:
       cac: 6.7.14
-      citty: 0.1.6
+      citty: 0.2.0
 
   '@braidai/lang@1.1.2': {}
 
@@ -10363,12 +10369,12 @@ snapshots:
 
   '@npmcli/name-from-folder@2.0.0': {}
 
-  '@nuxt/cli@3.32.0(cac@6.7.14)(magicast@0.5.1)':
+  '@nuxt/cli@3.33.0(@nuxt/schema@packages+schema)(cac@6.7.14)(magicast@0.5.1)':
     dependencies:
-      '@bomb.sh/tab': 0.0.11(cac@6.7.14)(citty@0.1.6)
-      '@clack/prompts': 1.0.0-alpha.9
+      '@bomb.sh/tab': 0.0.12(cac@6.7.14)(citty@0.2.0)
+      '@clack/prompts': 1.0.0
       c12: 3.3.3(magicast@0.5.1)
-      citty: 0.1.6
+      citty: 0.2.0
       confbox: 0.2.2
       consola: 3.4.2
       copy-paste: 2.2.0
@@ -10376,7 +10382,8 @@ snapshots:
       defu: 6.1.4
       exsolve: 1.0.8
       fuse.js: 7.1.0
-      giget: 2.0.0
+      fzf: 0.5.2
+      giget: 3.1.2
       jiti: 2.6.1
       listhen: 1.9.0
       nypm: 0.6.5
@@ -10392,6 +10399,8 @@ snapshots:
       tinyexec: 1.0.2
       ufo: 1.6.3
       youch: 4.1.0-beta.13
+    optionalDependencies:
+      '@nuxt/schema': link:packages/schema
     transitivePeerDependencies:
       - cac
       - commander
@@ -10608,7 +10617,7 @@ snapshots:
   '@nuxtjs/mdc@0.19.2':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@shikijs/core': 3.21.0
+      '@shikijs/core': 3.22.0
       '@shikijs/langs': 3.20.0
       '@shikijs/themes': 3.20.0
       '@shikijs/transformers': 3.20.0
@@ -11459,13 +11468,6 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
-  '@shikijs/core@3.21.0':
-    dependencies:
-      '@shikijs/types': 3.21.0
-      '@shikijs/vscode-textmate': 10.0.2
-      '@types/hast': 3.0.4
-      hast-util-to-html: 9.0.5
-
   '@shikijs/core@3.22.0':
     dependencies:
       '@shikijs/types': 3.22.0
@@ -11531,11 +11533,6 @@ snapshots:
       '@types/hast': 3.0.4
 
   '@shikijs/types@3.20.0':
-    dependencies:
-      '@shikijs/vscode-textmate': 10.0.2
-      '@types/hast': 3.0.4
-
-  '@shikijs/types@3.21.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -13982,6 +13979,8 @@ snapshots:
 
   fuse.js@7.1.0: {}
 
+  fzf@0.5.2: {}
+
   gensync@1.0.0-beta.2: {}
 
   get-caller-file@2.0.5: {}
@@ -14022,6 +14021,8 @@ snapshots:
       node-fetch-native: 1.6.7
       nypm: 0.6.5
       pathe: 2.0.3
+
+  giget@3.1.2: {}
 
   git-up@8.1.1:
     dependencies:
