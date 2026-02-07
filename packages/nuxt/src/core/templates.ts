@@ -469,7 +469,7 @@ export const publicPathTemplate: NuxtTemplate = {
       '\u2029': '\\u2029',
     }
     const escapeUnsafeChars = (str: string): string =>
-      str.replace(/[<>\/\\\b\f\n\r\t\0\u2028\u2029]/g, ch => charMap[ch] ?? ch)
+      str.replace(/[<>\/\\\u0008\f\n\r\t\0\u2028\u2029]/g, ch => charMap[ch] ?? ch)
 
     return [
       'import { joinRelativeURL } from \'ufo\'',
