@@ -24,23 +24,50 @@ async function createServer (handler: ServerHandler) {
 
 vi.mock('#build/nuxt.config.mjs', () => {
   return {
-    remoteComponentIslands: true,
-    selectiveClient: true,
+    // app config defaults
+    appBaseURL: '/',
+    appBuildAssetsDir: '/_nuxt/',
+    appCdnURL: '',
+    appHead: {},
+    appId: 'nuxt-app',
+    appKeepalive: false,
+    appLayoutTransition: false,
+    appPageTransition: false,
+    appRootAttrs: { id: '__nuxt' },
+    appRootTag: 'div',
+    appSpaLoaderAttrs: {},
+    appSpaLoaderTag: 'div',
+    appSpaLoadingTemplate: false,
+    appTeleportAttrs: { id: 'teleports' },
+    appTeleportTag: 'div',
+    appViewTransition: false,
+    // nuxt.config.mjs template exports
     renderJsonPayloads: true,
     componentIslands: true,
     payloadExtraction: false,
+    cookieStore: false,
     appManifest: false,
-    appId: 'nuxt-app',
+    remoteComponentIslands: true,
+    selectiveClient: true,
+    devPagesDir: null,
+    devRootDir: null,
+    devLogs: false,
+    nuxtLinkDefaults: { componentName: 'NuxtLink' },
+    asyncDataDefaults: {},
+    resetAsyncDataToUndefined: false,
+    nuxtDefaultErrorValue: null,
+    fetchDefaults: {},
+    vueAppRootContainer: '#__nuxt',
+    viewTransition: false,
+    outdatedBuildInterval: 3600000,
     multiApp: false,
-    appBaseURL: '/',
-  }
-})
-
-vi.mock('vue', async (original) => {
-  const vue = await original<typeof import('vue')>()
-  return {
-    ...vue,
-    h: vi.fn(vue.h),
+    chunkErrorEvent: false,
+    crawlLinks: false,
+    spaLoadingTemplateOutside: false,
+    purgeCachedData: false,
+    granularCachedData: false,
+    pendingWhenIdle: false,
+    alwaysRunFetchOnKeyChange: false,
   }
 })
 
@@ -59,11 +86,8 @@ describe('runtime server component', () => {
   })
 
   it('expect no data-v- attributes #23051', () => {
-    // @ts-expect-error mock
-    vi.mocked(h).mockImplementation(() => null)
-
     // @ts-expect-error test setup
-    createServerComponent('DummyName').setup!({
+    const vnode = createServerComponent('DummyName').setup!({
       lazy: false,
     }, {
       attrs: {
@@ -75,16 +99,14 @@ describe('runtime server component', () => {
       expose: vi.fn(),
     })()
 
-    expect(h).toHaveBeenCalledOnce()
-    if (!vi.mocked(h).mock.lastCall) { throw new Error('no last call') }
-    expect(vi.mocked(h).mock.lastCall![1]?.props).toBeTypeOf('object')
-    expect(vi.mocked(h).mock.lastCall![1]?.props).toMatchInlineSnapshot(`
+    expect(vnode).toBeTruthy()
+    expect(vnode.props?.props).toBeTypeOf('object')
+    expect(vnode.props?.props).toMatchInlineSnapshot(`
       {
         "data-v-123": "",
         "test": 1,
       }
     `)
-    vi.mocked(h).mockRestore()
   })
 
   it('expect remote island to be rendered', async () => {
