@@ -300,7 +300,7 @@ if (isBuilt || isWindows) {
 
       // Trigger ROUTES HMR by adding a new page file (this regenerates routes.mjs)
       writeFileSync(
-        join(fixtureDir, 'app/pages/hmr-trigger.vue'),
+        join(fixtureDir, 'pages/hmr-trigger.vue'),
         `<template><div data-testid="hmr-trigger">HMR trigger page</div></template>`,
       )
 
