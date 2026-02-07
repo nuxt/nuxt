@@ -1992,6 +1992,23 @@ describe.skipIf(isDev)('inlining component styles', () => {
     const html = await $fetch<string>('/styles')
     expect(html).toContain('{--client-only:"client-only"}')
   })
+
+  it('should not duplicate inlined global CSS in linked CSS files', async () => {
+    const html = await $fetch<string>('/styles')
+
+    // Global CSS should be inlined
+    expect(html).toContain('--global:"global"')
+
+    // Get all linked CSS content
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)"/g)].map(m => m[1]!))
+    let linkedCSS = ''
+    for (const file of cssFiles) {
+      linkedCSS += await $fetch<string>(file)
+    }
+
+    // Global CSS (when inlined) should not be duplicated in linked CSS files
+    expect(linkedCSS).not.toContain('--global:"global"')
+  })
 })
 
 describe('server components/islands', () => {
