@@ -10,7 +10,7 @@ on:
     branches:
       - main
       - 3.x
-      - "!v[0-9]*"
+      - '!v[0-9]*'
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
 env:
@@ -39,6 +39,8 @@ jobs:
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
+          base: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha }}
+          ref: ${{ github.event.merge_group.head_sha || github.sha }}
           filters: |
             src:
               - 'packages/**'
@@ -66,7 +68,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -122,7 +124,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
         with:
-          category: "/language:${{ matrix.language }}"
+          category: '/language:${{ matrix.language }}'
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -133,7 +135,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
-        module: ["bundler"]
+        module: ['bundler']
         # module: ["bundler", "node"]
 
     steps:
@@ -142,7 +144,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -174,7 +176,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -201,7 +203,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -226,7 +228,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -251,7 +253,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -281,35 +283,35 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
-        env: ["dev", "built"]
-        builder: ["vite-env-api", "vite", "rspack", "webpack"]
-        context: ["async", "default"]
-        manifest: ["manifest-on", "manifest-off"]
-        payload: ["json", "js"]
-        node: ["lts/-1"]
+        env: ['dev', 'built']
+        builder: ['vite-env-api', 'vite', 'rspack', 'webpack']
+        context: ['async', 'default']
+        manifest: ['manifest-on', 'manifest-off']
+        payload: ['json', 'js']
+        node: ['lts/-1']
         exclude:
-          - builder: "webpack"
-            payload: "js"
-          - builder: "rspack"
-            payload: "js"
-          - manifest: "manifest-off"
-            payload: "js"
-          - context: "default"
-            payload: "js"
+          - builder: 'webpack'
+            payload: 'js'
+          - builder: 'rspack'
+            payload: 'js'
+          - manifest: 'manifest-off'
+            payload: 'js'
+          - context: 'default'
+            payload: 'js'
           - os: windows-latest
-            payload: "js"
-          - env: "dev"
-            builder: "rspack"
-          - manifest: "manifest-off"
-            builder: "rspack"
-          - env: "dev"
-            builder: "webpack"
-          - manifest: "manifest-off"
-            builder: "webpack"
-          - manifest: "manifest-off"
-            builder: "vite-env-api"
-          - payload: "js"
-            builder: "vite-env-api"
+            payload: 'js'
+          - env: 'dev'
+            builder: 'rspack'
+          - manifest: 'manifest-off'
+            builder: 'rspack'
+          - env: 'dev'
+            builder: 'webpack'
+          - manifest: 'manifest-off'
+            builder: 'webpack'
+          - manifest: 'manifest-off'
+            builder: 'vite-env-api'
+          - payload: 'js'
+            builder: 'vite-env-api'
 
     timeout-minutes: 15
 
@@ -319,7 +321,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: ${{ matrix.node }}
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -410,7 +412,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: current
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
@@ -441,7 +443,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
