@@ -1,5 +1,4 @@
 import type { H3Event } from 'h3'
-import { decodePath } from 'ufo'
 import { useRuntimeConfig } from 'nitropack/runtime'
 import { createHead } from '@unhead/vue/server'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -11,15 +10,9 @@ import { NUXT_NO_SSR, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
-function decodeEventPath (path: string) {
-  const queryIndex = path.indexOf('?')
-  if (queryIndex === -1) { return decodePath(path) }
-  return decodePath(path.slice(0, queryIndex)) + path.slice(queryIndex)
-}
-
 export function createSSRContext (event: H3Event): NuxtSSRContext {
   const ssrContext: NuxtSSRContext = {
-    url: decodeEventPath(event.path),
+    url: event.path,
     event,
     runtimeConfig: useRuntimeConfig(event) as NuxtSSRContext['runtimeConfig'],
     noSSR: !!(NUXT_NO_SSR) || event.context.nuxt?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(event.path) : false),
