@@ -15,7 +15,7 @@ permissions: {}
 
 jobs:
   link-checker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
       - name: Restore lychee cache

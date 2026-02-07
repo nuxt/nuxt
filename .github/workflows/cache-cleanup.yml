@@ -10,7 +10,7 @@ permissions: {}
 
 jobs:
   cleanup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       # `actions:write` permission is required to delete caches
       #   See also: https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28#delete-a-github-actions-cache-for-a-repository-using-a-cache-id

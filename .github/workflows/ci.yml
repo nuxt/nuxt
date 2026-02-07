@@ -3,16 +3,10 @@ name: ci
 on:
   merge_group:
   push:
-    paths-ignore:
-      - "docs/**"
-      - "*.md"
     branches:
       - main
       - 3.x
   pull_request:
-    paths-ignore:
-      - "docs/**"
-      - "*.md"
     branches:
       - main
       - 3.x
@@ -33,8 +27,37 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
+  changes:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            src:
+              - 'packages/**'
+              - 'test/**'
+              - 'scripts/**'
+              - 'patches/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+              - 'tsconfig.json'
+              - 'vitest.config.ts'
+              - 'playwright.config.ts'
+              - 'eslint.config.mjs'
+              - '.github/workflows/ci.yml'
+
   build:
-    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
 
     steps:
@@ -109,7 +132,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04-arm, windows-latest]
         module: ["bundler"]
         # module: ["bundler", "node"]
 
@@ -140,8 +163,9 @@ jobs:
 
   lint:
     # autofix workflow will be triggered instead for PRs
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    needs: changes
+    if: github.event_name == 'push' && needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
 
     steps:
@@ -166,11 +190,11 @@ jobs:
 
   test-unit:
     # autofix workflow will be triggered instead for PRs
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    needs: changes
+    if: github.event_name == 'push' && needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
-    needs:
-      - build
+
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
@@ -192,7 +216,7 @@ jobs:
         run: pnpm test:unit
 
   test-size:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs:
       - build
 
@@ -217,7 +241,7 @@ jobs:
         run: pnpm vitest run bundle
 
   test-benchmark:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs:
       - build
 
@@ -256,7 +280,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04-arm, windows-latest]
         env: ["dev", "built"]
         builder: ["vite-env-api", "vite", "rspack", "webpack"]
         context: ["async", "default"]
@@ -321,9 +345,47 @@ jobs:
           NITRO_NO_UNIX_SOCKET: ${{ matrix.env == 'dev' && '1' || '' }}
 
       - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-        if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'
+        if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-24.04-arm' && matrix.manifest == 'manifest-on'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  ci-ok:
+    # This job is the single required check for merge queues and branch protection.
+    # All other jobs feed into this one. Skipped jobs are treated as successful.
+    if: always()
+    runs-on: ubuntu-24.04-arm
+    needs:
+      - changes
+      - build
+      - codeql
+      - typecheck
+      - lint
+      - test-unit
+      - test-size
+      - test-benchmark
+      - test-fixtures
+    steps:
+      - name: Check required jobs
+        run: |
+          # Fail if any needed job was not successful (skipped counts as success)
+          results=( \
+            "${{ needs.changes.result }}" \
+            "${{ needs.build.result }}" \
+            "${{ needs.codeql.result }}" \
+            "${{ needs.typecheck.result }}" \
+            "${{ needs.lint.result }}" \
+            "${{ needs.test-unit.result }}" \
+            "${{ needs.test-size.result }}" \
+            "${{ needs.test-benchmark.result }}" \
+            "${{ needs.test-fixtures.result }}" \
+          )
+          for result in "${results[@]}"; do
+            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+              echo "One or more required jobs failed or were cancelled: $result"
+              exit 1
+            fi
+          done
+          echo "All required jobs passed or were skipped."
 
   release-nightly:
     concurrency:
@@ -337,7 +399,7 @@ jobs:
       !startsWith(github.event.head_commit.message, 'docs')
     needs:
       - build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
 
     steps:
@@ -368,7 +430,7 @@ jobs:
     if: github.repository_owner == 'nuxt'
     needs:
       - build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
 
     steps:
