@@ -164,7 +164,7 @@ jobs:
   lint:
     # autofix workflow will be triggered instead for PRs
     needs: changes
-    if: github.event_name == 'push' && needs.changes.outputs.src == 'true'
+    if: (github.event_name == 'push' || github.event_name == 'merge_group') && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
 
@@ -191,7 +191,7 @@ jobs:
   test-unit:
     # autofix workflow will be triggered instead for PRs
     needs: changes
-    if: github.event_name == 'push' && needs.changes.outputs.src == 'true'
+    if: (github.event_name == 'push' || github.event_name == 'merge_group') && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
 
