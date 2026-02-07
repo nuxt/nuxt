@@ -1,13 +1,13 @@
-import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
+import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, TransitionProps, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { NitroRouteRules } from 'nitropack/types'
-
+import { defu } from 'defu'
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _wrapInTransition } from './utils'
+import { _wrapInTransition, toArray } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
 // @ts-expect-error virtual file
@@ -89,15 +89,38 @@ export default defineComponent({
     let lastLayout: string | boolean | undefined
 
     return () => {
-      const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
+      const hasLayout = !!layout.value && layout.value in layouts
+
+      const hasTransition = hasLayout && !!(route?.meta.layoutTransition ?? defaultLayoutTransition)
+
+      const transitionProps = hasTransition && _mergeTransitionProps([
+        route?.meta.layoutTransition,
+        defaultLayoutTransition,
+        {
+          onAfterLeave () {
+            delete nuxtApp._runningTransition
+
+            nuxtApp.callHook('layout:transition:finish')
+          },
+        },
+      ])
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
 
-      // We avoid rendering layout transition if there is no layout to render
-      return _wrapInTransition(hasLayout && transitionProps, {
-        default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
+      return _wrapInTransition(transitionProps, {
+        default: () => h(Suspense, {
+          suspensible: true,
+          onPending: () => {
+            if (hasTransition) { nuxtApp._runningTransition = true }
+          },
+          onResolve: async () => {
+            await nextTick(done)
+
+            delete nuxtApp._runningTransition
+          },
+        },
+        {
           default: () => h(
             LayoutProvider,
             {
@@ -108,7 +131,7 @@ export default defineComponent({
               isRenderingNewLayout: (name?: string | boolean) => {
                 return (name !== previouslyRenderedLayout && name === layout.value)
               },
-              hasTransition: !!transitionProps,
+              hasTransition,
             }, context.slots),
         }),
       }).default()
@@ -212,3 +235,15 @@ const LayoutProvider = defineComponent({
     }
   },
 })
+
+function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
+  const _props: TransitionProps[] = []
+  for (const prop of routeProps) {
+    if (!prop) { continue }
+    _props.push({
+      ...prop,
+      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
+    })
+  }
+  return defu(..._props as [TransitionProps, TransitionProps])
+}
