@@ -15,7 +15,7 @@ concurrency:
 jobs:
   update:
     if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       pull-requests: write
