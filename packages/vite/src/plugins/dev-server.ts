@@ -8,8 +8,6 @@ import { useNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-import type { ErrorPartial } from '../types'
-
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
   const nitro = useNitro()
@@ -184,7 +182,9 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
         if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
-          throw { status: 404, unhandled: false } satisfies ErrorPartial
+          res!.statusCode = 404
+          res!.end('Not Found')
+          return
         }
       })
       await nuxt.callHook('server:devHandler', viteMiddleware, {
