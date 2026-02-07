@@ -7,8 +7,8 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { NuxtLayout, NuxtPage } from '#components'
 
 describe('NuxtPage with nested routes of different depths (#33766)', () => {
-  const router = useRouter()
-  const nuxtApp = useNuxtApp()
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
   let resolveA: undefined | (() => void)
   let resolveB: undefined | (() => void)
 
@@ -25,6 +25,8 @@ describe('NuxtPage with nested routes of different depths (#33766)', () => {
   }
 
   beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
     resolveA = undefined
     resolveB = undefined
     resetCounts()
@@ -275,8 +277,8 @@ describe('NuxtPage with nested routes of different depths (#33766)', () => {
 })
 
 describe('NuxtPage should re-render when navigating between deeply nested routes of same depth', () => {
-  const router = useRouter()
-  const nuxtApp = useNuxtApp()
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
   let resolveX: undefined | (() => void)
   let resolveY: undefined | (() => void)
 
@@ -294,6 +296,8 @@ describe('NuxtPage should re-render when navigating between deeply nested routes
   }
 
   beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
     resolveX = undefined
     resolveY = undefined
     resetCounts()
@@ -514,7 +518,7 @@ describe('NuxtPage should re-render when navigating between deeply nested routes
 })
 
 describe('NuxtPage render counts with synchronous components', () => {
-  const router = useRouter()
+  let router: ReturnType<typeof useRouter>
 
   const counts = {
     parent: { setup: 0, render: 0 },
@@ -527,6 +531,7 @@ describe('NuxtPage render counts with synchronous components', () => {
   }
 
   beforeEach(() => {
+    router = useRouter()
     resetCounts()
 
     router.addRoute({
@@ -647,8 +652,9 @@ describe('NuxtPage render counts with synchronous components', () => {
 
 describe('NuxtPage should work with keepalive options', () => {
   let visits = 0
-  const router = useRouter()
+  let router: ReturnType<typeof useRouter>
   beforeEach(() => {
+    router = useRouter()
     visits = 0
     router.addRoute({
       name: 'home',

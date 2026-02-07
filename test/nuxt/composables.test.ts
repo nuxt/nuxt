@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
@@ -455,9 +455,13 @@ describe('useRuntimeHook', () => {
 })
 
 describe('routing utilities: `navigateTo`', () => {
-  const nuxtApp = useNuxtApp()
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let router: ReturnType<typeof useRouter>
 
-  const router = useRouter()
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    router = useRouter()
+  })
 
   function waitForPageChange () {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
@@ -590,8 +594,13 @@ describe('routing utilities: `navigateTo` path encoding', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
-  const nuxtApp = useNuxtApp()
-  const router = useRouter()
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let router: ReturnType<typeof useRouter>
+
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    router = useRouter()
+  })
 
   function waitForPageChange () {
     return new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
@@ -825,7 +834,10 @@ describe('callOnce', () => {
     ['with "render" option', { mode: 'render' as const }],
     ['with "navigation" option', { mode: 'navigation' as const }],
   ])('%s', (_name, options) => {
-    const nuxtApp = useNuxtApp()
+    let nuxtApp: ReturnType<typeof useNuxtApp>
+    beforeEach(() => {
+      nuxtApp = useNuxtApp()
+    })
     afterEach(() => {
       nuxtApp.payload.once.clear()
     })
