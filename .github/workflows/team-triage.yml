@@ -14,7 +14,7 @@ permissions: {}
 
 jobs:
   handle-discussion-label:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository == 'nuxt/nuxt' && contains(github.event.label.name, 'discussion')
     
     steps:
