@@ -400,7 +400,7 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
 
   const fn = () => isNuxtMajorVersion(2, nuxt)
     // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
-    ? nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
+    ? nuxtModule.call(nuxt.moduleContainer, moduleOptions, nuxt)
     : nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
       ? nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(moduleOptions, nuxt))
       : nuxtModule(moduleOptions, nuxt)
