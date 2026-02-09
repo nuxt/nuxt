@@ -1,4 +1,3 @@
-import type { NitroOptions } from 'nitropack/types'
 import type { NuxtModule } from './module.ts'
 
 export interface NuxtDebugContext {
@@ -24,8 +23,6 @@ export interface NuxtDebugOptions {
   modules?: boolean
   /** Debug for file watchers */
   watchers?: boolean
-  /** Debug options for Nitro */
-  nitro?: NitroOptions['debug']
   /** Debug for production hydration mismatch */
   hydration?: boolean
   /** Debug for Vue Router */

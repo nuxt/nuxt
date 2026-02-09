@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { resolve } from 'pathe'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { configDefaults, coverageConfigDefaults, defaultExclude, defineConfig } from 'vitest/config'
@@ -33,16 +34,18 @@ const projects: Record<string, NuxtConfig> = {
 
 export default defineConfig({
   test: {
+    onConsoleLog (log) {
+      if (log.includes('<Suspense> is an experimental feature')) { return false }
+    },
     coverage: {
       exclude: [...coverageConfigDefaults.exclude, 'playground', '**/test/', 'scripts'],
     },
-    poolOptions: isCI ? { forks: { execArgv: getV8Flags() } } : undefined,
+    execArgv: isCI ? getV8Flags() : undefined,
     projects: [
       {
         plugins: isCI ? [codspeedPlugin()] : [],
         test: {
           name: 'benchmark',
-          pool: isCI ? 'forks' : undefined,
           include: [],
           benchmark: {
             include: ['**/*.bench.ts'],

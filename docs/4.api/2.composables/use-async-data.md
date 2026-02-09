@@ -25,8 +25,8 @@ const { data, status, pending, error, refresh, clear } = await useAsyncData(
 </script>
 ```
 
-::warning
-If you're using a custom useAsyncData wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/4.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata) for more information on how to make a custom async data fetcher.
+::warning{to="/docs/4.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata"}
+If you're using a custom `useAsyncData` wrapper, do not await it in the composable as that can cause unexpected behavior. See recipe for custom async data fetcher.
 ::
 
 ::note
@@ -148,7 +148,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
   - `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   - `transform`: a function that can be used to alter `handler` function result after resolving
-  - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
+  - `getCachedData`: Provide a function which returns cached data. An `undefined` return value will trigger a fetch. By default, this is:
     ```ts
     const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
       ? nuxtApp.payload.data[key]

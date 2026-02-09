@@ -1,8 +1,7 @@
 import { isAbsolute, normalize, resolve } from 'pathe'
-import { directoryToURL, logger, resolveAlias, tryImportModule } from '@nuxt/kit'
+import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
 import { parseNodeModulePath } from 'mlly'
 import { resolveModulePath } from 'exsolve'
-import { runtimeDependencies as runtimeNuxtDependencies } from 'nuxt/meta'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
 import { nuxt } from '../presets/nuxt.ts'
@@ -45,7 +44,7 @@ function serverPreset (ctx: WebpackConfigContext) {
   }
 }
 
-async function serverStandalone (ctx: WebpackConfigContext) {
+function serverStandalone (ctx: WebpackConfigContext) {
   // TODO: Refactor this out of webpack
   const inline = [
     'src/',
@@ -60,11 +59,6 @@ async function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-
-  const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitropack/runtime/meta')>('nitropack/runtime/meta', {
-    url: new URL(import.meta.url),
-  }) || {}
-
   const external = new Set([
     'nitro/runtime',
     // TODO: remove in v5
@@ -72,10 +66,7 @@ async function serverStandalone (ctx: WebpackConfigContext) {
     'nitropack/runtime',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
-    // explicit dependencies we use in our ssr renderer
-    'unhead', '@unhead/vue', '@nuxt/devalue', 'rou3', 'unstorage',
-    ...runtimeNuxtDependencies,
-    ...runtimeNitroDependencies,
+    ...ctx.nuxt['~runtimeDependencies'] || [],
   ])
   if (!ctx.nuxt.options.dev) {
     external.add('#internal/nuxt/paths')

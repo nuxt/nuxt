@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
@@ -230,6 +230,25 @@ if (isBuilt || isWindows) {
       expect(filteredLogs).toStrictEqual([])
     })
 
+    test.fail('should support renaming files to same import name', async ({ page, goto }) => {
+      await goto('/rename-component')
+
+      await expect(page.getByTestId('example')).toHaveText('test.vue')
+
+      renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
+
+      writeFileSync(
+        join(fixtureDir, 'app/components/example/example-test.vue'),
+        `<template><div data-testid="example">example-test.vue</div></template>`,
+      )
+
+      await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+
+      await page.reload()
+
+      await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+    })
+
     test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
       await goto('/issues/32177')
 
@@ -254,7 +273,67 @@ if (isBuilt || isWindows) {
 
       // Wait for HMR to process and check no errors
       await page.waitForTimeout(1000)
-      expect(page).toHaveNoErrorsOrWarnings()
+    })
+
+    test('custom routes added via router.addRoute() should survive HMR (#32027)', async ({ page, goto }) => {
+      // Navigate to the custom route (SSR will warn but client plugin will add route)
+      await goto('/custom-route')
+      await expect(page.getByTestId('custom-route')).toHaveText('Custom route added via plugin')
+
+      // Verify custom route is in the router before HMR
+      const routeExistsBefore = await page.evaluate(() => {
+        const router = window.useNuxtApp?.().$router
+        // @ts-expect-error - accessing nuxt internals
+        return router?.hasRoute('custom-route') ?? false
+      })
+      expect(routeExistsBefore).toBe(true)
+
+      // Start tracking console logs after initial navigation
+      // This way we only capture warnings that occur during/after HMR
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Trigger ROUTES HMR by adding a new page file (this regenerates routes.mjs)
+      writeFileSync(
+        join(fixtureDir, 'app/pages/hmr-trigger.vue'),
+        `<template><div data-testid="hmr-trigger">HMR trigger page</div></template>`,
+      )
+
+      // Wait for routes HMR to process
+      await expect(async () => {
+        const newRouteExists = await page.evaluate(() => {
+          const router = window.useNuxtApp?.().$router
+          // @ts-expect-error - accessing nuxt internals
+          return router?.getRoutes().some((r: { path: string }) => r.path === '/hmr-trigger') ?? false
+        })
+        return newRouteExists
+      }).toBeWithPolling(true)
+
+      // Verify custom route still exists after HMR
+      const routeExistsAfter = await page.evaluate(() => {
+        const router = window.useNuxtApp?.().$router
+        // @ts-expect-error - accessing nuxt internals
+        return router?.hasRoute('custom-route') ?? false
+      })
+      expect(routeExistsAfter).toBe(true)
+
+      // Verify no "No match found" warnings for custom-route after HMR
+      const customRouteWarnings = consoleLogs.filter(log =>
+        log.text.includes('No match found for location with path "/custom-route"'),
+      )
+      expect(customRouteWarnings).toStrictEqual([])
+
+      // Filter out other expected warnings/errors
+      const errors = consoleLogs.filter(log =>
+        (log.type === 'warning' || log.type === 'error') &&
+        !log.text.includes('No match found for location with path "/hmr-trigger"'),
+      )
+      expect(errors).toStrictEqual([])
     })
   }
 }

@@ -35,6 +35,17 @@ describe('UnheadImportsPlugin', () => {
       expect(transformInclude('/project/node_modules/@unhead/vue/index.js')).toBe(false)
       expect(transformInclude('/project/node_modules/unhead/index.js')).toBe(false)
     })
+
+    it('should exclude nuxt head runtime composables', () => {
+      // Unix paths
+      expect(transformInclude('/project/node_modules/nuxt/dist/head/runtime/composables.js')).toBe(false)
+      expect(transformInclude('/project/node_modules/nuxt/dist/head/runtime/index.js')).toBe(false)
+      // Windows paths
+      expect(transformInclude('C:\\project\\node_modules\\nuxt\\dist\\head\\runtime\\composables.js')).toBe(false)
+      // Should NOT exclude - different paths
+      expect(transformInclude('/project/node_modules/nuxt/dist/head/plugin.js')).toBe(true)
+      expect(transformInclude('/project/node_modules/nuxt/dist/app/composables.js')).toBe(true)
+    })
   })
 
   describe('transform', () => {

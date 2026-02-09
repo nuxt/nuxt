@@ -8,8 +8,8 @@ import { flushPromises } from '@vue/test-utils'
 import { NuxtPage } from '#components'
 
 describe('scrollBehavior of router options with global transition', () => {
-  const router = useRouter()
-  const nuxtApp = useNuxtApp()
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
 
   let wrapper: VueWrapper<unknown>
   let scrollTo: ReturnType<typeof vi.spyOn>
@@ -17,13 +17,6 @@ describe('scrollBehavior of router options with global transition', () => {
 
   const pageTransitionFinish = vi.fn()
   const pageLoadingEnd = vi.fn()
-
-  router.addRoute({
-    name: 'transitions',
-    path: '/transitions',
-    component: NestedPageParent,
-    children: [{ path: 'async', component: AsyncComponent }, { path: 'sync', component: SyncComponent }],
-  })
 
   async function completeNavigation () {
     await flushPromises()
@@ -36,6 +29,16 @@ describe('scrollBehavior of router options with global transition', () => {
   }
 
   beforeAll(async () => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    router.addRoute({
+      name: 'transitions',
+      path: '/transitions',
+      component: NestedPageParent,
+      children: [{ path: 'async', component: AsyncComponent }, { path: 'sync', component: SyncComponent }],
+    })
+
     cleanups.push(nuxtApp.hook('page:transition:finish', pageTransitionFinish))
     cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
 

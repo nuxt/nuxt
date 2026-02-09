@@ -68,11 +68,12 @@ export default defineComponent({
     let vnode: VNode
 
     const done = nuxtApp.deferHydration()
+    let isSuspensePending = false
+    let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
       useRouter().beforeEach(removeErrorHook)
     }
-
     if (import.meta.client && props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {
         if (next !== prev) {
@@ -92,6 +93,8 @@ export default defineComponent({
       })
       onBeforeUnmount(() => {
         unsub()
+        // Ensure hydration completes if unmounted before Suspense resolves (e.g., layout change)
+        done()
       })
     }
 
@@ -130,7 +133,7 @@ export default defineComponent({
 
               if (isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
               // if leaving a route with an existing child route, render the old vnode
-                if (hasSameChildren) {
+                if (hasSameChildren || vnode) {
                   return vnode
                 }
                 // If _leaving_ null child route, return null vnode
@@ -147,6 +150,12 @@ export default defineComponent({
                     nuxtApp.callHook('page:loading:end')
                   }
                 })
+              }
+
+              // force suspense remount and restart async tracking
+              // if suspense is already pending and page key changed
+              if (isSuspensePending && previousPageKey !== key) {
+                suspenseKey++
               }
 
               previousPageKey = key
@@ -167,14 +176,17 @@ export default defineComponent({
               const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
+                  key: suspenseKey,
                   suspensible: true,
                   onPending: () => {
+                    isSuspensePending = true
                     if (hasTransition) { nuxtApp._runningTransition = true }
                     nuxtApp.callHook('page:start', routeProps.Component)
                   },
                   onResolve: async () => {
-                    await nextTick()
+                    isSuspensePending = false
                     try {
+                      await nextTick()
                       nuxtApp._route.sync?.()
                       await nuxtApp.callHook('page:finish', routeProps.Component)
                       delete nuxtApp._runningTransition

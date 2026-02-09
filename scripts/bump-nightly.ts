@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { execSync } from 'node:child_process'
 import { inc } from 'semver'
 import { determineBumpType, getLatestTag, loadWorkspace } from './_utils.ts'

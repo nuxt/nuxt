@@ -375,6 +375,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       moduleDetection: 'force',
       isolatedModules: true,
       verbatimModuleSyntax: true,
+      allowArbitraryExtensions: true,
       /* Strictness */
       strict: nuxt.options.typescript?.strict ?? true,
       noUncheckedIndexedAccess: true,
@@ -426,6 +427,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
       verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
+      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
       /* Strictness */
       strict: tsConfig.compilerOptions?.strict,
       noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
@@ -460,6 +462,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       moduleDetection: tsConfig.compilerOptions?.moduleDetection,
       isolatedModules: tsConfig.compilerOptions?.isolatedModules,
       verbatimModuleSyntax: tsConfig.compilerOptions?.verbatimModuleSyntax,
+      allowArbitraryExtensions: tsConfig.compilerOptions?.allowArbitraryExtensions,
       /* Strictness */
       strict: tsConfig.compilerOptions?.strict,
       noUncheckedIndexedAccess: tsConfig.compilerOptions?.noUncheckedIndexedAccess,
@@ -585,12 +588,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   ])
 
   const declaration = [
-    ...references.map((ref) => {
-      if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
-      }
-      return `/// <reference ${renderAttrs(ref)} />`
-    }),
+    ...references.map(ref => renderReference(ref, nuxt.options.buildDir)),
     ...declarations,
     '',
     'export {}',
@@ -598,24 +596,14 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   ].join('\n')
 
   const nodeDeclaration = [
-    ...nodeReferences.map((ref) => {
-      if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
-      }
-      return `/// <reference ${renderAttrs(ref)} />`
-    }),
+    ...nodeReferences.map(ref => renderReference(ref, nuxt.options.buildDir)),
     '',
     'export {}',
     '',
   ].join('\n')
 
   const sharedDeclaration = [
-    ...sharedReferences.map((ref) => {
-      if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
-      }
-      return `/// <reference ${renderAttrs(ref)} />`
-    }),
+    ...sharedReferences.map(ref => renderReference(ref, nuxt.options.buildDir)),
     '',
     'export {}',
     '',
@@ -667,16 +655,11 @@ function sortTsPaths (paths: Record<string, string[]>) {
   }
 }
 
-function renderAttrs (obj: Record<string, string>) {
-  const attrs: string[] = []
-  for (const key in obj) {
-    attrs.push(renderAttr(key, obj[key]))
-  }
-  return attrs.join(' ')
-}
-
-function renderAttr (key: string, value?: string) {
-  return value ? `${key}="${value}"` : ''
+function renderReference (ref: TSReference, baseDir: string) {
+  const stuff = 'path' in ref
+    ? `path="${isAbsolute(ref.path) ? relative(baseDir, ref.path) : ref.path}"`
+    : `types="${ref.types}"`
+  return `/// <reference ${stuff} />`
 }
 
 const RELATIVE_WITH_DOT_RE = /^([^.])/

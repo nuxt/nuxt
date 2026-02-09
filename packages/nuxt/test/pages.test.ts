@@ -624,11 +624,11 @@ export const pageTests: Array<{
       { path: `${pagesDir}/خاص:جديد.vue` },
     ],
     output: [
-      { name: '测试', path: '/测试', file: `${pagesDir}/测试.vue`, children: [] },
-      { name: '文档', path: '/文档', file: `${pagesDir}/文档.vue`, children: [
-        { name: '文档-介绍', path: '介绍', file: `${pagesDir}/文档/介绍.vue`, children: [] },
+      { name: '测试', path: `/${encodeURIComponent('测试')}`, file: `${pagesDir}/测试.vue`, children: [] },
+      { name: '文档', path: `/${encodeURIComponent('文档')}`, file: `${pagesDir}/文档.vue`, children: [
+        { name: '文档-介绍', path: encodeURIComponent('介绍'), file: `${pagesDir}/文档/介绍.vue`, children: [] },
       ] },
-      { name: 'خاص:جديد', path: '/خاص\\:جديد', file: `${pagesDir}/خاص:جديد.vue`, children: [] },
+      { name: 'خاص:جديد', path: `/${encodeURIComponent('خاص')}\\:${encodeURIComponent('جديد')}`, file: `${pagesDir}/خاص:جديد.vue`, children: [] },
     ],
   },
   {
@@ -638,8 +638,8 @@ export const pageTests: Array<{
       { path: `${pagesDir}/a\\b.vue` },
     ],
     output: [
-      { name: 'a&b', path: '/a&b', file: `${pagesDir}/a&b.vue`, children: [] },
-      { name: 'a\\b', path: '/a\\\\b', file: `${pagesDir}/a\\b.vue`, children: [] },
+      { name: 'a&b', path: `/a${encodeURIComponent('&')}b`, file: `${pagesDir}/a&b.vue`, children: [] },
+      { name: 'a\\b', path: `/a${encodeURIComponent('\\')}b`, file: `${pagesDir}/a\\b.vue`, children: [] },
     ],
   },
   {
@@ -832,6 +832,30 @@ export const pageTests: Array<{
         redirect: '/',
         children: [],
         meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
+      },
+    ],
+  },
+  {
+    description: 'should handle unicode characters in alias paths',
+    files: [
+      {
+        path: `${pagesDir}/products.vue`,
+        template: `
+            <script setup lang="ts">
+            definePageMeta({
+              alias: ['/товары', '/produits', '/製品']
+            })
+            </script>
+          `,
+      },
+    ],
+    output: [
+      {
+        name: 'products',
+        path: '/products',
+        file: `${pagesDir}/products.vue`,
+        alias: ['/товары', '/produits', '/製品'],
+        children: [],
       },
     ],
   },

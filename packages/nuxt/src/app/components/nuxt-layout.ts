@@ -143,7 +143,8 @@ const LayoutProvider = defineComponent({
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
+        // When name=false, always return true so NuxtPage doesn't skip rendering
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
       })
     }
 

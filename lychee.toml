@@ -33,6 +33,9 @@ exclude = [
   "https://www.webpagetest.org/",
   "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
+  # external docs sites that block or rate-limit CI bots
+  'https://router.vuejs.org/(.*)',
+  'https://vitest.dev/(.*)',
   # dummy example URLs
   "https://myawesome-lib.js/",
   "https://awesome-lib.js/",

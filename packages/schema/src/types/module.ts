@@ -126,10 +126,10 @@ export interface NuxtModule<
   getMeta?: () => Promise<ModuleMeta>
   onInstall?: (nuxt: Nuxt) => Awaitable<void>
   onUpgrade?: (
+    nuxt: Nuxt,
     options: TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions,
-    nuxt: Nuxt,
     previousVersion: string,
   ) => Awaitable<void>
 }

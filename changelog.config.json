@@ -1,7 +1,0 @@
-{
-  "github": "nuxt/nuxt",
-  "scopeMap": {
-    "nuxt3": "nuxt",
-    "nuxi": "cli"
-  }
-}
