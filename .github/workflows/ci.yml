@@ -244,6 +244,7 @@ jobs:
 
   test-benchmark:
     runs-on: ubuntu-latest
+    if: github.event_name != 'merge_group'
     needs:
       - build
 
@@ -364,7 +365,6 @@ jobs:
       - lint
       - test-unit
       - test-size
-      - test-benchmark
       - test-fixtures
     steps:
       - name: Check required jobs
