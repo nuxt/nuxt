@@ -15,7 +15,8 @@ export default defineBuildConfig({
     },
     {
       type: 'bundle',
-      input: 'src/loaders/vue-module-identifier', dts: false,
+      input: 'src/loaders/vue-module-identifier',
+      dts: false,
     },
   ],
 })
