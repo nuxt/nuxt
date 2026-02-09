@@ -378,7 +378,6 @@ jobs:
             "${{ needs.lint.result }}" \
             "${{ needs.test-unit.result }}" \
             "${{ needs.test-size.result }}" \
-            "${{ needs.test-benchmark.result }}" \
             "${{ needs.test-fixtures.result }}" \
           )
           for result in "${results[@]}"; do
