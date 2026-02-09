@@ -61,6 +61,7 @@ export default defineConfig({
           include: ['test/*.test.ts'],
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: isWindows ? 60000 : 10000,
+          retry: isCI ? 2 : 0,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
           exclude: [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
           benchmark: { include: [] },
