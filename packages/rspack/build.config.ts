@@ -7,9 +7,15 @@ export default defineBuildConfig({
       input: 'src/index',
       dts: { oxc: true },
       rolldown: {
-        external: ['#builder'],
+        external: [
+          '@nuxt/schema',
+          '#builder',
+        ],
       },
     },
-    { type: 'bundle', input: 'src/loaders/vue-module-identifier', dts: false },
+    {
+      type: 'bundle',
+      input: 'src/loaders/vue-module-identifier', dts: false,
+    },
   ],
 })
