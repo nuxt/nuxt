@@ -91,12 +91,12 @@
     {
       "component": "() => import("pages/a/b.vue")",
       "name": ""a\\b"",
-      "path": ""/a\\\\b"",
+      "path": ""/a%5Cb"",
     },
     {
       "component": "() => import("pages/a&b.vue")",
       "name": ""a&b"",
-      "path": ""/a&b"",
+      "path": ""/a%26b"",
     },
   ],
   "should extract serializable values and override fallback when normalized with `overrideMeta: true`": [
@@ -330,22 +330,22 @@
         {
           "component": "() => import("pages/文档/介绍.vue")",
           "name": ""文档-介绍"",
-          "path": ""介绍"",
+          "path": ""%E4%BB%8B%E7%BB%8D"",
         },
       ],
       "component": "() => import("pages/文档.vue")",
       "name": ""文档"",
-      "path": ""/文档"",
+      "path": ""/%E6%96%87%E6%A1%A3"",
     },
     {
       "component": "() => import("pages/测试.vue")",
       "name": ""测试"",
-      "path": ""/测试"",
+      "path": ""/%E6%B5%8B%E8%AF%95"",
     },
     {
       "component": "() => import("pages/خاص:جديد.vue")",
       "name": ""خاص:جديد"",
-      "path": ""/خاص\\:جديد"",
+      "path": ""/%D8%AE%D8%A7%D8%B5\\:%D8%AC%D8%AF%D9%8A%D8%AF"",
     },
   ],
   "should handle unicode characters in alias paths": [

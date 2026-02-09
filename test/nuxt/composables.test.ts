@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
@@ -20,7 +20,7 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
-import { encodeURL, resolveRouteObject } from '#app/composables/router'
+import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 
 import { shouldLoadPayload } from '#app/composables/payload'
@@ -455,9 +455,13 @@ describe('useRuntimeHook', () => {
 })
 
 describe('routing utilities: `navigateTo`', () => {
-  const nuxtApp = useNuxtApp()
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let router: ReturnType<typeof useRouter>
 
-  const router = useRouter()
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    router = useRouter()
+  })
 
   function waitForPageChange () {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
@@ -537,9 +541,66 @@ describe('routing utilities: `encodeURL`', () => {
   })
 })
 
+describe('routing utilities: `encodeRoutePath`', () => {
+  it('should encode decoded unicode paths', () => {
+    expect(encodeRoutePath('/café')).toBe(`/${encodeURIComponent('café')}`)
+    expect(encodeRoutePath('/测试')).toBe(`/${encodeURIComponent('测试')}`)
+    expect(encodeRoutePath('/товары')).toBe(`/${encodeURIComponent('товары')}`)
+  })
+
+  it('should not double-encode already-encoded paths', () => {
+    const encoded = `/${encodeURIComponent('café')}`
+    expect(encodeRoutePath(encoded)).toBe(encoded)
+    expect(encodeRoutePath('/%E6%B5%8B%E8%AF%95')).toBe('/%E6%B5%8B%E8%AF%95')
+  })
+
+  it('should preserve query and hash', () => {
+    expect(encodeRoutePath('/café?q=foo')).toBe(`/${encodeURIComponent('café')}?q=foo`)
+    expect(encodeRoutePath('/café?q=foo#bar')).toBe(`/${encodeURIComponent('café')}?q=foo#bar`)
+  })
+
+  it('should encode special characters in path segments', () => {
+    expect(encodeRoutePath('/a&b')).toBe(`/a${encodeURIComponent('&')}b`)
+    expect(encodeRoutePath('/normal')).toBe('/normal')
+  })
+})
+
+describe('routing utilities: `navigateTo` path encoding', () => {
+  it('should encode decoded unicode paths for vue-router', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    await navigateTo('/café')
+    expect(push).toHaveBeenCalledWith(`/${encodeURIComponent('café')}`)
+    push.mockRestore()
+  })
+
+  it('should not double-encode already-encoded paths', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    const encoded = `/${encodeURIComponent('café')}`
+    await navigateTo(encoded)
+    expect(push).toHaveBeenCalledWith(encoded)
+    push.mockRestore()
+  })
+
+  it('should not encode object locations', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    const to = { path: '/test', query: { foo: 'bar' } }
+    await navigateTo(to)
+    expect(push).toHaveBeenCalledWith(to)
+    push.mockRestore()
+  })
+})
+
 describe('routing utilities: `useRoute`', () => {
-  const nuxtApp = useNuxtApp()
-  const router = useRouter()
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let router: ReturnType<typeof useRouter>
+
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    router = useRouter()
+  })
 
   function waitForPageChange () {
     return new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
@@ -773,7 +834,10 @@ describe('callOnce', () => {
     ['with "render" option', { mode: 'render' as const }],
     ['with "navigation" option', { mode: 'navigation' as const }],
   ])('%s', (_name, options) => {
-    const nuxtApp = useNuxtApp()
+    let nuxtApp: ReturnType<typeof useNuxtApp>
+    beforeEach(() => {
+      nuxtApp = useNuxtApp()
+    })
     afterEach(() => {
       nuxtApp.payload.once.clear()
     })
