@@ -26,10 +26,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
-
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
-      if (!chunk) { continue }
+      if (!chunk) {
+        continue
+      }
       if (chunk.isEntry && chunk.src) {
         entryIds.add(chunk.src)
       } else {
@@ -102,9 +103,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             // 1. Vue components that will have inlined styles
             // 2. Entry file (global CSS is inlined via separate mechanism)
             // CSS imported from other files (plugins, etc.) should retain side effects
-            const isFromEntry = importer === entry
-            const isFromVue = importer && isVue(importer)
-            if (!isFromEntry && !isFromVue) {
+            if (!importer || (importer !== entry && !isVue(importer))) {
               return
             }
 

@@ -89,8 +89,10 @@ export class SSRStylesPlugin {
     nuxt.hook('build:manifest', (manifest) => {
       for (const [id, chunk] of Object.entries(manifest)) {
         if (chunk.isEntry && chunk.src) {
+          // Track entry modules
           this.chunksWithInlinedCSS.add(chunk.src)
         } else if (this.chunksWithInlinedCSS.has(id)) {
+          // Remove CSS for chunks with inlined styles
           chunk.css &&= []
         }
 
