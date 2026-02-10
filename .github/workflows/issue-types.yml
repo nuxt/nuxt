@@ -11,7 +11,7 @@ permissions:
 jobs:
   convert-label-to-issue-type:
     name: Convert labels to issue types
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository == 'nuxt/nuxt'
     steps:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
