@@ -214,11 +214,23 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
 **getCachedData default:**
 
 ```ts
-const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
-  ? nuxtApp.payload.data[key]
-  : nuxtApp.static.data[key]
+const getDefaultCachedData = (key, nuxtApp, ctx) => {
+  if (nuxtApp.isHydrating) {
+    return nuxtApp.payload.data[key]
+  }
+  if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook') {
+    return nuxtApp.static.data[key]
+  }
+}
 ```
-This only caches data when `experimental.payloadExtraction` in `nuxt.config` is enabled.
+
+By default, `getCachedData` does not cache data across client-side navigations. It only returns cached data during hydration (from the SSR payload) or from static data (when [`payloadExtraction`](/docs/4.x/guide/going-further/experimental-features#payloadextraction) is enabled).
+
+Additionally, when using the default `getCachedData`, Nuxt will automatically purge cached data when the last component using a key unmounts. This means navigating away and back will trigger a new fetch.
+
+::tip
+To opt into client-side caching, provide a custom `getCachedData`. This also prevents the automatic data purging on unmount. See the [data fetching guide](/docs/4.x/getting-started/data-fetching#client-side-caching) for caching patterns.
+::
 
 ## Return Values
 
