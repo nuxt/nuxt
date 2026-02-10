@@ -1,7 +1,7 @@
 import { START_LOCATION } from 'vue-router'
 import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import type { RouterConfig } from 'nuxt/schema'
-import { type RuntimeNuxtHooks, useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '#app/nuxt'
 import { isChangingPage } from '#app/components/utils'
 import { useRouter } from '#app/composables/router'
 
@@ -35,15 +35,17 @@ export default <RouterConfig> {
       return _calculatePosition(to, from, savedPosition, hashScrollBehaviour)
     }
 
-    const hookToWait: keyof RuntimeNuxtHooks = nuxtApp._runningTransition
-      ? (from.meta.layout ?? 'default') !== (to.meta.layout ?? 'default')
-          ? 'layout:transition:finish'
-          : 'page:transition:finish'
-      : 'page:loading:end'
-
     return new Promise((resolve) => {
-      nuxtApp.hooks.hookOnce(hookToWait, () => {
+      const doScroll = () => {
         requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour)))
+      }
+      nuxtApp.hooks.hookOnce('page:loading:end', () => {
+        const transitionPromise = nuxtApp['~transitionPromise'] as Promise<void> | undefined
+        if (transitionPromise) {
+          transitionPromise.then(doScroll)
+        } else {
+          doScroll()
+        }
       })
     })
   },

@@ -1,13 +1,12 @@
-import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, TransitionProps, VNode } from 'vue'
+import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { NitroRouteRules } from 'nitropack/types'
-import { defu } from 'defu'
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _wrapInTransition, toArray } from './utils'
+import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
 // @ts-expect-error virtual file
@@ -97,10 +96,18 @@ export default defineComponent({
         route?.meta.layoutTransition,
         defaultLayoutTransition,
         {
+          onBeforeLeave () {
+            // Create the transition promise when the leave animation starts.
+            // This overrides any page transition promise since the layout
+            // is the outermost transition wrapper.
+            nuxtApp['~transitionPromise'] = new Promise((resolve) => {
+              nuxtApp['~transitionFinish'] = resolve
+            })
+          },
           onAfterLeave () {
-            delete nuxtApp._runningTransition
-
-            nuxtApp.callHook('layout:transition:finish')
+            nuxtApp['~transitionFinish']?.()
+            delete nuxtApp['~transitionFinish']
+            delete nuxtApp['~transitionPromise']
           },
         },
       ])
@@ -111,13 +118,8 @@ export default defineComponent({
       return _wrapInTransition(transitionProps, {
         default: () => h(Suspense, {
           suspensible: true,
-          onPending: () => {
-            if (hasTransition) { nuxtApp._runningTransition = true }
-          },
           onResolve: async () => {
             await nextTick(done)
-
-            delete nuxtApp._runningTransition
           },
         },
         {
@@ -235,15 +237,3 @@ const LayoutProvider = defineComponent({
     }
   },
 })
-
-function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = []
-  for (const prop of routeProps) {
-    if (!prop) { continue }
-    _props.push({
-      ...prop,
-      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
-    })
-  }
-  return defu(..._props as [TransitionProps, TransitionProps])
-}
