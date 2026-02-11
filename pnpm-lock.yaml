@@ -624,6 +624,9 @@ importers:
       unplugin-vue-router:
         specifier: ^0.19.2
         version: 0.19.2(@vue/compiler-sfc@3.5.27)(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
+      unrouting:
+        specifier: file:../../unrouting-0.0.1.tgz
+        version: file:unrouting-0.0.1.tgz
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -8740,6 +8743,10 @@ packages:
   unplugin@3.0.0:
     resolution: {integrity: sha512-0Mqk3AT2TZCXWKdcoaufeXNukv2mTrEZExeXlHIOZXdqYoHHr4n51pymnwV8x2BOVxwXbK2HLlI7usrqMpycdg==}
     engines: {node: ^20.19.0 || >=22.12.0}
+
+  unrouting@file:unrouting-0.0.1.tgz:
+    resolution: {integrity: sha512-QfPE42EUQcWke8h9R152LbboLRegTxh2GlSNJFdPcJUYPSTFSIXKBmZziK/Q2OQp3kHpAXTASX4JI5x7n5BBDQ==, tarball: file:unrouting-0.0.1.tgz}
+    version: 0.0.1
 
   unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}
@@ -17403,6 +17410,11 @@ snapshots:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.3
       webpack-virtual-modules: 0.6.2
+
+  unrouting@file:unrouting-0.0.1.tgz:
+    dependencies:
+      escape-string-regexp: 5.0.0
+      ufo: 1.6.3
 
   unrs-resolver@1.11.1:
     dependencies:

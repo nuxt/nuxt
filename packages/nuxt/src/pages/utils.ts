@@ -1,10 +1,9 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
-import { extname, normalize, relative } from 'pathe'
-import { encodePath, joinURL, withLeadingSlash } from 'ufo'
+import { normalize, relative } from 'pathe'
+import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
-import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 
@@ -14,31 +13,11 @@ import { parseAndWalk } from 'oxc-walker'
 import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
 import { transformSync } from 'oxc-transform'
+import { buildTree, toVueRouter4 } from 'unrouting'
+import type { VueRoute } from 'unrouting'
 import { getLoader, uniqueBy } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
-
-const SegmentTokenType = {
-  static: 'static',
-  dynamic: 'dynamic',
-  optional: 'optional',
-  catchall: 'catchall',
-  group: 'group',
-} as const
-
-type SegmentTokenType = typeof SegmentTokenType[keyof typeof SegmentTokenType]
-
-const SegmentParserState = {
-  initial: 'initial',
-  ...SegmentTokenType,
-} as const
-
-type SegmentParserState = typeof SegmentParserState[keyof typeof SegmentParserState]
-
-interface SegmentToken {
-  type: SegmentTokenType
-  value: string
-}
 
 interface ScannedFile {
   relativePath: string
@@ -99,86 +78,48 @@ type GenerateRoutesFromFilesOptions = {
   shouldUseServerComponents?: boolean
 }
 
-const INDEX_PAGE_RE = /\/index$/
 export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   if (!files.length) { return [] }
-  const routes: NuxtPage[] = []
 
-  const sortedFiles = [...files].sort((a, b) => a.relativePath.length - b.relativePath.length)
-
-  for (const file of sortedFiles) {
-    const segments = file.relativePath
-      .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
-      .split('/')
-
-    const route: NuxtPage = {
-      name: '',
-      path: '',
-      file: file.absolutePath,
-      children: [],
-    }
-
-    // Array where routes should be added, useful when adding child routes
-    let parent = routes
-
-    // Array for collecting route groups
-    const routeGroups: string[] = []
-
-    const lastSegment = segments[segments.length - 1]!
-    if (lastSegment.endsWith('.server')) {
-      segments[segments.length - 1] = lastSegment.replace('.server', '')
-      if (options.shouldUseServerComponents) {
-        route.mode = 'server'
-      }
-    } else if (lastSegment.endsWith('.client')) {
-      segments[segments.length - 1] = lastSegment.replace('.client', '')
-      route.mode = 'client'
-    }
-
-    for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i]
-
-      const tokens = parseSegment(segment!, file.absolutePath)
-
-      // Skip group segments after collecting their names
-      if (tokens.every(token => token.type === SegmentTokenType.group)) {
-        const groupNames = tokens.map(t => t.value)
-
-        routeGroups.push(...groupNames)
-
-        continue
-      }
-
-      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
-
-      // ex: parent/[slug].vue -> parent-slug
-      route.name += (route.name && '/') + segmentName
-
-      // ex: parent.vue + parent/child.vue
-      const routePath = getRoutePath(tokens, segments[i + 1] !== undefined && segments[i + 1] !== 'index')
-      const path = withLeadingSlash(joinURL(route.path, routePath.replace(INDEX_PAGE_RE, '/')))
-      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path.replace('([^/]*)*', '(.*)*'))
-
-      if (child && child.children) {
-        parent = child.children
-        route.path = ''
-      } else if (segmentName === 'index' && !route.path) {
-        route.path += '/'
-      } else if (segmentName !== 'index') {
-        route.path += routePath
-      }
-    }
-
-    // Add route groups to meta
-    if (routeGroups.length > 0) {
-      route.meta ||= {}
-      route.meta.groups = routeGroups
-    }
-
-    parent.push(route)
+  // Build a mapping from relativePath → absolutePath for resolving file paths
+  const absolutePathMap = new Map<string, string>()
+  for (const file of files) {
+    absolutePathMap.set(file.relativePath, file.absolutePath)
   }
 
-  return prepareRoutes(routes)
+  // Use unrouting to build the route tree and emit vue-router routes
+  const tree = buildTree(files.map(f => f.relativePath), {
+    modes: options.shouldUseServerComponents ? ['server', 'client'] : ['client'],
+  })
+  const vueRoutes = toVueRouter4(tree)
+
+  // Convert VueRoute[] → NuxtPage[]
+  function toNuxtPages (routes: VueRoute[]): NuxtPage[] {
+    return routes.map((route) => {
+      const page: NuxtPage = {
+        name: route.name,
+        path: route.path,
+        file: route.file ? absolutePathMap.get(route.file) || route.file : undefined,
+        children: route.children?.length ? toNuxtPages(route.children) : [],
+      }
+
+      // Map modes to Nuxt's mode field
+      if (route.modes?.includes('server')) {
+        page.mode = 'server'
+      } else if (route.modes?.includes('client')) {
+        page.mode = 'client'
+      }
+
+      // Pass through groups metadata
+      if (route.meta?.groups) {
+        page.meta = { ...page.meta, groups: route.meta.groups }
+      }
+
+      return page
+    })
+  }
+
+  return toNuxtPages(vueRoutes)
 }
 
 interface AugmentPagesContext {
@@ -358,172 +299,6 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
   extractCache[absolutePath] = extractedData
   return klona(extractedData)
-}
-
-const ESCAPE_CHARS_RE = /[\\:]/g
-function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
-  return tokens.reduce((path, token) => {
-    switch (token.type) {
-      case SegmentTokenType.optional:
-        return path + `:${token.value}?`
-      case SegmentTokenType.dynamic:
-        return path + `:${token.value}()`
-      case SegmentTokenType.catchall:
-        return path + (hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`)
-      case SegmentTokenType.group:
-        return path
-      case SegmentTokenType.static:
-      default:
-        return path + encodePath(token.value).replace(ESCAPE_CHARS_RE, '\\$&')
-    }
-  }, '/')
-}
-
-const PARAM_CHAR_RE = /[\w.]/
-
-function parseSegment (segment: string, absolutePath: string) {
-  let state: SegmentParserState = SegmentParserState.initial
-  let i = 0
-
-  let buffer = ''
-  const tokens: SegmentToken[] = []
-
-  function consumeBuffer () {
-    if (!buffer) {
-      return
-    }
-    if (state === SegmentParserState.initial) {
-      throw new Error('wrong state')
-    }
-
-    tokens.push({ type: state, value: buffer })
-
-    buffer = ''
-  }
-
-  while (i < segment.length) {
-    const c = segment[i]
-
-    switch (state) {
-      case SegmentParserState.initial:
-        buffer = ''
-        if (c === '[') {
-          state = SegmentParserState.dynamic
-        } else if (c === '(') {
-          state = SegmentParserState.group
-        } else {
-          i--
-          state = SegmentParserState.static
-        }
-        break
-
-      case SegmentParserState.static:
-        if (c === '[') {
-          consumeBuffer()
-          state = SegmentParserState.dynamic
-        } else if (c === '(') {
-          consumeBuffer()
-          state = SegmentParserState.group
-        } else {
-          buffer += c
-        }
-        break
-
-      case SegmentParserState.catchall:
-      case SegmentParserState.dynamic:
-      case SegmentParserState.optional:
-      case SegmentParserState.group:
-        if (buffer === '...') {
-          buffer = ''
-          state = SegmentParserState.catchall
-        }
-        if (c === '[' && state === SegmentParserState.dynamic) {
-          state = SegmentParserState.optional
-        }
-        if (c === ']' && (state !== SegmentParserState.optional || segment[i - 1] === ']')) {
-          if (!buffer) {
-            throw new Error('Empty param')
-          } else {
-            consumeBuffer()
-          }
-          state = SegmentParserState.initial
-        } else if (c === ')' && state === SegmentParserState.group) {
-          if (!buffer) {
-            throw new Error('Empty group')
-          } else {
-            consumeBuffer()
-          }
-          state = SegmentParserState.initial
-        } else if (c && PARAM_CHAR_RE.test(c)) {
-          buffer += c
-        } else if (state === SegmentParserState.dynamic || state === SegmentParserState.optional) {
-          if (c !== '[' && c !== ']') {
-            logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
-          }
-        }
-        break
-    }
-    i++
-  }
-
-  if (state === SegmentParserState.dynamic) {
-    throw new Error(`Unfinished param "${buffer}"`)
-  }
-
-  consumeBuffer()
-
-  return tokens
-}
-
-function findRouteByName (name: string, routes: NuxtPage[]): NuxtPage | undefined {
-  for (const route of routes) {
-    if (route.name === name) {
-      return route
-    }
-    if (route.children && route.children.length > 0) {
-      const child = findRouteByName(name, route.children)
-      if (child) {
-        return child
-      }
-    }
-  }
-}
-
-const NESTED_PAGE_RE = /\//g
-function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<string>()) {
-  for (const route of routes) {
-    // Remove -index
-    if (route.name) {
-      route.name = route.name
-        .replace(INDEX_PAGE_RE, '')
-        .replace(NESTED_PAGE_RE, '-')
-
-      if (names.has(route.name)) {
-        const existingRoute = findRouteByName(route.name, routes)
-        const extra = existingRoute?.name ? `is the same as \`${existingRoute.file}\`` : 'is a duplicate'
-        logger.warn(`Route name generated for \`${route.file}\` ${extra}. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
-      }
-    }
-
-    // Remove leading / if children route
-    if (parent && route.path[0] === '/') {
-      route.path = route.path.slice(1)
-    }
-
-    if (route.children?.length) {
-      route.children = prepareRoutes(route.children, route, names)
-    }
-
-    if (route.children?.find(childRoute => childRoute.path === '')) {
-      delete route.name
-    }
-
-    if (route.name) {
-      names.add(route.name)
-    }
-  }
-
-  return routes
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {
