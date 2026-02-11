@@ -1359,18 +1359,6 @@ describe('composables', () => {
     expect(await page.getByRole('alert').textContent()).toContain('Assertive announcement')
     await page.close()
   })
-  it('`useAnnouncer` should re-announce same message', async () => {
-    const { page } = await renderPage('/announcer')
-    await page.getByTestId('same-message-button').click()
-    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Same message'))
-    expect(await page.getByRole('alert').textContent()).toContain('Same message')
-    // Click again to announce the same message
-    await page.getByTestId('same-message-button').click()
-    // The message should be cleared first then re-announced
-    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Same message'))
-    expect(await page.getByRole('alert').textContent()).toContain('Same message')
-    await page.close()
-  })
 })
 
 describe('middlewares', () => {

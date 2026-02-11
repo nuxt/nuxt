@@ -38,7 +38,7 @@ Use this for in-page updates like form validation, async operations, toast notif
 
 ### `set(message, politeness = "polite")`
 
-Sets the message to announce with its urgency level. The message is cleared first and then set via `nextTick` to ensure re-announcement of the same message.
+Sets the message to announce with its urgency level.
 
 ### `polite(message)`
 

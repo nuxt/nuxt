@@ -930,21 +930,21 @@ describe('announcer', () => {
     expect(announcer.politeness.value).toBe('assertive')
   })
 
-  it('should set message and politeness', async () => {
+  it('should set message and politeness', () => {
     const announcer = useAnnouncer()
     announcer.set('Test message with politeness', 'assertive')
     expect(announcer.message.value).toBe('Test message with politeness')
     expect(announcer.politeness.value).toBe('assertive')
   })
 
-  it('should set message with polite politeness', async () => {
+  it('should set message with polite politeness', () => {
     const announcer = useAnnouncer()
     announcer.polite('Test message polite')
     expect(announcer.message.value).toBe('Test message polite')
     expect(announcer.politeness.value).toBe('polite')
   })
 
-  it('should set message with assertive politeness', async () => {
+  it('should set message with assertive politeness', () => {
     const announcer = useAnnouncer()
     announcer.assertive('Test message assertive')
     expect(announcer.message.value).toBe('Test message assertive')

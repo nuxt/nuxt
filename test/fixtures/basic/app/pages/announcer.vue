@@ -12,10 +12,6 @@ function announcePolite () {
 function announceAssertive () {
   assertive('Assertive announcement')
 }
-
-function announceSameMessage () {
-  polite('Same message')
-}
 </script>
 
 <template>
@@ -35,12 +31,6 @@ function announceSameMessage () {
       @click="announceAssertive"
     >
       Announce Assertive
-    </button>
-    <button
-      data-testid="same-message-button"
-      @click="announceSameMessage"
-    >
-      Announce Same Message
     </button>
   </div>
 </template>

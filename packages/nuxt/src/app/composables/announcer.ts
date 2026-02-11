@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentScope, nextTick, onScopeDispose, shallowRef } from 'vue'
+import { getCurrentScope, onScopeDispose, shallowRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
 
 export type AnnouncerPoliteness = 'assertive' | 'polite' | 'off'
@@ -23,12 +23,8 @@ function createAnnouncer (opts: NuxtAnnouncerOpts = {}): NuxtAnnouncer {
   const politeness = shallowRef<AnnouncerPoliteness>(opts.politeness || 'polite')
 
   function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
-    // Clear first to ensure re-announcement of same message
-    message.value = ''
-    nextTick(() => {
-      message.value = messageValue
-      politeness.value = politenessSetting
-    })
+    message.value = messageValue
+    politeness.value = politenessSetting
   }
 
   function polite (msg: string) {
