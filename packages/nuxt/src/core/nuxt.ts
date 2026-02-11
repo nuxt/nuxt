@@ -560,6 +560,14 @@ async function initNuxt (nuxt: Nuxt) {
     mode: 'client',
   })
 
+  // Add <NuxtAnnouncer>
+  addComponent({
+    name: 'NuxtAnnouncer',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-announcer'),
+    mode: 'client',
+  })
+
   // Add <NuxtClientFallback>
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
