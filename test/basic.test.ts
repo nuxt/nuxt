@@ -1345,6 +1345,32 @@ describe('composables', () => {
     expect(await page.getByRole('alert').textContent()).toContain('Dynamically set title')
     await page.close()
   })
+  it('`useAnnouncer` should announce polite message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('polite-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Polite announcement'))
+    expect(await page.getByRole('alert').textContent()).toContain('Polite announcement')
+    await page.close()
+  })
+  it('`useAnnouncer` should announce assertive message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('assertive-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Assertive announcement'))
+    expect(await page.getByRole('alert').textContent()).toContain('Assertive announcement')
+    await page.close()
+  })
+  it('`useAnnouncer` should re-announce same message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('same-message-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Same message'))
+    expect(await page.getByRole('alert').textContent()).toContain('Same message')
+    // Click again to announce the same message
+    await page.getByTestId('same-message-button').click()
+    // The message should be cleared first then re-announced
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Same message'))
+    expect(await page.getByRole('alert').textContent()).toContain('Same message')
+    await page.close()
+  })
 })
 
 describe('middlewares', () => {

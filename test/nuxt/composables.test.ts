@@ -20,6 +20,7 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
+import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 
@@ -69,6 +70,7 @@ describe('composables', () => {
   it('are all tested', () => {
     const testedComposables: string[] = [
       'useRouteAnnouncer',
+      'useAnnouncer',
       'clearNuxtData',
       'refreshNuxtData',
       'useAsyncData',
@@ -911,6 +913,39 @@ describe('route announcer', () => {
 
   it('should set message with assertive politeness', () => {
     const announcer = useRouteAnnouncer()
+    announcer.assertive('Test message assertive')
+    expect(announcer.message.value).toBe('Test message assertive')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+})
+
+describe('announcer', () => {
+  it('should create an announcer with default politeness', () => {
+    const announcer = useAnnouncer({ politeness: 'polite' })
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should create an announcer with provided politeness', () => {
+    const announcer = useAnnouncer({ politeness: 'assertive' })
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message and politeness', async () => {
+    const announcer = useAnnouncer()
+    announcer.set('Test message with politeness', 'assertive')
+    expect(announcer.message.value).toBe('Test message with politeness')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message with polite politeness', async () => {
+    const announcer = useAnnouncer()
+    announcer.polite('Test message polite')
+    expect(announcer.message.value).toBe('Test message polite')
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should set message with assertive politeness', async () => {
+    const announcer = useAnnouncer()
     announcer.assertive('Test message assertive')
     expect(announcer.message.value).toBe('Test message assertive')
     expect(announcer.politeness.value).toBe('assertive')
