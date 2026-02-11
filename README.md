@@ -1,4 +1,4 @@
-[![Nuxt banner](./.github/assets/banner.svg)](https://nuxt.com)
+<a href="https://nuxt.com"><img width="830" height="213" src="./.github/assets/banner.svg" alt="Nuxt banner"></a>
 
 # Nuxt
 
