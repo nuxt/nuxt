@@ -1,4 +1,4 @@
-import { getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
+import { createCommentVNode, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
 import type { AsyncComponentLoader, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
@@ -34,12 +34,12 @@ function pageToClientOnly<T extends ComponentOptions> (component: T) {
     // override the component render (non script setup component) or dev mode
     clone.render = (ctx: any, cache: any, $props: any, $setup: any, $data: any, $options: any) => ($setup.mounted$ ?? ctx.mounted$)
       ? h(component.render?.bind(ctx)(ctx, cache, $props, $setup, $data, $options))
-      : h('div')
+      : createCommentVNode('placeholder')
   } else {
     // handle runtime-compiler template
     clone.template &&= `
       <template v-if="mounted$">${component.template}</template>
-      <template v-else><div></div></template>
+      <template v-else><!--placeholder--></template>
     `
   }
 
@@ -62,13 +62,13 @@ function pageToClientOnly<T extends ComponentOptions> (component: T) {
           setupState.mounted$ = mounted$
           return setupState
         }
-        return (...args: any[]) => (mounted$.value || !nuxtApp.isHydrating) ? h(setupState(...args)) : h('div')
+        return (...args: any[]) => (mounted$.value || !nuxtApp.isHydrating) ? h(setupState(...args)) : createCommentVNode('placeholder')
       })
     } else {
       return typeof setupState === 'function'
         ? (...args: any[]) => (mounted$.value || !nuxtApp.isHydrating)
             ? h(setupState(...args))
-            : h('div')
+            : createCommentVNode('placeholder')
         : Object.assign(setupState, { mounted$ })
     }
   }
