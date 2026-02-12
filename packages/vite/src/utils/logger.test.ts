@@ -1,25 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type * as vite from 'vite'
 import { createViteLogger } from './logger.ts'
 import { logger } from '@nuxt/kit'
 
-vi.mock('@nuxt/kit', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    box: vi.fn(),
-    level: 3,
-  },
-  useNitro: vi.fn(() => ({
-    options: {
-      publicAssets: [],
+vi.mock('@nuxt/kit', async (importActual) => {
+  const actual = await importActual<typeof import('@nuxt/kit')>()
+  return {
+    ...actual,
+    logger: {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      box: vi.fn(),
+      level: 3,
     },
-  })),
-}))
-
-vi.mock('consola/utils', () => ({
-  colorize: vi.fn((_color, text) => text),
-}))
+    useNitro: vi.fn(() => ({
+      options: {
+        publicAssets: [],
+      },
+    })),
+  }
+})
 
 describe('createViteLogger', () => {
   beforeEach(() => {
@@ -28,14 +29,14 @@ describe('createViteLogger', () => {
   })
 
   it('should capture new dependencies and show a suggestion after debounce', () => {
-    const config = {
+    const config: Partial<vite.InlineConfig> = {
       root: '/',
       build: { outDir: '/dist' },
       optimizeDeps: {
         include: ['existing-dep'],
       },
     }
-    const viteLogger = createViteLogger(config as any)
+    const viteLogger = createViteLogger(config as vite.InlineConfig)
 
     viteLogger.info('✨ new dependencies optimized: dep1, dep2')
 
@@ -53,8 +54,8 @@ describe('createViteLogger', () => {
   })
 
   it('should debounce multiple messages and reloads', () => {
-    const config = { root: '/', build: { outDir: '/dist' }, optimizeDeps: { include: [] } }
-    const viteLogger = createViteLogger(config as any)
+    const config: Partial<vite.InlineConfig> = { root: '/', build: { outDir: '/dist' }, optimizeDeps: { include: [] } }
+    const viteLogger = createViteLogger(config as vite.InlineConfig)
 
     viteLogger.info('✨ new dependencies optimized: dep1')
     vi.advanceTimersByTime(1000)
@@ -72,8 +73,8 @@ describe('createViteLogger', () => {
   })
 
   it('should only show the hint once', () => {
-    const config = { root: '/', build: { outDir: '/dist' }, optimizeDeps: { include: [] } }
-    const viteLogger = createViteLogger(config as any)
+    const config: Partial<vite.InlineConfig> = { root: '/', build: { outDir: '/dist' }, optimizeDeps: { include: [] } }
+    const viteLogger = createViteLogger(config as vite.InlineConfig)
 
     viteLogger.info('✨ new dependencies optimized: dep1')
     vi.advanceTimersByTime(2500)
@@ -87,8 +88,8 @@ describe('createViteLogger', () => {
   })
 
   it('should reset suggestion state on clearScreen', () => {
-    const config = { root: '/', build: { outDir: '/dist' }, optimizeDeps: { include: [] }, clearScreen: true } as any
-    const viteLogger = createViteLogger(config)
+    const config: Partial<vite.InlineConfig> = { root: '/', build: { outDir: '/dist' }, optimizeDeps: { include: [] }, clearScreen: true }
+    const viteLogger = createViteLogger(config as vite.InlineConfig)
 
     viteLogger.info('✨ new dependencies optimized: dep1')
     viteLogger.clearScreen('info')
