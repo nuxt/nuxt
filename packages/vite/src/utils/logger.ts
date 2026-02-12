@@ -2,7 +2,7 @@ import process from 'node:process'
 import type * as vite from 'vite'
 import { createLogger } from 'vite'
 import { logger } from '@nuxt/kit'
-import { colorize } from 'consola/utils'
+import { colorize, stripAnsi } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
 import type { NuxtOptions } from '@nuxt/schema'
 import { relative } from 'pathe'
@@ -11,9 +11,6 @@ import { useResolveFromPublicAssets } from '../plugins/public-dirs.ts'
 let duplicateCount = 0
 let lastType: vite.LogType | null = null
 let lastMsg: string | null = null
-
-// eslint-disable-next-line no-control-regex
-const VITE_ANSI_ESCAPE_RE = /\u001B\[[\d;]*m/g
 
 export const logLevelMap: Record<NuxtOptions['logLevel'], vite.UserConfig['logLevel']> = {
   silent: 'silent',
@@ -28,7 +25,7 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
   info: 3,
 }
 
-const VITE_RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
+const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
 export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean } = {}): vite.Logger {
   const pendingOptimizeDeps = new Set<string>()
   let optimizeDepsHintTimer: NodeJS.Timeout | null = null
@@ -55,7 +52,7 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       if (msg.startsWith('Sourcemap') && msg.includes('node_modules')) { return }
       // Hide warnings about externals produced by https://github.com/vitejs/vite/blob/v5.2.11/packages/vite/src/node/plugins/css.ts#L350-L355
       if (msg.includes('didn\'t resolve at build time, it will remain unchanged to be resolved at runtime')) {
-        const id = msg.trim().match(VITE_RUNTIME_RESOLVE_REF_RE)?.[1]
+        const id = msg.trim().match(RUNTIME_RESOLVE_REF_RE)?.[1]
         if (id && resolveFromPublicAssets(id)) { return }
       }
       if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
@@ -64,7 +61,7 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
         if (msg.includes('new dependencies optimized:')) {
           const deps = msg.split('new dependencies optimized:')[1]!
             .split(',')
-            .map(d => d.trim().replace(VITE_ANSI_ESCAPE_RE, ''))
+            .map(d => stripAnsi(d.trim()))
             .filter(Boolean)
 
           const include = (config.optimizeDeps?.include as string[] | undefined) || []
