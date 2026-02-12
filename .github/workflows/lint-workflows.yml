@@ -4,23 +4,25 @@ on:
   merge_group:
   push:
     paths:
-      - ".github/workflows/**"
+      - '.github/workflows/**'
     branches:
       - main
       - 3.x
   pull_request:
     paths:
-      - ".github/workflows/**"
+      - '.github/workflows/**'
     branches:
       - main
       - 3.x
-      - "!v[0-9]*"
+      - '!v[0-9]*'
 
 permissions:
   contents: read
 
 jobs:
   lint-workflows:
+    # already tested in merge queue
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
 
     steps:
