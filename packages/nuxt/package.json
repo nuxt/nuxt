@@ -107,10 +107,10 @@
     "unimport": "^5.6.0",
     "unplugin": "^3.0.0",
     "unplugin-vue-router": "^0.19.2",
+    "unrouting": "https://pkg.pr.new/unrouting@738b7d3",
     "untyped": "^2.0.0",
     "vue": "^3.5.27",
-    "vue-router": "^4.6.4",
-    "unrouting": "file:../../unrouting-0.0.1.tgz"
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@nuxt/scripts": "0.13.2",
