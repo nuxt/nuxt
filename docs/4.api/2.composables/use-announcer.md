@@ -54,7 +54,7 @@ Sets the message with `politeness = "assertive"`. Use for urgent updates that sh
 <script setup lang="ts">
 const { polite, assertive } = useAnnouncer()
 
-async function submitForm() {
+async function submitForm () {
   try {
     await $fetch('/api/contact', { method: 'POST', body: formData })
     polite('Message sent successfully')
@@ -73,11 +73,11 @@ async function submitForm() {
 <script setup lang="ts">
 const { assertive } = useAnnouncer()
 
-function validateForm() {
+function validateForm () {
   const errors = []
-  if (!email.value) errors.push('Email is required')
-  if (!password.value) errors.push('Password is required')
-  
+  if (!email.value) { errors.push('Email is required') }
+  if (!password.value) { errors.push('Password is required') }
+
   if (errors.length) {
     assertive(`Form has ${errors.length} errors: ${errors.join(', ')}`)
     return false
