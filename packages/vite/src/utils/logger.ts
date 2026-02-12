@@ -81,9 +81,8 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
             const allDeps = [...existingDeps, ...pendingOptimizeDeps]
             const depsList = allDeps.map(d => `        '${d}',`).join('\n')
             logger.info(
-              `Hint: Vite has discovered new dependencies that were not pre-bundled or cached at startup.\n` +
-              `This has caused the page to reload. To prevent this and speed up your startup,\n` +
-              `you can add them to your \`nuxt.config.ts\` so they are bundled and cached on the first run:\n\n` +
+              `Hint: Vite discovered new dependencies and reloaded the page to optimize them.\n` +
+              `To avoid future reloads, you can pre-bundle them in your \`nuxt.config.ts\`:\n\n` +
               colorize('gray', `export default defineNuxtConfig({\n  vite: {\n    optimizeDeps: {\n      include: [\n${depsList}\n      ]\n    }\n  }\n})\n\n`) +
               `Learn more: https://vite.dev/guide/dep-pre-bundling.html`,
             )
