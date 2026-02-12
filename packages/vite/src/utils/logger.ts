@@ -12,6 +12,9 @@ let duplicateCount = 0
 let lastType: vite.LogType | null = null
 let lastMsg: string | null = null
 
+// eslint-disable-next-line no-control-regex
+const VITE_ANSI_ESCAPE_RE = /\u001B\[[\d;]*m/g
+
 export const logLevelMap: Record<NuxtOptions['logLevel'], vite.UserConfig['logLevel']> = {
   silent: 'silent',
   info: 'info',
@@ -25,8 +28,12 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
   info: 3,
 }
 
-const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
+const VITE_RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
 export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean } = {}): vite.Logger {
+  const pendingOptimizeDeps = new Set<string>()
+  let optimizeDepsHintTimer: NodeJS.Timeout | null = null
+  let hasShownOptimizeDepsHint = false
+
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
   const _logger = createLogger()
@@ -48,10 +55,45 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       if (msg.startsWith('Sourcemap') && msg.includes('node_modules')) { return }
       // Hide warnings about externals produced by https://github.com/vitejs/vite/blob/v5.2.11/packages/vite/src/node/plugins/css.ts#L350-L355
       if (msg.includes('didn\'t resolve at build time, it will remain unchanged to be resolved at runtime')) {
-        const id = msg.trim().match(RUNTIME_RESOLVE_REF_RE)?.[1]
+        const id = msg.trim().match(VITE_RUNTIME_RESOLVE_REF_RE)?.[1]
         if (id && resolveFromPublicAssets(id)) { return }
       }
       if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
+
+      if (type === 'info' && !hasShownOptimizeDepsHint && (msg.includes('new dependencies optimized:') || msg.includes('optimized dependencies changed. reloading'))) {
+        if (msg.includes('new dependencies optimized:')) {
+          const deps = msg.split('new dependencies optimized:')[1]!
+            .split(',')
+            .map(d => d.trim().replace(VITE_ANSI_ESCAPE_RE, ''))
+            .filter(Boolean)
+
+          const include = (config.optimizeDeps?.include as string[] | undefined) || []
+          for (const dep of deps) {
+            if (!include.includes(dep)) {
+              pendingOptimizeDeps.add(dep)
+            }
+          }
+        }
+
+        if (optimizeDepsHintTimer) { clearTimeout(optimizeDepsHintTimer) }
+        optimizeDepsHintTimer = setTimeout(() => {
+          optimizeDepsHintTimer = null
+          if (pendingOptimizeDeps.size > 0) {
+            hasShownOptimizeDepsHint = true
+            const existingDeps = (config.optimizeDeps?.include as string[] | undefined) || []
+            const allDeps = [...existingDeps, ...pendingOptimizeDeps]
+            const depsList = allDeps.map(d => `        '${d}',`).join('\n')
+            logger.info(
+              `Hint: Vite has discovered new dependencies that were not pre-bundled or cached at startup.\n` +
+              `This has caused the page to reload. To prevent this and speed up your startup,\n` +
+              `you can add them to your \`nuxt.config.ts\` so they are bundled and cached on the first run:\n\n` +
+              colorize('gray', `export default defineNuxtConfig({\n  vite: {\n    optimizeDeps: {\n      include: [\n${depsList}\n      ]\n    }\n  }\n})\n\n`) +
+              `Learn more: https://vite.dev/guide/dep-pre-bundling.html`,
+            )
+            pendingOptimizeDeps.clear()
+          }
+        }, 2500)
+      }
     }
 
     const sameAsLast = lastType === type && lastMsg === msg
@@ -99,7 +141,11 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       viteLogger.hasWarned = true
       output('error', msg, opts)
     },
-    clearScreen () {
+    clearScreen (_type) {
+      pendingOptimizeDeps.clear()
+      if (optimizeDepsHintTimer) { clearTimeout(optimizeDepsHintTimer) }
+      optimizeDepsHintTimer = null
+      hasShownOptimizeDepsHint = false
       clear()
     },
     hasErrorLogged (error) {
