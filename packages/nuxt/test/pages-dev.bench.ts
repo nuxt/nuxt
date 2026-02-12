@@ -84,47 +84,47 @@ function createSimulator (filePaths: string[]): DevSimulator {
 const newFile = `${pagesDir}/new-feature/dashboard.vue`
 const existingFile = largeAppPaths[Math.floor(largeAppPaths.length / 2)]!
 
-describe(`dev server simulation — medium app (${mediumAppPaths.length} files)`, () => {
+describe(`dev server simulation - medium app (${mediumAppPaths.length} files)`, () => {
   const sim = createSimulator(mediumAppPaths)
   sim.coldStart()
 
-  bench('cold start (initial build + emit)', () => {
+  bench(`cold start (initial build + emit) - medium (${mediumAppPaths.length} files)`, () => {
     sim.coldStart()
   })
 
-  bench('emit (no fs change)', () => {
+  bench(`emit (no fs change) - medium (${mediumAppPaths.length} files)`, () => {
     sim.emit()
   })
 
-  bench('add file + emit', () => {
+  bench(`add file + emit - medium (${mediumAppPaths.length} files)`, () => {
     sim.addFile(newFile)
     sim.removeFile(newFile) // reset
   })
 
-  bench('remove file + emit', () => {
+  bench(`remove file + emit - medium (${mediumAppPaths.length} files)`, () => {
     sim.removeFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!)
     sim.addFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!) // reset
   })
 })
 
-describe(`dev server simulation — large app (${largeAppPaths.length} files)`, () => {
+describe(`dev server simulation - large app (${largeAppPaths.length} files)`, () => {
   const sim = createSimulator(largeAppPaths)
   sim.coldStart()
 
-  bench('cold start (initial build + emit)', () => {
+  bench(`cold start (initial build + emit) - large (${largeAppPaths.length} files)`, () => {
     sim.coldStart()
   })
 
-  bench('emit (no fs change)', () => {
+  bench(`emit (no fs change) - large (${largeAppPaths.length} files)`, () => {
     sim.emit()
   })
 
-  bench('add file + emit', () => {
+  bench(`add file + emit - large (${largeAppPaths.length} files)`, () => {
     sim.addFile(newFile)
     sim.removeFile(newFile) // reset
   })
 
-  bench('remove file + emit', () => {
+  bench(`remove file + emit - large (${largeAppPaths.length} files)`, () => {
     sim.removeFile(existingFile)
     sim.addFile(existingFile) // reset
   })
