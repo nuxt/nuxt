@@ -1,6 +1,6 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
-import { normalize, relative } from 'pathe'
+import { normalize } from 'pathe'
 import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
@@ -19,25 +19,23 @@ import { getLoader, uniqueBy } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
-interface ScannedFile {
-  relativePath: string
-  absolutePath: string
-  /** Layer priority — lower number = higher priority (user project is 0). */
-  priority?: number
-}
-
 export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = getLayerDirectories(nuxt).map(d => d.appPages)
 
-  const scannedFiles: ScannedFile[] = []
+  const inputFiles: InputFile[] = []
+  const absolutePaths: string[] = []
   for (let priority = 0; priority < pagesDirs.length; priority++) {
     const dir = pagesDirs[priority]!
     const files = await resolveFiles(dir, pattern)
-    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file, priority })))
+    for (const file of files) {
+      inputFiles.push({ path: file, priority })
+      absolutePaths.push(file)
+    }
   }
 
-  const allRoutes = generateRoutesFromFiles(scannedFiles, {
+  const allRoutes = generateRoutesFromFiles(inputFiles, {
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
+    roots: pagesDirs,
   })
 
   const pages = uniqueBy(allRoutes, 'path')
@@ -55,7 +53,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
       'middleware',
       ...extraPageMetaExtractionKeys,
     ]),
-    fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
+    fullyResolvedPaths: new Set(absolutePaths),
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -74,27 +72,20 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
 
 type GenerateRoutesFromFilesOptions = {
   shouldUseServerComponents?: boolean
+  roots?: string[]
 }
 
-export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
+export function generateRoutesFromFiles (files: InputFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   if (!files.length) { return [] }
 
-  // Build InputFile[] for unrouting and absolutePath lookup in a single pass
-  const absolutePathMap = new Map<string, string>()
-  const inputFiles: InputFile[] = new Array(files.length)
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i]!
-    absolutePathMap.set(file.relativePath, file.absolutePath)
-    inputFiles[i] = { path: file.relativePath, priority: file.priority ?? 0 }
-  }
-
-  const tree = buildTree(inputFiles, {
+  const tree = buildTree(files, {
+    roots: options.roots,
     modes: options.shouldUseServerComponents ? ['server', 'client'] : ['client'],
     warn: msg => logger.warn(msg),
   })
   const vueRoutes = toVueRouter4(tree, {
-    onDuplicateRouteName: (name, file, existingFile) => {
-      logger.warn(`Route name generated for \`${absolutePathMap.get(file) || file}\` is the same as \`${absolutePathMap.get(existingFile) || existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+    onDuplicateRouteName: (_name, file, existingFile) => {
+      logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
     },
   })
 
@@ -104,7 +95,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       const page: NuxtPage = {
         name: route.name,
         path: route.path,
-        file: route.file ? absolutePathMap.get(route.file) || route.file : undefined,
+        file: route.file,
         children: route.children?.length ? toNuxtPages(route.children) : [],
       }
 

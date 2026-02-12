@@ -2,9 +2,10 @@ import { bench, describe } from 'vitest'
 import { generateRoutesFromFiles } from '../src/pages/utils.ts'
 
 const pagesDir = 'pages'
+const roots = [`${pagesDir}/`]
 
 function scanned (paths: string[]) {
-  return paths.map(p => ({ relativePath: p.replace(`${pagesDir}/`, ''), absolutePath: p }))
+  return paths.map(p => ({ path: p }))
 }
 
 const smallApp = scanned([
@@ -47,7 +48,7 @@ const mediumApp = scanned([
 ])
 
 function generateLargeApp () {
-  const files: string[] = mediumApp.map(f => `${pagesDir}/${f.relativePath}`)
+  const files: string[] = mediumApp.map(f => f.path)
   const sections = ['shop', 'learn', 'community', 'enterprise', 'developer']
   for (const section of sections) {
     files.push(`${pagesDir}/${section}.vue`)
@@ -65,14 +66,14 @@ const largeApp = generateLargeApp()
 
 describe('generateRoutesFromFiles', () => {
   bench(`small app (${smallApp.length} files)`, () => {
-    generateRoutesFromFiles(smallApp)
+    generateRoutesFromFiles(smallApp, { roots })
   })
 
   bench(`medium app (${mediumApp.length} files)`, () => {
-    generateRoutesFromFiles(mediumApp)
+    generateRoutesFromFiles(mediumApp, { roots })
   })
 
   bench(`large app (${largeApp.length} files)`, () => {
-    generateRoutesFromFiles(largeApp)
+    generateRoutesFromFiles(largeApp, { roots })
   })
 })

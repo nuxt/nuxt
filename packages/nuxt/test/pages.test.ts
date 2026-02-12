@@ -60,13 +60,9 @@ describe('pages:generateRoutesFromFiles', () => {
         ) as Record<string, string>
 
         try {
-          const files = test.files.map(file => ({
-            shouldUseServerComponents: true,
-            absolutePath: file.path,
-            relativePath: file.path.replace(/^(?:pages|layer\/pages)\//, ''),
-          })).sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
+          const files = test.files.map(file => ({ path: file.path }))
 
-          result = generateRoutesFromFiles(files).map((route, index) => {
+          result = generateRoutesFromFiles(files, { roots: ['pages/', 'layer/pages/'] }).map((route, index) => {
             return {
               ...route,
               meta: test.files![index]!.meta ?? route.meta,
