@@ -16,7 +16,7 @@ import { distDir } from '../dirs.ts'
 import { resolveTypePath } from '../core/utils/types.ts'
 import { logger } from '../utils.ts'
 import picomatch from 'picomatch'
-import { augmentAndResolve, createPagesContext, resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
@@ -88,9 +88,9 @@ export default defineNuxtModule({
     // Persistent route tree for incremental dev-mode updates
     const pagesCtx: PagesContext | undefined = nuxt.options.dev
       ? createPagesContext({
-        roots: pagesDirs,
-        shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
-      })
+          roots: pagesDirs,
+          shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
+        })
       : undefined
 
     // Compile page pattern to a fast matcher for watcher add events
