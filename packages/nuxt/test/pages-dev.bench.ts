@@ -1,18 +1,5 @@
-/**
- * Dev server lifecycle benchmark.
- *
- * Simulates the real dev-mode page scanning workflow:
- * 1. Cold start — build routes from all files (initial page scan)
- * 2. Add file — a new page is created during development
- * 3. Remove file — a page is deleted during development
- * 4. No-op re-emit — layout/middleware change triggers route re-generation without fs change
- */
 import { bench, describe } from 'vitest'
 import { generateRoutesFromFiles } from '../src/pages/utils.ts'
-
-// ---------------------------------------------------------------------------
-// Fixture data
-// ---------------------------------------------------------------------------
 
 const pagesDir = 'pages'
 
@@ -93,10 +80,6 @@ function createSimulator (filePaths: string[]): DevSimulator {
     },
   }
 }
-
-// ---------------------------------------------------------------------------
-// Benchmarks
-// ---------------------------------------------------------------------------
 
 const newFile = `${pagesDir}/new-feature/dashboard.vue`
 const existingFile = largeAppPaths[Math.floor(largeAppPaths.length / 2)]!
