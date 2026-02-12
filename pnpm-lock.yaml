@@ -585,6 +585,9 @@ importers:
       perfect-debounce:
         specifier: ^2.1.0
         version: 2.1.0
+      picomatch:
+        specifier: ^4.0.3
+        version: 4.0.3
       pkg-types:
         specifier: ^2.3.0
         version: 2.3.0
@@ -646,6 +649,9 @@ importers:
       '@types/estree':
         specifier: 1.0.8
         version: 1.0.8
+      '@types/picomatch':
+        specifier: ^4.0.2
+        version: 4.0.2
       '@vitejs/plugin-vue':
         specifier: 6.0.4
         version: 6.0.4(vite@7.3.1(@types/node@24.10.11)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.27(typescript@5.9.3))
@@ -3924,6 +3930,9 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
+
+  '@types/picomatch@4.0.2':
+    resolution: {integrity: sha512-qHHxQ+P9PysNEGbALT8f8YOSHW0KJu6l2xU8DYY0fu/EmGxXdVnuTLvFUvBgPJMSqXq29SYHveejeAha+4AYgA==}
 
   '@types/pug@2.0.10':
     resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
@@ -8745,7 +8754,7 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
 
   unrouting@https://pkg.pr.new/unrouting@ba1252f:
-    resolution: {integrity: sha512-rtK1iTBuX3DNaSCUjFgBFCyF3bEqQKtRbQc4edFUo3Mo1U8zF4X8H5CDwE1cD7ijQYpxeT7azkPpLaFSbW0Irg==, tarball: https://pkg.pr.new/unrouting@ba1252f}
+    resolution: {tarball: https://pkg.pr.new/unrouting@ba1252f}
     version: 0.0.1
 
   unrs-resolver@1.11.1:
@@ -11533,6 +11542,8 @@ snapshots:
       undici-types: 7.16.0
 
   '@types/normalize-package-data@2.4.4': {}
+
+  '@types/picomatch@4.0.2': {}
 
   '@types/pug@2.0.10': {}
 

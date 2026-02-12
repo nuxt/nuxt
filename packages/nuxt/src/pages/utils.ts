@@ -13,32 +13,137 @@ import { parseAndWalk } from 'oxc-walker'
 import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
 import { transformSync } from 'oxc-transform'
-import { buildTree, toVueRouter4 } from 'unrouting'
-import type { InputFile, VueRoute } from 'unrouting'
-import { getLoader, uniqueBy } from '../core/utils/index.ts'
+import { addFile, buildTree, removeFile, toVueRouter4 } from 'unrouting'
+import type { BuildTreeOptions, InputFile, RouteTree, VueRoute, VueRouterEmitOptions } from 'unrouting'
+import { getLoader } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
-export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
+// ---------------------------------------------------------------------------
+// PagesContext — persistent route tree for incremental dev-mode updates
+// ---------------------------------------------------------------------------
+
+export interface PagesContext {
+  /** Emit NuxtPage[] from the current tree state. */
+  emit: () => NuxtPage[]
+  /** Add a file to the tree (incremental). */
+  addFile: (filePath: string, priority?: number) => void
+  /** Remove a file from the tree. Returns `true` if the file was found and removed. */
+  removeFile: (filePath: string) => boolean
+  /** Full rebuild — replace tree contents from a fresh file list. */
+  rebuild: (files: InputFile[]) => void
+  /** Set of absolute file paths currently tracked in the tree. */
+  trackedFiles: Set<string>
+}
+
+export interface PagesContextOptions {
+  roots?: string[]
+  shouldUseServerComponents?: boolean
+}
+
+export function createPagesContext (options: PagesContextOptions = {}): PagesContext {
+  const treeOptions: BuildTreeOptions = {
+    roots: options.roots,
+    modes: options.shouldUseServerComponents ? ['server', 'client'] : ['client'],
+    warn: msg => logger.warn(msg),
+  }
+  const emitOptions: VueRouterEmitOptions = {
+    onDuplicateRouteName: (_name, file, existingFile) => {
+      logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+    },
+  }
+
+  let tree: RouteTree = buildTree([], treeOptions)
+  const trackedFiles = new Set<string>()
+
+  return {
+    emit () {
+      return toNuxtPages(toVueRouter4(tree, emitOptions))
+    },
+    addFile (filePath: string, priority = 0) {
+      addFile(tree, { path: filePath, priority }, treeOptions)
+      trackedFiles.add(filePath)
+    },
+    removeFile (filePath: string) {
+      const removed = removeFile(tree, filePath)
+      if (removed) {
+        trackedFiles.delete(filePath)
+      }
+      return removed
+    },
+    rebuild (files: InputFile[]) {
+      tree = buildTree(files, treeOptions)
+      trackedFiles.clear()
+      for (const f of files) {
+        trackedFiles.add(f.path)
+      }
+    },
+    trackedFiles,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// VueRoute[] → NuxtPage[] conversion
+// ---------------------------------------------------------------------------
+
+function toNuxtPages (routes: VueRoute[]): NuxtPage[] {
+  return routes.map((route) => {
+    const page: NuxtPage = {
+      name: route.name,
+      path: route.path,
+      file: route.file,
+      children: route.children?.length ? toNuxtPages(route.children) : [],
+    }
+
+    if (route.modes?.includes('server')) {
+      page.mode = 'server'
+    } else if (route.modes?.includes('client')) {
+      page.mode = 'client'
+    }
+
+    if (route.meta?.groups) {
+      page.meta = { ...page.meta, groups: route.meta.groups }
+    }
+
+    return page
+  })
+}
+
+// ---------------------------------------------------------------------------
+// resolvePagesRoutes — full glob + build (initial load & fallback)
+// ---------------------------------------------------------------------------
+
+export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt(), ctx?: PagesContext): Promise<NuxtPage[]> {
   const pagesDirs = getLayerDirectories(nuxt).map(d => d.appPages)
 
   const inputFiles: InputFile[] = []
-  const absolutePaths: string[] = []
   for (let priority = 0; priority < pagesDirs.length; priority++) {
     const dir = pagesDirs[priority]!
     const files = await resolveFiles(dir, pattern)
     for (const file of files) {
       inputFiles.push({ path: file, priority })
-      absolutePaths.push(file)
     }
   }
 
-  const allRoutes = generateRoutesFromFiles(inputFiles, {
-    shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
-    roots: pagesDirs,
-  })
+  let pages: NuxtPage[]
+  if (ctx) {
+    ctx.rebuild(inputFiles)
+    pages = ctx.emit()
+  } else {
+    // One-shot for production / no-context case
+    const oneShot = createPagesContext({ roots: pagesDirs, shouldUseServerComponents: !!nuxt.options.experimental.componentIslands })
+    oneShot.rebuild(inputFiles)
+    pages = oneShot.emit()
+  }
 
-  const pages = uniqueBy(allRoutes, 'path')
+  return augmentAndResolve(pages, ctx?.trackedFiles ?? new Set(inputFiles.map(f => f.path)), nuxt)
+}
+
+// ---------------------------------------------------------------------------
+// augmentAndResolve — downstream pipeline (augmentation + hooks)
+// ---------------------------------------------------------------------------
+
+export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt()): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
   if (shouldAugment === false) {
@@ -53,7 +158,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
       'middleware',
       ...extraPageMetaExtractionKeys,
     ]),
-    fullyResolvedPaths: new Set(absolutePaths),
+    fullyResolvedPaths: trackedFiles,
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -70,52 +175,15 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   return pages
 }
 
-type GenerateRoutesFromFilesOptions = {
-  shouldUseServerComponents?: boolean
-  roots?: string[]
-}
+// ---------------------------------------------------------------------------
+// generateRoutesFromFiles — convenience wrapper (used by tests/benchmarks)
+// ---------------------------------------------------------------------------
 
-export function generateRoutesFromFiles (files: InputFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
+export function generateRoutesFromFiles (files: InputFile[], options: PagesContextOptions = {}): NuxtPage[] {
   if (!files.length) { return [] }
-
-  const tree = buildTree(files, {
-    roots: options.roots,
-    modes: options.shouldUseServerComponents ? ['server', 'client'] : ['client'],
-    warn: msg => logger.warn(msg),
-  })
-  const vueRoutes = toVueRouter4(tree, {
-    onDuplicateRouteName: (_name, file, existingFile) => {
-      logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
-    },
-  })
-
-  // Convert VueRoute[] → NuxtPage[]
-  function toNuxtPages (routes: VueRoute[]): NuxtPage[] {
-    return routes.map((route) => {
-      const page: NuxtPage = {
-        name: route.name,
-        path: route.path,
-        file: route.file,
-        children: route.children?.length ? toNuxtPages(route.children) : [],
-      }
-
-      // Map modes to Nuxt's mode field
-      if (route.modes?.includes('server')) {
-        page.mode = 'server'
-      } else if (route.modes?.includes('client')) {
-        page.mode = 'client'
-      }
-
-      // Pass through groups metadata
-      if (route.meta?.groups) {
-        page.meta = { ...page.meta, groups: route.meta.groups }
-      }
-
-      return page
-    })
-  }
-
-  return toNuxtPages(vueRoutes)
+  const ctx = createPagesContext(options)
+  ctx.rebuild(files)
+  return ctx.emit()
 }
 
 interface AugmentPagesContext {

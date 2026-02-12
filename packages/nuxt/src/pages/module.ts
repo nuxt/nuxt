@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -15,7 +15,9 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { resolveTypePath } from '../core/utils/types.ts'
 import { logger } from '../utils.ts'
-import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import picomatch from 'picomatch'
+import { augmentAndResolve, createPagesContext, resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
@@ -78,24 +80,45 @@ export default defineNuxtModule({
       })
     }
 
-    const resolvePagesRoutes = async (pattern: string | string[], nuxt: Nuxt) => {
-      const pages = await _resolvePagesRoutes(pattern, nuxt)
-
-      if (nuxt.options.experimental.inlineRouteRules) {
-        const routeRules = globRouteRulesFromPages(pages)
-        await updateRouteConfig?.(routeRules)
-      } else {
-        // also remove rules when disabled
-        removePagesRules(pages)
-      }
-
-      return pages
-    }
-
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
 
     const pagesDirs = getLayerDirectories(nuxt).map(dirs => dirs.appPages)
+
+    // Persistent route tree for incremental dev-mode updates
+    const pagesCtx: PagesContext | undefined = nuxt.options.dev
+      ? createPagesContext({
+        roots: pagesDirs,
+        shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
+      })
+      : undefined
+
+    // Compile page pattern to a fast matcher for watcher add events
+    const isPagePattern = picomatch(
+      Array.isArray(options.pattern) ? options.pattern : [options.pattern],
+    )
+
+    const handleRouteRules = async (pages: NuxtPage[]) => {
+      if (nuxt.options.experimental.inlineRouteRules) {
+        const routeRules = globRouteRulesFromPages(pages)
+        await updateRouteConfig?.(routeRules)
+      } else {
+        removePagesRules(pages)
+      }
+    }
+
+    const resolvePagesRoutes = async (pattern: string | string[], nuxt: Nuxt) => {
+      const pages = await _resolvePagesRoutes(pattern, nuxt, pagesCtx)
+      await handleRouteRules(pages)
+      return pages
+    }
+
+    /** Emit from existing tree + augment + hooks + route rules (used for incremental updates). */
+    const augmentAndResolvePages = async (pages: NuxtPage[], trackedFiles: Set<string>, nuxt: Nuxt) => {
+      const resolved = await augmentAndResolve(pages, trackedFiles, nuxt)
+      await handleRouteRules(resolved)
+      return resolved
+    }
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
     const routerPath = await resolveTypePath('vue-router', '', nuxt.options.modulesDir) || 'vue-router'
@@ -339,7 +362,29 @@ export default defineNuxtModule({
 
       if (event === 'change' && !shouldAlwaysRegenerate) { return }
 
-      if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
+      // Attempt incremental tree update for page file add/unlink in dev mode
+      const layerIndex = pagesDirs.findIndex(dir => path.startsWith(dir))
+      const isInPagesDir = layerIndex !== -1
+
+      if (pagesCtx && isInPagesDir && !shouldAlwaysRegenerate) {
+        try {
+          if (event === 'add') {
+            const relativeToDir = relative(pagesDirs[layerIndex]!, path)
+            if (!isPagePattern(relativeToDir) || isIgnored(path)) { return }
+            pagesCtx.addFile(path, layerIndex)
+          } else if (event === 'unlink') {
+            if (!pagesCtx.removeFile(path)) { return }
+          }
+          // Re-emit from mutated tree + run downstream pipeline
+          const pages = pagesCtx.emit()
+          nuxt.apps.default!.pages = await augmentAndResolvePages(pages, pagesCtx.trackedFiles, nuxt)
+        } catch (err) {
+          // Fallback: full rebuild on unexpected tree error
+          logger.warn('Incremental route update failed, performing full rebuild', err)
+          nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
+        }
+      } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
+        // Full rebuild: scanPageMeta content change, layout/middleware change, or no pagesCtx
         nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
       }
     })
