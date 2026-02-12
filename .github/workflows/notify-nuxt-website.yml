@@ -12,7 +12,7 @@ permissions: {}
 
 jobs:
   notify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - name: trigger nuxt website deployment
         run: curl "${{ secrets.NUXT_WEBSITE_WEBHOOK_URL }}"

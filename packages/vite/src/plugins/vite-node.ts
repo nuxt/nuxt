@@ -6,8 +6,8 @@ import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { join, normalize } from 'pathe'
-import { resolveAlias, tryUseNuxt } from '@nuxt/kit'
+import { isAbsolute, join, normalize } from 'pathe'
+import { directoryToURL, resolveAlias, tryUseNuxt } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -87,7 +87,19 @@ function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string
   // This ensures CSS is in manifest even if moduleGraph isn't populated yet
   for (const globalCss of nuxt.options.css) {
     if (typeof globalCss === 'string') {
-      css.add(resolveAlias(globalCss, nuxt.options.alias))
+      let resolved: string | undefined = resolveAlias(globalCss, nuxt.options.alias)
+
+      // Resolve bare module specifiers to absolute paths
+      if (!isAbsolute(resolved)) {
+        resolved = resolveModulePath(resolved, {
+          try: true,
+          from: nuxt.options.modulesDir.map(d => directoryToURL(d)),
+        })
+        if (!resolved) { continue }
+        css.add('/@fs' + resolved)
+      } else {
+        css.add(resolved)
+      }
     }
   }
 

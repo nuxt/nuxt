@@ -10,11 +10,10 @@ export default defineBuildConfig({
         external: [
           '@rspack/core',
           '@nuxt/schema',
-          'nitro',
-          'nitropack',
+          'nitro/types',
+          'nitropack/types',
           'webpack',
           'vite',
-          'h3',
           'unimport',
           /^nuxt(\/|$)/,
           /^#build\//,
