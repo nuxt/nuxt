@@ -14,7 +14,7 @@ import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
 import { transformSync } from 'oxc-transform'
 import { buildTree, toVueRouter4 } from 'unrouting'
-import type { VueRoute } from 'unrouting'
+import type { InputFile, VueRoute } from 'unrouting'
 import { getLoader, uniqueBy } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -22,23 +22,21 @@ import type { NuxtPage } from 'nuxt/schema'
 interface ScannedFile {
   relativePath: string
   absolutePath: string
+  /** Layer priority — lower number = higher priority (user project is 0). */
+  priority?: number
 }
 
-const enUSComparator = new Intl.Collator('en-US')
 export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = getLayerDirectories(nuxt).map(d => d.appPages)
 
   const scannedFiles: ScannedFile[] = []
-  for (const dir of pagesDirs) {
+  for (let priority = 0; priority < pagesDirs.length; priority++) {
+    const dir = pagesDirs[priority]!
     const files = await resolveFiles(dir, pattern)
-    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
+    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file, priority })))
   }
 
-  // sort scanned files using en-US locale to make the result consistent across different system locales
-
-  scannedFiles.sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
-
-  const allRoutes = generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
+  const allRoutes = generateRoutesFromFiles(scannedFiles, {
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
   })
 
@@ -81,17 +79,24 @@ type GenerateRoutesFromFilesOptions = {
 export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   if (!files.length) { return [] }
 
-  // Build a mapping from relativePath → absolutePath for resolving file paths
+  // Build InputFile[] for unrouting and absolutePath lookup in a single pass
   const absolutePathMap = new Map<string, string>()
-  for (const file of files) {
+  const inputFiles: InputFile[] = new Array(files.length)
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]!
     absolutePathMap.set(file.relativePath, file.absolutePath)
+    inputFiles[i] = { path: file.relativePath, priority: file.priority ?? 0 }
   }
 
-  // Use unrouting to build the route tree and emit vue-router routes
-  const tree = buildTree(files.map(f => f.relativePath), {
+  const tree = buildTree(inputFiles, {
     modes: options.shouldUseServerComponents ? ['server', 'client'] : ['client'],
+    warn: msg => logger.warn(msg),
   })
-  const vueRoutes = toVueRouter4(tree)
+  const vueRoutes = toVueRouter4(tree, {
+    onDuplicateRouteName: (name, file, existingFile) => {
+      logger.warn(`Route name generated for \`${absolutePathMap.get(file) || file}\` is the same as \`${absolutePathMap.get(existingFile) || existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+    },
+  })
 
   // Convert VueRoute[] → NuxtPage[]
   function toNuxtPages (routes: VueRoute[]): NuxtPage[] {
