@@ -1,21 +1,5 @@
-/**
- * Dev server lifecycle benchmark.
- *
- * Simulates the real dev-mode page scanning workflow:
- * 1. Cold start — build routes from all files (initial page scan)
- * 2. Add file — a new page is created during development
- * 3. Remove file — a page is deleted during development
- * 4. No-op re-emit — layout/middleware change triggers route re-generation without fs change
- *
- * Branch-agnostic: uses `createPagesContext` when available (incremental path)
- * and falls back to `generateRoutesFromFiles` (full-rebuild path on main branch).
- */
 import { bench, describe } from 'vitest'
-import * as pagesUtils from '../src/pages/utils.ts'
-
-// ---------------------------------------------------------------------------
-// Fixture data
-// ---------------------------------------------------------------------------
+import { createPagesContext } from '../src/pages/utils.ts'
 
 const pagesDir = 'pages'
 const roots = [`${pagesDir}/`]
@@ -63,18 +47,8 @@ function generateLargeAppPaths (): string[] {
 
 const largeAppPaths = generateLargeAppPaths()
 
-// ---------------------------------------------------------------------------
-// Branch-agnostic adapter
-// ---------------------------------------------------------------------------
-
 type ContextOptions = { roots: string[] }
 
-/**
- * Adapter that wraps either the incremental `createPagesContext` API
- * (unrouting branch) or falls back to full `generateRoutesFromFiles` rebuilds
- * (main branch). Both branches export `generateRoutesFromFiles`; only the
- * unrouting branch exports `createPagesContext`.
- */
 interface DevSimulator {
   /** Build the initial route tree from all files. */
   coldStart: () => void
@@ -87,107 +61,74 @@ interface DevSimulator {
 }
 
 function createSimulator (filePaths: string[], opts: ContextOptions): DevSimulator {
-  const hasIncremental = 'createPagesContext' in pagesUtils
+  const createCtx = createPagesContext
+  let ctx = createCtx(opts)
+  const files = filePaths.map(p => ({ path: p }))
 
-  if (hasIncremental) {
-    // Incremental path: persistent tree with addFile/removeFile
-    const createCtx = (pagesUtils as any).createPagesContext as typeof pagesUtils.createPagesContext
-    let ctx = createCtx(opts)
-    const files = filePaths.map(p => ({ path: p }))
-
-    return {
-      coldStart () {
-        ctx = createCtx(opts)
-        ctx.rebuild(files)
-        ctx.emit()
-      },
-      emit () {
-        ctx.emit()
-      },
-      addFile (path: string) {
-        ctx.addFile(path)
-        ctx.emit()
-      },
-      removeFile (path: string) {
-        ctx.removeFile(path)
-        ctx.emit()
-      },
-    }
-  } else {
-    // Full-rebuild path (main branch): generateRoutesFromFiles on every operation
-    // Construct files in the format main branch expects (relativePath + absolutePath)
-    const makeFiles = (paths: string[]) => paths.map(p => ({
-      path: p,
-      relativePath: p.replace(/^pages\//, ''),
-      absolutePath: p,
-    }))
-    const allFiles = makeFiles(filePaths)
-
-    return {
-      coldStart () {
-        pagesUtils.generateRoutesFromFiles(allFiles as any)
-      },
-      emit () {
-        pagesUtils.generateRoutesFromFiles(allFiles as any)
-      },
-      addFile (path: string) {
-        pagesUtils.generateRoutesFromFiles(makeFiles([...filePaths, path]) as any)
-      },
-      removeFile (path: string) {
-        pagesUtils.generateRoutesFromFiles(makeFiles(filePaths.filter(p => p !== path)) as any)
-      },
-    }
+  return {
+    coldStart () {
+      ctx = createCtx(opts)
+      ctx.rebuild(files)
+      ctx.emit()
+    },
+    emit () {
+      ctx.emit()
+    },
+    addFile (path: string) {
+      ctx.addFile(path)
+      ctx.emit()
+    },
+    removeFile (path: string) {
+      ctx.removeFile(path)
+      ctx.emit()
+    },
   }
 }
-
-// ---------------------------------------------------------------------------
-// Benchmarks
-// ---------------------------------------------------------------------------
 
 const newFile = `${pagesDir}/new-feature/dashboard.vue`
 const existingFile = largeAppPaths[Math.floor(largeAppPaths.length / 2)]!
 
-describe(`dev server simulation — medium app (${mediumAppPaths.length} files)`, () => {
+describe(`dev server simulation - medium app (${mediumAppPaths.length} files)`, () => {
   const sim = createSimulator(mediumAppPaths, { roots })
   sim.coldStart()
 
-  bench('cold start (initial build + emit)', () => {
+  bench(`cold start (initial build + emit) - medium (${mediumAppPaths.length} files)`, () => {
     sim.coldStart()
   })
 
-  bench('emit (no fs change)', () => {
+  bench(`emit (no fs change) - medium (${mediumAppPaths.length} files)`, () => {
     sim.emit()
   })
 
-  bench('add file + emit', () => {
+  bench(`add file + emit - medium (${mediumAppPaths.length} files)`, () => {
     sim.addFile(newFile)
     sim.removeFile(newFile) // reset
   })
 
-  bench('remove file + emit', () => {
+  bench(`remove file + emit - medium (${mediumAppPaths.length} files)`, () => {
     sim.removeFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!)
     sim.addFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!) // reset
   })
 })
 
-describe(`dev server simulation — large app (${largeAppPaths.length} files)`, () => {
+describe(`dev server simulation - large app (${largeAppPaths.length} files)`, () => {
   const sim = createSimulator(largeAppPaths, { roots })
   sim.coldStart()
 
-  bench('cold start (initial build + emit)', () => {
+  bench(`cold start (initial build + emit) - large (${largeAppPaths.length} files)`, () => {
     sim.coldStart()
   })
 
-  bench('emit (no fs change)', () => {
+  bench(`emit (no fs change) - large (${largeAppPaths.length} files)`, () => {
     sim.emit()
   })
 
-  bench('add file + emit', () => {
+  bench(`add file + emit - large (${largeAppPaths.length} files)`, () => {
     sim.addFile(newFile)
     sim.removeFile(newFile) // reset
   })
 
-  bench('remove file + emit', () => {
+  bench(`remove file + emit - large (${largeAppPaths.length} files)`, () => {
     sim.removeFile(existingFile)
     sim.addFile(existingFile) // reset
   })
