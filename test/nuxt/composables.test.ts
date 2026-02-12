@@ -921,7 +921,7 @@ describe('route announcer', () => {
 
 describe('announcer', () => {
   it('should create an announcer with default politeness', () => {
-    const announcer = useAnnouncer({ politeness: 'polite' })
+    const announcer = useAnnouncer()
     expect(announcer.politeness.value).toBe('polite')
   })
 
