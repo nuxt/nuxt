@@ -432,7 +432,12 @@ export function useAsyncData<
   // Allow directly awaiting on asyncData
   const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
   Object.assign(asyncDataPromise, asyncReturn)
-
+  // Allow destructuring without loosing promise methods
+  Object.defineProperties(asyncDataPromise, {
+    then: { enumerable: true, value: asyncDataPromise.then.bind(asyncDataPromise) },
+    catch: { enumerable: true, value: asyncDataPromise.catch.bind(asyncDataPromise) },
+    finally: { enumerable: true, value: asyncDataPromise.finally.bind(asyncDataPromise) },
+  })
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 }
 
