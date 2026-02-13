@@ -628,8 +628,8 @@ importers:
         specifier: ^0.19.2
         version: 0.19.2(@vue/compiler-sfc@3.5.27)(vue-router@4.6.4(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
       unrouting:
-        specifier: https://pkg.pr.new/unrouting@ba1252f
-        version: https://pkg.pr.new/unrouting@ba1252f
+        specifier: ^0.1.3
+        version: 0.1.3
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -8753,9 +8753,8 @@ packages:
     resolution: {integrity: sha512-0Mqk3AT2TZCXWKdcoaufeXNukv2mTrEZExeXlHIOZXdqYoHHr4n51pymnwV8x2BOVxwXbK2HLlI7usrqMpycdg==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
-  unrouting@https://pkg.pr.new/unrouting@ba1252f:
-    resolution: {tarball: https://pkg.pr.new/unrouting@ba1252f}
-    version: 0.0.1
+  unrouting@0.1.3:
+    resolution: {integrity: sha512-/cYt6OnDziX5k/cOBcbIVCNq9tG4wYNCf5rHdoZzs2+ph+w/p/pJWN0FScpAaTUVndVQOh5JeoMHZq/Vz83yAw==}
 
   unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}
@@ -17422,7 +17421,7 @@ snapshots:
       picomatch: 4.0.3
       webpack-virtual-modules: 0.6.2
 
-  unrouting@https://pkg.pr.new/unrouting@ba1252f:
+  unrouting@0.1.3:
     dependencies:
       escape-string-regexp: 5.0.0
       ufo: 1.6.3
