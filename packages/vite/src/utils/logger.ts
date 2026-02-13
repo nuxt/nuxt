@@ -26,11 +26,7 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
 }
 
 const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
-export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean } = {}): vite.Logger {
-  const pendingOptimizeDeps = new Set<string>()
-  let optimizeDepsHintTimer: NodeJS.Timeout | null = null
-  let hasShownOptimizeDepsHint = false
-
+export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean, onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void } = {}): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
   const _logger = createLogger()
@@ -57,38 +53,16 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       }
       if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
 
-      if (type === 'info' && !hasShownOptimizeDepsHint && (msg.includes('new dependencies optimized:') || msg.includes('optimized dependencies changed. reloading'))) {
-        if (msg.includes('new dependencies optimized:')) {
-          const deps = msg.split('new dependencies optimized:')[1]!
-            .split(',')
-            .map(d => stripAnsi(d.trim()))
-            .filter(Boolean)
-
-          const include = (config.optimizeDeps?.include as string[] | undefined) || []
-          for (const dep of deps) {
-            if (!include.includes(dep)) {
-              pendingOptimizeDeps.add(dep)
-            }
-          }
-        }
-
-        if (optimizeDepsHintTimer) { clearTimeout(optimizeDepsHintTimer) }
-        optimizeDepsHintTimer = setTimeout(() => {
-          optimizeDepsHintTimer = null
-          if (pendingOptimizeDeps.size > 0) {
-            hasShownOptimizeDepsHint = true
-            const existingDeps = (config.optimizeDeps?.include as string[] | undefined) || []
-            const allDeps = [...existingDeps, ...pendingOptimizeDeps]
-            const depsList = allDeps.map(d => `        '${d}',`).join('\n')
-            logger.info(
-              `Hint: Vite discovered new dependencies and reloaded the page to optimize them.\n` +
-              `To avoid future reloads, you can pre-bundle them in your \`nuxt.config.ts\`:\n\n` +
-              colorize('gray', `export default defineNuxtConfig({\n  vite: {\n    optimizeDeps: {\n      include: [\n${depsList}\n      ]\n    }\n  }\n})\n\n`) +
-              `Learn more: https://vite.dev/guide/dep-pre-bundling.html`,
-            )
-            pendingOptimizeDeps.clear()
-          }
-        }, 2500)
+      // Parse Vite optimizer messages and forward to OptimizeDepsHintPlugin
+      if (type === 'warn' && (msg.includes('Failed to resolve dependency') || msg.includes('Cannot optimize dependency'))) {
+        const match = stripAnsi(msg).match(/(?:Failed to resolve|Cannot optimize) dependency:\s*([^,]+)/)
+        if (match) { ctx.onStaleDep?.(match[1]!.trim()) }
+        return
+      }
+      if (type === 'info' && msg.includes('new dependencies optimized:')) {
+        const match = stripAnsi(msg).match(/new dependencies optimized:\s*(.+)/)
+        if (match) { ctx.onNewDeps?.(match[1]!.split(',').map(d => d.trim()).filter(Boolean)) }
+        return
       }
     }
 
@@ -138,10 +112,6 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       output('error', msg, opts)
     },
     clearScreen (_type) {
-      pendingOptimizeDeps.clear()
-      if (optimizeDepsHintTimer) { clearTimeout(optimizeDepsHintTimer) }
-      optimizeDepsHintTimer = null
-      hasShownOptimizeDepsHint = false
       clear()
     },
     hasErrorLogged (error) {
