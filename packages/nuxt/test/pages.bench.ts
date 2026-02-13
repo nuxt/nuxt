@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest'
-import { generateRoutesFromFiles } from '../src/pages/utils.ts'
+import { generateRoutesFromFiles } from './pages.test'
 
 const pagesDir = 'pages'
 const roots = [`${pagesDir}/`]

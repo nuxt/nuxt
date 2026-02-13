@@ -152,17 +152,6 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
   return pages
 }
 
-// ---------------------------------------------------------------------------
-// generateRoutesFromFiles — convenience wrapper (used by tests/benchmarks)
-// ---------------------------------------------------------------------------
-
-export function generateRoutesFromFiles (files: InputFile[], options: PagesContextOptions = {}): NuxtPage[] {
-  if (!files.length) { return [] }
-  const ctx = createPagesContext(options)
-  ctx.rebuild(files)
-  return ctx.emit()
-}
-
 interface AugmentPagesContext {
   fullyResolvedPaths?: Set<string>
   pagesToSkip?: Set<string>

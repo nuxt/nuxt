@@ -1,10 +1,18 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
+import type { InputFile } from 'unrouting'
+
+export function generateRoutesFromFiles (files: InputFile[], options: PagesContextOptions = {}): NuxtPage[] {
+  if (!files.length) { return [] }
+  const ctx = createPagesContext(options)
+  ctx.rebuild(files)
+  return ctx.emit()
+}
 
 describe('pages:generateRoutesFromFiles', () => {
   vi.mock('knitwork', async (original) => {
