@@ -4,6 +4,19 @@ import { createPagesContext } from '../src/pages/utils.ts'
 const pagesDir = 'pages'
 const roots = [`${pagesDir}/`]
 
+const smallAppPaths = [
+  `${pagesDir}/index.vue`,
+  `${pagesDir}/about.vue`,
+  `${pagesDir}/contact.vue`,
+  `${pagesDir}/blog.vue`,
+  `${pagesDir}/blog/[slug].vue`,
+  `${pagesDir}/users.vue`,
+  `${pagesDir}/users/[id].vue`,
+  `${pagesDir}/users/[id]/settings.vue`,
+  `${pagesDir}/[...slug].vue`,
+  `${pagesDir}/login.vue`,
+]
+
 const mediumAppPaths = [
   `${pagesDir}/index.vue`, `${pagesDir}/about.vue`, `${pagesDir}/contact.vue`,
   `${pagesDir}/blog.vue`, `${pagesDir}/blog/[slug].vue`, `${pagesDir}/blog/index.vue`,
@@ -87,6 +100,19 @@ function createSimulator (filePaths: string[], opts: ContextOptions): DevSimulat
 
 const newFile = `${pagesDir}/new-feature/dashboard.vue`
 const existingFile = largeAppPaths[Math.floor(largeAppPaths.length / 2)]!
+
+describe(`dev server simulation - small app (${smallAppPaths.length} files)`, () => {
+  const sim = createSimulator(smallAppPaths, { roots })
+  sim.coldStart()
+
+  bench(`cold start (initial build + emit) - small (${smallAppPaths.length} files)`, () => {
+    sim.coldStart()
+  })
+
+  bench(`emit (no fs change) - small (${smallAppPaths.length} files)`, () => {
+    sim.emit()
+  })
+})
 
 describe(`dev server simulation - medium app (${mediumAppPaths.length} files)`, () => {
   const sim = createSimulator(mediumAppPaths, { roots })
