@@ -389,6 +389,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const cachedMatchers: Record<string, string> = {}
   addTemplate({
     filename: 'route-rules.mjs',
+    write: true,
     getContents () {
       const key = hash(nuxt._nitro?.options.routeRules || {})
       if (cachedMatchers[key]) {
