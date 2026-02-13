@@ -13,8 +13,8 @@ import { parseAndWalk } from 'oxc-walker'
 import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
 import { transformSync } from 'oxc-transform'
-import { addFile, buildTree, removeFile, toVueRouter4 } from 'unrouting'
-import type { BuildTreeOptions, InputFile, RouteTree, VueRoute, VueRouterEmitOptions } from 'unrouting'
+import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
+import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 import { getLoader } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
@@ -42,26 +42,30 @@ export interface PagesContextOptions {
 }
 
 export function createPagesContext (options: PagesContextOptions = {}): PagesContext {
+  const modes = options.shouldUseServerComponents ? ['server', 'client'] : ['client']
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
-    modes: options.shouldUseServerComponents ? ['server', 'client'] : ['client'],
+    modes,
     warn: msg => logger.warn(msg),
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
       logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
     },
+    attrs: { mode: modes },
   }
+
+  const compiledParse = compileParsePath(treeOptions)
 
   let tree: RouteTree = buildTree([], treeOptions)
   const trackedFiles = new Set<string>()
 
   return {
     emit () {
-      return toNuxtPages(toVueRouter4(tree, emitOptions))
+      return toVueRouter4(tree, emitOptions)
     },
     addFile (filePath: string, priority = 0) {
-      addFile(tree, { path: filePath, priority }, treeOptions)
+      addFile(tree, { path: filePath, priority }, compiledParse)
       trackedFiles.add(filePath)
     },
     removeFile (filePath: string) {
@@ -80,33 +84,6 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
     },
     trackedFiles,
   }
-}
-
-// ---------------------------------------------------------------------------
-// VueRoute[] → NuxtPage[] conversion
-// ---------------------------------------------------------------------------
-
-function toNuxtPages (routes: VueRoute[]): NuxtPage[] {
-  return routes.map((route) => {
-    const page: NuxtPage = {
-      name: route.name,
-      path: route.path,
-      file: route.file,
-      children: route.children?.length ? toNuxtPages(route.children) : [],
-    }
-
-    if (route.modes?.includes('server')) {
-      page.mode = 'server'
-    } else if (route.modes?.includes('client')) {
-      page.mode = 'client'
-    }
-
-    if (route.meta?.groups) {
-      page.meta = { ...page.meta, groups: route.meta.groups }
-    }
-
-    return page
-  })
 }
 
 // ---------------------------------------------------------------------------
