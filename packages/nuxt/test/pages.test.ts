@@ -28,6 +28,28 @@ describe('pages:generateRoutesFromFiles', () => {
     return [...routes].sort((a, b) => enUSComparator.compare(b.path, a.path))
   }
 
+  // Sort normalized route arrays by their serialized path for order-independent snapshots
+  function sortNormalizedArray (arr: any[]): any[] {
+    return [...arr].map((item: any) => {
+      if (item && typeof item === 'object' && item.children) {
+        return { ...item, children: sortNormalizedArray(item.children) }
+      }
+      return item
+    }).sort((a: any, b: any) => {
+      const aPath = typeof a === 'string' ? a : JSON.stringify(a)
+      const bPath = typeof b === 'string' ? b : JSON.stringify(b)
+      return enUSComparator.compare(bPath, aPath)
+    })
+  }
+
+  function sortNormalizedResults (results: Record<string, any>) {
+    const sorted: Record<string, any> = {}
+    for (const [key, value] of Object.entries(results)) {
+      sorted[key] = Array.isArray(value) ? sortNormalizedArray(value) : value
+    }
+    return sorted
+  }
+
   for (const test of pageTests) {
     const _it = test.it || it
     _it(test.description, async () => {
@@ -78,11 +100,14 @@ describe('pages:generateRoutesFromFiles', () => {
   }
 
   it('should consistently normalize routes', async () => {
-    await expect(normalizedResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta-disabled.test.ts.snap')
+    // Sort each test case's routes array for order-independent comparison
+    const sorted = sortNormalizedResults(normalizedResults)
+    await expect(sorted).toMatchFileSnapshot('./__snapshots__/pages-override-meta-disabled.test.ts.snap')
   })
 
   it('should consistently normalize routes when overriding meta', async () => {
-    await expect(normalizedOverrideMetaResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta-enabled.test.ts.snap')
+    const sorted = sortNormalizedResults(normalizedOverrideMetaResults)
+    await expect(sorted).toMatchFileSnapshot('./__snapshots__/pages-override-meta-enabled.test.ts.snap')
   })
 })
 

@@ -39,7 +39,7 @@ jobs:
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
-          base: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha }}
+          base: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha || github.event.before }}
           ref: ${{ github.event.merge_group.head_sha || github.sha }}
           filters: |
             src:
@@ -127,6 +127,8 @@ jobs:
           category: '/language:${{ matrix.language }}'
 
   typecheck:
+    # already tested in merge queue
+    if: github.event_name != 'push'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     needs:
@@ -166,7 +168,7 @@ jobs:
   lint:
     # autofix workflow will be triggered instead for PRs
     needs: changes
-    if: (github.event_name == 'push' || github.event_name == 'merge_group') && needs.changes.outputs.src == 'true'
+    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
 
@@ -193,7 +195,7 @@ jobs:
   test-unit:
     # autofix workflow will be triggered instead for PRs
     needs: changes
-    if: (github.event_name == 'push' || github.event_name == 'merge_group') && needs.changes.outputs.src == 'true'
+    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
 
@@ -218,6 +220,8 @@ jobs:
         run: pnpm test:unit
 
   test-size:
+    # already tested in merge queue
+    if: github.event_name != 'push'
     runs-on: ubuntu-24.04-arm
     needs:
       - build
@@ -276,6 +280,8 @@ jobs:
           mode: simulation
 
   test-fixtures:
+    # already tested in merge queue
+    if: github.event_name != 'push'
     runs-on: ${{ matrix.os }}
     needs:
       - build
