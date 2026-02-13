@@ -7,11 +7,11 @@ on:
     branches:
       - main
       - 3.x
-      - "!v[0-9]*"
+      - '!v[0-9]*'
     paths:
-      - "docs/**"
-      - ".github/workflows/docs.yml"
-      - "*.md"
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - '*.md'
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
@@ -19,6 +19,8 @@ permissions: {}
 
 jobs:
   lint-docs:
+    # already tested in merge queue; autofix workflow handles PRs
+    if: github.event_name == 'merge_group'
     runs-on: ubuntu-24.04-arm
 
     steps:
@@ -27,7 +29,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
