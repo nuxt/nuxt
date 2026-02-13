@@ -373,7 +373,7 @@ describe('OptimizeDepsHintPlugin', () => {
       expect(infoCalls[0]).toContain('Unresolvable')
       expect(infoCalls[0]).toContain('stale-dep')
       // Only one config block
-      expect(infoCalls[0].match(/defineNuxtConfig/g)).toHaveLength(1)
+      expect(infoCalls[0]!.match(/defineNuxtConfig/g)).toHaveLength(1)
       // No separate warn call
       expect(logger.warn).not.toHaveBeenCalled()
     })
