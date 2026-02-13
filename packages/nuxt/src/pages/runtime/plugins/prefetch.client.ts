@@ -22,8 +22,7 @@ export default defineNuxtPlugin({
         }
       })
     })
-    // Prefetch layouts & middleware (skip in dev to avoid Vite dep discovery reloads)
-    if (import.meta.dev) { return }
+    // Prefetch layouts & middleware
     nuxtApp.hooks.hook('link:prefetch', (url) => {
       if (hasProtocol(url)) { return }
       const route = router.resolve(url)
