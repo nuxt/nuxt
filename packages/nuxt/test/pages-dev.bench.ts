@@ -1,7 +1,21 @@
 import { bench, describe } from 'vitest'
-import { generateRoutesFromFiles } from '../src/pages/utils.ts'
+import { createPagesContext } from '../src/pages/utils.ts'
 
 const pagesDir = 'pages'
+const roots = [`${pagesDir}/`]
+
+const smallAppPaths = [
+  `${pagesDir}/index.vue`,
+  `${pagesDir}/about.vue`,
+  `${pagesDir}/contact.vue`,
+  `${pagesDir}/blog.vue`,
+  `${pagesDir}/blog/[slug].vue`,
+  `${pagesDir}/users.vue`,
+  `${pagesDir}/users/[id].vue`,
+  `${pagesDir}/users/[id]/settings.vue`,
+  `${pagesDir}/[...slug].vue`,
+  `${pagesDir}/login.vue`,
+]
 
 const mediumAppPaths = [
   `${pagesDir}/index.vue`, `${pagesDir}/about.vue`, `${pagesDir}/contact.vue`,
@@ -46,6 +60,8 @@ function generateLargeAppPaths (): string[] {
 
 const largeAppPaths = generateLargeAppPaths()
 
+type ContextOptions = { roots: string[] }
+
 interface DevSimulator {
   /** Build the initial route tree from all files. */
   coldStart: () => void
@@ -57,26 +73,27 @@ interface DevSimulator {
   removeFile: (path: string) => void
 }
 
-function createSimulator (filePaths: string[]): DevSimulator {
-  // Full-rebuild path (main branch): generateRoutesFromFiles on every operation
-  const makeFiles = (paths: string[]) => paths.map(p => ({
-    relativePath: p.replace(/^pages\//, ''),
-    absolutePath: p,
-  }))
-  const allFiles = makeFiles(filePaths)
+function createSimulator (filePaths: string[], opts: ContextOptions): DevSimulator {
+  const createCtx = createPagesContext
+  let ctx = createCtx(opts)
+  const files = filePaths.map(p => ({ path: p }))
 
   return {
     coldStart () {
-      generateRoutesFromFiles(allFiles)
+      ctx = createCtx(opts)
+      ctx.rebuild(files)
+      ctx.emit()
     },
     emit () {
-      generateRoutesFromFiles(allFiles)
+      ctx.emit()
     },
     addFile (path: string) {
-      generateRoutesFromFiles(makeFiles([...filePaths, path]))
+      ctx.addFile(path)
+      ctx.emit()
     },
     removeFile (path: string) {
-      generateRoutesFromFiles(makeFiles(filePaths.filter(p => p !== path)))
+      ctx.removeFile(path)
+      ctx.emit()
     },
   }
 }
@@ -84,8 +101,21 @@ function createSimulator (filePaths: string[]): DevSimulator {
 const newFile = `${pagesDir}/new-feature/dashboard.vue`
 const existingFile = largeAppPaths[Math.floor(largeAppPaths.length / 2)]!
 
+describe(`dev server simulation - small app (${smallAppPaths.length} files)`, () => {
+  const sim = createSimulator(smallAppPaths, { roots })
+  sim.coldStart()
+
+  bench(`cold start (initial build + emit) - small (${smallAppPaths.length} files)`, () => {
+    sim.coldStart()
+  })
+
+  bench(`emit (no fs change) - small (${smallAppPaths.length} files)`, () => {
+    sim.emit()
+  })
+})
+
 describe(`dev server simulation - medium app (${mediumAppPaths.length} files)`, () => {
-  const sim = createSimulator(mediumAppPaths)
+  const sim = createSimulator(mediumAppPaths, { roots })
   sim.coldStart()
 
   bench(`cold start (initial build + emit) - medium (${mediumAppPaths.length} files)`, () => {
@@ -108,7 +138,7 @@ describe(`dev server simulation - medium app (${mediumAppPaths.length} files)`, 
 })
 
 describe(`dev server simulation - large app (${largeAppPaths.length} files)`, () => {
-  const sim = createSimulator(largeAppPaths)
+  const sim = createSimulator(largeAppPaths, { roots })
   sim.coldStart()
 
   bench(`cold start (initial build + emit) - large (${largeAppPaths.length} files)`, () => {
