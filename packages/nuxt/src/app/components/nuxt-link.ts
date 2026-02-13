@@ -362,7 +362,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
-        if (import.meta.server || import.meta.dev) { return }
+        if (import.meta.server) { return }
         return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
       }
 
@@ -379,7 +379,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath).catch(() => {}),
-          !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+          !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
         ])
       }
 

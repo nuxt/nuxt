@@ -2657,7 +2657,7 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   })
 
   // TODO: looks like this test is flaky
-  it.skipIf(!isTestingAppManifest || isDev)('does not fetch a prefetched payload', { retry: 3 }, async () => {
+  it.skipIf(!isTestingAppManifest)('does not fetch a prefetched payload', { retry: 3 }, async () => {
     const { page, requests } = await renderPage()
 
     await gotoPath(page, '/random/a')
