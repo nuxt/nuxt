@@ -19,6 +19,11 @@ export async function build (nuxt: Nuxt): Promise<void> {
   await generateApp()
 
   if (nuxt.options.dev) {
+    const noAppFolder = nuxt.options.srcDir === nuxt.options.rootDir
+    if (noAppFolder && !nuxt.options.test) {
+      logger.info('Using legacy directory structure. https://go.nuxt.com/v4-structure')
+    }
+
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, relativePath) => {
       // Unset mainComponent and errorComponent if app or error component is changed
