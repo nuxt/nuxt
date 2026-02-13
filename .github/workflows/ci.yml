@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
+        uses: github/codeql-action/init@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
         with:
           config: |
             paths:
@@ -96,7 +96,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@45cbd0c69e560cd9e7cd7f8c32362050c9b7ded2 # v4.32.2
+        uses: github/codeql-action/analyze@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -240,7 +240,7 @@ jobs:
         run: pnpm test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@9a74b6ba663684052277e8f342b5eb99c7442a03 # v4.10.5
+        uses: CodSpeedHQ/action@4deb3275dd364fb96fb074c953133d29ec96f80f # v4.10.6
         with:
           run: pnpm vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
