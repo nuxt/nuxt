@@ -1345,6 +1345,20 @@ describe('composables', () => {
     expect(await page.getByRole('alert').textContent()).toContain('Dynamically set title')
     await page.close()
   })
+  it('`useAnnouncer` should announce polite message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('polite-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Polite announcement'))
+    expect(await page.getByRole('alert').textContent()).toContain('Polite announcement')
+    await page.close()
+  })
+  it('`useAnnouncer` should announce assertive message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('assertive-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Assertive announcement'))
+    expect(await page.getByRole('alert').textContent()).toContain('Assertive announcement')
+    await page.close()
+  })
 })
 
 describe('middlewares', () => {
