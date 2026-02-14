@@ -192,9 +192,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      const fileContent = route.file in vfs
-        ? vfs[route.file]!
-        : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
+      const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
