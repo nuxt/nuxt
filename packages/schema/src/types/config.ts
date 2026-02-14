@@ -156,6 +156,7 @@ export interface NuxtAppConfig {
   pageTransition: boolean | Serializable<TransitionProps>
   viewTransition?: boolean | 'always'
   keepalive: boolean | Serializable<KeepAliveProps>
+  importMap?: Record<string, string> // Additional entries to include in the import map.
 }
 
 export interface AppConfig {

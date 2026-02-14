@@ -21,7 +21,7 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
-import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
+import { appHead, appImportMap, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
@@ -182,7 +182,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
 
-  // 0. Add import map for stable chunk hashes
+  // 0. Add import map for stable chunk hashes and custom imports (app.importMap)
   if (entryFileName && !NO_SCRIPTS) {
     let path = entryPath
     if (!path) {
@@ -204,7 +204,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         tagPosition: 'head',
         tagPriority: -2,
         type: 'importmap',
-        innerHTML: JSON.stringify({ imports: { '#entry': path } }),
+        innerHTML: JSON.stringify({ imports: { '#entry': path, ...appImportMap } }),
       }],
     }, headEntryOptions)
   }
