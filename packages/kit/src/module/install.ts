@@ -150,13 +150,13 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     const configKey = meta.configKey as keyof NuxtOptions | undefined
 
     // Merge options
-    const optionsFns = [
+    const optionsFns = new Set([
       ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
       ...meta?.name ? nuxt._moduleOptionsFunctions.get(meta.name) || [] : [],
       // TODO: consider dropping options functions keyed by config key
       ...configKey ? nuxt._moduleOptionsFunctions.get(configKey) || [] : [],
-    ]
-    if (optionsFns.length > 0) {
+    ])
+    if (optionsFns.size > 0) {
       const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
       const defaults: Array<Record<string, unknown> | undefined> = []
       for (const fn of optionsFns) {
