@@ -99,7 +99,9 @@ export default defineResolvers({
     noVueServer: false,
     payloadExtraction: {
       async $resolve (val, get) {
-        if ((await get('ssr')) === false) { return false }
+        if ((await get('ssr')) === false) {
+          return false
+        }
         return typeof val === 'boolean' ? val : true
       },
     },
