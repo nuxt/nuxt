@@ -797,7 +797,7 @@ function createAsyncData<
       return nuxtApp._asyncDataPromises[key]!
     },
     _execute: debounce((...args) => asyncData.execute(...args), 0, { leading: true }),
-    _default: options.default!,
+    _default: () => hasCachedData ? initialCachedData : options.default!(),
     _deps: 0,
     _init: true,
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
