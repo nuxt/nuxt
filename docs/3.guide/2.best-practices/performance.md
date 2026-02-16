@@ -144,7 +144,7 @@ Images in your website can usually be separated by importance; the ones that are
     format="webp"
     preload
     loading="eager"
-    fetch-priority="high"
+    fetchpriority="high"
     width="200"
     height="100"
   />
@@ -154,7 +154,7 @@ Images in your website can usually be separated by importance; the ones that are
     src="/facebook-logo.jpg"
     format="webp"
     loading="lazy"
-    fetch-priority="low"
+    fetchpriority="low"
     width="200"
     height="100"
   />
