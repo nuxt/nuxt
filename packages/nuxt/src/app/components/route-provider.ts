@@ -1,4 +1,4 @@
-import { defineComponent, h, nextTick, onMounted, provide, shallowReactive, shallowRef, watch } from 'vue'
+import { defineComponent, h, nextTick, onMounted, onScopeDispose, provide, shallowReactive, shallowRef, watch } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
@@ -43,6 +43,7 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
       const router = useRouter()
 
       if (nuxtApp.isHydrating) {
+        let stopped = false
         const unwatch = watch(
           () => router.currentRoute.value,
           () => {
@@ -50,7 +51,18 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
           },
           { flush: 'sync' },
         )
-        nuxtApp.hooks.hookOnce('app:suspense:resolve', unwatch)
+        let removeHook = () => {}
+        const stopSync = () => {
+          if (stopped) {
+            return
+          }
+          stopped = true
+          unwatch()
+          removeHook()
+        }
+
+        removeHook = nuxtApp.hooks.hookOnce('app:suspense:resolve', stopSync)
+        onScopeDispose(stopSync)
       }
     }
 
