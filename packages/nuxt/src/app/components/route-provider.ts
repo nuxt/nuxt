@@ -1,9 +1,7 @@
-import { defineComponent, h, nextTick, onMounted, onScopeDispose, provide, shallowReactive, shallowRef, watch } from 'vue'
+import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
-import { useRouter } from '#app/composables/router'
-import { useNuxtApp } from '#app/nuxt'
 
 export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
   name,
@@ -21,50 +19,17 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     const previousKey = props.renderKey
     const previousRoute = props.route
-    const routeVersion = shallowRef(0)
 
     // Provide a reactive route within the page
     const route = {} as RouteLocationNormalizedLoaded
     for (const key in props.route) {
       Object.defineProperty(route, key, {
-        get: () => {
-          routeVersion.value
-          return previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded]
-        },
+        get: () => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded],
         enumerable: true,
       })
     }
 
     provide(PageRouteSymbol, shallowReactive(route))
-
-    // Force getter re-evaluation to sync query params during hydration
-    if (import.meta.client) {
-      const nuxtApp = useNuxtApp()
-      const router = useRouter()
-
-      if (nuxtApp.isHydrating) {
-        let stopped = false
-        const unwatch = watch(
-          () => router.currentRoute.value,
-          () => {
-            routeVersion.value++
-          },
-          { flush: 'sync' },
-        )
-        let removeHook = () => {}
-        const stopSync = () => {
-          if (stopped) {
-            return
-          }
-          stopped = true
-          unwatch()
-          removeHook()
-        }
-
-        removeHook = nuxtApp.hooks.hookOnce('app:suspense:resolve', stopSync)
-        onScopeDispose(stopSync)
-      }
-    }
 
     let vnode: VNode
     if (import.meta.dev && import.meta.client && props.trackRootNodes) {

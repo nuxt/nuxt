@@ -165,9 +165,25 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
-    const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
+    const currentRoute = router.currentRoute.value
+    const resolvedInitialRoute = import.meta.client && initialURL !== currentRoute.fullPath
       ? router.resolve(initialURL)
-      : router.currentRoute.value
+      : currentRoute
+    const getQuery = (fullPath: string) => fullPath.split('#', 1)[0]?.split('?', 2)[1] || ''
+    const deferredInitialRoute = import.meta.client
+      && nuxtApp.isHydrating
+      && !!nuxtApp.payload.prerenderedAt
+      && isSamePath(resolvedInitialRoute.path, currentRoute.path)
+      && getQuery(resolvedInitialRoute.fullPath) !== getQuery(currentRoute.fullPath)
+      ? resolvedInitialRoute
+      : null
+    const toForcedRoute = (route: typeof resolvedInitialRoute) => {
+      const normalizedRoute = { ...route, force: true }
+      if ('name' in normalizedRoute) {
+        (normalizedRoute as { name?: undefined }).name = undefined
+      }
+      return normalizedRoute
+    }
     syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
@@ -274,14 +290,18 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
-        // #4920, #4982
-        if ('name' in resolvedInitialRoute) {
-          resolvedInitialRoute.name = undefined
+        const initialRouteToApply = deferredInitialRoute ? currentRoute : resolvedInitialRoute
+
+        if (deferredInitialRoute) {
+          nuxtApp.hooks.hookOnce('app:suspense:resolve', async () => {
+            if (router.currentRoute.value.fullPath === deferredInitialRoute.fullPath) {
+              return
+            }
+            await router.replace(toForcedRoute(deferredInitialRoute))
+          })
         }
-        await router.replace({
-          ...resolvedInitialRoute,
-          force: true,
-        })
+
+        await router.replace(toForcedRoute(initialRouteToApply))
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {

@@ -651,6 +651,8 @@ describe('pages', () => {
 
     // Check query value shows up
     expect(await page.innerText('div')).toContain('true')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.query.active === 'true')
+    expect(await page.evaluate(() => window.useNuxtApp?.()._route.query.active)).toBe('true')
 
     // Check style is reactive
     expect(await page.$eval('div', e => getComputedStyle(e).color))
