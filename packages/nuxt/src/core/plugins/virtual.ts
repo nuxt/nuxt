@@ -7,6 +7,9 @@ import escapeStringRegexp from 'escape-string-regexp'
 
 const PREFIX = 'virtual:nuxt:'
 const PREFIX_RE = /^\/?virtual:nuxt:/
+const ROUTE_RULES_ID = '#build/route-rules.mjs'
+const ROUTE_RULES_SUFFIX = '/route-rules.mjs'
+const EMPTY_ROUTE_RULES_MATCHER = 'export default function () { return {} }'
 
 interface VirtualFSPluginOptions {
   mode: 'client' | 'server'
@@ -29,6 +32,8 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
     }
   }
 
+  const isRouteRulesId = (id: string) => id === ROUTE_RULES_ID || id === nuxt.options.buildDir + ROUTE_RULES_SUFFIX
+
   function resolveId (id: string, importer?: string) {
     id = resolveAlias(id, alias)
 
@@ -47,6 +52,13 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
     const resolvedId = resolveWithExt(id)
     if (resolvedId) {
       return PREFIX + encodeURIComponent(resolvedId) + search
+    }
+
+    // `#build/route-rules.mjs` is provided by nitro templates and can be temporarily
+    // unavailable in vfs during startup edge cases. Resolve it virtually so imports
+    // don't fail before the template is registered.
+    if (isRouteRulesId(id)) {
+      return PREFIX + encodeURIComponent(id) + search
     }
 
     if (importer && RELATIVE_ID_RE.test(id)) {
@@ -112,6 +124,14 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
       },
       handler (id) {
         const key = withoutQuery(withoutPrefix(decodeURIComponent(id)))
+
+        if (isRouteRulesId(key) && !nuxt.vfs[key]) {
+          return {
+            code: EMPTY_ROUTE_RULES_MATCHER,
+            map: null,
+          }
+        }
+
         return {
           code: nuxt.vfs[key] || '',
           map: null,

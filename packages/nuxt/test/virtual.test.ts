@@ -46,6 +46,14 @@ describe('virtual fs plugin', () => {
       export { foo };"
     `)
   })
+
+  it('should provide a fallback matcher for #build/route-rules.mjs', async () => {
+    const code = await generateCode('import routeRulesMatcher from "#build/route-rules.mjs"; export const rules = routeRulesMatcher("/")', {
+      vfs: {},
+    })
+    expect(code).toContain('function routeRulesMatcher')
+    expect(code).toContain('const rules = routeRulesMatcher()')
+  })
 })
 
 async function generateCode (input: string, options: { mode?: 'client' | 'server', vfs: Record<string, string> }) {
