@@ -31,13 +31,13 @@ export default defineNuxtModule({
     })
 
     // Register module types
-    nuxt.hook('prepare:types', async (ctx: any) => {
-      ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
-      ctx.sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
-      ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
+    nuxt.hook('prepare:types', async ({ references, sharedReferences, nodeReferences, nodeTsConfig }) => {
+      references.push({ path: 'schema/nuxt.schema.d.ts' })
+      sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
+      nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
 
-      ctx.nodeTsConfig.include ||= []
-      ctx.nodeTsConfig.include.push(
+      nodeTsConfig.include ||= []
+      nodeTsConfig.include.push(
         relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'nuxt.schema.*')),
         relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'layers/*/nuxt.schema.*')),
       )
