@@ -17,7 +17,7 @@ export default defineNuxtModule({
   meta: {
     name: 'nuxt:nuxt-config-schema',
   },
-  async setup(_: unknown, nuxt: Nuxt) {
+  async setup (_: unknown, nuxt: Nuxt) {
     const resolver = createResolver(import.meta.url)
 
     // Initialize untyped/jiti loader
@@ -101,7 +101,7 @@ export default defineNuxtModule({
 
     // --- utils ---
 
-    async function resolveSchema() {
+    async function resolveSchema () {
       // Global import
       // @ts-expect-error adding to globalThis for 'auto-import' support within nuxt.config file
       globalThis.defineNuxtSchema = (val: SchemaDefinition) => val
@@ -144,7 +144,7 @@ export default defineNuxtModule({
       return schema
     }
 
-    async function writeSchema(schema: Schema) {
+    async function writeSchema (schema: Schema) {
       await nuxt.hooks.callHook('schema:beforeWrite', schema)
       // Write it to build dir
       await mkdir(resolve(nuxt.options.buildDir, 'schema'), { recursive: true })
