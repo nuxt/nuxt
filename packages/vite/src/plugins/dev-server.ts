@@ -153,6 +153,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
         // Check if this is a vite-handled route or proxy path
         let isViteRoute = isBasePath
+        let isProxyRoute = false
         if (!isViteRoute) {
           // Check vite middleware routes (must be done per-request as middleware stack can change)
           for (const viteRoute of viteServer.middlewares.stack) {
@@ -162,11 +163,12 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
             }
           }
           // Check proxy paths
-          isViteRoute ||= isProxyPath(url)
+          isProxyRoute = isProxyPath(url)
+          isViteRoute ||= isProxyRoute
         }
 
         const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-        if (!isViteRoute) {
+        if (isProxyRoute) {
           // @ts-expect-error _skip_transform is a private property
           req._skip_transform = true
         }
