@@ -144,7 +144,6 @@ Images in your website can usually be separated by importance; the ones that are
     format="webp"
     :preload="{ fetchPriority: 'high' }"
     loading="eager"
-    fetchpriority="high"
     width="200"
     height="100"
   />
