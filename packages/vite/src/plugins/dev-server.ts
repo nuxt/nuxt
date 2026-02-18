@@ -74,9 +74,9 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       const mw: Connect.ServerStackItem = {
         route: '',
         handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-          // Skip the transform middleware for proxy routes - don't call next() to prevent further processing
-          if (req._skip_transform) {
-            return
+          // 'Skip' the transform middleware
+          if (req._skip_transform && req.url) {
+            req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
           }
           next()
         },
@@ -162,7 +162,9 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
               break
             }
           }
-          // Check proxy paths
+          // Check proxy paths - only set _skip_transform for routes that positively match
+          // a proxy pattern. This prevents negative regex patterns from being bypassed
+          // when URLs are rewritten to /__skip_vite/...
           isProxyRoute = isProxyPath(url)
           isViteRoute ||= isProxyRoute
         }
@@ -181,11 +183,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
             return err ? reject(err) : resolve(null)
           })
         })
-
-        // For proxy routes that were skipped by the mw middleware, we need to let nitro handle them
-        if (isProxyRoute) {
-          return
-        }
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
         if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
