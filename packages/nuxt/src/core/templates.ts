@@ -454,12 +454,29 @@ export default /*@__PURE__*/ defuFn(${app.configs.map((_id: string, index: numbe
 export const publicPathTemplate: NuxtTemplate = {
   filename: 'paths.mjs',
   getContents ({ nuxt }) {
+    const charMap: Record<string, string> = {
+      '<': '\\u003C',
+      '>': '\\u003E',
+      '/': '\\u002F',
+      '\\': '\\\\',
+      '\b': '\\b',
+      '\f': '\\f',
+      '\n': '\\n',
+      '\r': '\\r',
+      '\t': '\\t',
+      '\0': '\\0',
+      '\u2028': '\\u2028',
+      '\u2029': '\\u2029',
+    }
+    const escapeUnsafeChars = (str: string): string =>
+      str.replace(/[<>\/\\\b\f\n\r\t\0\u2028\u2029]/g, ch => charMap[ch] ?? ch)
+
     return [
       'import { joinRelativeURL } from \'ufo\'',
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
 
       nuxt.options.dev
-        ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
+        ? `const getAppConfig = () => (${escapeUnsafeChars(JSON.stringify(nuxt.options.app))})`
         : 'const getAppConfig = () => useRuntimeConfig().app',
 
       'export const baseURL = () => getAppConfig().baseURL',
