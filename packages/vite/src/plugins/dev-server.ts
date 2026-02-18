@@ -5,6 +5,7 @@ import { defu } from 'defu'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type { H3Event as H3V1Event } from 'h3'
 import { useNitro } from '@nuxt/kit'
+import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
@@ -68,6 +69,23 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
       if (nuxt.options.experimental.viteEnvironmentApi) {
         await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
+      }
+
+      const mw: Connect.ServerStackItem = {
+        route: '',
+        handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
+          // Skip the transform middleware for proxy routes - don't call next() to prevent further processing
+          if (req._skip_transform) {
+            return
+          }
+          next()
+        },
+      }
+      const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
+      if (transformHandler === -1) {
+        viteServer.middlewares.stack.push(mw)
+      } else {
+        viteServer.middlewares.stack.splice(transformHandler, 0, mw)
       }
 
       const staticBases: string[] = []
@@ -153,8 +171,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         if (isProxyRoute) {
           // @ts-expect-error _skip_transform is a private property
           req._skip_transform = true
-          // For proxy routes, skip vite handling and let them be handled by nitro
-          return
         }
 
         // Workaround: vite devmiddleware modifies req.url
@@ -165,6 +181,11 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
             return err ? reject(err) : resolve(null)
           })
         })
+
+        // For proxy routes that were skipped by the mw middleware, we need to let nitro handle them
+        if (isProxyRoute) {
+          return
+        }
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
         if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
