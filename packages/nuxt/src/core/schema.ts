@@ -10,13 +10,14 @@ import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
+import type { Nuxt } from '@nuxt/schema'
 import { logger } from '../utils.ts'
 
 export default defineNuxtModule({
   meta: {
     name: 'nuxt:nuxt-config-schema',
   },
-  async setup (_, nuxt) {
+  async setup (_: unknown, nuxt: Nuxt) {
     const resolver = createResolver(import.meta.url)
 
     // Initialize untyped/jiti loader
@@ -30,13 +31,13 @@ export default defineNuxtModule({
     })
 
     // Register module types
-    nuxt.hook('prepare:types', async (ctx) => {
-      ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
-      ctx.sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
-      ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
+    nuxt.hook('prepare:types', async ({ references, sharedReferences, nodeReferences, nodeTsConfig }) => {
+      references.push({ path: 'schema/nuxt.schema.d.ts' })
+      sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
+      nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
 
-      ctx.nodeTsConfig.include ||= []
-      ctx.nodeTsConfig.include.push(
+      nodeTsConfig.include ||= []
+      nodeTsConfig.include.push(
         relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'nuxt.schema.*')),
         relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'layers/*/nuxt.schema.*')),
       )
@@ -82,7 +83,7 @@ export default defineNuxtModule({
       }
 
       const isIgnored = createIsIgnored(nuxt)
-      const rootDirs = layerDirs.map(layer => layer.root)
+      const rootDirs = layerDirs.map((layer: { root: string }) => layer.root)
       const SCHEMA_RE = /(?:^|\/)nuxt.schema.\w+$/
       const watcher = watch(rootDirs, {
         ...nuxt.options.watchers.chokidar,
@@ -103,7 +104,7 @@ export default defineNuxtModule({
     async function resolveSchema () {
       // Global import
       // @ts-expect-error adding to globalThis for 'auto-import' support within nuxt.config file
-      globalThis.defineNuxtSchema = (val: any) => val
+      globalThis.defineNuxtSchema = (val: SchemaDefinition) => val
 
       // Load schema from layers
       const schemaDefs: SchemaDefinition[] = [nuxt.options.$schema]
