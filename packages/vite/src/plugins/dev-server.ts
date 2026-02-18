@@ -5,7 +5,6 @@ import { defu } from 'defu'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type { H3Event as H3V1Event } from 'h3'
 import { useNitro } from '@nuxt/kit'
-import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
@@ -69,23 +68,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
       if (nuxt.options.experimental.viteEnvironmentApi) {
         await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
-      }
-
-      const mw: Connect.ServerStackItem = {
-        route: '',
-        handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-          // 'Skip' the transform middleware
-          if (req._skip_transform && req.url) {
-            req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
-          }
-          next()
-        },
-      }
-      const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
-      if (transformHandler === -1) {
-        viteServer.middlewares.stack.push(mw)
-      } else {
-        viteServer.middlewares.stack.splice(transformHandler, 0, mw)
       }
 
       const staticBases: string[] = []
@@ -171,6 +153,8 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         if (isProxyRoute) {
           // @ts-expect-error _skip_transform is a private property
           req._skip_transform = true
+          // For proxy routes, skip vite handling and let them be handled by nitro
+          return
         }
 
         // Workaround: vite devmiddleware modifies req.url
