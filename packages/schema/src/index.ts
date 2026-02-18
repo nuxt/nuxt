@@ -5,7 +5,7 @@ export type { KeyedFunction } from './types/compiler.ts'
 export type { AppConfig, AppConfigInput, CustomAppConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigLayer, NuxtOptions, PublicRuntimeConfig, RuntimeConfig, RuntimeValue, SchemaDefinition, UpperSnakeCase, ViteConfig, ViteOptions } from './types/config.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export type { ImportPresetWithDeprecation } from './types/hooks.ts'
-export type { GenerateAppOptions, HookResult, NuxtAnalyzeMeta, NuxtHookName, NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, TSReference, VueTSConfig, WatchEvent } from './types/hooks.ts'
+export type { DoctorCheck, DoctorCheckContext, GenerateAppOptions, HookResult, NuxtAnalyzeMeta, NuxtHookName, NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, TSReference, VueTSConfig, WatchEvent } from './types/hooks.ts'
 export type { ImportsOptions } from './types/imports.ts'
 export type { AppHeadMetaObject, MetaObject, MetaObjectRaw } from './types/head.ts'
 export type { ModuleDefinition, ModuleDependencies, ModuleDependencyMeta, ModuleMeta, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, NuxtModule, ResolvedModuleOptions } from './types/module.ts'
