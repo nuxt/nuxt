@@ -11,7 +11,7 @@ import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { logger } from '../../utils.ts'
 import { isSerializable } from '../utils.ts'
-import type { ParserOptions } from 'oxc-parser'
+import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -248,21 +248,46 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             const m = new MagicString(metaCode)
 
             if (meta.type === 'ObjectExpression') {
+              const omitProp = (prop: ObjectPropertyKind, i: number) => {
+                const nextProperty = meta.properties[i + 1]
+                if (nextProperty) {
+                  m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
+                } else if (code[prop.end] === ',') {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
+                } else {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                }
+              }
+
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
+                if (prop.type !== 'Property' || prop.key.type !== 'Identifier') {
+                  continue
+                }
+
+                if (options.extractedKeys?.includes(prop.key.name)) {
                   const { serializable } = isSerializable(metaCode, prop.value)
-                  if (!serializable) {
-                    continue
+                  if (serializable) {
+                    omitProp(prop, i)
                   }
-                  const nextProperty = meta.properties[i + 1]
-                  if (nextProperty) {
-                    m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
-                  } else if (code[prop.end] === ',') {
-                    m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
-                  } else {
-                    m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                } else if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
+                  for (const layoutProp of prop.value.properties) {
+                    if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
+                      continue
+                    }
+                    if (layoutProp.key.name === 'name') {
+                      m.appendLeft(
+                        prop.start - meta.start,
+                        `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                      )
+                    } else if (layoutProp.key.name === 'props') {
+                      m.appendLeft(
+                        prop.start - meta.start,
+                        `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                      )
+                    }
                   }
+                  omitProp(prop, i)
                 }
               }
             }
