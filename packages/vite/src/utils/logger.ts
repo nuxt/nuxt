@@ -2,7 +2,7 @@ import process from 'node:process'
 import type * as vite from 'vite'
 import { createLogger } from 'vite'
 import { logger } from '@nuxt/kit'
-import { colorize } from 'consola/utils'
+import { colorize, stripAnsi } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
 import type { NuxtOptions } from '@nuxt/schema'
 import { relative } from 'pathe'
@@ -26,7 +26,7 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
 }
 
 const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
-export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean } = {}): vite.Logger {
+export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean, onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void } = {}): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
   const _logger = createLogger()
@@ -52,6 +52,18 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
         if (id && resolveFromPublicAssets(id)) { return }
       }
       if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
+
+      // Parse Vite optimizer messages and forward to OptimizeDepsHintPlugin
+      if (type === 'warn' && (msg.includes('Failed to resolve dependency') || msg.includes('Cannot optimize dependency'))) {
+        const match = stripAnsi(msg).match(/(?:Failed to resolve|Cannot optimize) dependency:\s*([^,]+)/)
+        if (match) { ctx.onStaleDep?.(match[1]!.trim()) }
+        return
+      }
+      if (type === 'info' && msg.includes('new dependencies optimized:')) {
+        const match = stripAnsi(msg).match(/new dependencies optimized:\s*(.+)/)
+        if (match) { ctx.onNewDeps?.(match[1]!.split(',').map(d => d.trim()).filter(Boolean)) }
+        return
+      }
     }
 
     const sameAsLast = lastType === type && lastMsg === msg
@@ -99,7 +111,7 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       viteLogger.hasWarned = true
       output('error', msg, opts)
     },
-    clearScreen () {
+    clearScreen (_type) {
       clear()
     },
     hasErrorLogged (error) {
