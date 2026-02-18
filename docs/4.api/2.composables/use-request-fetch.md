@@ -33,7 +33,7 @@ const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'
 
 // This will NOT forward anything
 // Result: { cookies: {} }
-const { data: notForwarded } = await useAsyncData((_nuxtApp, { signal }) => $fetch('/api/cookies', { signal }))
+const { data: notForwarded } = await useAsyncData(({ signal }) => $fetch('/api/cookies', { signal }))
 </script>
 ```
 
