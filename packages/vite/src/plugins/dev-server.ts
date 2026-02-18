@@ -71,23 +71,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
       }
 
-      const mw: Connect.ServerStackItem = {
-        route: '',
-        handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-          // 'Skip' the transform middleware
-          if (req._skip_transform && req.url) {
-            req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
-          }
-          next()
-        },
-      }
-      const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
-      if (transformHandler === -1) {
-        viteServer.middlewares.stack.push(mw)
-      } else {
-        viteServer.middlewares.stack.splice(transformHandler, 0, mw)
-      }
-
       const staticBases: string[] = []
       for (const folder of nitro.options.publicAssets) {
         if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
@@ -208,6 +191,31 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           return isProxyPath(url)
         },
       })
+
+      // Return a post-hook so the skip-transform middleware is inserted AFTER Vite has
+      // registered all its standard middleware (including the proxy middleware). This is
+      // critical: Nuxt's configureServer hook runs before Vite adds proxyMiddleware and
+      // viteTransformMiddleware to the stack, so inserting mw directly in the hook body
+      // would place it BEFORE the proxy — causing the modified /__skip_vite/... URL to be
+      // seen by the proxy middleware and unexpectedly matched by negative-lookahead patterns.
+      return () => {
+        const mw: Connect.ServerStackItem = {
+          route: '',
+          handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
+            // 'Skip' the transform middleware
+            if (req._skip_transform && req.url) {
+              req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
+            }
+            next()
+          },
+        }
+        const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
+        if (transformHandler === -1) {
+          viteServer.middlewares.stack.push(mw)
+        } else {
+          viteServer.middlewares.stack.splice(transformHandler, 0, mw)
+        }
+      }
     },
   }
 }
