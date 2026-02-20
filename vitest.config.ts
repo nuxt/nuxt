@@ -30,6 +30,11 @@ const projects: Record<string, NuxtConfig> = {
       alwaysRunFetchOnKeyChange: true,
     },
   },
+  'nuxt-forward-client-ip': {
+    experimental: {
+      forwardClientIP: true,
+    },
+  },
 }
 
 export default defineConfig({

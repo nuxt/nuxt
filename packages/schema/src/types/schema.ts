@@ -1503,6 +1503,17 @@ export interface ConfigSchema {
     alwaysRunFetchOnKeyChange: boolean
 
     /**
+     * When enabled, Nuxt will automatically forward the client IP address in the `x-forwarded-for`
+     * header for all server-side fetch requests made via `useFetch`, `useAsyncData` or `$fetch`.
+     *
+     * This is useful when backends use IP-based rate limiting, as it prevents the Nuxt server
+     * itself from being throttled instead of the actual client.
+     *
+     * @default false
+     */
+    forwardClientIP: boolean
+
+    /**
      * Whether to parse `error.data` when rendering a server error page.
      *
      * @default true
