@@ -5,12 +5,12 @@ import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
-import { useRequestFetch } from './ssr'
+import { getForwardedClientIP, useRequestEvent, useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
 // @ts-expect-error virtual file
-import { alwaysRunFetchOnKeyChange, fetchDefaults } from '#build/nuxt.config.mjs'
+import { alwaysRunFetchOnKeyChange, fetchDefaults, forwardClientIP } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -155,6 +155,13 @@ export function useFetch<
       const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
       if (isLocalFetch) {
         _$fetch = useRequestFetch()
+      } else if (forwardClientIP) {
+        // For external fetches, only forward the x-forwarded-for header (not all request headers)
+        const event = useRequestEvent()
+        const forwardedFor = getForwardedClientIP(event)
+        if (forwardedFor) {
+          _$fetch = globalThis.$fetch.create({ headers: { 'x-forwarded-for': forwardedFor } })
+        }
       }
     }
 

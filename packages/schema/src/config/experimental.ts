@@ -204,6 +204,11 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    forwardClientIP: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     parseErrorData: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
