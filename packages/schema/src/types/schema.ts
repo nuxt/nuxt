@@ -1504,12 +1504,12 @@ export interface ConfigSchema {
 
     /**
      * When enabled, Nuxt will automatically forward the client IP address in the `x-forwarded-for`
-     * header for all server-side fetch requests made via `useFetch`, `useAsyncData` or `$fetch`.
+     * header for server-side fetch requests made via `useFetch` and `useRequestFetch`.
      *
      * This is useful when backends use IP-based rate limiting, as it prevents the Nuxt server
      * itself from being throttled instead of the actual client.
      *
-     * @default false
+     * `@default` false
      */
     forwardClientIP: boolean
 
