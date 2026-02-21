@@ -18,6 +18,7 @@ if (shouldRun) {
       },
       hooks: {
         'modules:done' () {
+          // Keep parity with the basic fixture setup so production-only Vite paths are exercised.
           process.env.NODE_ENV = 'production'
         },
       },
