@@ -4,7 +4,9 @@ import { $fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { isDev, isWebpack } from './matrix'
 
-if (!isDev && !isWebpack) {
+const shouldRun = !isDev && !isWebpack
+
+if (shouldRun) {
   await setup({
     rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
     dev: isDev,
@@ -24,7 +26,7 @@ if (!isDev && !isWebpack) {
   })
 }
 
-describe.skipIf(isDev || isWebpack)('inlineStyles dedupe regression (basic fixture)', () => {
+describe.runIf(shouldRun)('inline styles dedupe', () => {
   it('does not keep entry CSS link when function-based inlining includes entry and vue styles', async () => {
     const html = await $fetch<string>('/inline-styles-regression')
     expect(html).toContain('--global:"global";')
