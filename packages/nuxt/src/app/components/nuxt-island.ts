@@ -10,7 +10,7 @@ import { joinURL, withQuery } from 'ufo'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
-import { getRouteRules } from '../composables/manifest'
+import { shouldLoadPayload } from '../composables/payload'
 import { useRoute } from '../composables/router'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
@@ -88,6 +88,7 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
+    const route = useRoute()
     const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
     const instance = getCurrentInstance()!
@@ -109,6 +110,7 @@ export default defineComponent({
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
+          path: route.path,
           ...(import.meta.server && import.meta.prerender)
             ? {}
             : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
@@ -209,8 +211,7 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const rules = import.meta.client ? getRouteRules({ path: useRoute().path }) : {}
-      const shouldCache = rules.prerender || rules.cache
+      const shouldCache = import.meta.client ? await shouldLoadPayload(route.path) : false
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
