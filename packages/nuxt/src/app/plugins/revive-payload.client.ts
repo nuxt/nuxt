@@ -21,6 +21,7 @@ const revivers: [string, (data: any) => any][] = [
 if (componentIslands) {
   revivers.push(['Island', ({ key, path, params, result }: any) => {
     const nuxtApp = useNuxtApp()
+    const routePath = path || useRoute().path
     if (!nuxtApp.isHydrating) {
       const fetchIsland = (shouldCache: boolean) => {
         const fetchOptions = {
@@ -29,7 +30,6 @@ if (componentIslands) {
           ...(shouldCache ? { cache: 'force-cache' as RequestCache } : {}),
         }
         if (shouldCache) {
-          // Prerendered/cached routes: memory cache (bounded set) + browser cache.
           nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
             ...fetchOptions,
           }).then((r) => {
@@ -37,14 +37,12 @@ if (componentIslands) {
             return nuxtApp.payload.data[key]
           })
         } else {
-          // Preserve NuxtLink prefetch behavior without retaining island data in memory.
           void $fetch(`/__nuxt_island/${key}.json`, fetchOptions).catch(() => {})
         }
       }
-      void shouldLoadPayload(path || useRoute().path).then(fetchIsland).catch(() => fetchIsland(false))
+      void shouldLoadPayload(routePath).then(fetchIsland).catch(() => fetchIsland(false))
     }
     const cached = nuxtApp.payload.data[key]
-    // Reuse cached island data with html on navigation back (#33809)
     if (cached?.html) {
       cached.__cached = true
       return cached

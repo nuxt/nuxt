@@ -158,8 +158,7 @@ export default defineComponent({
       }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
-      // Ensure payload is initialized (already set by SSR setPayload())
-      // Don't overwrite .html if it exists from SSR as DOM HTML has teleports (#33809)
+      // Keep SSR html; hydrated DOM html includes teleports (#33809).
       nuxtApp.payload.data[key] ||= {}
     }
 
@@ -201,7 +200,6 @@ export default defineComponent({
       const cached = nuxtApp.payload.data[key]?.html
         ? nuxtApp.payload.data[key]
         : nuxtApp.static.data[key]
-      // Require truthy html for cache to be valid - refetch if html is missing/empty (#33809)
       if (!force && cached?.html) { return cached }
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
