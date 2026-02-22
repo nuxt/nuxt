@@ -42,58 +42,6 @@ function createCurrentLocation (
   return path + (path.includes('?') ? '' : search) + hash
 }
 
-function getQueryFromFullPath (fullPath: string) {
-  return fullPath.split('#', 1)[0]?.split('?', 2)[1] || ''
-}
-
-function toForcedRoute (route: ReturnType<Router['resolve']>) {
-  const normalizedRoute = { ...route, force: true }
-  if ('name' in normalizedRoute) {
-    ;(normalizedRoute as { name?: undefined }).name = undefined
-  }
-  return normalizedRoute
-}
-
-function resolvePrerenderInitialRoutes (
-  {
-    isClient,
-    isHydrating,
-    prerenderedAt,
-    initialURL,
-    payloadPath,
-    currentRoute,
-    resolve,
-  }: {
-    isClient: boolean
-    isHydrating: boolean
-    prerenderedAt: boolean
-    initialURL: string
-    payloadPath?: string
-    currentRoute: RouteLocationNormalizedLoadedGeneric
-    resolve: Router['resolve']
-  },
-) {
-  const browserInitialRoute = isClient
-    ? resolve(initialURL)
-    : currentRoute
-  const payloadInitialRoute = isClient && payloadPath
-    ? resolve(payloadPath)
-    : browserInitialRoute
-  const deferredInitialRoute = isClient
-    && isHydrating
-    && prerenderedAt
-    && isSamePath(payloadInitialRoute.path, browserInitialRoute.path)
-    && getQueryFromFullPath(payloadInitialRoute.fullPath) !== getQueryFromFullPath(browserInitialRoute.fullPath)
-    ? browserInitialRoute
-    : null
-  const initialRouteToApply = deferredInitialRoute ? payloadInitialRoute : browserInitialRoute
-
-  return {
-    deferredInitialRoute,
-    initialRouteToApply,
-  }
-}
-
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
@@ -218,18 +166,28 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const currentRoute = router.currentRoute.value
-    const {
-      deferredInitialRoute,
-      initialRouteToApply,
-    } = resolvePrerenderInitialRoutes({
-      isClient: import.meta.client,
-      isHydrating: nuxtApp.isHydrating,
-      prerenderedAt: !!nuxtApp.payload.prerenderedAt,
-      initialURL,
-      payloadPath: nuxtApp.payload.path,
-      currentRoute,
-      resolve: router.resolve,
-    })
+    const browserInitialRoute = import.meta.client
+      ? router.resolve(initialURL)
+      : currentRoute
+    const payloadInitialRoute = import.meta.client && nuxtApp.payload.path
+      ? router.resolve(nuxtApp.payload.path)
+      : browserInitialRoute
+    const getQuery = (fullPath: string) => fullPath.split('#', 1)[0]?.split('?', 2)[1] || ''
+    const deferredInitialRoute = import.meta.client
+      && nuxtApp.isHydrating
+      && !!nuxtApp.payload.prerenderedAt
+      && isSamePath(payloadInitialRoute.path, browserInitialRoute.path)
+      && getQuery(payloadInitialRoute.fullPath) !== getQuery(browserInitialRoute.fullPath)
+      ? browserInitialRoute
+      : null
+    const initialRouteToApply = deferredInitialRoute ? payloadInitialRoute : browserInitialRoute
+    const toForcedRoute = (route: typeof browserInitialRoute) => {
+      const normalizedRoute = { ...route, force: true }
+      if ('name' in normalizedRoute) {
+        (normalizedRoute as { name?: undefined }).name = undefined
+      }
+      return normalizedRoute
+    }
     syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
