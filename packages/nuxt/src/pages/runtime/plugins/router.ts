@@ -42,16 +42,14 @@ function createCurrentLocation (
   return path + (path.includes('?') ? '' : search) + hash
 }
 
-function getQueryFromFullPath (fullPath: string): string {
+function getQueryFromFullPath (fullPath: string) {
   return fullPath.split('#', 1)[0]?.split('?', 2)[1] || ''
 }
 
-function toForcedRoute (
-  route: ReturnType<Router['resolve']>,
-): ReturnType<Router['resolve']> & { force: true, name?: undefined } {
-  const normalizedRoute = { ...route, force: true } as ReturnType<Router['resolve']> & { force: true, name?: undefined }
+function toForcedRoute (route: ReturnType<Router['resolve']>) {
+  const normalizedRoute = { ...route, force: true }
   if ('name' in normalizedRoute) {
-    normalizedRoute.name = undefined
+    ;(normalizedRoute as { name?: undefined }).name = undefined
   }
   return normalizedRoute
 }
@@ -91,8 +89,6 @@ function resolvePrerenderInitialRoutes (
   const initialRouteToApply = deferredInitialRoute ? payloadInitialRoute : browserInitialRoute
 
   return {
-    browserInitialRoute,
-    payloadInitialRoute,
     deferredInitialRoute,
     initialRouteToApply,
   }
