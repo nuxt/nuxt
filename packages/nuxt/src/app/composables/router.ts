@@ -1,6 +1,6 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute } from 'vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
@@ -13,9 +13,40 @@ import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
+/**
+ * Router returned by `useRouter()`, with Nuxt-specific extensions.
+ * @see https://nuxt.com/docs/4.x/api/composables/use-router
+ */
+export type NuxtRouter = Router & { readonly historyState?: History['state'] }
+
+const getHistoryState = (): History['state'] | undefined => {
+  if (import.meta.client && typeof window !== 'undefined') {
+    return window.history?.state
+  }
+  return undefined
+}
+
 /** @since 3.0.0 */
-export const useRouter: typeof _useRouter = () => {
-  return useNuxtApp()?.$router as Router
+export const useRouter = (): NuxtRouter => {
+  const router = useNuxtApp()?.$router as Router | undefined
+  if (!router) {
+    return undefined as unknown as NuxtRouter
+  }
+  if (import.meta.server) {
+    return router as NuxtRouter
+  }
+  return new Proxy(router, {
+    get (target, prop) {
+      if (prop === 'historyState') {
+        return getHistoryState()
+      }
+      return Reflect.get(target, prop)
+    },
+    has (target, prop) {
+      if (prop === 'historyState') { return true }
+      return Reflect.has(target, prop)
+    },
+  }) as NuxtRouter
 }
 
 /** @since 3.0.0 */
