@@ -166,18 +166,22 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const currentRoute = router.currentRoute.value
-    const resolvedInitialRoute = import.meta.client && initialURL !== currentRoute.fullPath
+    const browserInitialRoute = import.meta.client
       ? router.resolve(initialURL)
       : currentRoute
+    const payloadInitialRoute = import.meta.client && nuxtApp.payload.path
+      ? router.resolve(nuxtApp.payload.path)
+      : browserInitialRoute
     const getQuery = (fullPath: string) => fullPath.split('#', 1)[0]?.split('?', 2)[1] || ''
     const deferredInitialRoute = import.meta.client
       && nuxtApp.isHydrating
       && !!nuxtApp.payload.prerenderedAt
-      && isSamePath(resolvedInitialRoute.path, currentRoute.path)
-      && getQuery(resolvedInitialRoute.fullPath) !== getQuery(currentRoute.fullPath)
-      ? resolvedInitialRoute
+      && isSamePath(payloadInitialRoute.path, browserInitialRoute.path)
+      && getQuery(payloadInitialRoute.fullPath) !== getQuery(browserInitialRoute.fullPath)
+      ? browserInitialRoute
       : null
-    const toForcedRoute = (route: typeof resolvedInitialRoute) => {
+    const initialRouteToApply = deferredInitialRoute ? payloadInitialRoute : browserInitialRoute
+    const toForcedRoute = (route: typeof browserInitialRoute) => {
       const normalizedRoute = { ...route, force: true }
       if ('name' in normalizedRoute) {
         (normalizedRoute as { name?: undefined }).name = undefined
@@ -290,13 +294,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
-        const initialRouteToApply = deferredInitialRoute ? currentRoute : resolvedInitialRoute
-
         if (deferredInitialRoute) {
           nuxtApp.hooks.hookOnce('app:suspense:resolve', async () => {
-            if (router.currentRoute.value.fullPath === deferredInitialRoute.fullPath) {
-              return
-            }
             await router.replace(toForcedRoute(deferredInitialRoute))
           })
         }
