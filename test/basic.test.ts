@@ -120,6 +120,7 @@ describe('route rules', () => {
       ssr: false,
     })
     expect(routeRules['/route-rules/isr-spa/_payload.json']).toBeUndefined()
+    expect(routeRules['/route-rules/isr-spa/_payload.js']).toBeUndefined()
   })
 })
 
