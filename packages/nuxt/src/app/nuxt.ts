@@ -143,6 +143,10 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+    /** @internal */
+    _preserveOnInit?: boolean
+    /** @internal */
+    _disposeType?: 'scope' | 'key'
   } | undefined>
 
   /** @internal */

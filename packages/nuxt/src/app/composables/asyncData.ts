@@ -260,8 +260,13 @@ export function useAsyncData<
   function createInitialFetch () {
     const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: options.dedupe }
     if (!nuxtApp._asyncData[key.value]?._init) {
-      initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
-      nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
+      const existingEntry = nuxtApp._asyncData[key.value]
+      if (existingEntry?._preserveOnInit) {
+        nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, existingEntry.data.value as NoInfer<DataT>)
+      } else {
+        initialFetchOptions.cachedData = options.getCachedData!(key.value, nuxtApp, { cause: 'initial' })
+        nuxtApp._asyncData[key.value] = createAsyncData(nuxtApp, key.value, _handler, options, initialFetchOptions.cachedData)
+      }
     }
     return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
   }
@@ -323,12 +328,13 @@ export function useAsyncData<
       initialFetch()
     }
 
-    function unregister (key: string) {
+    function unregister (key: string, disposeType: 'scope' | 'key' = 'scope') {
       const data = nuxtApp._asyncData[key]
       if (data?._deps) {
         data._deps--
         // clean up memory when it no longer is needed
         if (data._deps === 0) {
+          data._disposeType = disposeType
           data?._off()
         }
       }
@@ -364,7 +370,7 @@ export function useAsyncData<
 
         // Now it's safe to drop the old container.
         if (oldKey) {
-          unregister(oldKey)
+          unregister(oldKey, 'key')
         }
 
         // Trigger the fetch for the new key if needed.
@@ -398,7 +404,7 @@ export function useAsyncData<
       onScopeDispose(() => {
         unsubKeyWatcher()
         unsubParamsWatcher()
-        unregister(key.value)
+        unregister(key.value, 'scope')
       })
     }
   }
@@ -614,7 +620,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
-function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
+function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, opts: { silent?: boolean } = {}): void {
   if (key in nuxtApp.payload.data) {
     nuxtApp.payload.data[key] = undefined
   }
@@ -624,12 +630,25 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (nuxtApp._asyncData[key]) {
-    nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
-    nuxtApp._asyncData[key]!.error.value = undefined
-    if (pendingWhenIdle) {
-      nuxtApp._asyncData[key]!.pending.value = false
+    const data = nuxtApp._asyncData[key]!
+    delete data._preserveOnInit
+    delete data._disposeType
+    const defaultValue = unref(data._default())
+    if (opts.silent) {
+      // bypass reactivity during teardown to avoid notifying stale effects (`#32154`)
+      const dataRef = data.data as unknown as { _value: unknown, _rawValue?: unknown }
+      dataRef._value = defaultValue
+      if ('_rawValue' in dataRef) {
+        dataRef._rawValue = defaultValue
+      }
+    } else {
+      data.data.value = defaultValue
     }
-    nuxtApp._asyncData[key]!.status.value = 'idle'
+    data.error.value = undefined
+    if (pendingWhenIdle) {
+      data.pending.value = false
+    }
+    data.status.value = 'idle'
   }
 
   if (key in nuxtApp._asyncDataPromises) {
@@ -652,7 +671,7 @@ export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: 
   isPending: () => boolean
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController, _preserveOnInit?: boolean, _disposeType?: 'scope' | 'key' }
 
 function createAsyncData<
   ResT,
@@ -808,12 +827,26 @@ function createAsyncData<
       }
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
-        nextTick(() => {
-          if (!nuxtApp._asyncData[key]?._init) {
-            clearNuxtDataByKey(nuxtApp, key)
-            asyncData.execute = () => Promise.resolve()
+        const dataRef = nuxtApp._asyncData[key]!.data as { dep?: { subs?: unknown } }
+        nuxtApp._asyncData[key]!._preserveOnInit = nuxtApp._asyncData[key]!._disposeType === 'scope' && Boolean(dataRef.dep?.subs)
+        delete nuxtApp._asyncData[key]!._disposeType
+        if (nuxtApp._asyncData[key]!._preserveOnInit) {
+          if (key in nuxtApp.payload.data) {
+            nuxtApp.payload.data[key] = undefined
           }
-        })
+          nuxtApp._asyncData[key]!.status.value = 'idle'
+          nuxtApp._asyncData[key]!.error.value = undefined
+          if (pendingWhenIdle) {
+            nuxtApp._asyncData[key]!.pending.value = false
+          }
+        } else {
+          nextTick(() => {
+            if (!nuxtApp._asyncData[key]?._init) {
+              clearNuxtDataByKey(nuxtApp, key, { silent: true })
+            }
+          })
+        }
+        asyncData.execute = () => Promise.resolve()
       }
     },
   }
