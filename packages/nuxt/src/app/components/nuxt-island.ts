@@ -102,7 +102,6 @@ export default defineComponent({
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {
       const toRevive: Partial<NuxtIslandResponse> = {}
-      if (result.html) { toRevive.html = result.html }
       if (result.props) { toRevive.props = result.props }
       if (result.slots) { toRevive.slots = result.slots }
       if (result.components) { toRevive.components = result.components }
@@ -209,11 +208,14 @@ export default defineComponent({
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const shouldCache = import.meta.client ? await shouldLoadPayload(route.path) : false
+      const shouldCache = import.meta.client
+        ? await shouldLoadPayload(route.path).catch(() => false)
+        : false
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }), {
+        // Mirror payload caching semantics: only cache prerendered/cached routes.
         ...(import.meta.client && shouldCache ? { cache: 'force-cache' as RequestCache } : {}),
       })
       if (!r.ok) {

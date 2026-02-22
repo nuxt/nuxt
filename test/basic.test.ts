@@ -2155,6 +2155,22 @@ describe('server components/islands', () => {
 
     await page.close()
   })
+
+  it.skipIf(!isTestingAppManifest)('should render island when manifest fetch fails', { timeout: 60000 }, async () => {
+    const { page, pageErrors } = await renderPage('')
+    await page.route('**/builds/meta/*.json', route => route.abort())
+
+    await gotoPath(page, '/island-nav-test')
+    await page.waitForLoadState('networkidle')
+
+    await page.locator('.island-with-client').waitFor()
+    await page.locator('.client-button').first().waitFor({ timeout: 10000 })
+
+    expect(await page.locator('.client-button').count()).toBe(1)
+    expect(pageErrors).toHaveLength(0)
+
+    await page.close()
+  })
 })
 
 describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
