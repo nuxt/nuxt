@@ -619,6 +619,19 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
+function setRefValueSilently (data: unknown, value: unknown): boolean {
+  // Vue does not expose a public "set without trigger"; keep a guarded path and fallback.
+  if (!data || typeof data !== 'object' || !('_value' in data)) {
+    return false
+  }
+  const dataRef = data as { _value: unknown, _rawValue?: unknown }
+  dataRef._value = value
+  if ('_rawValue' in dataRef) {
+    dataRef._rawValue = value
+  }
+  return true
+}
+
 function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, opts: { silent?: boolean } = {}): void {
   if (key in nuxtApp.payload.data) {
     nuxtApp.payload.data[key] = undefined
@@ -633,15 +646,18 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, opts: { silent?: boo
     delete data._preserveOnInit
     const defaultValue = unref(data._default())
     if (opts.silent) {
-      // bypass reactivity during teardown to avoid notifying stale effects (`#32154`)
-      const dataRef = data.data as unknown as { _value: unknown, _rawValue?: unknown }
-      dataRef._value = defaultValue
-      if ('_rawValue' in dataRef) {
-        dataRef._rawValue = defaultValue
+      // Bypass triggers to avoid stale `v-once` effects reading cleared data (`#32154`).
+      // Held computed wrappers can remain transiently stale until they invalidate.
+      if (!setRefValueSilently(data.data, defaultValue)) {
+        if (import.meta.dev) {
+          console.warn('[nuxt] asyncData silent clear fallback: ref internals changed, using reactive setter')
+        }
+        data.data.value = defaultValue
       }
     } else {
       data.data.value = defaultValue
     }
+    // This asymmetry is intentional: status/error/pending updates should stay reactive.
     data.error.value = undefined
     if (pendingWhenIdle) {
       data.pending.value = false

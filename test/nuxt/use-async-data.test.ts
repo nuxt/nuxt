@@ -298,8 +298,8 @@ describe('useAsyncData', () => {
 
     await flushPromises()
 
-    // `res.data` is a computed wrapper and won't be invalidated by silent dispose clear.
-    // Verify against a fresh access path instead.
+    // Silent dispose clear can leave held computed wrappers transiently stale until invalidation.
+    // Assert via a fresh access path instead.
     expect(useNuxtData(route.fullPath).data.value).toBe(undefined)
     expect(res.status.value).toBe('idle')
     expect(res.pending.value).toBe(false)
