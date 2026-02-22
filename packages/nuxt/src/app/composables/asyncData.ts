@@ -334,8 +334,7 @@ export function useAsyncData<
         data._deps--
         // clean up memory when it no longer is needed
         if (data._deps === 0) {
-          data._disposeType = disposeType
-          data?._off()
+          data?._off(disposeType)
         }
       }
     }
@@ -632,7 +631,6 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string, opts: { silent?: boo
   if (nuxtApp._asyncData[key]) {
     const data = nuxtApp._asyncData[key]!
     delete data._preserveOnInit
-    delete data._disposeType
     const defaultValue = unref(data._default())
     if (opts.silent) {
       // bypass reactivity during teardown to avoid notifying stale effects (`#32154`)
@@ -671,7 +669,7 @@ export type DebouncedReturn<ArgumentsT extends unknown[], ReturnT> = ((...args: 
   isPending: () => boolean
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController, _preserveOnInit?: boolean, _disposeType?: 'scope' | 'key' }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: (reason?: 'scope' | 'key') => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>, _abortController?: AbortController, _preserveOnInit?: boolean }
 
 function createAsyncData<
   ResT,
@@ -820,7 +818,7 @@ function createAsyncData<
     _deps: 0,
     _init: true,
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
-    _off: () => {
+    _off: (reason = 'scope') => {
       unsubRefreshAsyncData()
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
@@ -828,8 +826,7 @@ function createAsyncData<
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
         const dataRef = nuxtApp._asyncData[key]!.data as { dep?: { subs?: unknown } }
-        nuxtApp._asyncData[key]!._preserveOnInit = nuxtApp._asyncData[key]!._disposeType === 'scope' && Boolean(dataRef.dep?.subs)
-        delete nuxtApp._asyncData[key]!._disposeType
+        nuxtApp._asyncData[key]!._preserveOnInit = reason === 'scope' && Boolean(dataRef.dep?.subs)
         if (nuxtApp._asyncData[key]!._preserveOnInit) {
           if (key in nuxtApp.payload.data) {
             nuxtApp.payload.data[key] = undefined
