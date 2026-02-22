@@ -415,6 +415,7 @@ describe('compiled route rules', () => {
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+    expect(await isPrerendered('/pre/spa/thing')).toBeTruthy()
   })
 
   it('should determine if payload should be loaded based on route rules', async () => {
