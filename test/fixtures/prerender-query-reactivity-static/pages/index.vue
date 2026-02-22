@@ -4,7 +4,9 @@ const route = useRoute()
 
 <template>
   <main>
-    <p data-testid="query">Query preview: {{ route.query.preview }}</p>
+    <p data-testid="query">
+      Query preview: {{ route.query.preview }}
+    </p>
     <div
       data-testid="mode"
       :class="route.query.preview === 'true' ? 'preview-mode' : 'normal-mode'"
