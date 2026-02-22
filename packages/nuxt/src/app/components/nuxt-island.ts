@@ -158,7 +158,11 @@ export default defineComponent({
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
       // Keep SSR html; hydrated DOM html includes teleports (#33809).
-      nuxtApp.payload.data[key] ||= {}
+      const payloadEntry = nuxtApp.payload.data[key] ||= {}
+      if (!payloadEntry.html && !payloadEntry.components) {
+        // Normalise UID so cached SSR markup can be safely rebound per island instance.
+        payloadEntry.html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), 'data-island-uid=""')
+      }
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
