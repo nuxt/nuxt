@@ -4,25 +4,27 @@ on:
   merge_group:
   push:
     paths:
-      - "**/package.json"
-      - "pnpm-lock.yaml"
+      - '**/package.json'
+      - 'pnpm-lock.yaml'
     branches:
       - main
       - 3.x
   pull_request:
     paths:
-      - "**/package.json"
-      - "pnpm-lock.yaml"
+      - '**/package.json'
+      - 'pnpm-lock.yaml'
     branches:
       - main
       - 3.x
-      - "!v[0-9]*"
+      - '!v[0-9]*'
 
 permissions:
   contents: read
 
 jobs:
   lint-monorepo:
+    # already tested in merge queue
+    if: github.event_name != 'push'
     runs-on: ubuntu-24.04-arm
 
     steps:
@@ -31,7 +33,7 @@ jobs:
       - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: lts/*
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install

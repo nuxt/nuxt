@@ -37,37 +37,57 @@ describe('useAsyncData', () => {
     uniqueKey = `key-${++counter}`
   })
 
-  function mountWithAsyncData (...args: any[]) {
-    return new Promise<ReturnType<typeof useAsyncData> & ReturnType<typeof mountSuspended<unknown>>>((resolve) => {
-      let res: ReturnType<typeof useAsyncData & ReturnType<typeof mountSuspended>>
-      const component = defineComponent({
-        setup () {
-          res = useAsyncData(...args as [any])
-          return () => h('div', [res.data.value as any])
-        },
-      })
+  type AsyncDataWithoutPromiseMethods = Omit<ReturnType<typeof useAsyncData>, 'then' | 'catch' | 'finally'>
+  type MountedWrapper = Awaited<ReturnType<typeof mountSuspended<unknown>>>
 
-      mountSuspended(component).then(c => resolve(Object.assign(c, res)))
+  async function mountWithAsyncData (...args: any[]) {
+    let res!: ReturnType<typeof useAsyncData>
+    const component = defineComponent({
+      setup () {
+        res = useAsyncData(...args as [any])
+        return () => h('div', [res.data.value as any])
+      },
     })
+
+    const c = await mountSuspended(component)
+    // Avoid returning a thenable here, otherwise Promise will unwrap it.
+    const { then: _then, catch: _catch, finally: _finally, ...asyncData } = res
+    return Object.assign(c, asyncData) as AsyncDataWithoutPromiseMethods & MountedWrapper
   }
 
   it('should work at basic level', async () => {
     const res = useAsyncData(() => Promise.resolve('test'))
     expect(Object.keys(res).sort()).toMatchInlineSnapshot(`
       [
+        "catch",
         "clear",
         "data",
         "error",
         "execute",
+        "finally",
         "pending",
         "refresh",
         "status",
+        "then",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
     expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
+  })
+
+  it('should keep promise methods after destructuring', async () => {
+    const asyncData = useAsyncData(() => Promise.resolve('test'))
+    const destructured = { ...asyncData, foo: 'foo' }
+
+    expect(typeof destructured.then).toBe('function')
+    expect(typeof destructured.catch).toBe('function')
+    expect(typeof destructured.finally).toBe('function')
+
+    expect(destructured.data.value).toBe(undefined)
+    await (destructured as Promise<unknown>)
+    expect(destructured.data.value).toBe('test')
   })
 
   it('should not execute with immediate: false', async () => {
