@@ -52,7 +52,7 @@ const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
 let entryPath: string
 
-export default defineEventHandler(async (event) => {
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
   // Whether we're rendering an error page
   const ssrError = event.url.pathname.startsWith('/__nuxt_error')
     ? getQuery<NuxtPayload['error'] & { url: string }>(event)
@@ -314,6 +314,8 @@ export default defineEventHandler(async (event) => {
 
   return renderHTMLDocument(htmlContext)
 })
+
+export default handler
 
 function normalizeChunks (chunks: (string | undefined)[]) {
   const result: string[] = []

@@ -42,7 +42,7 @@ interface Renderer {
 }
 
 // -- SSR Renderer --
-export const getSSRRenderer = lazyCachedFunction(async (): Promise<Renderer> => {
+export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async (): Promise<Renderer> => {
   // Load server bundle
   const createSSRApp = await getServerEntry()
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
@@ -131,4 +131,4 @@ export function getRenderer (ssrContext: NuxtSSRContext): Promise<Renderer> {
 }
 
 // @ts-expect-error file will be produced after app build
-export const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
+export const getSSRStyles: () => Promise<Record<string, () => Promise<string[]>>> = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))

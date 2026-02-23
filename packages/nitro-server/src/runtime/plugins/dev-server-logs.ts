@@ -30,7 +30,7 @@ interface NuxtDevAsyncContext {
 
 const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
 
-export default definePlugin((nitroApp) => {
+const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   // TODO: Use nitro asyncContext
   const originalFetch = nitroApp.fetch
   nitroApp.fetch = (input: ServerRequest | URL | string, init?: RequestInit, context?: any) => {
@@ -95,6 +95,8 @@ export default definePlugin((nitroApp) => {
     }
   })
 })
+
+export default plugin
 
 const EXCLUDE_TRACE_RE = /\/node_modules\/(?:.*\/)?(?:nuxt|nuxt-nightly|nuxt-edge|nuxt3|consola|@vue)\/|core\/runtime\/nitro/
 

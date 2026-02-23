@@ -6,7 +6,7 @@ const config = useRuntimeConfig()
 const baseURL = config.app.baseURL?.replace(/\/$/, '') || '/'
 const hasBaseURL = baseURL !== '/' && !/^\.(?:$|\/)/.test(baseURL)
 
-export default defineEventHandler((event) => {
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event) => {
   if (!hasBaseURL) {
     return
   }
@@ -28,3 +28,5 @@ export default defineEventHandler((event) => {
 
   throw new HTTPError({ status: 404, statusText: `Page not found.` })
 })
+
+export default handler

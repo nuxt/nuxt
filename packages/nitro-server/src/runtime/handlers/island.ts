@@ -16,7 +16,7 @@ import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse 
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
-export default defineEventHandler(async (event) => {
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
   event.res.headers.set('content-type', 'application/json;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
@@ -104,6 +104,8 @@ export default defineEventHandler(async (event) => {
   }
   return islandResponse
 })
+
+export default handler
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
