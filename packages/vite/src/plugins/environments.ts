@@ -9,8 +9,7 @@ import { defineEnv } from 'unenv'
 import escapeStringRegexp from 'escape-string-regexp'
 
 export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
-  // TODO: remove .replace once nitro adds support for un-ignoring public assets
-  const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '_[hash].js'))
+  const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
   const clientOutputDir = join(useNitro().options.output.publicDir, nuxt.options.app.buildAssetsDir)
 
   const clientAliases: Record<string, string> = {

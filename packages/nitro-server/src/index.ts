@@ -262,6 +262,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir,
+            ignore: false,
           },
       ...layerPublicAssetsDirs,
     ],
