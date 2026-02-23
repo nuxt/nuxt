@@ -14,7 +14,7 @@ import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
     body: NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])
+      ? encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers']))
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
@@ -26,7 +26,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderRespon
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? stringify(opts.data, opts.ssrContext['~payloadReducers']) : ''
+  const contents = opts.data ? encodeForwardSlashes(stringify(opts.data, opts.ssrContext['~payloadReducers'])) : ''
   const payload: Script = {
     'type': 'application/json',
     'innerHTML': contents,
@@ -48,6 +48,15 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
         : `window.__NUXT__={};window.__NUXT__.config=${config}`,
     },
   ]
+}
+
+/**
+ * Encode forward slashes as unicode escape sequences to prevent
+ * Google Search Console from treating them as internal links.
+ * @see https://github.com/nuxt/nuxt/issues/24175
+ */
+function encodeForwardSlashes (str: string): string {
+  return str.replaceAll('/', '\\u002F')
 }
 
 export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: NitroRouteRules, data?: any, src?: string }): Script[] {
