@@ -58,16 +58,19 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"1226k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"72.3k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"339k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1491k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
+        "@vue/server-renderer",
+        "@vue/shared",
+        "babel__parser",
         "croner",
         "crossws",
         "defu",
@@ -77,6 +80,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "estree-walker",
         "h3",
         "hookable",
+        "nuxt__devalue",
         "ofetch",
         "ohash",
         "pathe",
@@ -87,9 +91,16 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "ufo",
         "unctx",
         "unhead",
+        "unhead__vue",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue__compiler-core",
+        "vue__compiler-dom",
+        "vue__compiler-ssr",
+        "vue__reactivity",
+        "vue__runtime-core",
+        "vue__runtime-dom",
       ]
     `)
   })
@@ -98,16 +109,18 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"436k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"72.0k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"163k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"527k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
+        "@vue/server-renderer",
+        "@vue/shared",
         "croner",
         "crossws",
         "defu",
@@ -116,6 +129,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "h3",
         "hookable",
         "mocked-exports",
+        "nuxt__devalue",
         "ofetch",
         "ohash",
         "pathe",
@@ -125,9 +139,13 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "ufo",
         "unctx",
         "unhead",
+        "unhead__vue",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue__reactivity",
+        "vue__runtime-core",
+        "vue__runtime-dom",
       ]
     `)
   })
@@ -136,16 +154,19 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"1331k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"177k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"340k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1493k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
+        "@vue/server-renderer",
+        "@vue/shared",
+        "babel__parser",
         "croner",
         "crossws",
         "defu",
@@ -155,6 +176,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "estree-walker",
         "h3",
         "hookable",
+        "nuxt__devalue",
         "ofetch",
         "ohash",
         "pathe",
@@ -166,9 +188,16 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "uncrypto",
         "unctx",
         "unhead",
+        "unhead__vue",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue__compiler-core",
+        "vue__compiler-dom",
+        "vue__compiler-ssr",
+        "vue__reactivity",
+        "vue__runtime-core",
+        "vue__runtime-dom",
       ]
     `)
   })
