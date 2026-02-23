@@ -11,6 +11,7 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
+
 /** @since 3.0.0 */
 export const showError = <DataT = unknown>(
   error: string | Error | (Partial<NuxtError<DataT>> & {

@@ -30,6 +30,11 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     })
   }
 
+  if (import.meta.dev && typeof defaultRes.body !== 'string' && Array.isArray(defaultRes.body.stack)) {
+    // normalize to string format expected by nuxt `error.vue`
+    defaultRes.body.stack = defaultRes.body.stack.join('\n')
+  }
+
   const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'status' | 'statusText' | 'message' | 'stack'> & { url: URL | string, data: any }
   // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ||= error.data

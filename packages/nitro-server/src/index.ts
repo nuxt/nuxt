@@ -17,6 +17,7 @@ import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
+import { runtimeDependencies } from 'nitro/meta'
 import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
@@ -89,7 +90,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Resolve aliases in user-provided input - so `~/server/test` will work
+  // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
 
@@ -144,36 +145,38 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       name: 'nuxt',
       version: nuxtVersion || nitroBuilder.version,
     },
-    imports: {
-      autoImport: nuxt.options.imports.autoImport as boolean,
-      dirs: [...sharedDirs],
-      presets: nuxt.options.experimental.nitroAutoImports
-        ? [
-            ...v2ImportsPreset,
-            await getH3ImportsPreset(),
-          ]
-        : [],
-      imports: [
-        {
-          as: '__buildAssetsURL',
-          name: 'buildAssetsURL',
-          from: resolve(distDir, 'runtime/utils/paths'),
+    imports: nuxt.options.experimental.nitroAutoImports === false
+      ? false
+      : {
+          autoImport: nuxt.options.imports.autoImport as boolean,
+          dirs: [...sharedDirs],
+          presets: nuxt.options.experimental.nitroAutoImports
+            ? [
+                ...v2ImportsPreset,
+                await getH3ImportsPreset(),
+              ]
+            : [],
+          imports: [
+            {
+              as: '__buildAssetsURL',
+              name: 'buildAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              as: '__publicAssetsURL',
+              name: 'publicAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
+              as: 'defineAppConfig',
+              name: 'defineAppConfig',
+              from: resolve(distDir, 'runtime/utils/config'),
+              priority: -1,
+            },
+          ],
+          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
         },
-        {
-          as: '__publicAssetsURL',
-          name: 'publicAssetsURL',
-          from: resolve(distDir, 'runtime/utils/paths'),
-        },
-        {
-          // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
-          as: 'defineAppConfig',
-          name: 'defineAppConfig',
-          from: resolve(distDir, 'runtime/utils/config'),
-          priority: -1,
-        },
-      ],
-      exclude: [...excludePattern, /[\\/]\.git[\\/]/],
-    },
     // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
     scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: {
@@ -228,6 +231,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           lib: ['esnext', 'webworker', 'dom.iterable'],
           skipLibCheck: true,
           noUncheckedIndexedAccess: true,
+          allowArbitraryExtensions: true,
         },
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
@@ -354,7 +358,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
-  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout']
+  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr']
 
   addTemplate({
     filename: 'route-rules.mjs',
@@ -384,7 +388,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
                   value = normalizedRules
                 }
               }
-              if (name === 'cache' || name === 'isr') {
+              if (name === 'cache' || name === 'isr' || name === 'swr') {
                 name = 'payload'
                 value = Boolean(value)
               }
@@ -677,6 +681,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
   await nuxt.callHook('nitro:init', nitro)
+
+  nuxt['~runtimeDependencies'] ||= []
+  nuxt['~runtimeDependencies']!.push(
+    ...runtimeDependencies,
+    'unhead', '@unhead/vue', '@nuxt/devalue', 'unstorage',
+    // ensure we only have one version of vue if nitro is going to inline anyway
+    ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
+  )
 
   // Connect vfs storages
   const nitroVfs = nitro.vfs

@@ -1,7 +1,7 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative } from 'pathe'
-import { joinURL, withLeadingSlash } from 'ufo'
+import { encodePath, joinURL, withLeadingSlash } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -192,9 +192,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      const fileContent = route.file in vfs
-        ? vfs[route.file]!
-        : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
+      const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
@@ -374,7 +372,7 @@ function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): st
         return path
       case SegmentTokenType.static:
       default:
-        return path + token.value.replace(ESCAPE_CHARS_RE, '\\$&')
+        return path + encodePath(token.value).replace(ESCAPE_CHARS_RE, '\\$&')
     }
   }, '/')
 }

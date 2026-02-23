@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as context from './context.ts'
 import { useRuntimeConfig } from './runtime-config.ts'
 
-const mockKlona = vi.fn()
+const { mockKlona } = vi.hoisted(() => ({
+  mockKlona: vi.fn(),
+}))
 vi.mock('klona', () => ({
   klona: mockKlona,
 }))

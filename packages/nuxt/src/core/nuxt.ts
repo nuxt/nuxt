@@ -33,7 +33,9 @@ import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 
+import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
+import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
@@ -240,6 +242,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
+  nuxt['~runtimeDependencies'] = [...runtimeDependencies]
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
@@ -250,10 +253,10 @@ async function initNuxt (nuxt: Nuxt) {
     })
   })
 
-  const serverBuilderTypePath = typeof nuxt.options.server.builder === 'string'
+  const serverBuilderReference = typeof nuxt.options.server.builder === 'string'
     ? nuxt.options.server.builder === '@nuxt/nitro-server'
-      ? resolveModulePath(nuxt.options.server.builder, { from: import.meta.url })
-      : nuxt.options.server.builder
+      ? { path: resolveModulePath(nuxt.options.server.builder, { from: import.meta.url }).replace('.mjs', '.d.mts') }
+      : { types: nuxt.options.server.builder }
     : undefined
 
   // Add nuxt types
@@ -275,14 +278,14 @@ async function initNuxt (nuxt: Nuxt) {
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
     opts.nodeReferences.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.nodeReferences.push({ types: 'nuxt' })
-    opts.nodeReferences.push({ types: relative(nuxt.options.buildDir, resolveModulePath('@nuxt/vite-builder', { from: import.meta.url })) })
+    opts.nodeReferences.push({ path: resolveModulePath('@nuxt/vite-builder', { from: import.meta.url }).replace('.mjs', '.d.mts') })
     if (typeof nuxt.options.builder === 'string' && nuxt.options.builder !== '@nuxt/vite-builder') {
       opts.nodeReferences.push({ types: nuxt.options.builder })
     }
 
-    if (serverBuilderTypePath) {
-      opts.references.push({ types: serverBuilderTypePath })
-      opts.nodeReferences.push({ types: serverBuilderTypePath })
+    if (serverBuilderReference) {
+      opts.references.push(serverBuilderReference)
+      opts.nodeReferences.push(serverBuilderReference)
     }
 
     opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
@@ -310,8 +313,8 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/runtime-config.d.ts') })
 
-    if (serverBuilderTypePath) {
-      opts.references.push({ types: serverBuilderTypePath })
+    if (serverBuilderReference) {
+      opts.references.push(serverBuilderReference)
     }
   })
 
@@ -627,6 +630,7 @@ async function initNuxt (nuxt: Nuxt) {
     keyedFunctions: normalizedKeyedFunctions,
     alias: nuxt.options.alias,
     getAutoImports: unimport!.getImports,
+    appDir: nuxt.options.appDir,
   }))
 
   // remove duplicate css after modules are done
@@ -881,6 +885,12 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       createDebugger(nuxt.hooks, { tag: 'nuxt' })
     }
   })
+
+  // Restore cached buildId before modules are initialised so that the nitro
+  // module (which captures buildId at init time) uses the correct value.
+  if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
+    nuxt.hooks.hookOnce('modules:before', () => restoreCachedBuildId(nuxt))
+  }
 
   if (opts.ready !== false) {
     await nuxt.ready()

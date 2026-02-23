@@ -15,7 +15,7 @@ import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkPro
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
+import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
@@ -379,7 +379,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath).catch(() => {}),
-          !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+          !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
         ])
       }
 
@@ -511,16 +511,31 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
           rel,
           target,
-          onClick: (event) => {
+          onClick: async (event) => {
             if (isExternal.value || hasTarget.value) {
               return
             }
 
             event.preventDefault()
 
-            return props.replace
-              ? router.replace(href.value)
-              : router.push(href.value)
+            try {
+              const encodedHref = encodeRoutePath(href.value)
+              return await (props.replace ? router.replace(encodedHref) : router.push(encodedHref))
+            } finally {
+              // Focus the target element for hash links to restore accessibility behavior
+              // that was prevented by event.preventDefault()
+              if (import.meta.client && isHashLinkWithoutHashMode(to.value)) {
+                const rawHash = (to.value as string).slice(1)
+                let hash = rawHash
+                try {
+                  hash = decodeURIComponent(rawHash)
+                } catch {
+                  // ignore errors
+                }
+                const el = document.getElementById(hash)
+                el?.focus()
+              }
+            }
           },
         }, slots.default?.())
       }

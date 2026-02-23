@@ -260,7 +260,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     router.afterEach((to) => {
-      if (to.matched.length === 0) {
+      if (to.matched.length === 0 && !error.value) {
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,
