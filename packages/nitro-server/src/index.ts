@@ -136,6 +136,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     serverDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
+    exportConditions: ['import', 'module'],
     experimental: {
       tsconfigPaths: false,
       asyncContext: nuxt.options.experimental.asyncContext,
