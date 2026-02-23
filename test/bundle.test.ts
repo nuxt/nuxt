@@ -68,17 +68,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@babel/parser",
-        "@nuxt/devalue",
-        "@unhead/vue",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
         "croner",
         "crossws",
         "defu",
@@ -88,7 +77,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "estree-walker",
         "h3",
         "hookable",
-        "nitro",
         "ofetch",
         "ohash",
         "pathe",
@@ -120,13 +108,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@nuxt/devalue",
-        "@unhead/vue",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
         "croner",
         "crossws",
         "defu",
@@ -135,7 +116,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "h3",
         "hookable",
         "mocked-exports",
-        "nitro",
         "ofetch",
         "ohash",
         "pathe",
@@ -166,17 +146,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@babel/parser",
-        "@nuxt/devalue",
-        "@unhead/vue",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
         "croner",
         "crossws",
         "defu",
@@ -186,7 +155,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "estree-walker",
         "h3",
         "hookable",
-        "nitro",
         "ofetch",
         "ohash",
         "pathe",
