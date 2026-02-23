@@ -1,7 +1,7 @@
 import type { RenderResponse } from 'nitropack/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
-import type { H3Event } from 'h3'
+import type { EventHandler, H3Event } from 'h3'
 import { defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
@@ -17,7 +17,7 @@ import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse 
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
-export default defineEventHandler(async (event) => {
+const handler: EventHandler = defineEventHandler(async (event) => {
   const nitroApp = useNitroApp()
 
   setResponseHeaders(event, {
@@ -112,6 +112,8 @@ export default defineEventHandler(async (event) => {
   }
   return islandResponse
 })
+
+export default handler
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
