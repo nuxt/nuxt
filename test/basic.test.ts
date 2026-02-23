@@ -1246,6 +1246,9 @@ describe('errors', () => {
     await page.route(/\.css/, route => route.abort('timedout')) // verify CSS link preload failure doesn't break the page
     await page.goto(url('/'))
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/' && !window.useNuxtApp?.().isHydrating)
+
+    const initialLogs = consoleLogs.map(c => c.text).join('')
+    expect(initialLogs).toContain('caught chunk load error')
     consoleLogs.length = 0
 
     await page.getByText('Increment state').click()
