@@ -31,10 +31,10 @@
     "h3": "1.15.5",
     "h3-next": "npm:h3@2.0.1-rc.14",
     "nitropack": "2.13.1",
-    "obuild": "0.4.27",
-    "rolldown": "1.0.0-rc.3",
-    "rollup": "4.57.1",
-    "vue": "3.5.27"
+    "obuild": "0.4.31",
+    "rolldown": "1.0.0-rc.5",
+    "rollup": "4.59.0",
+    "vue": "3.5.28"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
