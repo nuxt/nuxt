@@ -52,7 +52,7 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
 
 /**
  * Encode forward slashes as unicode escape sequences to prevent
- * Google Search Console from treating them as internal links.
+ * Google from treating them as internal links and trying to crawl them.
  * @see https://github.com/nuxt/nuxt/issues/24175
  */
 function encodeForwardSlashes (str: string): string {
