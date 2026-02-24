@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro-server",
-  "version": "3.21.1",
+  "version": "3.21.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
