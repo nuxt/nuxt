@@ -278,7 +278,7 @@ export default defineNuxtModule({
               route.addToMeta(page.meta)
             }
             if (page.alias) {
-              route.addAlias(page.alias)
+              route.addAlias(Array.isArray(page.alias) ? page.alias : [page.alias])
             }
             if (page.name) {
               route.name = page.name
