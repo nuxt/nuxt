@@ -19,7 +19,15 @@ export default defineComponent({
       politeness: props.politeness,
     })
 
-    const role = computed(() => politeness.value === 'assertive' ? 'alert' : 'status')
+    const role = computed(() => {
+      if (politeness.value === 'assertive') {
+        return 'alert'
+      }
+      if (politeness.value === 'off') {
+        return undefined
+      }
+      return 'status'
+    })
 
     expose({
       set,

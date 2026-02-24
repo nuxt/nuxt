@@ -956,7 +956,7 @@ describe('announcer', () => {
 
     // Clean up any pre-existing announcer state
     delete nuxtApp._announcer
-    delete (nuxtApp as any)._announcerDeps
+    delete nuxtApp._announcerDeps
 
     const scope1 = effectScope()
     let announcer: ReturnType<typeof useAnnouncer>
