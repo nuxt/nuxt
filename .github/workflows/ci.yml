@@ -133,7 +133,7 @@ jobs:
     needs:
       - build
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
         module: ["bundler", "node"]
@@ -285,7 +285,7 @@ jobs:
       - build
 
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
         env: ['dev', 'built']
