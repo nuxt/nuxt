@@ -8,7 +8,8 @@ import type {
   PropType,
   SlotsType,
   UnwrapRef,
-  VNode, VNodeProps,
+  VNode,
+  VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
@@ -208,7 +209,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return resolveTrailingSlashBehavior(path, router.resolve, unref(props.trailingSlash))
     })
 
-    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to })
+    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to, viewTransition: unref(props.viewTransition) })
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
