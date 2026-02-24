@@ -223,7 +223,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '/__nuxt_error': { cache: false },
     },
     typescript: {
-      strict: true,
       generateTsConfig: true,
       tsconfigPath: join(nuxt.options.buildDir, 'tsconfig.server.json'),
       generatedTypesDir: join(nuxt.options.buildDir, 'types/nitro'),
@@ -355,10 +354,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve user-provided paths
   nitroConfig.serverDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.serverDir as string)
   nitroConfig.ignore ||= []
-  nitroConfig.ignore.push(
-    ...resolveIgnorePatterns(nitroConfig.serverDir),
-    `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
-  )
+  nitroConfig.ignore.push(...resolveIgnorePatterns(nitroConfig.serverDir))
 
   const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr']
 
