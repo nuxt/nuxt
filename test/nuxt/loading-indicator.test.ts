@@ -9,15 +9,17 @@ import { flushPromises } from '@vue/test-utils'
 import { NuxtLoadingIndicator, NuxtPage } from '#components'
 
 describe('page loading indicator', () => {
-  const router = useRouter()
+  let router: ReturnType<typeof useRouter>
   let resolve: undefined | (() => void)
-  const nuxtApp = useNuxtApp()
-
-  const { isLoading } = useLoadingIndicator({ duration: 1, throttle: 0, resetDelay: 0, hideDelay: 0 }) as any
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let isLoading: { value: boolean }
 
   const customProp = ref(false)
 
   beforeEach(() => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+    isLoading = (useLoadingIndicator({ duration: 1, throttle: 0, resetDelay: 0, hideDelay: 0 }) as any).isLoading
     resolve = undefined
 
     router.addRoute({
