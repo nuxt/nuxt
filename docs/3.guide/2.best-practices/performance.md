@@ -142,9 +142,8 @@ Images in your website can usually be separated by importance; the ones that are
   <NuxtImg
     src="/hero-banner.jpg"
     format="webp"
-    preload
+    :preload="{ fetchPriority: 'high' }"
     loading="eager"
-    fetch-priority="high"
     width="200"
     height="100"
   />
@@ -154,7 +153,7 @@ Images in your website can usually be separated by importance; the ones that are
     src="/facebook-logo.jpg"
     format="webp"
     loading="lazy"
-    fetch-priority="low"
+    fetchpriority="low"
     width="200"
     height="100"
   />

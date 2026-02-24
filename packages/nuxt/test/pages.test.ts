@@ -1,10 +1,18 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey } from '../src/pages/runtime/utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
+import type { InputFile } from 'unrouting'
+
+export function generateRoutesFromFiles (files: InputFile[], options: PagesContextOptions = {}): NuxtPage[] {
+  if (!files.length) { return [] }
+  const ctx = createPagesContext(options)
+  ctx.rebuild(files)
+  return ctx.emit()
+}
 
 describe('pages:generateRoutesFromFiles', () => {
   vi.mock('knitwork', async (original) => {
@@ -60,13 +68,9 @@ describe('pages:generateRoutesFromFiles', () => {
         ) as Record<string, string>
 
         try {
-          const files = test.files.map(file => ({
-            shouldUseServerComponents: true,
-            absolutePath: file.path,
-            relativePath: file.path.replace(/^(?:pages|layer\/pages)\//, ''),
-          })).sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
+          const files = test.files.map(file => ({ path: file.path }))
 
-          result = generateRoutesFromFiles(files).map((route, index) => {
+          result = generateRoutesFromFiles(files, { roots: ['pages/', 'layer/pages/'] }).map((route, index) => {
             return {
               ...route,
               meta: test.files![index]!.meta ?? route.meta,
