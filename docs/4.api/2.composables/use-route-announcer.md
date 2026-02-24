@@ -58,5 +58,5 @@ const { message, politeness, set, polite, assertive } = useRouteAnnouncer({
 ```
 
 ::callout
-For announcing dynamic in-page content changes (form validation, toasts, loading states), use [`useAnnouncer`](/docs/4.x/api/composables/use-announcer) instead.
+For announcing dynamic in-page content changes (form validation, toasts, loading states), use [`useAnnouncer`](/docs/api/composables/use-announcer) instead.
 ::
