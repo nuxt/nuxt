@@ -26,7 +26,7 @@ describe('components:loader', () => {
       "import __nuxt_component_0 from "/components/MyComponent.vue";
       import { Fragment, createElementBlock, createVNode, defineAsyncComponent, openBlock, resolveComponent, unref } from "vue";
 
-      //#region ../../../../../../pages/index.vue
+      //#region ../../../../../pages/index.vue
       const __nuxt_component_0_lazy = defineAsyncComponent(() => import("/components/MyComponent.vue").then((c) => c.default || c));
       const _sfc_main = {
         __name: "index",
@@ -96,7 +96,7 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
       "import __nuxt_component_0 from "/components/MyComponent.vue";
       import { createVNode, defineAsyncComponent, defineComponent, resolveComponent } from "vue";
 
-      //#region ../../../../../../pages/about.tsx
+      //#region ../../../../../pages/about.tsx
       const __nuxt_component_0_lazy = defineAsyncComponent(() => import("/components/MyComponent.vue").then((c) => c.default || c));
       var about_default = /* @__PURE__ */ defineComponent({ setup() {
         const NamedComponent = __nuxt_component_0;
