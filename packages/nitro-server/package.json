@@ -11,6 +11,13 @@
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.mts",
+  "typesVersions": {
+    "*": {
+      "h3": [
+        "./dist/runtime/h3-compat.d.mts"
+      ]
+    }
+  },
   "exports": {
     ".": "./dist/index.mjs",
     "./h3": "./dist/runtime/h3-compat.mjs"
