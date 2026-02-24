@@ -585,6 +585,9 @@ importers:
       perfect-debounce:
         specifier: ^2.1.0
         version: 2.1.0
+      picomatch:
+        specifier: ^4.0.3
+        version: 4.0.3
       pkg-types:
         specifier: ^2.3.0
         version: 2.3.0
@@ -624,6 +627,9 @@ importers:
       unplugin-vue-router:
         specifier: ^0.19.2
         version: 0.19.2(@vue/compiler-sfc@3.5.28)(vue-router@4.6.4(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
+      unrouting:
+        specifier: ^0.1.5
+        version: 0.1.5
       untyped:
         specifier: ^2.0.0
         version: 2.0.0
@@ -643,6 +649,9 @@ importers:
       '@types/estree':
         specifier: 1.0.8
         version: 1.0.8
+      '@types/picomatch':
+        specifier: ^4.0.2
+        version: 4.0.2
       '@vitejs/plugin-vue':
         specifier: 6.0.4
         version: 6.0.4(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
@@ -3920,6 +3929,9 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
+
+  '@types/picomatch@4.0.2':
+    resolution: {integrity: sha512-qHHxQ+P9PysNEGbALT8f8YOSHW0KJu6l2xU8DYY0fu/EmGxXdVnuTLvFUvBgPJMSqXq29SYHveejeAha+4AYgA==}
 
   '@types/pug@2.0.10':
     resolution: {integrity: sha512-Sk/uYFOBAB7mb74XcpizmH0KOR2Pv3D2Hmrh1Dmy5BmK3MpdSa5kqZcg6EKBdklU0bFXX9gCfzvpnyUehrPIuA==}
@@ -8821,6 +8833,9 @@ packages:
     resolution: {integrity: sha512-0Mqk3AT2TZCXWKdcoaufeXNukv2mTrEZExeXlHIOZXdqYoHHr4n51pymnwV8x2BOVxwXbK2HLlI7usrqMpycdg==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
+  unrouting@0.1.5:
+    resolution: {integrity: sha512-Z9QCdWmf2dqrlcJ5KMgSRm5sEhhhSS2D7iOh/t3k0bnAKp5K8+AMf6eqfGGZAQCPn3IcM7ABixxy+FBjOvATBQ==}
+
   unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}
 
@@ -11613,6 +11628,8 @@ snapshots:
       undici-types: 7.16.0
 
   '@types/normalize-package-data@2.4.4': {}
+
+  '@types/picomatch@4.0.2': {}
 
   '@types/pug@2.0.10': {}
 
@@ -17577,6 +17594,11 @@ snapshots:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.3
       webpack-virtual-modules: 0.6.2
+
+  unrouting@0.1.5:
+    dependencies:
+      escape-string-regexp: 5.0.0
+      ufo: 1.6.3
 
   unrs-resolver@1.11.1:
     dependencies:
