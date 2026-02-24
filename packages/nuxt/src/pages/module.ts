@@ -324,9 +324,24 @@ export default defineNuxtModule({
       })
     }
 
-    // Add $router types
-    nuxt.hook('prepare:types', ({ references }) => {
+    // Add $router types and vue-router volar plugins
+    nuxt.hook('prepare:types', ({ references, tsConfig }) => {
       references.push({ types: useExperimentalTypedPages ? 'vue-router/auto-routes' : 'vue-router' })
+
+      // Add vue-router volar plugins to tsconfig
+      tsConfig.vueCompilerOptions ||= {}
+      tsConfig.vueCompilerOptions.plugins ||= []
+
+      // Always add <route> block support
+      tsConfig.vueCompilerOptions.plugins.push('vue-router/volar/sfc-route-blocks')
+
+      // Add typed useRoute() when typedPages is enabled
+      if (useExperimentalTypedPages) {
+        tsConfig.vueCompilerOptions.plugins.push({
+          name: 'vue-router/volar/sfc-typed-router',
+          options: { rootDir: nuxt.options.rootDir },
+        })
+      }
     })
 
     // Add vue-router route guard imports
