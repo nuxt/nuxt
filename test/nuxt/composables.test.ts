@@ -950,4 +950,41 @@ describe('announcer', () => {
     expect(announcer.message.value).toBe('Test message assertive')
     expect(announcer.politeness.value).toBe('assertive')
   })
+
+  it('should cleanup announcer when last scope is disposed', () => {
+    const nuxtApp = useNuxtApp()
+
+    // Clean up any pre-existing announcer state
+    delete nuxtApp._announcer
+    delete (nuxtApp as any)._announcerDeps
+
+    const scope1 = effectScope()
+    let announcer: ReturnType<typeof useAnnouncer>
+
+    scope1.run(() => {
+      announcer = useAnnouncer()
+      announcer.set('Test message', 'assertive')
+    })
+
+    expect(nuxtApp._announcerDeps).toBe(1)
+    expect(nuxtApp._announcer).toBeDefined()
+
+    // Create a second consumer in a separate scope
+    const scope2 = effectScope()
+    scope2.run(() => {
+      useAnnouncer()
+    })
+
+    expect(nuxtApp._announcerDeps).toBe(2)
+
+    // Dispose first scope — announcer should still exist
+    scope1.stop()
+    expect(nuxtApp._announcerDeps).toBe(1)
+    expect(nuxtApp._announcer).toBeDefined()
+
+    // Dispose second scope — announcer should be cleaned up
+    scope2.stop()
+    expect(nuxtApp._announcerDeps).toBe(0)
+    expect(nuxtApp._announcer).toBeUndefined()
+  })
 })

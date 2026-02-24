@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 import type { AnnouncerPoliteness } from '../composables/announcer'
 import { useAnnouncer } from '../composables/announcer'
 
@@ -19,6 +19,8 @@ export default defineComponent({
       politeness: props.politeness,
     })
 
+    const role = computed(() => politeness.value === 'assertive' ? 'alert' : 'status')
+
     expose({
       set,
       polite,
@@ -33,7 +35,7 @@ export default defineComponent({
         position: 'absolute',
       },
     }, h('span', {
-      'role': 'alert',
+      'role': role.value,
       'aria-live': politeness.value,
       'aria-atomic': props.atomic,
       'style': {
