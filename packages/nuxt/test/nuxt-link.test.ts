@@ -25,11 +25,13 @@ vi.mock('vue', async () => {
   }
 })
 
-// Mocks Nuxt `useRouter()`
+// Mocks Nuxt `useRouter()` and `navigateTo()`
+const navigateToMock = vi.fn()
 vi.mock('../src/app/composables/router', () => ({
   resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
     return withQuery(to.path || '', to.query || {}) + (to.hash || '')
   },
+  navigateTo: (...args: unknown[]) => navigateToMock(...args),
   useRouter: () => ({
     resolve: (route: string | RouteLocation): Partial<RouteLocation> & { href: string } => {
       if (typeof route === 'string') {
@@ -42,6 +44,7 @@ vi.mock('../src/app/composables/router', () => ({
         href: route.path || `/${route.name?.toString()}`,
       }
     },
+    currentRoute: { value: { path: '/' } },
   }),
 }))
 
@@ -382,5 +385,95 @@ describe('nuxt-link:useLink', () => {
     const link = component.useLink({ to })
     expect(link.isExternal.value).toBe(true)
     expect(link.href.value).toBe('https://nuxtjs.org')
+  })
+
+  it('accepts a Ref for `href`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const href = ref('/about')
+    const link = component.useLink({ href })
+    expect(link.href.value).toBe('/about')
+    expect(link.isExternal.value).toBe(false)
+  })
+
+  it('reacts to changes in a Ref `href`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const href = ref('/about')
+    const link = component.useLink({ href })
+    expect(link.href.value).toBe('/about')
+    href.value = '/contact'
+    expect(link.href.value).toBe('/contact')
+  })
+
+  it('accepts a Ref for `external`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const external = ref(true)
+    const link = component.useLink({ to: '/about', external })
+    expect(link.isExternal.value).toBe(true)
+  })
+
+  it('reacts to changes in a Ref `external`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const external = ref(false)
+    const link = component.useLink({ to: '/about', external })
+    expect(link.isExternal.value).toBe(false)
+    external.value = true
+    expect(link.isExternal.value).toBe(true)
+  })
+
+  it('accepts a Ref for `target`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const target = ref<string | null>('_blank')
+    const link = component.useLink({ to: '/about', target })
+    expect(link.hasTarget.value).toBe(true)
+  })
+
+  it('reacts to changes in a Ref `target`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const target = ref<string | null>(null)
+    const link = component.useLink({ to: '/about', target })
+    expect(link.hasTarget.value).toBe(false)
+    target.value = '_blank'
+    expect(link.hasTarget.value).toBe(true)
+  })
+
+  it('navigate() calls navigateTo with correct href', async () => {
+    navigateToMock.mockClear()
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const link = component.useLink({ to: '/about' })
+    await link.navigate()
+    expect(navigateToMock).toHaveBeenCalledWith('/about', { replace: undefined, external: false })
+  })
+
+  it('navigate() uses current Ref value for href', async () => {
+    navigateToMock.mockClear()
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const to = ref('/about')
+    const link = component.useLink({ to })
+    to.value = '/contact'
+    await link.navigate()
+    expect(navigateToMock).toHaveBeenCalledWith('/contact', { replace: undefined, external: false })
+  })
+
+  it('navigate() respects Ref `replace` prop', async () => {
+    navigateToMock.mockClear()
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const replace = ref(true)
+    const link = component.useLink({ to: '/about', replace })
+    await link.navigate()
+    expect(navigateToMock).toHaveBeenCalledWith('/about', { replace: true, external: false })
+  })
+
+  it('applies trailingSlash with Ref `to`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink', trailingSlash: 'append' })
+    const to = ref('/about')
+    const link = component.useLink({ to })
+    expect(link.href.value).toBe('/about/')
+  })
+
+  it('applies Ref `trailingSlash` prop', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const trailingSlash = ref<'append' | 'remove'>('append')
+    const link = component.useLink({ to: '/about', trailingSlash })
+    expect(link.to.value).toBe('/about/')
   })
 })
