@@ -1,5 +1,5 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
-import type { NitroRouteRules } from 'nitropack/types'
+import type { NitroRouteRules } from 'nitro/types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -56,7 +56,7 @@ export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
 export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
-  const path = typeof arg === 'string' ? arg : arg.path
+  const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
     return routeRulesMatcher(path)
   } catch (e) {
