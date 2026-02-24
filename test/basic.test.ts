@@ -1926,7 +1926,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
       if (style === '{--plugin:"plugin"}') {
-        expect.soft(css).toContain(style)
+        // Vite 8 may merge multiple :root blocks, so check without the `{` prefix
+        expect.soft(css).toContain('--plugin:"plugin"')
         continue
       }
       // webpack can hoist component level css up to a shared css file

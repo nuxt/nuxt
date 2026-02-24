@@ -26,6 +26,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
+
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
       if (!chunk) {
@@ -35,6 +36,23 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         entryIds.add(chunk.src)
       } else {
         chunk.css &&= []
+      }
+      // Rolldown may split a component into a facade chunk (with no CSS) and
+      // a shared code chunk (with CSS). Also clear CSS from directly imported
+      // chunks when they are rolldown-generated internal chunks whose CSS belongs
+      // to the same component (matched by filename prefix).
+      if (chunk.imports && chunk.src) {
+        const componentBaseName = _filename(chunk.src)
+        for (const imp of chunk.imports) {
+          const imported = manifest[imp]
+          if (imported?.css?.length && !imported.isEntry && !imported.src) {
+            // Only clear if ALL CSS files in the chunk match this component
+            const allMatch = imported.css.every((css: string) => css.startsWith(componentBaseName + '.'))
+            if (allMatch) {
+              imported.css = []
+            }
+          }
+        }
       }
     }
 
