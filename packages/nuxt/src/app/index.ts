@@ -11,7 +11,7 @@ export { defineNuxtLink } from './components/index'
 export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
-export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext, PageMeta, NuxtPageProps } from './types'
+export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext, PageMeta, NuxtPageProps, NuxtLayouts } from './types'
 
 export const isVue2 = false
 export const isVue3 = true

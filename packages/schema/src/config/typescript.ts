@@ -19,17 +19,6 @@ export default defineResolvers({
     hoist: {
       $resolve: (val) => {
         const defaults = [
-          // Nitro auto-imported/augmented dependencies
-          'nitro/types',
-          'nitro/runtime',
-          // TODO: remove in v5
-          'nitropack/types',
-          'nitropack/runtime',
-          'nitropack',
-          'defu',
-          'h3',
-          'consola',
-          'ofetch',
           // Key nuxt dependencies
           '@unhead/vue',
           '@nuxt/devtools',
@@ -38,7 +27,6 @@ export default defineResolvers({
           '@vue/compiler-sfc',
           'vue-router',
           'vue-router/auto-routes',
-          'unplugin-vue-router/client',
           '@nuxt/schema',
           'nuxt',
         ]

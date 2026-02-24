@@ -24,7 +24,7 @@ describe('components:loader', () => {
     const code = await transform(sfc, '/pages/index.vue')
     expect(code).toMatchInlineSnapshot(`
       "import __nuxt_component_0 from '../components/MyComponent.vue';
-      import { defineAsyncComponent, resolveComponent, createElementBlock, openBlock, Fragment, createVNode, unref } from 'vue';
+      import { defineAsyncComponent, resolveComponent, openBlock, createElementBlock, Fragment, createVNode, unref } from 'vue';
 
       const __nuxt_component_0_lazy = defineAsyncComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
 
@@ -228,7 +228,7 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     const imports = lines.filter(l => l.startsWith('import'))
     expect(imports.join('\n')).toMatchInlineSnapshot(`
       "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyInteractionComponent, createLazyMediaQueryComponent, createLazyTimeComponent, createLazyIfComponent, createLazyNeverComponent } from '../client-runtime.mjs';
-      import { createElementBlock, openBlock, Fragment, createVNode, withCtx } from 'vue';"
+      import { openBlock, createElementBlock, Fragment, createVNode, withCtx } from 'vue';"
     `)
     const components = lines.filter(l => l.startsWith('const __nuxt_component'))
     expect(components.join('\n')).toMatchInlineSnapshot(`

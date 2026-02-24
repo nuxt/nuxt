@@ -2,8 +2,8 @@ import type { Ref } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
-import type { H3Event } from 'h3'
+import { deleteCookie, getCookie, getRequestHeader, setCookie } from '@nuxt/nitro-server/h3'
+import type { H3Event } from '@nuxt/nitro-server/h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
@@ -29,7 +29,15 @@ export interface CookieRef<T> extends Ref<T> {}
 const CookieDefaults = {
   path: '/',
   watch: true,
-  decode: val => destr(decodeURIComponent(val)),
+  decode: (val) => {
+    const decoded = decodeURIComponent(val)
+    const parsed = destr(decoded)
+    // destr can return Infinity or precision-loss numbers - keep original string
+    if (typeof parsed === 'number' && (!Number.isFinite(parsed) || String(parsed) !== decoded)) {
+      return decoded
+    }
+    return parsed
+  },
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
 } satisfies CookieOptions<any>
 

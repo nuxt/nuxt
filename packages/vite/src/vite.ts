@@ -25,7 +25,6 @@ import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize.ts'
 import { distDir } from './dirs.ts'
-import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
 import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
@@ -38,6 +37,8 @@ import { DevServerPlugin } from './plugins/dev-server.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
 import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
+import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
+import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -188,6 +189,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ),
       },
       plugins: [
+        // add resolver for modules used in virtual files
+        ResolveDeepImportsPlugin(nuxt),
+        ResolveExternalsPlugin(nuxt),
         ...nuxt.options.experimental.viteEnvironmentApi
           ? [
               vuePlugin(viteConfig.vue),
@@ -211,8 +215,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // Add type-checking
               VitePluginCheckerPlugin(nuxt),
 
-              // server-only plugins
-              VueFeatureFlagsPlugin(nuxt),
               // tell rollup's nitro build about the original sources of the generated vite server build
               SourcemapPreserverPlugin(nuxt),
 

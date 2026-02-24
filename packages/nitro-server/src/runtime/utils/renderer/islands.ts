@@ -44,7 +44,7 @@ export function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIsland
   return response
 }
 
-export function getComponentSlotTeleport (clientUid: string, teleports: Record<string, string>) {
+export function getComponentSlotTeleport (clientUid: string, teleports: Record<string, string>): Record<string, string> {
   const entries = Object.entries(teleports)
   const slots: Record<string, string> = {}
 
@@ -59,7 +59,7 @@ export function getComponentSlotTeleport (clientUid: string, teleports: Record<s
   return slots
 }
 
-export function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
+export function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string): string {
   const { teleports, islandContext } = ssrContext
 
   if (islandContext || !teleports) { return html }

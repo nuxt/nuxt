@@ -14,6 +14,7 @@ import router from './router.ts'
 import typescript from './typescript.ts'
 import vite from './vite.ts'
 import webpack from './webpack.ts'
+import type { InputObject } from 'untyped'
 
 export default {
   ...adhoc,
@@ -32,4 +33,4 @@ export default {
   ...oxc,
   ...vite,
   ...webpack,
-}
+} as InputObject
