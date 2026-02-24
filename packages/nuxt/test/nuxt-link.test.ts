@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import { ref } from 'vue'
 import { withQuery } from 'ufo'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link.ts'
 import { defineNuxtLink } from '../src/app/components/nuxt-link.ts'
@@ -347,5 +348,39 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: '/to/', external: true }, removeSlashOptions).props.href).toBe('/to')
       })
     })
+  })
+})
+
+describe('nuxt-link:useLink', () => {
+  it('accepts plain values for `to`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const link = component.useLink({ to: '/about' })
+    expect(link.href.value).toBe('/about')
+    expect(link.isExternal.value).toBe(false)
+  })
+
+  it('accepts a Ref for `to`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const to = ref('/about')
+    const link = component.useLink({ to })
+    expect(link.href.value).toBe('/about')
+    expect(link.isExternal.value).toBe(false)
+  })
+
+  it('reacts to changes in a Ref `to`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const to = ref('/about')
+    const link = component.useLink({ to })
+    expect(link.href.value).toBe('/about')
+    to.value = '/contact'
+    expect(link.href.value).toBe('/contact')
+  })
+
+  it('correctly identifies external links via Ref `to`', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const to = ref('https://nuxtjs.org')
+    const link = component.useLink({ to })
+    expect(link.isExternal.value).toBe(true)
+    expect(link.href.value).toBe('https://nuxtjs.org')
   })
 })
