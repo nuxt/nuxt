@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack/types'
+import type { EventHandler } from 'h3'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
@@ -49,7 +50,7 @@ const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
 let entryPath: string
 
-export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
+const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
@@ -326,6 +327,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     },
   } satisfies RenderResponse
 })
+
+export default handler
 
 function normalizeChunks (chunks: (string | undefined)[]) {
   const result: string[] = []

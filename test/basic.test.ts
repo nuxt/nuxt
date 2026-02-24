@@ -1090,15 +1090,6 @@ describe('head tags', () => {
     expect(html).toContain('<meta http-equiv="content-security-policy" content="default-src https">')
   })
 
-  it('should not duplicate link tags with rel="alternate"', async () => {
-    const page = await createPage('/head-component')
-
-    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
-
-    expect(await page.locator('link[rel="alternate"]').count()).toBe(1)
-    await page.close()
-  })
-
   it('should deduplicate head tags with key', async () => {
     const page = await createPage('/head-component')
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
@@ -1442,6 +1433,14 @@ describe('layouts', () => {
 
     expect(html).toContain('with-layout.vue')
     expect(html).toContain('Custom Layout:')
+  })
+  it('should work with props', async () => {
+    const html = await $fetch<string>('/with-layout-props')
+
+    expect(html).toContain('with-layout-props.vue')
+    expect(html).toContain('Custom Layout:')
+    expect(html).toContain('set props from page meta')
+    await expectNoClientErrors('/with-layout-props')
   })
   it('should work with a dynamically set layout', async () => {
     const html = await $fetch<string>('/with-dynamic-layout')

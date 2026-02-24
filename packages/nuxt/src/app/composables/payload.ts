@@ -70,7 +70,7 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const config = useRuntimeConfig()
-  const hash = opts.hash || (opts.fresh ? Date.now() : config.app.buildId)
+  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   return joinURL(baseOrCdnURL, u.pathname, filename + (hash ? `?${hash}` : ''))
@@ -79,7 +79,7 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 async function _importPayload (payloadURL: string) {
   if (import.meta.server || !payloadExtraction) { return null }
   const payloadPromise = renderJsonPayloads
-    ? fetch(payloadURL, { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
+    ? fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
     : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
 
   try {
