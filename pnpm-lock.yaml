@@ -525,9 +525,6 @@ importers:
       exsolve:
         specifier: ^1.0.8
         version: 1.0.8
-      h3:
-        specifier: 1.15.5
-        version: 1.15.5
       hookable:
         specifier: ^5.5.3
         version: 5.5.3

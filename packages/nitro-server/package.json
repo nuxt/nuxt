@@ -12,7 +12,8 @@
   "type": "module",
   "types": "./dist/index.d.mts",
   "exports": {
-    ".": "./dist/index.mjs"
+    ".": "./dist/index.mjs",
+    "./h3": "./dist/runtime/h3-compat.mjs"
   },
   "files": [
     "dist"
