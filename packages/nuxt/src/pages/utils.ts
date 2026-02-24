@@ -390,6 +390,24 @@ function getRouteFromNuxtPage (page: NuxtPage, metaImports: Set<string>, options
   return route
 }
 
+function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined): string {
+  if (page.mode === 'server') {
+    return `() => createIslandPage(${routeName})`
+  }
+  if (page.mode === 'client') {
+    return `() => createClientPage(${pageImport})`
+  }
+  return pageImport
+}
+
+function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string): string {
+  if (isSyncImport) {
+    return `Object.assign(${pageImportName}, { __name: ${metaRouteName} })`
+  }
+  const base = normalizeComponent(page, pageImport, routeName)
+  return `${base}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
+}
+
 function getMetaRouteFromNuxtPage (page: RequirePicked<NuxtPage, 'file'>, metaImports: Set<string>, options: NormalizeRoutesOptions, nuxt: ReturnType<typeof useNuxt>): NormalizedRoute {
   const route = getRouteFromNuxtPage(page, metaImports, options)
   const file = normalize(page.file!)
@@ -441,19 +459,10 @@ function getMetaRouteFromNuxtPage (page: RequirePicked<NuxtPage, 'file'>, metaIm
     }
   }
 
-  let component = page.mode === 'server'
-    ? `() => createIslandPage(${route.name})`
-    : page.mode === 'client'
-      ? `() => createClientPage(${pageImport})`
-      : pageImport
-
-  if (nuxt.options.experimental.normalizePageNames) {
-    if (isSyncImport) {
-      component = `Object.assign(${pageImportName}, { __name: ${metaRouteName} })`
-    } else {
-      component = `${component}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
-    }
-  }
+  const normalizeNames = nuxt.options.experimental.normalizePageNames
+  const component = normalizeNames
+    ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName)
+    : normalizeComponent(page, pageImport, route.name)
 
   const metaRoute: NormalizedRoute = {
     name: metaRouteName,
