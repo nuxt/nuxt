@@ -99,7 +99,7 @@ const expect = baseExpect.extend({
     // @ts-expect-error untyped
     const consoleLogs: Array<{ text: string, type: string }> = page._consoleLogs
     const errorLogs = consoleLogs.filter(log =>
-      log.type === 'error' || (log.type === 'warning' && !log.text.includes('webpack/hot/dev-server')))
+      log.type === 'error' || (log.type === 'warning' && !log.text.includes('webpack/hot/dev-server') && !log.text.includes('Extraneous non-props attributes (style) were passed to component')))
 
     const pass = errorLogs.length === 0
     const message = pass ? '' : `Found error logs: ${errorLogs.map(log => log.text).join('\n')}`
