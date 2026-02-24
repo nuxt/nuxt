@@ -137,7 +137,7 @@ declare module '@nuxt/schema' {
      * @example
      * ```js
      * serverHandlers: [
-     *   { route: '/path/foo/**:name', handler: '~/server/foohandler.ts' }
+     *   { route: '/path/foo/**:name', handler: '#server/foohandler.ts' }
      * ]
      * ```
      */

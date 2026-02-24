@@ -7,7 +7,10 @@ export default defineBuildConfig({
       input: ['src/index', 'src/vite-node', 'src/vite-node-entry'],
       dts: { oxc: true },
       rolldown: {
-        external: ['#vite-node'],
+        external: [
+          '@nuxt/schema',
+          '#vite-node',
+        ],
       },
     },
   ],

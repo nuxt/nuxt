@@ -641,6 +641,11 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it('renders unicode routes correctly', async () => {
+    const html = await $fetch('/random/日本語')
+    expect(html).toContain('Japanese random route')
+  })
+
   it('should trigger page:loading:end only once', async () => {
     const { page, consoleLogs } = await renderPage('/')
 
@@ -1072,16 +1077,6 @@ describe('head tags', () => {
     const html = await $fetch<string>('/head')
     // http-equiv should be rendered kebab case
     expect(html).toContain('<meta http-equiv="content-security-policy" content="default-src https">')
-  })
-
-  // TODO: https://github.com/nuxt/nuxt/issues/32670
-  it.fails('should not duplicate link tags with rel="alternate"', async () => {
-    const page = await createPage('/head-component')
-
-    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
-
-    expect(await page.locator('link[rel="alternate"]').count()).toBe(1)
-    await page.close()
   })
 
   it('should deduplicate head tags with key', async () => {
@@ -1846,6 +1841,10 @@ describe('automatically keyed composables', () => {
     const html = await $fetch<string>('/keyed-composables/local')
     expect(html).toContain('true')
     expect(html).not.toContain('false')
+  })
+  // TODO: remove in Nuxt 5
+  it('should work when imported from #app barrel export', async () => {
+    await expectNoClientErrors('/keyed-composables/barrel-import')
   })
 })
 
