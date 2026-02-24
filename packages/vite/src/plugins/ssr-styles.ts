@@ -44,7 +44,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   })
 
   const cssMap: Record<string, { files: string[], inBundle?: boolean }> = {}
-  const idRefMap: Record<string, string> = {}
+  // Track emitted CSS chunk refs globally to avoid duplicate emissions across transform calls.
+  const emittedFileRefs: Record<string, string> = {}
 
   const options = {
     shouldInline: nuxt.options.features.inlineStyles,
@@ -281,13 +282,20 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                 continue
               }
               emittedIds.add(file)
-              const ref = this.emitFile({
-                type: 'chunk',
-                name: `${idFilename}-styles-${++styleCtr}.mjs`,
-                id: fileInline,
-              })
 
-              idRefMap[relativeToSrcDir(file)] = ref
+              // Reuse ref from a previous emission of the same file to avoid rolldown
+              // returning incorrect refs when the same chunk ID is emitted multiple times
+              const resolvedInlineId = res.id
+              let ref = emittedFileRefs[resolvedInlineId]
+              if (!ref) {
+                ref = this.emitFile({
+                  type: 'chunk',
+                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  id: fileInline,
+                })
+                emittedFileRefs[resolvedInlineId] = ref
+              }
+
               idMap.files.push(ref)
             }
 
@@ -299,7 +307,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               const resolved = await this.resolve(i.specifier, id)
               if (!resolved) { continue }
               const resolvedIdInline = resolved.id + '?inline&used'
-              if (!(await this.resolve(resolvedIdInline))) {
+              const res = await this.resolve(resolvedIdInline)
+              if (!res) {
                 if (!warnCache.has(resolved.id)) {
                   warnCache.add(resolved.id)
                   this.warn(`[nuxt] Cannot extract styles for \`${i.specifier}\`. Its styles will not be inlined when server-rendering.`)
@@ -308,13 +317,19 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               }
 
               if (emittedIds.has(resolved.id)) { continue }
-              const ref = this.emitFile({
-                type: 'chunk',
-                name: `${idFilename}-styles-${++styleCtr}.mjs`,
-                id: resolvedIdInline,
-              })
 
-              idRefMap[relativeToSrcDir(resolved.id)] = ref
+              // Reuse ref from a previous emission of the same file
+              const resolvedInlineId = res.id
+              let ref = emittedFileRefs[resolvedInlineId]
+              if (!ref) {
+                ref = this.emitFile({
+                  type: 'chunk',
+                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  id: resolvedIdInline,
+                })
+                emittedFileRefs[resolvedInlineId] = ref
+              }
+
               idMap.files.push(ref)
             }
           },
