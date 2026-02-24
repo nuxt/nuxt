@@ -179,6 +179,63 @@ describe('pages:generateRoutesFromFiles', () => {
       expect(r0.component).toContain('.then((m) => Object.assign(m.default')
       expect(r0.component).toContain('__name')
     })
+
+    it('should use createIslandPage without __name for server mode pages', () => {
+      vi.mocked(useNuxt).mockReturnValueOnce({
+        options: {
+          // @ts-expect-error partial
+          experimental: { normalizePageNames: true },
+        },
+      })
+
+      const pages: NuxtPage[] = [
+        {
+          file: '/pages/server.vue',
+          name: 'server-page',
+          path: '/server',
+          mode: 'server',
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toContain('createIslandPage(')
+      expect(r0.component).not.toContain('__name')
+      expect(r0.component).not.toContain('.then')
+    })
+
+    it('should assign __name to the resolved component for client mode pages', () => {
+      vi.mocked(useNuxt).mockReturnValueOnce({
+        options: {
+          // @ts-expect-error partial
+          experimental: { normalizePageNames: true },
+        },
+      })
+
+      const pages: NuxtPage[] = [
+        {
+          file: '/pages/client.vue',
+          name: 'client-page',
+          path: '/client',
+          mode: 'client',
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toContain('createClientPage(')
+      expect(r0.component).toContain('.then((c) => Object.assign(c,')
+      expect(r0.component).toContain('__name')
+      expect(r0.component).not.toContain('m.default')
+    })
   })
 
   it('should consistently normalize routes when overriding meta', async () => {

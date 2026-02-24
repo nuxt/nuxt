@@ -404,8 +404,13 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
   if (isSyncImport) {
     return `Object.assign(${pageImportName}, { __name: ${metaRouteName} })`
   }
-  const base = normalizeComponent(page, pageImport, routeName)
-  return `${base}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
+  if (page.mode === 'server') {
+    return `() => createIslandPage(${routeName})`
+  }
+  if (page.mode === 'client') {
+    return `() => createClientPage(${pageImport}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
+  }
+  return `${pageImport}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
 }
 
 function getMetaRouteFromNuxtPage (page: RequirePicked<NuxtPage, 'file'>, metaImports: Set<string>, options: NormalizeRoutesOptions, nuxt: ReturnType<typeof useNuxt>): NormalizedRoute {
