@@ -1,5 +1,5 @@
-import type { H3Error } from 'h3'
-import { createError as createH3Error } from 'h3'
+import type { H3Error } from '@nuxt/nitro-server/h3'
+import { createError as createH3Error } from '@nuxt/nitro-server/h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'

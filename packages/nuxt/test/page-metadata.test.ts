@@ -798,6 +798,32 @@ const hoisted = ref('hoisted')
     `)
   })
 
+  it('should transform layout written in object syntax', () => {
+    const sfc = `
+<script setup lang="ts">
+definePageMeta({
+  layout: {
+    name: 'foo',
+    props: {
+      bar: 'bar',
+    },
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        layout: 'foo',
+      layoutProps: {
+            bar: 'bar',
+          },
+
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
   describe('strip extracted metadata', () => {
     it.each([
       {
