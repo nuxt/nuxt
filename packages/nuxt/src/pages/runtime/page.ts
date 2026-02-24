@@ -1,15 +1,14 @@
 import { Fragment, Suspense, defineComponent, h, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
-import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
 
-import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
+import { generateRouteKey, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _wrapInTransition } from '#app/components/utils'
+import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
@@ -167,7 +166,9 @@ export default defineComponent({
                 defaultPageTransition,
                 {
                   onAfterLeave () {
-                    delete nuxtApp._runningTransition
+                    nuxtApp['~transitionFinish']?.()
+                    delete nuxtApp['~transitionFinish']
+                    delete nuxtApp['~transitionPromise']
                     nuxtApp.callHook('page:transition:finish', routeProps.Component)
                   },
                 },
@@ -180,7 +181,11 @@ export default defineComponent({
                   suspensible: true,
                   onPending: () => {
                     isSuspensePending = true
-                    if (hasTransition) { nuxtApp._runningTransition = true }
+                    if (hasTransition && !nuxtApp['~transitionPromise']) {
+                      nuxtApp['~transitionPromise'] = new Promise((resolve) => {
+                        nuxtApp['~transitionFinish'] = resolve
+                      })
+                    }
                     nuxtApp.callHook('page:start', routeProps.Component)
                   },
                   onResolve: async () => {
@@ -189,7 +194,6 @@ export default defineComponent({
                       await nextTick()
                       nuxtApp._route.sync?.()
                       await nuxtApp.callHook('page:finish', routeProps.Component)
-                      delete nuxtApp._runningTransition
                       if (!pageLoadingEndHookAlreadyCalled && !willRenderAnotherChild) {
                         pageLoadingEndHookAlreadyCalled = true
                         await nuxtApp.callHook('page:loading:end')
@@ -249,18 +253,6 @@ export default defineComponent({
      */
     pageRef: Element | ComponentPublicInstance | null
   }
-}
-
-function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = []
-  for (const prop of routeProps) {
-    if (!prop) { continue }
-    _props.push({
-      ...prop,
-      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
-    })
-  }
-  return defu(..._props as [TransitionProps, TransitionProps])
 }
 
 function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
