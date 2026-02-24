@@ -13,7 +13,7 @@ import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
     body: NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])
+      ? encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers']))
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
     status: ssrContext.event.res.status || 200,
     statusText: ssrContext.event.res.statusText || '',
@@ -25,7 +25,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderRespon
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? stringify(opts.data, opts.ssrContext['~payloadReducers']) : ''
+  const contents = opts.data ? encodeForwardSlashes(stringify(opts.data, opts.ssrContext['~payloadReducers'])) : ''
   const payload: Script = {
     'type': 'application/json',
     'innerHTML': contents,
@@ -49,7 +49,15 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
   ]
 }
 
-// TODO: remove in nuxt v5
+/**
+ * Encode forward slashes as unicode escape sequences to prevent
+ * Google from treating them as internal links and trying to crawl them.
+ * @see https://github.com/nuxt/nuxt/issues/24175
+ */
+function encodeForwardSlashes (str: string): string {
+  return str.replaceAll('/', '\\u002F')
+}
+
 export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: MatchedRouteRules, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = !opts.ssrContext.noSSR && (
