@@ -146,7 +146,7 @@ interface _NuxtApp {
   } | undefined>
 
   /** @internal */
-  _state: Record<string, {
+  '_state': Record<string, {
     data: Ref<unknown>
     /** @internal */
     _default: () => MaybeRefOrGetter<unknown>
