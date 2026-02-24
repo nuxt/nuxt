@@ -71,23 +71,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
       }
 
-      const mw: Connect.ServerStackItem = {
-        route: '',
-        handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-          // 'Skip' the transform middleware
-          if (req._skip_transform && req.url) {
-            req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
-          }
-          next()
-        },
-      }
-      const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
-      if (transformHandler === -1) {
-        viteServer.middlewares.stack.push(mw)
-      } else {
-        viteServer.middlewares.stack.splice(transformHandler, 0, mw)
-      }
-
       const staticBases: string[] = []
       for (const folder of nitro.options.publicAssets) {
         if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
@@ -208,6 +191,27 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           return isProxyPath(url)
         },
       })
+
+      // Use a post-hook so this runs after Vite registers its internal middleware.
+      // This ensures the URL rewrite to /__skip_vite runs after the proxy middleware.
+      return () => {
+        const mw: Connect.ServerStackItem = {
+          route: '',
+          handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
+            // 'Skip' the transform middleware
+            if (req._skip_transform && req.url) {
+              req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
+            }
+            next()
+          },
+        }
+        const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
+        if (transformHandler === -1) {
+          viteServer.middlewares.stack.push(mw)
+        } else {
+          viteServer.middlewares.stack.splice(transformHandler, 0, mw)
+        }
+      }
     },
   }
 }
