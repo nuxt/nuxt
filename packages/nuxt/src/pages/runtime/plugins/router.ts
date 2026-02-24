@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { decodePath, isSamePath, withoutBase } from 'ufo'
+import { isSamePath, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
@@ -35,9 +35,9 @@ function createCurrentLocation (
     let pathFromHash = hash.slice(slicePos)
     // prepend the starting slash to hash so the url starts with /#
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
-    return decodePath(withoutBase(pathFromHash, ''))
+    return withoutBase(pathFromHash, '')
   }
-  const displayedPath = decodePath(withoutBase(pathname, base))
+  const displayedPath = withoutBase(pathname, base)
   const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
@@ -260,7 +260,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     router.afterEach((to) => {
-      if (to.matched.length === 0) {
+      if (to.matched.length === 0 && !error.value) {
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,

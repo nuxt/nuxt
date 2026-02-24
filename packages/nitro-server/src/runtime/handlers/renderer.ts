@@ -1,8 +1,9 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { RenderResponse } from 'nitropack/types'
+import type { EventHandler } from 'h3'
 import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
-import { encodePath, getQuery as getURLQuery, joinURL } from 'ufo'
+import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
@@ -49,7 +50,7 @@ const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
 let entryPath: string
 
-export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
+const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
 
   // Whether we're rendering an error page
@@ -172,8 +173,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
     // Hint nitro to prerender payload for this route
-    // Encode the path for the header since ssrContext.url is decoded
-    appendResponseHeader(event, 'x-nitro-prerender', encodePath(joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME)))
+    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
@@ -327,6 +327,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     },
   } satisfies RenderResponse
 })
+
+export default handler
 
 function normalizeChunks (chunks: (string | undefined)[]) {
   const result: string[] = []

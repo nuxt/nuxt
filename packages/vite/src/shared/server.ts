@@ -1,7 +1,6 @@
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
-import { useNitro } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
 
@@ -75,9 +74,6 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       noDiscovery: true,
       include: undefined,
       exclude: getTranspileStrings({ isDev: nuxt.options.dev, isClient: false }),
-    },
-    resolve: {
-      conditions: useNitro().options.exportConditions,
     },
   } satisfies EnvironmentOptions
 }
