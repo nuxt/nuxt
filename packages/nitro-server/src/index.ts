@@ -135,7 +135,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     serverDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
     buildDir: nuxt.options.buildDir,
-    exportConditions: ['import', 'module'],
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
       typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || nuxt.options.nitro.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
@@ -685,6 +684,29 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // ensure we only have one version of vue if nitro is going to inline anyway
     ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
   )
+
+  addVitePlugin({
+    name: 'nuxt:nitro:ssr-conditions',
+    configEnvironment (name, config) {
+      if (name === 'ssr') {
+        config.resolve ||= {}
+        config.resolve.conditions = [...nitro.options.exportConditions || [], 'import']
+      }
+    },
+  })
+
+  // Tree-shake Vue feature flags for non-node Nitro targets
+  addVitePlugin({
+    name: 'nuxt:nitro:vue-feature-flags',
+    applyToEnvironment: environment => environment.name === 'ssr' && environment.config.isProduction,
+    configResolved (config) {
+      for (const key in config.define) {
+        if (key.startsWith('__VUE')) {
+          nitro.options.replace[key] = config.define[key]
+        }
+      }
+    },
+  })
 
   // Connect vfs storages
   const nitroVfs = nitro.vfs
