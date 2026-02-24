@@ -192,9 +192,9 @@ interface _NuxtApp {
   '~transitionFinish'?: () => void
 
   /** @internal */
-  _announcer?: NuxtAnnouncer
+  '_announcer'?: NuxtAnnouncer
   /** @internal */
-  _announcerDeps?: number
+  '_announcerDeps'?: number
 
   // Nuxt injections
   '$config': RuntimeConfig
