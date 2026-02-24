@@ -61,46 +61,32 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"67.7k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1491k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1272k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@vue/server-renderer",
-        "@vue/shared",
+        "@unhead/vue+[...]",
         "babel__parser",
-        "croner",
-        "crossws",
         "defu",
         "destr",
         "devalue",
-        "entities",
-        "estree-walker",
-        "h3",
+        "h3+rou3+srvx",
         "hookable",
         "nuxt__devalue",
         "ofetch",
         "ohash",
         "pathe",
-        "rou3",
         "scule",
-        "source-map-js",
-        "srvx",
         "ufo",
         "unctx",
-        "unhead",
-        "unhead__vue",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
-        "vue__compiler-core",
-        "vue__compiler-dom",
         "vue__compiler-ssr",
-        "vue__reactivity",
-        "vue__runtime-core",
-        "vue__runtime-dom",
+        "vue__server-renderer",
       ]
     `)
   })
@@ -109,43 +95,33 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"67.7k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"68.0k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"527k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"454k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@vue/server-renderer",
-        "@vue/shared",
-        "croner",
-        "crossws",
+        "@unhead/vue+[...]",
         "defu",
         "destr",
         "devalue",
-        "h3",
+        "h3+rou3+srvx",
         "hookable",
-        "mocked-exports",
         "nuxt__devalue",
         "ofetch",
         "ohash",
         "pathe",
-        "rou3",
         "scule",
-        "srvx",
         "ufo",
         "unctx",
-        "unhead",
-        "unhead__vue",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
-        "vue__reactivity",
-        "vue__runtime-core",
-        "vue__runtime-dom",
+        "vue__server-renderer",
       ]
     `)
   })
@@ -157,47 +133,33 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"163k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1493k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1273k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@vue/server-renderer",
-        "@vue/shared",
+        "@unhead/vue+[...]",
         "babel__parser",
-        "croner",
-        "crossws",
         "defu",
         "destr",
         "devalue",
-        "entities",
-        "estree-walker",
-        "h3",
+        "h3+rou3+srvx",
         "hookable",
         "nuxt__devalue",
         "ofetch",
         "ohash",
         "pathe",
-        "rou3",
         "scule",
-        "source-map-js",
-        "srvx",
         "ufo",
         "uncrypto",
         "unctx",
-        "unhead",
-        "unhead__vue",
         "unstorage",
         "vue",
         "vue-bundle-renderer",
-        "vue__compiler-core",
-        "vue__compiler-dom",
         "vue__compiler-ssr",
-        "vue__reactivity",
-        "vue__runtime-core",
-        "vue__runtime-dom",
+        "vue__server-renderer",
       ]
     `)
   })
