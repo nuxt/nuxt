@@ -17,6 +17,7 @@ describe('loadNuxtConfig', () => {
         "#layers/c": "<rootDir>/layers/c/",
         "#layers/d": "<rootDir>/layers/d/",
         "#layers/layer-fixture": "<rootDir>/",
+        "#server": "<rootDir>/server/",
         "#shared": "<rootDir>/shared/",
         "@": "<rootDir>/",
         "@@": "<rootDir>/",

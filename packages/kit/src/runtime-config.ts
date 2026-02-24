@@ -29,7 +29,7 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): vo
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
   try {
-    return useNitro().updateConfig({ runtimeConfig })
+    return useNitro().updateConfig({ runtimeConfig: runtimeConfig as Record<string, any> })
   } catch {
     // Nitro is not yet initialised - we can safely ignore this error
   }

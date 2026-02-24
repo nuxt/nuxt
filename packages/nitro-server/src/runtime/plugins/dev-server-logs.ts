@@ -28,7 +28,7 @@ interface NuxtDevAsyncContext {
 
 const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
 
-export default (nitroApp: NitroApp) => {
+export default (nitroApp: NitroApp): void => {
   const handler = nitroApp.h3App.handler
   nitroApp.h3App.handler = (event) => {
     return asyncContext.callAsync({ logs: [], event }, () => handler(event))
@@ -77,7 +77,7 @@ export default (nitroApp: NitroApp) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     try {
-      const reducers = Object.assign(Object.create(null), devReducers, ctx.event.context._payloadReducers)
+      const reducers = Object.assign(Object.create(null), devReducers, ctx.event.context['~payloadReducers'])
       htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
     } catch (e) {
       const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''

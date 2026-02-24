@@ -53,6 +53,10 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
       new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
       `Importing from server is not allowed in ${context}.`,
     ])
+    patterns.push([
+      /^#server(\/|$)/,
+      `Server aliases are not allowed in ${context}.`,
+    ])
   }
 
   return patterns

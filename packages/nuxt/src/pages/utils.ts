@@ -1,11 +1,10 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
-import { extname, normalize, relative } from 'pathe'
-import { encodePath, joinURL, withLeadingSlash } from 'ufo'
+import { normalize } from 'pathe'
+import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
-import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 
@@ -15,58 +14,116 @@ import { parseAndWalk } from 'oxc-walker'
 import { parseSync } from 'oxc-parser'
 import type { CallExpression, ExpressionStatement, Node, ObjectProperty } from 'oxc-parser'
 import { transformSync } from 'oxc-transform'
-import { getLoader, uniqueBy } from '../core/utils/index.ts'
+import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
+import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
+import { getLoader } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
 type RequirePicked<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 
-const SegmentTokenType = {
-  static: 'static',
-  dynamic: 'dynamic',
-  optional: 'optional',
-  catchall: 'catchall',
-  group: 'group',
-} as const
+// ---------------------------------------------------------------------------
+// PagesContext — persistent route tree for incremental dev-mode updates
+// ---------------------------------------------------------------------------
 
-type SegmentTokenType = typeof SegmentTokenType[keyof typeof SegmentTokenType]
-
-const SegmentParserState = {
-  initial: 'initial',
-  ...SegmentTokenType,
-} as const
-
-type SegmentParserState = typeof SegmentParserState[keyof typeof SegmentParserState]
-
-interface SegmentToken {
-  type: SegmentTokenType
-  value: string
+export interface PagesContext {
+  /** Emit NuxtPage[] from the current tree state. */
+  emit: () => NuxtPage[]
+  /** Add a file to the tree (incremental). */
+  addFile: (filePath: string, priority?: number) => void
+  /** Remove a file from the tree. Returns `true` if the file was found and removed. */
+  removeFile: (filePath: string) => boolean
+  /** Full rebuild — replace tree contents from a fresh file list. */
+  rebuild: (files: InputFile[]) => void
+  /** Set of absolute file paths currently tracked in the tree. */
+  trackedFiles: Set<string>
 }
 
-interface ScannedFile {
-  relativePath: string
-  absolutePath: string
+export interface PagesContextOptions {
+  roots?: string[]
+  shouldUseServerComponents?: boolean
 }
 
-const enUSComparator = new Intl.Collator('en-US')
-export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt()): Promise<NuxtPage[]> {
-  const pagesDirs = getLayerDirectories(nuxt).map(d => d.appPages)
-
-  const scannedFiles: ScannedFile[] = []
-  for (const dir of pagesDirs) {
-    const files = await resolveFiles(dir, pattern)
-    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
+export function createPagesContext (options: PagesContextOptions = {}): PagesContext {
+  const modes = options.shouldUseServerComponents ? ['server', 'client'] : ['client']
+  const treeOptions: BuildTreeOptions = {
+    roots: options.roots,
+    modes,
+    warn: msg => logger.warn(msg),
+  }
+  const emitOptions: VueRouterEmitOptions = {
+    onDuplicateRouteName: (_name, file, existingFile) => {
+      logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+    },
+    attrs: { mode: modes },
   }
 
-  // sort scanned files using en-US locale to make the result consistent across different system locales
+  const compiledParse = compileParsePath(treeOptions)
 
-  scannedFiles.sort((a, b) => enUSComparator.compare(a.relativePath, b.relativePath))
+  let tree: RouteTree = buildTree([], treeOptions)
+  const trackedFiles = new Set<string>()
 
-  const allRoutes = generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
-    shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
-  })
+  return {
+    emit () {
+      return toVueRouter4(tree, emitOptions)
+    },
+    addFile (filePath: string, priority = 0) {
+      addFile(tree, { path: filePath, priority }, compiledParse)
+      trackedFiles.add(filePath)
+    },
+    removeFile (filePath: string) {
+      const removed = removeFile(tree, filePath)
+      if (removed) {
+        trackedFiles.delete(filePath)
+      }
+      return removed
+    },
+    rebuild (files: InputFile[]) {
+      tree = buildTree(files, treeOptions)
+      trackedFiles.clear()
+      for (const f of files) {
+        trackedFiles.add(f.path)
+      }
+    },
+    trackedFiles,
+  }
+}
 
-  const pages = uniqueBy(allRoutes, 'path')
+// ---------------------------------------------------------------------------
+// resolvePagesRoutes — full glob + build (initial load & fallback)
+// ---------------------------------------------------------------------------
+
+export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt(), ctx?: PagesContext): Promise<NuxtPage[]> {
+  const pagesDirs = getLayerDirectories(nuxt).map(d => d.appPages)
+
+  const inputFiles: InputFile[] = []
+  for (let priority = 0; priority < pagesDirs.length; priority++) {
+    const dir = pagesDirs[priority]!
+    const files = await resolveFiles(dir, pattern)
+    for (const file of files) {
+      inputFiles.push({ path: file, priority })
+    }
+  }
+
+  let pages: NuxtPage[]
+  if (ctx) {
+    ctx.rebuild(inputFiles)
+    pages = ctx.emit()
+  } else {
+    // One-shot for production / no-context case
+    const oneShot = createPagesContext({ roots: pagesDirs, shouldUseServerComponents: !!nuxt.options.experimental.componentIslands })
+    oneShot.rebuild(inputFiles)
+    pages = oneShot.emit()
+  }
+
+  return augmentAndResolve(pages, ctx?.trackedFiles ?? new Set(inputFiles.map(f => f.path)), nuxt)
+}
+
+// ---------------------------------------------------------------------------
+// augmentAndResolve — downstream pipeline (augmentation + hooks)
+// ---------------------------------------------------------------------------
+
+export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt()): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
   if (shouldAugment === false) {
@@ -81,7 +138,7 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
       'middleware',
       ...extraPageMetaExtractionKeys,
     ]),
-    fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
+    fullyResolvedPaths: trackedFiles,
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -98,79 +155,6 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   return pages
 }
 
-type GenerateRoutesFromFilesOptions = {
-  shouldUseServerComponents?: boolean
-}
-
-const INDEX_PAGE_RE = /\/index$/
-export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
-  if (!files.length) { return [] }
-  const routes: NuxtPage[] = []
-
-  const sortedFiles = [...files].sort((a, b) => a.relativePath.length - b.relativePath.length)
-
-  for (const file of sortedFiles) {
-    const segments = file.relativePath
-      .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
-      .split('/')
-
-    const route: NuxtPage = {
-      name: '',
-      path: '',
-      file: file.absolutePath,
-      children: [],
-    }
-
-    // Array where routes should be added, useful when adding child routes
-    let parent = routes
-
-    const lastSegment = segments[segments.length - 1]!
-    if (lastSegment.endsWith('.server')) {
-      segments[segments.length - 1] = lastSegment.replace('.server', '')
-      if (options.shouldUseServerComponents) {
-        route.mode = 'server'
-      }
-    } else if (lastSegment.endsWith('.client')) {
-      segments[segments.length - 1] = lastSegment.replace('.client', '')
-      route.mode = 'client'
-    }
-
-    for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i]
-
-      const tokens = parseSegment(segment!, file.absolutePath)
-
-      // Skip group segments
-      if (tokens.every(token => token.type === SegmentTokenType.group)) {
-        continue
-      }
-
-      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
-
-      // ex: parent/[slug].vue -> parent-slug
-      route.name += (route.name && '/') + segmentName
-
-      // ex: parent.vue + parent/child.vue
-      const routePath = getRoutePath(tokens, segments[i + 1] !== undefined && segments[i + 1] !== 'index')
-      const path = withLeadingSlash(joinURL(route.path, routePath.replace(INDEX_PAGE_RE, '/')))
-      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path.replace('([^/]*)*', '(.*)*'))
-
-      if (child && child.children) {
-        parent = child.children
-        route.path = ''
-      } else if (segmentName === 'index' && !route.path) {
-        route.path += '/'
-      } else if (segmentName !== 'index') {
-        route.path += routePath
-      }
-    }
-
-    parent.push(route)
-  }
-
-  return prepareRoutes(routes)
-}
-
 interface AugmentPagesContext {
   fullyResolvedPaths?: Set<string>
   pagesToSkip?: Set<string>
@@ -182,9 +166,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      const fileContent = route.file in vfs
-        ? vfs[route.file]!
-        : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
+      const fileContent = vfs[route.file] ?? fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = defu({}, routeMeta.meta, route.meta)
@@ -348,172 +330,6 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
 
   extractCache[absolutePath] = extractedData
   return klona(extractedData)
-}
-
-const COLON_RE = /:/g
-function getRoutePath (tokens: SegmentToken[], hasSucceedingSegment = false): string {
-  return tokens.reduce((path, token) => {
-    switch (token.type) {
-      case SegmentTokenType.optional:
-        return path + `:${token.value}?`
-      case SegmentTokenType.dynamic:
-        return path + `:${token.value}()`
-      case SegmentTokenType.catchall:
-        return path + (hasSucceedingSegment ? `:${token.value}([^/]*)*` : `:${token.value}(.*)*`)
-      case SegmentTokenType.group:
-        return path
-      case SegmentTokenType.static:
-      default:
-        return path + encodePath(token.value).replace(COLON_RE, '\\:')
-    }
-  }, '/')
-}
-
-const PARAM_CHAR_RE = /[\w.]/
-
-function parseSegment (segment: string, absolutePath: string) {
-  let state: SegmentParserState = SegmentParserState.initial
-  let i = 0
-
-  let buffer = ''
-  const tokens: SegmentToken[] = []
-
-  function consumeBuffer () {
-    if (!buffer) {
-      return
-    }
-    if (state === SegmentParserState.initial) {
-      throw new Error('wrong state')
-    }
-
-    tokens.push({ type: state, value: buffer })
-
-    buffer = ''
-  }
-
-  while (i < segment.length) {
-    const c = segment[i]
-
-    switch (state) {
-      case SegmentParserState.initial:
-        buffer = ''
-        if (c === '[') {
-          state = SegmentParserState.dynamic
-        } else if (c === '(') {
-          state = SegmentParserState.group
-        } else {
-          i--
-          state = SegmentParserState.static
-        }
-        break
-
-      case SegmentParserState.static:
-        if (c === '[') {
-          consumeBuffer()
-          state = SegmentParserState.dynamic
-        } else if (c === '(') {
-          consumeBuffer()
-          state = SegmentParserState.group
-        } else {
-          buffer += c
-        }
-        break
-
-      case SegmentParserState.catchall:
-      case SegmentParserState.dynamic:
-      case SegmentParserState.optional:
-      case SegmentParserState.group:
-        if (buffer === '...') {
-          buffer = ''
-          state = SegmentParserState.catchall
-        }
-        if (c === '[' && state === SegmentParserState.dynamic) {
-          state = SegmentParserState.optional
-        }
-        if (c === ']' && (state !== SegmentParserState.optional || segment[i - 1] === ']')) {
-          if (!buffer) {
-            throw new Error('Empty param')
-          } else {
-            consumeBuffer()
-          }
-          state = SegmentParserState.initial
-        } else if (c === ')' && state === SegmentParserState.group) {
-          if (!buffer) {
-            throw new Error('Empty group')
-          } else {
-            consumeBuffer()
-          }
-          state = SegmentParserState.initial
-        } else if (c && PARAM_CHAR_RE.test(c)) {
-          buffer += c
-        } else if (state === SegmentParserState.dynamic || state === SegmentParserState.optional) {
-          if (c !== '[' && c !== ']') {
-            logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
-          }
-        }
-        break
-    }
-    i++
-  }
-
-  if (state === SegmentParserState.dynamic) {
-    throw new Error(`Unfinished param "${buffer}"`)
-  }
-
-  consumeBuffer()
-
-  return tokens
-}
-
-function findRouteByName (name: string, routes: NuxtPage[]): NuxtPage | undefined {
-  for (const route of routes) {
-    if (route.name === name) {
-      return route
-    }
-    if (route.children && route.children.length > 0) {
-      const child = findRouteByName(name, route.children)
-      if (child) {
-        return child
-      }
-    }
-  }
-}
-
-const NESTED_PAGE_RE = /\//g
-function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<string>()) {
-  for (const route of routes) {
-    // Remove -index
-    if (route.name) {
-      route.name = route.name
-        .replace(INDEX_PAGE_RE, '')
-        .replace(NESTED_PAGE_RE, '-')
-
-      if (names.has(route.name)) {
-        const existingRoute = findRouteByName(route.name, routes)
-        const extra = existingRoute?.name ? `is the same as \`${existingRoute.file}\`` : 'is a duplicate'
-        logger.warn(`Route name generated for \`${route.file}\` ${extra}. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
-      }
-    }
-
-    // Remove leading / if children route
-    if (parent && route.path[0] === '/') {
-      route.path = route.path.slice(1)
-    }
-
-    if (route.children?.length) {
-      route.children = prepareRoutes(route.children, route, names)
-    }
-
-    if (route.children?.find(childRoute => childRoute.path === '')) {
-      delete route.name
-    }
-
-    if (route.name) {
-      names.add(route.name)
-    }
-  }
-
-  return routes
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {

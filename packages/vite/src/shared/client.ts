@@ -1,6 +1,8 @@
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 
+import { getTranspileStrings } from '../utils/transpile.ts'
+
 export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
   return {
     optimizeDeps: {
@@ -61,6 +63,7 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         '#head',
         'virtual:nuxt:',
         'virtual:nuxt:*',
+        ...getTranspileStrings({ isDev: nuxt.options.dev, isClient: true }),
       ],
     },
     define: {
