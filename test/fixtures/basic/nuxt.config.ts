@@ -153,7 +153,6 @@ export default withMatrix({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
-    decorators: true,
     typedPages: true,
     clientFallback: true,
     restoreState: true,
