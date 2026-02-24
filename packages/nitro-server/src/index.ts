@@ -711,6 +711,29 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
   )
 
+  addVitePlugin({
+    name: 'nuxt:nitro:ssr-conditions',
+    configEnvironment (name, config) {
+      if (name === 'ssr') {
+        config.resolve ||= {}
+        config.resolve.conditions = [...nitro.options.exportConditions || [], 'import']
+      }
+    },
+  })
+
+  // Tree-shake Vue feature flags for non-node Nitro targets
+  addVitePlugin({
+    name: 'nuxt:nitro:vue-feature-flags',
+    applyToEnvironment: environment => environment.name === 'ssr' && environment.config.isProduction,
+    configResolved (config) {
+      for (const key in config.define) {
+        if (key.startsWith('__VUE')) {
+          nitro.options.replace[key] = config.define[key]
+        }
+      }
+    },
+  })
+
   // Connect vfs storages
   nitro.vfs = nuxt.vfs = nitro.vfs || nuxt.vfs || {}
 
