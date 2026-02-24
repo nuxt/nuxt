@@ -1,7 +1,10 @@
 import type { H3Event } from 'h3'
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
+import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getRequestIP, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { H3Event$Fetch } from 'nitropack/types'
+
+// @ts-expect-error virtual file
+import { forwardClientIP } from '#build/nuxt.config.mjs'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -46,7 +49,35 @@ export function useRequestFetch (): H3Event$Fetch | typeof globalThis.$fetch {
   if (import.meta.client) {
     return globalThis.$fetch
   }
-  return useRequestEvent()?.$fetch || globalThis.$fetch
+  const event = useRequestEvent()
+  if (!event?.$fetch) { return globalThis.$fetch }
+  if (forwardClientIP) {
+    const forwardedFor = getForwardedClientIP(event)
+    if (forwardedFor) {
+      const _fetch = event.$fetch
+      return ((req, init) => _fetch(req, {
+        ...init,
+        headers: {
+          'x-forwarded-for': forwardedFor,
+          ...init?.headers,
+        },
+      })) as H3Event$Fetch
+    }
+  }
+  return event.$fetch
+}
+
+/**
+ * Returns the value to use for the `x-forwarded-for` header when `forwardClientIP` is enabled.
+ * Appends the client IP to any existing `x-forwarded-for` value from the incoming request.
+ * @internal
+ */
+export function getForwardedClientIP (event: ReturnType<typeof useRequestEvent>): string | undefined {
+  if (!event) { return undefined }
+  const clientIP = getRequestIP(event)
+  if (!clientIP) { return undefined }
+  const existingForwardedFor = getRequestHeader(event, 'x-forwarded-for')
+  return existingForwardedFor ? `${existingForwardedFor}, ${clientIP}` : clientIP
 }
 
 /** @since 3.0.0 */

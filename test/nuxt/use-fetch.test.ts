@@ -234,6 +234,11 @@ describe('useFetch', () => {
     expect.soft(status.value).toBe('pending')
   })
 
+  it.runIf(process.env.PROJECT === 'nuxt-forward-client-ip')('should forward client IP in x-forwarded-for header with `experimental.forwardClientIP`', async () => {
+    const { data } = await useFetch<TestData>('/api/test')
+    expect(data.value?.headers['x-forwarded-for']).toBeDefined()
+  })
+
   it('should pick values from data', async () => {
     const { data } = await useFetch<TestData>('/api/test', { pick: ['method'] })
     expect(data.value).toEqual({ method: 'GET' })
