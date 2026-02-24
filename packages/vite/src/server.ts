@@ -5,7 +5,6 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
-import type { Nitro } from 'nitropack/types'
 import { getPort } from 'get-port-please'
 
 import type { ViteBuildContext } from './vite.ts'
@@ -13,7 +12,6 @@ import { createViteLogger } from './utils/logger.ts'
 import { writeDevServer } from './plugins/vite-node.ts'
 import { writeManifest } from './manifest.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
-import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { ssr, ssrEnvironment } from './shared/server.ts'
 
@@ -28,7 +26,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       devSourcemap: !!nuxt.options.sourcemap.server,
     },
     plugins: [
-      VueFeatureFlagsPlugin(nuxt),
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'ssr'),
@@ -47,13 +44,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
         },
       },
     ],
-    environments: {
-      ssr: {
-        resolve: {
-          conditions: ((nuxt as any)._nitro as Nitro)?.options.exportConditions,
-        },
-      },
-    },
     ssr: ssr(nuxt),
     cacheDir: resolve(nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'server'),
     server: {
