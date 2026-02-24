@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
+import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router } from 'vue-router'
 import type { H3Event } from 'h3'
 import { getRouteRules as getNitroRouteRules } from 'nitropack/runtime'
 import type { NitroRouteRules } from 'nitropack/types'
@@ -149,7 +149,9 @@ describe('nitro compatible APIs', () => {
 
 describe('aliases', () => {
   it('allows importing from path aliases', () => {
-    expectTypeOf(useRouter).toEqualTypeOf<typeof vueUseRouter>()
+    // Nuxt's useRouter returns Router with Nuxt extensions (e.g. historyState)
+    expectTypeOf(useRouter()).toMatchTypeOf<Router>()
+    expectTypeOf(useRouter().historyState).toEqualTypeOf<History['state'] | undefined>()
     expectTypeOf(isVue3).toEqualTypeOf<boolean>()
   })
 })
