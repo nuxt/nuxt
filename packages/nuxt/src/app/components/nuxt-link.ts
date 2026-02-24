@@ -4,13 +4,12 @@ import type {
   ComputedRef,
   DefineSetupFnComponent,
   InjectionKey,
+  MaybeRef,
   PropType,
   SlotsType,
   UnwrapRef,
-  VNode,
-  VNodeProps,
+  VNode, VNodeProps,
 } from 'vue'
-import type { MaybeRef } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkReturn, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
