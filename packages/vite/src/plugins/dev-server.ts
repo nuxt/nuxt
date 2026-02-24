@@ -192,12 +192,8 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         },
       })
 
-      // Return a post-hook so the skip-transform middleware is inserted AFTER Vite has
-      // registered all its standard middleware (including the proxy middleware). This is
-      // critical: Nuxt's configureServer hook runs before Vite adds proxyMiddleware and
-      // viteTransformMiddleware to the stack, so inserting mw directly in the hook body
-      // would place it BEFORE the proxy — causing the modified /__skip_vite/... URL to be
-      // seen by the proxy middleware and unexpectedly matched by negative-lookahead patterns.
+      // Use a post-hook so this runs after Vite registers its internal middleware.
+      // This ensures the URL rewrite to /__skip_vite runs after the proxy middleware.
       return () => {
         const mw: Connect.ServerStackItem = {
           route: '',
