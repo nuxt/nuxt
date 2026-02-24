@@ -1,4 +1,4 @@
-import { getRequestURL } from 'h3'
+import { getRequestURL } from '@nuxt/nitro-server/h3'
 import { useRequestEvent } from './ssr'
 
 /** @since 3.5.0 */

@@ -61,6 +61,9 @@ jobs:
     if: needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -88,6 +91,12 @@ jobs:
           retention-days: 3
           name: dist
           path: packages/*/dist
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   codeql:
     if: github.event_name != 'merge_group'
@@ -131,14 +140,20 @@ jobs:
     if: github.event_name != 'push'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
     needs:
       - build
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
         module: ['bundler']
         # module: ["bundler", "node"]
+        exclude:
+          # only run ubuntu in merge queue
+          - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -165,12 +180,21 @@ jobs:
       - name: Typecheck (docs)
         run: pnpm typecheck:docs
 
-  lint:
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  lint-and-test:
     # autofix workflow will be triggered instead for PRs
     needs: changes
     if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 10
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -192,37 +216,25 @@ jobs:
       - name: Check built types
         run: pnpm test:attw
 
-  test-unit:
-    # autofix workflow will be triggered instead for PRs
-    needs: changes
-    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
-        with:
-          node-version: lts/*
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build (stub)
-        run: pnpm dev:prepare
-
       - name: Test (nuxt runtime)
         run: pnpm test:runtime
 
       - name: Test (unit)
         run: pnpm test:unit
 
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   test-size:
     # already tested in merge queue
     if: github.event_name != 'push'
     runs-on: ubuntu-24.04-arm
+    permissions:
+      actions: write
+      contents: read
     needs:
       - build
 
@@ -245,6 +257,12 @@ jobs:
 
       - name: Check bundle size
         run: pnpm vitest run bundle
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   test-benchmark:
     runs-on: ubuntu-latest
@@ -283,11 +301,14 @@ jobs:
     # already tested in merge queue
     if: github.event_name != 'push'
     runs-on: ${{ matrix.os }}
+    permissions:
+      actions: write
+      contents: read
     needs:
       - build
 
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
         env: ['dev', 'built']
@@ -358,6 +379,12 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   ci-ok:
     # This job is the single required check for merge queues and branch protection.
     # All other jobs feed into this one. Skipped jobs are treated as successful.
@@ -368,8 +395,7 @@ jobs:
       - build
       - codeql
       - typecheck
-      - lint
-      - test-unit
+      - lint-and-test
       - test-size
       - test-fixtures
     steps:
@@ -381,8 +407,7 @@ jobs:
             "${{ needs.build.result }}" \
             "${{ needs.codeql.result }}" \
             "${{ needs.typecheck.result }}" \
-            "${{ needs.lint.result }}" \
-            "${{ needs.test-unit.result }}" \
+            "${{ needs.lint-and-test.result }}" \
             "${{ needs.test-size.result }}" \
             "${{ needs.test-fixtures.result }}" \
           )

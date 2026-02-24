@@ -240,14 +240,10 @@ export default createConfigForNuxt({
           'patterns': [
             {
               allowTypeImports: true,
-              group: [
-                // disallow everything
-                '[@a-z]*',
-                // except certain dependencies
-                ...[
+              regex: `^(?!(${
+                [
                   // vue ecosystem
                   '@unhead',
-                  '@vue',
                   '@vue/shared',
                   'ofetch',
                   'vue/server-renderer',
@@ -257,10 +253,8 @@ export default createConfigForNuxt({
                   'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
-                ].map(r => `!${r}`),
-                '!#[a-z]*/**', // aliases
-                '!.*/**', // relative imports
-              ],
+                ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+              })($|/))(?!#)(?!\\.)[a-zA-Z@]`,
             },
           ],
         }],

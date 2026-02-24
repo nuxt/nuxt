@@ -73,7 +73,7 @@
     "unstorage": "1.17.4",
     "vite": "7.3.1",
     "vue": "3.5.28",
-    "vue-router": "4.6.4",
+    "vue-router": "5.0.3",
     "webpack": "5.105.2"
   },
   "devDependencies": {
