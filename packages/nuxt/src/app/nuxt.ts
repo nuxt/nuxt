@@ -20,6 +20,7 @@ import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn }
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
+import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
@@ -195,6 +196,11 @@ interface _NuxtApp {
   '~transitionPromise'?: Promise<void>
   /** @internal */
   '~transitionFinish'?: () => void
+
+  /** @internal */
+  '_announcer'?: NuxtAnnouncer
+  /** @internal */
+  '_announcerDeps'?: number
 
   // Nuxt injections
   '$config': RuntimeConfig
