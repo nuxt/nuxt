@@ -38,7 +38,7 @@ The properties of `useHead` can be dynamic, accepting `ref`, `computed` and `rea
 ## Type
 
 ```ts [Signature]
-export function useHead (meta: MaybeComputedRef<MetaObject>): void
+export function useHead (meta: MaybeComputedRef<MetaObject>): ActiveHeadEntry<UseHeadInput>
 
 interface MetaObject {
   title?: string
@@ -51,6 +51,21 @@ interface MetaObject {
   noscript?: Noscript[]
   htmlAttrs?: HtmlAttributes
   bodyAttrs?: BodyAttributes
+}
+
+interface ActiveHeadEntry<Input> {
+  /**
+   * Updates the entry with new input.
+   *
+   * Will first clear any side effects for previous input.
+   */
+  patch: (input: Input) => void
+  /**
+   * Dispose the entry, removing it from the active head.
+   *
+   * Will queue side effects for removal.
+   */
+  dispose: () => void
 }
 ```
 

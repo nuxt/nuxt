@@ -3,8 +3,8 @@ import MagicString from 'magic-string'
 import { hash } from 'ohash'
 
 import { parseAndWalk } from 'oxc-walker'
-import { transformAndMinify } from '../../core/utils/parse'
-import { isJS, isVue } from '../utils'
+import { transformAndMinify } from '../../core/utils/parse.ts'
+import { isJS, isVue } from '../utils/index.ts'
 
 export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {
   return createUnplugin(() => ({

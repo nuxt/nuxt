@@ -7,10 +7,10 @@ import { findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, reso
 
 import type { PluginMeta } from 'nuxt/app'
 
-import { logger, resolveToAlias } from '../utils'
-import * as defaultTemplates from './templates'
-import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
-import { extractMetadata, orderMap } from './plugins/plugin-metadata'
+import { logger, resolveToAlias } from '../utils.ts'
+import * as defaultTemplates from './templates.ts'
+import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
+import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
@@ -254,7 +254,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     try {
-      const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src]! : await fsp.readFile(plugin.src!, 'utf-8')
+      const code = nuxt.vfs[plugin.src] ?? await fsp.readFile(plugin.src!, 'utf-8')
       _plugins.push({
         ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
         ...plugin,

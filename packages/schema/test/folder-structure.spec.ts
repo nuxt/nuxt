@@ -3,8 +3,8 @@ import { applyDefaults } from 'untyped'
 import process from 'node:process'
 
 import { normalize } from 'pathe'
-import { NuxtConfigSchema } from '../src'
-import type { NuxtOptions } from '../src'
+import { NuxtConfigSchema } from '../src/index.ts'
+import type { NuxtOptions } from '../src/index.ts'
 
 vi.mock('node:fs', () => ({
   existsSync: (id: string) => id.endsWith('app'),

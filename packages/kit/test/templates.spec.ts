@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addTypeTemplate, buildNuxt, loadNuxt } from '../src'
+import { addTypeTemplate, buildNuxt, loadNuxt } from '../src/index.ts'
 import { findWorkspaceDir } from 'pkg-types'
 import { resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'

@@ -139,7 +139,8 @@ describe('<NuxtTime>', () => {
 
     const html = thing.html()
     const id = html.match(/data-prehydrate-id="([^"]+)"/)?.[1]
-    expect(thing.html()).toEqual(
+    expect(id, 'data-prehydrate-id attribute should be present (onPrehydrate transform may not have run)').toBeDefined()
+    expect(html).toEqual(
       `<time data-locale="en-GB" data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
 
@@ -151,9 +152,13 @@ describe('<NuxtTime>', () => {
     })
 
     const head = injectHead()
-    // @ts-expect-error craziness
-    const innerHTML = head.entries.get(1).input.script[0].innerHTML
-    const fn = new Function(innerHTML)
+    const prehydrateEntry = [...head.entries.values()].find(
+      // @ts-expect-error untyped internal
+      e => e.input?.script?.[0]?.innerHTML?.includes('_nuxtTimeNow'),
+    )
+    expect(prehydrateEntry, 'onPrehydrate head entry should exist').toBeDefined()
+    // @ts-expect-error untyped internal
+    const fn = new Function(prehydrateEntry!.input.script[0].innerHTML)
     fn()
 
     expect(window._nuxtTimeNow).toBeDefined()
@@ -163,5 +168,63 @@ describe('<NuxtTime>', () => {
     )
 
     vi.restoreAllMocks()
+  })
+
+  describe('invalid date handling', () => {
+    it('should display "Invalid Date" and omit datetime attribute for invalid date without relative mode', async () => {
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: 'invalid-date-string',
+              locale: 'en-GB',
+            }),
+        }),
+      )
+      expect(thing.html()).toMatchInlineSnapshot(
+        `"<time>Invalid Date</time>"`,
+      )
+    })
+
+    it('should display "Invalid Date" and omit datetime attribute for invalid date with relative mode', async () => {
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: 'xyz',
+              relative: true,
+              locale: 'en-GB',
+            }),
+        }),
+      )
+      expect(thing.html()).toMatchInlineSnapshot(
+        `"<time>Invalid Date</time>"`,
+      )
+    })
+
+    it('should fallback to current date when datetime is falsy', async () => {
+      // When datetime is falsy (null, undefined, empty string), it falls back to new Date()
+      const beforeMount = Date.now()
+      const thing = await mountSuspended(
+        defineComponent({
+          render: () =>
+            h(NuxtTime, {
+              datetime: null as unknown as string,
+              locale: 'en-GB',
+              dateStyle: 'short',
+              timeZone: 'UTC',
+            }),
+        }),
+      )
+      const afterMount = Date.now()
+      const html = thing.html()
+
+      // Extract the datetime attribute value
+      const datetimeMatch = html.match(/datetime="([^"]+)"/)
+      expect(datetimeMatch).toBeTruthy()
+      const renderedDate = new Date(datetimeMatch![1]!)
+      expect(renderedDate.getTime()).toBeGreaterThanOrEqual(beforeMount)
+      expect(renderedDate.getTime()).toBeLessThanOrEqual(afterMount)
+    })
   })
 })

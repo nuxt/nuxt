@@ -1,21 +1,21 @@
-import { defineBuildConfig } from 'unbuild'
-import { addRollupTimingsPlugin, stubOptions } from '../../debug/build-config'
+import { defineBuildConfig } from 'obuild/config'
 
 export default defineBuildConfig({
-  declaration: true,
   entries: [
-    'src/index',
-    { input: 'src/runtime/', outDir: 'dist/runtime', ext: 'js' },
-  ],
-  stubOptions,
-  hooks: {
-    'rollup:options' (ctx, options) {
-      addRollupTimingsPlugin(options)
+    {
+      type: 'bundle',
+      input: 'src/index',
+      dts: { oxc: true },
+      rolldown: {
+        external: [
+          '@nuxt/schema',
+        ],
+      },
     },
-  },
-  externals: [
-    '@nuxt/schema',
-    'nuxt',
-    'nitropack',
+    {
+      type: 'transform',
+      input: 'src/runtime/',
+      outDir: 'dist/runtime',
+    },
   ],
 })

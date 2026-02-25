@@ -3,10 +3,10 @@ import { isAbsolute } from 'node:path'
 import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
-import { MODE_RE, filterInPlace } from './utils'
-import { tryUseNuxt, useNuxt } from './context'
-import { addTemplate } from './template'
-import { resolveAlias } from './resolve'
+import { MODE_RE, filterInPlace } from './utils.ts'
+import { tryUseNuxt, useNuxt } from './context.ts'
+import { addTemplate } from './template.ts'
+import { resolveAlias } from './resolve.ts'
 
 /**
  * Normalize a nuxt plugin object
@@ -76,7 +76,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  * ```
  */
 export interface AddPluginOptions { append?: boolean }
-export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}) {
+export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}): NuxtPlugin {
   const nuxt = useNuxt()
 
   // Normalize plugin

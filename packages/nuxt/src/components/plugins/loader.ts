@@ -5,9 +5,9 @@ import { pascalCase } from 'scule'
 import { relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
-import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
-import { installNuxtModule } from '../../core/features'
-import { logger, resolveToAlias } from '../../utils'
+import { QUOTE_RE, SX_RE, isVue } from '../../core/utils/index.ts'
+import { installNuxtModule } from '../../core/features.ts'
+import { logger, resolveToAlias } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {

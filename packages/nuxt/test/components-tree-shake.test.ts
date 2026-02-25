@@ -7,8 +7,8 @@ import type { Plugin } from 'vite'
 import { createLogger } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
-import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
-import { componentsFixtureDir, normalizeLineEndings } from './utils'
+import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake.ts'
+import { componentsFixtureDir, normalizeLineEndings } from './utils.ts'
 
 // mock due to differences of results between windows and linux
 vi.spyOn(path, 'relative').mockImplementation((from: string, to: string) => {

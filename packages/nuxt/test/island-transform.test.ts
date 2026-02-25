@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Component } from '@nuxt/schema'
-import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform'
-import { normalizeLineEndings } from './utils'
+import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
+import { normalizeLineEndings } from './utils.ts'
 
 const getComponents = () => [{
   filePath: '/root/hello.server.vue',

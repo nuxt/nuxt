@@ -2,7 +2,7 @@ import type { Component, PropType, RendererNode, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
+import { appendResponseHeader } from '@nuxt/nitro-server/h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
@@ -206,7 +206,7 @@ export default defineComponent({
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
       if (!r.ok) {
-        throw createError({ statusCode: r.status, statusMessage: r.statusText })
+        throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
         const result = await r.json()

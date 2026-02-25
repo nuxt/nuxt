@@ -9,8 +9,8 @@ import htmlnano from 'htmlnano'
 import { glob } from 'tinyglobby'
 import { camelCase } from 'scule'
 
-import { version } from '../../nuxt/package.json'
-import genericMessages from '../templates/messages.json'
+import pkg from '../../nuxt/package.json' with { type: 'json' }
+import genericMessages from '../templates/messages.json' with { type: 'json' }
 
 const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
 const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)
@@ -93,7 +93,7 @@ export const RenderPlugin = () => {
           html = html.replace('</body></html>', '')
         }
 
-        html = html.replace(/\{\{ version \}\}/g, version)
+        html = html.replace(/\{\{ version \}\}/g, pkg.version)
 
         // Load messages
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
@@ -116,7 +116,7 @@ export const RenderPlugin = () => {
           hasExpression ? 'import { escapeHtml } from \'@vue/shared\'\n' : '',
           hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
           hasMessages ? `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}` : '',
-          `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}) => {`,
+          `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}): string => {`,
           hasMessages ? '  messages = { ..._messages, ...messages }' : '',
           `  return ${templateString}`,
           '}',

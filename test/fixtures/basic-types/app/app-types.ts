@@ -20,6 +20,15 @@ type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
+declare module 'nuxt/app' {
+  interface NuxtLayouts {
+    withFunction: {
+      someProp: number
+      function: () => void
+    }
+  }
+}
+
 describe('API routes', () => {
   it('generates types for routes', () => {
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
@@ -297,6 +306,22 @@ describe('layouts', () => {
     h(NuxtLayout, { fallback: 'custom' })
     // @ts-expect-error Invalid layout
     h(NuxtLayout, { fallback: 'invalid-layout' })
+  })
+
+  it('setPageLayout recognizes named layouts and props', () => {
+    setPageLayout('custom')
+    setPageLayout('pascal-case')
+    setPageLayout('override')
+    setPageLayout('with-props', { aProp: 42 })
+    // @ts-expect-error Invalid layout
+    setPageLayout('invalid-layout')
+    // @ts-expect-error Invalid layout props
+    setPageLayout('with-props', { aProp: 'string-instead-of-number' })
+  })
+
+  it('expect setPageLayout to raise TS error when using non-serializable props values', () => {
+    // @ts-expect-error Non-serializable layout props
+    setPageLayout('withFunction', { aProp: () => {}, someProp: 5 })
   })
 })
 
@@ -630,7 +655,7 @@ describe('extends type declarations', () => {
 describe('composables inference', () => {
   it('callWithNuxt', () => {
     const bob = callWithNuxt({} as any, () => true)
-    expectTypeOf<typeof bob>().toEqualTypeOf<boolean | Promise<boolean>>()
+    expectTypeOf<typeof bob>().toEqualTypeOf<Promise<boolean>>()
   })
   it('runWithContext', () => {
     const bob = useNuxtApp().runWithContext(() => true)

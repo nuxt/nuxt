@@ -1,12 +1,12 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-
+import type { NitroRouteRules } from 'nitropack/types'
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _wrapInTransition } from './utils'
+import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
 // @ts-expect-error virtual file
@@ -15,6 +15,10 @@ import { useRoute as useVueRouterRoute } from '#build/pages'
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import _routeRulesMatcher from '#build/route-rules.mjs'
+
+const routeRulesMatcher = _routeRulesMatcher as (path: string) => NitroRouteRules
 
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
@@ -56,7 +60,7 @@ export default defineComponent({
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
     const layout = computed(() => {
-      let layout = unref(props.name) ?? route?.meta.layout as string ?? 'default'
+      let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
           console.warn(`Invalid layout \`${layout}\` selected.`)
@@ -84,26 +88,52 @@ export default defineComponent({
     let lastLayout: string | boolean | undefined
 
     return () => {
-      const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
+      const hasLayout = !!layout.value && layout.value in layouts
+
+      const hasTransition = hasLayout && !!(route?.meta.layoutTransition ?? defaultLayoutTransition)
+
+      const transitionProps = hasTransition && _mergeTransitionProps([
+        route?.meta.layoutTransition,
+        defaultLayoutTransition,
+        {
+          onBeforeLeave () {
+            // Create the transition promise when the leave animation starts.
+            // This overrides any page transition promise since the layout
+            // is the outermost transition wrapper.
+            nuxtApp['~transitionPromise'] = new Promise((resolve) => {
+              nuxtApp['~transitionFinish'] = resolve
+            })
+          },
+          onAfterLeave () {
+            nuxtApp['~transitionFinish']?.()
+            delete nuxtApp['~transitionFinish']
+            delete nuxtApp['~transitionPromise']
+          },
+        },
+      ])
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
 
-      // We avoid rendering layout transition if there is no layout to render
-      return _wrapInTransition(hasLayout && transitionProps, {
-        default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
+      return _wrapInTransition(transitionProps, {
+        default: () => h(Suspense, {
+          suspensible: true,
+          onResolve: async () => {
+            await nextTick(done)
+          },
+        },
+        {
           default: () => h(
             LayoutProvider,
             {
-              layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
+              layoutProps: mergeProps(context.attrs, route.meta.layoutProps ?? {}, { ref: layoutRef }),
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
               isRenderingNewLayout: (name?: string | boolean) => {
                 return (name !== previouslyRenderedLayout && name === layout.value)
               },
-              hasTransition: !!transitionProps,
+              hasTransition,
             }, context.slots),
         }),
       }).default()
@@ -138,7 +168,8 @@ const LayoutProvider = defineComponent({
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default'),
+        // When name=false, always return true so NuxtPage doesn't skip rendering
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === false || name === (route.meta.layout ?? routeRulesMatcher(route.path).appLayout ?? 'default'),
       })
     }
 

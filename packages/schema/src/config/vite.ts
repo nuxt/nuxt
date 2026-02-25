@@ -1,7 +1,7 @@
-import defu from 'defu'
+import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   vite: {
@@ -83,9 +83,8 @@ export default defineResolvers({
         $resolve: async (val, get) => defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options')),
       },
       exclude: {
-        $resolve: async (val, get) => [
+        $resolve: val => [
           ...Array.isArray(val) ? val : [],
-          ...(await get('build.transpile')).filter(i => typeof i === 'string'),
           'vue-demi',
         ],
       },

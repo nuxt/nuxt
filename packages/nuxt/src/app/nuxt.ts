@@ -4,8 +4,9 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
+import type { UseContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { EventHandlerRequest, H3Event } from 'h3'
+import type { EventHandlerRequest, H3Event } from '@nuxt/nitro-server/h3'
 import type { RenderResponse } from 'nitropack/types'
 import type { LogObject } from 'consola'
 import type { VueHeadClient } from '@unhead/vue/types'
@@ -15,16 +16,17 @@ import type { NuxtAppLiterals } from 'nuxt/app'
 import type { NuxtIslandContext } from './types'
 import type { RouteMiddleware } from './composables/router'
 import type { NuxtError } from './composables/error'
-import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
+import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
+import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-export function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -72,16 +74,18 @@ export interface NuxtSSRContext extends SSRContext {
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */
-  _renderResponse?: Partial<RenderResponse>
+  ['~renderResponse']?: Partial<RenderResponse>
   /** @internal */
-  _payloadReducers: Record<string, (data: any) => any>
+  ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */
-  _sharedPrerenderCache?: {
+  ['~sharedPrerenderCache']?: {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
   /** @internal */
-  _preloadManifest?: boolean
+  ['~preloadManifest']?: boolean
+  /** @internal */
+  ['~lazyHydratedModules']?: Set<string>
 }
 
 export interface NuxtPayload {
@@ -98,30 +102,30 @@ export interface NuxtPayload {
 }
 
 interface _NuxtApp {
-  vueApp: App<Element>
-  versions: Record<string, string>
+  'vueApp': App<Element>
+  'versions': Record<string, string>
 
-  hooks: Hookable<RuntimeNuxtHooks>
-  hook: _NuxtApp['hooks']['hook']
-  callHook: _NuxtApp['hooks']['callHook']
+  'hooks': Hookable<RuntimeNuxtHooks>
+  'hook': _NuxtApp['hooks']['hook']
+  'callHook': _NuxtApp['hooks']['callHook']
 
-  runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
+  'runWithContext': <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
 
   [key: string]: unknown
 
   /** @internal */
-  _cookies?: Record<string, unknown>
-  _cookiesChanged?: Record<string, boolean>
+  '_cookies'?: Record<string, unknown>
+  '_cookiesChanged'?: Record<string, boolean>
   /**
    * The id of the Nuxt application.
    * @internal */
-  _id: string
+  '_id': string
   /** @internal */
-  _scope: EffectScope
+  '_scope': EffectScope
   /** @internal */
-  _asyncDataPromises: Record<string, Promise<any> | undefined>
+  '_asyncDataPromises': Record<string, Promise<any> | undefined>
   /** @internal */
-  _asyncData: Record<string, {
+  '_asyncData': Record<string, {
     data: Ref<unknown>
     pending: Ref<boolean>
     error: Ref<Error | undefined>
@@ -136,7 +140,7 @@ interface _NuxtApp {
     /** @internal */
     _init: boolean
     /** @internal */
-    _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+    _execute: DebouncedReturn<[opts?: AsyncDataExecuteOptions | undefined], void>
     /** @internal */
     _hash?: Record<string, string | undefined>
     /** @internal */
@@ -144,58 +148,74 @@ interface _NuxtApp {
   } | undefined>
 
   /** @internal */
-  _loadingIndicator?: LoadingIndicator
-  /** @internal */
-  _loadingIndicatorDeps?: number
+  '_state': Record<string, {
+    /** @internal */
+    _default: () => unknown
+  } | undefined>
 
   /** @internal */
-  _middleware: {
+  '_loadingIndicator'?: LoadingIndicator
+  /** @internal */
+  '_loadingIndicatorDeps'?: number
+
+  /** @internal */
+  '_middleware': {
     global: RouteMiddleware[]
     named: Record<string, RouteMiddleware>
   }
 
   /** @internal */
-  _processingMiddleware?: string | boolean
+  '_processingMiddleware'?: string | boolean
 
   /** @internal */
-  _once: {
+  '_once': {
     [key: string]: Promise<any>
   }
 
   /** @internal */
-  _observer?: { observe: (element: Element, callback: () => void) => () => void }
+  '_observer'?: { observe: (element: Element, callback: () => void) => () => void }
 
   /** @internal */
-  _appConfig: AppConfig
+  '_appConfig': AppConfig
   /** @internal */
-  _route: RouteLocationNormalizedLoaded & {
+  '_route': RouteLocationNormalizedLoaded & {
     sync?: () => void
   }
 
   /** @internal */
-  _islandPromises?: Record<string, Promise<any>>
+  '_islandPromises'?: Record<string, Promise<any>>
 
   /** @internal */
-  _payloadRevivers: Record<string, (data: any) => any>
+  '_payloadRevivers': Record<string, (data: any) => any>
 
   /** @internal */
-  _routeAnnouncer?: RouteAnnouncer
+  '_routeAnnouncer'?: RouteAnnouncer
   /** @internal */
-  _routeAnnouncerDeps?: number
+  '_routeAnnouncerDeps'?: number
+
+  /** @internal */
+  '~transitionPromise'?: Promise<void>
+  /** @internal */
+  '~transitionFinish'?: () => void
+
+  /** @internal */
+  '_announcer'?: NuxtAnnouncer
+  /** @internal */
+  '_announcerDeps'?: number
 
   // Nuxt injections
-  $config: RuntimeConfig
+  '$config': RuntimeConfig
 
-  isHydrating?: boolean
-  deferHydration: () => () => void | Promise<void>
+  'isHydrating'?: boolean
+  'deferHydration': () => () => void | Promise<void>
 
-  ssrContext?: NuxtSSRContext
-  payload: NuxtPayload
-  static: {
+  'ssrContext'?: NuxtSSRContext
+  'payload': NuxtPayload
+  'static': {
     data: Record<string, any>
   }
 
-  provide: (name: string, value: any) => void
+  'provide': (name: string, value: any) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -265,7 +285,7 @@ export interface CreateOptions {
 }
 
 /** @since 3.0.0 */
-export function createNuxtApp (options: CreateOptions) {
+export function createNuxtApp (options: CreateOptions): NuxtApp {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
     _id: options.id || appId || 'nuxt-app',
@@ -312,6 +332,7 @@ export function createNuxtApp (options: CreateOptions) {
     },
     _asyncDataPromises: {},
     _asyncData: shallowReactive({}),
+    _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
@@ -406,14 +427,14 @@ export function createNuxtApp (options: CreateOptions) {
 }
 
 /** @since 3.12.0 */
-export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): void {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
   }
 }
 
 /** @since 3.0.0 */
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>): Promise<void> {
   if (typeof plugin === 'function') {
     const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
     if (provide && typeof provide === 'object') {
@@ -425,7 +446,7 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 }
 
 /** @since 3.0.0 */
-export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
+export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>): Promise<void> {
   const resolvedPlugins: Set<string> = new Set()
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
@@ -497,10 +518,10 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const definePayloadPlugin = defineNuxtPlugin
+export const definePayloadPlugin: typeof defineNuxtPlugin = defineNuxtPlugin
 
 /** @since 3.0.0 */
-export function isNuxtPlugin (plugin: unknown) {
+export function isNuxtPlugin (plugin: unknown): plugin is Plugin {
   return typeof plugin === 'function' && NuxtPluginIndicator in plugin
 }
 
@@ -510,7 +531,7 @@ export function isNuxtPlugin (plugin: unknown) {
  * @param setup The function to call
  * @since 3.0.0
  */
-export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>): Promise<ReturnType<T>> {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {

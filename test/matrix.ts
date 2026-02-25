@@ -1,4 +1,4 @@
-import defu from 'defu'
+import { defu } from 'defu'
 import type { NuxtConfig } from 'nuxt/schema'
 
 export const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'

@@ -1,16 +1,17 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
+import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
-import type { PageMeta } from '../../pages/runtime/composables'
+import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
+import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
@@ -203,7 +204,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         const encodedLoc = location.replace(URL_QUOTE_RE, '%22')
         const encodedHeader = encodeURL(location, isExternalHost)
 
-        nuxtApp.ssrContext!._renderResponse = {
+        nuxtApp.ssrContext!['~renderResponse'] = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
           headers: { location: encodedHeader },
@@ -243,7 +244,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  return options?.replace ? router.replace(to) : router.push(to)
+  // Encode the path portion of string locations to match vue-router's
+  // percent-encoded route records.
+  const encodedTo = typeof to === 'string' ? encodeRoutePath(to) : to
+  return options?.replace ? router.replace(encodedTo) : router.push(encodedTo)
 }
 
 /**
@@ -266,14 +270,18 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   throw err
 }
 
-/** @since 3.0.0 */
-export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
+/**
+ * Sets the layout for the current page.
+ * @since 3.0.0
+ */
+export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never) => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
       console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
     }
     nuxtApp.payload.state._layout = layout
+    nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
     console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
@@ -282,11 +290,14 @@ export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? strin
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {
     const unsubscribe = useRouter().beforeResolve((to) => {
       to.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+      to.meta.layoutProps = props
       unsubscribe()
     })
   }
   if (!inMiddleware) {
-    useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+    const route = useRoute()
+    route.meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
+    route.meta.layoutProps = props
   }
 }
 
@@ -309,4 +320,15 @@ export function encodeURL (location: string, isExternalHost = false) {
     return url.toString().replace(url.protocol, '')
   }
   return url.toString()
+}
+
+/**
+ * Encode the pathname of a route location string. Ensures decoded paths like
+ * `/café` are percent-encoded to match vue-router's encoded route records.
+ * Already-encoded paths are not double-encoded.
+ * @internal
+ */
+export function encodeRoutePath (url: string): string {
+  const parsed = parseURL(url)
+  return encodePath(decodePath(parsed.pathname)) + parsed.search + parsed.hash
 }

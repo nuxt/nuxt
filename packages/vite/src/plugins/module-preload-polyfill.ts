@@ -1,6 +1,6 @@
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
-import { resolveClientEntry } from '../utils/config'
+import { resolveClientEntry } from '../utils/config.ts'
 
 const QUERY_RE = /\?.+$/
 

@@ -42,7 +42,7 @@ describe('defineNuxtComponent', () => {
       }),
       render () {
         // @ts-expect-error this is not typed in options api
-        return h('div', `Total users: ${this.users.value.length}`)
+        return h('div', `Total users: ${this.users.length}`)
       },
     })
 
@@ -69,6 +69,20 @@ describe('defineNuxtComponent', () => {
     await refreshNuxtData()
     await nextTick()
     expect(wrapper.html()).toBe('<div>1</div>')
+  })
+
+  it('should update reactively when asyncData properties are modified', async () => {
+    const component = defineNuxtComponent({
+      asyncData: () => ({ count: 0 }),
+      template: '<div>{{ count }}</div>',
+      mounted () {
+        // @ts-expect-error count is not typed in options api
+        this.count = 42
+      },
+    })
+    const wrapper = await mountSuspended(component)
+    await nextTick()
+    expect(wrapper.html()).toBe('<div>42</div>')
   })
 
   it('should handle state and watchers correctly without duplicate updates', async () => {

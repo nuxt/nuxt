@@ -6,8 +6,8 @@ function renderStubMessage (name: string) {
   if (import.meta.client) {
     throw createError({
       fatal: true,
-      statusCode: 500,
-      statusMessage: message,
+      status: 500,
+      statusText: message,
     })
   }
 }

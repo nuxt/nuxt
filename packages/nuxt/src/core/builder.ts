@@ -5,13 +5,13 @@ import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isI
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
-import { isDirectory, logger } from '../utils'
-import { generateApp as _generateApp, createApp } from './app'
-import { checkForExternalConfigurationFiles } from './external-config-files'
-import { cleanupCaches, getVueHash } from './cache'
+import { isDirectory, logger } from '../utils.ts'
+import { generateApp as _generateApp, createApp } from './app.ts'
+import { checkForExternalConfigurationFiles } from './external-config-files.ts'
+import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
-export async function build (nuxt: Nuxt) {
+export async function build (nuxt: Nuxt): Promise<void> {
   const app = createApp(nuxt)
   nuxt.apps.default = app
 
@@ -102,7 +102,17 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(dirs => dirs.app), {
+  const layerDirs = getLayerDirectories(nuxt)
+  const paths: string[] = []
+  for (const layer of layerDirs) {
+    paths.push(layer.app)
+    // Only add server if it's not inside app (avoid double-watching)
+    if (!layer.server.startsWith(layer.app.replace(/\/?$/, '/'))) {
+      paths.push(layer.server)
+    }
+  }
+
+  const watcher = chokidarWatch(paths, {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -248,9 +258,13 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
 function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
   for (const dirs of getLayerDirectories(nuxt)) {
-    if (!dirs.app || isIgnored(dirs.app)) { continue }
-
-    pathsToWatch.add(dirs.app)
+    if (!isIgnored(dirs.app)) {
+      pathsToWatch.add(dirs.app)
+    }
+    // Only add server if it's not inside app (avoid double-watching)
+    if (!isIgnored(dirs.server) && !dirs.server.startsWith(dirs.app.replace(/\/?$/, '/'))) {
+      pathsToWatch.add(dirs.server)
+    }
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }

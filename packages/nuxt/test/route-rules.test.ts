@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { globRouteRulesFromPages, removePagesRules } from '../src/pages/route-rules'
+import { globRouteRulesFromPages, removePagesRules } from '../src/pages/route-rules.ts'
 
 describe('routeRules from page meta', () => {
   const getPages = () => [

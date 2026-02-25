@@ -6,6 +6,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { useNitro } from '@nuxt/kit'
 import { resolveModulePath } from 'exsolve'
 import { defineEnv } from 'unenv'
+import escapeStringRegexp from 'escape-string-regexp'
 
 export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
   const fileNames = withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, '[hash].js'))
@@ -80,7 +81,12 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
           {
             name: 'nuxt:client:aliases',
             enforce: 'post',
-            resolveId: source => clientAliases[source],
+            resolveId: {
+              filter: {
+                id: Object.keys(clientAliases).map(id => new RegExp('^' + escapeStringRegexp(id) + '$')),
+              },
+              handler: source => clientAliases[source],
+            },
           },
         ]
       } else if (environment.name === 'ssr') {

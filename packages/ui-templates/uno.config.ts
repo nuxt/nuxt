@@ -1,4 +1,5 @@
 import { defineConfig, presetWind3 } from 'unocss'
+import type { UserConfig } from 'unocss'
 
 export default defineConfig({
   presets: [
@@ -83,4 +84,4 @@ export default defineConfig({
       },
     },
   },
-})
+}) satisfies UserConfig as UserConfig

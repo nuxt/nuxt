@@ -1,6 +1,6 @@
 import type { InputObject } from 'untyped'
 
-import type { ConfigSchema } from '../types/schema'
+import type { ConfigSchema } from '../types/schema.ts'
 
 type KeysOf<T, Prefix extends string | unknown = unknown> = keyof T extends string
   ?

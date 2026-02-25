@@ -3,8 +3,8 @@ import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 
-import { loadNuxtConfig } from '../src/loader/config'
-import { _generateTypes, resolveLayerPaths } from '../src/template'
+import { loadNuxtConfig } from '../src/loader/config.ts'
+import { _generateTypes, resolveLayerPaths } from '../src/template.ts'
 import { getLayerDirectories } from 'nuxt/kit'
 
 type DeepPartial<T> = {

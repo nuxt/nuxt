@@ -1,6 +1,6 @@
 import { defu } from 'defu'
 import type { TransformOptions } from 'esbuild'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   esbuild: {
