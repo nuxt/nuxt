@@ -53,14 +53,17 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       }
       if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
 
-      if (type === 'warn' && (msg.includes('Failed to resolve dependency') || msg.includes('Cannot optimize dependency'))) {
+      // Intercept Vite optimizer messages → OptimizeDepsHintPlugin. Fails gracefully (Vite's default messages pass through).
+      // Source: https://github.com/vitejs/vite/blob/v7.3.1/packages/vite/src/node/optimizer/optimizer.ts
+      // Ideally Vite exposes hooks for these in the future
+      if (ctx.onStaleDep && type === 'warn' && (msg.includes('Failed to resolve dependency') || msg.includes('Cannot optimize dependency'))) {
         const match = stripAnsi(msg).match(/(?:Failed to resolve|Cannot optimize) dependency:\s*([^,]+)/)
-        if (match) { ctx.onStaleDep?.(match[1]!.trim()) }
+        if (match) { ctx.onStaleDep(match[1]!.trim()) }
         return
       }
-      if (type === 'info' && msg.includes('new dependencies optimized:')) {
+      if (ctx.onNewDeps && type === 'info' && msg.includes('new dependencies optimized:')) {
         const match = stripAnsi(msg).match(/new dependencies optimized:\s*(.+)/)
-        if (match) { ctx.onNewDeps?.(match[1]!.split(',').map(d => d.trim()).filter(Boolean)) }
+        if (match) { ctx.onNewDeps(match[1]!.split(',').map(d => d.trim()).filter(Boolean)) }
         return
       }
     }
