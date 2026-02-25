@@ -27,7 +27,11 @@ export interface CookieOptions<T = any> extends _CookieOptions {
    *
    * By default, a cookie is only rewritten when its value changes.
    * When `refresh` is set to `true`, the cookie will be re-written
-   * on every assignment, extending its expiration.
+   * on every explicit assignment (e.g. `cookie.value = cookie.value`),
+   * extending its expiration even if the value is the same.
+   *
+   * Note: the expiration is not refreshed automatically — you must
+   * assign to `cookie.value` to trigger the refresh.
    *
    * @default false
    */
@@ -77,10 +81,12 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
-  // use a custom ref to expire the cookie on client side otherwise use cookieServerRef
+  // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
   const cookie = import.meta.client && delay && !hasExpired
     ? cookieRef<T | undefined>(cookieValue, delay, opts.watch && opts.watch !== 'shallow')
-    : cookieServerRef<T | undefined>(name, cookieValue)
+    : import.meta.server
+      ? cookieServerRef<T | undefined>(name, cookieValue)
+      : ref<T | undefined>(cookieValue)
 
   if (import.meta.dev && hasExpired) {
     console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
