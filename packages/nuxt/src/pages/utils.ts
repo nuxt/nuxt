@@ -429,53 +429,20 @@ function getMetaRouteFromNuxtPage (page: RequirePicked<NuxtPage, 'file'>, metaIm
 
   const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
 
-  let metaRouteName = `${metaImportName}?.name ?? ${route.name}`
-  let metaRoutePath = `${metaImportName}?.path ?? ${route.path}`
-  let metaRouteProps = `${metaImportName}?.props ?? ${route.props ?? false}`
-  let metaRouteMeta = `${metaImportName} || {}`
-  let metaRouteAlias = `${metaImportName}?.alias || []`
-  let metaRouteRedirect = `${metaImportName}?.redirect`
-
-  if (options?.overrideMeta) {
-    if (!markedDynamic.has('name')) {
-      metaRouteName = route.name ?? `${metaImportName}?.name`
-    }
-    if (!markedDynamic.has('path')) {
-      metaRoutePath = route.path ?? `${metaImportName}?.path`
-    }
-    if (!markedDynamic.has('props') && route.props != null) {
-      metaRouteProps = route.props
-    }
-    if (!markedDynamic.has('meta') && route.meta != null) {
-      metaRouteMeta = route.meta
-    }
-    if (!markedDynamic.has('alias') && route.alias != null) {
-      metaRouteAlias = route.alias
-    }
-    if (!markedDynamic.has('redirect') && route.redirect != null) {
-      metaRouteRedirect = route.redirect
-    }
-  } else {
-    if (route.alias != null) {
-      metaRouteAlias = `${route.alias}.concat(${metaImportName}?.alias || [])`
-    }
-    if (route.redirect != null) {
-      metaRouteRedirect = route.redirect
-    }
-  }
-
   const normalizeNames = nuxt.options.experimental.normalizePageNames
+  const metaRouteName = `${metaImportName}?.name ?? ${route.name}`
   const component = normalizeNames
     ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName)
     : normalizeComponent(page, pageImport, route.name)
 
+  // Step 1: Build metaRoute with runtime fallback defaults
   const metaRoute: NormalizedRoute = {
     name: metaRouteName,
-    path: metaRoutePath,
-    props: metaRouteProps,
-    meta: metaRouteMeta,
-    alias: metaRouteAlias,
-    redirect: metaRouteRedirect,
+    path: `${metaImportName}?.path ?? ${route.path}`,
+    props: `${metaImportName}?.props ?? ${route.props ?? false}`,
+    meta: `${metaImportName} || {}`,
+    alias: `${metaImportName}?.alias || []`,
+    redirect: `${metaImportName}?.redirect`,
     component,
   }
 
@@ -499,8 +466,39 @@ async function createClientPage(loader) {
     metaRoute.children = route.children
   }
 
+  // Step 2: Merge static meta with runtime meta
   if (route.meta) {
     metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
+  }
+
+  // Step 3: Apply overrideMeta or non-overrideMeta adjustments
+  if (options?.overrideMeta) {
+    // skip and retain fallback if marked dynamic
+    // set to extracted value or fallback if none extracted
+    for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
+      if (markedDynamic.has(key)) { continue }
+      metaRoute[key] = route[key] ?? `${metaImportName}?.${key}`
+    }
+
+    // set to extracted value or delete if none extracted
+    for (const key of ['meta', 'alias', 'redirect', 'props'] satisfies NormalizedRouteKeys) {
+      if (markedDynamic.has(key)) { continue }
+
+      if (route[key] == null) {
+        delete metaRoute[key]
+        continue
+      }
+
+      metaRoute[key] = route[key]
+    }
+  } else {
+    if (route.alias != null) {
+      metaRoute.alias = `${route.alias}.concat(${metaImportName}?.alias || [])`
+    }
+
+    if (route.redirect != null) {
+      metaRoute.redirect = route.redirect
+    }
   }
 
   return metaRoute
