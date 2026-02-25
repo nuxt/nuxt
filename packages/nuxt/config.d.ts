@@ -1,5 +1,5 @@
-import type { NuxtConfig } from 'nuxt/schema'
 import type { ConfigLayerMeta, DefineConfig } from 'c12'
+import type { NuxtConfig } from 'nuxt/schema'
 
 export { NuxtConfig } from 'nuxt/schema'
 

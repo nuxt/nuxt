@@ -10,9 +10,6 @@ import { appManifest as isAppManifestEnabled, purgeCachedData } from '#build/nux
 export default defineNuxtPlugin({
   name: 'nuxt:payload',
   setup (nuxtApp) {
-    // TODO: Support dev
-    if (import.meta.dev) { return }
-
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
     useRouter().beforeResolve(async (to, from) => {

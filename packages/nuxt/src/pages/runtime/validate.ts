@@ -11,8 +11,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   const error = createError({
     fatal: import.meta.client,
-    statusCode: (result && result.statusCode) || 404,
-    statusMessage: (result && result.statusMessage) || `Page Not Found: ${to.fullPath}`,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    status: (result && (result.status || result.statusCode)) || 404,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    statusText: (result && (result.statusText || result.statusMessage)) || `Page Not Found: ${to.fullPath}`,
     data: {
       path: to.fullPath,
     },

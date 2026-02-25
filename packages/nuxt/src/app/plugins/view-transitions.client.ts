@@ -30,6 +30,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
 
   router.beforeResolve(async (to, from) => {
+    if (to.matched.length === 0) { return }
+
     const toViewTransitionOptions = (to.meta.viewTransition || {}) as ViewTransitionPageOptions
     const fromViewTransitionOptions = (from.meta.viewTransition || {}) as ViewTransitionPageOptions
     const viewTransitionMode = toViewTransitionOptions?.enabled ?? defaultViewTransition.enabled
@@ -65,7 +67,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     const ready = new Promise<void>(resolve => (changeRoute = resolve))
 
     transition = document.startViewTransition!({
-      // @ts-expect-error update is not in the type
       update: () => {
         changeRoute()
         return promise
@@ -82,6 +83,16 @@ export default defineNuxtPlugin((nuxtApp) => {
     await nuxtApp.callHook('page:view-transition:start', transition)
 
     return ready
+  })
+
+  router.onError(() => {
+    abortTransition?.()
+    resetTransitionState()
+  })
+
+  nuxtApp.hook('app:error', () => {
+    abortTransition?.()
+    resetTransitionState()
   })
 
   nuxtApp.hook('vue:error', () => {

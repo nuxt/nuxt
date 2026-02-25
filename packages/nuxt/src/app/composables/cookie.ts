@@ -2,8 +2,8 @@ import type { Ref } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
-import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
-import type { H3Event } from 'h3'
+import { deleteCookie, getCookie, getRequestHeader, setCookie } from '@nuxt/nitro-server/h3'
+import type { H3Event } from '@nuxt/nitro-server/h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
@@ -21,6 +21,21 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
+
+  /**
+   * Refresh cookie expiration even when the value remains unchanged.
+   *
+   * By default, a cookie is only rewritten when its value changes.
+   * When `refresh` is set to `true`, the cookie will be re-written
+   * on every explicit assignment (e.g. `cookie.value = cookie.value`),
+   * extending its expiration even if the value is the same.
+   *
+   * Note: the expiration is not refreshed automatically — you must
+   * assign to `cookie.value` to trigger the refresh.
+   *
+   * @default false
+   */
+  refresh?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -29,11 +44,21 @@ export interface CookieRef<T> extends Ref<T> {}
 const CookieDefaults = {
   path: '/',
   watch: true,
-  decode: val => destr(decodeURIComponent(val)),
+  decode: (val) => {
+    const decoded = decodeURIComponent(val)
+    const parsed = destr(decoded)
+    // destr can return Infinity or precision-loss numbers - keep original string
+    if (typeof parsed === 'number' && (!Number.isFinite(parsed) || String(parsed) !== decoded)) {
+      return decoded
+    }
+    return parsed
+  },
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
+  refresh: false,
 } satisfies CookieOptions<any>
 
-const store = import.meta.client && cookieStore ? window.cookieStore : undefined
+// we use globalThis to avoid crashes in web workers
+const store = import.meta.client && cookieStore ? globalThis.cookieStore : undefined
 
 /** @since 3.0.0 */
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
@@ -56,10 +81,12 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
-  // use a custom ref to expire the cookie on client side otherwise use basic ref
+  // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
   const cookie = import.meta.client && delay && !hasExpired
     ? cookieRef<T | undefined>(cookieValue, delay, opts.watch && opts.watch !== 'shallow')
-    : ref<T | undefined>(cookieValue)
+    : import.meta.server
+      ? cookieServerRef<T | undefined>(name, cookieValue)
+      : ref<T | undefined>(cookieValue)
 
   if (import.meta.dev && hasExpired) {
     console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
@@ -130,7 +157,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (opts.watch) {
       watch(cookie, () => {
         if (watchPaused) { return }
-        callback()
+        callback(opts.refresh)
       },
       { deep: opts.watch !== 'shallow' })
     }
@@ -141,7 +168,18 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
-      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      const valueIsSame = isEqual(cookie.value, cookies[name])
+
+      if (
+        opts.readonly
+        || (valueIsSame && !opts.refresh)
+      ) { return }
+
+      nuxtApp._cookiesChanged ||= {}
+      if (valueIsSame && opts.refresh && !nuxtApp._cookiesChanged[name]) {
+        return
+      }
+
       nuxtApp._cookies ||= {}
       if (name in nuxtApp._cookies) {
         // do not append a second `set-cookie` header
@@ -210,7 +248,7 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 /**
  * The maximum value allowed on a timeout delay.
  *
- * Reference: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
+ * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout#maximum_delay_value
  */
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 
@@ -251,6 +289,33 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
       },
       set (newValue) {
         createExpirationTimeout()
+
+        internalRef.value = newValue
+        trigger()
+      },
+    }
+  })
+}
+
+/**
+ * Custom ref that tracks explicit cookie writes on the server.
+ *
+ * This is required for the `refresh` option to ensure the cookie is
+ * re-written on SSR even when the value remains unchanged.
+ */
+function cookieServerRef<T> (name: string, value: T | undefined) {
+  const internalRef = ref(value)
+  const nuxtApp = useNuxtApp()
+
+  return customRef((track, trigger) => {
+    return {
+      get () {
+        track()
+        return internalRef.value
+      },
+      set (newValue) {
+        nuxtApp._cookiesChanged ||= {}
+        nuxtApp._cookiesChanged[name] = true
 
         internalRef.value = newValue
         trigger()

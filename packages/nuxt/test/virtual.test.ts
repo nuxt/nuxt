@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import { rollup } from 'rollup'
 
-import { VirtualFSPlugin } from '../src/core/plugins/virtual'
+import { VirtualFSPlugin } from '../src/core/plugins/virtual.ts'
 
 describe('virtual fs plugin', () => {
   it('should support loading files virtually', async () => {
@@ -52,6 +52,7 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
   const stubNuxt = {
     options: {
       extensions: ['.ts', '.js'],
+      buildDir: '/.nuxt',
       alias: {
         '~': '/',
         '#build': '/.nuxt',

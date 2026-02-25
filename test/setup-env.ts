@@ -1,6 +1,6 @@
 import { consola } from 'consola'
 import { vi } from 'vitest'
-import { logger } from '../packages/kit'
+import { logger } from '@nuxt/kit'
 
 consola.mockTypes(() => vi.fn())
 logger.mockTypes(() => vi.fn())

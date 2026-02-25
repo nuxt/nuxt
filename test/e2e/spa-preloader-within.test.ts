@@ -4,14 +4,12 @@ import { join } from 'pathe'
 import type { Page } from 'playwright-core'
 import { waitForHydration } from '@nuxt/test-utils'
 import { expect, test } from './test-utils'
+import { isDev } from '../matrix'
 
 /**
  * This test suite verifies that the SPA loading template is correctly rendered
  * inside the app tag when spaLoadingTemplateLocation is set to 'within'.
  */
-
-const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
-const isDev = process.env.TEST_ENV === 'dev'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/spa-loader', import.meta.url))
 
@@ -29,7 +27,6 @@ test.use({
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
       buildDir: isDev ? join(fixtureDir, '.nuxt', 'test', Math.random().toString(36).slice(2, 8)) : undefined,
-      builder: isWebpack ? 'webpack' : 'vite',
       spaLoadingTemplate: true,
       experimental: {
         spaLoadingTemplateLocation: 'within',

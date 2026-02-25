@@ -19,7 +19,7 @@ async function initTesting () {
   ])
 
   await Promise.all(
-    dirs.map(dir => exec('pnpm', ['nuxi', 'prepare'], { nodeOptions: { cwd: dir } })),
+    dirs.map(dir => exec('pnpm', ['nuxt', 'prepare'], { nodeOptions: { cwd: dir } })),
   )
 }
 

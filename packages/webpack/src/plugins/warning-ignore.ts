@@ -1,6 +1,6 @@
 import type { Compiler, WebpackError } from 'webpack'
 
-export type WarningFilter = (warn: WebpackError) => boolean
+export type WarningFilter = (warn: WebpackError | Error) => boolean
 
 export default class WarningIgnorePlugin {
   filter: WarningFilter

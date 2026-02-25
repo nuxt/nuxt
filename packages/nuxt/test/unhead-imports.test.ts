@@ -1,7 +1,8 @@
 // @vitest-environment node
+import process from 'node:process'
 import { describe, expect, it } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
-import { UnheadImportsPlugin } from '../src/head/plugins/unhead-imports'
+import { UnheadImportsPlugin } from '../src/head/plugins/unhead-imports.ts'
 
 describe('UnheadImportsPlugin', () => {
   // Helper function to transform code
@@ -33,6 +34,17 @@ describe('UnheadImportsPlugin', () => {
     it('should exclude files from unhead libraries', () => {
       expect(transformInclude('/project/node_modules/@unhead/vue/index.js')).toBe(false)
       expect(transformInclude('/project/node_modules/unhead/index.js')).toBe(false)
+    })
+
+    it('should exclude nuxt head runtime composables', () => {
+      // Unix paths
+      expect(transformInclude('/project/node_modules/nuxt/dist/head/runtime/composables.js')).toBe(false)
+      expect(transformInclude('/project/node_modules/nuxt/dist/head/runtime/index.js')).toBe(false)
+      // Windows paths
+      expect(transformInclude('C:\\project\\node_modules\\nuxt\\dist\\head\\runtime\\composables.js')).toBe(false)
+      // Should NOT exclude - different paths
+      expect(transformInclude('/project/node_modules/nuxt/dist/head/plugin.js')).toBe(true)
+      expect(transformInclude('/project/node_modules/nuxt/dist/app/composables.js')).toBe(true)
     })
   })
 

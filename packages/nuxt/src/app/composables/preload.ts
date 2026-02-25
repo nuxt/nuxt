@@ -36,7 +36,7 @@ export const prefetchComponents = (components: string | string[]) => {
 
 // --- Internal ---
 
-function _loadAsyncComponent (component: Component) {
+export function _loadAsyncComponent (component: Component) {
   if ((component as any)?.__asyncLoader && !(component as any).__asyncResolved) {
     return (component as any).__asyncLoader()
   }
@@ -61,11 +61,11 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
 
   router._routePreloaded.add(path)
 
-  const components = matched
-    .map(component => component.components?.default)
-    .filter(component => typeof component === 'function')
-
-  for (const component of components) {
+  for (const route of matched) {
+    const component = route.components?.default
+    if (typeof component !== 'function') {
+      continue
+    }
     const promise = Promise.resolve((component as () => unknown)())
       .catch(() => {})
       .finally(() => promises.splice(promises.indexOf(promise)))

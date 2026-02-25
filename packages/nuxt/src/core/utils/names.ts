@@ -1,7 +1,7 @@
 import { basename, dirname, extname, normalize } from 'pathe'
 import { kebabCase, splitByCase } from 'scule'
 import { withTrailingSlash } from 'ufo'
-import { QUOTE_RE } from '.'
+import { QUOTE_RE } from './index.ts'
 
 export function getNameFromPath (path: string, relativeTo?: string) {
   const relativePath = relativeTo
@@ -33,7 +33,7 @@ export function resolveComponentNameSegments (fileName: string, prefixParts: str
     matchedSuffix.unshift(...splitByCase(prefixPart).map(p => p.toLowerCase()))
     const matchedSuffixContent = matchedSuffix.join('/')
     if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
-      // e.g Item/Item/Item.vue -> Item
+      // e.g. Item/Item/Item.vue -> Item
       (prefixPart.toLowerCase() === fileNamePartsContent &&
         prefixParts[index + 1] &&
         prefixParts[index] === prefixParts[index + 1])) {

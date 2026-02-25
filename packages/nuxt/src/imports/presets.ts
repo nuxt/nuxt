@@ -102,6 +102,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/route-announcer',
   },
   {
+    imports: ['useAnnouncer'],
+    from: '#app/composables/announcer',
+  },
+  {
     imports: ['useRuntimeHook'],
     from: '#app/composables/runtime-hook',
   },
@@ -139,6 +143,10 @@ export const scriptsStubsPreset = {
     'useScriptNpm',
     'useScriptUmamiAnalytics',
     'useScriptSnapchatPixel',
+    'useScriptRybbitAnalytics',
+    'useScriptDatabuddyAnalytics',
+    'useScriptRedditPixel',
+    'useScriptPayPal',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',
@@ -200,6 +208,7 @@ const vuePreset = defineUnimportPreset({
     'watchEffect',
     'watchPostEffect',
     'watchSyncEffect',
+    'onWatcherCleanup',
     'isShallow',
 
     // effect
@@ -218,7 +227,6 @@ const vuePreset = defineUnimportPreset({
     'hasInjectionContext',
     'nextTick',
     'provide',
-    'mergeModels',
     'toValue',
     'useModel',
     'useAttrs',
@@ -262,6 +270,13 @@ export const appCompatPresets: InlinePreset[] = [
   {
     imports: ['setInterval'],
     from: '#app/compat/interval',
+  },
+]
+
+export const lazyHydrationMacroPreset = [
+  {
+    imports: ['defineLazyHydrationComponent'],
+    from: '#app/composables/lazy-hydration',
   },
 ]
 

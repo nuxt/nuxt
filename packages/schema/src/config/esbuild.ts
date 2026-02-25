@@ -1,13 +1,9 @@
 import { defu } from 'defu'
 import type { TransformOptions } from 'esbuild'
-import { defineResolvers } from '../utils/definition'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   esbuild: {
-    /**
-     * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
-     * @type {import('esbuild').TransformOptions}
-     */
     options: {
       target: {
         $resolve: async (val, get) => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { pascalCase } from 'scule'
-import { getNameFromPath, resolveComponentNameSegments } from '../src/core/utils'
+import { getNameFromPath, resolveComponentNameSegments } from '../src/core/utils/index.ts'
 
 describe('getNameFromPath', () => {
   const cases: Record<string, string> = {

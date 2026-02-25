@@ -1,8 +1,9 @@
-import { defineConfig, presetUno } from 'unocss'
+import { defineConfig, presetWind3 } from 'unocss'
+import type { UserConfig } from 'unocss'
 
 export default defineConfig({
   presets: [
-    presetUno({
+    presetWind3({
       dark: 'media',
     }),
   ],
@@ -83,4 +84,4 @@ export default defineConfig({
       },
     },
   },
-})
+}) satisfies UserConfig as UserConfig

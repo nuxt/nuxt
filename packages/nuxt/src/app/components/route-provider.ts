@@ -6,14 +6,11 @@ import { PageRouteSymbol } from './injections'
 export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
   name,
   props: {
-    vnode: {
-      type: Object as () => VNode,
-      required: true,
-    },
     route: {
       type: Object as () => RouteLocationNormalizedLoaded,
       required: true,
     },
+    vnode: Object as () => VNode,
     vnodeRef: Object as () => Ref<any>,
     renderKey: String,
     trackRootNodes: Boolean,
@@ -39,7 +36,7 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            const filename = (vnode?.type as any).__file
+            const filename = (vnode?.type as any)?.__file
             console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
           }
         })
@@ -47,6 +44,9 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
     }
 
     return () => {
+      if (!props.vnode) {
+        return props.vnode
+      }
       if (import.meta.dev && import.meta.client) {
         vnode = h(props.vnode, { ref: props.vnodeRef })
         return vnode

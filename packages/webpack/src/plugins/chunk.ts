@@ -4,25 +4,39 @@ import { webpack } from '#builder'
 const pluginName = 'ChunkErrorPlugin'
 
 export class ChunkErrorPlugin {
-  script = `
-if (typeof ${webpack.RuntimeGlobals.require} !== "undefined") {
-  var _ensureChunk = ${webpack.RuntimeGlobals.ensureChunk};
-  ${webpack.RuntimeGlobals.ensureChunk} = function (chunkId) {
-    return Promise.resolve(_ensureChunk(chunkId)).catch(error => {
-      const e = new Event('nuxt:preloadError', { cancelable: true })
-      e.payload = error
-      window.dispatchEvent(e)
-      throw error
+  apply (compiler: Compiler) {
+    compiler.hooks.thisCompilation.tap(pluginName, (compilation) => {
+      compilation.hooks.runtimeRequirementInTree
+        .for(webpack.RuntimeGlobals.ensureChunk)
+        .tap(pluginName, (chunk) => {
+          compilation.addRuntimeModule(
+            chunk,
+            new ChunkErrorRuntimeModule(),
+          )
+        })
+    })
+  }
+}
+
+class ChunkErrorRuntimeModule extends webpack.RuntimeModule {
+  constructor () {
+    super('chunk preload error handler', webpack.RuntimeModule.STAGE_ATTACH)
+  }
+
+  override generate () {
+    const { ensureChunk } = webpack.RuntimeGlobals
+    return `
+if (typeof ${ensureChunk} !== "undefined") {
+  var _ensureChunk = ${ensureChunk};
+  ${ensureChunk} = function (chunkId) {
+    return Promise.resolve(_ensureChunk(chunkId)).catch(function(error) {
+      var e = new Event('nuxt:preloadError', { cancelable: true });
+      e.payload = error;
+      window.dispatchEvent(e);
+      throw error;
     });
   };
-};`
-
-  apply (compiler: Compiler) {
-    compiler.hooks.thisCompilation.tap(pluginName, compilation =>
-      compilation.mainTemplate.hooks.localVars.tap(
-        { name: pluginName, stage: 1 },
-        source => source + this.script,
-      ),
-    )
+}
+`
   }
 }

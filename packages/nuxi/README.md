@@ -1,4 +1,4 @@
-# Nuxt CLI (nuxi)
+# Nuxt CLI
 
 ⚡️ Next Generation CLI Experience for [Nuxt](https://nuxt.com/).
 

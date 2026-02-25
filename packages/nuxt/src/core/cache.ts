@@ -16,15 +16,17 @@ export async function getVueHash (nuxt: Nuxt) {
 
   const { hash } = await getHashes(nuxt, {
     id,
-    cwd: layer => layer.config?.srcDir,
-    patterns: layer => [
-      join(relative(layer.cwd, layer.config.srcDir), '**'),
-      `!${relative(layer.cwd, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
-      `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.public || 'public'))}/**`,
-      `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.static || 'public'))}/**`,
-      '!node_modules/**',
-      '!nuxt.config.*',
-    ],
+    cwd: layer => layer.config.srcDir || layer.cwd,
+    patterns: (layer) => {
+      const srcDir = layer.config.srcDir || layer.cwd
+      return [
+        '**',
+        `!${relative(srcDir, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
+        `!${relative(srcDir, resolve(layer.cwd, layer.config.dir?.public || 'public'))}/**`,
+        '!node_modules/**',
+        '!nuxt.config.*',
+      ]
+    },
     configOverrides: {
       buildId: undefined,
       serverDir: undefined,
@@ -33,24 +35,29 @@ export async function getVueHash (nuxt: Nuxt) {
       runtimeConfig: undefined,
       logLevel: undefined,
       devServerHandlers: undefined,
-      generate: undefined,
       devtools: undefined,
     },
   })
 
   const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
+  const buildIdCacheFile = cacheFile.replace('.tar', '.buildid')
 
   return {
     hash,
     async collectCache () {
       const start = Date.now()
       await writeCache(nuxt.options.buildDir, nuxt.options.buildDir, cacheFile)
+
+      // Cache buildId so it can be restored before modules are initialised on the next build
+      await mkdir(dirname(buildIdCacheFile), { recursive: true })
+      await writeFile(buildIdCacheFile, nuxt.options.buildId)
+
       const elapsed = Date.now() - start
       consola.success(`Cached Vue client and server builds in \`${elapsed}ms\`.`)
     },
     async restoreCache () {
       const start = Date.now()
-      const res = await restoreCache(nuxt.options.buildDir, cacheFile)
+      const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
       if (res) {
         consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
@@ -60,9 +67,36 @@ export async function getVueHash (nuxt: Nuxt) {
   }
 }
 
+/**
+ * Restore cached buildId before modules are initialised.
+ *
+ * Modules and the nitro builder require `buildId`, so we must set
+ * `nuxt.options.buildId` and `nuxt.options.runtimeConfig.app.buildId`
+ * before modules install. This ensures the manifest and all downstream
+ * consumers use the same buildId that was used when the Vue build was cached.
+ */
+export async function restoreCachedBuildId (nuxt: Nuxt) {
+  const { hash } = await getVueHash(nuxt)
+  const cacheDir = getCacheDir(nuxt)
+  const buildIdCacheFile = join(cacheDir, 'vue', hash + '.buildid')
+
+  if (!existsSync(buildIdCacheFile)) {
+    return
+  }
+
+  const cachedBuildId = (await readFile(buildIdCacheFile, 'utf-8')).trim()
+  if (!cachedBuildId || !/^[\w-]+$/.test(cachedBuildId)) {
+    return
+  }
+
+  nuxt.options.buildId = cachedBuildId
+  nuxt.options.runtimeConfig.app.buildId = cachedBuildId
+  consola.debug(`Restored cached buildId: ${cachedBuildId}`)
+}
+
 export async function cleanupCaches (nuxt: Nuxt) {
   const start = Date.now()
-  const caches = await glob(['*/*.tar'], {
+  const caches = await glob(['*/*.tar', '*/*.buildid'], {
     cwd: getCacheDir(nuxt),
     absolute: true,
   })
@@ -117,7 +151,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
       name: f.name,
       size: f.attrs?.size,
       data: hash(f.data),
-    }))
+    })).sort((a, b) => a.name.localeCompare(b.name))
 
     const isIgnored = createIsIgnored(nuxt)
     const sourceFiles = await readFilesRecursive(options.cwd(layer), {
@@ -142,6 +176,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
         'yarn.lock',
         'pnpm-lock.yaml',
         'tsconfig.json',
+        'bun.lock',
         'bun.lockb',
       ],
     })
@@ -151,6 +186,8 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
       data: normalizeFiles(rootFiles),
     })
   }
+
+  hashSources.sort((a, b) => a.name.localeCompare(b.name))
 
   const res = ((nuxt as any)[`_${options.id}BuildHash`] = {
     hash: hash(hashSources),
@@ -233,16 +270,24 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
   }
 }
 
-async function restoreCache (cwd: string, cacheFile: string) {
+async function restoreCacheFromFile (cwd: string, cacheFile: string) {
   if (!existsSync(cacheFile)) {
     return false
   }
 
+  const resolvedCwd = resolve(cwd) + '/'
   const files = parseTar(await readFile(cacheFile))
   for (const file of files) {
     let fd: FileHandle | undefined = undefined
     try {
       const filePath = resolve(cwd, file.name)
+
+      // Prevent path traversal attacks
+      if (!filePath.startsWith(resolvedCwd)) {
+        consola.warn(`Skipping unsafe cache path: ${file.name}`)
+        continue
+      }
+
       await mkdir(dirname(filePath), { recursive: true })
 
       fd = await open(filePath, 'w')

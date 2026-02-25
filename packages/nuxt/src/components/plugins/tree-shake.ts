@@ -1,14 +1,13 @@
 import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
-import type { AssignmentProperty, CallExpression, ObjectExpression, Pattern, Program, Property, ReturnStatement, VariableDeclaration } from 'estree'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
 
-import { parseAndWalk, walk, withLocations } from '../../core/utils/parse'
-import type { Node } from '../../core/utils/parse'
-import { distDir } from '../../dirs'
+import { parseAndWalk, walk } from 'oxc-walker'
+import type { BindingPattern, BindingProperty, CallExpression, Node, ObjectExpression, Program, ReturnStatement, VariableDeclaration } from 'oxc-parser'
+import { distDir } from '../../dirs.ts'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
@@ -49,7 +48,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
       const componentsToRemoveSet = new Set<string>()
 
       // remove client only components or components called in ClientOnly default slot
-      const ast = parseAndWalk(code, id, (node) => {
+      const { program: ast } = parseAndWalk(code, id, (node) => {
         if (!isSsrRender(node)) {
           return
         }
@@ -62,10 +61,9 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
           if (!componentName || !COMPONENTS_IDENTIFIERS_RE.test(componentName) || children?.type !== 'ObjectExpression') { return }
 
           const isClientOnlyComponent = CLIENT_ONLY_NAME_RE.test(componentName)
-          const slotsToRemove = isClientOnlyComponent ? children.properties.filter(prop => prop.type === 'Property' && prop.key.type === 'Identifier' && !PLACEHOLDER_EXACT_RE.test(prop.key.name)) as Property[] : children.properties as Property[]
+          const slotsToRemove = isClientOnlyComponent ? children.properties.filter(prop => prop.type === 'Property' && prop.key.type === 'Identifier' && !PLACEHOLDER_EXACT_RE.test(prop.key.name)) : children.properties
 
-          for (const _slot of slotsToRemove) {
-            const slot = withLocations(_slot)
+          for (const slot of slotsToRemove) {
             s.remove(slot.start, slot.end + 1)
             const removedCode = `({${code.slice(slot.start, slot.end + 1)}})`
             const currentState = s.toString()
@@ -149,8 +147,7 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
 function removePropertyFromObject (node: ObjectExpression, name: string, magicString: MagicString) {
   for (const property of node.properties) {
     if (property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === name) {
-      const _property = withLocations(property)
-      magicString.remove(_property.start, _property.end + 1)
+      magicString.remove(property.start, property.end + 1)
       return true
     }
   }
@@ -172,12 +169,11 @@ function removeImportDeclaration (ast: Program, importName: string, magicString:
     const specifierIndex = node.specifiers.findIndex(s => s.local.name === importName)
     if (specifierIndex > -1) {
       if (node.specifiers!.length > 1) {
-        const specifier = withLocations(node.specifiers![specifierIndex])
+        const specifier = node.specifiers![specifierIndex]!
         magicString.remove(specifier.start, specifier.end + 1)
         node.specifiers!.splice(specifierIndex, 1)
       } else {
-        const specifier = withLocations(node)
-        magicString.remove(specifier.start, specifier.end)
+        magicString.remove(node.start, node.end)
       }
       return true
     }
@@ -241,7 +237,7 @@ function removeVariableDeclarator (codeAst: Program, name: string, magicString: 
     enter (node) {
       if (node.type !== 'VariableDeclaration') { return }
       for (const declarator of node.declarations) {
-        const toRemove = withLocations(findMatchingPatternToRemove(declarator.id, node, name, removedNodes))
+        const toRemove = findMatchingPatternToRemove(declarator.id, node, name, removedNodes)
         if (toRemove) {
           magicString.remove(toRemove.start, toRemove.end + 1)
           removedNodes.add(toRemove)
@@ -254,20 +250,20 @@ function removeVariableDeclarator (codeAst: Program, name: string, magicString: 
 /**
  * find the Pattern to remove which the identifier is equal to the name parameter.
  */
-function findMatchingPatternToRemove (node: Pattern, toRemoveIfMatched: Node, name: string, removedNodeSet: WeakSet<Node>): Node | undefined {
+function findMatchingPatternToRemove (node: BindingPattern, toRemoveIfMatched: Node, name: string, removedNodeSet: WeakSet<Node>): Node | undefined {
   if (node.type === 'Identifier') {
     if (node.name === name) {
       return toRemoveIfMatched
     }
   } else if (node.type === 'ArrayPattern') {
-    const elements = node.elements.filter((e): e is Pattern => e !== null && !removedNodeSet.has(e))
+    const elements = node.elements.filter((e): e is BindingPattern => e !== null && !removedNodeSet.has(e))
 
     for (const element of elements) {
       const matched = findMatchingPatternToRemove(element, elements.length > 1 ? element : toRemoveIfMatched, name, removedNodeSet)
       if (matched) { return matched }
     }
   } else if (node.type === 'ObjectPattern') {
-    const properties = node.properties.filter((e): e is AssignmentProperty => e.type === 'Property' && !removedNodeSet.has(e))
+    const properties = node.properties.filter((e): e is BindingProperty => e.type === 'Property' && !removedNodeSet.has(e))
 
     for (const [index, property] of properties.entries()) {
       let nodeToRemove: Node = property

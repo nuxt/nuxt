@@ -1,13 +1,15 @@
-import { isAbsolute, resolve } from 'pathe'
-import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
-import { logger } from '@nuxt/kit'
-import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets } from '../utils/config'
-import { nuxt } from '../presets/nuxt'
-import { node } from '../presets/node'
-import { webpack } from '#builder'
+import { isAbsolute, normalize, resolve } from 'pathe'
+import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
+import { parseNodeModulePath } from 'mlly'
+import { resolveModulePath } from 'exsolve'
+import type { WebpackConfigContext } from '../utils/config.ts'
+import { applyPresets } from '../utils/config.ts'
+import { nuxt } from '../presets/nuxt.ts'
+import { node } from '../presets/node.ts'
+import { TsCheckerPlugin, webpack } from '#builder'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
+const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
 
 export async function server (ctx: WebpackConfigContext) {
   ctx.name = 'server'
@@ -27,7 +29,7 @@ function serverPreset (ctx: WebpackConfigContext) {
 
   if (ctx.nuxt.options.sourcemap.server) {
     const prefix = ctx.nuxt.options.sourcemap.server === 'hidden' ? 'hidden-' : ''
-    ctx.config.devtool = prefix + ctx.isDev ? 'cheap-module-source-map' : 'source-map'
+    ctx.config.devtool = prefix + (ctx.isDev ? 'cheap-module-source-map' : 'source-map')
   } else {
     ctx.config.devtool = false
   }
@@ -35,6 +37,10 @@ function serverPreset (ctx: WebpackConfigContext) {
   ctx.config.optimization = {
     splitChunks: false,
     minimize: false,
+  }
+
+  if (ctx.isDev) {
+    ctx.config.output!.asyncChunks = false
   }
 }
 
@@ -53,21 +59,46 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = [
+  const external = new Set([
     'nitro/runtime',
+    // TODO: remove in v5
+    '#internal/nitro',
+    'nitropack/runtime',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
-  ]
+    ...ctx.nuxt['~runtimeDependencies'] || [],
+  ])
   if (!ctx.nuxt.options.dev) {
-    external.push('#internal/nuxt/paths', '#internal/nuxt/app-config', '#app-manifest')
+    external.add('#internal/nuxt/paths')
+    external.add('#internal/nuxt/app-config')
+    external.add('#app-manifest')
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }
-  ctx.config.externals.push(({ request }, cb) => {
+
+  // Resolve conditions for server build
+  const conditions = [
+    ctx.nuxt.options.dev ? 'development' : 'production',
+    'node',
+    'import',
+    'require',
+  ]
+
+  ctx.config.externals.push(({ request, context }, cb) => {
     if (!request) {
       return cb(undefined, false)
     }
-    if (external.includes(request)) {
+    if (external.has(request)) {
+      // Resolve to absolute path so nitro can handle version resolution
+      const resolved = resolveModulePath(request, {
+        from: context ? [context, ...ctx.nuxt.options.modulesDir].map(d => directoryToURL(d)) : ctx.nuxt.options.modulesDir.map(d => directoryToURL(d)),
+        suffixes: ['', 'index'],
+        conditions,
+        try: true,
+      })
+      if (resolved && isAbsolute(resolved)) {
+        return cb(undefined, resolved)
+      }
       return cb(undefined, true)
     }
     if (
@@ -79,6 +110,27 @@ function serverStandalone (ctx: WebpackConfigContext) {
       // console.log('Inline', request)
       return cb(undefined, false)
     }
+
+    if (context && request && !request.startsWith('node:') && (isAbsolute(context) || VIRTUAL_RE.test(context))) {
+      try {
+        const normalisedRequest = resolveAlias(normalize(request), ctx.nuxt.options.alias)
+        const dir = parseNodeModulePath(context).dir || ctx.nuxt.options.rootDir
+
+        const resolved = resolveModulePath(normalisedRequest, {
+          from: [dir, ...ctx.nuxt.options.modulesDir].map(d => directoryToURL(d)),
+          suffixes: ['', 'index'],
+          conditions,
+          try: true,
+        })
+
+        if (resolved && isAbsolute(resolved)) {
+          return cb(undefined, false)
+        }
+      } catch {
+        // Ignore resolution errors, fall through to externalize
+      }
+    }
+
     // console.log('Ext', request)
     return cb(undefined, true)
   })
@@ -97,7 +149,7 @@ function serverPlugins (ctx: WebpackConfigContext) {
 
   // Add type-checking
   if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
-    ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
+    ctx.config.plugins!.push(new TsCheckerPlugin({
       logger,
     }))
   }

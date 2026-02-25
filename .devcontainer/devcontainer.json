@@ -2,7 +2,9 @@
 // https://containers.dev/implementors/json_reference/
 {
   "name": "nuxt-devcontainer",
-  "build": { "dockerfile": "Dockerfile" },
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {},
   "customizations": {
     "vscode": {
@@ -16,6 +18,15 @@
     }
   },
   "postStartCommand": "pnpm install && pnpm dev:prepare",
+  "forwardPorts": [
+    3000
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "Application",
+      "onAutoForward": "openPreview"
+    }
+  },
   "mounts": [
     "type=volume,target=${containerWorkspaceFolder}/node_modules"
   ]

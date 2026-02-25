@@ -1,10 +1,10 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
-import type { Plugin, RouteMiddleware } from 'nuxt/app'
+import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
@@ -14,10 +14,8 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
-// @ts-expect-error virtual file
-import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions, { hashMode } from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
@@ -111,20 +109,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
-    nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
-      if (to.matched[0]?.components?.default === from.matched[0]?.components?.default) {
+      if (to.matched.at(-1)?.components?.default === from.matched.at(-1)?.components?.default) {
         syncCurrentRoute()
       }
     })
 
     // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
-    const route = {} as RouteLocationNormalizedLoaded
+    const route = { sync: syncCurrentRoute } as NuxtApp['_route']
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation],
+        get: () => _route.value[key as keyof RouteLocationNormalizedLoadedGeneric],
         enumerable: true,
       })
     }
@@ -168,9 +165,21 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
+    // #4920, #4982
     const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
       ? router.resolve(initialURL)
       : router.currentRoute.value
+
+    // Detect if we're hydrating a prerendered page that doesn't match the current URL
+    // (for example, if the browser URL has different query params than the
+    // prerendered payload).
+    const hasDeferredRoute = import.meta.client
+      && nuxtApp.isHydrating
+      && nuxtApp.payload.prerenderedAt
+      && nuxtApp.payload.path
+      && initialURL !== nuxtApp.payload.path
+      && isSamePath(router.currentRoute.value.path, nuxtApp.payload.path)
+
     syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
@@ -198,16 +207,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        if (isAppManifestEnabled) {
-          const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
+        const routeRules = getRouteRules({ path: to.path })
 
-          if (routeRules.appMiddleware) {
-            for (const key in routeRules.appMiddleware) {
-              if (routeRules.appMiddleware[key]) {
-                middlewareEntries.add(key)
-              } else {
-                middlewareEntries.delete(key)
-              }
+        if (routeRules.appMiddleware) {
+          for (const key in routeRules.appMiddleware) {
+            if (routeRules.appMiddleware[key]) {
+              middlewareEntries.add(key)
+            } else {
+              middlewareEntries.delete(key)
             }
           }
         }
@@ -223,12 +230,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
 
           try {
+            if (import.meta.dev) {
+              nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
+            }
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
-                  statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`,
+                  status: 404,
+                  statusText: `Page Not Found: ${initialURL}`,
                 })
                 await nuxtApp.runWithContext(() => showError(error))
                 return false
@@ -261,12 +271,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:end')
     })
 
-    router.afterEach(async (to, _from) => {
-      if (to.matched.length === 0) {
-        await nuxtApp.runWithContext(() => showError(createError({
-          statusCode: 404,
+    router.afterEach((to) => {
+      if (to.matched.length === 0 && !error.value) {
+        return nuxtApp.runWithContext(() => showError(createError({
+          status: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`,
+          statusText: `Page not found: ${to.fullPath}`,
           data: {
             path: to.fullPath,
           },
@@ -276,14 +286,28 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
-        // #4920, #4982
         if ('name' in resolvedInitialRoute) {
           resolvedInitialRoute.name = undefined
         }
-        await router.replace({
-          ...resolvedInitialRoute,
-          force: true,
-        })
+
+        if (hasDeferredRoute) {
+          // First apply the route that was prerendered to avoid hydration mismatches,
+          // then replace it after hydration with the actual resolved initial route
+          const payloadRoute = router.resolve(nuxtApp.payload.path!)
+          if ('name' in payloadRoute) {
+            payloadRoute.name = undefined
+          }
+          await router.replace({ ...payloadRoute, force: true })
+
+          nuxtApp.hooks.hookOnce('app:suspense:resolve', async () => {
+            await router.replace({ ...resolvedInitialRoute, force: true })
+          })
+        } else {
+          await router.replace({
+            ...resolvedInitialRoute,
+            force: true,
+          })
+        }
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {

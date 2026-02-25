@@ -1,12 +1,13 @@
-import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { beforeAll, bench, describe } from 'vitest'
-import { join, normalize } from 'pathe'
-import { withoutTrailingSlash } from 'ufo'
+import { join } from 'pathe'
 import { loadNuxt } from 'nuxt'
+import { findWorkspaceDir } from 'pkg-types'
 
-const emptyDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../node_modules/fixture', import.meta.url))))
-const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url))))
+const repoRoot = await findWorkspaceDir()
+
+const emptyDir = join(repoRoot, 'node_modules/fixture')
+const basicTestFixtureDir = join(repoRoot, 'test/fixtures/basic')
 
 describe('loadNuxt', () => {
   beforeAll(async () => {

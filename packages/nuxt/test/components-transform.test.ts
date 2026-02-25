@@ -2,9 +2,10 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
-import { normalize } from 'pathe'
+import { join, normalize } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
 
-import { TransformPlugin } from '../src/components/plugins/transform'
+import { TransformPlugin } from '../src/components/plugins/transform.ts'
 
 describe('components:transform', () => {
   it('should transform #components imports', async () => {
@@ -20,6 +21,24 @@ describe('components:transform', () => {
       import { Bar } from '/Bar.vue';
       "
     `)
+  })
+
+  it('should ignore #components import mapping inside packages that use it internally', async () => {
+    const transform = createTransformer([
+      createComponent('Foo'),
+      createComponent('Bar', { export: 'Bar' }),
+    ])
+
+    const dependency = fileURLToPath(new URL('./package-fixture/root/node_modules/pkg/', import.meta.url))
+    const dependencyFile = join(dependency, 'foo', 'bar', 'baz')
+    const dependencyImports = await transform('import { Internal, Private } from \'#components\'', dependencyFile)
+
+    const externalPackage = fileURLToPath(new URL('./package-fixture/pkg/', import.meta.url))
+    const externalPackageFile = join(externalPackage, 'foo', 'bar', 'baz')
+    const externalPackageImports = await transform('import { Internal, Private } from \'#components\'', externalPackageFile)
+
+    expect(dependencyImports).toMatchInlineSnapshot(`undefined`)
+    expect(externalPackageImports).toMatchInlineSnapshot(`undefined`)
   })
 
   it('should correctly resolve server-only components', async () => {
@@ -80,11 +99,12 @@ describe('components:transform', () => {
   })
 })
 
-const rootDir = fileURLToPath(new URL('../..', import.meta.url))
+const repoRoot = await findWorkspaceDir()
 
 function createTransformer (components: Component[], mode: 'client' | 'server' | 'all' = 'all') {
   const stubNuxt = {
     options: {
+      rootDir: fileURLToPath(new URL('./package-fixture/root/', import.meta.url)),
       buildDir: '/',
       sourcemap: {
         server: false,
@@ -92,15 +112,19 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
       },
     },
   } as Nuxt
-  const plugin = TransformPlugin(stubNuxt, {
+  const plugins = TransformPlugin(stubNuxt, {
     mode,
     getComponents: () => components,
     serverComponentRuntime: '<repo>/nuxt/src/components/runtime/server-component',
   }).vite()
 
   return async (code: string, id: string) => {
-    const result = await (plugin as any).transform!(code, id)
-    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(rootDir), '<repo>/')
+    let transformResult: string | undefined
+    for (const plugin of plugins as any[]) {
+      const result = await plugin.transform.handler(transformResult || code, id)
+      transformResult = (typeof result === 'string' ? result : result?.code) || transformResult
+    }
+    return transformResult?.replaceAll(normalize(repoRoot), '<repo>/')
   }
 }
 

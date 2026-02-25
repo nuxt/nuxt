@@ -1,5 +1,10 @@
-import { createElementBlock, defineComponent, onMounted, ref, useId } from 'vue'
+import { createElementBlock, defineComponent, onMounted, shallowRef, useId } from 'vue'
 import { useState } from '../composables/state'
+
+const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
+function sanitizeTag (tag: string, fallback: string): string {
+  return VALID_TAG_RE.test(tag) ? tag : fallback
+}
 
 export default defineComponent({
   name: 'NuxtClientFallback',
@@ -26,7 +31,7 @@ export default defineComponent({
   },
   emits: ['ssr-error'],
   setup (props, ctx) {
-    const mounted = ref(false)
+    const mounted = shallowRef(false)
     const ssrFailed = useState(useId())
 
     if (ssrFailed.value) {
@@ -39,7 +44,7 @@ export default defineComponent({
           const slot = ctx.slots.placeholder || ctx.slots.fallback
           if (slot) { return slot() }
           const fallbackStr = props.placeholder || props.fallback
-          const fallbackTag = props.placeholderTag || props.fallbackTag
+          const fallbackTag = sanitizeTag(props.placeholderTag || props.fallbackTag, 'div')
           return createElementBlock(fallbackTag, null, fallbackStr)
         }
       }
