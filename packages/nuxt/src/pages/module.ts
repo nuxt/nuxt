@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addImportsSources, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -496,10 +496,12 @@ export default defineNuxtModule({
       nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
-    addImportsSources(pagesImportPresets)
-    if (nuxt.options.experimental.inlineRouteRules) {
-      addImportsSources(routeRulesPresets)
-    }
+    nuxt.hook('imports:sources', (sources) => {
+      sources.push(...pagesImportPresets)
+      if (nuxt.options.experimental.inlineRouteRules) {
+        sources.push(...routeRulesPresets)
+      }
+    })
 
     const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
     if (nuxt.options.test && nuxt.options.dev) {

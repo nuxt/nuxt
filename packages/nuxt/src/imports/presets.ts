@@ -109,10 +109,6 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['useHead', 'useHeadSafe', 'useServerHeadSafe', 'useServerHead', 'useSeoMeta', 'useServerSeoMeta', 'injectHead'],
     from: '#app/composables/head',
   },
-  {
-    imports: ['definePageMeta'],
-    from: '#app/composables/pages',
-  },
 ]
 
 export const scriptsStubsPreset = {
