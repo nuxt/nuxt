@@ -262,7 +262,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config.build!.watch = undefined
   }
 
-  // Snapshot before vite:extend — mergeConfig reuses array refs, so modules can mutate nuxt.options
   userOptimizeDepsInclude.set(nuxt, [...((config.optimizeDeps?.include as string[]) || [])])
 
   const ctx = { nuxt, entry, config: config as ViteConfig }
