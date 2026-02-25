@@ -66,6 +66,9 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
         if (match) { ctx.onNewDeps(match[1]!.split(',').map(d => d.trim()).filter(Boolean)) }
         return
       }
+      if (ctx.onNewDeps && type === 'info' && msg.includes('optimized dependencies changed. reloading')) {
+        return
+      }
     }
 
     const sameAsLast = lastType === type && lastMsg === msg

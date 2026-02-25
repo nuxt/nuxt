@@ -164,7 +164,9 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
       order: 'pre',
       handler (source: string, importer: string | undefined) {
         if (importer && !importer.includes('/node_modules/') && !source.startsWith('.') && !source.startsWith('/') && !source.startsWith('\0')) {
-          importerOf.set(source, importer)
+          if (!importerOf.has(source)) {
+            importerOf.set(source, importer)
+          }
         }
       },
     },
