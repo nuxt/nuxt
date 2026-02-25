@@ -219,18 +219,47 @@ describe('useHydration', () => {
 })
 
 describe('useState', () => {
-  it('default', () => {
+  // be sure to not have colliding keys in tests
+  afterEach(() => {
+    clearNuxtState()
+  })
+
+  it('expect providing only init function to use autoKey default', () => {
     expect(useState(() => 'default').value).toBe('default')
   })
 
-  it('registers state in payload', () => {
+  it('expect state in nuxtApp payload to be registered', () => {
     useState('key', () => 'value')
     expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$skey', 'value'])
+  })
+
+  it('expect state to be a plain ref and not nested', () => {
+    const state1 = useState('key', () => ref({
+      test: 1,
+    }))
+    expect(isRef(state1)).toBeTruthy()
+    expect(isRef(state1.value)).toBeFalsy()
+  })
+
+  it('expect same state is provided with the same ref', () => {
+    const state1 = useState('key', () => ref({
+      test: 1,
+    }))
+    const state2 = useState('key', () => ref({
+      test: 2,
+    }))
+    state1.value.test = 3
+    expect(state1.value).toBe(state2.value)
   })
 })
 
 describe('clearNuxtState', () => {
-  it('clears state in payload for single key', () => {
+  // be sure to not have colliding keys in tests
+  afterEach(() => {
+    clearNuxtState()
+  })
+
+  it('expect state in payload for single key to be removed', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
@@ -238,7 +267,7 @@ describe('clearNuxtState', () => {
     expect(state.value).toBeUndefined()
   })
 
-  it('clears state in payload for array of keys', () => {
+  it('expect state in payload for array of keys to be removed', () => {
     const key1 = 'clearNuxtState-test'
     const key2 = 'clearNuxtState-test2'
     const state1 = useState(key1, () => 'test')
@@ -253,7 +282,7 @@ describe('clearNuxtState', () => {
     expect(state2.value).toBeUndefined()
   })
 
-  it('clears state in payload for function', () => {
+  it('expect state in payload for function to be removed', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
@@ -263,14 +292,86 @@ describe('clearNuxtState', () => {
     expect(state.value).toBeUndefined()
   })
 
-  it('clears all state when no key is provided', () => {
+  it('expect all states to be removed when no key is provided', () => {
     const state1 = useState('clearNuxtState-test', () => 'test')
     const state2 = useState('clearNuxtState-test2', () => 'test')
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
-    clearNuxtState()
+    clearNuxtState(undefined)
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBeUndefined()
+  })
+
+  it('expect state in payload for single key to reset', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
+    state.value = 'test-2'
+    expect(state.value).toBe('test-2')
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect state in payload for array of keys to reset ', () => {
+    const key1 = 'clearNuxtState-test'
+    const key2 = 'clearNuxtState-test2'
+    const state1 = useState(key1, () => 'test')
+    const state2 = useState(key2, () => 'test')
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+    state1.value = 'test-2'
+    state2.value = 'test-2'
+    clearNuxtState([key1, 'other'], { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState([key1, key2], { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+  })
+
+  it('expect state in payload for function to reset', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
+    expect(state.value).toBe('test')
+    clearNuxtState(() => false, { reset: true })
+    expect(state.value).toBe('test')
+    state.value = 'test-2'
+    clearNuxtState(k => k === key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect all states to reset when no key is provided', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    const state2 = useState('clearNuxtState-test2', () => 'test')
+    state1.value = 'test-2'
+    state2.value = 'test-2'
+    expect(state1.value).toBe('test-2')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState(undefined, { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+  })
+
+  it('expect fetching state twice to reset both', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    const state2 = useState('clearNuxtState-test', () => 'test')
+    state1.value = 'test-2'
+    expect(state1.value).toBe('test-2')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState(undefined, { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+  })
+
+  it('expect fetching state after reset has init value', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    state1.value = 'test-2'
+    expect(state1.value).toBe('test-2')
+    const state2 = useState('clearNuxtState-test', () => 'test')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState(undefined, { reset: true })
+    expect(state1.value).toBe('test')
+    const state3 = useState('clearNuxtState-test', () => 'test')
+    expect(state3.value).toBe('test')
   })
 })
 

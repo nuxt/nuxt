@@ -1314,6 +1314,24 @@ export interface ConfigSchema {
         deep: boolean
       }
 
+      /**
+       * Options that apply to `useState` and `clearNuxtState`.
+       * @default { resetOnClear: false }
+       * @default { resetOnClear: true } with compatibilityVersion >= 5
+       */
+      useState: {
+        /**
+         * When `true`, `clearNuxtState` will reset state to its initial value (provided by the `init`
+         * function of `useState`) instead of setting it to `undefined`.
+         *
+         * This aligns `clearNuxtState` behavior with `clearNuxtData`, which already resets to defaults.
+         *
+         * @default false
+         * @default true with compatibilityVersion >= 5
+         */
+        resetOnClear: boolean
+      }
+
       useFetch: Pick<FetchOptions, 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>
     }
 

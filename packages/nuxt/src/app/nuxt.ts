@@ -147,6 +147,12 @@ interface _NuxtApp {
   } | undefined>
 
   /** @internal */
+  '_state': Record<string, {
+    /** @internal */
+    _default: () => unknown
+  } | undefined>
+
+  /** @internal */
   '_loadingIndicator'?: LoadingIndicator
   /** @internal */
   '_loadingIndicatorDeps'?: number
@@ -325,6 +331,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     },
     _asyncDataPromises: {},
     _asyncData: shallowReactive({}),
+    _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
