@@ -1357,7 +1357,13 @@ export interface ConfigSchema {
     normalizeComponentNames: boolean
 
     /**
-     * Ensure that page components name match their route names.
+     * Ensure that page component names match their route names.
+     *
+     * This is useful when using `<KeepAlive>` with `include`/`exclude` filters, as Vue's
+     * `<KeepAlive>` relies on the component `name` option to identify components.
+     * Without this, page components may have generic names (like `index`) that don't
+     * correspond to their route names, making name-based `<KeepAlive>` filtering unreliable.
+     * @default false
      */
     normalizePageNames: boolean
 
