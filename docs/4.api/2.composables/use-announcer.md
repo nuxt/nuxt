@@ -120,9 +120,9 @@ watch(results, (newResults) => {
 ```
 
 ::callout
-You need to add the [`<NuxtAnnouncer>`](/docs/api/components/nuxt-announcer) component to your app for the announcements to be rendered in the DOM.
+You need to add the [`<NuxtAnnouncer>`](/docs/4.x/api/components/nuxt-announcer) component to your app for the announcements to be rendered in the DOM.
 ::
 
 ::callout
-For automatic announcements of route/page changes, use [`useRouteAnnouncer`](/docs/api/composables/use-route-announcer) with the [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) component instead.
+For automatic announcements of route/page changes, use [`useRouteAnnouncer`](/docs/4.x/api/composables/use-route-announcer) with the [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) component instead.
 ::
