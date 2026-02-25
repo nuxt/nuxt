@@ -34,7 +34,8 @@
   "imports": {
     "#app": "./dist/app/index.js",
     "#app/nuxt": "./dist/app/nuxt.js",
-    "#unhead/composables": "./dist/head/runtime/composables.js"
+    "#unhead/composables": "./dist/head/runtime/composables.js",
+    "#pages/composables": "./dist/pages/runtime/composables.js"
   },
   "files": [
     "app.d.ts",
