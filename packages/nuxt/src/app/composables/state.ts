@@ -3,6 +3,9 @@ import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 
+// @ts-expect-error virtual file
+import { useStateDefaults } from '#build/nuxt.config.mjs'
+
 const useStateKeyPrefix = '$s'
 
 /**
@@ -45,11 +48,24 @@ export function useState<T> (...args: any): Ref<T> {
   return state
 }
 
+export interface ClearNuxtStateOptions {
+  /**
+   * Reset the state to the initial value provided by the `init` function of `useState`
+   * instead of setting it to `undefined`.
+   *
+   * When not specified, this defaults to the value of `experimental.defaults.useState.resetOnClear`
+   * in your Nuxt config (which defaults to `true` with `compatibilityVersion: 5`).
+   */
+  reset?: boolean
+}
+
 /** @since 3.6.0 */
 export function clearNuxtState (
   keys?: string | string[] | ((key: string) => boolean),
-  reset?: boolean,
+  opts?: ClearNuxtStateOptions,
 ): void {
+  const reset = opts?.reset ?? useStateDefaults.resetOnClear
+
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)
     .map(key => key.substring(useStateKeyPrefix.length))

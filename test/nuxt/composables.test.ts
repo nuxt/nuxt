@@ -219,7 +219,7 @@ describe('useHydration', () => {
 describe('useState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState(undefined, false)
+    clearNuxtState()
   })
 
   it('expect providing only init function to use autoKey default', () => {
@@ -254,7 +254,7 @@ describe('useState', () => {
 describe('clearNuxtState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState(undefined, false)
+    clearNuxtState()
   })
 
   it('expect state in payload for single key to be removed', () => {
@@ -284,7 +284,7 @@ describe('clearNuxtState', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
-    clearNuxtState(() => false, false)
+    clearNuxtState(() => false)
     expect(state.value).toBe('test')
     clearNuxtState(k => k === key)
     expect(state.value).toBeUndefined()
@@ -305,7 +305,7 @@ describe('clearNuxtState', () => {
     const state = useState(key, () => 'test')
     state.value = 'test-2'
     expect(state.value).toBe('test-2')
-    clearNuxtState(key, true)
+    clearNuxtState(key, { reset: true })
     expect(state.value).toBe('test')
   })
 
@@ -318,10 +318,10 @@ describe('clearNuxtState', () => {
     expect(state2.value).toBe('test')
     state1.value = 'test-2'
     state2.value = 'test-2'
-    clearNuxtState([key1, 'other'], true)
+    clearNuxtState([key1, 'other'], { reset: true })
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test-2')
-    clearNuxtState([key1, key2], true)
+    clearNuxtState([key1, key2], { reset: true })
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
   })
@@ -330,10 +330,10 @@ describe('clearNuxtState', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
-    clearNuxtState(() => false, true)
+    clearNuxtState(() => false, { reset: true })
     expect(state.value).toBe('test')
     state.value = 'test-2'
-    clearNuxtState(k => k === key, true)
+    clearNuxtState(k => k === key, { reset: true })
     expect(state.value).toBe('test')
   })
 
@@ -344,7 +344,7 @@ describe('clearNuxtState', () => {
     state2.value = 'test-2'
     expect(state1.value).toBe('test-2')
     expect(state2.value).toBe('test-2')
-    clearNuxtState(undefined, true)
+    clearNuxtState(undefined, { reset: true })
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
   })
@@ -355,7 +355,7 @@ describe('clearNuxtState', () => {
     state1.value = 'test-2'
     expect(state1.value).toBe('test-2')
     expect(state2.value).toBe('test-2')
-    clearNuxtState(undefined, true)
+    clearNuxtState(undefined, { reset: true })
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
   })
@@ -366,7 +366,7 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test-2')
     const state2 = useState('clearNuxtState-test', () => 'test')
     expect(state2.value).toBe('test-2')
-    clearNuxtState(undefined, true)
+    clearNuxtState(undefined, { reset: true })
     expect(state1.value).toBe('test')
     const state3 = useState('clearNuxtState-test', () => 'test')
     expect(state3.value).toBe('test')
