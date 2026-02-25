@@ -139,7 +139,8 @@ describe('<NuxtTime>', () => {
 
     const html = thing.html()
     const id = html.match(/data-prehydrate-id="([^"]+)"/)?.[1]
-    expect(thing.html()).toEqual(
+    expect(id, 'data-prehydrate-id attribute should be present (onPrehydrate transform may not have run)').toBeDefined()
+    expect(html).toEqual(
       `<time data-locale="en-GB" data-relative="true" data-title="test" datetime="${new Date(datetime).toISOString()}" title="test" ssr="true" data-prehydrate-id="${id}">${description}</time>`,
     )
 
@@ -151,9 +152,13 @@ describe('<NuxtTime>', () => {
     })
 
     const head = injectHead()
-    // @ts-expect-error craziness
-    const innerHTML = head.entries.get(1).input.script[0].innerHTML
-    const fn = new Function(innerHTML)
+    const prehydrateEntry = [...head.entries.values()].find(
+      // @ts-expect-error untyped internal
+      e => e.input?.script?.[0]?.innerHTML?.includes('_nuxtTimeNow'),
+    )
+    expect(prehydrateEntry, 'onPrehydrate head entry should exist').toBeDefined()
+    // @ts-expect-error untyped internal
+    const fn = new Function(prehydrateEntry!.input.script[0].innerHTML)
     fn()
 
     expect(window._nuxtTimeNow).toBeDefined()
