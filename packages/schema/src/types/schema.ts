@@ -1375,6 +1375,18 @@ export interface ConfigSchema {
     normalizeComponentNames: boolean
 
     /**
+     * Ensure that page component names match their route names.
+     *
+     * This is useful when using `<KeepAlive>` with `include`/`exclude` filters, as Vue's
+     * `<KeepAlive>` relies on the component `name` option to identify components.
+     * Without this, page components may have generic names (like `index`) that don't
+     * correspond to their route names, making name-based `<KeepAlive>` filtering unreliable.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    normalizePageNames: boolean
+
+    /**
      * Keep showing the spa-loading-template until suspense:resolve
      *
      * @default 'body'
