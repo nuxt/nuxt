@@ -27,6 +27,7 @@ import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import { isTestingAppManifest } from '../matrix'
+import { flushPromises } from '@vue/test-utils'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -820,13 +821,34 @@ describe('useCookie', () => {
 
   it('should set cookie value when called on client', () => {
     useCookie('cookie-watch-false', { default: () => 'foo', watch: false })
-    expect(document.cookie).toContain('cookie-watch-false=foo')
+    expect(document.cookie).toContain('cookie-watch-false=%22foo%22')
 
     useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
-    expect(document.cookie).toContain('cookie-watch-true=foo')
+    expect(document.cookie).toContain('cookie-watch-true=%22foo%22')
 
     useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
-    expect(document.cookie).toContain('cookie-readonly=foo')
+    expect(document.cookie).toContain('cookie-readonly=%22foo%22')
+  })
+
+  it('should not parse json by default', () => {
+    const json = useCookie('json', { default: () => '{"hello": "world"}' })
+    expect(json.value).toBe('{"hello": "world"}')
+  })
+
+  it('should not parse json by default when decoded by change event', async () => {
+    const j1 = useCookie('j1', { default: () => '{"hello": "world"}' })
+    expect.soft(j1.value).not.toEqual({ hello: 'world' })
+    expect.soft(j1.value).toBe('{"hello": "world"}')
+    const j2 = useCookie('j1')
+    expect.soft(j2.value).not.toEqual({ hello: 'world' })
+    expect.soft(j2.value).toBe('{"hello": "world"}')
+    j1.value = '{"hello": "welt"}'
+    expect.soft(j1.value).not.toEqual({ hello: 'welt' })
+    expect.soft(j1.value).toBe('{"hello": "welt"}')
+    await nextTick()
+    await flushPromises()
+    expect.soft(j2.value).not.toEqual({ hello: 'welt' })
+    expect.soft(j2.value).toBe('{"hello": "welt"}')
   })
 })
 

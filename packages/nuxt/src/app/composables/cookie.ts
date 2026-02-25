@@ -38,7 +38,7 @@ const CookieDefaults = {
     }
     return parsed
   },
-  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
+  encode: val => encodeURIComponent(JSON.stringify(val)),
 } satisfies CookieOptions<any>
 
 // we use globalThis to avoid crashes in web workers
