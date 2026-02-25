@@ -58,15 +58,19 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       // Ideally Vite exposes hooks for these in the future
       if (ctx.onStaleDep && type === 'warn' && (msg.includes('Failed to resolve dependency') || msg.includes('Cannot optimize dependency'))) {
         const match = stripAnsi(msg).match(/(?:Failed to resolve|Cannot optimize) dependency:\s*([^,]+)/)
-        if (match) { ctx.onStaleDep(match[1]!.trim()) }
-        return
+        if (match) {
+          ctx.onStaleDep(match[1]!.trim())
+          return
+        }
       }
       if (ctx.onNewDeps && type === 'info' && msg.includes('new dependencies optimized:')) {
         const match = stripAnsi(msg).match(/new dependencies optimized:\s*(.+)/)
-        if (match) { ctx.onNewDeps(match[1]!.split(',').map(d => d.trim()).filter(Boolean)) }
-        return
+        if (match) {
+          ctx.onNewDeps(match[1]!.split(',').map(d => d.trim()).filter(Boolean))
+          return
+        }
       }
-      if (ctx.onNewDeps && type === 'info' && msg.includes('optimized dependencies changed. reloading')) {
+      if (ctx.onNewDeps && type === 'info' && (msg.includes('optimized dependencies changed. reloading') || msg.includes('add these dependencies to optimizeDeps.include'))) {
         return
       }
     }
