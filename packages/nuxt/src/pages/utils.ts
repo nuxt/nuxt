@@ -3,7 +3,6 @@ import fs from 'node:fs'
 import { normalize } from 'pathe'
 import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
-
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
@@ -19,8 +18,6 @@ import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } fro
 import { getLoader } from '../core/utils/index.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
-
-type RequirePicked<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 
 // ---------------------------------------------------------------------------
 // PagesContext — persistent route tree for incremental dev-mode updates
@@ -344,51 +341,6 @@ interface NormalizeRoutesOptions {
   serverComponentRuntime: string
   clientComponentRuntime: string
 }
-export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
-  const nuxt = useNuxt()
-  return {
-    imports: metaImports,
-    routes: genArrayFromRaw(routes.map((page) => {
-      if (page.file) {
-        return getMetaRouteFromNuxtPage(page as RequirePicked<NuxtPage, 'file'>, metaImports, options, nuxt)
-      }
-      return getRouteFromNuxtPage(page, metaImports, options)
-    })),
-  }
-}
-
-function getRouteFromNuxtPage (page: NuxtPage, metaImports: Set<string>, options: NormalizeRoutesOptions): NormalizedRoute {
-  const metaFiltered: Record<string, any> = {}
-  let skipMeta = true
-  for (const key in page.meta || {}) {
-    if (key !== DYNAMIC_META_KEY && page.meta![key] !== undefined) {
-      skipMeta = false
-      metaFiltered[key] = page.meta![key]
-    }
-  }
-  const skipAlias = toArray(page.alias).every(val => !val)
-
-  const route: NormalizedRoute = {
-    path: serializeRouteValue(page.path),
-    props: serializeRouteValue(page.props),
-    name: serializeRouteValue(page.name),
-    meta: serializeRouteValue(metaFiltered, skipMeta),
-    alias: serializeRouteValue(toArray(page.alias), skipAlias),
-    redirect: serializeRouteValue(page.redirect),
-  }
-
-  for (const key of [...defaultExtractionKeys, 'meta'] satisfies NormalizedRouteKeys) {
-    if (route[key] === undefined) {
-      delete route[key]
-    }
-  }
-
-  if (page.children?.length) {
-    route.children = normalizeRoutes(page.children, metaImports, options).routes
-  }
-
-  return route
-}
 
 function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined): string {
   if (page.mode === 'server') {
@@ -404,104 +356,140 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
   if (isSyncImport) {
     return `Object.assign(${pageImportName}, { __name: ${metaRouteName} })`
   }
+  // Server components already receive the name via createIslandPage(name)
   if (page.mode === 'server') {
     return `() => createIslandPage(${routeName})`
   }
+  // Client components return a processed component (not a module with .default)
   if (page.mode === 'client') {
     return `() => createClientPage(${pageImport}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
   }
   return `${pageImport}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
 }
 
-function getMetaRouteFromNuxtPage (page: RequirePicked<NuxtPage, 'file'>, metaImports: Set<string>, options: NormalizeRoutesOptions, nuxt: ReturnType<typeof useNuxt>): NormalizedRoute {
-  const route = getRouteFromNuxtPage(page, metaImports, options)
-  const file = normalize(page.file!)
-  const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
-  const metaImportName = pageImportName + 'Meta'
-  metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
+export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
+  const nuxt = useNuxt()
+  return {
+    imports: metaImports,
+    routes: genArrayFromRaw(routes.map((page) => {
+      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
+      const metaFiltered: Record<string, any> = {}
+      let skipMeta = true
+      for (const key in page.meta || {}) {
+        if (key !== DYNAMIC_META_KEY && page.meta![key] !== undefined) {
+          skipMeta = false
+          metaFiltered[key] = page.meta![key]
+        }
+      }
+      const skipAlias = toArray(page.alias).every(val => !val)
 
-  if (page._sync) {
-    metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
-  }
+      const route: NormalizedRoute = {
+        path: serializeRouteValue(page.path),
+        props: serializeRouteValue(page.props),
+        name: serializeRouteValue(page.name),
+        meta: serializeRouteValue(metaFiltered, skipMeta),
+        alias: serializeRouteValue(toArray(page.alias), skipAlias),
+        redirect: serializeRouteValue(page.redirect),
+      }
 
-  const isSyncImport = page._sync && page.mode !== 'client'
-  const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
+      for (const key of [...defaultExtractionKeys, 'meta'] satisfies NormalizedRouteKeys) {
+        if (route[key] === undefined) {
+          delete route[key]
+        }
+      }
 
-  const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
+      if (page.children?.length) {
+        route.children = normalizeRoutes(page.children, metaImports, options).routes
+      }
 
-  const normalizeNames = nuxt.options.experimental.normalizePageNames
-  const metaRouteName = `${metaImportName}?.name ?? ${route.name}`
-  const component = normalizeNames
-    ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName)
-    : normalizeComponent(page, pageImport, route.name)
+      // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
+      if (!page.file) {
+        return route
+      }
 
-  // Step 1: Build metaRoute with runtime fallback defaults
-  const metaRoute: NormalizedRoute = {
-    name: metaRouteName,
-    path: `${metaImportName}?.path ?? ${route.path}`,
-    props: `${metaImportName}?.props ?? ${route.props ?? false}`,
-    meta: `${metaImportName} || {}`,
-    alias: `${metaImportName}?.alias || []`,
-    redirect: `${metaImportName}?.redirect`,
-    component,
-  }
+      const file = normalize(page.file)
+      const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
+      const metaImportName = pageImportName + 'Meta'
+      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
-  if (page.mode === 'server') {
-    metaImports.add(`
+      if (page._sync) {
+        metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
+      }
+
+      const isSyncImport = page._sync && page.mode !== 'client'
+      const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
+      const metaRouteName = `${metaImportName}?.name ?? ${route.name}`
+
+      const component = nuxt.options.experimental.normalizePageNames
+        ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName)
+        : normalizeComponent(page, pageImport, route.name)
+
+      const metaRoute: NormalizedRoute = {
+        name: metaRouteName,
+        path: `${metaImportName}?.path ?? ${route.path}`,
+        props: `${metaImportName}?.props ?? ${route.props ?? false}`,
+        meta: `${metaImportName} || {}`,
+        alias: `${metaImportName}?.alias || []`,
+        redirect: `${metaImportName}?.redirect`,
+        component,
+      }
+
+      if (page.mode === 'server') {
+        metaImports.add(`
 let _createIslandPage
 async function createIslandPage (name) {
   _createIslandPage ||= await import(${JSON.stringify(options?.serverComponentRuntime)}).then(r => r.createIslandPage)
   return _createIslandPage(name)
 };`)
-  } else if (page.mode === 'client') {
-    metaImports.add(`
+      } else if (page.mode === 'client') {
+        metaImports.add(`
 let _createClientPage
 async function createClientPage(loader) {
   _createClientPage ||= await import(${JSON.stringify(options?.clientComponentRuntime)}).then(r => r.createClientPage)
   return _createClientPage(loader);
 }`)
-  }
-
-  if (route.children) {
-    metaRoute.children = route.children
-  }
-
-  // Step 2: Merge static meta with runtime meta
-  if (route.meta) {
-    metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
-  }
-
-  // Step 3: Apply overrideMeta or non-overrideMeta adjustments
-  if (options?.overrideMeta) {
-    // skip and retain fallback if marked dynamic
-    // set to extracted value or fallback if none extracted
-    for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
-      if (markedDynamic.has(key)) { continue }
-      metaRoute[key] = route[key] ?? `${metaImportName}?.${key}`
-    }
-
-    // set to extracted value or delete if none extracted
-    for (const key of ['meta', 'alias', 'redirect', 'props'] satisfies NormalizedRouteKeys) {
-      if (markedDynamic.has(key)) { continue }
-
-      if (route[key] == null) {
-        delete metaRoute[key]
-        continue
       }
 
-      metaRoute[key] = route[key]
-    }
-  } else {
-    if (route.alias != null) {
-      metaRoute.alias = `${route.alias}.concat(${metaImportName}?.alias || [])`
-    }
+      if (route.children) {
+        metaRoute.children = route.children
+      }
 
-    if (route.redirect != null) {
-      metaRoute.redirect = route.redirect
-    }
+      if (route.meta) {
+        metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
+      }
+
+      if (options?.overrideMeta) {
+        // skip and retain fallback if marked dynamic
+        // set to extracted value or fallback if none extracted
+        for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
+          if (markedDynamic.has(key)) { continue }
+          metaRoute[key] = route[key] ?? `${metaImportName}?.${key}`
+        }
+
+        // set to extracted value or delete if none extracted
+        for (const key of ['meta', 'alias', 'redirect', 'props'] satisfies NormalizedRouteKeys) {
+          if (markedDynamic.has(key)) { continue }
+
+          if (route[key] == null) {
+            delete metaRoute[key]
+            continue
+          }
+
+          metaRoute[key] = route[key]
+        }
+      } else {
+        if (route.alias != null) {
+          metaRoute.alias = `${route.alias}.concat(${metaImportName}?.alias || [])`
+        }
+
+        if (route.redirect != null) {
+          metaRoute.redirect = route.redirect
+        }
+      }
+
+      return metaRoute
+    })),
   }
-
-  return metaRoute
 }
 
 const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*:\w.*$/
