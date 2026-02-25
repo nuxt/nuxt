@@ -757,6 +757,24 @@ describe('nuxt composables', () => {
     await page.close()
   })
 
+  it('re-sets cookie on SSR when refresh is true and value is explicitly written', async () => {
+    const res = await fetch('/cookies-refresh', {
+      headers: {
+        cookie: 'refresh-with-write=existing; refresh-without-write=existing; no-refresh-with-write=existing',
+      },
+    })
+    const cookies = res.headers.get('set-cookie') ?? ''
+
+    // refresh: true with explicit write — should re-set the cookie
+    expect(cookies).toContain('refresh-with-write=existing')
+
+    // refresh: true without explicit write — should NOT re-set the cookie
+    expect(cookies).not.toContain('refresh-without-write')
+
+    // refresh: false with same-value write — should NOT re-set the cookie
+    expect(cookies).not.toContain('no-refresh-with-write')
+  })
+
   it('supports onPrehydrate', async () => {
     const html = await $fetch<string>('/composables/on-prehydrate') as string
     /**
