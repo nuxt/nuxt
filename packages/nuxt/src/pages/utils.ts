@@ -341,7 +341,34 @@ interface NormalizeRoutesOptions {
   serverComponentRuntime: string
   clientComponentRuntime: string
 }
+
+function normalizeComponent (page: NuxtPage, pageImport: string, routeName: string | undefined): string {
+  if (page.mode === 'server') {
+    return `() => createIslandPage(${routeName})`
+  }
+  if (page.mode === 'client') {
+    return `() => createClientPage(${pageImport})`
+  }
+  return pageImport
+}
+
+function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | undefined, pageImportName: string, pageImport: string, routeName: string | undefined, metaRouteName: string): string {
+  if (isSyncImport) {
+    return `Object.assign(${pageImportName}, { __name: ${metaRouteName} })`
+  }
+  // Server components already receive the name via createIslandPage(name)
+  if (page.mode === 'server') {
+    return `() => createIslandPage(${routeName})`
+  }
+  // Client components return a processed component (not a module with .default)
+  if (page.mode === 'client') {
+    return `() => createClientPage(${pageImport}).then((c) => Object.assign(c, { __name: ${metaRouteName} }))`
+  }
+  return `${pageImport}.then((m) => Object.assign(m.default, { __name: ${metaRouteName} }))`
+}
+
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
+  const nuxt = useNuxt()
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -389,20 +416,22 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file)
+      const isSyncImport = page._sync && page.mode !== 'client'
+      const pageImport = isSyncImport ? pageImportName : genDynamicImport(file)
+      const metaRouteName = `${metaImportName}?.name ?? ${route.name}`
+
+      const component = nuxt.options.experimental.normalizePageNames
+        ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName)
+        : normalizeComponent(page, pageImport, route.name)
 
       const metaRoute: NormalizedRoute = {
-        name: `${metaImportName}?.name ?? ${route.name}`,
+        name: metaRouteName,
         path: `${metaImportName}?.path ?? ${route.path}`,
         props: `${metaImportName}?.props ?? ${route.props ?? false}`,
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: page.mode === 'server'
-          ? `() => createIslandPage(${route.name})`
-          : page.mode === 'client'
-            ? `() => createClientPage(${pageImport})`
-            : pageImport,
+        component,
       }
 
       if (page.mode === 'server') {

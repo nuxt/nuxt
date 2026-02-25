@@ -28,6 +28,8 @@ export { usePreviewMode } from './preview'
 export { useId } from './id'
 export { useRouteAnnouncer } from './route-announcer'
 export type { Politeness } from './route-announcer'
+export { useAnnouncer } from './announcer'
+export type { AnnouncerPoliteness, NuxtAnnouncer, NuxtAnnouncerOpts } from './announcer'
 export { useRuntimeHook } from './runtime-hook'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { injectHead, useHead, useHeadSafe, useSeoMeta, useServerHead, useServerHeadSafe, useServerSeoMeta } from './head'

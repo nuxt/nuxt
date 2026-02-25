@@ -20,6 +20,7 @@ import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn }
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
+import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
@@ -114,6 +115,7 @@ interface _NuxtApp {
 
   /** @internal */
   '_cookies'?: Record<string, unknown>
+  '_cookiesChanged'?: Record<string, boolean>
   /**
    * The id of the Nuxt application.
    * @internal */
@@ -143,6 +145,12 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+  } | undefined>
+
+  /** @internal */
+  '_state': Record<string, {
+    /** @internal */
+    _default: () => unknown
   } | undefined>
 
   /** @internal */
@@ -189,6 +197,11 @@ interface _NuxtApp {
   '~transitionPromise'?: Promise<void>
   /** @internal */
   '~transitionFinish'?: () => void
+
+  /** @internal */
+  '_announcer'?: NuxtAnnouncer
+  /** @internal */
+  '_announcerDeps'?: number
 
   // Nuxt injections
   '$config': RuntimeConfig
@@ -319,6 +332,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     },
     _asyncDataPromises: {},
     _asyncData: shallowReactive({}),
+    _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
