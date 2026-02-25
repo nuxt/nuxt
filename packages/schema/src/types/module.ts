@@ -1,4 +1,4 @@
-import type { Defu } from 'defu'
+import type { Defu, createDefu } from 'defu'
 import type { NuxtHooks } from './hooks.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { NuxtCompatibility } from './compatibility.ts'
@@ -88,6 +88,7 @@ export interface ModuleDefinition<
 > {
   meta?: ModuleMeta
   defaults?: TOptionsDefaults | ((nuxt: Nuxt) => Awaitable<TOptionsDefaults>)
+  optionsCustomMerger?: Parameters<typeof createDefu>[0]
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
   moduleDependencies?: ModuleDependencies | ((nuxt: Nuxt) => Awaitable<ModuleDependencies>)

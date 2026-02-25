@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks'
-import { defu } from 'defu'
+import { createDefu, defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
 import { logger } from '../logger.ts'
@@ -51,7 +51,7 @@ function _defineNuxtModule<
   module.meta.configKey ||= module.meta.name
 
   // Resolves module options from inline options, [configKey] in nuxt.config, defaults and schema
-  async function getOptions (inlineOptions?: Partial<TOptions>, nuxt: Nuxt = useNuxt()): Promise<
+  async function getOptions (inlineOptions: Partial<TOptions> = {}, nuxt: Nuxt = useNuxt()): Promise<
     TWith extends true
       ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
       : TOptions
@@ -65,7 +65,11 @@ function _defineNuxtModule<
         ? await module.defaults(nuxt)
         : module.defaults ?? {} as TOptionsDefaults
 
-    let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
+    const _defu = module.optionsCustomMerger
+      ? createDefu(module.optionsCustomMerger)
+      : defu
+
+    let options = _defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
 
     if (module.schema) {
       options = await applyDefaults(module.schema, options) as any
@@ -83,7 +87,7 @@ function _defineNuxtModule<
   }
 
   // Module format is always a simple function
-  async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
+  async function normalizedModule (inlineOptions: Partial<TOptions> = {}, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
       throw new TypeError(`Cannot use ${module.meta.name || 'module'} outside of Nuxt context`)
     }
