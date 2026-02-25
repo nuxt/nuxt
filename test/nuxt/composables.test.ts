@@ -929,6 +929,44 @@ describe('useCookie', () => {
     useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
     expect(document.cookie).toContain('cookie-readonly=foo')
   })
+
+  it('should re-write cookie on same-value assignment when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+
+    document.cookie = 'refresh-test=initial; Max-Age=3600'
+    const cookie = useCookie('refresh-test', {
+      maxAge: 3600,
+      refresh: true,
+    })
+    expect(cookie.value).toBe('initial')
+
+    // Assign the same value — should still trigger a cookie write
+    cookie.value = 'initial'
+    await nextTick()
+
+    expect(document.cookie).toContain('refresh-test=initial')
+  })
+
+  it('should not re-write cookie on same-value assignment when refresh is false', async () => {
+    const { nextTick } = await import('vue')
+
+    document.cookie = 'no-refresh-test=original'
+    const cookie = useCookie('no-refresh-test', {
+      maxAge: 3600,
+      refresh: false,
+    })
+    expect(cookie.value).toBe('original')
+
+    // Clear document.cookie to detect if a write happens
+    document.cookie = 'no-refresh-test=; Max-Age=0'
+    expect(document.cookie).not.toContain('no-refresh-test=original')
+
+    // Assign the same value — should NOT trigger a cookie write
+    cookie.value = 'original'
+    await nextTick()
+
+    expect(document.cookie).not.toContain('no-refresh-test=original')
+  })
 })
 
 describe('callOnce', () => {
