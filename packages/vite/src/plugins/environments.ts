@@ -77,8 +77,6 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
             },
           },
         ]
-      } else if (environment.name === 'ssr') {
-        //
       }
       return false
     },
