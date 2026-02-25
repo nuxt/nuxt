@@ -5,8 +5,6 @@ import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from '@nuxt/nitro-server/h3'
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import destr from 'destr'
-import { isEqual } from 'ohash'
-import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
@@ -63,7 +61,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   const hasExpired = delay !== undefined && delay <= 0
   const shouldSetInitialClientCookie = import.meta.client && (hasExpired || cookies[name] === undefined || cookies[name] === null)
-  const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
+
+  const isEqual = (a: T, b: T) => {
+    return opts.encode(a) === opts.encode(b)
+  }
+
+  const clone = (val: T): T => {
+    return opts.decode(opts.encode(val)) as T // cast here because CookieDefaults is not generic
+  }
+
+  const cookieValue = clone(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use basic ref
   const cookie = import.meta.client && delay && !hasExpired
@@ -86,19 +93,19 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
     const callback = (force = false) => {
       if (!force) {
-        if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+        if (opts.readonly || isEqual(cookie.value, cookies[name] as T)) { return }
       }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
 
-      cookies[name] = klona(cookie.value)
+      cookies[name] = clone(cookie.value)
       channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
     const handleChange = (data: { value?: any, refresh?: boolean }) => {
-      const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
+      const value = (data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)) as T // cast here because CookieDefaults is not generic
       watchPaused = true
       cookie.value = value
-      cookies[name] = klona(value)
+      cookies[name] = clone(value)
       nextTick(() => { watchPaused = false })
     }
 
@@ -150,11 +157,11 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
-      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      if (opts.readonly || isEqual(cookie.value, cookies[name] as T)) { return }
       nuxtApp._cookies ||= {}
       if (name in nuxtApp._cookies) {
         // do not append a second `set-cookie` header
-        if (isEqual(cookie.value, nuxtApp._cookies[name])) { return }
+        if (isEqual(cookie.value, nuxtApp._cookies[name] as T)) { return }
         // warn in dev mode
         if (import.meta.dev) {
           console.warn(`[nuxt] cookie \`${name}\` was previously set to \`${opts.encode(nuxtApp._cookies[name] as any)}\` and is being overridden to \`${opts.encode(cookie.value as any)}\`. This may cause unexpected issues.`)
