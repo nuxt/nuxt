@@ -180,6 +180,10 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         }
         return cjs
       }
+
+      server.httpServer?.on('close', () => {
+        if (hintTimer) { clearTimeout(hintTimer) }
+      })
     },
   }
 }
