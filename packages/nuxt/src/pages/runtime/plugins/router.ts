@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { decodePath, isSamePath, withoutBase } from 'ufo'
+import { isSamePath, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
@@ -35,9 +35,9 @@ function createCurrentLocation (
     let pathFromHash = hash.slice(slicePos)
     // prepend the starting slash to hash so the url starts with /#
     if (pathFromHash[0] !== '/') { pathFromHash = '/' + pathFromHash }
-    return decodePath(withoutBase(pathFromHash, ''))
+    return withoutBase(pathFromHash, '')
   }
-  const displayedPath = decodePath(withoutBase(pathname, base))
+  const displayedPath = withoutBase(pathname, base)
   const path = !renderedPath || isSamePath(displayedPath, renderedPath) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
@@ -165,9 +165,21 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
+    // #4920, #4982
     const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
       ? router.resolve(initialURL)
       : router.currentRoute.value
+
+    // Detect if we're hydrating a prerendered page that doesn't match the current URL
+    // (for example, if the browser URL has different query params than the
+    // prerendered payload).
+    const hasDeferredRoute = import.meta.client
+      && nuxtApp.isHydrating
+      && nuxtApp.payload.prerenderedAt
+      && nuxtApp.payload.path
+      && initialURL !== nuxtApp.payload.path
+      && isSamePath(router.currentRoute.value.path, nuxtApp.payload.path)
+
     syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
@@ -260,7 +272,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     router.afterEach((to) => {
-      if (to.matched.length === 0) {
+      if (to.matched.length === 0 && !error.value) {
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,
@@ -274,14 +286,28 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
-        // #4920, #4982
         if ('name' in resolvedInitialRoute) {
           resolvedInitialRoute.name = undefined
         }
-        await router.replace({
-          ...resolvedInitialRoute,
-          force: true,
-        })
+
+        if (hasDeferredRoute) {
+          // First apply the route that was prerendered to avoid hydration mismatches,
+          // then replace it after hydration with the actual resolved initial route
+          const payloadRoute = router.resolve(nuxtApp.payload.path!)
+          if ('name' in payloadRoute) {
+            payloadRoute.name = undefined
+          }
+          await router.replace({ ...payloadRoute, force: true })
+
+          nuxtApp.hooks.hookOnce('app:suspense:resolve', async () => {
+            await router.replace({ ...resolvedInitialRoute, force: true })
+          })
+        } else {
+          await router.replace({
+            ...resolvedInitialRoute,
+            force: true,
+          })
+        }
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {

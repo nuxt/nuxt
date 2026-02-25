@@ -33,6 +33,7 @@ import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 
+import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
@@ -637,6 +638,7 @@ async function initNuxt (nuxt: Nuxt) {
     keyedFunctions: normalizedKeyedFunctions,
     alias: nuxt.options.alias,
     getAutoImports: unimport!.getImports,
+    appDir: nuxt.options.appDir,
   }))
 
   // remove duplicate css after modules are done
@@ -891,6 +893,12 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       createDebugger(nuxt.hooks, { tag: 'nuxt' })
     }
   })
+
+  // Restore cached buildId before modules are initialised so that the nitro
+  // module (which captures buildId at init time) uses the correct value.
+  if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
+    nuxt.hooks.hookOnce('modules:before', () => restoreCachedBuildId(nuxt))
+  }
 
   if (opts.ready !== false) {
     await nuxt.ready()
