@@ -4,13 +4,6 @@ import type { Nuxt } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
 
-// Replaces Vite's default optimizer messages (suppressed in logger.ts):
-//   info: "new dependencies optimized: X, Y"
-//   warn: "Failed to resolve dependency: X, present in client 'optimizeDeps.include'"
-//   warn: "Cannot optimize dependency: X, present in client 'optimizeDeps.include'"
-//
-// logger.ts parses these messages and forwards them via onNewDeps/onStaleDep callbacks.
-
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {
   if (!deps.length) { return '[]' }
   const lines = deps.map((d) => {
@@ -27,7 +20,6 @@ function configBlock (deps: string[], cjsDeps?: Set<string>): string {
   )
 }
 
-// Group deps by importer file, with ungrouped deps listed first
 export function formatDepLines (deps: string[], importers?: Map<string, string>, cjsDeps?: Set<string>): string {
   const ungrouped: string[] = []
   const grouped = new Map<string, string[]>()
@@ -58,15 +50,6 @@ export function formatDepLines (deps: string[], importers?: Map<string, string>,
   return lines.join('\n')
 }
 
-export function formatNewDepsHint (newDeps: string[], allDeps: string[], importers?: Map<string, string>, cjsDeps?: Set<string>): string {
-  return (
-    `Vite discovered new dependencies at runtime:\n` +
-    formatDepLines(newDeps, importers, cjsDeps) + '\n' +
-    `Pre-bundle them in your \`nuxt.config.ts\` to avoid page reloads:\n\n` +
-    configBlock(allDeps, cjsDeps)
-  )
-}
-
 export function formatStaleDepsHint (userStale: string[], moduleStale: string[]): string {
   const lines: string[] = []
   for (const d of userStale) { lines.push(`  ${colorize('cyan', d)}`) }
@@ -77,17 +60,14 @@ export function formatStaleDepsHint (userStale: string[], moduleStale: string[])
 // Snapshotted in bundle() before vite:extend can mutate shared array references
 export const userOptimizeDepsInclude = new WeakMap<Nuxt, string[]>()
 
-// Callbacks for createViteLogger to forward parsed optimizer messages
 export const optimizerCallbacks = new WeakMap<Nuxt, {
   onNewDeps: (deps: string[]) => void
   onStaleDep: (dep: string) => void
 }>()
 
-// --- Plugin ---
-
 export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
   const rootDir = nuxt.options.rootDir
-  // Read lazily — snapshot is set after plugin instantiation in the env API path
+  // Read lazily — snapshot is set after plugin instantiation
   const getUserInclude = () => userOptimizeDepsInclude.get(nuxt) || []
   const discovered = new Set<string>()
   const userStale = new Set<string>()
@@ -97,14 +77,12 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
   let hasShownStaleHint = false
   let hasShownFullHint = false
 
-  /** User includes (minus stale) + discovered, for the config snippet */
   const getSnippetDeps = () => [...new Set([...getUserInclude().filter(d => !userStale.has(d)), ...discovered])]
 
   let getCjsDeps: () => Set<string> = () => new Set()
 
   const importerOf = new Map<string, string>()
 
-  // Merged hint: new deps + stale warnings + single config snippet
   function scheduleHint () {
     if (hintTimer) { clearTimeout(hintTimer) }
     hintTimer = setTimeout(() => {
@@ -116,7 +94,6 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         pending = new Set()
         const cjsDeps = getCjsDeps()
 
-        // Resolve relative paths only for deps being displayed
         const relativeImporters = new Map<string, string>()
         for (const dep of newDeps) {
           const imp = importerOf.get(dep)
@@ -125,7 +102,6 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         }
 
         if (hasShownFullHint) {
-          // Concise repeat: just the dep names
           const depList = newDeps.map(d => colorize('cyan', d) + (cjsDeps.has(d) ? ' ' + colorize('yellow', '(CJS)') : '')).join(', ')
           logger.info(`New dependencies found: ${depList}`)
         } else {
@@ -160,7 +136,6 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
     }, 3000)
   }
 
-  // Register callbacks for logger.ts to forward parsed Vite optimizer messages
   optimizerCallbacks.set(nuxt, {
     onNewDeps (deps: string[]) {
       for (const dep of deps) {
@@ -185,7 +160,6 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
     apply: 'serve',
     applyToEnvironment: environment => environment.name === 'client',
 
-    // Track bare-import → importer so we know what triggered a dep discovery
     resolveId: {
       order: 'pre',
       handler (source: string, importer: string | undefined) {
@@ -195,7 +169,6 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
       },
     },
 
-    // Read optimizer metadata for CJS detection
     configureServer (server) {
       const optimizer = server.environments.client?.depsOptimizer
       if (!optimizer) { return }

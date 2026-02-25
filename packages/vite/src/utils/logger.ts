@@ -53,7 +53,6 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       }
       if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
 
-      // Parse Vite optimizer messages and forward to OptimizeDepsHintPlugin
       if (type === 'warn' && (msg.includes('Failed to resolve dependency') || msg.includes('Cannot optimize dependency'))) {
         const match = stripAnsi(msg).match(/(?:Failed to resolve|Cannot optimize) dependency:\s*([^,]+)/)
         if (match) { ctx.onStaleDep?.(match[1]!.trim()) }
@@ -111,7 +110,7 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       viteLogger.hasWarned = true
       output('error', msg, opts)
     },
-    clearScreen (_type) {
+    clearScreen () {
       clear()
     },
     hasErrorLogged (error) {

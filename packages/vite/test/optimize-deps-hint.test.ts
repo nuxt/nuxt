@@ -4,7 +4,6 @@ import {
   OptimizeDepsHintPlugin,
   formatDepLines,
   formatIncludeSnippet,
-  formatNewDepsHint,
   formatStaleDepsHint,
   optimizerCallbacks,
   userOptimizeDepsInclude,
@@ -15,8 +14,6 @@ vi.mock('@nuxt/kit', () => ({
 }))
 
 const { logger } = await import('@nuxt/kit')
-
-// --- Helpers ---
 
 function createNuxt (userInclude: string[] = []) {
   const nuxt = { options: { rootDir: '/project' } } as any
@@ -55,8 +52,6 @@ async function flushHint () {
   vi.advanceTimersByTime(3000)
   await vi.advanceTimersByTimeAsync(0)
 }
-
-// --- Formatter tests ---
 
 describe('formatIncludeSnippet', () => {
   it('returns empty array for no deps', () => {
@@ -118,47 +113,6 @@ describe('formatDepLines', () => {
   })
 })
 
-describe('formatNewDepsHint', () => {
-  it('lists new deps and shows full config snippet', () => {
-    const hint = formatNewDepsHint(['dep1', 'dep2'], ['existing', 'dep1', 'dep2'])
-    const plain = stripAnsi(hint)
-
-    expect(plain).toContain('Vite discovered new dependencies at runtime:')
-    expect(plain).toContain('dep1')
-    expect(plain).toContain('dep2')
-    expect(plain).toContain('\'existing\',')
-    expect(plain).toContain('\'dep1\',')
-    expect(plain).toContain('\'dep2\',')
-    expect(plain).toContain('Learn more:')
-  })
-
-  it('shows importer path when available', () => {
-    const importers = new Map([['lodash', './app/pages/index.vue']])
-    const hint = formatNewDepsHint(['lodash'], ['lodash'], importers)
-    const plain = stripAnsi(hint)
-
-    expect(plain).toContain('lodash')
-    expect(plain).toContain('← ./app/pages/index.vue')
-  })
-
-  it('shows CJS tag in dep list and // CJS in config snippet', () => {
-    const cjs = new Set(['lodash'])
-    const hint = formatNewDepsHint(['lodash', 'radash'], ['lodash', 'radash'], undefined, cjs)
-    const plain = stripAnsi(hint)
-
-    expect(plain).toContain('lodash (CJS)')
-    expect(plain).not.toContain('radash (CJS)')
-    expect(plain).toContain('\'lodash\', // CJS')
-    expect(plain).not.toContain('\'radash\', // CJS')
-  })
-
-  it('shows pre-bundle prompt in update line', () => {
-    const hint = formatNewDepsHint(['radash'], ['radash'])
-    const plain = stripAnsi(hint)
-    expect(plain).toContain('Pre-bundle them in your `nuxt.config.ts` to avoid page reloads:')
-  })
-})
-
 describe('formatStaleDepsHint', () => {
   it('lists user stale deps', () => {
     const plain = stripAnsi(formatStaleDepsHint(['stale-dep'], []))
@@ -179,8 +133,6 @@ describe('formatStaleDepsHint', () => {
     expect(plain.match(/Unresolvable/g)).toHaveLength(1)
   })
 })
-
-// --- Plugin tests ---
 
 describe('OptimizeDepsHintPlugin', () => {
   beforeEach(() => {
