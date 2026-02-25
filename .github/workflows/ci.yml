@@ -213,14 +213,14 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Check built types
-        run: pnpm test:attw
-
       - name: Test (nuxt runtime)
         run: pnpm test:runtime
 
       - name: Test (unit)
         run: pnpm test:unit
+
+      - name: Check built types
+        run: pnpm test:attw
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
