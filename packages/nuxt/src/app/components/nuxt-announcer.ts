@@ -1,21 +1,23 @@
 import { computed, defineComponent, h } from 'vue'
-import type { Politeness } from 'nuxt/app'
-import { useRouteAnnouncer } from '../composables/route-announcer'
+import type { AnnouncerPoliteness } from '../composables/announcer'
+import { useAnnouncer } from '../composables/announcer'
 
 export default defineComponent({
-  name: 'NuxtRouteAnnouncer',
+  name: 'NuxtAnnouncer',
   props: {
     atomic: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     politeness: {
-      type: String as () => Politeness,
+      type: String as () => AnnouncerPoliteness,
       default: 'polite',
     },
   },
   setup (props, { slots, expose }) {
-    const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness })
+    const { set, polite, assertive, message, politeness } = useAnnouncer({
+      politeness: props.politeness,
+    })
 
     const role = computed(() => {
       if (politeness.value === 'assertive') {
@@ -28,11 +30,15 @@ export default defineComponent({
     })
 
     expose({
-      set, polite, assertive, message, politeness,
+      set,
+      polite,
+      assertive,
+      message,
+      politeness,
     })
 
     return () => h('span', {
-      class: 'nuxt-route-announcer',
+      class: 'nuxt-announcer',
       style: {
         position: 'absolute',
       },
