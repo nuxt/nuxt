@@ -157,6 +157,13 @@ export default defineResolvers({
       useAsyncData: {
         deep: false,
       },
+      useState: {
+        resetOnClear: {
+          $resolve: async (val, get) => {
+            return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+          },
+        },
+      },
       useFetch: {},
     },
     clientNodeCompat: false,
@@ -165,6 +172,11 @@ export default defineResolvers({
     normalizeComponentNames: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
+      },
+    },
+    normalizePageNames: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
     spaLoadingTemplateLocation: {
