@@ -101,7 +101,7 @@ if (isBuilt || isWindows) {
     await expect(async () => {
       const res = await fetch('/')
       const html = await res.text()
-      return html.includes('rel="stylesheet"')
+      return /href="[^"]*test\.css[^"]*"/.test(html)
     }).toBeWithPolling(true)
 
     // Trigger a config restart by modifying nuxt.config.ts
@@ -117,7 +117,7 @@ if (isBuilt || isWindows) {
     await expect(async () => {
       const res = await fetch('/')
       const html = await res.text()
-      return html.includes('rel="stylesheet"')
+      return /href="[^"]*test\.css[^"]*"/.test(html)
     }).toBeWithPolling(true, { timeout: 30000, interval: 1000 })
 
     // Restore original config and wait for restart to complete
