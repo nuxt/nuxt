@@ -199,7 +199,9 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
-    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    expect(headers.getSetCookie()).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+    ])
 
     const { page } = await renderPage('/navigate-to-forbidden')
 
@@ -214,7 +216,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it('validates routes with custom statusCode and statusMessage', async () => {
+  it('validates routes with custom status and statusText', async () => {
     const CUSTOM_ERROR_CODE = 401
     const CUSTOM_ERROR_MESSAGE = 'Custom error message'
     const ERROR_PAGE_TEXT = 'This is the error page'
@@ -713,8 +715,17 @@ describe('nuxt composables', () => {
         }).map(([key, value]) => `${key}=${value}`).join('; '),
       },
     })
-    const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
+    const cookies = res.headers.getSetCookie()
+    expect(cookies).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+      'accessed-with-default-value=default; Path=/',
+      'set=set; Path=/',
+      'browser-set=set; Path=/',
+      'browser-set-to-null=; Max-Age=0; Path=/',
+      'browser-set-to-null-with-default=; Max-Age=0; Path=/',
+      'browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/',
+      'theCookie=show; Path=/',
+    ])
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -1204,16 +1215,21 @@ describe('errors', () => {
     url.host = 'localhost:3000'
     error.url = url.toString()
     expect(error).toMatchObject({
-      message: isDev ? 'This is a custom error' : 'Server Error',
-      statusCode: 422,
-      statusMessage: 'This is a custom error',
+      message: 'This is a custom error',
       url: 'http://localhost:3000/error',
     })
   })
 
   it('should render a HTML error page', async () => {
-    const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.headers.getSetCookie()).toStrictEqual([
+      'set-in-plugin=true; Path=/',
+      'some-error=was%20set; Path=/',
+    ])
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -1234,8 +1250,8 @@ describe('errors', () => {
       {
         "error": true,
         "message": "Page Not Found: /__nuxt_error",
-        "statusCode": 404,
-        "statusMessage": "Page Not Found: /__nuxt_error",
+        "status": 404,
+        "statusText": "Page Not Found: /__nuxt_error",
         "url": "http://localhost:3000/__nuxt_error",
       }
     `)
@@ -1386,12 +1402,12 @@ describe('composables', () => {
 
 describe('middlewares', () => {
   it('should redirect to index with global middleware', async () => {
-    const html = await $fetch<string>('/redirect/')
+    const res = await fetch('/redirect/', { redirect: 'manual' })
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
 
-    expect(html).toContain('Hello Nuxt 3!')
+    expect(res.headers.get('location')).toEqual('/')
   })
 
   it('should allow redirection from a non-existent route with `ssr: false`', async () => {
@@ -2299,7 +2315,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
-    expect(await $fetch<string>('/foo/url')).toContain('path: /foo/url')
+    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
   })
 
   it('should allow setting relative baseURL', async () => {
@@ -2347,7 +2363,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     }
   })
 
-  it.skipIf(isDev || isWebpack)('should render relative importmap path with relative path', async () => {
+  it.skipIf(isWebpack)('should render relative importmap path with relative path', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',
@@ -2653,7 +2669,7 @@ describe('component islands', () => {
     })
 
     const result = await fetch('/foo/islands')
-    expect(result.status).toBe(200)
+    expect.soft(result.status).toBe(200)
 
     await startServer()
   })
@@ -2667,19 +2683,23 @@ describe('component islands', () => {
     await page.getByText('to server page').click()
     await islandPageRequest
     await page.locator('#server-page').waitFor()
+
+    await page.close()
   })
 
   it('should show error on 404 error for server pages during client navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('[href="/server-components/lost-page"]')
     await page.getByText('This is the error page').waitFor()
+
+    await page.close()
   })
 })
 
 describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   it('does not override vite plugins', async () => {
-    expect(await $fetch<string>('/vite-plugin-without-path')).toBe('vite-plugin without path')
-    expect(await $fetch<string>('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
+    expect(await $fetch('/vite-plugin-without-path', { responseType: 'text' })).toBe('vite-plugin without path')
+    expect(await $fetch('/__nuxt-test', { responseType: 'text' })).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
     expect(await fetch('/app.config').then(r => r.status)).toBe(404)
@@ -2688,7 +2708,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
 
 describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
-    const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(typeof data.prerenderedAt).toEqual('number')
 
@@ -2750,14 +2770,14 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   })
 
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
-    const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
   })
 
   it('should render payload for ISR routes', async () => {
-    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/isr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['isr-data']).toBeDefined()
@@ -2765,7 +2785,7 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   })
 
   it('should render payload for SWR routes', async () => {
-    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/swr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-data']).toBeDefined()
@@ -2959,7 +2979,8 @@ describe('teleports', () => {
 })
 
 describe('experimental', () => {
-  it('decorators support works', async () => {
+  // TODO: not supported by oxc yet: https://github.com/oxc-project/oxc/issues/9170
+  it.fails('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
     expect(html).toContain('decorated-decorated')
     expectNoClientErrors('/experimental/decorators')

@@ -57,37 +57,36 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"199k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"67.7k"`)
 
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1440k"`)
+    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1272k"`)
 
     const packages = modules.files
-      .filter(m => m.endsWith('package.json'))
-      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
+      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@babel/parser",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
+        "@unhead/vue+[...]",
+        "babel__parser",
+        "defu",
+        "destr",
         "devalue",
-        "entities",
-        "entities/dist/commonjs",
-        "estree-walker",
+        "h3+rou3+srvx",
         "hookable",
-        "source-map-js",
+        "nuxt__devalue",
+        "ofetch",
+        "ohash",
+        "pathe",
+        "scule",
         "ufo",
-        "unhead",
+        "unctx",
+        "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue__compiler-ssr",
+        "vue__server-renderer",
       ]
     `)
   })
@@ -95,21 +94,34 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default server bundle size (inlined vue modules)', async () => {
     const serverDir = join(rootDir, '.output-inline/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"564k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"68.0k"`)
 
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"105k"`)
+    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"454k"`)
 
     const packages = modules.files
-      .filter(m => m.endsWith('package.json'))
-      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
+      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
+        "@unhead/vue+[...]",
+        "defu",
+        "destr",
         "devalue",
+        "h3+rou3+srvx",
         "hookable",
-        "unhead",
+        "nuxt__devalue",
+        "ofetch",
+        "ohash",
+        "pathe",
+        "scule",
+        "ufo",
+        "unctx",
+        "unstorage",
+        "vue",
+        "vue-bundle-renderer",
+        "vue__server-renderer",
       ]
     `)
   })
@@ -117,37 +129,37 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"294k"`)
+    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"163k"`)
 
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1451k"`)
+    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1273k"`)
 
     const packages = modules.files
-      .filter(m => m.endsWith('package.json'))
-      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
+      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@babel/parser",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
-        "@vue/reactivity",
-        "@vue/runtime-core",
-        "@vue/runtime-dom",
-        "@vue/server-renderer",
-        "@vue/shared",
+        "@unhead/vue+[...]",
+        "babel__parser",
+        "defu",
+        "destr",
         "devalue",
-        "entities",
-        "entities/dist/commonjs",
-        "estree-walker",
+        "h3+rou3+srvx",
         "hookable",
-        "source-map-js",
+        "nuxt__devalue",
+        "ofetch",
+        "ohash",
+        "pathe",
+        "scule",
         "ufo",
-        "unhead",
+        "uncrypto",
+        "unctx",
+        "unstorage",
         "vue",
         "vue-bundle-renderer",
+        "vue__compiler-ssr",
+        "vue__server-renderer",
       ]
     `)
   })

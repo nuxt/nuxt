@@ -1,26 +1,12 @@
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
-import type { EventHandler, H3Event } from 'h3'
+import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
+import type { EventHandler, H3Event } from 'nitro/h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 import type { HookResult, RuntimeConfig, TSReference } from 'nuxt/schema'
 
-declare module 'nitropack' {
+declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-    appLayout?: string | false
-  }
-}
-
-declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
+    baseURL: string
     buildAssetsDir: string
     cdnURL: string
   }
@@ -35,22 +21,7 @@ declare module 'nitropack/types' {
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
-declare module 'nitropack' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface NitroRuntimeConfig extends RuntimeConfig {}
-  interface NitroRouteConfig {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-  }
-  interface NitroRuntimeHooks {
-    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
-    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
-    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
-  }
-}
-declare module 'nitropack/types' {
+declare module 'nitro/types' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {

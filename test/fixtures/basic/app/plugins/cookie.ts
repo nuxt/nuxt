@@ -1,3 +1,6 @@
-export default defineNuxtPlugin(() => {
-  useCookie('set-in-plugin').value = 'true'
+export default defineNuxtPlugin({
+  env: { islands: false },
+  setup () {
+    useCookie('set-in-plugin').value = 'true'
+  },
 })

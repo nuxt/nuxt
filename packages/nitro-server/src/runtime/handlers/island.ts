@@ -1,9 +1,9 @@
-import { useNitroApp } from 'nitropack/runtime'
-import type { RenderResponse } from 'nitropack/types'
+import { useNitroHooks } from 'nitro/app'
+import type { RenderResponse } from 'nitro/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
-import type { EventHandler, H3Event } from 'h3'
-import { defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
+import type { H3Event } from 'nitro/h3'
+import { defineEventHandler, getQuery, readBody } from 'nitro/h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
@@ -16,16 +16,13 @@ import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse 
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 
-const handler: EventHandler = defineEventHandler(async (event) => {
-  const nitroApp = useNitroApp()
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
+  event.res.headers.set('content-type', 'application/json;charset=utf-8')
+  event.res.headers.set('x-powered-by', 'Nuxt')
 
-  setResponseHeaders(event, {
-    'content-type': 'application/json;charset=utf-8',
-    'x-powered-by': 'Nuxt',
-  })
-
-  if (import.meta.prerender && event.path && await islandCache!.hasItem(event.path)) {
-    return islandCache!.getItem(event.path) as Promise<Partial<RenderResponse>>
+  const url = event.url.pathname + event.url.search + event.url.hash
+  if (import.meta.prerender && url && await islandCache!.hasItem(url)) {
+    return islandCache!.getItem(url) as Promise<Partial<RenderResponse>>
   }
 
   const islandContext = await getIslandContext(event)
@@ -99,11 +96,11 @@ const handler: EventHandler = defineEventHandler(async (event) => {
     slots: getSlotIslandResponse(ssrContext),
   }
 
-  await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
+  await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
 
   if (import.meta.prerender) {
     await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)
-    await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
+    await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, url)
   }
   return islandResponse
 })
@@ -112,24 +109,24 @@ export default handler
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
-  let url = event.path || ''
-  if (import.meta.prerender && event.path && await islandPropCache!.hasItem(event.path)) {
+  let url = event.url.pathname + event.url.search + event.url.hash
+  if (import.meta.prerender && url && await islandPropCache!.hasItem(url)) {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
-    url = await islandPropCache!.getItem(event.path) as string
+    url = await islandPropCache!.getItem(url) as string
   }
   const componentParts = url.substring('/__nuxt_island'.length + 1).replace(ISLAND_SUFFIX_RE, '').split('_')
   const hashId = componentParts.length > 1 ? componentParts.pop() : undefined
   const componentName = componentParts.join('_')
 
   // TODO: Validate context
-  const context = event.method === 'GET' ? getQuery(event) : await readBody(event)
+  const context = event.req.method === 'GET' ? getQuery<NuxtIslandContext>(event) : await readBody<NuxtIslandContext>(event)
 
   const ctx: NuxtIslandContext = {
     url: '/',
     ...context,
     id: hashId,
     name: componentName,
-    props: destr(context.props) || {},
+    props: destr(context?.props) || {},
     slots: {},
     components: {},
   }

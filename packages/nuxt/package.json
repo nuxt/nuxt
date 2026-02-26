@@ -85,7 +85,7 @@
     "mlly": "^1.8.0",
     "nanotar": "^0.3.0",
     "nypm": "^0.6.5",
-    "ofetch": "^1.5.1",
+    "ofetch": "^2.0.0-alpha.3",
     "ohash": "^2.0.11",
     "on-change": "^6.0.2",
     "oxc-minify": "^0.115.0",

@@ -2,7 +2,7 @@ import { withoutTrailingSlash } from 'ufo'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const nuxtApp = useNuxtApp()
-  if (useRequestHeaders(['trailing-slash'])['trailing-slash'] && to.fullPath.endsWith('/')) {
+  if (useRequestEvent()?.req.headers.get('trailing-slash') && to.fullPath.endsWith('/')) {
     return navigateTo(withoutTrailingSlash(to.fullPath), { redirectCode: 307 })
   }
   if (to.path.startsWith('/redirect/')) {

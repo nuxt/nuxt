@@ -59,6 +59,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
+
   const external = new Set([
     'nitro/runtime',
     // TODO: remove in v5

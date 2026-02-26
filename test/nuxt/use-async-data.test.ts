@@ -13,14 +13,14 @@ import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxt
 import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
 registerEndpoint('/api/sleep', defineEventHandler((event) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve({ method: event.method, headers: Object.fromEntries(event.headers.entries()) })
+      resolve({ method: event.req.method, headers: Object.fromEntries(event.req.headers.entries()) })
     }, 100)
   })
 }))
@@ -109,10 +109,10 @@ describe('useAsyncData', () => {
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
-    expect(error.value).toMatchInlineSnapshot('[Error: test]')
+    expect(error.value).toMatchInlineSnapshot('[HTTPError: test]')
     expect(status.value).toBe('error')
     expect(pending.value).toBe(false)
-    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[Error: test]')
+    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[HTTPError: test]')
 
     const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData(uniqueKey, () => ({} as any), { immediate: false })
 

@@ -1,13 +1,15 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
-import type { RenderResponse } from 'nitropack/types'
-import type { EventHandler } from 'h3'
-import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
+import type { RenderResponse } from 'nitro/types'
+import type { H3Event } from 'nitro/h3'
+import { HTTPError, defineEventHandler, getQuery, writeEarlyHints } from 'nitro/h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { HeadEntryOptions, Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
-import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runtime'
+import { getRouteRules, useNitroHooks } from 'nitro/app'
+import { relative } from 'pathe'
+
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
 
 import { getRenderer } from '../utils/renderer/build-files'
@@ -29,7 +31,7 @@ import entryIds from '#internal/nuxt/entry-ids.mjs'
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
-import { relative } from 'pathe'
+import type { AppConfig } from '@nuxt/schema'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -50,19 +52,16 @@ const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
 let entryPath: string
 
-const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
-  const nitroApp = useNitroApp()
-
+const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
   // Whether we're rendering an error page
-  const ssrError = event.path.startsWith('/__nuxt_error')
-    ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
+  const ssrError = event.url.pathname.startsWith('/__nuxt_error')
+    ? getQuery<NuxtPayload['error'] & { url: string }>(event)
     : null
 
-  if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {
-    throw createError({
+  if (ssrError && !event.context.nuxt?.['~internal'] /* allow internal fetch */) {
+    throw new HTTPError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
-      message: 'Page Not Found: /__nuxt_error',
     })
   }
 
@@ -74,12 +73,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   ssrContext.head.push(appHead, headEntryOptions)
 
   if (ssrError) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const status = ssrError.status || ssrError.statusCode
-    if (status) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      ssrError.status = ssrError.statusCode = Number.parseInt(status as any)
-    }
+    ssrError.status &&= Number.parseInt(ssrError.status.toString())
     if (PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
       try {
         ssrError.data = destr(ssrError.data)
@@ -91,7 +85,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   }
 
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
-  const routeOptions = getRouteRules(event)
+  const routeOptions = getRouteRules(event.req.method, event.url.pathname).routeRules || {}
 
   // Whether we are prerendering route or using ISR/SWR caching
   const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && (
@@ -104,13 +98,12 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
     const url = ssrContext.url.substring(0, ssrContext.url.lastIndexOf('/')) || '/'
     ssrContext.url = url
 
-    event._path = event.node.req.url = url
     if (import.meta.prerender && await payloadCache!.hasItem(url)) {
-      return payloadCache!.getItem(url) as Promise<Partial<RenderResponse>>
+      return returnResponse(event, await payloadCache!.getItem(url) as Partial<RenderResponse>)
     }
   }
 
-  if (routeOptions.ssr === false) {
+  if (!routeOptions?.ssr) {
     ssrContext.noSSR = true
   }
 
@@ -123,7 +116,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
     if (link) {
-      writeEarlyHints(event, link)
+      writeEarlyHints(event, { link })
     }
   }
 
@@ -152,9 +145,8 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
 
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
 
-  if (ssrContext['~renderResponse'] || ssrContext._renderResponse) {
-    // TODO: remove _renderResponse in nuxt v5
-    return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
+  if (ssrContext['~renderResponse']) {
+    return returnResponse(event, ssrContext['~renderResponse'])
   }
 
   // Handle errors
@@ -168,17 +160,18 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
     if (import.meta.prerender) {
       await payloadCache!.setItem(ssrContext.url, response)
     }
-    return response
+
+    return returnResponse(event, response)
   }
 
   if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
     // Hint nitro to prerender payload for this route
-    appendResponseHeader(event, 'x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await payloadCache!.setItem(ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, ''), renderPayloadResponse(ssrContext))
   }
 
-  const NO_SCRIPTS = NUXT_NO_SCRIPTS || routeOptions.noScripts
+  const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
@@ -194,7 +187,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
       } else {
         // TODO: provide support for relative paths in assets as well
         // relativise path
-        path = relative(event.path.replace(/\/[^/]+$/, '/'), joinURL('/', path))
+        path = relative(event.url.pathname.replace(/\/[^/]+$/, '/'), joinURL('/', path))
         if (!/^(?:\/|\.+\/)/.test(path)) {
           path = `./${path}`
         }
@@ -282,7 +275,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   }
 
   // 6. Scripts
-  if (!routeOptions.noScripts) {
+  if (!routeOptions?.noScripts) {
     const tagPosition = (_PAYLOAD_EXTRACTION && !NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head'
 
     ssrContext.head.push({
@@ -314,18 +307,12 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   }
 
   // Allow hooking into the rendered result
-  await nitroApp.hooks.callHook('render:html', htmlContext, { event })
+  await useNitroHooks().callHook('render:html', htmlContext, { event })
 
-  // Construct HTML response
-  return {
-    body: renderHTMLDocument(htmlContext),
-    statusCode: getResponseStatus(event),
-    statusMessage: getResponseStatusText(event),
-    headers: {
-      'content-type': 'text/html;charset=utf-8',
-      'x-powered-by': 'Nuxt',
-    },
-  } satisfies RenderResponse
+  event.res.headers.set('content-type', 'text/html;charset=utf-8')
+  event.res.headers.set('x-powered-by', 'Nuxt')
+
+  return renderHTMLDocument(htmlContext)
 })
 
 export default handler
@@ -356,4 +343,29 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
     `<head>${joinTags(html.head)}</head>` +
     `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` +
     '</html>'
+}
+
+declare module 'srvx' {
+  interface ServerRequestContext {
+    nuxt?: {
+      'appConfig'?: AppConfig
+      'noSSR'?: boolean
+      /** @internal */
+      '~internal'?: boolean
+    }
+  }
+}
+
+function returnResponse (event: H3Event, response: Partial<RenderResponse>) {
+  for (const header in response.headers || {}) {
+    event.res.headers.set(header, response.headers![header]!)
+  }
+  if (response.status) {
+    event.res.status = response.status
+  }
+  if (response.statusText) {
+    event.res.statusText = response.statusText
+  }
+
+  return response.body
 }
