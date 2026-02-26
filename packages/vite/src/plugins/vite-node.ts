@@ -256,14 +256,19 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
 }
 
 let _node: ViteNodeServer | undefined
+let _nodeServer: ViteDevServer | undefined
 
 function getNode (server: ViteDevServer) {
-  return _node ||= new ViteNodeServer(server, {
-    transformMode: {
-      ssr: [/.*/],
-      web: [],
-    },
-  })
+  if (!_node || _nodeServer !== server) {
+    _node = new ViteNodeServer(server, {
+      transformMode: {
+        ssr: [/.*/],
+        web: [],
+      },
+    })
+    _nodeServer = server
+  }
+  return _node
 }
 
 function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {
