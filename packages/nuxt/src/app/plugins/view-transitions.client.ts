@@ -1,7 +1,7 @@
 import { isChangingPage } from '../components/utils'
 import { useRouter } from '../composables/router'
 import { defineNuxtPlugin } from '../nuxt'
-import type { ViewTransitionOptions, ViewTransitionPageOptions } from '../../../../schema/src/types/config'
+import type { ViewTransitionPageOptions } from 'nuxt/schema'
 // @ts-expect-error virtual file
 import { appViewTransition as defaultViewTransition } from '#build/nuxt.config.mjs'
 
@@ -29,12 +29,22 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const router = useRouter()
 
+  const normalizeViewTransitionOptions = (value: unknown): Partial<ViewTransitionPageOptions> => {
+    if (typeof value === 'boolean' || value === 'always') {
+      return { enabled: value }
+    }
+    if (value && typeof value === 'object') {
+      return value as ViewTransitionPageOptions
+    }
+    return {}
+  }
+
   router.beforeResolve(async (to, from) => {
     if (to.matched.length === 0) { return }
 
-    const toViewTransitionOptions = (to.meta.viewTransition || {}) as ViewTransitionPageOptions
-    const fromViewTransitionOptions = (from.meta.viewTransition || {}) as ViewTransitionPageOptions
-    const viewTransitionMode = toViewTransitionOptions?.enabled ?? defaultViewTransition.enabled
+    const toViewTransitionOptions = normalizeViewTransitionOptions(to.meta.viewTransition)
+    const fromViewTransitionOptions = normalizeViewTransitionOptions(from.meta.viewTransition)
+    const viewTransitionMode = toViewTransitionOptions.enabled ?? defaultViewTransition.enabled
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
 
@@ -47,7 +57,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       return
     }
 
-    const resolveViewTransitionTypes = (types: ViewTransitionOptions['types']) => {
+    const resolveViewTransitionTypes = (types: ViewTransitionPageOptions['types']) => {
       return types ? typeof types === 'function' ? types(to, from) : types : undefined
     }
 
@@ -58,6 +68,12 @@ export default defineNuxtPlugin((nuxtApp) => {
     const viewTransitionFromTypes = resolveViewTransitionTypes(fromViewTransitionOptions.fromTypes) ?? []
     const viewTransitionToTypes = resolveViewTransitionTypes(toViewTransitionOptions.toTypes) ?? []
 
+    const allTypes = [
+      ...viewTransitionBaseTypes,
+      ...viewTransitionFromTypes,
+      ...viewTransitionToTypes,
+    ]
+
     const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
       abortTransition = reject
@@ -66,17 +82,16 @@ export default defineNuxtPlugin((nuxtApp) => {
     let changeRoute: () => void
     const ready = new Promise<void>(resolve => (changeRoute = resolve))
 
-    transition = document.startViewTransition!({
-      update: () => {
-        changeRoute()
-        return promise
-      },
-      types: [
-        ...viewTransitionBaseTypes,
-        ...viewTransitionFromTypes,
-        ...viewTransitionToTypes,
-      ],
-    })
+    const update = () => {
+      changeRoute()
+      return promise
+    }
+
+    // Use the object form (Level 2) only when types are specified,
+    // falling back to the callback form (Level 1) for broader browser support.
+    transition = allTypes.length > 0
+      ? document.startViewTransition!({ update, types: allTypes })
+      : document.startViewTransition!(update)
 
     transition.finished.then(resetTransitionState)
 

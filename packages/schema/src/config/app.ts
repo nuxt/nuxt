@@ -95,7 +95,7 @@ export default defineResolvers({
           types: hasTypes ? val.types as ViewTransitionOptions['types'] : undefined,
         }
 
-        if (appOptions.enabled && appOptions.types) {
+        if (appOptions.enabled !== undefined && appOptions.types !== undefined) {
           return appOptions as ViewTransitionOptions
         }
 

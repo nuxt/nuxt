@@ -165,10 +165,14 @@ export interface AppConfig {
 
 export interface ViewTransitionOptions {
   enabled: boolean | 'always'
-  types?: [string] | ((to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => [string])
+  types?: string[]
 }
 
-export interface ViewTransitionPageOptions extends ViewTransitionOptions {
-  toTypes?: [string] | ((to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => [string])
-  fromTypes?: [string] | ((to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => [string])
+type ViewTransitionTypesFn = (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => string[]
+
+export interface ViewTransitionPageOptions {
+  enabled?: boolean | 'always'
+  types?: string[] | ViewTransitionTypesFn
+  toTypes?: string[] | ViewTransitionTypesFn
+  fromTypes?: string[] | ViewTransitionTypesFn
 }
