@@ -121,11 +121,17 @@ interface PageMeta {
 
   **`viewTransition`**
 
-  - **Type**: `boolean | 'always'`
+  - **Type**: `boolean | 'always' | ViewTransitionPageOptions`
 
     **Experimental feature, only available when [enabled in your nuxt.config file](/docs/4.x/getting-started/transitions#view-transitions-api-experimental)**</br>
     Enable/disable View Transitions for the current page.
     If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
+
+    You can also pass a `ViewTransitionPageOptions` object to configure [view transition types](/docs/4.x/getting-started/transitions#view-transition-types):
+    - `enabled`: `boolean | 'always'` - enable/disable the transition
+    - `types`: `string[] | (to, from) => string[]` - types applied to any transition involving this page
+    - `toTypes`: `string[] | (to, from) => string[]` - types applied only when navigating **to** this page
+    - `fromTypes`: `string[] | (to, from) => string[]` - types applied only when navigating **from** this page
 
   **`redirect`**
 
