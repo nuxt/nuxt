@@ -36,7 +36,7 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction } from './compiler.ts'
@@ -1147,7 +1147,7 @@ export interface ConfigSchema {
      * @default false
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
      */
-    viewTransition: boolean | 'always'
+    viewTransition: ViewTransitionOptions | ViewTransitionOptions['enabled']
 
     /**
      * Write early hints when using node server.

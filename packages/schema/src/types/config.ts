@@ -5,6 +5,7 @@ import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
+import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { AppHeadMetaObject } from './head.ts'
@@ -154,10 +155,24 @@ export interface NuxtAppConfig {
   head: Serializable<AppHeadMetaObject>
   layoutTransition: boolean | Serializable<TransitionProps>
   pageTransition: boolean | Serializable<TransitionProps>
-  viewTransition?: boolean | 'always'
+  viewTransition?: ViewTransitionOptions['enabled'] | ViewTransitionOptions
   keepalive: boolean | Serializable<KeepAliveProps>
 }
 
 export interface AppConfig {
   [key: string]: unknown
+}
+
+export interface ViewTransitionOptions {
+  enabled: boolean | 'always'
+  types?: string[]
+}
+
+type ViewTransitionTypesFn = (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => string[]
+
+export interface ViewTransitionPageOptions {
+  enabled?: boolean | 'always'
+  types?: string[] | ViewTransitionTypesFn
+  toTypes?: string[] | ViewTransitionTypesFn
+  fromTypes?: string[] | ViewTransitionTypesFn
 }

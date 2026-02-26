@@ -100,6 +100,12 @@ export default defineResolvers({
     payloadExtraction: true,
     clientFallback: false,
     crossOriginPrefetch: false,
+
+    /**
+     * Enable View Transition API integration with client-side router.
+     * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
+     * @type {ViewTransitionOptions['enabled'] | ViewTransitionOptions}
+     */
     viewTransition: false,
     writeEarlyHints: false,
     componentIslands: {
