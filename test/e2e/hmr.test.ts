@@ -93,6 +93,42 @@ if (isBuilt || isWindows) {
     await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev')
   })
 
+  test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) => {
+    // Verify CSS <link> is present in initial SSR HTML
+    const configPath = join(fixtureDir, 'nuxt.config.ts')
+    const configContents = readFileSync(configPath, 'utf8')
+
+    await expect(async () => {
+      const res = await fetch('/')
+      const html = await res.text()
+      return /href="[^"]*test\.css[^"]*"/.test(html)
+    }).toBeWithPolling(true)
+
+    // Trigger a config restart by modifying nuxt.config.ts
+    writeFileSync(configPath, configContents.replace(
+      'experimental: {',
+      '// trigger restart\n  experimental: {',
+    ))
+
+    // Wait for the restart to begin and complete
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Verify CSS <link> is still present after restart
+    await expect(async () => {
+      const res = await fetch('/')
+      const html = await res.text()
+      return /href="[^"]*test\.css[^"]*"/.test(html)
+    }).toBeWithPolling(true, { timeout: 30000, interval: 1000 })
+
+    // Restore original config and wait for restart to complete
+    writeFileSync(configPath, configContents)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    await expect(async () => {
+      const res = await fetch('/')
+      return res.status
+    }).toBeWithPolling(200, { timeout: 30000, interval: 1000 })
+  })
+
   test('HMR for island components', async ({ page, goto }) => {
     // Navigate to the page with the island components
     await goto('/server-component')
