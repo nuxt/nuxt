@@ -11,7 +11,21 @@ import type { NuxtPage } from '../schema.ts'
 const filePath = '/app/pages/index.vue'
 
 vi.mock('klona', { spy: true })
-
+vi.mock('@nuxt/kit', async (original) => {
+  const mod = await original<typeof import('@nuxt/kit')>()
+  return {
+    ...mod,
+    useNuxt: vi.fn(() => {
+      return {
+        options: {
+          experimental: {
+            normalizePageNames: false,
+          },
+        },
+      }
+    }),
+  }
+})
 describe('page metadata', () => {
   it('should not extract metadata from empty files', () => {
     expect(getRouteMeta('', filePath)).toEqual({})
@@ -793,6 +807,32 @@ const hoisted = ref('hoisted')
         validate: (route) => {
           return route.params.id === 'test'
         }
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should transform layout written in object syntax', () => {
+    const sfc = `
+<script setup lang="ts">
+definePageMeta({
+  layout: {
+    name: 'foo',
+    props: {
+      bar: 'bar',
+    },
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        layout: 'foo',
+      layoutProps: {
+            bar: 'bar',
+          },
+
       }
       export default __nuxt_page_meta"
     `)

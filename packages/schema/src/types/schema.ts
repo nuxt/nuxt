@@ -36,7 +36,7 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViteOptions } from './config.ts'
+import type { AppConfig, NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction } from './compiler.ts'
@@ -1147,7 +1147,7 @@ export interface ConfigSchema {
      * @default false
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
      */
-    viewTransition: boolean | 'always'
+    viewTransition: ViewTransitionOptions | ViewTransitionOptions['enabled']
 
     /**
      * Write early hints when using node server.
@@ -1174,7 +1174,7 @@ export interface ConfigSchema {
     localLayerAliases: boolean
 
     /**
-     * Enable the new experimental typed router using [unplugin-vue-router](https://github.com/posva/unplugin-vue-router).
+     * Enable the new experimental typed router using vue-router.
      *
      * @default false
      */
@@ -1314,6 +1314,24 @@ export interface ConfigSchema {
         deep: boolean
       }
 
+      /**
+       * Options that apply to `useState` and `clearNuxtState`.
+       * @default { resetOnClear: false }
+       * @default { resetOnClear: true } with compatibilityVersion >= 5
+       */
+      useState: {
+        /**
+         * When `true`, `clearNuxtState` will reset state to its initial value (provided by the `init`
+         * function of `useState`) instead of setting it to `undefined`.
+         *
+         * This aligns `clearNuxtState` behavior with `clearNuxtData`, which already resets to defaults.
+         *
+         * @default false
+         * @default true with compatibilityVersion >= 5
+         */
+        resetOnClear: boolean
+      }
+
       useFetch: Pick<FetchOptions, 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>
     }
 
@@ -1355,6 +1373,18 @@ export interface ConfigSchema {
      * @default true
      */
     normalizeComponentNames: boolean
+
+    /**
+     * Ensure that page component names match their route names.
+     *
+     * This is useful when using `<KeepAlive>` with `include`/`exclude` filters, as Vue's
+     * `<KeepAlive>` relies on the component `name` option to identify components.
+     * Without this, page components may have generic names (like `index`) that don't
+     * correspond to their route names, making name-based `<KeepAlive>` filtering unreliable.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    normalizePageNames: boolean
 
     /**
      * Keep showing the spa-loading-template until suspense:resolve
@@ -1559,8 +1589,8 @@ export interface ConfigSchema {
     /**
      * Whether to enable a compatibility layer for Nitro auto imports.
      * We recommend migrating to direct imports instead.
-     * @default false
-     * @default true with compatibilityVersion >= 5
+     * @default true
+     * @default false with compatibilityVersion >= 5
      */
     nitroAutoImports: boolean
   }

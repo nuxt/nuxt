@@ -8,8 +8,6 @@ import { useNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-import type { ErrorPartial } from '../types'
-
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
   const nitro = useNitro()
@@ -71,23 +69,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
       if (nuxt.options.experimental.viteEnvironmentApi) {
         await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
-      }
-
-      const mw: Connect.ServerStackItem = {
-        route: '',
-        handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-          // 'Skip' the transform middleware
-          if (req._skip_transform && req.url) {
-            req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
-          }
-          next()
-        },
-      }
-      const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
-      if (transformHandler === -1) {
-        viteServer.middlewares.stack.push(mw)
-      } else {
-        viteServer.middlewares.stack.splice(transformHandler, 0, mw)
       }
 
       const staticBases: string[] = []
@@ -184,7 +165,9 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
         if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
-          throw { status: 404 } satisfies ErrorPartial
+          res!.statusCode = 404
+          res!.end('Not Found')
+          return
         }
       })
       await nuxt.callHook('server:devHandler', viteMiddleware, {
@@ -208,6 +191,27 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           return isProxyPath(url)
         },
       })
+
+      // Use a post-hook so this runs after Vite registers its internal middleware.
+      // This ensures the URL rewrite to /__skip_vite runs after the proxy middleware.
+      return () => {
+        const mw: Connect.ServerStackItem = {
+          route: '',
+          handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
+            // 'Skip' the transform middleware
+            if (req._skip_transform && req.url) {
+              req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
+            }
+            next()
+          },
+        }
+        const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
+        if (transformHandler === -1) {
+          viteServer.middlewares.stack.push(mw)
+        } else {
+          viteServer.middlewares.stack.splice(transformHandler, 0, mw)
+        }
+      }
     },
   }
 }

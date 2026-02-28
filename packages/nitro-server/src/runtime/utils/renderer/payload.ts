@@ -14,7 +14,7 @@ import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
     body: NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])
+      ? encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers']))
       : `export default ${devalue(splitPayload(ssrContext).payload)}`,
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
@@ -26,7 +26,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderRespon
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? stringify(opts.data, opts.ssrContext['~payloadReducers']) : ''
+  const contents = opts.data ? encodeForwardSlashes(stringify(opts.data, opts.ssrContext['~payloadReducers'])) : ''
   const payload: Script = {
     'type': 'application/json',
     'innerHTML': contents,
@@ -50,6 +50,29 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
   ]
 }
 
+/**
+ * Encode forward slashes as unicode escape sequences to prevent
+ * Google from treating them as internal links and trying to crawl them.
+ * @see https://github.com/nuxt/nuxt/issues/24175
+ */
+function encodeForwardSlashes (str: string): string {
+  return str.replaceAll('/', '\\u002F')
+}
+
+/**
+ * Escape a string for safe interpolation inside a double-quoted JavaScript string literal.
+ * Prevents XSS when user-controlled URLs are embedded in inline `<script>` tags.
+ */
+function escapeJsString (str: string): string {
+  return str
+    .replaceAll('\\', '\\\\')
+    .replaceAll('"', '\\"')
+    .replaceAll('\n', '\\n')
+    .replaceAll('\r', '\\r')
+    .replaceAll('/', '\\u002F')
+    .replaceAll('<', '\\u003C')
+}
+
 export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: NitroRouteRules, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = !opts.ssrContext.noSSR && (
@@ -58,8 +81,10 @@ export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOp
   )
   const nuxtData = devalue(opts.data)
   if (_PAYLOAD_EXTRACTION) {
-    const singleAppPayload = `import p from "${opts.src}";window.__NUXT__={...p,...(${nuxtData})}`
-    const multiAppPayload = `import p from "${opts.src}";window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={...p,...(${nuxtData})}`
+    // Escape the URL to prevent XSS when interpolated into a JS string literal
+    const escapedSrc = escapeJsString(opts.src!)
+    const singleAppPayload = `import p from "${escapedSrc}";window.__NUXT__={...p,...(${nuxtData})}`
+    const multiAppPayload = `import p from "${escapedSrc}";window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={...p,...(${nuxtData})}`
     return [
       {
         type: 'module',

@@ -100,6 +100,12 @@ export default defineResolvers({
     payloadExtraction: true,
     clientFallback: false,
     crossOriginPrefetch: false,
+
+    /**
+     * Enable View Transition API integration with client-side router.
+     * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
+     * @type {ViewTransitionOptions['enabled'] | ViewTransitionOptions}
+     */
     viewTransition: false,
     writeEarlyHints: false,
     componentIslands: {
@@ -157,6 +163,13 @@ export default defineResolvers({
       useAsyncData: {
         deep: false,
       },
+      useState: {
+        resetOnClear: {
+          $resolve: async (val, get) => {
+            return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+          },
+        },
+      },
       useFetch: {},
     },
     clientNodeCompat: false,
@@ -165,6 +178,11 @@ export default defineResolvers({
     normalizeComponentNames: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : true
+      },
+    },
+    normalizePageNames: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
     spaLoadingTemplateLocation: {

@@ -7,7 +7,11 @@ export default defineBuildConfig({
       input: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner', 'src/fix-stacktrace'],
       dts: { oxc: true },
       rolldown: {
-        external: ['#vite-node', '#build/dist/server/runner.mjs'],
+        external: [
+          '@nuxt/schema',
+          '#vite-node', 
+          '#build/dist/server/runner.mjs'
+        ],
       },
     },
   ],

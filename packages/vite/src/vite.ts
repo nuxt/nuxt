@@ -19,13 +19,13 @@ import { clientEnvironment } from './shared/client.ts'
 import { warmupViteServer } from './utils/warmup.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
+import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize.ts'
 import { distDir } from './dirs.ts'
-import { VueFeatureFlagsPlugin } from './plugins/vue-feature-flags.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
 import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
@@ -224,8 +224,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // Add type-checking
               VitePluginCheckerPlugin(nuxt),
 
-              // server-only plugins
-              VueFeatureFlagsPlugin(nuxt),
               // tell rollup's nitro build about the original sources of the generated vite server build
               SourcemapPreserverPlugin(nuxt),
 
@@ -241,6 +239,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // ensure changes in chunks do not invalidate whole build
               StableEntryPlugin(nuxt),
               AnalyzePlugin(nuxt),
+              OptimizeDepsHintPlugin(nuxt),
             ]
           : [],
       ],
@@ -271,6 +270,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config.build!.watch = undefined
   }
 
+  userOptimizeDepsInclude.set(nuxt, [...((config.optimizeDeps?.include as string[]) || [])])
+
   const ctx = { nuxt, entry, config: config as ViteConfig }
   await nuxt.callHook('vite:extend', ctx)
 
@@ -282,7 +283,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 }
 
 async function handleEnvironments (nuxt: Nuxt, config: vite.InlineConfig) {
-  config.customLogger = createViteLogger(config)
+  const callbacks = optimizerCallbacks.get(nuxt)
+  config.customLogger = createViteLogger(config, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep })
   config.configFile = false
 
   for (const environment of ['client', 'ssr']) {

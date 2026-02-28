@@ -14,7 +14,7 @@ permissions: {}
 
 jobs:
   deploy-docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
       - if: ${{ github.repository_owner == 'nuxt' && github.event_name == 'push' }}

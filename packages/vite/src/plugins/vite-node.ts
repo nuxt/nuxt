@@ -6,8 +6,8 @@ import os from 'node:os'
 import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
-import { join, normalize } from 'pathe'
-import { tryUseNuxt } from '@nuxt/kit'
+import { isAbsolute, join, normalize } from 'pathe'
+import { directoryToURL, resolveAlias, tryUseNuxt } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -69,6 +69,8 @@ export interface ViteNodeFetch {
 function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string) {
   const css = new Set<string>()
   const ssrServer = nuxt.options.experimental.viteEnvironmentApi ? viteServer.environments.ssr : viteServer
+
+  // Collect CSS from module graph (already loaded modules)
   for (const key of ssrServer.moduleGraph.urlToModuleMap.keys()) {
     if (isCSS(key)) {
       const query = getQuery(key)
@@ -78,6 +80,26 @@ function getManifest (nuxt: Nuxt, viteServer: ViteDevServer, clientEntry: string
         continue
       }
       css.add(key)
+    }
+  }
+
+  // Add global CSS from config as fallback to prevent FOUC
+  // This ensures CSS is in manifest even if moduleGraph isn't populated yet
+  for (const globalCss of nuxt.options.css) {
+    if (typeof globalCss === 'string') {
+      let resolved: string | undefined = resolveAlias(globalCss, nuxt.options.alias)
+
+      // Resolve bare module specifiers to absolute paths
+      if (!isAbsolute(resolved)) {
+        resolved = resolveModulePath(resolved, {
+          try: true,
+          from: nuxt.options.modulesDir.map(d => directoryToURL(d)),
+        })
+        if (!resolved) { continue }
+        css.add('/@fs' + resolved)
+      } else {
+        css.add(resolved)
+      }
     }
   }
 
@@ -234,14 +256,19 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin {
 }
 
 let _node: ViteNodeServer | undefined
+let _nodeServer: ViteDevServer | undefined
 
 function getNode (server: ViteDevServer) {
-  return _node ||= new ViteNodeServer(server, {
-    transformMode: {
-      ssr: [/.*/],
-      web: [],
-    },
-  })
+  if (!_node || _nodeServer !== server) {
+    _node = new ViteNodeServer(server, {
+      transformMode: {
+        ssr: [/.*/],
+        web: [],
+      },
+    })
+    _nodeServer = server
+  }
+  return _node
 }
 
 function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, config: ViteNodeServerOptions) {

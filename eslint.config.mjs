@@ -240,14 +240,10 @@ export default createConfigForNuxt({
           'patterns': [
             {
               allowTypeImports: true,
-              group: [
-                // disallow everything
-                '[@a-z]*',
-                // except certain dependencies
-                ...[
+              regex: `^(?!(${
+                [
                   // vue ecosystem
                   '@unhead',
-                  '@vue',
                   '@vue/shared',
                   'vue/server-renderer',
                   'vue',
@@ -256,10 +252,8 @@ export default createConfigForNuxt({
                   'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
-                ].map(r => `!${r}`),
-                '!#[a-z]*/**', // aliases
-                '!.*/**', // relative imports
-              ],
+                ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+              })($|/))(?!#)(?!\\.)[a-zA-Z@]`,
             },
           ],
         }],
@@ -330,8 +324,4 @@ export default createConfigForNuxt({
   )
 
   // Generate type definitions for the eslint config
-  // @ts-expect-error type issues in eslint
-  .onResolved((configs) => {
-    // @ts-expect-error type issues in eslint
-    return typegen(configs)
-  })
+  .onResolved(configs => typegen(configs))

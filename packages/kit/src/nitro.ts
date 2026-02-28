@@ -113,7 +113,7 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
 
 /**
  * Add directories to be scanned by Nitro. It will check for subdirectories,
- * which will be registered just like the `~/server` folder is.
+ * which will be registered just like the `~~/server` folder is.
  */
 export function addServerScanDir (dirs: string | string[], opts: { prepend?: boolean } = {}): void {
   const nuxt = useNuxt()

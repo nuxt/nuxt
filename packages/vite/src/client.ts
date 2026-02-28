@@ -13,6 +13,7 @@ import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { createViteLogger } from './utils/logger.ts'
+import { OptimizeDepsHintPlugin, optimizerCallbacks } from './plugins/optimize-deps-hint.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
@@ -44,6 +45,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       AnalyzePlugin(nuxt),
       DevServerPlugin(nuxt),
       VitePluginCheckerPlugin(nuxt, 'client'),
+      OptimizeDepsHintPlugin(nuxt),
     ],
     appType: 'custom',
     server: {
@@ -55,7 +57,8 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     ...clientEnvironment(nuxt, ctx.entry),
   } satisfies vite.InlineConfig, nuxt.options.vite.$client || {}))
 
-  clientConfig.customLogger = createViteLogger(clientConfig)
+  const callbacks = optimizerCallbacks.get(nuxt)
+  clientConfig.customLogger = createViteLogger(clientConfig, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep })
 
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
