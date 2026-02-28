@@ -1,7 +1,8 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import destr from 'destr'
-import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
+import { definePayloadReviver, getNuxtClientPayload, shouldLoadPayload } from '../composables/payload'
 import { createError } from '../composables/error'
+import { useRoute } from '../composables/router'
 import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
@@ -18,19 +19,37 @@ const revivers: [string, (data: any) => any][] = [
 ]
 
 if (componentIslands) {
-  revivers.push(['Island', ({ key, params, result }: any) => {
+  revivers.push(['Island', ({ key, path, params, result }: any) => {
     const nuxtApp = useNuxtApp()
+    const routePath = path || useRoute().path
     if (!nuxtApp.isHydrating) {
-      nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
-        responseType: 'json',
-        ...params ? { params } : {},
-      }).then((r) => {
-        nuxtApp.payload.data[key] = r
-        return r
-      })
+      const fetchIsland = (shouldCache: boolean) => {
+        const fetchOptions = {
+          responseType: 'json' as const,
+          ...params ? { params } : {},
+          ...(shouldCache ? { cache: 'force-cache' as RequestCache } : {}),
+        }
+        if (shouldCache) {
+          nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
+            ...fetchOptions,
+          }).then((r) => {
+            nuxtApp.payload.data[key] = { __cached: true, ...r as Record<string, unknown> }
+            return nuxtApp.payload.data[key]
+          })
+        } else {
+          void $fetch(`/__nuxt_island/${key}.json`, fetchOptions).catch(() => {})
+        }
+      }
+      void shouldLoadPayload(routePath).then(fetchIsland).catch(() => fetchIsland(false))
+    }
+    const cached = nuxtApp.payload.data[key]
+    if (cached?.html) {
+      cached.__cached = true
+      return cached
     }
     return {
       html: '',
+      __cached: true,
       ...result,
     }
   }])
