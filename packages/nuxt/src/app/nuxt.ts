@@ -136,7 +136,7 @@ interface _NuxtApp {
     /** @internal */
     _deps: number
     /** @internal */
-    _off: () => void
+    _off: (reason?: 'scope' | 'key') => void
     /** @internal */
     _init: boolean
     /** @internal */
@@ -145,6 +145,8 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+    /** @internal */
+    _preserveOnInit?: boolean
   } | undefined>
 
   /** @internal */
