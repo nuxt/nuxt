@@ -1,6 +1,6 @@
 ---
-navigation.title: 'Nuxt and hydration'
-title: Nuxt and hydration
+navigation.title: 'Nuxt and Hydration'
+title: Nuxt and Hydration
 description: Why fixing hydration issues is important
 ---
 
