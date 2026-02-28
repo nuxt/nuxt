@@ -150,11 +150,16 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `transform`: a function that can be used to alter `handler` function result after resolving
   - `getCachedData`: Provide a function which returns cached data. An `undefined` return value will trigger a fetch. By default, this is:
     ```ts
-    const getDefaultCachedData = (key, nuxtApp, ctx) => nuxtApp.isHydrating
-      ? nuxtApp.payload.data[key]
-      : nuxtApp.static.data[key]
+    const getDefaultCachedData = (key, nuxtApp, ctx) => {
+      if (nuxtApp.isHydrating) {
+        return nuxtApp.payload.data[key]
+      }
+      if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook') {
+        return nuxtApp.static.data[key]
+      }
+    }
     ```
-    Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
+    Which only caches data during hydration (from the SSR payload) or from static data when [`payloadExtraction`](/docs/4.x/guide/going-further/experimental-features#payloadextraction) is enabled. It does not cache data across client-side navigations. See the [data fetching guide](/docs/4.x/getting-started/data-fetching#client-side-caching) for custom caching patterns.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
   - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
