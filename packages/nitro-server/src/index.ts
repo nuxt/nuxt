@@ -372,7 +372,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
-  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr']
+  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr']
 
   function getRouteRulesRouter () {
     const routeRulesRouter = createRou3Router<NitroRouteRules>()
@@ -449,6 +449,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       nitro.hooks.hook('build:before', (nitro) => {
         for (const [route, value] of Object.entries(nitro.options.routeRules)) {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
+            if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
               const payloadKey = route + '/_payload.json'
               const defaults = {} as Record<string, any>

@@ -36,7 +36,11 @@ function detectLinkRelType () {
 /** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
-  const promise = _getPayloadURL(url, opts).then((payloadURL) => {
+  const promise = shouldLoadPayload(url).then(async (shouldPreload) => {
+    if (!shouldPreload) {
+      return
+    }
+    const payloadURL = await _getPayloadURL(url, opts)
     const link = renderJsonPayloads
       ? { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
       : { rel: 'modulepreload', crossorigin: '', href: payloadURL } as const
@@ -114,6 +118,9 @@ async function _isPrerenderedInManifest (url: string) {
  */
 export async function shouldLoadPayload (url = useRoute().path) {
   const rules = getRouteRules({ path: url })
+  if (rules.ssr === false) {
+    return false
+  }
   const res = _shouldLoadPrerenderedPayload(rules)
   if (res !== undefined) {
     return res

@@ -187,6 +187,7 @@ export default withMatrix({
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
       '/isr': { isr: 60 },
+      '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/swr': { swr: 60 },
     },
     prerender: {
