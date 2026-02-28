@@ -147,7 +147,7 @@ function baseResolve (ctx: WebpackConfigContext) {
   const webpackModulesDir = ['node_modules'].concat(ctx.options.modulesDir)
 
   ctx.config.resolve = {
-    extensions: ['.wasm', '.mjs', '.js', '.ts', '.json', '.vue', '.jsx', '.tsx'],
+    extensions: ['.wasm', '.js', '.mjs', '.ts', '.json', '.vue', '.cjs', '.tsx', '.jsx', '.mts', '.cts'],
     alias: ctx.alias,
     modules: webpackModulesDir,
     fullySpecified: false,

@@ -23,7 +23,7 @@ const mockNuxt = {
     buildDir: '/my-app/.nuxt',
     modulesDir: ['/my-app/node_modules', '/node_modules'],
     modules: [],
-    extensions: ['.ts', '.mjs', '.js'],
+    extensions: ['.js', '.mjs', '.ts', '.cjs', '.tsx', '.jsx', '.mts', '.cts'],
     _layers: [{ config: { rootDir: '/my-app', srcDir: '/my-app' } }],
     _installedModules: [],
     _modules: [],

@@ -198,7 +198,7 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
   // Use current nuxt options
   const nuxt = tryUseNuxt()
   const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
-  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
+  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.js', '.mjs', '.cjs', '.tsx', '.jsx', '.mts', '.cts', '.json'])
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
