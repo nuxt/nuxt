@@ -20,6 +20,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
 
   const chunksWithInlinedCSS = new Set<string>()
+  const inlineableCSSIds = new Set<string>()
+  const nonInlineableCSSIds = new Set<string>()
+  const entriesWithNonInlineableCSS = new Set<string>()
   const clientCSSMap: Record<string, Set<string>> = {}
 
   // Remove CSS entries for files that will have inlined styles
@@ -34,6 +37,15 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       if (chunk.isEntry && chunk.src) {
         entryIds.add(chunk.src)
       } else {
+        chunk.css &&= []
+      }
+    }
+
+    if (nuxt.options.features.inlineStyles !== false) {
+      for (const chunk of Object.values(manifest)) {
+        if (!chunk.isEntry || !chunk.src || entriesWithNonInlineableCSS.has(chunk.src)) {
+          continue
+        }
         chunk.css &&= []
       }
     }
@@ -61,6 +73,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     }
     return cached
   }
+  const normalizeModuleId = (id: string) => id.replace(QUERY_RE, '')
 
   const warnCache = new Set<string>()
   const components = nuxt.apps.default!.components || []
@@ -95,16 +108,32 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           async handler (id, importer, _options) {
             // We want to remove side effects (namely, emitting CSS) from `.vue` files and explicitly imported `.css` files
             // but only as long as we are going to inline that CSS.
-            if ((options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(importer)))) {
+            if (options.shouldInline === false) {
               return
             }
 
             const res = await this.resolve(id, importer, { ..._options, skipSelf: true })
-            if (res) {
-              return {
-                ...res,
-                moduleSideEffects: false,
+            if (!res) {
+              return
+            }
+
+            const isInlineableImporter = !!importer && (importer === entry || isVue(importer))
+            const isInlineableByFunction = typeof options.shouldInline !== 'function' || options.shouldInline(importer)
+
+            if (!isInlineableImporter || !isInlineableByFunction) {
+              if (isCSS(res.id)) {
+                nonInlineableCSSIds.add(normalizeModuleId(res.id))
               }
+              return
+            }
+
+            if (isCSS(res.id)) {
+              inlineableCSSIds.add(normalizeModuleId(res.id))
+            }
+
+            return {
+              ...res,
+              moduleSideEffects: false,
             }
           },
         },
@@ -193,6 +222,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                 }
                 // This is required to track CSS in entry chunk
                 if (isEntry && chunk.facadeModuleId) {
+                  if (nonInlineableCSSIds.has(normalizeModuleId(moduleId)) && !inlineableCSSIds.has(normalizeModuleId(moduleId))) {
+                    entriesWithNonInlineableCSS.add(relativeToSrcDir(chunk.facadeModuleId))
+                  }
                   const facadeMap = clientCSSMap[chunk.facadeModuleId] ||= new Set()
                   facadeMap.add(moduleId)
                 }
