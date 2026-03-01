@@ -4,7 +4,7 @@ import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { EventHandler, H3Event } from 'h3'
 import { defineEventHandler, getQuery, readBody, setResponseHeaders } from 'h3'
-import { resolveUnrefHeadInput } from '@unhead/vue'
+import { toRaw, unref } from 'vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
@@ -74,14 +74,14 @@ const handler: EventHandler = defineEventHandler(async (event) => {
       }
     }
     if (link.length) {
-      ssrContext.head.push({ link }, { mode: 'server' })
+      ssrContext.head.push({ link })
     }
   }
 
   const islandHead: SerializableHead = {}
   for (const entry of ssrContext.head.entries.values()) {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input as any) as SerializableHead)) {
+    const resolved = toRaw(unref(entry.input)) as SerializableHead
+    for (const [key, value] of Object.entries(resolved)) {
       const currentValue = islandHead[key as keyof SerializableHead]
       if (Array.isArray(currentValue)) {
         currentValue.push(...value)

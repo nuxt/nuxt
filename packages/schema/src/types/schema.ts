@@ -1593,6 +1593,33 @@ export interface ConfigSchema {
      * @default false with compatibilityVersion >= 5
      */
     nitroAutoImports: boolean
+
+    /**
+     * Enable SSR streaming to improve Time to First Byte (TTFB).
+     *
+     * When enabled, the server sends the HTML shell (head, styles, preload hints)
+     * immediately and streams the rendered body content progressively.
+     *
+     * Streaming is automatically disabled for bot/crawler user agents to ensure
+     * search engines receive fully-rendered HTML. You can also control streaming
+     * per-route via `routeRules` with the `streaming` property.
+     *
+     * Set to `true` to enable with defaults, or pass an object to configure options.
+     *
+     * @default false
+     * @see https://github.com/nuxt/nuxt/issues/4753
+     */
+    ssrStreaming: boolean | {
+      enabled?: boolean
+      /**
+       * A regular expression pattern (as a string) to detect bot/crawler user agents.
+       * Requests matching this pattern will receive fully-buffered (non-streamed)
+       * responses for SEO safety.
+       *
+       * @default 'bot\\b|crawl|spider|slurp|chrome-lighthouse|facebookexternalhit|google\\b|bing\\b|yandex\\b|baidu\\b|duckduck'
+       */
+      botRegex?: string
+    }
   }
 
   /**

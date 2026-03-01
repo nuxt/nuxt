@@ -62,7 +62,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.7.0",
     "@nuxt/vite-builder": "workspace:*",
-    "@unhead/vue": "^2.1.4",
+    "@unhead/vue": "^3.0.0-beta.10",
     "@vue/shared": "^3.5.28",
     "c12": "^3.3.3",
     "chokidar": "^5.0.0",

@@ -32,13 +32,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    // allow @unhead/vue server composables to be tree-shaken from the client bundle
-    if (!nuxt.options.dev) {
-      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
-      ]
-    }
-
     nuxt.options.alias['#unhead/composables'] = resolve(runtimeDir, 'composables')
     addBuildPlugin(UnheadImportsPlugin({
       sourcemap: !!nuxt.options.sourcemap.server,
@@ -61,11 +54,11 @@ export default {
         }
         // v1 unhead legacy options
         const disableCapoSorting = !nuxt.options.experimental.headNext
-        return `import { DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
+        return `import { PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
 export default {
   disableDefaults: true,
   disableCapoSorting: ${Boolean(disableCapoSorting)},
-  plugins: [DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
+  plugins: [PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
 }`
       },
     })
@@ -75,6 +68,7 @@ export default {
       getContents () {
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
+          `export const ssrStreaming = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
         ].join('\n')
       },
     })
