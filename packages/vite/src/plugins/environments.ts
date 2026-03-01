@@ -21,13 +21,10 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
     '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
   }
 
-  let viteConfig: vite.InlineConfig
-
   return {
     name: 'nuxt:environments',
     enforce: 'pre', // run before other plugins
-    config (config) {
-      viteConfig = config
+    config () {
       if (!nuxt.options.dev) {
         return {
           base: './',
@@ -35,7 +32,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     configEnvironment (name, config) {
-      if (!nuxt.options.experimental.viteEnvironmentApi && viteConfig.ssr) {
+      if (!nuxt.options.experimental.viteEnvironmentApi && name === 'ssr') {
         config.optimizeDeps ||= {}
         config.optimizeDeps.include = undefined
       }
