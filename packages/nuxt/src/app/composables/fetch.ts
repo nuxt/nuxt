@@ -147,7 +147,7 @@ export function useFetch<
     watch([...watchSources || [], _fetchOptions], setImmediate, { flush: 'sync', once: true })
   }
 
-  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
+  const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, ({ signal }) => {
     let _$fetch: H3Event$Fetch | $Fetch<unknown, NitroFetchRequest> = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
