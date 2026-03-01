@@ -97,7 +97,12 @@ export default defineResolvers({
     restoreState: false,
     renderJsonPayloads: true,
     noVueServer: false,
-    payloadExtraction: true,
+    payloadExtraction: {
+      $resolve: async (val, get) => {
+        if (val === 'client' || typeof val === 'boolean') { return val }
+        return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
+      },
+    },
     clientFallback: false,
     crossOriginPrefetch: false,
 
