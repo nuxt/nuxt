@@ -81,6 +81,43 @@ export interface NuxtAnalyzeMeta {
 }
 
 /**
+ * Diagnostic check result from `nuxi doctor` command.
+ */
+export interface DoctorCheck {
+  /** Check name (display) */
+  name: string
+  /** Check result status */
+  status: 'success' | 'warning' | 'error'
+  /** Short summary message */
+  message: string
+
+  /** Programmatic identifier, e.g. "MISSING_PEER_DEP" */
+  id?: string
+  /** Module name that contributed this check, e.g. "@nuxt/ui" */
+  source?: string
+
+  /** Extra context or list of issues */
+  details?: string | string[]
+  /** How to fix the issue */
+  suggestion?: string
+  /** Documentation or reference link */
+  url?: string
+
+  /** Arbitrary metadata for programmatic consumption */
+  data?: Record<string, unknown>
+}
+
+/**
+ * Context provided to the `doctor:check` hook.
+ */
+export interface DoctorCheckContext {
+  /** Add a diagnostic check result */
+  addCheck: (check: DoctorCheck) => void
+  /** The Nuxt instance */
+  nuxt: Nuxt
+}
+
+/**
  * The listeners to Nuxt build time events
  */
 export interface NuxtHooks {
@@ -265,6 +302,12 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'build:error': (error: Error) => HookResult
+  /**
+   * Called when running `nuxi doctor` to collect diagnostic checks from modules.
+   * @param ctx Context with `addCheck` function and `nuxt` instance
+   * @returns Promise
+   */
+  'doctor:check': (ctx: DoctorCheckContext) => HookResult
   /**
    * Called before @nuxt/cli writes `.nuxt/tsconfig.json` and `.nuxt/nuxt.d.ts`, allowing addition of custom references and declarations in `nuxt.d.ts`, or directly modifying the options in `tsconfig.json`
    * @param options Objects containing `references`, `declarations`, `tsConfig`
