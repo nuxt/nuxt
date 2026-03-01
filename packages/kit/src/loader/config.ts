@@ -111,8 +111,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     _layers.push(layer)
   }
 
-  ;(nuxtConfig as any)._layers = _layers
-
   // Ensure at least one layer remains (without nuxt.config)
   if (!_layers.length) {
     _layers.push({
@@ -123,6 +121,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       },
     })
   }
+
+  ;(nuxtConfig as any)._layers = _deepFreeze(_layers)
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
@@ -156,4 +156,15 @@ async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {
       delete globalSelf[key]
     }
   }
+}
+
+function _deepFreeze (object: Record<string, any>) {
+  const propNames = Object.getOwnPropertyNames(object)
+  for (const name of propNames) {
+    const value = object[name]
+    if (value && typeof value === 'object') {
+      _deepFreeze(value)
+    }
+  }
+  return Object.freeze(object)
 }
