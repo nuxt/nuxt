@@ -7,6 +7,7 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 
+import { ELEMENT_NODE, parse as parseHTML } from 'ultrahtml'
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
@@ -183,15 +184,18 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   return ctx.augmentedPages
 }
 
-const SFC_SCRIPT_RE = /<script(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script[^>]*>/g
 export function extractScriptContent (sfc: string) {
   const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
-  for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
-    if (match?.groups?.content) {
-      contents.push({
-        loader: match.groups.attrs && /[tj]sx/.test(match.groups.attrs) ? 'tsx' : 'ts',
-        code: match.groups.content.trim(),
-      })
+  const tree = parseHTML(sfc)
+  for (const node of tree.children) {
+    if (node.type === ELEMENT_NODE && node.name === 'script') {
+      const code = sfc.slice(node.loc[0].end, node.loc[1].start).trim()
+      if (code) {
+        contents.push({
+          loader: /[tj]sx/.test(node.attributes.lang || '') ? 'tsx' : 'ts',
+          code,
+        })
+      }
     }
   }
 
