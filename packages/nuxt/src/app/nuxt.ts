@@ -1,5 +1,5 @@
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
-import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
+import type { App, EffectScope, Ref, VNode, Plugin as VuePlugin, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
@@ -9,7 +9,7 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from '@nuxt/nitro-server/h3'
 import type { RenderResponse } from 'nitropack/types'
 import type { LogObject } from 'consola'
-import type { ReactiveHead, ResolvableValue, Unhead, VueHeadClient } from '@unhead/vue/types'
+import type { ReactiveHead, ResolvableValue, Unhead } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 
 import type { NuxtAppLiterals } from 'nuxt/app'
@@ -69,7 +69,7 @@ export interface NuxtSSRContext extends SSRContext {
   error?: boolean
   nuxt: _NuxtApp
   payload: Partial<NuxtPayload>
-  head: Unhead<ResolvableValue<ReactiveHead>, SSRHeadPayload>
+  head: Unhead<ResolvableValue<ReactiveHead>, SSRHeadPayload> & VuePlugin
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   teleports?: Record<string, string>
