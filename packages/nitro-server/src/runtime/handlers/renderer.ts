@@ -26,6 +26,8 @@ import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
 import { entryFileName } from '#internal/entry-chunk.mjs'
 // @ts-expect-error virtual file
+import { iifeChunkFileName } from '#internal/streaming-iife-chunk.mjs'
+// @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import { relative } from 'pathe'
 
@@ -50,9 +52,6 @@ let entryPath: string
 
 // Bot detection regex for SSR streaming (compiled once, tree-shaken when streaming disabled)
 const SSR_BOT_RE = NUXT_SSR_STREAMING ? new RegExp(NUXT_SSR_STREAMING_BOT_RE, 'i') : null
-// Bootstrap script for unhead streaming queue
-const UNHEAD_STREAM_KEY = '__unhead__'
-const UNHEAD_BOOTSTRAP_SCRIPT = NUXT_SSR_STREAMING ? `<script>window.${UNHEAD_STREAM_KEY}={_q:[],push(e){this._q.push(e)}}</script>` : ''
 
 const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
   const nitroApp = useNitroApp()
@@ -136,14 +135,11 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   }
 
   // === SSR Streaming Path ===
-  // Note: componentIslands is excluded because island teleport replacement
-  // requires post-hoc string manipulation that is incompatible with streaming.
   if (NUXT_SSR_STREAMING
     && !ssrContext.noSSR
     && !ssrError
     && !isRenderingPayload
     && !import.meta.prerender
-    && !componentIslands
     && routeOptions.streaming !== false
     && !SSR_BOT_RE!.test(getRequestHeader(event, 'user-agent') || '')) {
     return renderStreamedResponse({ event, ssrContext, renderer, nitroApp, routeOptions, ssrError, _PAYLOAD_EXTRACTION: _PAYLOAD_EXTRACTION!, payloadURL })
@@ -357,7 +353,7 @@ async function renderStreamedResponse (ctx: {
 }): Promise<Partial<RenderResponse>> {
   const { event, ssrContext, renderer, nitroApp, routeOptions, ssrError, _PAYLOAD_EXTRACTION, payloadURL } = ctx
   const { renderToWebStream } = await import('vue/server-renderer')
-  const { renderSSRHeadSuspenseChunk } = await import('@unhead/vue/stream/server')
+  const { createBootstrapScript, renderShell, renderSSRHeadSuspenseChunk } = await import('@unhead/vue/stream/server')
   const { APP_ROOT_OPEN_TAG, APP_ROOT_CLOSE_TAG, getServerApp } = await import('../utils/renderer/build-files')
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || routeOptions.noScripts
 
@@ -445,15 +441,36 @@ async function renderStreamedResponse (ctx: {
     })
   }
 
-  // 4. Render the shell head
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = ssrContext.head.render()
-  ssrContext.head.entries.clear()
+  // Preload streaming IIFE script (production only - in dev we inline it)
+  if (!NO_SCRIPTS && !import.meta.dev && iifeChunkFileName) {
+    ssrContext.head.push({
+      link: [{ rel: 'preload', as: 'script', href: buildAssetsURL(iifeChunkFileName) }],
+    })
+  }
+
+  // 4. Render the shell head (atomically renders and clears entries)
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
 
   // 5. Build the HTML shell
+  // Bootstrap queue goes in <head> (no DOM access needed).
+  // IIFE goes after <body> opens so document.body exists when it initializes the DOM renderer.
+  const bootstrapScript = NO_SCRIPTS ? '' : createBootstrapScript()
+  let iifeScript = ''
+  if (!NO_SCRIPTS) {
+    if (!import.meta.dev && iifeChunkFileName) {
+      // Production: async load the built, minified IIFE chunk (bootstrap queue buffers until ready)
+      iifeScript = `<script async src="${buildAssetsURL(iifeChunkFileName)}"></script>`
+    } else {
+      // Dev: inline the IIFE code (Vite dev server transforms to ESM so script src won't work)
+      const { streamingIifeCode } = await import('unhead/stream/iife')
+      iifeScript = `<script>${streamingIifeCode}</script>`
+    }
+  }
   const shellHtml = '<!DOCTYPE html>'
     + `<html${htmlAttrs ? ' ' + htmlAttrs : ''}>`
-    + `<head>${UNHEAD_BOOTSTRAP_SCRIPT}${headTags}</head>`
+    + `<head>${bootstrapScript}${headTags}</head>`
     + `<body${bodyAttrs ? ' ' + bodyAttrs : ''}>`
+    + iifeScript
     + (bodyTagsOpen || '')
 
   // 6. Get the Vue app and create a web stream
@@ -479,7 +496,7 @@ async function renderStreamedResponse (ctx: {
             // Inject head updates from resolved suspense boundaries
             const headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
             if (headChunk) {
-              controller.enqueue(encoder.encode(`<script>${headChunk}</script>`))
+              controller.enqueue(encoder.encode(`<script>${headChunk};document.currentScript.remove()</script>`))
             }
           }
         } finally {

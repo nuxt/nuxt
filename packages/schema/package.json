@@ -32,7 +32,7 @@
     "@types/pug": "2.0.10",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "@unhead/vue": "3.0.0-beta.10",
+    "@unhead/vue": "3.0.0-beta.11",
     "@vitejs/plugin-vue": "6.0.4",
     "@vitejs/plugin-vue-jsx": "5.1.4",
     "@vue/compiler-core": "3.5.28",

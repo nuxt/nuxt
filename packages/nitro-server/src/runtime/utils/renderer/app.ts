@@ -16,8 +16,7 @@ export function createSSRContext (event: H3Event): NuxtSSRContext {
     event,
     runtimeConfig: useRuntimeConfig(event) as NuxtSSRContext['runtimeConfig'],
     noSSR: !!(NUXT_NO_SSR) || event.context.nuxt?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(event.path) : false),
-    // TODO: fix types in unhead
-    head: createHead(unheadOptions) as NuxtSSRContext['head'],
+    head: createHead(unheadOptions),
     error: false,
     nuxt: undefined!, /* NuxtApp */
     payload: {},

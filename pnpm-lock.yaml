@@ -15,7 +15,7 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 24.10.13
-  '@unhead/vue': 3.0.0-beta.10
+  '@unhead/vue': 3.0.0-beta.11
   '@vue/compiler-core': 3.5.28
   '@vue/compiler-dom': 3.5.28
   '@vue/shared': 3.5.28
@@ -108,8 +108,8 @@ importers:
         specifier: 8.56.1
         version: 8.56.1(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3)
       '@unhead/vue':
-        specifier: 3.0.0-beta.10
-        version: 3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
+        specifier: 3.0.0-beta.11
+        version: 3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
       '@vitest/coverage-v8':
         specifier: 4.0.18
         version: 4.0.18(vitest@4.0.18(@types/node@24.10.13)(happy-dom@20.7.0)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
@@ -369,8 +369,8 @@ importers:
         specifier: workspace:*
         version: link:../kit
       '@unhead/vue':
-        specifier: 3.0.0-beta.10
-        version: 3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
+        specifier: 3.0.0-beta.11
+        version: 3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
       '@vue/shared':
         specifier: 3.5.28
         version: 3.5.28
@@ -487,8 +487,8 @@ importers:
         specifier: 24.10.13
         version: 24.10.13
       '@unhead/vue':
-        specifier: 3.0.0-beta.10
-        version: 3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
+        specifier: 3.0.0-beta.11
+        version: 3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
       '@vue/shared':
         specifier: 3.5.28
         version: 3.5.28
@@ -636,7 +636,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.13.2
-        version: 0.13.2(@unhead/vue@3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3)))(db0@0.3.4)(ioredis@5.9.1)(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
+        version: 0.13.2(@unhead/vue@3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3)))(db0@0.3.4)(ioredis@5.9.1)(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))
       '@parcel/watcher':
         specifier: 2.5.6
         version: 2.5.6
@@ -856,8 +856,8 @@ importers:
         specifier: 2.25.12
         version: 2.25.12(esbuild@0.27.3)
       '@unhead/vue':
-        specifier: 3.0.0-beta.10
-        version: 3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
+        specifier: 3.0.0-beta.11
+        version: 3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
       '@vitejs/plugin-vue':
         specifier: 6.0.4
         version: 6.0.4(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
@@ -1384,6 +1384,16 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+
+  test/fixtures/ssr-streaming:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   test/fixtures/suspense:
     dependencies:
@@ -2363,7 +2373,7 @@ packages:
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
-      '@unhead/vue': 3.0.0-beta.10
+      '@unhead/vue': 3.0.0-beta.11
     peerDependenciesMeta:
       '@googlemaps/markerclusterer':
         optional: true
@@ -4190,8 +4200,8 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unhead/vue@3.0.0-beta.10':
-    resolution: {integrity: sha512-dXT8HdIfFOxTtuLc/SRvzv+XWYW8FEARGbsdgERXVFkwUpzVvW1JsGhhdnWAe0rXuuVZjfp5c+loxwJHKcKMfQ==}
+  '@unhead/vue@3.0.0-beta.11':
+    resolution: {integrity: sha512-I8AMe2g2/XMdTjow2OW92qHRuweMneFcdUwpZiM+eIyYJTAUNgP6w2oBfjYb8GSxV/Ca/CXT13Hx0StkXAq4WA==}
     peerDependencies:
       vite: 7.3.1
       vue: 3.5.28
@@ -8868,8 +8878,8 @@ packages:
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
 
-  unhead@3.0.0-beta.10:
-    resolution: {integrity: sha512-2YYCG2iQK7uClHvyWy5ZcNs9aqTUMTjerKzc9i2fsAumXUn00+ZFUtiCZ2APNDSR09uPM/Qe26dFkjjjlgdzgQ==}
+  unhead@3.0.0-beta.11:
+    resolution: {integrity: sha512-9XG5150CfXM5Xf/ArtB2ypW7P6GNDeEYrAe8JMSYVkRkp/VBWTYjlgIDjTlxraSLmj7T2GJuwB6BAye3Jk+Gmg==}
     peerDependencies:
       vite: 7.3.1
     peerDependenciesMeta:
@@ -10578,10 +10588,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.105.2
 
-  '@nuxt/scripts@0.13.2(@unhead/vue@3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3)))(db0@0.3.4)(ioredis@5.9.1)(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))':
+  '@nuxt/scripts@0.13.2(@unhead/vue@3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3)))(db0@0.3.4)(ioredis@5.9.1)(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3))':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
+      '@unhead/vue': 3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))
       '@vueuse/core': 14.1.0(vue@3.5.28(typescript@5.9.3))
       consola: 3.4.2
       defu: 6.1.4
@@ -12037,13 +12047,13 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unhead/vue@3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))':
+  '@unhead/vue@3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.28(typescript@5.9.3))':
     dependencies:
       hookable: 6.0.1
       magic-string: 0.30.21
       oxc-parser: 0.106.0
       oxc-walker: 0.7.0(oxc-parser@0.106.0)
-      unhead: 3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
+      unhead: 3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
       vue: 3.5.28(typescript@5.9.3)
     optionalDependencies:
       vite: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)
@@ -17674,7 +17684,7 @@ snapshots:
     dependencies:
       pathe: 2.0.3
 
-  unhead@3.0.0-beta.10(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)):
+  unhead@3.0.0-beta.11(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2)):
     dependencies:
       hookable: 6.0.1
       magic-string: 0.30.21
