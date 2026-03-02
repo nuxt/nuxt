@@ -7,7 +7,7 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 
-import { ELEMENT_NODE, parse as parseHTML } from 'ultrahtml'
+import { parse as parseSFC } from '@vue/compiler-sfc'
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
@@ -186,16 +186,13 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
 
 export function extractScriptContent (sfc: string) {
   const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
-  const tree = parseHTML(sfc)
-  for (const node of tree.children) {
-    if (node.type === ELEMENT_NODE && node.name === 'script') {
-      const code = sfc.slice(node.loc[0].end, node.loc[1].start).trim()
-      if (code) {
-        contents.push({
-          loader: /[tj]sx/.test(node.attributes.lang || '') ? 'tsx' : 'ts',
-          code,
-        })
-      }
+  const { descriptor } = parseSFC(sfc, { pad: false })
+  for (const block of [descriptor.script, descriptor.scriptSetup]) {
+    if (block?.content.trim()) {
+      contents.push({
+        loader: block.lang && /[tj]sx/.test(block.lang) ? 'tsx' : 'ts',
+        code: block.content.trim(),
+      })
     }
   }
 

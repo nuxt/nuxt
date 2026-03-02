@@ -53,6 +53,46 @@ definePageMeta({
     })
   })
 
+  it('should handle multiple script blocks and escaped closing tags', () => {
+    const meta = getRouteMeta(`
+<script>
+export default { inheritAttrs: false }
+</script>
+
+<script setup lang="ts">
+const snippet = '<\\/script>'
+definePageMeta({
+  name: 'multi',
+})
+</script>
+
+<template><div /></template>`, filePath)
+
+    expect(meta).toStrictEqual({
+      name: 'multi',
+    })
+  })
+
+  it('should handle script tag references inside template without extracting them', () => {
+    const meta = getRouteMeta(`
+<template>
+  <div>
+    <script-placeholder />
+    <component is="script" />
+  </div>
+</template>
+
+<script setup lang="ts">
+definePageMeta({
+  path: '/safe',
+})
+</script>`, filePath)
+
+    expect(meta).toStrictEqual({
+      path: '/safe',
+    })
+  })
+
   it('should extract metadata from JS/JSX files', () => {
     const fileContents = `definePageMeta({ name: 'bar' })`
     for (const ext of ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']) {
