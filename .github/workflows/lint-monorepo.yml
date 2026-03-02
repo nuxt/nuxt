@@ -8,6 +8,7 @@ on:
       - 'pnpm-lock.yaml'
     branches:
       - main
+      - 4.x
       - 3.x
   pull_request:
     paths:
@@ -15,6 +16,7 @@ on:
       - 'pnpm-lock.yaml'
     branches:
       - main
+      - 4.x
       - 3.x
       - '!v[0-9]*'
 
