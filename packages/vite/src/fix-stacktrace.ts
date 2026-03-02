@@ -4,10 +4,13 @@ import type { ViteNodeRunner } from 'vite-node/client'
 export default (nitroApp: NitroApp): void => {
   let runner: ViteNodeRunner
   nitroApp.hooks.hook('error', async (error) => {
-    // @ts-expect-error post-build file
-    runner ||= await import('#build/dist/server/runner.mjs').then(m => m.default)
-    if (error?.stack) {
-      await runner.ssrFixStacktrace(error)
+    if (!error?.stack) { return }
+    try {
+      // @ts-expect-error virtual alias registered by vite builder
+      runner ||= await import('#internal/nuxt/vite-node-runner').then(m => m.default)
+      runner.ssrFixStacktrace(error)
+    } catch {
+      // best-effort only; preserve original error
     }
   })
 }

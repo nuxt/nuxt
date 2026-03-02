@@ -9,8 +9,8 @@ export default defineBuildConfig({
       rolldown: {
         external: [
           '@nuxt/schema',
-          '#vite-node', 
-          '#build/dist/server/runner.mjs'
+          '#vite-node',
+          '#internal/nuxt/vite-node-runner',
         ],
       },
     },
