@@ -38,4 +38,4 @@ jobs:
       - name: 🛠 Build and release project
         run: node scripts/release.ts
         env:
-          TAG: ${{ startsWith(github.ref_name, 'v3.') && '3x' || startsWith(github.ref_name, 'v5.') && '5x' || 'latest' }}
+          TAG: ${{ startsWith(github.ref_name, 'v3.') && '3x' || startsWith(github.ref_name, 'v4.') && '4x,latest' || startsWith(github.ref_name, 'v5.') && '5x' || 'latest' }}
