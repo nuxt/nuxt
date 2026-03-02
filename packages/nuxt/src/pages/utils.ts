@@ -7,7 +7,6 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 
-import { parse as parseSFC } from '@vue/compiler-sfc'
 import { defu } from 'defu'
 import { klona } from 'klona'
 import { parseAndWalk } from 'oxc-walker'
@@ -184,14 +183,14 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   return ctx.augmentedPages
 }
 
+const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/gi
 export function extractScriptContent (sfc: string) {
   const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
-  const { descriptor } = parseSFC(sfc, { pad: false })
-  for (const block of [descriptor.script, descriptor.scriptSetup]) {
-    if (block?.content.trim()) {
+  for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
+    if (match?.groups?.content) {
       contents.push({
-        loader: block.lang && /[tj]sx/.test(block.lang) ? 'tsx' : 'ts',
-        code: block.content.trim(),
+        loader: match.groups.attrs && /[tj]sx/.test(match.groups.attrs) ? 'tsx' : 'ts',
+        code: match.groups.content.trim(),
       })
     }
   }
