@@ -336,8 +336,8 @@ importers:
         specifier: 7.7.1
         version: 7.7.1
       hookable:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 6.0.1
+        version: 6.0.1
       nitro:
         specifier: 3.0.1-alpha.2
         version: 3.0.1-alpha.2(ioredis@5.9.1)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
@@ -526,8 +526,8 @@ importers:
         specifier: ^1.0.8
         version: 1.0.8
       hookable:
-        specifier: ^5.5.3
-        version: 5.5.3
+        specifier: ^6.0.1
+        version: 6.0.1
       ignore:
         specifier: ^7.0.5
         version: 7.0.5
@@ -898,8 +898,8 @@ importers:
         specifier: 1.15.5
         version: 1.15.5
       hookable:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 6.0.1
+        version: 6.0.1
       ignore:
         specifier: 7.0.5
         version: 7.0.5
