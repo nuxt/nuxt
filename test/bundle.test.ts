@@ -58,42 +58,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"199k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
-
-    const packages = modules.files
-      .filter(m => m.endsWith('package.json'))
-      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
-      .sort()
-    expect(packages).toMatchInlineSnapshot(`[]`)
-  })
-
-  it('default server bundle size (inlined vue modules)', async () => {
-    const serverDir = join(rootDir, '.output-inline/server')
-
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
-
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
-
-    const packages = modules.files
-      .filter(m => m.endsWith('package.json'))
-      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
-      .sort()
-    expect(packages).toMatchInlineSnapshot(`[]`)
-  })
-
-  it('default server bundle size (pages)', async () => {
-    const serverDir = join(pagesRootDir, '.output/server')
-
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
-
-    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1230k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1444k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -104,15 +72,82 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@babel/parser",
         "@vue/compiler-core",
         "@vue/compiler-dom",
+        "@vue/compiler-ssr",
         "@vue/reactivity",
         "@vue/runtime-core",
         "@vue/runtime-dom",
+        "@vue/server-renderer",
         "@vue/shared",
+        "devalue",
         "entities",
         "entities/dist/commonjs",
         "estree-walker",
+        "hookable",
         "source-map-js",
+        "ufo",
+        "unhead",
         "vue",
+        "vue-bundle-renderer",
+      ]
+    `)
+  })
+
+  it('default server bundle size (inlined vue modules)', async () => {
+    const serverDir = join(rootDir, '.output-inline/server')
+
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"564k"`)
+
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"109k"`)
+
+    const packages = modules.files
+      .filter(m => m.endsWith('package.json'))
+      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
+      .sort()
+    expect(packages).toMatchInlineSnapshot(`
+      [
+        "devalue",
+        "hookable",
+        "unhead",
+      ]
+    `)
+  })
+
+  it('default server bundle size (pages)', async () => {
+    const serverDir = join(pagesRootDir, '.output/server')
+
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"293k"`)
+
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1455k"`)
+
+    const packages = modules.files
+      .filter(m => m.endsWith('package.json'))
+      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
+      .sort()
+    expect(packages).toMatchInlineSnapshot(`
+      [
+        "@babel/parser",
+        "@vue/compiler-core",
+        "@vue/compiler-dom",
+        "@vue/compiler-ssr",
+        "@vue/reactivity",
+        "@vue/runtime-core",
+        "@vue/runtime-dom",
+        "@vue/server-renderer",
+        "@vue/shared",
+        "devalue",
+        "entities",
+        "entities/dist/commonjs",
+        "estree-walker",
+        "hookable",
+        "source-map-js",
+        "ufo",
+        "unhead",
+        "vue",
+        "vue-bundle-renderer",
       ]
     `)
   })
