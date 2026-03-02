@@ -6,6 +6,7 @@ on:
       - "docs/**"
     branches:
       - main
+      - 4.x
       - 3.x
 
 # Remove default permissions of GITHUB_TOKEN for security

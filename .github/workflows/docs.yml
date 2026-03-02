@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 4.x
       - 3.x
       - '!v[0-9]*'
     paths:
