@@ -18,6 +18,67 @@ describe('page metadata', () => {
     expect(getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})
   })
 
+  it('should not confuse Script* component tags with <script> blocks', () => {
+    const meta = getRouteMeta(`
+<template>
+  <div>
+    <ScriptYouTubePlayer video-id="dQw4w9WgXcQ" />
+  </div>
+</template>
+
+<script setup lang="ts">
+definePageMeta({
+  layout: 'dark',
+})
+</script>`, filePath)
+
+    expect(meta).toStrictEqual({
+      meta: {
+        __nuxt_dynamic_meta_key: new Set(['meta']),
+      },
+    })
+  })
+
+  it('should handle multiple script blocks and escaped closing tags', () => {
+    const meta = getRouteMeta(`
+<script>
+export default { inheritAttrs: false }
+</script>
+
+<script setup lang="ts">
+const snippet = '<\\/script>'
+definePageMeta({
+  name: 'multi',
+})
+</script>
+
+<template><div /></template>`, filePath)
+
+    expect(meta).toStrictEqual({
+      name: 'multi',
+    })
+  })
+
+  it('should handle script tag references inside template without extracting them', () => {
+    const meta = getRouteMeta(`
+<template>
+  <div>
+    <script-placeholder />
+    <component is="script" />
+  </div>
+</template>
+
+<script setup lang="ts">
+definePageMeta({
+  path: '/safe',
+})
+</script>`, filePath)
+
+    expect(meta).toStrictEqual({
+      path: '/safe',
+    })
+  })
+
   it('should extract metadata from JS/JSX files', () => {
     const fileContents = `definePageMeta({ name: 'bar' })`
     for (const ext of ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']) {
