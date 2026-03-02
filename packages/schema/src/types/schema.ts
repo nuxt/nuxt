@@ -1131,7 +1131,7 @@ export interface ConfigSchema {
      * - `false` - Payload extraction is disabled entirely. Payload is always inlined in HTML and
      *   no `_payload.json` files are generated.
      *
-     * @default true
+     * `@default` true (or 'client' when compatibilityVersion >= 5)
      */
     payloadExtraction: 'client' | boolean | undefined
 
