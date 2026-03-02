@@ -14,8 +14,8 @@ import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadin
 import { buildAssetsURL } from '#internal/nuxt/paths'
 import type { Entry } from '#app/entry'
 
-export const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
-export const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
+export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`
+export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
 
 // @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
