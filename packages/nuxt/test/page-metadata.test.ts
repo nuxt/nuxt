@@ -32,6 +32,27 @@ describe('page metadata', () => {
     expect(getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})
   })
 
+  it('should not confuse Script* component tags with <script> blocks', () => {
+    const meta = getRouteMeta(`
+<template>
+  <div>
+    <ScriptYouTubePlayer video-id="dQw4w9WgXcQ" />
+  </div>
+</template>
+
+<script setup lang="ts">
+definePageMeta({
+  layout: 'dark',
+})
+</script>`, filePath)
+
+    expect(meta).toStrictEqual({
+      meta: {
+        __nuxt_dynamic_meta_key: new Set(['meta']),
+      },
+    })
+  })
+
   it('should extract metadata from JS/JSX files', () => {
     const fileContents = `definePageMeta({ name: 'bar' })`
     for (const ext of ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']) {
