@@ -124,7 +124,7 @@
     "memfs": "4.56.10",
     "nitropack": "2.13.1",
     "nuxt": "workspace:*",
-    "nuxt-content-twoslash": "0.2.1",
+    "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.5.1",
     "pathe": "2.0.3",
     "pkg-pr-new": "0.0.65",
