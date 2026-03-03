@@ -63,7 +63,7 @@
     "send": ">=1.2.1",
     "typescript": "5.9.3",
     "ufo": "1.6.3",
-    "unimport": "5.7.0",
+    "unimport": "5.6.0",
     "unstorage": "1.17.4",
     "vite": "7.3.1",
     "vue": "3.5.29",
