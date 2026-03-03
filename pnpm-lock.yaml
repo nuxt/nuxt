@@ -198,8 +198,8 @@ importers:
         specifier: workspace:*
         version: link:packages/nuxt
       nuxt-content-twoslash:
-        specifier: 0.2.1
-        version: 0.2.1(@nuxtjs/mdc@0.19.2)
+        specifier: 0.1.2
+        version: 0.1.2(@nuxtjs/mdc@0.19.2)
       ofetch:
         specifier: 1.5.1
         version: 1.5.1
@@ -7128,8 +7128,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxt-content-twoslash@0.2.1:
-    resolution: {integrity: sha512-VQy8V7pZHv9lQgLv0jXbXw1UkJrGQ+wxw3JcdN0H0MFCF/MNstoEm7Juz8VLnO37QWxgaj8cWjIjbsftmm/1Rg==}
+  nuxt-content-twoslash@0.1.2:
+    resolution: {integrity: sha512-7vCO04V0uyCXtjh40HgVIVKRReUlXc4efMNMdgDtx3Y7p9mnChRt9eRRD3c8VlDD27pLlkrTTnE2n15bu/SqbQ==}
     hasBin: true
     peerDependencies:
       '@nuxtjs/mdc': '>=0.5.0'
@@ -15452,16 +15452,17 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt-content-twoslash@0.2.1(@nuxtjs/mdc@0.19.2):
+  nuxt-content-twoslash@0.1.2(@nuxtjs/mdc@0.19.2):
     dependencies:
       '@nuxt/kit': link:packages/kit
+      '@nuxt/schema': link:packages/schema
       '@nuxtjs/mdc': 0.19.2
       '@shikijs/vitepress-twoslash': 1.29.2(@nuxt/kit@packages+kit)(typescript@5.9.3)
-      ansis: 4.2.0
       cac: 6.7.14
-      chokidar: 5.0.0
+      chokidar: 4.0.3
       fast-glob: 3.3.3
-      pathe: 2.0.3
+      pathe: 1.1.2
+      picocolors: 1.1.1
       remark-parse: 11.0.0
       shiki: 1.29.2
       twoslash: 0.2.12(typescript@5.9.3)
