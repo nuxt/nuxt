@@ -47,21 +47,44 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
-        // disableDefaults is enabled to avoid server component issues
-        if (!options.legacy) {
-          return `
-export default {
-  disableDefaults: true,
-}`
+        const plugins: string[] = []
+        const imports: string[] = []
+
+        if (options.templateParams) {
+          imports.push('TemplateParamsPlugin')
+          plugins.push('TemplateParamsPlugin')
         }
-        // v1 unhead legacy options
-        const disableCapoSorting = !nuxt.options.experimental.headNext
-        return `import { PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
-export default {
-  disableDefaults: true,
-  disableCapoSorting: ${Boolean(disableCapoSorting)},
-  plugins: [PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
-}`
+
+        if (options.legacy) {
+          // v1 unhead legacy options
+          for (const name of ['PromisesPlugin', 'AliasSortingPlugin']) {
+            if (!imports.includes(name)) {
+              imports.push(name)
+            }
+            plugins.push(name)
+          }
+          if (!imports.includes('TemplateParamsPlugin')) {
+            imports.push('TemplateParamsPlugin')
+            plugins.push('TemplateParamsPlugin')
+          }
+        }
+
+        const disableCapoSorting = options.legacy && !nuxt.options.experimental.headNext
+
+        const lines: string[] = []
+        if (imports.length) {
+          lines.push(`import { ${imports.join(', ')} } from ${JSON.stringify(unheadPlugins)};`)
+        }
+        lines.push(`export default {`)
+        lines.push(`  disableDefaults: true,`)
+        if (disableCapoSorting) {
+          lines.push(`  disableCapoSorting: true,`)
+        }
+        if (plugins.length) {
+          lines.push(`  plugins: [${plugins.join(', ')}],`)
+        }
+        lines.push(`}`)
+        return lines.join('\n')
       },
     })
 
