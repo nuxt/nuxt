@@ -9,7 +9,10 @@ export default defineBuildConfig({
       rolldown: {
         external: [
           '@nuxt/schema',
+          '@rspack/core',
+          'nitropack/types',
           '#vite-node',
+          '#vite-node-runner',
           '#internal/nuxt/vite-node-runner',
         ],
       },
