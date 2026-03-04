@@ -174,6 +174,7 @@ export default defineResolvers({
   },
   unhead: {
     legacy: false,
+    templateParams: false,
     renderSSRHeadOptions: {
       $resolve: val => ({
         omitLineBreaks: true,

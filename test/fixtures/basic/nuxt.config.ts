@@ -121,6 +121,9 @@ export default withMatrix({
       },
     },
   },
+  unhead: {
+    templateParams: true,
+  },
   appConfig: {
     fromNuxtConfig: true,
     nested: {

@@ -4,8 +4,7 @@ import {
   useHead as headCore,
   useHeadSafe as headSafe,
   headSymbol,
-  useSeoMeta as seoMeta, useServerHead as serverHead, useServerHeadSafe as serverHeadSafe,
-  useServerSeoMeta as serverSeoMeta,
+  useSeoMeta as seoMeta,
 } from '@unhead/vue'
 import { useNuxtApp } from '#app/nuxt'
 import type { NuxtApp } from '#app/nuxt'
@@ -51,25 +50,19 @@ export function useSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions 
  * @deprecated Use `useHead` instead and wrap with `if (import.meta.server)`
  */
 export function useServerHead (input: UseHeadInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput> {
-  const head = options.head || injectHead(options.nuxt)
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return serverHead(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
+  return useHead(input, options)
 }
 
 /**
  * @deprecated Use `useHeadSafe` instead and wrap with `if (import.meta.server)`
  */
 export function useServerHeadSafe (input: UseHeadSafeInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadSafeInput> {
-  const head = options.head || injectHead(options.nuxt)
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return serverHeadSafe(input, { head, ...options }) as ActiveHeadEntry<UseHeadSafeInput>
+  return useHeadSafe(input, options)
 }
 
 /**
  * @deprecated Use `useSeoMeta` instead and wrap with `if (import.meta.server)`
  */
 export function useServerSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseSeoMetaInput> {
-  const head = options.head || injectHead(options.nuxt)
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  return serverSeoMeta(input, { head, ...options }) as ActiveHeadEntry<UseSeoMetaInput>
+  return useSeoMeta(input, options)
 }

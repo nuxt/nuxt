@@ -1,7 +1,9 @@
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, defineNuxtModule, directoryToURL } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
+// @ts-expect-error fix type in unhead
+import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
@@ -32,13 +34,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    // allow @unhead/vue server composables to be tree-shaken from the client bundle
-    if (!nuxt.options.dev) {
-      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
-      ]
-    }
-
     nuxt.options.alias['#unhead/composables'] = resolve(runtimeDir, 'composables')
     addBuildPlugin(UnheadImportsPlugin({
       sourcemap: !!nuxt.options.sourcemap.server,
@@ -52,21 +47,44 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
-        // disableDefaults is enabled to avoid server component issues
-        if (!options.legacy) {
-          return `
-export default {
-  disableDefaults: true,
-}`
+        const plugins: string[] = []
+        const imports: string[] = []
+
+        if (options.templateParams) {
+          imports.push('TemplateParamsPlugin')
+          plugins.push('TemplateParamsPlugin')
         }
-        // v1 unhead legacy options
-        const disableCapoSorting = !nuxt.options.experimental.headNext
-        return `import { DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
-export default {
-  disableDefaults: true,
-  disableCapoSorting: ${Boolean(disableCapoSorting)},
-  plugins: [DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
-}`
+
+        if (options.legacy) {
+          // v1 unhead legacy options
+          for (const name of ['PromisesPlugin', 'AliasSortingPlugin']) {
+            if (!imports.includes(name)) {
+              imports.push(name)
+            }
+            plugins.push(name)
+          }
+          if (!imports.includes('TemplateParamsPlugin')) {
+            imports.push('TemplateParamsPlugin')
+            plugins.push('TemplateParamsPlugin')
+          }
+        }
+
+        const disableCapoSorting = options.legacy && !nuxt.options.experimental.headNext
+
+        const lines: string[] = []
+        if (imports.length) {
+          lines.push(`import { ${imports.join(', ')} } from ${JSON.stringify(unheadPlugins)};`)
+        }
+        lines.push(`export default {`)
+        lines.push(`  disableDefaults: true,`)
+        if (disableCapoSorting) {
+          lines.push(`  disableCapoSorting: true,`)
+        }
+        if (plugins.length) {
+          lines.push(`  plugins: [${plugins.join(', ')}],`)
+        }
+        lines.push(`}`)
+        return lines.join('\n')
       },
     })
 
@@ -75,6 +93,7 @@ export default {
       getContents () {
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
+          `export const ssrStreaming = ${!!(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled)}`,
         ].join('\n')
       },
     })
@@ -84,6 +103,64 @@ export default {
       config.virtual!['#internal/unhead-options.mjs'] = () => nuxt.vfs['#build/unhead-options.mjs'] || ''
       config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs'] || ''
     })
+
+    // SSR streaming: provide IIFE virtual module + emit as minified chunk in production
+    // Note: we intentionally do NOT use unheadVuePlugin's SFC transform (HeadStream injection)
+    // because it causes hydration mismatches (server renders <script>, client renders null).
+    // Instead, the renderer injects head update scripts outside the Vue render tree.
+    const ssrStreamingEnabled = typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
+    if (ssrStreamingEnabled) {
+      let iifeChunkFileName: string | undefined
+
+      nuxt.hooks.hook('nitro:config', (config) => {
+        config.virtual!['#internal/streaming-iife-chunk.mjs'] = () =>
+          `export const iifeChunkFileName = ${JSON.stringify(iifeChunkFileName)}`
+      })
+
+      // Vite plugin: provides the IIFE virtual module and emits it as a chunk in production
+      addVitePlugin({
+        name: 'nuxt:streaming-iife',
+        enforce: 'pre',
+        applyToEnvironment: (env: any) => env.name === 'client',
+
+        resolveId (id: string) {
+          if (id === 'virtual:@unhead/streaming-iife.js') {
+            return '\0virtual:@unhead/streaming-iife.js'
+          }
+        },
+
+        load (id: string, opts: any) {
+          if (id === '\0virtual:@unhead/streaming-iife.js') {
+            if (opts?.ssr) { return '' }
+            return streamingIifeCode
+          }
+        },
+
+        buildStart () {
+          if (!nuxt.options.dev) {
+            this.emitFile({
+              type: 'chunk',
+              id: 'virtual:@unhead/streaming-iife.js',
+              name: 'streaming-iife',
+            })
+          }
+        },
+
+        writeBundle (_options: any, bundle: any) {
+          for (const chunk of Object.values(bundle) as any[]) {
+            if (chunk.type === 'chunk' && chunk.name === 'streaming-iife') {
+              const prefix = nuxt.options.app.buildAssetsDir.replace(/^\//, '')
+              let fileName = chunk.fileName as string
+              if (fileName.startsWith(prefix)) {
+                fileName = fileName.slice(prefix.length)
+              }
+              iifeChunkFileName = fileName
+              break
+            }
+          }
+        },
+      })
+    }
 
     // Add library-specific plugin
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })
