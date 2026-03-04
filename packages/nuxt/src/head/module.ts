@@ -2,6 +2,8 @@ import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
+// @ts-expect-error fix type in unhead
+import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
@@ -104,10 +106,9 @@ export default {
           }
         },
 
-        async load (id: string, opts: any) {
+        load (id: string, opts: any) {
           if (id === '\0virtual:@unhead/streaming-iife.js') {
             if (opts?.ssr) { return '' }
-            const { streamingIifeCode } = await import('unhead/stream/iife')
             return streamingIifeCode
           }
         },
