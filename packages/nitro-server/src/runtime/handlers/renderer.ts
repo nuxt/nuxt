@@ -1,16 +1,20 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
+import { renderToWebStream } from 'vue/server-renderer'
 import type { RenderResponse } from 'nitropack/types'
 import type { EventHandler } from 'h3'
 import { appendResponseHeader, createError, getQuery, getRequestHeader, getResponseStatus, getResponseStatusText, writeEarlyHints } from 'h3'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString } from '@unhead/vue/server'
+import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
+// @ts-expect-error fix type in unhead
+import { streamingIifeCode } from 'unhead/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import destr from 'destr'
 import { defineRenderHandler, getRouteRules, useNitroApp } from 'nitropack/runtime'
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/app'
 
-import { getRenderer } from '../utils/renderer/build-files'
+import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG, getRenderer, getServerApp } from '../utils/renderer/build-files'
 import { payloadCache } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/renderer/payload'
@@ -352,9 +356,6 @@ async function renderStreamedResponse (ctx: {
   payloadURL: string | undefined
 }): Promise<Partial<RenderResponse>> {
   const { event, ssrContext, renderer, nitroApp, routeOptions, ssrError, _PAYLOAD_EXTRACTION, payloadURL } = ctx
-  const { renderToWebStream } = await import('vue/server-renderer')
-  const { createBootstrapScript, renderShell, renderSSRHeadSuspenseChunk } = await import('@unhead/vue/stream/server')
-  const { APP_ROOT_OPEN_TAG, APP_ROOT_CLOSE_TAG, getServerApp } = await import('../utils/renderer/build-files')
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || routeOptions.noScripts
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
@@ -462,7 +463,6 @@ async function renderStreamedResponse (ctx: {
       iifeScript = `<script async src="${buildAssetsURL(iifeChunkFileName)}"></script>`
     } else {
       // Dev: inline the IIFE code (Vite dev server transforms to ESM so script src won't work)
-      const { streamingIifeCode } = await import('unhead/stream/iife')
       iifeScript = `<script>${streamingIifeCode}</script>`
     }
   }
