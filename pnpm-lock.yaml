@@ -1324,7 +1324,7 @@ importers:
         specifier: 1.6.3
         version: 1.6.3
       unplugin:
-        specifier: latest
+        specifier: ^3.0.0
         version: 3.0.0
       vue:
         specifier: 3.5.29
