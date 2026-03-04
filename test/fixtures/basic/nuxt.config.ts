@@ -121,6 +121,9 @@ export default withMatrix({
       },
     },
   },
+  unhead: {
+    templateParams: true,
+  },
   appConfig: {
     fromNuxtConfig: true,
     nested: {
@@ -213,9 +216,6 @@ export default withMatrix({
     plugins: {
       '~~/postcss/plugin': {},
     },
-  },
-  unhead: {
-    templateParams: true,
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
