@@ -227,7 +227,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
-          `export const NUXT_PAYLOAD_EXTRACTION = ${!!nuxt.options.experimental.payloadExtraction}`,
+          `export const NUXT_PAYLOAD_EXTRACTION = ${nuxt.options.experimental.payloadExtraction !== false}`,
+          `export const NUXT_PAYLOAD_INLINE = ${nuxt.options.experimental.payloadExtraction !== true}`,
           `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes}`,
         ].join('\n')
       },
@@ -672,11 +673,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         }))
   }
 
-  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
-  // Add prerender payload support
-  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
-    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-    nuxt.options.experimental.payloadExtraction = true
+  // For full-static output, ensure payload extraction is not disabled
+  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
+    logger.warn('Payload extraction is recommended for full-static output. You can enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.')
   }
 
   // Trigger Nitro reload when SPA loading template changes
