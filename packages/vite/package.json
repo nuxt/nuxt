@@ -33,16 +33,16 @@
     "h3-next": "npm:h3@2.0.1-rc.14",
     "nitropack": "2.13.1",
     "obuild": "0.4.31",
-    "rolldown": "1.0.0-rc.5",
+    "rolldown": "1.0.0-rc.6",
     "rollup": "4.59.0",
-    "vue": "3.5.28"
+    "vue": "3.5.29"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.3",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vitejs/plugin-vue-jsx": "^5.1.4",
-    "autoprefixer": "^10.4.24",
+    "autoprefixer": "^10.4.27",
     "consola": "^3.4.2",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
@@ -57,7 +57,7 @@
     "mocked-exports": "^0.1.1",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.8",
     "rollup-plugin-visualizer": "^7.0.0",
     "seroval": "^1.5.0",
     "std-env": "^3.10.0",
