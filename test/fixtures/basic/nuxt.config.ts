@@ -214,6 +214,9 @@ export default withMatrix({
       '~~/postcss/plugin': {},
     },
   },
+  unhead: {
+    templateParams: true,
+  },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
     'webpack:config' (configs) {
