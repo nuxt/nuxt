@@ -696,6 +696,36 @@ describe('routing utilities: `navigateTo` path encoding', () => {
   })
 })
 
+describe('parseJSON', () => {
+  it('filters prototype pollution keys and unicode-escaped variants', () => {
+    const withProto = parseJSON<Record<string, any>>('{"__proto__":{"polluted":true},"safe":1}')
+    const withUnicodeProto = parseJSON<Record<string, any>>('{"\\u005f\\u005fproto\\u005f\\u005f":{"polluted":true},"safe":1}')
+
+    expect(withProto).toMatchObject({ safe: 1 })
+    expect(withUnicodeProto).toMatchObject({ safe: 1 })
+    expect((Object.prototype as any).polluted).toBeUndefined()
+  })
+
+  it('drops constructor only when it includes prototype payload', () => {
+    const constructorPrototype = parseJSON<Record<string, any>>('{"constructor":{"prototype":{"polluted":true}},"safe":1}')
+    const constructorPlain = parseJSON<Record<string, any>>('{"constructor":{"name":"ok"},"safe":1}')
+
+    expect(constructorPrototype).toMatchObject({ safe: 1 })
+    expect(Object.hasOwn(constructorPrototype, 'constructor')).toBe(false)
+    expect(constructorPlain).toMatchObject({ constructor: { name: 'ok' }, safe: 1 })
+  })
+
+  it('parses primitives and respects fallback for invalid payloads', () => {
+    expect(parseJSON('true')).toBe(true)
+    expect(parseJSON('false')).toBe(false)
+    expect(parseJSON('null')).toBeNull()
+    expect(parseJSON('undefined')).toBeUndefined()
+    expect(parseJSON('"a+b"')).toBe('a+b')
+    expect(parseJSON<{ fallback: boolean }>('{"broken":', { fallback: true })).toEqual({ fallback: true })
+    expect(parseJSON('{"broken":')).toBe('{"broken":')
+  })
+})
+
 describe('routing utilities: `useRoute`', () => {
   let nuxtApp: ReturnType<typeof useNuxtApp>
   let router: ReturnType<typeof useRouter>
