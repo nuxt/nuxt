@@ -4,10 +4,17 @@ export default defineBuildConfig({
   entries: [
     {
       type: 'bundle',
-      input: ['src/index', 'src/vite-node', 'src/vite-node-entry'],
+      input: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner', 'src/fix-stacktrace'],
       dts: { oxc: true },
       rolldown: {
-        external: ['#vite-node'],
+        external: [
+          '@nuxt/schema',
+          '@rspack/core',
+          'nitropack/types',
+          '#vite-node',
+          '#vite-node-runner',
+          '#internal/nuxt/vite-node-runner',
+        ],
       },
     },
   ],
