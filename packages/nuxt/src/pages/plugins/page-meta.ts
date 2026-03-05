@@ -378,11 +378,12 @@ const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
 const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
 const LANG_PARAM_RE = /[?&]lang=([^?&]+)/
 function parseMacroQuery (id: string) {
+  const { search } = parseModuleId(id)
   const query: { macro?: string, type?: string, lang?: ParserOptions['lang'] } = {
-    type: TYPE_PARAM_RE.exec(id)?.[1],
-    lang: LANG_PARAM_RE.exec(id)?.[1] as ParserOptions['lang'] ?? undefined,
+    type: TYPE_PARAM_RE.exec(search)?.[1],
+    lang: LANG_PARAM_RE.exec(search)?.[1] as ParserOptions['lang'] ?? undefined,
   }
-  if (MACRO_QUERY_RE.test(id)) {
+  if (MACRO_QUERY_RE.test(search)) {
     query.macro = 'true'
   }
   return query
