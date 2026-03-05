@@ -1,5 +1,3 @@
-import { pathToFileURL } from 'node:url'
-import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
@@ -8,6 +6,7 @@ import { resolve } from 'pathe'
 import { parseAndWalk, walk } from 'oxc-walker'
 import type { BindingPattern, BindingProperty, CallExpression, Node, ObjectExpression, Program, ReturnStatement, VariableDeclaration } from 'oxc-parser'
 import { distDir } from '../../dirs.ts'
+import { parseModuleId } from '../../core/utils/plugins.ts'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
@@ -24,7 +23,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
     name: 'nuxt:tree-shake-template',
     enforce: 'post',
     transformInclude (id) {
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const { pathname } = parseModuleId(id)
       return pathname.endsWith('.vue')
     },
     transform (code, id) {

@@ -1,16 +1,18 @@
-import { pathToFileURL } from 'node:url'
 import type { SourceMapInput } from 'rollup'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { dirname } from 'pathe'
-import { parseQuery, parseURL } from 'ufo'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import type { ArrowFunctionExpression, Function } from 'oxc-parser'
+
+import { parseModuleId } from '../utils/plugins.ts'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
 const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)$/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
+const STYLE_QUERY_RE = /[?&]type=style/
+const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 
 export interface ExtractAsyncDataHandlersOptions {
   sourcemap: boolean
@@ -36,8 +38,8 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
       }
     },
     transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
+      const { pathname, search } = parseModuleId(id)
+      return SUPPORTED_EXT_RE.test(pathname) && !STYLE_QUERY_RE.test(search) && !MACRO_QUERY_RE.test(search)
     },
     transform: {
       filter: {

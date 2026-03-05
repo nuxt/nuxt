@@ -1,15 +1,12 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL } from 'ufo'
-import type { ParsedQuery } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
-import { isAbsolute } from 'pathe'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { logger } from '../../utils.ts'
+import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
 import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'
 
@@ -115,7 +112,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
-            const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+            const { pathname } = parseModuleId(id)
             logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
@@ -380,12 +377,14 @@ function rewriteQuery (id: string) {
 }
 
 function parseMacroQuery (id: string) {
-  const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
-  const query = parseQuery<{
-    lang?: ParserOptions['lang']
-  } & ParsedQuery>(search)
+  const { search } = parseModuleId(id.replace(/\?macro=true$/, ''))
+  const params = new URLSearchParams(search)
+  const query: { macro?: string, type?: string, lang?: ParserOptions['lang'] } = {
+    type: params.get('type') ?? undefined,
+    lang: params.get('lang') as ParserOptions['lang'] ?? undefined,
+  }
   if (id.includes('?macro=true')) {
-    return { macro: 'true', ...query }
+    query.macro = 'true'
   }
   return query
 }

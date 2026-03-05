@@ -1,8 +1,7 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
-import { parseQuery, parseURL } from 'ufo'
+
 import { isAbsolute, join, parse } from 'pathe'
 import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
@@ -14,6 +13,7 @@ import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
 import { isWhitespace, logger, stripExtension } from '../../utils.ts'
+import { parseModuleId } from '../utils/plugins.ts'
 import type { FunctionCallMetadata } from '../utils/parse-utils.ts'
 import { parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../utils/parse-utils.ts'
 
@@ -32,16 +32,18 @@ const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
 const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
+const STYLE_QUERY_RE = /[?&]type=style/
+const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 
 export function shouldTransformFile (id: string, extensions: RegExp | readonly string[]) {
-  const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  const { pathname, search } = parseModuleId(id)
   return !NUXT_LIB_RE.test(pathname)
     && (
       extensions instanceof RegExp
         ? extensions.test(pathname)
         : new RegExp(`\\.(${extensions.map(e => escapeRE(e)).join('|')})$`).test(pathname)
     )
-    && parseQuery(search).type !== 'style' && !parseQuery(search).macro
+    && !STYLE_QUERY_RE.test(search) && !MACRO_QUERY_RE.test(search)
 }
 
 // TODO: remove in Nuxt 5
