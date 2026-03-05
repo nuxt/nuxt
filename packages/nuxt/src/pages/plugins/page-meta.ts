@@ -376,14 +376,15 @@ function rewriteQuery (id: string) {
   return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(MACRO_RE, ''))
 }
 
+const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
+const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
+const LANG_PARAM_RE = /[?&]lang=([^?&]+)/
 function parseMacroQuery (id: string) {
-  const { search } = parseModuleId(id.replace(/\?macro=true$/, ''))
-  const params = new URLSearchParams(search)
   const query: { macro?: string, type?: string, lang?: ParserOptions['lang'] } = {
-    type: params.get('type') ?? undefined,
-    lang: params.get('lang') as ParserOptions['lang'] ?? undefined,
+    type: TYPE_PARAM_RE.exec(id)?.[1],
+    lang: LANG_PARAM_RE.exec(id)?.[1] as ParserOptions['lang'] ?? undefined,
   }
-  if (id.includes('?macro=true')) {
+  if (MACRO_QUERY_RE.test(id)) {
     query.macro = 'true'
   }
   return query
