@@ -1009,9 +1009,6 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
-      esbuild:
-        specifier: ^0.27.3
-        version: 0.27.3
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
