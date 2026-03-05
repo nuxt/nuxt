@@ -9,7 +9,7 @@ import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 // @ts-expect-error virtual file
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_PAYLOAD_EXTRACTION } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
@@ -75,12 +75,8 @@ function escapeJsString (str: string): string {
 
 export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: NitroRouteRules, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
-  const _PAYLOAD_EXTRACTION = !opts.ssrContext.noSSR && (
-    (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
-    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (opts.routeOptions.isr || opts.routeOptions.cache))
-  )
   const nuxtData = devalue(opts.data)
-  if (_PAYLOAD_EXTRACTION) {
+  if (opts.src) {
     // Escape the URL to prevent XSS when interpolated into a JS string literal
     const escapedSrc = escapeJsString(opts.src!)
     const singleAppPayload = `import p from "${escapedSrc}";window.__NUXT__={...p,...(${nuxtData})}`

@@ -3,9 +3,13 @@
 import type { Storage } from 'unstorage'
 import { useStorage } from 'nitropack/runtime'
 // @ts-expect-error virtual file
-import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
-export const payloadCache: Storage | null = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
+export const payloadCache: Storage | null = import.meta.prerender
+  ? useStorage('internal:nuxt:prerender:payload')
+  : NUXT_RUNTIME_PAYLOAD_EXTRACTION
+    ? useStorage('cache:nuxt:payload')
+    : null
 export const islandCache: Storage | null = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
 export const islandPropCache: Storage | null = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
 export const sharedPrerenderPromises: Map<string, Promise<any>> | null = import.meta.prerender && NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
