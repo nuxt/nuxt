@@ -1,10 +1,29 @@
-import { pathToFileURL } from 'node:url'
 import { extname } from 'pathe'
-import { parseQuery, parseURL } from 'ufo'
+
+/**
+ * Split a bundler module ID into its pathname and search (query) parts.
+ *
+ * Module IDs from Vite/webpack are already-normalized filesystem paths
+ * that may carry query strings (e.g. `?vue&type=style&lang=css`).
+ */
+export function parseModuleId (id: string): { pathname: string, search: string } {
+  const qIndex = id.indexOf('?')
+  if (qIndex === -1) {
+    return { pathname: id, search: '' }
+  }
+  return { pathname: id.slice(0, qIndex), search: id.slice(qIndex) }
+}
+
+const NUXT_COMPONENT_RE = /[?&]nuxt_component=/
+const MACRO_RE = /[?&]macro=/
+const VUE_QUERY_RE = /[?&]vue(?:&|$)/
+const SETUP_QUERY_RE = /[?&]setup(?:=|&|$)/
+const TYPE_QUERY_RE = /[?&]type=([^&]*)/
 
 export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 'style'> } = {}) {
+  const { search } = parseModuleId(id)
+
   // Bare `.vue` file (in Vite)
-  const { search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
   if (id.endsWith('.vue') && !search) {
     return true
   }
@@ -13,22 +32,26 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
     return false
   }
 
-  const query = parseQuery(search)
-
   // Component async/lazy wrapper
-  if (query.nuxt_component) {
+  if (NUXT_COMPONENT_RE.test(search)) {
     return false
   }
 
   // Macro
-  if (query.macro && (search === '?macro=true' || !opts.type || opts.type.includes('script'))) {
+  if (MACRO_RE.test(search) && (search === '?macro=true' || !opts.type || opts.type.includes('script'))) {
     return true
   }
 
   // Non-Vue or Styles
-  const type = 'setup' in query ? 'script' : query.type as 'script' | 'template' | 'style'
-  if (!('vue' in query) || (opts.type && !opts.type.includes(type))) {
+  if (!VUE_QUERY_RE.test(search)) {
     return false
+  }
+
+  if (opts.type) {
+    const type = SETUP_QUERY_RE.test(search) ? 'script' : TYPE_QUERY_RE.exec(search)?.[1] as 'script' | 'template' | 'style' | undefined
+    if (!type || !opts.type.includes(type)) {
+      return false
+    }
   }
 
   // Query `?vue&type=template` (in Webpack or external template)
@@ -37,14 +60,17 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
 
 const JS_RE = /\.(?:[cm]?j|t)sx?$/
 
+/** Matches module IDs for Vue files (ignoring query strings). */
+export const VUE_ID_RE = /\.vue(?:\?|$)/
+
 export function isJS (id: string) {
   // JavaScript files
-  const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  const { pathname } = parseModuleId(id)
   return JS_RE.test(pathname)
 }
 
 export function getLoader (id: string): 'vue' | 'ts' | 'tsx' | null {
-  const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  const { pathname } = parseModuleId(id)
   const ext = extname(pathname)
   if (ext === '.vue') {
     return 'vue'
