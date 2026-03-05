@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
-import { parseJSON } from '#app/utils/json'
+import { parseUntrustedJSON } from '#app/utils/json'
 
 import { hasProtocol } from 'ufo'
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
@@ -696,10 +696,10 @@ describe('routing utilities: `navigateTo` path encoding', () => {
   })
 })
 
-describe('parseJSON', () => {
+describe('parseUntrustedJSON', () => {
   it('filters prototype pollution keys and unicode-escaped variants', () => {
-    const withProto = parseJSON<Record<string, any>>('{"__proto__":{"polluted":true},"safe":1}')
-    const withUnicodeProto = parseJSON<Record<string, any>>('{"\\u005f\\u005fproto\\u005f\\u005f":{"polluted":true},"safe":1}')
+    const withProto = parseUntrustedJSON<Record<string, any>>('{"__proto__":{"polluted":true},"safe":1}')
+    const withUnicodeProto = parseUntrustedJSON<Record<string, any>>('{"\\u005f\\u005fproto\\u005f\\u005f":{"polluted":true},"safe":1}')
 
     expect(withProto).toMatchObject({ safe: 1 })
     expect(withUnicodeProto).toMatchObject({ safe: 1 })
@@ -707,8 +707,8 @@ describe('parseJSON', () => {
   })
 
   it('drops constructor only when it includes prototype payload', () => {
-    const constructorPrototype = parseJSON<Record<string, any>>('{"constructor":{"prototype":{"polluted":true}},"safe":1}')
-    const constructorPlain = parseJSON<Record<string, any>>('{"constructor":{"name":"ok"},"safe":1}')
+    const constructorPrototype = parseUntrustedJSON<Record<string, any>>('{"constructor":{"prototype":{"polluted":true}},"safe":1}')
+    const constructorPlain = parseUntrustedJSON<Record<string, any>>('{"constructor":{"name":"ok"},"safe":1}')
 
     expect(constructorPrototype).toMatchObject({ safe: 1 })
     expect(Object.hasOwn(constructorPrototype, 'constructor')).toBe(false)
@@ -716,15 +716,15 @@ describe('parseJSON', () => {
   })
 
   it('parses primitives and respects fallback for invalid payloads', () => {
-    expect(parseJSON('true')).toBe(true)
-    expect(parseJSON('false')).toBe(false)
-    expect(parseJSON('null')).toBeNull()
-    expect(parseJSON('undefined')).toBeUndefined()
-    expect(parseJSON('1e+3')).toBe(1000)
-    expect(parseJSON('"a+b"')).toBe('a+b')
-    expect(parseJSON('"\\uZZZZ"', 'fallback')).toBe('fallback')
-    expect(parseJSON<{ fallback: boolean }>('{"broken":', { fallback: true })).toEqual({ fallback: true })
-    expect(parseJSON('{"broken":')).toBe('{"broken":')
+    expect(parseUntrustedJSON('true')).toBe(true)
+    expect(parseUntrustedJSON('false')).toBe(false)
+    expect(parseUntrustedJSON('null')).toBeNull()
+    expect(parseUntrustedJSON('undefined')).toBeUndefined()
+    expect(parseUntrustedJSON('1e+3')).toBe(1000)
+    expect(parseUntrustedJSON('"a+b"')).toBe('a+b')
+    expect(parseUntrustedJSON('"\\uZZZZ"', 'fallback')).toBe('fallback')
+    expect(parseUntrustedJSON<{ fallback: boolean }>('{"broken":', { fallback: true })).toEqual({ fallback: true })
+    expect(parseUntrustedJSON('{"broken":')).toBe('{"broken":')
   })
 })
 
@@ -916,7 +916,7 @@ describe('useCookie', () => {
       default: () => ({ s2: -1 }),
       decode (value) {
         barCallCount++
-        return parseJSON(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     bazCookie.value.s2++
@@ -929,7 +929,7 @@ describe('useCookie', () => {
       filter: key => key === 'bar' || key === 'baz',
       decode (value) {
         quxCallCount++
-        return parseJSON(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     quxCookie.value.s3++

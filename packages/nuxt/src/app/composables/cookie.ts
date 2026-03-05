@@ -6,7 +6,7 @@ import { deleteCookie, getCookie, getRequestHeader, setCookie } from '@nuxt/nitr
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
-import { parseJSON } from '../utils/json'
+import { parseUntrustedJSON } from '../utils/json'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
@@ -46,8 +46,8 @@ const CookieDefaults = {
   watch: true,
   decode: (val) => {
     const decoded = decodeURIComponent(val)
-    const parsed = parseJSON(decoded)
-    // parseJSON can return Infinity or precision-loss numbers - keep original string
+    const parsed = parseUntrustedJSON(decoded)
+    // parseUntrustedJSON can return Infinity or precision-loss numbers - keep original string
     if (typeof parsed === 'number' && (!Number.isFinite(parsed) || String(parsed) !== decoded)) {
       return decoded
     }
