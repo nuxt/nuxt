@@ -1,5 +1,3 @@
-import { pathToFileURL } from 'node:url'
-import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
@@ -8,6 +6,7 @@ import { resolve } from 'pathe'
 import { parseAndWalk, walk } from 'oxc-walker'
 import type { BindingPattern, BindingProperty, CallExpression, Node, ObjectExpression, Program, ReturnStatement, VariableDeclaration } from 'oxc-parser'
 import { distDir } from '../../dirs.ts'
+import { VUE_ID_RE } from '../../core/utils/plugins.ts'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
@@ -23,86 +22,87 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
   return {
     name: 'nuxt:tree-shake-template',
     enforce: 'post',
-    transformInclude (id) {
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-      return pathname.endsWith('.vue')
-    },
-    transform (code, id) {
-      const components = options.getComponents()
+    transform: {
+      filter: {
+        id: { include: VUE_ID_RE },
+      },
+      handler (code, id) {
+        const components = options.getComponents()
 
-      if (!regexpMap.has(components)) {
-        const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
-        const clientOnlyComponents = components
-          .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && !other.filePath.startsWith(serverPlaceholderPath)))
-          .flatMap(c => [c.pascalName, c.kebabName.replaceAll('-', '_')])
-          .concat(['ClientOnly', 'client_only'])
+        if (!regexpMap.has(components)) {
+          const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
+          const clientOnlyComponents = components
+            .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && !other.filePath.startsWith(serverPlaceholderPath)))
+            .flatMap(c => [c.pascalName, c.kebabName.replaceAll('-', '_')])
+            .concat(['ClientOnly', 'client_only'])
 
-        regexpMap.set(components, [new RegExp(`(${clientOnlyComponents.join('|')})`), new RegExp(`^(${clientOnlyComponents.map(c => `(?:(?:_unref\\()?(?:_component_)?(?:Lazy|lazy_)?${c}\\)?)`).join('|')})$`), clientOnlyComponents])
-      }
-
-      const s = new MagicString(code)
-
-      const [COMPONENTS_RE, COMPONENTS_IDENTIFIERS_RE] = regexpMap.get(components)!
-      if (!COMPONENTS_RE.test(code)) { return }
-
-      const componentsToRemoveSet = new Set<string>()
-
-      // remove client only components or components called in ClientOnly default slot
-      const { program: ast } = parseAndWalk(code, id, (node) => {
-        if (!isSsrRender(node)) {
-          return
+          regexpMap.set(components, [new RegExp(`(${clientOnlyComponents.join('|')})`), new RegExp(`^(${clientOnlyComponents.map(c => `(?:(?:_unref\\()?(?:_component_)?(?:Lazy|lazy_)?${c}\\)?)`).join('|')})$`), clientOnlyComponents])
         }
 
-        const [componentCall, _, children] = node.arguments
-        if (!componentCall) { return }
+        const s = new MagicString(code)
 
-        if (componentCall.type === 'Identifier' || componentCall.type === 'MemberExpression' || componentCall.type === 'CallExpression') {
-          const componentName = getComponentName(node)
-          if (!componentName || !COMPONENTS_IDENTIFIERS_RE.test(componentName) || children?.type !== 'ObjectExpression') { return }
+        const [COMPONENTS_RE, COMPONENTS_IDENTIFIERS_RE] = regexpMap.get(components)!
+        if (!COMPONENTS_RE.test(code)) { return }
 
-          const isClientOnlyComponent = CLIENT_ONLY_NAME_RE.test(componentName)
-          const slotsToRemove = isClientOnlyComponent ? children.properties.filter(prop => prop.type === 'Property' && prop.key.type === 'Identifier' && !PLACEHOLDER_EXACT_RE.test(prop.key.name)) : children.properties
+        const componentsToRemoveSet = new Set<string>()
 
-          for (const slot of slotsToRemove) {
-            s.remove(slot.start, slot.end + 1)
-            const removedCode = `({${code.slice(slot.start, slot.end + 1)}})`
-            const currentState = s.toString()
+        // remove client only components or components called in ClientOnly default slot
+        const { program: ast } = parseAndWalk(code, id, (node) => {
+          if (!isSsrRender(node)) {
+            return
+          }
 
-            parseAndWalk(removedCode, id, (node) => {
-              if (!isSsrRender(node)) { return }
-              const name = getComponentName(node)
-              if (!name) { return }
+          const [componentCall, _, children] = node.arguments
+          if (!componentCall) { return }
 
-              // detect if the component is called else where
-              const nameToRemove = isComponentNotCalledInSetup(currentState, id, name)
-              if (nameToRemove) {
-                componentsToRemoveSet.add(nameToRemove)
-              }
-            })
+          if (componentCall.type === 'Identifier' || componentCall.type === 'MemberExpression' || componentCall.type === 'CallExpression') {
+            const componentName = getComponentName(node)
+            if (!componentName || !COMPONENTS_IDENTIFIERS_RE.test(componentName) || children?.type !== 'ObjectExpression') { return }
+
+            const isClientOnlyComponent = CLIENT_ONLY_NAME_RE.test(componentName)
+            const slotsToRemove = isClientOnlyComponent ? children.properties.filter(prop => prop.type === 'Property' && prop.key.type === 'Identifier' && !PLACEHOLDER_EXACT_RE.test(prop.key.name)) : children.properties
+
+            for (const slot of slotsToRemove) {
+              s.remove(slot.start, slot.end + 1)
+              const removedCode = `({${code.slice(slot.start, slot.end + 1)}})`
+              const currentState = s.toString()
+
+              parseAndWalk(removedCode, id, (node) => {
+                if (!isSsrRender(node)) { return }
+                const name = getComponentName(node)
+                if (!name) { return }
+
+                // detect if the component is called else where
+                const nameToRemove = isComponentNotCalledInSetup(currentState, id, name)
+                if (nameToRemove) {
+                  componentsToRemoveSet.add(nameToRemove)
+                }
+              })
+            }
+          }
+        })
+
+        const componentsToRemove = [...componentsToRemoveSet]
+        const removedNodes = new WeakSet<Node>()
+
+        for (const componentName of componentsToRemove) {
+        // remove import declaration if it exists
+          removeImportDeclaration(ast, componentName, s)
+          // remove variable declaration
+          removeVariableDeclarator(ast, componentName, s, removedNodes)
+          // remove from setup return statement
+          removeFromSetupReturn(ast, componentName, s)
+        }
+
+        if (s.hasChanged()) {
+          return {
+            code: s.toString(),
+            map: options.sourcemap
+              ? s.generateMap({ hires: true })
+              : undefined,
           }
         }
-      })
-
-      const componentsToRemove = [...componentsToRemoveSet]
-      const removedNodes = new WeakSet<Node>()
-
-      for (const componentName of componentsToRemove) {
-        // remove import declaration if it exists
-        removeImportDeclaration(ast, componentName, s)
-        // remove variable declaration
-        removeVariableDeclarator(ast, componentName, s, removedNodes)
-        // remove from setup return statement
-        removeFromSetupReturn(ast, componentName, s)
-      }
-
-      if (s.hasChanged()) {
-        return {
-          code: s.toString(),
-          map: options.sourcemap
-            ? s.generateMap({ hires: true })
-            : undefined,
-        }
-      }
+      },
     },
   }
 })
