@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { isAbsolute, relative, resolve } from 'pathe'
+import { isAbsolute, normalize, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import { genArrayFromRaw, genObjectFromRawEntries } from 'knitwork'
 import type { Nuxt } from '@nuxt/schema'
@@ -26,7 +26,7 @@ function normalizePath (nuxt: Nuxt, id?: string | null): string | null {
 
 function resolveFilePath (id?: string | null): string | null {
   if (!id) { return null }
-  return parseModuleId(id).pathname || null
+  return parseModuleId(normalize(id)).pathname || null
 }
 
 function sanitizeStyleAssetName (rel: string) {
@@ -229,12 +229,6 @@ export class SSRStylesPlugin {
     }
 
     return null
-  }
-
-  private normalizeResourcePath (resource?: string | null): string | null {
-    if (!resource) { return null }
-    const withoutQuery = resource.split('?')[0]
-    return resolveFilePath(withoutQuery)
   }
 
   apply (compiler: Compiler) {

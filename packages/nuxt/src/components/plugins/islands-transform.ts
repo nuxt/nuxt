@@ -4,6 +4,7 @@ import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
+import { normalize } from 'pathe'
 import { isVue, parseModuleId } from '../../core/utils/index.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -40,7 +41,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
       const islands = components.filter(component =>
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
       )
-      const { pathname } = parseModuleId(id)
+      const { pathname } = parseModuleId(normalize(id))
       return islands.some(c => c.filePath === pathname)
     },
     transform: {
