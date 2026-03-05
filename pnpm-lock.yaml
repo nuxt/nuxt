@@ -31,7 +31,6 @@ overrides:
   send: '>=1.2.1'
   typescript: 5.9.3
   ufo: 1.6.3
-  unimport: 6.0.1
   unstorage: 1.17.4
   vite: 7.3.1
   vue: 3.5.29
@@ -616,7 +615,7 @@ importers:
         specifier: ^2.5.0
         version: 2.5.0
       unimport:
-        specifier: 6.0.1
+        specifier: ^6.0.1
         version: 6.0.1
       unplugin:
         specifier: ^3.0.0
@@ -8751,6 +8750,10 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
+  unimport@5.7.0:
+    resolution: {integrity: sha512-njnL6sp8lEA8QQbZrt+52p/g4X0rw3bnGGmUcJnt1jeG8+iiqO779aGz0PirCtydAIVcuTBRlJ52F0u46z309Q==}
+    engines: {node: '>=18.12.0'}
+
   unimport@6.0.1:
     resolution: {integrity: sha512-RbT3PfMshH2eYH5ylQuCf1sUQ1ocygZp57HaBNIp96g1upcTZnIstCfl6ZbZM7KHI88K3jmwhgeMxwtYsWSqug==}
     engines: {node: '>=18.12.0'}
@@ -15389,7 +15392,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.5.0
       unenv: 2.0.0-rc.24
-      unimport: 6.0.1
+      unimport: 5.7.0
       unplugin-utils: 0.3.1
       unstorage: 1.17.4(db0@0.3.4)(ioredis@5.9.1)
       untyped: 2.0.0
@@ -17358,6 +17361,23 @@ snapshots:
       is-plain-obj: 4.1.0
       trough: 2.2.0
       vfile: 6.0.3
+
+  unimport@5.7.0:
+    dependencies:
+      acorn: 8.16.0
+      escape-string-regexp: 5.0.0
+      estree-walker: 3.0.3
+      local-pkg: 1.1.2
+      magic-string: 0.30.21
+      mlly: 1.8.1
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      pkg-types: 2.3.0
+      scule: 1.3.0
+      strip-literal: 3.1.0
+      tinyglobby: 0.2.15
+      unplugin: 2.3.11
+      unplugin-utils: 0.3.1
 
   unimport@6.0.1:
     dependencies:
