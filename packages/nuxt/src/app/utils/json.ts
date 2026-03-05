@@ -4,7 +4,7 @@ const PROTO_RE = /"(?:_|\\u005[Ff]){2}(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])
 // https://github.com/unjs/destr/blob/main/src/index.ts#L5-L6
 const CONSTRUCTOR_RE = /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/
 
-export function parseJSON<T = unknown>(value: string, fallback?: T): T {
+export function parseJSON<T = unknown> (value: string, fallback?: T): T {
   if (typeof value !== 'string') {
     return value as T
   }
@@ -12,10 +12,10 @@ export function parseJSON<T = unknown>(value: string, fallback?: T): T {
   const _value = value.trim()
 
   // Handle primitives (safe fast paths)
-  if (_value === 'true') return true as T
-  if (_value === 'false') return false as T
-  if (_value === 'null') return null as T
-  if (_value === 'undefined') return undefined as T
+  if (_value === 'true') { return true as T }
+  if (_value === 'false') { return false as T }
+  if (_value === 'null') { return null as T }
+  if (_value === 'undefined') { return undefined as T }
 
   // Handle quoted strings (no number coercion)
   if (QUOTED_RE.test(_value)) {
