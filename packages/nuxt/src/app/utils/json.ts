@@ -1,4 +1,3 @@
-const PLUS_RE = /\+/g
 const QUOTED_RE = /^"(?:.|[\n\r])*"$/
 // https://github.com/unjs/destr/blob/main/src/index.ts#L3-L4
 const PROTO_RE = /"(?:_|\\u005[Ff]){2}(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff]){2}"\s*:/
@@ -42,7 +41,7 @@ export function parseJSON<T = unknown>(value: string, fallback?: T): T {
   }
 
   try {
-    return JSON.parse(value.replace(PLUS_RE, '%2B')) as T
+    return JSON.parse(value) as T
   } catch {
     return (fallback ?? value) as T
   }
