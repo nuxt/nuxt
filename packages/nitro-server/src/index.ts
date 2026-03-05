@@ -160,6 +160,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     imports: nuxt.options.experimental.nitroAutoImports === false
       ? {
+          autoImport: false,
           imports: getCoreNitroImports(),
           exclude: [...excludePattern, /[\\/]\.git[\\/]/],
         }

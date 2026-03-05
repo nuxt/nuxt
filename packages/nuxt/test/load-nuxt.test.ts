@@ -179,8 +179,10 @@ describe('loadNuxt', () => {
 
     const nitroImports = (nuxt as any)._nitro?.options.imports?.imports ?? []
     const hasDefineAppConfig = nitroImports.some((i: { name: string }) => i.name === 'defineAppConfig')
+    const autoImport = (nuxt as any)._nitro?.options.imports?.autoImport
 
     expect(hasDefineAppConfig).toBe(true)
+    expect(autoImport).toBe(false)
 
     await nuxt.close()
   })
