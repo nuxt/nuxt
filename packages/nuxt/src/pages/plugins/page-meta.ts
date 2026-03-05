@@ -51,7 +51,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
     transform: {
       filter: {
         id: {
-          include: /[?&]macro=true/,
+          include: /[?&]macro=true\b/,
           exclude: [/(?:\?|%3F).*type=(?:style|template)/],
         },
         code: {
