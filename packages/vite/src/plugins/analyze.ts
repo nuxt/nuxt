@@ -32,7 +32,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
               const minifiedModuleEntryPromises: Array<Promise<[string, RenderedModule]>> = []
               for (const [moduleId, module] of Object.entries(bundle.modules)) {
                 minifiedModuleEntryPromises.push(
-                  transformWithEsbuild(module.code || '', moduleId, { minify: true })
+                  transformWithEsbuild(module.code || '', 'index.js', { minify: true })
                     .then(result => [moduleId, { ...module, code: result.code }]),
                 )
               }
