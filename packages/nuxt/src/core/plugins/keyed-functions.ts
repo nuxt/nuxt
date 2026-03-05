@@ -13,7 +13,6 @@ import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
 import { isWhitespace, logger, stripExtension } from '../../utils.ts'
-import { parseModuleId } from '../utils/plugins.ts'
 import type { FunctionCallMetadata } from '../utils/parse-utils.ts'
 import { parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../utils/parse-utils.ts'
 
@@ -28,23 +27,12 @@ interface KeyedFunctionsOptions {
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
-const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
-const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
+const NUXT_LIB_RE = /^[^?]*node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
+const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
 const STYLE_QUERY_RE = /[?&]type=style/
 const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
-
-export function shouldTransformFile (id: string, extensions: RegExp | readonly string[]) {
-  const { pathname, search } = parseModuleId(id)
-  return !NUXT_LIB_RE.test(pathname)
-    && (
-      extensions instanceof RegExp
-        ? extensions.test(pathname)
-        : new RegExp(`\\.(${extensions.map(e => escapeRE(e)).join('|')})$`).test(pathname)
-    )
-    && !STYLE_QUERY_RE.test(search) && !MACRO_QUERY_RE.test(search)
-}
 
 // TODO: remove in Nuxt 5
 type BackwardsCompatibleKeyedFunction = Omit<KeyedFunction, 'source'> & { source?: KeyedFunction['source'] | RegExp }
@@ -104,9 +92,12 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   return {
     name: 'nuxt:compiler:keyed-functions',
     enforce: 'post',
-    transformInclude: id => shouldTransformFile(id, SUPPORTED_EXT_RE),
     transform: {
       filter: {
+        id: {
+          include: SUPPORTED_EXT_RE,
+          exclude: [NUXT_LIB_RE, STYLE_QUERY_RE, MACRO_QUERY_RE],
+        },
         code: { include: CODE_INCLUDE_RE },
       },
       async handler (code, _id) {

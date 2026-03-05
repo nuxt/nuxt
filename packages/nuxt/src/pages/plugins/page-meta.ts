@@ -48,12 +48,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
-    transformInclude (id) {
-      return !!parseMacroQuery(id).macro
-    },
     transform: {
       filter: {
         id: {
+          include: /[?&]macro=true/,
           exclude: [/(?:\?|%3F).*type=(?:style|template)/],
         },
         code: {

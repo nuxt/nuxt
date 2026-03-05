@@ -60,6 +60,9 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
 
 const JS_RE = /\.(?:[cm]?j|t)sx?$/
 
+/** Matches module IDs for Vue files (ignoring query strings). */
+export const VUE_ID_RE = /\.vue(?:\?|$)/
+
 export function isJS (id: string) {
   // JavaScript files
   const { pathname } = parseModuleId(id)
