@@ -22,7 +22,7 @@ export function parseJSON<T = unknown>(value: string, fallback?: T): T {
     try {
       return JSON.parse(_value)
     } catch {
-      return _value as T
+      return (fallback ?? _value) as T
     }
   }
 

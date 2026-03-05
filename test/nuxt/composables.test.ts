@@ -722,6 +722,7 @@ describe('parseJSON', () => {
     expect(parseJSON('undefined')).toBeUndefined()
     expect(parseJSON('1e+3')).toBe(1000)
     expect(parseJSON('"a+b"')).toBe('a+b')
+    expect(parseJSON('"\\uZZZZ"', 'fallback')).toBe('fallback')
     expect(parseJSON<{ fallback: boolean }>('{"broken":', { fallback: true })).toEqual({ fallback: true })
     expect(parseJSON('{"broken":')).toBe('{"broken":')
   })
