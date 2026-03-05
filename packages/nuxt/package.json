@@ -106,7 +106,7 @@
     "ultrahtml": "^1.6.0",
     "uncrypto": "^0.1.3",
     "unctx": "^2.5.0",
-    "unimport": "^5.6.0",
+    "unimport": "^6.0.1",
     "unplugin": "^3.0.0",
     "unplugin-vue-router": "^0.19.2",
     "untyped": "^2.0.0",
