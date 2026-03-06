@@ -18,7 +18,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     return
   }
 
-  let visualizer: typeof import('rollup-plugin-visualizer').visualizer | undefined
+  let visualizer: typeof import('rollup-plugin-visualizer').visualizer
 
   try {
     visualizer = await import('rollup-plugin-visualizer').then(r => r.visualizer)
