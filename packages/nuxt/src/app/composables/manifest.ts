@@ -1,4 +1,4 @@
-import type { H3Event } from 'h3'
+import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { NitroRouteRules } from 'nitropack/types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file

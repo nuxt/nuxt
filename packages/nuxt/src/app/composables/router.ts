@@ -1,7 +1,7 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { sanitizeStatusCode } from 'h3'
+import { sanitizeStatusCode } from '@nuxt/nitro-server/h3'
 import { decodePath, encodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'

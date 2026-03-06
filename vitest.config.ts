@@ -13,6 +13,7 @@ const commonSettings: NuxtConfig = {
   routeRules: {
     '/specific-prerendered': { prerender: true },
     '/pre/test': { redirect: '/' },
+    '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
   },
   experimental: {

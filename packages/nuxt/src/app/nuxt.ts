@@ -6,7 +6,7 @@ import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { EventHandlerRequest, H3Event } from 'h3'
+import type { EventHandlerRequest, H3Event } from '@nuxt/nitro-server/h3'
 import type { RenderResponse } from 'nitropack/types'
 import type { LogObject } from 'consola'
 import type { VueHeadClient } from '@unhead/vue/types'
@@ -20,10 +20,11 @@ import type { AsyncDataExecuteOptions, AsyncDataRequestStatus, DebouncedReturn }
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
+import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 
 // @ts-expect-error virtual file
-import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
+import { appId, asyncCallHook, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
 export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
@@ -114,6 +115,7 @@ interface _NuxtApp {
 
   /** @internal */
   '_cookies'?: Record<string, unknown>
+  '_cookiesChanged'?: Record<string, boolean>
   /**
    * The id of the Nuxt application.
    * @internal */
@@ -143,6 +145,12 @@ interface _NuxtApp {
     _hash?: Record<string, string | undefined>
     /** @internal */
     _abortController?: AbortController
+  } | undefined>
+
+  /** @internal */
+  '_state': Record<string, {
+    /** @internal */
+    _default: () => unknown
   } | undefined>
 
   /** @internal */
@@ -189,6 +197,11 @@ interface _NuxtApp {
   '~transitionPromise'?: Promise<void>
   /** @internal */
   '~transitionFinish'?: () => void
+
+  /** @internal */
+  '_announcer'?: NuxtAnnouncer
+  /** @internal */
+  '_announcerDeps'?: number
 
   // Nuxt injections
   '$config': RuntimeConfig
@@ -319,6 +332,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     },
     _asyncDataPromises: {},
     _asyncData: shallowReactive({}),
+    _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
@@ -372,7 +386,10 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     }
     // Patch callHook to preserve NuxtApp context on server
     // TODO: Refactor after https://github.com/unjs/hookable/issues/74
-    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, ...args)
+    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, args)
+  } else if (asyncCallHook) {
+    const _callHook = nuxtApp.hooks.callHook
+    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => Promise.resolve().then(() => _callHook(name, ...args))
   }
 
   nuxtApp.callHook = nuxtApp.hooks.callHook

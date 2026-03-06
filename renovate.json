@@ -7,6 +7,7 @@
   ],
   "baseBranchPatterns": [
     "main",
+    "4.x",
     "3.x"
   ],
   "ignoreDeps": [
@@ -31,6 +32,7 @@
     {
       "matchBaseBranches": [
         "main",
+        "4.x",
         "3.x"
       ],
       "ignoreDeps": [

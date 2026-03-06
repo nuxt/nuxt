@@ -5,10 +5,12 @@ on:
   push:
     branches:
       - main
+      - 4.x
       - 3.x
   pull_request:
     branches:
       - main
+      - 4.x
       - 3.x
       - '!v[0-9]*'
 
@@ -61,6 +63,9 @@ jobs:
     if: needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -83,11 +88,17 @@ jobs:
         run: pnpm build
 
       - name: Cache dist
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           retention-days: 3
           name: dist
           path: packages/*/dist
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   codeql:
     if: github.event_name != 'merge_group'
@@ -105,7 +116,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@89a39a4e59826350b863aa6b6252a07ad50cf83e # v4.32.4
+        uses: github/codeql-action/init@c793b717bc78562f491db7b0e93a3a178b099162 # v4.32.5
         with:
           config: |
             paths:
@@ -122,7 +133,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@89a39a4e59826350b863aa6b6252a07ad50cf83e # v4.32.4
+        uses: github/codeql-action/analyze@c793b717bc78562f491db7b0e93a3a178b099162 # v4.32.5
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -131,14 +142,20 @@ jobs:
     if: github.event_name != 'push'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
     needs:
       - build
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
         module: ['bundler']
         # module: ["bundler", "node"]
+        exclude:
+          # only run ubuntu in merge queue
+          - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -152,7 +169,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: dist
           path: packages
@@ -165,12 +182,21 @@ jobs:
       - name: Typecheck (docs)
         run: pnpm typecheck:docs
 
-  lint:
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  lint-and-test:
     # autofix workflow will be triggered instead for PRs
     needs: changes
     if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 10
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -189,40 +215,28 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Check built types
-        run: pnpm test:attw
-
-  test-unit:
-    # autofix workflow will be triggered instead for PRs
-    needs: changes
-    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
-        with:
-          node-version: lts/*
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build (stub)
-        run: pnpm dev:prepare
-
       - name: Test (nuxt runtime)
         run: pnpm test:runtime
 
       - name: Test (unit)
         run: pnpm test:unit
 
+      - name: Check built types
+        run: pnpm test:attw
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   test-size:
     # already tested in merge queue
     if: github.event_name != 'push'
     runs-on: ubuntu-24.04-arm
+    permissions:
+      actions: write
+      contents: read
     needs:
       - build
 
@@ -238,13 +252,19 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: dist
           path: packages
 
       - name: Check bundle size
         run: pnpm vitest run bundle
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   test-benchmark:
     runs-on: ubuntu-latest
@@ -264,7 +284,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: dist
           path: packages
@@ -283,11 +303,14 @@ jobs:
     # already tested in merge queue
     if: github.event_name != 'push'
     runs-on: ${{ matrix.os }}
+    permissions:
+      actions: write
+      contents: read
     needs:
       - build
 
     strategy:
-      fail-fast: false
+      fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
         env: ['dev', 'built']
@@ -320,7 +343,7 @@ jobs:
           - payload: 'js'
             builder: 'vite-env-api'
 
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -337,7 +360,7 @@ jobs:
         run: pnpm playwright-core install chromium
 
       - name: Restore dist cache
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: dist
           path: packages
@@ -358,6 +381,12 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
   ci-ok:
     # This job is the single required check for merge queues and branch protection.
     # All other jobs feed into this one. Skipped jobs are treated as successful.
@@ -368,8 +397,7 @@ jobs:
       - build
       - codeql
       - typecheck
-      - lint
-      - test-unit
+      - lint-and-test
       - test-size
       - test-fixtures
     steps:
@@ -381,8 +409,7 @@ jobs:
             "${{ needs.build.result }}" \
             "${{ needs.codeql.result }}" \
             "${{ needs.typecheck.result }}" \
-            "${{ needs.lint.result }}" \
-            "${{ needs.test-unit.result }}" \
+            "${{ needs.lint-and-test.result }}" \
             "${{ needs.test-size.result }}" \
             "${{ needs.test-fixtures.result }}" \
           )
@@ -423,7 +450,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: dist
           path: packages
@@ -431,7 +458,7 @@ jobs:
       - name: Release nightly
         run: node scripts/release.ts --nightly
         env:
-          TAG: ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
+          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || github.ref == 'refs/heads/4.x' && 'latest' || '3x' }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
@@ -454,7 +481,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: dist
           path: packages

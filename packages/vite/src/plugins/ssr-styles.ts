@@ -1,20 +1,21 @@
-import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 import { dirname, relative } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
-import { parseQuery, parseURL } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { IS_CSS_RE, isCSS, isVue } from '../utils/index.ts'
+import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { resolveClientEntry } from '../utils/config.ts'
 import { useNitro } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 const QUERY_RE = /\?.+$/
+const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
+const NUXT_COMPONENT_QUERY_RE = /[?&]nuxt_component=/
+const STYLE_QUERY_RE = /[?&]type=style/
 
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
@@ -268,12 +269,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               return
             }
 
-            const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+            const { pathname, search } = parseModuleId(id)
 
             if (!(id in clientCSSMap) && !islandPaths.has(pathname)) { return }
 
-            const query = parseQuery(search)
-            if (query.macro || query.nuxt_component) { return }
+            if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
 
             if (!islandPaths.has(pathname)) {
               if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
@@ -320,7 +320,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             if (!SUPPORTED_FILES_RE.test(pathname)) { return }
 
             for (const i of findStaticImports(code)) {
-              if (!i.specifier.endsWith('.css') && parseQuery(i.specifier).type !== 'style') { continue }
+              if (!i.specifier.endsWith('.css') && !STYLE_QUERY_RE.test(i.specifier)) { continue }
 
               const resolved = await this.resolve(i.specifier, id)
               if (!resolved) { continue }

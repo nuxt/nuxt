@@ -19,6 +19,7 @@ import { clientEnvironment } from './shared/client.ts'
 import { warmupViteServer } from './utils/warmup.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
+import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
@@ -45,6 +46,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
 
   nuxt.options.modulesDir.push(distDir)
+
+  // Register Nitro plugin to fix SSR error stacktraces in dev mode
+  if (nuxt.options.dev) {
+    const nitro = useNitro()
+    nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
+    nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
+    nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
+    nitro.options.virtual['#internal/nuxt/vite-node-runner'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
+  }
 
   let allowDirs = [
     nuxt.options.appDir,
@@ -213,6 +223,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // ensure changes in chunks do not invalidate whole build
               StableEntryPlugin(nuxt),
               AnalyzePlugin(nuxt),
+              OptimizeDepsHintPlugin(nuxt),
             ]
           : [],
       ],
@@ -243,6 +254,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config.build!.watch = undefined
   }
 
+  userOptimizeDepsInclude.set(nuxt, [...((config.optimizeDeps?.include as string[]) || [])])
+
   const ctx = { nuxt, entry, config: config as ViteConfig }
   await nuxt.callHook('vite:extend', ctx)
 
@@ -254,7 +267,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 }
 
 async function handleEnvironments (nuxt: Nuxt, config: vite.InlineConfig) {
-  config.customLogger = createViteLogger(config)
+  const callbacks = optimizerCallbacks.get(nuxt)
+  config.customLogger = createViteLogger(config, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep })
   config.configFile = false
 
   for (const environment of ['client', 'ssr']) {
