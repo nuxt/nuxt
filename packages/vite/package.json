@@ -27,16 +27,6 @@
     "build:stub": "obuild --stub",
     "test:attw": "attw --pack"
   },
-  "devDependencies": {
-    "@nuxt/schema": "workspace:*",
-    "h3": "1.15.5",
-    "h3-next": "npm:h3@2.0.1-rc.14",
-    "nitropack": "2.13.1",
-    "obuild": "0.4.31",
-    "rolldown": "1.0.0-rc.7",
-    "rollup": "4.59.0",
-    "vue": "3.5.29"
-  },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.3",
@@ -66,6 +56,17 @@
     "vite-node": "^5.3.0",
     "vite-plugin-checker": "^0.12.0",
     "vue-bundle-renderer": "^2.2.0"
+  },
+  "devDependencies": {
+    "@nuxt/schema": "workspace:*",
+    "h3": "1.15.5",
+    "h3-next": "npm:h3@2.0.1-rc.14",
+    "nitropack": "2.13.1",
+    "obuild": "0.4.31",
+    "rolldown": "1.0.0-rc.7",
+    "rollup": "4.59.0",
+    "rollup-plugin-visualizer": "7.0.1",
+    "vue": "3.5.29"
   },
   "peerDependencies": {
     "nuxt": "workspace:*",
