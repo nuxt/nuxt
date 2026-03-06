@@ -54,10 +54,10 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.1",
     "mocked-exports": "^0.1.1",
+    "nypm": "^0.6.5",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.8",
-    "rollup-plugin-visualizer": "^7.0.1",
     "seroval": "^1.5.0",
     "std-env": "^3.10.0",
     "ufo": "^1.6.3",
@@ -70,10 +70,14 @@
   "peerDependencies": {
     "nuxt": "workspace:*",
     "rolldown": "^1.0.0-beta.38",
+    "rollup-plugin-visualizer": "^6.0.0 || ^7.0.1",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
     "rolldown": {
+      "optional": true
+    },
+    "rollup-plugin-visualizer": {
       "optional": true
     }
   },

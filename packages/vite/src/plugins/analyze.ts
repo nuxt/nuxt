@@ -1,8 +1,12 @@
+import process from 'node:process'
 import type { Plugin } from 'vite'
 import { transformWithEsbuild } from 'vite'
 import { defu } from 'defu'
+import { addDependency } from 'nypm'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { RenderedModule } from 'rollup'
+import { logger } from '@nuxt/kit'
+import { hasTTY, isCI } from 'std-env'
 
 export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (nuxt.options.test) {
@@ -14,7 +18,34 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     return
   }
 
-  const { visualizer } = await import('rollup-plugin-visualizer')
+  const { visualizer } = await import('rollup-plugin-visualizer').catch(async (err) => {
+    if (err.code !== 'MODULE_NOT_FOUND') {
+      throw err
+    }
+
+    if (!isCI && hasTTY) {
+      const shouldInstall = await logger.prompt('Install rollup-plugin-visualizer?', {
+        type: 'confirm',
+        choices: [
+          { name: 'Yes', value: true },
+          { name: 'No', value: false },
+        ],
+      })
+
+      if (shouldInstall) {
+        await addDependency('rollup-plugin-visualizer', {
+          dev: true,
+          cwd: nuxt.options.rootDir,
+          silent: true,
+        })
+        logger.info('Rerun Nuxt to use `rollup-plugin-visualizer`.')
+        process.exit(1)
+      }
+    }
+
+    logger.info('Cannot find `rollup-plugin-visualizer`.')
+    process.exit(1)
+  })
 
   return {
     name: 'nuxt:analyze',
