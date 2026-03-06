@@ -99,6 +99,7 @@ export default defineResolvers({
     noVueServer: false,
     payloadExtraction: {
       $resolve: async (val, get) => {
+        if ((await get('ssr')) === false) { return false }
         if (val === 'client' || typeof val === 'boolean') { return val }
         return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
       },
