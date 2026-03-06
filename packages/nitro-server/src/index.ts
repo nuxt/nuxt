@@ -37,17 +37,8 @@ const logLevelMapReverse = {
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
-
-// Essential imports that must be available regardless of nitroAutoImports setting.
-// These are internal functions required for Nuxt's core functionality (e.g., app.config.ts).
-function getCoreNitroImports () {
-  return [
-    { as: '__buildAssetsURL', name: 'buildAssetsURL', from: resolve(distDir, 'runtime/utils/paths') },
-    { as: '__publicAssetsURL', name: 'publicAssetsURL', from: resolve(distDir, 'runtime/utils/paths') },
-    // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
-    { as: 'defineAppConfig', name: 'defineAppConfig', from: resolve(distDir, 'runtime/utils/config'), priority: -1 },
-  ]
-}
+const APP_CONFIG_RE = /(?:^|[/\\])app\.config(?:\.[^/\\]+)?$/
+const DEFINE_APP_CONFIG_IMPORT_RE = /\bimport\s*(?:\{[^}]*\bdefineAppConfig\b[^}]*\}|defineAppConfig)\s*from\b/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
@@ -159,15 +150,29 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       version: nuxtVersion || nitroBuilder.version,
     },
     imports: nuxt.options.experimental.nitroAutoImports === false
-      ? {
-          autoImport: false,
-          imports: getCoreNitroImports(),
-          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
-        }
+      ? false
       : {
           autoImport: nuxt.options.imports.autoImport as boolean,
           dirs: [...sharedDirs],
-          imports: getCoreNitroImports(),
+          imports: [
+            {
+              as: '__buildAssetsURL',
+              name: 'buildAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              as: '__publicAssetsURL',
+              name: 'publicAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
+              as: 'defineAppConfig',
+              name: 'defineAppConfig',
+              from: resolve(distDir, 'runtime/utils/config'),
+              priority: -1,
+            },
+          ],
           presets: [
             {
               from: 'h3',
@@ -657,6 +662,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     compatibilityDate: nuxt.options.compatibilityDate,
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
+
+  if (nuxt.options.experimental.nitroAutoImports === false) {
+    const defineAppConfigImport = `import { defineAppConfig } from ${JSON.stringify(resolve(distDir, 'runtime/utils/config'))}\n`
+    nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
+      rollupConfig.plugins.push({
+        name: 'nuxt:app-config-imports',
+        transform (code, id) {
+          const normalizedId = id.replace(/\\/g, '/')
+          if (!APP_CONFIG_RE.test(normalizedId) || !/\bdefineAppConfig\b/.test(code) || DEFINE_APP_CONFIG_IMPORT_RE.test(code)) {
+            return
+          }
+          return defineAppConfigImport + code
+        },
+      })
+    })
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig === false && nitro.options.imports) {
