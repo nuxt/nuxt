@@ -205,8 +205,8 @@ importers:
         specifier: 0.11.8
         version: 0.11.8
       std-env:
-        specifier: 3.10.0
-        version: 3.10.0
+        specifier: 4.0.0-rc.1
+        version: 4.0.0-rc.1
       tinyexec:
         specifier: 1.0.2
         version: 1.0.2
@@ -403,8 +403,8 @@ importers:
         specifier: ^0.7.12
         version: 0.7.12
       std-env:
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^4.0.0-rc.1
+        version: 4.0.0-rc.1
       ufo:
         specifier: ^1.6.3
         version: 1.6.3
@@ -575,8 +575,8 @@ importers:
         specifier: ^7.7.4
         version: 7.7.4
       std-env:
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^4.0.0-rc.1
+        version: 4.0.0-rc.1
       tinyglobby:
         specifier: ^0.2.15
         version: 0.2.15
@@ -738,8 +738,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       std-env:
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^4.0.0-rc.1
+        version: 4.0.0-rc.1
       time-fix-plugin:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.105.4)
@@ -820,8 +820,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0
       std-env:
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^4.0.0-rc.1
+        version: 4.0.0-rc.1
     devDependencies:
       '@types/pug':
         specifier: 2.0.10
@@ -1052,8 +1052,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       std-env:
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^4.0.0-rc.1
+        version: 4.0.0-rc.1
       ufo:
         specifier: ^1.6.3
         version: 1.6.3
@@ -1191,8 +1191,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       std-env:
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^4.0.0-rc.1
+        version: 4.0.0-rc.1
       time-fix-plugin:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.105.4)
@@ -8404,6 +8404,9 @@ packages:
 
   std-env@3.10.0:
     resolution: {integrity: sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg==}
+
+  std-env@4.0.0-rc.1:
+    resolution: {integrity: sha512-2gE+MEGsqvDEjl7LqbrCEB3Lo6+Pmt8ULCIsutKTesFBzSuNIkiWPSy65sa7WrlLebc9LcfnS5eyj69mutUp1A==}
 
   stop-iteration-iterator@1.1.0:
     resolution: {integrity: sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ==}
@@ -17122,6 +17125,8 @@ snapshots:
   statuses@2.0.2: {}
 
   std-env@3.10.0: {}
+
+  std-env@4.0.0-rc.1: {}
 
   stop-iteration-iterator@1.1.0:
     dependencies:
