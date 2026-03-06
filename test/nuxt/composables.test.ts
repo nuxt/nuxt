@@ -5,11 +5,11 @@ import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
-
 import { hasProtocol } from 'ufo'
-import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
-import * as composables from '#app/composables'
 
+import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
+
+import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
@@ -23,9 +23,9 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-
 import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
+
 import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
