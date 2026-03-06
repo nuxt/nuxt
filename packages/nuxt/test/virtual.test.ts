@@ -14,7 +14,6 @@ describe('virtual fs plugin', () => {
     expect(code).toMatchInlineSnapshot(`
       "//#region virtual:nuxt:%2F.nuxt%2Ffoo
       const foo = "hello world";
-
       //#endregion
       export { foo };"
     `)
@@ -31,7 +30,6 @@ describe('virtual fs plugin', () => {
     expect(code).toMatchInlineSnapshot(`
       "//#region virtual:nuxt:%2F.nuxt%2Ffoo.client.ts
       const foo = "foo client file";
-
       //#endregion
       export { foo };"
     `)
@@ -47,7 +45,6 @@ describe('virtual fs plugin', () => {
     expect(code).toMatchInlineSnapshot(`
       "//#region virtual:nuxt:%2F.nuxt%2Fbar
       const foo = "relative import";
-
       //#endregion
       export { foo };"
     `)
