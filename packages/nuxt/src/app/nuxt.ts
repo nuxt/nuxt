@@ -389,7 +389,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, args)
   } else if (asyncCallHook) {
     const _callHook = nuxtApp.hooks.callHook
-    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => Promise.resolve(_callHook(name, ...args))
+    nuxtApp.hooks.callHook = (name: any, ...args: any[]) => Promise.resolve().then(() => _callHook(name, ...args))
   }
 
   nuxtApp.callHook = nuxtApp.hooks.callHook

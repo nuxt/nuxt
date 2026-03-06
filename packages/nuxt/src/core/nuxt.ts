@@ -60,8 +60,8 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
   const { callHook, callHookParallel, callHookWith } = hooks
   if (options.experimental.asyncCallHook) {
-    hooks.callHook = (...args) => Promise.resolve(runWithNuxtContext(nuxt, () => callHook(...args)))
-    hooks.callHookParallel = (...args) => Promise.resolve(runWithNuxtContext(nuxt, () => callHookParallel(...args))) as Promise<any>
+    hooks.callHook = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHook(...args)))
+    hooks.callHookParallel = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHookParallel(...args)) ?? [])
   } else {
     hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
     hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
