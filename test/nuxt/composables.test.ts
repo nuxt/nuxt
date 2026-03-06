@@ -479,6 +479,10 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             "/pre": {
               "prerender": true,
             },
+            "/pre/spa": {
+              "prerender": true,
+              "ssr": false,
+            },
           },
         },
         "prerendered": [],
@@ -490,6 +494,12 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
+      }
+    `)
+    expect(getRouteRules({ path: '/pre/spa/thing' })).toMatchInlineSnapshot(`
+      {
+        "prerender": true,
+        "ssr": false,
       }
     `)
     expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
@@ -508,12 +518,17 @@ describe('compiled route rules', () => {
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+    expect(await isPrerendered('/pre/spa/thing')).toBeTruthy()
   })
 
   it('should determine if payload should be loaded based on route rules', async () => {
     // wildcard routes with prerender: true should load payloads
     const shouldLoadPre = await shouldLoadPayload('/pre/thing')
     expect(shouldLoadPre).toBe(true)
+
+    // prerendered routes with ssr: false should not load payloads
+    const shouldLoadSpaPre = await shouldLoadPayload('/pre/spa/thing')
+    expect(shouldLoadSpaPre).toBe(false)
 
     // specific prerendered routes should load payloads
     const shouldLoadSpecific = await shouldLoadPayload('/specific-prerendered')
