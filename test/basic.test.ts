@@ -1939,8 +1939,8 @@ describe.skipIf(isDev)('module identifiers', () => {
 
 describe.skipIf(isDev)('inlining component styles', () => {
   const globalCSS = [
-    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
-    '{--global:"global";', // global css from nuxt.config
+    '--plugin:"plugin"', // CSS imported ambiently in JS/TS
+    '--global:"global"', // global css from nuxt.config
   ]
   const nonGlobalCSS = [
     '{--assets:"assets"}', // <script>
@@ -1991,7 +1991,7 @@ describe.skipIf(isDev)('inlining component styles', () => {
     // should not include inlined CSS in generated CSS files
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
-      if (style === '{--plugin:"plugin"}') {
+      if (style === '--plugin:"plugin"') {
         expect.soft(css).toContain(style)
         continue
       }
