@@ -138,7 +138,9 @@ describe('composables', () => {
 
 describe('errors', () => {
   it('createError', () => {
-    expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
+    const notFoundError = createError({ statusCode: 404 })
+    expect(notFoundError).toBeInstanceOf(Error)
+    expect(notFoundError.toJSON()).toMatchInlineSnapshot(`
       {
         "message": "",
         "statusCode": 404,
