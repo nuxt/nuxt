@@ -2,8 +2,6 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
-import { destr } from 'destr'
-
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
 
@@ -899,7 +897,7 @@ describe('useCookie', () => {
       default: () => ({ s2: -1 }),
       decode (value) {
         barCallCount++
-        return destr(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     bazCookie.value.s2++
@@ -912,7 +910,7 @@ describe('useCookie', () => {
       filter: key => key === 'bar' || key === 'baz',
       decode (value) {
         quxCallCount++
-        return destr(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     quxCookie.value.s3++
