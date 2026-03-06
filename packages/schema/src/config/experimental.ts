@@ -256,7 +256,13 @@ export default defineResolvers({
      * When this option is enabled (by default) payload of pages that are prerendered are extracted
      * @type {boolean | undefined}
      */
-    payloadExtraction: true,
+    payloadExtraction: {
+      $resolve: async (val, get) => {
+        if (await get('ssr') === false) { return false }
+        if (typeof val === 'boolean') { return val }
+        return true
+      },
+    },
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
