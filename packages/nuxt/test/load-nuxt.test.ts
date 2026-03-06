@@ -167,6 +167,28 @@ describe('loadNuxt', () => {
 
     await nuxt.close()
   })
+
+  it('injects defineAppConfig into app.config when nitroAutoImports is disabled (#34142)', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        experimental: { nitroAutoImports: false },
+      },
+    })
+
+    const nitro = (nuxt as any)._nitro
+    const rollupConfig = { plugins: [] as Array<{ name: string, transform?: (code: string, id: string) => string | void }> }
+    await nitro?.hooks.callHook('rollup:before', nitro, rollupConfig)
+
+    const transformPlugin = rollupConfig.plugins.find(plugin => plugin.name === 'nuxt:app-config-imports')
+    const transformed = transformPlugin?.transform?.('export default defineAppConfig({ feature: true })\n', '/virtual/app.config.ts')
+
+    expect(transformed).toContain('import { defineAppConfig } from')
+    expect(transformed).toContain('runtime/utils/config')
+
+    await nuxt.close()
+  })
 })
 
 const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
