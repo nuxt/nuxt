@@ -59,7 +59,7 @@
     "postcss": "^8.5.8",
     "rollup-plugin-visualizer": "^7.0.1",
     "seroval": "^1.5.0",
-    "std-env": "^3.10.0",
+    "std-env": "^4.0.0-rc.1",
     "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
     "vite": "^7.3.1",
