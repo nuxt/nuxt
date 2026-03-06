@@ -1,12 +1,11 @@
-import { pathToFileURL } from 'node:url'
 import type { Component } from '@nuxt/schema'
-import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
-import { isVue } from '../../core/utils/index.ts'
+import { normalize } from 'pathe'
+import { isVue, parseModuleId } from '../../core/utils/index.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
@@ -42,7 +41,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
       const islands = components.filter(component =>
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
       )
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const { pathname } = parseModuleId(normalize(id))
       return islands.some(c => c.filePath === pathname)
     },
     transform: {
