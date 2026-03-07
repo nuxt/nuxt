@@ -119,6 +119,7 @@
     "@vitejs/plugin-vue": "6.0.4",
     "@vitejs/plugin-vue-jsx": "5.1.4",
     "@vue/compiler-sfc": "3.5.29",
+    "rolldown": "1.0.0-rc.7",
     "unbuild": "3.6.1",
     "vite": "8.0.0-beta.16",
     "vitest": "4.0.18",
