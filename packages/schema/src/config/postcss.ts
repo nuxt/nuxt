@@ -46,7 +46,9 @@ export default defineResolvers({
           if (await get('dev')) {
             return false
           }
-          return {}
+          return {
+            preset: ['default', { calc: false }],
+          }
         },
       },
     },
