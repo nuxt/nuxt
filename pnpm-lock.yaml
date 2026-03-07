@@ -1054,6 +1054,9 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
+      nypm:
+        specifier: ^0.6.5
+        version: 0.6.5
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -1069,9 +1072,6 @@ importers:
       postcss:
         specifier: ^8.5.8
         version: 8.5.8
-      rollup-plugin-visualizer:
-        specifier: ^7.0.0
-        version: 7.0.0(rolldown@1.0.0-rc.6)(rollup@4.59.0)
       seroval:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1118,6 +1118,9 @@ importers:
       rollup:
         specifier: 4.59.0
         version: 4.59.0
+      rollup-plugin-visualizer:
+        specifier: 7.0.1
+        version: 7.0.1(rolldown@1.0.0-rc.6)(rollup@4.59.0)
       vue:
         specifier: 3.5.29
         version: 3.5.29(typescript@5.9.3)
@@ -8000,6 +8003,19 @@ packages:
 
   rollup-plugin-visualizer@7.0.0:
     resolution: {integrity: sha512-loo4kmhTg7GMO0hqaUv/azvLPUT2B4jXU3gNMG35gm1mWKpOzhV6rspb/Mqmsfg7oOTdkzdmOckCIwGB5Ca1CA==}
+    engines: {node: '>=22'}
+    hasBin: true
+    peerDependencies:
+      rolldown: 1.x || ^1.0.0-beta || ^1.0.0-rc
+      rollup: 2.x || 3.x || 4.x
+    peerDependenciesMeta:
+      rolldown:
+        optional: true
+      rollup:
+        optional: true
+
+  rollup-plugin-visualizer@7.0.1:
+    resolution: {integrity: sha512-UJUT4+1Ho4OcWmPYU3sYXgUqI8B8Ayfe06MX7y0qCJ1K8aGoKtR/NDd/2nZqM7ADkrzny+I99Ul7GgyoiVNAgg==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -16627,6 +16643,16 @@ snapshots:
       rollup: 4.59.0
 
   rollup-plugin-visualizer@7.0.0(rolldown@1.0.0-rc.6)(rollup@4.59.0):
+    dependencies:
+      open: 11.0.0
+      picomatch: 4.0.3
+      source-map: 0.7.6
+      yargs: 18.0.0
+    optionalDependencies:
+      rolldown: 1.0.0-rc.6
+      rollup: 4.59.0
+
+  rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.6)(rollup@4.59.0):
     dependencies:
       open: 11.0.0
       picomatch: 4.0.3

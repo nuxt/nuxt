@@ -27,16 +27,6 @@
     "build:stub": "obuild --stub",
     "test:attw": "attw --pack"
   },
-  "devDependencies": {
-    "@nuxt/schema": "workspace:*",
-    "h3": "1.15.5",
-    "h3-next": "npm:h3@2.0.1-rc.14",
-    "nitropack": "2.13.1",
-    "obuild": "0.4.31",
-    "rolldown": "1.0.0-rc.6",
-    "rollup": "4.59.0",
-    "vue": "3.5.29"
-  },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.3",
@@ -56,11 +46,11 @@
     "mlly": "^1.8.0",
     "mocked-exports": "^0.1.1",
     "ohash": "^2.0.11",
+    "nypm": "^0.6.5",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.1.0",
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.8",
-    "rollup-plugin-visualizer": "^7.0.0",
     "seroval": "^1.5.0",
     "std-env": "^3.10.0",
     "ufo": "^1.6.3",
@@ -70,13 +60,28 @@
     "vite-plugin-checker": "^0.12.0",
     "vue-bundle-renderer": "^2.2.0"
   },
+  "devDependencies": {
+    "@nuxt/schema": "workspace:*",
+    "h3": "1.15.5",
+    "h3-next": "npm:h3@2.0.1-rc.14",
+    "nitropack": "2.13.1",
+    "obuild": "0.4.31",
+    "rolldown": "1.0.0-rc.6",
+    "rollup": "4.59.0",
+    "rollup-plugin-visualizer": "7.0.1",
+    "vue": "3.5.29"
+  },
   "peerDependencies": {
     "nuxt": "workspace:*",
     "rolldown": "^1.0.0-beta.38",
+    "rollup-plugin-visualizer": "^6.0.0 || ^7.0.1",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
     "rolldown": {
+      "optional": true
+    },
+    "rollup-plugin-visualizer": {
       "optional": true
     }
   },
