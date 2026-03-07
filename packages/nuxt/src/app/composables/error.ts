@@ -12,16 +12,21 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 /* @__NO_SIDE_EFFECTS__ */
 export const useError = (): Ref<NuxtPayload['error']> => toRef(useNuxtApp().payload, 'error')
 
-// #34138 - `Omit` breaks the Error inheritance chain, causing `@typescript-eslint/only-throw-error` to fail
-// Adding `Error` explicitly restores throwability. TODO: remove `Error` in Nuxt 5 when `Omit` is no longer needed
-export interface NuxtError<DataT = unknown> extends Omit<H3Error<DataT>, 'statusCode' | 'statusMessage'>, Error {
-  error?: true
-  status?: number
-  statusText?: string
+// #34138 - `Omit` breaks the Error inheritance chain for `@typescript-eslint/only-throw-error`
+// TODO: remove in Nuxt 5 when `NuxtError` no longer needs the `Omit` compatibility shape
+// Keep a class type here so `createError()` stays throwable while `createH3Error()` remains the runtime source of truth.
+export class NuxtError<DataT = unknown> extends Error {
+  declare [NUXT_ERROR_SIGNATURE]: true
+  declare error?: true
+  declare data?: DataT
+  declare fatal?: boolean
+  declare unhandled?: boolean
+  declare status?: number
+  declare statusText?: string
   /** @deprecated Use `status` */
-  statusCode?: H3Error<DataT>['statusCode']
+  declare statusCode?: H3Error<DataT>['statusCode']
   /** @deprecated Use `statusText` */
-  statusMessage?: H3Error<DataT>['statusMessage']
+  declare statusMessage?: H3Error<DataT>['statusMessage']
 }
 
 /** @since 3.0.0 */
@@ -30,7 +35,7 @@ export const showError = <DataT = unknown>(
     status?: number
     statusText?: string
   }),
-) => {
+): NuxtError<DataT> => {
   const nuxtError = createError<DataT>(error)
 
   try {
@@ -74,7 +79,7 @@ export const createError = <DataT = unknown>(error: string | Error | Partial<Nux
     error.message ??= (error as Partial<NuxtError<DataT>>).statusText
   }
 
-  const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
+  const nuxtError = createH3Error<DataT>(error) as NuxtError<DataT>
 
   Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {
     value: true,
