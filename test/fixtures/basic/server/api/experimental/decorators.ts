@@ -1,4 +1,4 @@
-export default eventHandler(() => {
+export default eventHandler((_event) => {
   function something (_method: () => unknown) {
     return () => 'decorated'
   }

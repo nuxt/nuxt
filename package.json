@@ -51,9 +51,7 @@
     "@vue/compiler-dom": "3.5.29",
     "@vue/shared": "3.5.29",
     "nuxt": "workspace:*",
-    "rolldown": "1.0.0-rc.7",
     "send": ">=1.2.1",
-    "vite": "8.0.0-beta.16",
     "vue": "3.5.29"
   },
   "devDependencies": {
@@ -112,7 +110,6 @@
     "pathe": "2.0.3",
     "pkg-pr-new": "0.0.65",
     "playwright-core": "1.58.2",
-    "rolldown": "1.0.0-rc.7",
     "rollup": "4.59.0",
     "semver": "7.7.4",
     "sherif": "1.10.0",
