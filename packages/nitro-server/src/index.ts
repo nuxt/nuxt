@@ -566,6 +566,42 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  // Add decorator support via Babel when experimental.decorators is enabled
+  if (nuxt.options.experimental.decorators) {
+    try {
+      const { babel } = await import('@rollup/plugin-babel')
+      nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
+      nitroConfig.rollupConfig!.plugins!.unshift(
+        babel({
+          babelHelpers: 'bundled',
+          configFile: false,
+          extensions: ['.ts', '.js', '.mjs', '.mts'],
+          plugins: [
+            // Syntax plugin allows Babel to parse TypeScript without transforming it,
+            // since the actual TS stripping is handled later by Nitro's esbuild plugin.
+            ['@babel/plugin-syntax-typescript', { isTSX: false }],
+            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+          ],
+        }),
+        babel({
+          babelHelpers: 'bundled',
+          configFile: false,
+          extensions: ['.tsx', '.jsx'],
+          plugins: [
+            ['@babel/plugin-syntax-typescript', { isTSX: true }],
+            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+          ],
+        }),
+      )
+    } catch (_err) {
+      const err = _err as NodeJS.ErrnoException
+      if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
+        throw err
+      }
+      logger.warn('Cannot find `@rollup/plugin-babel` and `@babel/plugin-proposal-decorators`. Install them to enable decorator support in the server build.')
+    }
+  }
+
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
