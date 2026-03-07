@@ -1,7 +1,6 @@
 import type { Plugin, ResolvedConfig } from 'vite'
 import { transformWithOxc } from 'vite'
 import process from 'node:process'
-import type { Plugin } from 'vite'
 import { defu } from 'defu'
 import { addDependency } from 'nypm'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
@@ -20,6 +19,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   }
 
   let visualizer: typeof import('rollup-plugin-visualizer').visualizer
+  let config: ResolvedConfig
 
   try {
     visualizer = await import('rollup-plugin-visualizer').then(r => r.visualizer)
