@@ -397,6 +397,7 @@ async function initNuxt (nuxt: Nuxt) {
     const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
     const sharedProtectionConfig = {
       cwd: nuxt.options.rootDir,
+      trace: true,
       include: sharedPatterns,
       patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
     }
@@ -409,6 +410,7 @@ async function initNuxt (nuxt: Nuxt) {
     // Add import protection
     const nuxtProtectionConfig = {
       cwd: nuxt.options.rootDir,
+      trace: true,
       // Exclude top-level resolutions by plugins
       exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
       patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
@@ -418,8 +420,8 @@ async function initNuxt (nuxt: Nuxt) {
       rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
     })
     // TODO: remove in nuxt v5 when we can use vite env api
-    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+    addVitePlugin(() => [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false, warn: 'once' })].flat().map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` })), { client: false })
+    addVitePlugin(() => [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true })].flat().map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` })), { server: false })
   })
 
   if (!nuxt.options.dev) {
