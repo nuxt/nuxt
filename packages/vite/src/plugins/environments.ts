@@ -35,10 +35,6 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     configEnvironment (name, config) {
-      if (!nuxt.options.experimental.viteEnvironmentApi && viteConfig.ssr) {
-        config.optimizeDeps ||= {}
-        config.optimizeDeps.include = undefined
-      }
       if (name === 'client') {
         const outputConfig = config.build?.rolldownOptions?.output as OutputOptions | undefined
         return {
