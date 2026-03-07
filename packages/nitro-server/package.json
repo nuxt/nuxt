@@ -31,6 +31,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
+    "@babel/plugin-syntax-typescript": "^7.28.6",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "^2.1.10",
@@ -47,6 +48,7 @@
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",
     "nitropack": "^2.13.1",
+    "nypm": "^0.6.5",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
@@ -60,10 +62,22 @@
     "vue-devtools-stub": "^0.1.0"
   },
   "peerDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.25.0",
+    "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:^"
   },
+  "peerDependenciesMeta": {
+    "@babel/plugin-proposal-decorators": {
+      "optional": true
+    },
+    "@rollup/plugin-babel": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "7.29.0",
     "@nuxt/schema": "workspace:*",
+    "@rollup/plugin-babel": "7.0.0",
     "nuxt": "workspace:*",
     "obuild": "0.4.31",
     "vitest": "4.0.18"
