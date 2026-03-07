@@ -1,6 +1,6 @@
+import process from 'node:process'
 import type { Plugin, ResolvedConfig } from 'vite'
 import { transformWithOxc } from 'vite'
-import process from 'node:process'
 import { defu } from 'defu'
 import { addDependency } from 'nypm'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
