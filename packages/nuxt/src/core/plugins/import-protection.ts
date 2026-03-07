@@ -1,4 +1,4 @@
-import { relative, resolve } from 'pathe'
+import { relative } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { NuxtOptions } from 'nuxt/schema'
 
@@ -49,9 +49,11 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
   }
 
   if (options.context === 'nuxt-app' || options.context === 'shared') {
+    // Block all imports from the server directory
+    // Impound normalizes paths relative to rootDir, and serverDir is already resolved relative to rootDir
     patterns.push([
-      new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
-      `Importing from server is not allowed in ${context}.`,
+      new RegExp('(^|\\/)' + escapeRE(relative(nuxt.options.rootDir, nuxt.options.serverDir)) + '(\\/|$)'),
+      `Importing from server is not allowed in ${context}. Use the \`shared/\` directory for code that needs to run on both server and client.`,
     ])
     patterns.push([
       /^#server(\/|$)/,
