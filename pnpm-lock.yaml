@@ -347,6 +347,9 @@ importers:
 
   packages/nitro-server:
     dependencies:
+      '@babel/plugin-syntax-typescript':
+        specifier: ^7.25.0
+        version: 7.28.6(@babel/core@7.29.0)
       '@nuxt/devalue':
         specifier: ^2.0.2
         version: 2.0.2
@@ -429,9 +432,15 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0
     devDependencies:
+      '@babel/plugin-proposal-decorators':
+        specifier: 7.29.0
+        version: 7.29.0(@babel/core@7.29.0)
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      '@rollup/plugin-babel':
+        specifier: 7.0.0
+        version: 7.0.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.59.0)
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -1041,6 +1050,9 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
+      nypm:
+        specifier: ^0.6.5
+        version: 0.6.5
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -1078,9 +1090,15 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
     devDependencies:
+      '@babel/plugin-proposal-decorators':
+        specifier: 7.29.0
+        version: 7.29.0(@babel/core@7.29.0)
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      '@rollup/plugin-babel':
+        specifier: 7.0.0
+        version: 7.0.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.59.0)
       h3:
         specifier: 1.15.5
         version: 1.15.5
@@ -1512,6 +1530,18 @@ packages:
     resolution: {integrity: sha512-6HyyU5l1yK/7h9Ki52i5h6mDAx4qJdiLQO4FdCyJNoB/gy3T3GGJdhQzzbZgvgZCugYBvwtQiWRt94QKedHnkA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
+
+  '@babel/plugin-proposal-decorators@7.29.0':
+    resolution: {integrity: sha512-CVBVv3VY/XRMxRYq5dwr2DS7/MvqPm23cOCjbwNnVrfOqcWlnefua1uUs0sjdKOGjvPUG633o07uWzJq4oI6dA==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+
+  '@babel/plugin-syntax-decorators@7.28.6':
+    resolution: {integrity: sha512-71EYI0ONURHJBL4rSFXnITXqXrrY8q4P0q006DPfN+Rk+ASM+++IBXem/ruokgBZR8YNEWZ8R6B+rCb8VcUTqA==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
 
   '@babel/plugin-syntax-jsx@7.27.1':
     resolution: {integrity: sha512-y8YTNIeKoyhGd9O0Jiyzyyqk8gdjnumGTQPsz0xOZOQ2RmkVJeZ1vmmfIvFEKqucBG6axJGBZDE/7iI5suUI/w==}
@@ -3580,6 +3610,19 @@ packages:
     peerDependencies:
       rollup: '>=4.0.0'
     peerDependenciesMeta:
+      rollup:
+        optional: true
+
+  '@rollup/plugin-babel@7.0.0':
+    resolution: {integrity: sha512-NS2+P7v80N3MQqehZEjgpaFb9UyX3URNMW/zvoECKGo4PY4DvJfQusTI7BX/Ks+CPvtTfk3TqcR6S9VYBi/C+A==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0
+      '@types/babel__core': ^7.1.9
+      rollup: ^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      '@types/babel__core':
+        optional: true
       rollup:
         optional: true
 
@@ -9758,6 +9801,20 @@ snapshots:
     dependencies:
       '@babel/types': 8.0.0-rc.1
 
+  '@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-create-class-features-plugin': 7.28.6(@babel/core@7.29.0)
+      '@babel/helper-plugin-utils': 7.28.6
+      '@babel/plugin-syntax-decorators': 7.28.6(@babel/core@7.29.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@babel/plugin-syntax-decorators@7.28.6(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-plugin-utils': 7.28.6
+
   '@babel/plugin-syntax-jsx@7.27.1(@babel/core@7.29.0)':
     dependencies:
       '@babel/core': 7.29.0
@@ -11420,6 +11477,17 @@ snapshots:
   '@rollup/plugin-alias@6.0.0(rollup@4.59.0)':
     optionalDependencies:
       rollup: 4.59.0
+
+  '@rollup/plugin-babel@7.0.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.59.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-module-imports': 7.28.6
+      '@rollup/pluginutils': 5.3.0(rollup@4.59.0)
+    optionalDependencies:
+      '@types/babel__core': 7.20.5
+      rollup: 4.59.0
+    transitivePeerDependencies:
+      - supports-color
 
   '@rollup/plugin-commonjs@28.0.9(rollup@4.59.0)':
     dependencies:

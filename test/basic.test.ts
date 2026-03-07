@@ -2971,8 +2971,7 @@ describe('teleports', () => {
 })
 
 describe('experimental', () => {
-  // TODO: re-enable when Rolldown supports decorators
-  it.skip('decorators support works', async () => {
+  it('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
     expect(html).toContain('decorated-decorated')
     expectNoClientErrors('/experimental/decorators')

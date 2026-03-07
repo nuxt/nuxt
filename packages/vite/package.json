@@ -28,7 +28,9 @@
     "test:attw": "attw --pack"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "7.29.0",
     "@nuxt/schema": "workspace:*",
+    "@rollup/plugin-babel": "7.0.0",
     "h3": "1.15.5",
     "h3-next": "npm:h3@2.0.1-rc.14",
     "nitropack": "2.13.1",
@@ -54,6 +56,7 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.1",
     "mocked-exports": "^0.1.1",
+    "nypm": "^0.6.5",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.8",
@@ -68,11 +71,19 @@
     "vue-bundle-renderer": "^2.2.0"
   },
   "peerDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.25.0",
+    "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:*",
     "rolldown": "^1.0.0-rc.1",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
+    "@babel/plugin-proposal-decorators": {
+      "optional": true
+    },
+    "@rollup/plugin-babel": {
+      "optional": true
+    },
     "rolldown": {
       "optional": true
     }

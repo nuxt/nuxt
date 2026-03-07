@@ -40,6 +40,7 @@ import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { DecoratorsPlugin } from './plugins/decorators.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -182,6 +183,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         watch: { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] },
       },
       plugins: [
+        // lower decorators before any other transforms
+        await DecoratorsPlugin(nuxt),
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
