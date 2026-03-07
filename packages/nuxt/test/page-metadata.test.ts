@@ -479,7 +479,7 @@ describe('rewrite page meta', () => {
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
-    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowErrorMatchingInlineSnapshot(`[Error: Multiple \`definePageMeta\` calls are not supported. Consolidate them into a single call. File: \`component.vue\`]`)
+    expect(() => transformPlugin.transform.handler(res.content, 'component.vue?macro=true')).toThrowError('Multiple `definePageMeta` calls are not supported. Consolidate them into a single call. File: `component.vue`')
   })
 
   it('should extract metadata from vue components', () => {

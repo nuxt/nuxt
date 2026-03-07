@@ -5,7 +5,7 @@ import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 
-import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
+import { QUOTE_RE, formatErrorMessage, resolveComponentNameSegments } from '../core/utils/index.ts'
 import { logger, resolveToAlias } from '../utils.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
@@ -171,10 +171,11 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
+  logger.warn(formatErrorMessage(`Two component files resolving to the same name \`${componentName}\`:\n` +
     `\n - ${filePath}` +
-    `\n - ${duplicatePath}`,
-  )
+    `\n - ${duplicatePath}`, {
+    fix: 'Rename one of the files or adjust the `components.dirs` prefix settings in your `nuxt.config`.',
+  }))
 }
 
 const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

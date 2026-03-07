@@ -77,7 +77,7 @@ describe('plugin sanity checking', () => {
         src: '',
       },
     ])
-    expect(logger.error).toBeCalledWith('Plugin `B` depends on `D` but they are not registered.')
+    expect(logger.error).toBeCalledWith(expect.stringContaining('Plugin `B` depends on `D` but they are not registered.'))
     vi.restoreAllMocks()
   })
 
@@ -100,9 +100,9 @@ describe('plugin sanity checking', () => {
         src: '',
       },
     ])
-    expect(logger.error).toBeCalledWith('Circular dependency detected in plugins: A -> B -> C -> A')
-    expect(logger.error).toBeCalledWith('Circular dependency detected in plugins: B -> C -> A -> B')
-    expect(logger.error).toBeCalledWith('Circular dependency detected in plugins: C -> A -> B -> C')
+    expect(logger.error).toBeCalledWith(expect.stringContaining('Circular dependency detected in plugins: A -> B -> C -> A'))
+    expect(logger.error).toBeCalledWith(expect.stringContaining('Circular dependency detected in plugins: B -> C -> A -> B'))
+    expect(logger.error).toBeCalledWith(expect.stringContaining('Circular dependency detected in plugins: C -> A -> B -> C'))
     vi.restoreAllMocks()
   })
 })

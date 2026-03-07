@@ -6,6 +6,7 @@ import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, 
 import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { logger } from '../../utils.ts'
+import { formatErrorMessage } from '../../core/utils/error-format.ts'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
 import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'
@@ -193,8 +194,12 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                 enter: (node, parent) => {
                   if (node.type === 'AwaitExpression') {
                     const filePath = id.replace(/\?.+$/, '')
-                    logger.error(`Await expressions are not supported in \`definePageMeta\`. File: \`${filePath}\``)
-                    throw new Error(`Await expressions are not supported in \`definePageMeta\`. File: \`${filePath}\``)
+                    const snippet = code.slice(node.start, Math.min(node.end, node.start + 80))
+                    const msg = formatErrorMessage(`Await expressions are not supported in \`definePageMeta\`. File: \`${filePath}\``, {
+                      context: { codeSnippet: snippet, offset: node.start },
+                    })
+                    logger.error(msg)
+                    throw new Error(msg)
                   }
                   if (
                     isBindingIdentifier(node, parent)
@@ -338,7 +343,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throw new Error(`Multiple \`definePageMeta\` calls are not supported. Consolidate them into a single call. File: \`${id.replace(/\?.+$/, '')}\``)
+          throw new Error(formatErrorMessage(`Multiple \`definePageMeta\` calls are not supported. Consolidate them into a single call. File: \`${id.replace(/\?.+$/, '')}\``, {
+            context: { callCount: instances },
+          }))
         }
 
         if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {

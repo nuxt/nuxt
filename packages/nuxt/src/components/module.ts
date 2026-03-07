@@ -5,6 +5,7 @@ import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addT
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
 import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
+import { formatErrorMessage } from '../core/utils/error-format.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
@@ -198,7 +199,13 @@ export default defineNuxtModule<ComponentsOptions>({
           })
         }
         if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
-          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
+          logger.warn(formatErrorMessage(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`, {
+            context: {
+              component: component.filePath,
+              ssr: nuxt.options.ssr,
+              componentIslands: nuxt.options.experimental.componentIslands,
+            },
+          }))
         }
       }
       context.components = newComponents

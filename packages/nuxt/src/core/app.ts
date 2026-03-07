@@ -9,7 +9,7 @@ import type { PluginMeta } from 'nuxt/app'
 
 import { logger, resolveToAlias } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
-import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
+import { formatErrorMessage, getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
@@ -67,8 +67,13 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
     const contents = await compileTemplate(template, templateContext).catch((e) => {
-      logger.error(`Could not compile template \`${template.filename}\`.`)
-      logger.error(e)
+      logger.error(formatErrorMessage(`Could not compile template \`${template.filename}\`.`, {
+        context: {
+          src: template.src || 'inline',
+          dst: fullPath,
+          buildDir: nuxt.options.buildDir
+        },
+      }), e)
       throw e
     })
 
@@ -279,7 +284,9 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.has(name))) {
-      logger.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`)
+      logger.error(formatErrorMessage(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`, {
+        context: { pluginSrc: plugin.src, registeredPlugins: [...pluginNames] },
+      }))
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {
@@ -288,7 +295,9 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
   const checkDeps = (name: string, visited: string[] = []): string[] => {
     if (visited.includes(name)) {
-      logger.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
+      logger.error(formatErrorMessage(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`, {
+        context: { dependencyGraph: deps },
+      }))
       return []
     }
     visited.push(name)

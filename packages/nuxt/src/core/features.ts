@@ -2,6 +2,7 @@ import { resolvePackageJSON } from 'pkg-types'
 import { useNuxt } from '@nuxt/kit'
 import { isAgent, isCI, provider } from 'std-env'
 import { logger } from '../utils.ts'
+import { formatErrorMessage } from './utils/error-format.ts'
 
 const installPrompts = new Set<string>()
 
@@ -51,7 +52,12 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     logger.success(`Installed \`${name}\`.`)
     return true
   } catch (err) {
-    logger.error(`Failed to install \`${name}\`.`, err)
+    logger.error(formatErrorMessage(`Failed to install \`${name}\`.`, {
+      context: {
+        rootDir: options.rootDir,
+        searchPaths: options.searchPaths,
+      },
+    }), err)
     return false
   }
 }

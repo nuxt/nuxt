@@ -847,8 +847,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     if (!await ensureDependencyInstalled('@nuxt/webpack-builder', {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
+      from: import.meta.url,
     })) {
-      logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
+      logger.warn(`Failed to install \`@nuxt/webpack-builder\` in \`${options.rootDir}\`. Please install it manually with \`npm install -D @nuxt/webpack-builder\`, or change the \`builder\` option to \`vite\` in \`nuxt.config\`.`)
     }
   }
 
