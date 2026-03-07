@@ -7,21 +7,6 @@ import type { Nuxt } from '@nuxt/schema'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators'] as const
 
-// Only process .vue script blocks (not style/template/macro blocks)
-const VUE_SCRIPT_RE = /\.vue\?.*\btype=script\b/
-
-function shouldTransform (id: string, code: string): boolean {
-  // Skip if code doesn't contain @ (no decorators possible)
-  if (!code.includes('@')) {
-    return false
-  }
-  // For .vue files with query params, only process script blocks
-  if (id.includes('.vue?') && !VUE_SCRIPT_RE.test(id)) {
-    return false
-  }
-  return true
-}
-
 async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
   for (const pkg of BABEL_DECORATOR_DEPS) {
     try {
@@ -74,26 +59,40 @@ export async function DecoratorsPlugin (nuxt: Nuxt): Promise<Plugin | undefined>
 
   return {
     name: 'nuxt:decorators',
-    transform (code, id) {
-      if (!shouldTransform(id, code)) {
-        return
-      }
-
-      const result = transformSync(code, {
-        filename: id,
-        configFile: false,
-        plugins: [
-          ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-        ],
-        sourceMaps: true,
-      })
-
-      if (result?.code != null) {
-        return {
-          code: result.code,
-          map: result.map,
+    transform: {
+      filter: {
+        // Only run on files containing @ (a prerequisite for decorator syntax)
+        code: '@',
+        // Exclude Vue style/template blocks and macro virtual modules
+        id: {
+          exclude: [
+            /\.vue\?.*\btype=(?:style|template)\b/,
+            /\.vue\?.*\bmacro=true\b/,
+          ],
+        },
+      },
+      handler (code, id) {
+        // Skip uncompiled SFC markup (raw .vue files not yet processed by @vitejs/plugin-vue)
+        if (id.includes('.vue') && code.trimStart().startsWith('<')) {
+          return
         }
-      }
+
+        const result = transformSync(code, {
+          filename: id,
+          configFile: false,
+          plugins: [
+            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+          ],
+          sourceMaps: true,
+        })
+
+        if (result?.code != null) {
+          return {
+            code: result.code,
+            map: result.map,
+          }
+        }
+      },
     },
   }
 }
