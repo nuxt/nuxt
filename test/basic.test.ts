@@ -195,7 +195,7 @@ describe('pages', () => {
 
   it('preserves page metadata added in pages:extend hook', async () => {
     const html = await $fetch<string>('/some-custom-path')
-    // Normalize arrow function whitespace: esbuild with es2024 target strips spaces around =>
+    // Normalise arrow function whitespace (esbuild with es2024 target strips spaces around =>)
     expect(html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>').replace(/\(\)\s*=>\s*/g, '() => ')).toMatchInlineSnapshot(`
       "{
         "name": "some-custom-name",

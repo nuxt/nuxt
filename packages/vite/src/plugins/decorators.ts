@@ -5,7 +5,7 @@ import { logger } from '@nuxt/kit'
 import { hasTTY, isCI } from 'std-env'
 import type { Nuxt } from '@nuxt/schema'
 
-const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
+const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx']
 
 async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
   for (const pkg of BABEL_DECORATOR_DEPS) {
@@ -27,13 +27,11 @@ async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
 
         if (shouldInstall) {
           logger.start(`Installing ${BABEL_DECORATOR_DEPS.map(d => `\`${d}\``).join(' and ')}...`)
-          for (const dep of BABEL_DECORATOR_DEPS) {
-            await addDependency(dep, {
-              dev: true,
-              cwd: nuxt.options.rootDir,
-              silent: true,
-            })
-          }
+          await addDependency(BABEL_DECORATOR_DEPS, {
+            dev: true,
+            cwd: nuxt.options.rootDir,
+            silent: true,
+          })
           logger.info('Rerun Nuxt to enable decorator support.')
           process.exit(1)
         }
@@ -46,19 +44,19 @@ async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
   return true
 }
 
-export async function DecoratorsPlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
-  if (!nuxt.options.experimental.decorators) {
-    return
-  }
-
-  if (!await ensureBabelDecoratorDeps(nuxt)) {
-    return
-  }
-
-  const { transformSync } = await import('@babel/core')
+export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
+  let transformSync: typeof import('@babel/core').transformSync
 
   return {
     name: 'nuxt:decorators',
+    apply: () => !!nuxt.options.experimental.decorators,
+    async applyToEnvironment () {
+      if (!await ensureBabelDecoratorDeps(nuxt)) {
+        return false
+      }
+      transformSync = await import('@babel/core').then(r => r.transformSync)
+      return true
+    },
     transform: {
       filter: {
         // Only run on files containing @ (a prerequisite for decorator syntax)

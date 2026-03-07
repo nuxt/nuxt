@@ -31,7 +31,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "@babel/plugin-syntax-typescript": "^7.25.0",
+    "@babel/plugin-syntax-typescript": "^7.28.6",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "^2.1.10",
@@ -48,6 +48,7 @@
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",
     "nitropack": "^2.13.1",
+    "nypm": "^0.6.5",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",

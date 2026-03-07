@@ -28,6 +28,7 @@ import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize.ts'
 import { distDir } from './dirs.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
+import { DecoratorsPlugin } from './plugins/decorators.ts'
 import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
 import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
@@ -40,7 +41,6 @@ import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
-import { DecoratorsPlugin } from './plugins/decorators.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -195,8 +195,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               DevServerPlugin(nuxt),
             ]
           : [],
-        // lower decorators after Vue SFC compilation and Oxc TypeScript stripping
-        await DecoratorsPlugin(nuxt),
+        // lower decorators after Vue SFC compilation and TypeScript stripping
+        DecoratorsPlugin(nuxt),
         // add resolver for files in public assets directories
         PublicDirsPlugin({
           dev: nuxt.options.dev,
