@@ -1036,6 +1036,9 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
+      nypm:
+        specifier: ^0.6.5
+        version: 0.6.5
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -1045,9 +1048,6 @@ importers:
       postcss:
         specifier: ^8.5.8
         version: 8.5.8
-      rollup-plugin-visualizer:
-        specifier: ^7.0.1
-        version: 7.0.1(rolldown@1.0.0-rc.7)(rollup@4.59.0)
       seroval:
         specifier: ^1.5.0
         version: 1.5.0
@@ -1094,6 +1094,9 @@ importers:
       rollup:
         specifier: 4.59.0
         version: 4.59.0
+      rollup-plugin-visualizer:
+        specifier: 7.0.1
+        version: 7.0.1(rolldown@1.0.0-rc.7)(rollup@4.59.0)
       vue:
         specifier: 3.5.29
         version: 3.5.29(typescript@5.9.3)
