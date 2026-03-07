@@ -22,10 +22,10 @@ describe('components:loader', () => {
     </script>
     `
     const code = await transform(sfc, '/pages/index.vue')
-    expect(code.replace(/\t/g, '  ')).toMatchInlineSnapshot(`
+    expect(normalizeCode(code)).toMatchInlineSnapshot(`
       "import __nuxt_component_0 from "/components/MyComponent.vue";
       import { Fragment, createElementBlock, createVNode, defineAsyncComponent, openBlock, resolveComponent, unref } from "vue";
-      //#region ../../../../../../pages/index.vue
+      //#region /pages/index.vue
       const __nuxt_component_0_lazy = defineAsyncComponent(() => import("/components/MyComponent.vue").then((c) => c.default || c));
       const _sfc_main = {
         __name: "index",
@@ -90,10 +90,10 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     })
     `
     const code = await transform(component, '/pages/about.tsx')
-    expect(code.replace(/\t/g, '  ')).toMatchInlineSnapshot(`
+    expect(normalizeCode(code)).toMatchInlineSnapshot(`
       "import __nuxt_component_0 from "/components/MyComponent.vue";
       import { createVNode, defineAsyncComponent, defineComponent, resolveComponent } from "vue";
-      //#region ../../../../../../pages/about.tsx
+      //#region /pages/about.tsx
       const __nuxt_component_0_lazy = defineAsyncComponent(() => import("/components/MyComponent.vue").then((c) => c.default || c));
       var about_default = /* @__PURE__ */ defineComponent({ setup() {
         const NamedComponent = __nuxt_component_0;
@@ -289,6 +289,11 @@ const plugin = LoaderPlugin({
   srcDir: '/',
   mode: 'server',
 })
+
+/** Normalize rolldown output to be stable across different working directories */
+function normalizeCode (code: string) {
+  return code.replace(/\t/g, '  ').replace(/\/\/#region (?:\.\.\/)+/g, '//#region /')
+}
 
 async function transform (code: string, filename: string) {
   const bundle = await rolldown({
