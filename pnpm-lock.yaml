@@ -1096,9 +1096,6 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
-      '@rollup/plugin-babel':
-        specifier: 7.0.0
-        version: 7.0.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.59.0)
       h3:
         specifier: 1.15.5
         version: 1.15.5

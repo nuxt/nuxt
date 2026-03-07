@@ -1,12 +1,27 @@
 import process from 'node:process'
 import type { Plugin } from 'vite'
-import { withFilter } from 'vite'
 import { addDependency } from 'nypm'
 import { logger } from '@nuxt/kit'
 import { hasTTY, isCI } from 'std-env'
 import type { Nuxt } from '@nuxt/schema'
 
-const BABEL_DECORATOR_DEPS = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators'] as const
+const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators'] as const
+
+// Match .vue files with script blocks (not style/template blocks)
+const VUE_STYLE_RE = /\.vue\?.*\btype=style\b/
+const VUE_TEMPLATE_RE = /\.vue\?.*\btype=template\b/
+
+function shouldTransform (id: string, code: string): boolean {
+  // Skip if code doesn't contain @ (no decorators possible)
+  if (!code.includes('@')) {
+    return false
+  }
+  // Skip Vue style and template blocks
+  if (VUE_STYLE_RE.test(id) || VUE_TEMPLATE_RE.test(id)) {
+    return false
+  }
+  return true
+}
 
 async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
   for (const pkg of BABEL_DECORATOR_DEPS) {
@@ -56,18 +71,30 @@ export async function DecoratorsPlugin (nuxt: Nuxt): Promise<Plugin | undefined>
     return
   }
 
-  const { babel } = await import('@rollup/plugin-babel')
+  const { transformSync } = await import('@babel/core')
 
-  return withFilter(
-    babel({
-      babelHelpers: 'bundled',
-      configFile: false,
-      extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.mts'],
-      plugins: [
-        ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
-      ],
-    }),
-    // Only run this transform if the file contains a decorator.
-    { transform: { code: '@' } },
-  ) as Plugin
+  return {
+    name: 'nuxt:decorators',
+    transform (code, id) {
+      if (!shouldTransform(id, code)) {
+        return
+      }
+
+      const result = transformSync(code, {
+        filename: id,
+        configFile: false,
+        plugins: [
+          ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+        ],
+        sourceMaps: true,
+      })
+
+      if (result?.code != null) {
+        return {
+          code: result.code,
+          map: result.map,
+        }
+      }
+    },
+  }
 }

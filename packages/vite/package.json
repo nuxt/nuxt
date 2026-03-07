@@ -60,7 +60,6 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@nuxt/schema": "workspace:*",
-    "@rollup/plugin-babel": "7.0.0",
     "h3": "1.15.5",
     "h3-next": "npm:h3@2.0.1-rc.14",
     "nitropack": "2.13.1",
@@ -71,7 +70,6 @@
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0",
-    "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:*",
     "rolldown": "^1.0.0-rc.1",
     "rollup-plugin-visualizer": "^6.0.0 || ^7.0.1",
@@ -79,9 +77,6 @@
   },
   "peerDependenciesMeta": {
     "@babel/plugin-proposal-decorators": {
-      "optional": true
-    },
-    "@rollup/plugin-babel": {
       "optional": true
     },
     "rolldown": {
