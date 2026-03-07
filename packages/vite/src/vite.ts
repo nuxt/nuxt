@@ -183,8 +183,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         watch: { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] },
       },
       plugins: [
-        // lower decorators before any other transforms
-        await DecoratorsPlugin(nuxt),
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
@@ -197,6 +195,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               DevServerPlugin(nuxt),
             ]
           : [],
+        // lower decorators after Vue SFC compilation and Oxc TypeScript stripping
+        await DecoratorsPlugin(nuxt),
         // add resolver for files in public assets directories
         PublicDirsPlugin({
           dev: nuxt.options.dev,

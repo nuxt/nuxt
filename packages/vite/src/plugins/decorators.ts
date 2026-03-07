@@ -5,7 +5,7 @@ import { logger } from '@nuxt/kit'
 import { hasTTY, isCI } from 'std-env'
 import type { Nuxt } from '@nuxt/schema'
 
-const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators'] as const
+const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
 
 async function ensureBabelDecoratorDeps (nuxt: Nuxt): Promise<boolean> {
   for (const pkg of BABEL_DECORATOR_DEPS) {
@@ -63,11 +63,10 @@ export async function DecoratorsPlugin (nuxt: Nuxt): Promise<Plugin | undefined>
       filter: {
         // Only run on files containing @ (a prerequisite for decorator syntax)
         code: '@',
-        // Exclude Vue style/template blocks and macro virtual modules
+        // Exclude Vue style and template blocks
         id: {
           exclude: [
             /\.vue\?.*\btype=(?:style|template)\b/,
-            /\.vue\?.*\bmacro=true\b/,
           ],
         },
       },
@@ -81,6 +80,7 @@ export async function DecoratorsPlugin (nuxt: Nuxt): Promise<Plugin | undefined>
           filename: id,
           configFile: false,
           plugins: [
+            '@babel/plugin-syntax-jsx',
             ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
           ],
           sourceMaps: true,

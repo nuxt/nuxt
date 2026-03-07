@@ -59,6 +59,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "7.29.0",
+    "@babel/plugin-syntax-jsx": "7.27.1",
     "@nuxt/schema": "workspace:*",
     "h3": "1.15.5",
     "h3-next": "npm:h3@2.0.1-rc.14",
@@ -70,6 +71,7 @@
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0",
+    "@babel/plugin-syntax-jsx": "^7.25.0",
     "nuxt": "workspace:*",
     "rolldown": "^1.0.0-rc.1",
     "rollup-plugin-visualizer": "^6.0.0 || ^7.0.1",
@@ -77,6 +79,9 @@
   },
   "peerDependenciesMeta": {
     "@babel/plugin-proposal-decorators": {
+      "optional": true
+    },
+    "@babel/plugin-syntax-jsx": {
       "optional": true
     },
     "rolldown": {

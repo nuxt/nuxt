@@ -1093,6 +1093,9 @@ importers:
       '@babel/plugin-proposal-decorators':
         specifier: 7.29.0
         version: 7.29.0(@babel/core@7.29.0)
+      '@babel/plugin-syntax-jsx':
+        specifier: 7.27.1
+        version: 7.27.1(@babel/core@7.29.0)
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
