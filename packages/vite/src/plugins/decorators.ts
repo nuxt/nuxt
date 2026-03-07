@@ -7,17 +7,16 @@ import type { Nuxt } from '@nuxt/schema'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators'] as const
 
-// Match .vue files with script blocks (not style/template blocks)
-const VUE_STYLE_RE = /\.vue\?.*\btype=style\b/
-const VUE_TEMPLATE_RE = /\.vue\?.*\btype=template\b/
+// Only process .vue script blocks (not style/template/macro blocks)
+const VUE_SCRIPT_RE = /\.vue\?.*\btype=script\b/
 
 function shouldTransform (id: string, code: string): boolean {
   // Skip if code doesn't contain @ (no decorators possible)
   if (!code.includes('@')) {
     return false
   }
-  // Skip Vue style and template blocks
-  if (VUE_STYLE_RE.test(id) || VUE_TEMPLATE_RE.test(id)) {
+  // For .vue files with query params, only process script blocks
+  if (id.includes('.vue?') && !VUE_SCRIPT_RE.test(id)) {
     return false
   }
   return true
