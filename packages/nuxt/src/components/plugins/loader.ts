@@ -6,6 +6,7 @@ import { relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils/index.ts'
+import { formatErrorMessage } from '../../core/utils/error-format.ts'
 import { installNuxtModule } from '../../core/features.ts'
 import { logger, resolveToAlias } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
@@ -65,7 +66,10 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const internalInstall = ((component as any)._internal_install) as string
           if (internalInstall && nuxt?.options.test === false) {
             if (!nuxt.options.dev) {
-              throw new Error(`[nuxt] \`${resolveToAlias(id, nuxt)}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
+              throw new Error(formatErrorMessage(`[nuxt] \`${resolveToAlias(id, nuxt)}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\`.`, {
+                fix: `Run \`npx nuxt module add ${internalInstall}\` to install it.`,
+                context: { file: id, component: component.pascalName, requiredModule: internalInstall },
+              }))
             }
             installNuxtModule(internalInstall)
           }

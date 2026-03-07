@@ -217,8 +217,7 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
-    const error = new Error('Nuxt build error')
-    error.stack = stats.toString('errors-only')
+    const error = new Error(`[nuxt] Webpack build failed with errors:\n\n${stats.toString('errors-only')}`)
     throw error
   }
 }

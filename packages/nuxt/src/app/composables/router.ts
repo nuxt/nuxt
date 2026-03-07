@@ -162,11 +162,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
-      throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
+      throw new Error('[nuxt] Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
     const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
+      throw new Error(`[nuxt] Cannot navigate to a URL with \`${protocol}\` protocol.`)
     }
   }
 
@@ -256,7 +256,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
-    throw new Error('abortNavigation() is only usable inside a route middleware handler.')
+    throw new Error('[nuxt] `abortNavigation()` is only usable inside a route middleware handler.')
   }
 
   if (!err) { return false }

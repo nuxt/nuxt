@@ -50,7 +50,7 @@ interface Renderer {
 export const getSSRRenderer: () => Promise<Renderer> = lazyCachedFunction(async (): Promise<Renderer> => {
   // Load server bundle
   const createSSRApp = await getServerEntry()
-  if (!createSSRApp) { throw new Error('Server bundle is not available') }
+  if (!createSSRApp) { throw new Error('[nuxt] Server bundle is not available. Make sure `nuxt build` completed successfully.') }
 
   // Load precomputed dependencies
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()

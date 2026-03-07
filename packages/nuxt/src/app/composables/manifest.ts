@@ -23,7 +23,7 @@ let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw new Error('[nuxt] App manifest is not enabled. Set `experimental.appManifest: true` in your `nuxt.config`.')
   }
   let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
@@ -49,7 +49,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
 /** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
+    throw new Error('[nuxt] App manifest is not enabled. Set `experimental.appManifest: true` in your `nuxt.config`.')
   }
   return manifest || fetchManifest()
 }

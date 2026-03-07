@@ -9,6 +9,7 @@ import { isDirectory, logger } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
+import { formatErrorMessage } from './utils/error-format.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
@@ -255,7 +256,7 @@ async function bundle (nuxt: Nuxt) {
     await nuxt.callHook('build:error', error)
 
     if (error.toString().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies, following the steps in `https://github.com/nuxt/framework/pull/2812`.')
+      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies. See: https://nuxt.com/docs/4.x/api/nuxt-config#builder')
     }
 
     throw error
@@ -266,7 +267,11 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
   } catch (err) {
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/4.x/api/nuxt-config#builder\``, { cause: err })
+    throw new Error(formatErrorMessage(`Loading \`${builder}\` builder failed.`, {
+      fix: `Run \`npm install ${builder}\` to install it.`,
+      docs: 'https://nuxt.com/docs/4.x/api/nuxt-config#builder',
+      context: { builder, rootDir: nuxt.options.rootDir },
+    }), { cause: err })
   }
 }
 

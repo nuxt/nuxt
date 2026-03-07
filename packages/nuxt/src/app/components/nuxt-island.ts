@@ -135,7 +135,7 @@ export default defineComponent({
         while (currentEl) {
           if (isEndFragment(currentEl)) {
             if (startEl !== currentEl.previousSibling) {
-              console.warn(`[\`Server components(and islands)\`] "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`)
+              console.warn(`[nuxt] Server component "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`)
             }
             break
           } else if (!isStartFragment(currentEl) && isFirstElement) {

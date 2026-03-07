@@ -61,7 +61,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const metaArg = node.arguments[1]
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw new Error('Invalid plugin metadata')
+        throw new Error(`[nuxt] Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`)
       }
       meta = extractMetaFromObject(metaArg.properties)
     }
@@ -93,7 +93,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
   const meta: PluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throw new Error('Invalid plugin metadata')
+      throw new Error('[nuxt] Invalid plugin metadata: spread elements and computed keys are not supported in plugin options. Use static properties instead.')
     }
     const propertyKey = property.key.name
     if (!isMetadataKey(propertyKey)) { continue }
@@ -105,7 +105,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
     }
     if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
-        throw new Error('dependsOn must take an array of string literals')
+        throw new Error('[nuxt] Invalid plugin metadata: `dependsOn` must be an array of string literals.')
       }
       meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }
@@ -174,7 +174,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           }
         })
       } catch (e) {
-        logger.error(e)
+        logger.error(`Error parsing plugin \`${plugin.src}\`.`, e)
         return
       }
 

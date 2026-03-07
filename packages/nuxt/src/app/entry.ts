@@ -38,7 +38,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
-    if (ssrContext?.['~renderResponse']) { throw new Error('skipping render') }
+    if (ssrContext?.['~renderResponse']) { throw new Error('[nuxt] Skipping render: a response was already set by middleware or a plugin.') }
 
     return vueApp
   }
@@ -103,7 +103,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    console.error('Error while mounting app:', error)
+    console.error('[nuxt] Error while mounting app:', error)
     throw error
   })
 }

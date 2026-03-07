@@ -125,7 +125,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      logger.error(`[nuxt] Error reading template from \`${template.src}\``)
+      logger.error(`Error reading template from \`${template.src}\``)
       throw err
     }
   }
@@ -279,7 +279,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.has(name))) {
-      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`)
+      logger.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`)
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {
@@ -288,7 +288,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
   const checkDeps = (name: string, visited: string[] = []): string[] => {
     if (visited.includes(name)) {
-      console.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
+      logger.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
       return []
     }
     visited.push(name)

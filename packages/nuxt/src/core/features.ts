@@ -1,6 +1,6 @@
 import { resolvePackageJSON } from 'pkg-types'
 import { useNuxt } from '@nuxt/kit'
-import { isCI, provider } from 'std-env'
+import { isAgent, isCI, provider } from 'std-env'
 import { logger } from '../utils.ts'
 
 const installPrompts = new Set<string>()
@@ -19,9 +19,16 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     }
   }
 
-  logger.info(`Package ${name} is missing`)
+  logger.info(`Package \`${name}\` is missing.`)
 
   if (isCI) {
+    return false
+  }
+
+  // When running inside an AI coding agent, skip the interactive prompt
+  // but log the exact command needed so the agent can act on it.
+  if (isAgent) {
+    logger.info(`Run \`npx nuxi module add ${name}\` to install it.`)
     return false
   }
 
@@ -37,14 +44,14 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     }
   }
 
-  logger.info(`Installing ${name}...`)
+  logger.info(`Installing \`${name}\`...`)
   try {
     const { runCommand } = await import('@nuxt/cli')
     await runCommand('module', ['add', name, '--cwd', rootDir])
-    logger.success(`Installed ${name}`)
+    logger.success(`Installed \`${name}\`.`)
     return true
   } catch (err) {
-    logger.error(err)
+    logger.error(`Failed to install \`${name}\`.`, err)
     return false
   }
 }

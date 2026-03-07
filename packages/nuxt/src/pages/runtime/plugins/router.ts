@@ -224,9 +224,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
           if (!middleware) {
             if (import.meta.dev) {
-              throw new Error(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
+              throw new Error(`[nuxt] Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
             }
-            throw new Error(`Unknown route middleware: '${entry}'.`)
+            throw new Error(`[nuxt] Unknown route middleware: '${entry}'.`)
           }
 
           try {
@@ -276,7 +276,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,
-          statusText: `Page not found: ${to.fullPath}`,
+          statusText: `Page Not Found: ${to.fullPath}`,
           data: {
             path: to.fullPath,
           },

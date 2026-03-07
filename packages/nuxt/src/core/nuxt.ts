@@ -11,7 +11,6 @@ import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMid
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
-import { consola } from 'consola'
 import onChange from 'on-change'
 import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
@@ -186,12 +185,12 @@ async function initNuxt (nuxt: Nuxt) {
 
     if (nuxt.options.dev && hasTTY && !isCI && !isAgent && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      consola.warn(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback. More info at: ${colors.underline('https://nitro.build/deploy#compatibility-date')}`)
+      logger.warn(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback. More info at: ${colors.underline('https://nitro.build/deploy#compatibility-date')}`)
     }
 
     if (nuxt.options.dev && isAgent && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      consola.warn(`No \`compatibilityDate\` is set in \`nuxt.config\`. Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`. Using \`${fallbackCompatibilityDate}\` as fallback. See: https://nitro.build/deploy#compatibility-date`)
+      logger.warn(`No \`compatibilityDate\` is set in \`nuxt.config\`. Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`. Using \`${fallbackCompatibilityDate}\` as fallback. See: https://nitro.build/deploy#compatibility-date`)
     }
   }
 

@@ -69,7 +69,7 @@ const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
-    throw new Error('Payload URL must not include hostname: ' + url)
+    throw new Error('[nuxt] Payload URL must not include hostname: ' + url)
   }
   const config = useRuntimeConfig()
   const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)

@@ -31,7 +31,7 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
         ])
 
         if (!code) {
-          this.warn('Failed loading file')
+          this.warn(`[nuxt] Failed to load sourcemap file: \`${id}\``)
           return null
         }
 

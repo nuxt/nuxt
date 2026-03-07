@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata.ts'
 import { checkForCircularDependencies } from '../src/core/app.ts'
+import { logger } from '../src/utils.ts'
 
 describe('plugin-metadata', () => {
   const properties = Object.entries({
@@ -60,7 +61,7 @@ describe('plugin-metadata', () => {
 
 describe('plugin sanity checking', () => {
   it('non-existent depends are warned', () => {
-    vi.spyOn(console, 'error')
+    vi.spyOn(logger, 'error')
     checkForCircularDependencies([
       {
         name: 'A',
@@ -76,12 +77,12 @@ describe('plugin sanity checking', () => {
         src: '',
       },
     ])
-    expect(console.error).toHaveBeenCalledWith('Plugin `B` depends on `D` but they are not registered.')
+    expect(logger.error).toBeCalledWith('Plugin `B` depends on `D` but they are not registered.')
     vi.restoreAllMocks()
   })
 
   it('circular dependencies are warned', () => {
-    vi.spyOn(console, 'error')
+    vi.spyOn(logger, 'error')
     checkForCircularDependencies([
       {
         name: 'A',
@@ -99,9 +100,9 @@ describe('plugin sanity checking', () => {
         src: '',
       },
     ])
-    expect(console.error).toHaveBeenCalledWith('Circular dependency detected in plugins: A -> B -> C -> A')
-    expect(console.error).toHaveBeenCalledWith('Circular dependency detected in plugins: B -> C -> A -> B')
-    expect(console.error).toHaveBeenCalledWith('Circular dependency detected in plugins: C -> A -> B -> C')
+    expect(logger.error).toBeCalledWith('Circular dependency detected in plugins: A -> B -> C -> A')
+    expect(logger.error).toBeCalledWith('Circular dependency detected in plugins: B -> C -> A -> B')
+    expect(logger.error).toBeCalledWith('Circular dependency detected in plugins: C -> A -> B -> C')
     vi.restoreAllMocks()
   })
 })

@@ -37,15 +37,15 @@ export default class VueSSRServerPlugin {
 
         if (entryAssets.length > 1) {
           throw new Error(
-            'Server-side bundle should have one single entry file. ' +
-            'Avoid using CommonsChunkPlugin in the server config.',
+            '[nuxt] Server-side bundle should have one single entry file. ' +
+            'Avoid using `optimization.splitChunks` in the server config.',
           )
         }
 
         const [entry] = entryAssets
         if (!entry || typeof entry.name !== 'string') {
           throw new Error(
-            `Entry "${entryName}" not found. Did you specify the correct entry option?`,
+            `[nuxt] Entry "${entryName}" not found. Did you specify the correct entry option?`,
           )
         }
 

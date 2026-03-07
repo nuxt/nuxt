@@ -77,7 +77,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       try {
         segments.push(hash(value))
       } catch {
-        console.warn('[useFetch] Failed to hash body', value)
+        console.warn('[nuxt] [useFetch] Failed to hash body', value)
       }
     }
   }
