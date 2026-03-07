@@ -64,7 +64,7 @@ export function getRouteRules (arg: string | H3Event | { path: string }) {
   try {
     return routeRulesMatcher(path)
   } catch (e) {
-    console.error('[nuxt] Error matching route rules.', e)
+    console.error(`[nuxt] Error matching route rules for path \`${path}\`.`, e)
     return {}
   }
 }

@@ -162,11 +162,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
-      throw new Error('[nuxt] Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
+      throw new Error(`[nuxt] Navigating to external URL \`${toPath}\` is not allowed by default. Use \`navigateTo('${toPath}', { external: true })\`.`)
     }
     const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`[nuxt] Cannot navigate to a URL with \`${protocol}\` protocol.`)
+      throw new Error(`[nuxt] Cannot navigate to URL \`${toPath}\` with \`${protocol}\` protocol.`)
     }
   }
 

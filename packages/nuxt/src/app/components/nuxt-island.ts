@@ -203,7 +203,7 @@ export default defineComponent({
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
       if (!r.ok) {
-        throw createError({ status: r.status, statusText: r.statusText })
+        throw createError({ status: r.status, statusText: r.statusText, message: `Failed to fetch island component \`${props.name}\`: ${r.status} ${r.statusText}` })
       }
       try {
         const result = await r.json()
@@ -218,7 +218,7 @@ export default defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: r })
+          throw new Error(`Failed to parse island response for \`${props.name}\` (HTTP ${r.status}): ${e.message}`, { cause: e })
         }
         throw e
       }

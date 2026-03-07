@@ -138,6 +138,9 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
     await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    if (_err.message && !_err.message.includes(ssrContext.url)) {
+      _err.message = `[nuxt] SSR rendering failed for \`${ssrContext.url}\`: ${_err.message}`
+    }
     throw _err
   })
 

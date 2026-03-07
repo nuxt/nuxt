@@ -82,7 +82,12 @@ const getSPARenderer = lazyCachedFunction(async (): Promise<Renderer> => {
   const precomputed = import.meta.dev ? undefined : await getPrecomputedDependencies()
 
   // @ts-expect-error virtual file
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
+  const spaTemplate = await import('#spa-template').then(r => r.template).catch((err) => {
+    if (import.meta.dev) {
+      console.warn('[nuxt] Failed to load SPA loading template:', err)
+    }
+    return ''
+  })
     .then((r) => {
       if (spaLoadingTemplateOutside) {
         const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`

@@ -93,7 +93,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               const prop = camelCase(isDynamic ? attr.slice(1) : attr)
               if (prop in hydrationStrategyMap) {
                 if (strategy) {
-                  logger.warn(`Multiple hydration strategies are not supported in the same component`)
+                  logger.warn(`Multiple hydration strategies are not supported in the same component \`<${node.name}>\` in \`${id}\`.`)
                 } else {
                   strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
                 }

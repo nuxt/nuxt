@@ -274,6 +274,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt._perf?.endPhase('vite:dev-server')
 }
 
+
 async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
   if (!enabled) { return fn() }
 

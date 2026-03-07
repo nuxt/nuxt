@@ -115,11 +115,7 @@ export default defineNuxtModule({
             // TODO: fix type for second argument of `import`
             loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
-            logger.warn(
-              'Unable to load schema from',
-              filePath,
-              err,
-            )
+            logger.warn(`Unable to load Nuxt schema from \`${filePath}\`. Ensure the file exports a valid schema definition.`, err)
             continue
           }
           schemaDefs.push(loadedConfig)

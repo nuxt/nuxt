@@ -64,7 +64,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
         '~internal': true,
       },
     },
-  ).catch(() => null)
+  ).catch((err) => {
+    if (import.meta.dev) {
+      console.warn('[nuxt] Failed to render SSR error page:', err)
+    }
+    return null
+  })
 
   // Fallback to static rendered error page
   if (!res) {

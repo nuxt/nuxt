@@ -11,7 +11,7 @@ export function resolveClientEntry (config: ResolvedConfig) {
     }
   }
 
-  throw new Error('[nuxt] No client entry found in `rollupOptions.input`. Expected an `entry` key or a string input.')
+  throw new Error(`[nuxt] No client entry found in \`rollupOptions.input\`. Expected an \`entry\` key or a string input. Received: ${JSON.stringify(input)}`)
 }
 
 export function resolveServerEntry (config: ResolvedConfig) {
@@ -25,5 +25,5 @@ export function resolveServerEntry (config: ResolvedConfig) {
     }
   }
 
-  throw new Error('[nuxt] No server entry found in `rollupOptions.input`. Expected a `server` key or a string input.')
+  throw new Error(`[nuxt] No server entry found in \`rollupOptions.input\`. Expected a \`server\` key or a string input. Received: ${JSON.stringify(input)}`)
 }

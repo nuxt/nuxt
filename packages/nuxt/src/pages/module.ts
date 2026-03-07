@@ -394,7 +394,7 @@ export default defineNuxtModule({
           nuxt.apps.default!.pages = await augmentAndResolvePages(pages, pagesCtx.trackedFiles, nuxt)
         } catch (err) {
           // Fallback: full rebuild on unexpected tree error
-          logger.warn('Incremental route update failed, performing full rebuild', err)
+          logger.warn(`Incremental route update failed for \`${event}\` on \`${path}\`, performing full rebuild.`, err)
           nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
         }
       } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {

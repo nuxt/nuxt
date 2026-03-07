@@ -100,7 +100,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          logger.warn('Components directory not found: `' + dirPath + '`')
+          logger.warn(`Components directory not found: \`${dirPath}\`. If this is intentional, you can remove it from \`components.dirs\` in your \`nuxt.config\`.`)
         }
 
         const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs

@@ -67,7 +67,11 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
       continue
     }
     const promise = Promise.resolve((component as () => unknown)())
-      .catch(() => {})
+      .catch((err) => {
+        if (import.meta.dev) {
+          console.warn(`[nuxt] Failed to preload route component for \`${path}\`:`, err)
+        }
+      })
       .finally(() => promises.splice(promises.indexOf(promise), 1))
     promises.push(promise)
   }

@@ -67,7 +67,9 @@ const NuxtClientFallbackServer = defineComponent({
 
       return { ssrFailed, ssrVNodes }
     } catch (ssrError) {
-      // catch in dev
+      if (import.meta.dev) {
+        console.warn('[nuxt] SSR rendering failed inside `<NuxtClientFallback>`, falling back to client-side rendering:', ssrError)
+      }
       error.value = true
       ctx.emit('ssr-error', ssrError)
       return { ssrFailed: true, ssrVNodes: [] }

@@ -64,7 +64,7 @@ export default defineComponent({
       let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`[nuxt] Invalid layout \`${layout}\` selected.`)
+          console.warn(`[nuxt] Invalid layout \`${layout}\` selected. Available layouts: ${Object.keys(layouts).join(', ') || 'none'}.`)
         }
         if (props.fallback) {
           layout = unref(props.fallback)
