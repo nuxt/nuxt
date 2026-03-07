@@ -21,7 +21,7 @@ import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import { defu } from 'defu'
 import { coerce, satisfies } from 'semver'
-import { hasTTY, isCI } from 'std-env'
+import { hasTTY, isAgent, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
@@ -184,9 +184,14 @@ async function initNuxt (nuxt: Nuxt) {
   if (!nuxt.options.compatibilityDate.default) {
     nuxt.options.compatibilityDate.default = fallbackCompatibilityDate
 
-    if (nuxt.options.dev && hasTTY && !isCI && !nuxt.options.test && !warnedAboutCompatDate) {
+    if (nuxt.options.dev && hasTTY && !isCI && !isAgent && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
       consola.warn(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback. More info at: ${colors.underline('https://nitro.build/deploy#compatibility-date')}`)
+    }
+
+    if (nuxt.options.dev && isAgent && !warnedAboutCompatDate) {
+      warnedAboutCompatDate = true
+      consola.warn(`No \`compatibilityDate\` is set in \`nuxt.config\`. Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`. Using \`${fallbackCompatibilityDate}\` as fallback. See: https://nitro.build/deploy#compatibility-date`)
     }
   }
 
