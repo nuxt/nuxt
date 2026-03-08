@@ -37,7 +37,7 @@ export default defineNuxtConfig({
 
     nuxt.hook('vite:configResolved', (config, { isClient }) => {
       if (isClient) {
-        capturedExclude = config.optimizeDeps?.exclude || []
+        capturedExclude = config.environments?.client?.optimizeDeps?.exclude || config.optimizeDeps?.exclude || []
       }
     })
 
