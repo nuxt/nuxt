@@ -43,7 +43,6 @@
     "@babel/core": "7.29.0",
     "@babel/helper-plugin-utils": "7.28.6",
     "@nuxt/cli": "3.33.1",
-    "@nuxt/devtools": "file:nuxt-devtools-3.2.2.tgz",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
