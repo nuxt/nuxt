@@ -647,8 +647,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   })
 
   // TODO: remove when devtools gains support for nitro v3
-  // @ts-expect-error devtools calls storage.watch()
-  nitro.storage ||= { watch: () => {} }
+  // @ts-expect-error devtools calls storage.watch() and storage.getMount()
+  nitro.storage ||= { watch: () => {}, getMount: () => ({}) }
 
   // For full-static output, ensure payload extraction is not disabled
   if (nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
