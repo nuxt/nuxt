@@ -1306,7 +1306,7 @@ importers:
         specifier: latest
         version: 6.1.4
       postcss:
-        specifier: ^8.4.47
+        specifier: ^8.5.8
         version: 8.5.8
       ufo:
         specifier: latest
