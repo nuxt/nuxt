@@ -1,4 +1,4 @@
-import type { InlineConfig, Plugin } from 'vite'
+import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { withoutLeadingSlash } from 'ufo'
 import type { OutputOptions } from 'rolldown'
