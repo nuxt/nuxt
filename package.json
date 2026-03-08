@@ -63,6 +63,7 @@
     "nuxt": "workspace:*",
     "ofetch": "2.0.0-alpha.3",
     "postcss": "8.5.8",
+    "rolldown": "1.0.0-rc.5",
     "rollup": "4.59.0",
     "send": ">=1.2.1",
     "srvx": "0.11.8",
