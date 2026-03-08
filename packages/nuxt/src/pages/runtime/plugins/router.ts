@@ -42,6 +42,8 @@ function createCurrentLocation (
   return path + (path.includes('?') ? '' : search) + hash
 }
 
+const MAX_REDIRECTS = 10
+
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
@@ -133,9 +135,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       named: {},
     }
 
+    const redirectChain = new Set<string>()
+    const resetRedirectChain = () => redirectChain.clear()
     const error = useError()
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
       router.afterEach(async (to, _from, failure) => {
+        resetRedirectChain()
         delete nuxtApp._processingMiddleware
 
         if (import.meta.client && !nuxtApp.isHydrating && error.value) {
@@ -189,6 +194,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
+      if (redirectChain.size === 0) {
+        redirectChain.add(to.fullPath)
+      }
       await nuxtApp.callHook('page:loading:start')
       to.meta = reactive(to.meta)
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
@@ -250,9 +258,28 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return result
             }
             if (result) {
-              if (isNuxtError(result) && result.fatal) {
-                await nuxtApp.runWithContext(() => showError(result))
+              if (isNuxtError(result)) {
+                if (result.fatal) {
+                  await nuxtApp.runWithContext(() => showError(result))
+                }
+                return result
               }
+
+              const targetPath = router.resolve(result).fullPath
+              if (redirectChain.has(targetPath) || redirectChain.size > MAX_REDIRECTS) {
+                if (import.meta.dev) {
+                  console.warn(
+                    `[nuxt] Redirect loop detected. Navigation to "${targetPath}" was aborted after ${redirectChain.size} redirects.\n` +
+                    `Check your route middleware and redirect rules for circular redirects.`,
+                  )
+                }
+                throw createError({
+                  statusCode: 500,
+                  fatal: true,
+                  statusMessage: `Too many redirects`,
+                })
+              }
+              redirectChain.add(targetPath)
               return result
             }
           } catch (err: any) {
@@ -267,6 +294,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     router.onError(async () => {
+      resetRedirectChain()
       delete nuxtApp._processingMiddleware
       await nuxtApp.callHook('page:loading:end')
     })

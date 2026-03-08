@@ -122,18 +122,30 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     const baseURL = useRuntimeConfig().app.baseURL
 
     const route: Route = reactive(getRouteFromPath(initialURL))
-    async function handleNavigation (url: string | Partial<Route>, replace?: boolean): Promise<void> {
+    const MAX_REDIRECTS = 10
+    async function handleNavigation (url: string | Partial<Route>, replace?: boolean, _depth = 0, seen = new Set<string>()): Promise<void> {
+      const to = getRouteFromPath(url)
+      if (seen.has(to.fullPath) || _depth > MAX_REDIRECTS) {
+        if (import.meta.dev) {
+          console.warn(
+            `[nuxt] Redirect loop detected. Navigation to "${to.fullPath}" was aborted after ${_depth} redirects.\n` +
+            `Check your route middleware and redirect rules for circular redirects.`,
+          )
+        }
+        throw createError({
+          statusCode: 500,
+          statusMessage: `Too many redirects`,
+        })
+      }
+      seen.add(to.fullPath)
       try {
-        // Resolve route
-        const to = getRouteFromPath(url)
-
         // Run beforeEach hooks
         for (const middleware of hooks['navigate:before']) {
           const result = await middleware(to, route)
           // Cancel navigation
           if (result === false || result instanceof Error) { return }
           // Redirect
-          if (typeof result === 'string' && result.length) { return handleNavigation(result, true) }
+          if (typeof result === 'string' && result.length) { return handleNavigation(result, true, _depth + 1, new Set(seen)) }
         }
 
         for (const handler of hooks['resolve:before']) {
