@@ -67,6 +67,7 @@ vi.mock('#build/nuxt.config.mjs', () => {
     granularCachedData: false,
     pendingWhenIdle: false,
     alwaysRunFetchOnKeyChange: false,
+    asyncCallHook: false,
   }
 })
 

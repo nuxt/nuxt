@@ -569,6 +569,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
       `export const pendingWhenIdle = ${!!ctx.nuxt.options.experimental.pendingWhenIdle}`,
       `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
+      `export const asyncCallHook = ${!!ctx.nuxt.options.experimental.asyncCallHook}`,
     ].join('\n\n')
   },
 }

@@ -59,8 +59,13 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
 
   const { callHook, callHookParallel, callHookWith } = hooks
-  hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
-  hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
+  if (options.experimental.asyncCallHook) {
+    hooks.callHook = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHook(...args)))
+    hooks.callHookParallel = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHookParallel(...args)) ?? [])
+  } else {
+    hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
+    hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
+  }
   hooks.callHookWith = (...args) => runWithNuxtContext(nuxt, () => callHookWith(...args))
 
   const nuxt: Nuxt = {
@@ -72,7 +77,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => runWithNuxtContext(nuxt, () => initNuxt(nuxt)),
-    close: () => hooks.callHook('close', nuxt),
+    close: async () => { await hooks.callHook('close', nuxt) },
     vfs: {},
     apps: {},
     runWithContext: fn => runWithNuxtContext(nuxt, fn),

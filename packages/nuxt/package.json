@@ -74,7 +74,7 @@
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
-    "hookable": "^5.5.3",
+    "hookable": "^6.0.1",
     "ignore": "^7.0.5",
     "impound": "^1.1.2",
     "jiti": "^2.6.1",
