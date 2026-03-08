@@ -228,6 +228,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
           skipLibCheck: true,
+          noEmit: true,
+          moduleResolution: 'bundler',
           noUncheckedIndexedAccess: true,
           allowArbitraryExtensions: true,
         },
