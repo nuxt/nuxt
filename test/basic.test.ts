@@ -110,6 +110,18 @@ describe('route rules', () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
   })
+
+  it('should not generate payload route rules for non-wildcard ssr: false routes', () => {
+    // @ts-expect-error untyped internal property
+    const routeRules = useTestContext().nuxt._nitro.options.routeRules
+
+    expect(routeRules['/route-rules/isr-spa']).toMatchObject({
+      isr: 60,
+      ssr: false,
+    })
+    expect(routeRules['/route-rules/isr-spa/_payload.json']).toBeUndefined()
+    expect(routeRules['/route-rules/isr-spa/_payload.js']).toBeUndefined()
+  })
 })
 
 describe('modules', () => {
@@ -199,9 +211,7 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
-    expect(headers.getSetCookie()).toStrictEqual([
-      'set-in-plugin=true; Path=/',
-    ])
+    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=%22true%22; Path=/')
 
     const { page } = await renderPage('/navigate-to-forbidden')
 
@@ -216,7 +226,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it('validates routes with custom status and statusText', async () => {
+  it('validates routes with custom statusCode and statusMessage', async () => {
     const CUSTOM_ERROR_CODE = 401
     const CUSTOM_ERROR_MESSAGE = 'Custom error message'
     const ERROR_PAGE_TEXT = 'This is the error page'
@@ -715,17 +725,8 @@ describe('nuxt composables', () => {
         }).map(([key, value]) => `${key}=${value}`).join('; '),
       },
     })
-    const cookies = res.headers.getSetCookie()
-    expect(cookies).toStrictEqual([
-      'set-in-plugin=true; Path=/',
-      'accessed-with-default-value=default; Path=/',
-      'set=set; Path=/',
-      'browser-set=set; Path=/',
-      'browser-set-to-null=; Max-Age=0; Path=/',
-      'browser-set-to-null-with-default=; Max-Age=0; Path=/',
-      'browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/',
-      'theCookie=show; Path=/',
-    ])
+    const cookies = res.headers.get('set-cookie')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -766,6 +767,24 @@ describe('nuxt composables', () => {
     const childBannerAfterToggle = await page.locator('#child-banner').isVisible()
     expect(childBannerAfterToggle).toBe(false)
     await page.close()
+  })
+
+  it('re-sets cookie on SSR when refresh is true and value is explicitly written', async () => {
+    const res = await fetch('/cookies-refresh', {
+      headers: {
+        cookie: 'refresh-with-write=existing; refresh-without-write=existing; no-refresh-with-write=existing',
+      },
+    })
+    const cookies = res.headers.get('set-cookie') ?? ''
+
+    // refresh: true with explicit write — should re-set the cookie
+    expect(cookies).toContain('refresh-with-write=existing')
+
+    // refresh: true without explicit write — should NOT re-set the cookie
+    expect(cookies).not.toContain('refresh-without-write')
+
+    // refresh: false with same-value write — should NOT re-set the cookie
+    expect(cookies).not.toContain('no-refresh-with-write')
   })
 
   it('supports onPrehydrate', async () => {
@@ -1197,21 +1216,16 @@ describe('errors', () => {
     url.host = 'localhost:3000'
     error.url = url.toString()
     expect(error).toMatchObject({
-      message: 'This is a custom error',
+      message: isDev ? 'This is a custom error' : 'Server Error',
+      statusCode: 422,
+      statusMessage: 'This is a custom error',
       url: 'http://localhost:3000/error',
     })
   })
 
   it('should render a HTML error page', async () => {
-    const res = await fetch('/error', {
-      headers: {
-        accept: 'text/html',
-      },
-    })
-    expect(res.headers.getSetCookie()).toStrictEqual([
-      'set-in-plugin=true; Path=/',
-      'some-error=was%20set; Path=/',
-    ])
+    const res = await fetch('/error')
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=%22true%22; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -1232,8 +1246,8 @@ describe('errors', () => {
       {
         "error": true,
         "message": "Page Not Found: /__nuxt_error",
-        "status": 404,
-        "statusText": "Page Not Found: /__nuxt_error",
+        "statusCode": 404,
+        "statusMessage": "Page Not Found: /__nuxt_error",
         "url": "http://localhost:3000/__nuxt_error",
       }
     `)
@@ -1350,29 +1364,46 @@ describe('composables', () => {
   })
   it('`useRouteAnnouncer` should change message on route change', async () => {
     const { page } = await renderPage('/route-announcer')
-    expect(await page.getByRole('alert').textContent()).toContain('First Page')
+    expect(await page.getByRole('status').textContent()).toContain('First Page')
+    expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite')
     await page.getByRole('link').click()
     await page.getByText('Second page content').waitFor()
-    expect(await page.getByRole('alert').textContent()).toContain('Second Page')
+    expect(await page.getByRole('status').textContent()).toContain('Second Page')
     await page.close()
   })
   it('`useRouteAnnouncer` should change message on dynamically changed title', async () => {
     const { page } = await renderPage('/route-announcer')
     await page.getByRole('button').click()
     await page.waitForFunction(() => document.title.includes('Dynamically set title'))
-    expect(await page.getByRole('alert').textContent()).toContain('Dynamically set title')
+    expect(await page.getByRole('status').textContent()).toContain('Dynamically set title')
+    await page.close()
+  })
+  it('`useAnnouncer` should announce polite message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('polite-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="status"]')?.textContent?.includes('Polite announcement'))
+    expect(await page.getByRole('status').textContent()).toContain('Polite announcement')
+    expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite')
+    await page.close()
+  })
+  it('`useAnnouncer` should announce assertive message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('assertive-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Assertive announcement'))
+    expect(await page.getByRole('alert').textContent()).toContain('Assertive announcement')
+    expect(await page.getByRole('alert').getAttribute('aria-live')).toBe('assertive')
     await page.close()
   })
 })
 
 describe('middlewares', () => {
   it('should redirect to index with global middleware', async () => {
-    const res = await fetch('/redirect/', { redirect: 'manual' })
+    const html = await $fetch<string>('/redirect/')
 
     // Snapshot
     // expect(html).toMatchInlineSnapshot()
 
-    expect(res.headers.get('location')).toEqual('/')
+    expect(html).toContain('Hello Nuxt 3!')
   })
 
   it('should allow redirection from a non-existent route with `ssr: false`', async () => {
@@ -1908,8 +1939,8 @@ describe.skipIf(isDev)('module identifiers', () => {
 
 describe.skipIf(isDev)('inlining component styles', () => {
   const globalCSS = [
-    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
-    '{--global:"global";', // global css from nuxt.config
+    '--plugin:"plugin"', // CSS imported ambiently in JS/TS
+    '--global:"global"', // global css from nuxt.config
   ]
   const nonGlobalCSS = [
     '{--assets:"assets"}', // <script>
@@ -1960,7 +1991,7 @@ describe.skipIf(isDev)('inlining component styles', () => {
     // should not include inlined CSS in generated CSS files
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
-      if (style === '{--plugin:"plugin"}') {
+      if (style === '--plugin:"plugin"') {
         expect.soft(css).toContain(style)
         continue
       }
@@ -2280,7 +2311,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
-    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
+    expect(await $fetch<string>('/foo/url')).toContain('path: /foo/url')
   })
 
   it('should allow setting relative baseURL', async () => {
@@ -2328,7 +2359,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     }
   })
 
-  it.skipIf(isWebpack)('should render relative importmap path with relative path', async () => {
+  it.skipIf(isDev || isWebpack)('should render relative importmap path with relative path', async () => {
     await startServer({
       env: {
         NUXT_APP_BASE_URL: '',
@@ -2634,7 +2665,7 @@ describe('component islands', () => {
     })
 
     const result = await fetch('/foo/islands')
-    expect.soft(result.status).toBe(200)
+    expect(result.status).toBe(200)
 
     await startServer()
   })
@@ -2648,23 +2679,19 @@ describe('component islands', () => {
     await page.getByText('to server page').click()
     await islandPageRequest
     await page.locator('#server-page').waitFor()
-
-    await page.close()
   })
 
   it('should show error on 404 error for server pages during client navigation', async () => {
     const { page } = await renderPage('/')
     await page.click('[href="/server-components/lost-page"]')
     await page.getByText('This is the error page').waitFor()
-
-    await page.close()
   })
 })
 
 describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   it('does not override vite plugins', async () => {
-    expect(await $fetch('/vite-plugin-without-path', { responseType: 'text' })).toBe('vite-plugin without path')
-    expect(await $fetch('/__nuxt-test', { responseType: 'text' })).toBe('vite-plugin with __nuxt prefix')
+    expect(await $fetch<string>('/vite-plugin-without-path')).toBe('vite-plugin without path')
+    expect(await $fetch<string>('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
     expect(await fetch('/app.config').then(r => r.status)).toBe(404)
@@ -2673,7 +2700,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
 
 describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   it('renders a payload', async () => {
-    const payload = await $fetch('/random/a/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(typeof data.prerenderedAt).toEqual('number')
 
@@ -2735,14 +2762,14 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   })
 
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
-    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
   })
 
   it('should render payload for ISR routes', async () => {
-    const payload = await $fetch('/isr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/isr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['isr-data']).toBeDefined()
@@ -2750,7 +2777,7 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
   })
 
   it('should render payload for SWR routes', async () => {
-    const payload = await $fetch('/swr/_payload.json', { responseType: 'text' })
+    const payload = await $fetch<string>('/swr/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-data']).toBeDefined()
@@ -2944,8 +2971,7 @@ describe('teleports', () => {
 })
 
 describe('experimental', () => {
-  // TODO: not supported by oxc yet: https://github.com/oxc-project/oxc/issues/9170
-  it.fails('decorators support works', async () => {
+  it('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
     expect(html).toContain('decorated-decorated')
     expectNoClientErrors('/experimental/decorators')

@@ -23,15 +23,14 @@ import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
-const runtimeDir = resolve(distDir, 'pages/runtime')
-
 export const pagesImportPresets: InlinePreset[] = [
-  { imports: ['definePageMeta'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['definePageMeta'], from: '#app/composables/pages' },
+  { imports: ['PageMeta'], from: '#app/composables/pages', type: true },
   { imports: ['useLink'], from: 'vue-router' },
 ]
 
 export const routeRulesPresets: InlinePreset[] = [
-  { imports: ['defineRouteRules'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['defineRouteRules'], from: '#app/composables/pages' },
 ]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
@@ -61,6 +60,8 @@ export default defineNuxtModule({
     pattern: `**/*{${nuxt.options.extensions.join(',')}}` as string | string[],
   }),
   async setup (_options, nuxt) {
+    const runtimeDir = resolve(distDir, 'pages/runtime')
+
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
@@ -693,9 +694,11 @@ export default defineNuxtModule({
           '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false> | {',
-          '      name?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
-          '      props?: Record<string, any>',
-          '    }',
+          '      [K in LayoutKey]: {',
+          '        name?: MaybeRef<K | false> | ComputedRef<K | false>',
+          '        props?: NuxtLayouts[K]',
+          '      }',
+          '    }[LayoutKey]',
           '  }',
           '}',
         ].join('\n')
@@ -708,9 +711,10 @@ export default defineNuxtModule({
         filename: 'types/view-transitions.d.ts',
         getContents: () => {
           return [
+            'import type { ViewTransitionPageOptions } from \'../types/config\'',
             'declare module \'nuxt/app\' {',
             '  interface PageMeta {',
-            '    viewTransition?: boolean | \'always\'',
+            '    viewTransition?: ViewTransitionPageOptions[\'enabled\'] | ViewTransitionPageOptions',
             '  }',
             '}',
             'export {}',

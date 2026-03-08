@@ -17,7 +17,7 @@ no_progress = true
 # include_fragments = true
 
 # Follow redirects
-max_redirects = 1
+max_redirects = 3
 
 # Set user agent to avoid bot blocking
 user_agent = "Mozilla/5.0 (compatible; lychee link checker)"
@@ -36,6 +36,7 @@ exclude = [
   # external docs sites that block or rate-limit CI bots
   'https://router.vuejs.org/(.*)',
   'https://vitest.dev/(.*)',
+  'https://vite.dev/(.*)',
   # dummy example URLs
   "https://myawesome-lib.js/",
   "https://awesome-lib.js/",
@@ -52,6 +53,11 @@ exclude = [
   'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
+  # GitHub URLs that redirect to login in unauthenticated CI
+  'https://github.com/(.*)/issues/new(.*)',
+  'https://github.com/(.*)/edit/(.*)',
+  # Discord invite redirects
+  'https://go.nuxt.com/discord',
   # excluded URLs from test suite
   "http://auth.com",
   "http://example1.com/",
