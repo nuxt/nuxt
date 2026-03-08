@@ -32,4 +32,13 @@ export interface NuxtDebugOptions {
     server?: boolean
     client?: boolean
   }
+  /**
+   * Profile startup/build performance and write a report to `.nuxt/perf-report.json`.
+   *
+   * - `true` — collect data, print a console summary, and write JSON
+   * - `'quiet'` — collect data and write JSON only (no console output)
+   *
+   * Can also be activated via `NUXT_DEBUG_PERF=1` (or `=quiet`) or `nuxt dev --profile`.
+   */
+  perf?: boolean | 'quiet'
 }

@@ -130,10 +130,20 @@ export default defineResolvers({
           nitro: true,
           router: true,
           hydration: true,
+          perf: true,
         } satisfies Required<NuxtDebugOptions>
       }
       if (val && typeof val === 'object') {
+        // Support NUXT_DEBUG_PERF env var to enable perf profiling
+        if (process.env.NUXT_DEBUG_PERF) {
+          (val as NuxtDebugOptions).perf = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
+        }
         return val
+      }
+      // Support NUXT_DEBUG_PERF env var without other debug options
+      if (process.env.NUXT_DEBUG_PERF) {
+        const perf: boolean | 'quiet' = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
+        return { perf } satisfies Partial<NuxtDebugOptions>
       }
       return false
     },

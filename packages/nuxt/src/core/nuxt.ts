@@ -47,6 +47,7 @@ import { DevOnlyPlugin } from './plugins/dev-only.ts'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing.ts'
 import { addModuleTranspiles } from './modules.ts'
 import { bundleServer } from './server.ts'
+import { NuxtPerfProfiler } from './perf.ts'
 import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
@@ -167,6 +168,8 @@ export const keyDependencies: string[] = [
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
+  nuxt._perf?.startPhase('init')
+
   const layerDirs = getLayerDirectories(nuxt)
 
   // Register user hooks
@@ -485,6 +488,8 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Init user modules
+  nuxt._perf?.endPhase('init')
+  nuxt._perf?.startPhase('modules')
   await nuxt.callHook('modules:before')
 
   const { paths: watchedModulePaths, resolvedModulePaths, modules } = await resolveModules(nuxt)
@@ -637,6 +642,8 @@ async function initNuxt (nuxt: Nuxt) {
   })
 
   await nuxt.callHook('modules:done')
+  nuxt._perf?.endPhase('modules')
+  nuxt._perf?.collectModuleTimings(nuxt.options._installedModules)
 
   // Add keys for useFetch, useAsyncData, etc.
   const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
@@ -779,6 +786,7 @@ export default defineNuxtPlugin({
 
   // Init nitro
   await bundleServer(nuxt)
+  nuxt._perf?.startPhase('ready')
 
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
@@ -792,10 +800,24 @@ export default defineNuxtPlugin({
   }
 
   await nuxt.callHook('ready', nuxt)
+  nuxt._perf?.endPhase('ready')
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+  // Start config phase profiling early (profiler may be replaced once config is loaded)
+  let perf: NuxtPerfProfiler | undefined
+  if (process.env.NUXT_DEBUG_PERF || (opts.overrides?.debug && (opts.overrides.debug === true || opts.overrides.debug?.perf))) {
+    perf = new NuxtPerfProfiler()
+    perf.startPhase('config')
+  }
+
   const options = await loadNuxtConfig(opts)
+
+  // Initialize profiler from resolved config if not already created
+  if (!perf && options.debug && (options.debug as any).perf) {
+    perf = new NuxtPerfProfiler()
+  }
+  perf?.endPhase('config')
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
@@ -891,6 +913,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   })
 
   const nuxt = createNuxt(options)
+
+  // Attach performance profiler if enabled
+  if (perf) {
+    nuxt._perf = perf
+    perf.installHookInterceptors(nuxt.hooks)
+    nuxt.hook('close', () => perf!.dispose())
+  }
 
   nuxt.runWithContext(() => {
     // We register hooks layer-by-layer so any overrides need to be registered separately

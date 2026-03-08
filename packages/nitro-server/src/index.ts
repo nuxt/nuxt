@@ -722,10 +722,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // Init nitro
+  nuxt._perf?.startPhase('nitro:createNitro')
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
+  nuxt._perf?.endPhase('nitro:createNitro')
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig === false && nitro.options.imports) {
@@ -948,24 +950,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // nuxt build/dev
-  nuxt.hook('build:done', async () => {
-    await nuxt.callHook('nitro:build:before', nitro)
-    await prepare(nitro)
-    if (nuxt.options.dev) {
-      return build(nitro)
-    }
-
-    await prerender(nitro)
-
-    logger.restoreAll()
-    await build(nitro)
-    logger.wrapAll()
-
-    await symlinkDist()
-  })
-
   // nuxt dev
+  let waitUntilCompile: Promise<void> | undefined
   if (nuxt.options.dev) {
     for (const builder of ['webpack', 'rspack'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
@@ -992,9 +978,32 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
     nuxt.server = createDevServer(nitro)
 
-    const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
-    nuxt.hook('build:done', () => waitUntilCompile)
+    waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
   }
+
+  // nuxt build/dev
+  nuxt.hook('build:done', async () => {
+    nuxt._perf?.startPhase('nitro:build')
+    try {
+      await nuxt.callHook('nitro:build:before', nitro)
+      await prepare(nitro)
+      if (nuxt.options.dev) {
+        await build(nitro)
+        await waitUntilCompile
+        return
+      }
+
+      await prerender(nitro)
+
+      logger.restoreAll()
+      await build(nitro)
+      logger.wrapAll()
+
+      await symlinkDist()
+    } finally {
+      nuxt._perf?.endPhase('nitro:build')
+    }
+  })
 }
 
 const RELATIVE_RE = /^([^.])/

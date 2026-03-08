@@ -38,6 +38,7 @@ import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { PerfPlugin } from './plugins/perf.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -114,7 +115,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           const environments = Object.values(builder.environments)
           for (const environment of environments) {
             logger.restoreAll()
+            nuxt._perf?.startPhase(`vite:${environment.name}`)
             await builder.build(environment)
+            nuxt._perf?.endPhase(`vite:${environment.name}`)
             logger.wrapAll()
             await nuxt.callHook('vite:compiled')
           }
@@ -176,6 +179,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         watch: { exclude: [...nuxt.options.ignore, /[\\/]node_modules[\\/]/] },
       },
       plugins: [
+        // per-plugin timing when profiling is enabled
+        PerfPlugin(nuxt),
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
@@ -261,10 +266,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     return
   }
 
+  nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
+  nuxt._perf?.endPhase('vite:dev-server')
 
   await writeDevServer(nuxt)
 }
