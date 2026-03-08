@@ -21,13 +21,10 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
     '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
   }
 
-  let viteConfig: InlineConfig
-
   return {
     name: 'nuxt:environments',
     enforce: 'pre', // run before other plugins
-    config (config) {
-      viteConfig = config
+    config () {
       if (!nuxt.options.dev) {
         return {
           base: './',
