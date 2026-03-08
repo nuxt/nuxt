@@ -110,6 +110,18 @@ describe('route rules', () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
   })
+
+  it('should not generate payload route rules for non-wildcard ssr: false routes', () => {
+    // @ts-expect-error untyped internal property
+    const routeRules = useTestContext().nuxt._nitro.options.routeRules
+
+    expect(routeRules['/route-rules/isr-spa']).toMatchObject({
+      isr: 60,
+      ssr: false,
+    })
+    expect(routeRules['/route-rules/isr-spa/_payload.json']).toBeUndefined()
+    expect(routeRules['/route-rules/isr-spa/_payload.js']).toBeUndefined()
+  })
 })
 
 describe('modules', () => {
@@ -183,7 +195,8 @@ describe('pages', () => {
 
   it('preserves page metadata added in pages:extend hook', async () => {
     const html = await $fetch<string>('/some-custom-path')
-    expect (html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>')).toMatchInlineSnapshot(`
+    // Normalise arrow function whitespace (esbuild with es2024 target strips spaces around =>)
+    expect(html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>').replace(/\(\)\s*=>\s*/g, '() => ')).toMatchInlineSnapshot(`
       "{
         "name": "some-custom-name",
         "path": "/some-custom-path",
@@ -199,7 +212,7 @@ describe('pages', () => {
   it('validates routes', async () => {
     const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
-    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
+    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=%22true%22; Path=/')
 
     const { page } = await renderPage('/navigate-to-forbidden')
 
@@ -646,6 +659,17 @@ describe('pages', () => {
     expect(html).toContain('Japanese random route')
   })
 
+  it.skipIf(isDev)('reactive query params in prerendered pages', async () => {
+    const { page } = await renderPage('/prerender/query-reactivity?active=true')
+
+    expect(await page.innerText('div')).toContain('true')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.query.active === 'true')
+    expect(await page.evaluate(() => window.useNuxtApp?.()._route.query.active)).toBe('true')
+    expect(await page.$eval('div', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
+
+    await page.close()
+  })
+
   it('should trigger page:loading:end only once', async () => {
     const { page, consoleLogs } = await renderPage('/')
 
@@ -703,7 +727,7 @@ describe('nuxt composables', () => {
       },
     })
     const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -744,6 +768,24 @@ describe('nuxt composables', () => {
     const childBannerAfterToggle = await page.locator('#child-banner').isVisible()
     expect(childBannerAfterToggle).toBe(false)
     await page.close()
+  })
+
+  it('re-sets cookie on SSR when refresh is true and value is explicitly written', async () => {
+    const res = await fetch('/cookies-refresh', {
+      headers: {
+        cookie: 'refresh-with-write=existing; refresh-without-write=existing; no-refresh-with-write=existing',
+      },
+    })
+    const cookies = res.headers.get('set-cookie') ?? ''
+
+    // refresh: true with explicit write — should re-set the cookie
+    expect(cookies).toContain('refresh-with-write=existing')
+
+    // refresh: true without explicit write — should NOT re-set the cookie
+    expect(cookies).not.toContain('refresh-without-write')
+
+    // refresh: false with same-value write — should NOT re-set the cookie
+    expect(cookies).not.toContain('no-refresh-with-write')
   })
 
   it('supports onPrehydrate', async () => {
@@ -1079,16 +1121,6 @@ describe('head tags', () => {
     expect(html).toContain('<meta http-equiv="content-security-policy" content="default-src https">')
   })
 
-  // TODO: https://github.com/nuxt/nuxt/issues/32670
-  it.fails('should not duplicate link tags with rel="alternate"', async () => {
-    const page = await createPage('/head-component')
-
-    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
-
-    expect(await page.locator('link[rel="alternate"]').count()).toBe(1)
-    await page.close()
-  })
-
   it('should deduplicate head tags with key', async () => {
     const page = await createPage('/head-component')
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
@@ -1194,7 +1226,7 @@ describe('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=%22true%22; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 
@@ -1333,17 +1365,34 @@ describe('composables', () => {
   })
   it('`useRouteAnnouncer` should change message on route change', async () => {
     const { page } = await renderPage('/route-announcer')
-    expect(await page.getByRole('alert').textContent()).toContain('First Page')
+    expect(await page.getByRole('status').textContent()).toContain('First Page')
+    expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite')
     await page.getByRole('link').click()
     await page.getByText('Second page content').waitFor()
-    expect(await page.getByRole('alert').textContent()).toContain('Second Page')
+    expect(await page.getByRole('status').textContent()).toContain('Second Page')
     await page.close()
   })
   it('`useRouteAnnouncer` should change message on dynamically changed title', async () => {
     const { page } = await renderPage('/route-announcer')
     await page.getByRole('button').click()
     await page.waitForFunction(() => document.title.includes('Dynamically set title'))
-    expect(await page.getByRole('alert').textContent()).toContain('Dynamically set title')
+    expect(await page.getByRole('status').textContent()).toContain('Dynamically set title')
+    await page.close()
+  })
+  it('`useAnnouncer` should announce polite message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('polite-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="status"]')?.textContent?.includes('Polite announcement'))
+    expect(await page.getByRole('status').textContent()).toContain('Polite announcement')
+    expect(await page.getByRole('status').getAttribute('aria-live')).toBe('polite')
+    await page.close()
+  })
+  it('`useAnnouncer` should announce assertive message', async () => {
+    const { page } = await renderPage('/announcer')
+    await page.getByTestId('assertive-button').click()
+    await page.waitForFunction(() => document.querySelector('[role="alert"]')?.textContent?.includes('Assertive announcement'))
+    expect(await page.getByRole('alert').textContent()).toContain('Assertive announcement')
+    expect(await page.getByRole('alert').getAttribute('aria-live')).toBe('assertive')
     await page.close()
   })
 })
@@ -1432,6 +1481,14 @@ describe('layouts', () => {
 
     expect(html).toContain('with-layout.vue')
     expect(html).toContain('Custom Layout:')
+  })
+  it('should work with props', async () => {
+    const html = await $fetch<string>('/with-layout-props')
+
+    expect(html).toContain('with-layout-props.vue')
+    expect(html).toContain('Custom Layout:')
+    expect(html).toContain('set props from page meta')
+    await expectNoClientErrors('/with-layout-props')
   })
   it('should work with a dynamically set layout', async () => {
     const html = await $fetch<string>('/with-dynamic-layout')
@@ -1852,6 +1909,10 @@ describe('automatically keyed composables', () => {
     expect(html).toContain('true')
     expect(html).not.toContain('false')
   })
+  // TODO: remove in Nuxt 5
+  it('should work when imported from #app barrel export', async () => {
+    await expectNoClientErrors('/keyed-composables/barrel-import')
+  })
 })
 
 describe.runIf(isDev && !isWebpack)('css links', () => {
@@ -1879,8 +1940,8 @@ describe.skipIf(isDev)('module identifiers', () => {
 
 describe.skipIf(isDev)('inlining component styles', () => {
   const globalCSS = [
-    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
-    '{--global:"global";', // global css from nuxt.config
+    '--plugin:"plugin"', // CSS imported ambiently in JS/TS
+    '--global:"global"', // global css from nuxt.config
   ]
   const nonGlobalCSS = [
     '{--assets:"assets"}', // <script>
@@ -1931,7 +1992,7 @@ describe.skipIf(isDev)('inlining component styles', () => {
     // should not include inlined CSS in generated CSS files
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
-      if (style === '{--plugin:"plugin"}') {
+      if (style === '--plugin:"plugin"') {
         expect.soft(css).toContain(style)
         continue
       }

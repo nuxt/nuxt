@@ -360,7 +360,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
     iframe.id = 'frame';
     iframe.src = 'data:text/html;base64,${base64HTML}';
     iframe.title = 'Detailed error stack trace';
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-top-navigation-by-user-activation');
 
     const preview = el('div');
     preview.id = 'preview';

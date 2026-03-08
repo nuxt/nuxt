@@ -36,7 +36,11 @@ function detectLinkRelType () {
 /** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
-  const promise = _getPayloadURL(url, opts).then((payloadURL) => {
+  const promise = shouldLoadPayload(url).then(async (shouldPreload) => {
+    if (!shouldPreload) {
+      return
+    }
+    const payloadURL = await _getPayloadURL(url, opts)
     const link = renderJsonPayloads
       ? { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
       : { rel: 'modulepreload', crossorigin: '', href: payloadURL } as const
@@ -70,7 +74,7 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const config = useRuntimeConfig()
-  const hash = opts.hash || (opts.fresh ? Date.now() : config.app.buildId)
+  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   return joinURL(baseOrCdnURL, u.pathname, filename + (hash ? `?${hash}` : ''))
@@ -79,7 +83,7 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 async function _importPayload (payloadURL: string) {
   if (import.meta.server || !payloadExtraction) { return null }
   const payloadPromise = renderJsonPayloads
-    ? fetch(payloadURL, { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
+    ? fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
     : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
 
   try {
@@ -114,6 +118,9 @@ async function _isPrerenderedInManifest (url: string) {
  */
 export async function shouldLoadPayload (url = useRoute().path) {
   const rules = getRouteRules({ path: url })
+  if (rules.ssr === false) {
+    return false
+  }
   const res = _shouldLoadPrerenderedPayload(rules)
   if (res !== undefined) {
     return res

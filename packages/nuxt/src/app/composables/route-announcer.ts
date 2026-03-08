@@ -13,7 +13,7 @@ export type NuxtRouteAnnouncerOpts = {
 export type RouteAnnouncer = {
   message: Ref<string>
   politeness: Ref<Politeness>
-  set: (message: string, politeness: Politeness) => void
+  set: (message: string, politeness?: Politeness) => void
   polite: (message: string) => void
   assertive: (message: string) => void
   _cleanup: () => void
@@ -29,12 +29,12 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
     politeness.value = politenessSetting
   }
 
-  function polite (message: string) {
-    return set(message, 'polite')
+  function polite (msg: string) {
+    set(msg, 'polite')
   }
 
-  function assertive (message: string) {
-    return set(message, 'assertive')
+  function assertive (msg: string) {
+    set(msg, 'assertive')
   }
 
   function _updateMessageWithPageHeading () {
@@ -65,13 +65,15 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
  * composable to handle the route announcer
  * @since 3.12.0
  */
-export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): Omit<RouteAnnouncer, '_cleanup'> {
+export function useRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}): Omit<RouteAnnouncer, '_cleanup'> {
   const nuxtApp = useNuxtApp()
 
   // Initialise global route announcer if it doesn't exist already
   const announcer = nuxtApp._routeAnnouncer ||= createRouteAnnouncer(opts)
-  if (opts.politeness !== announcer.politeness.value) {
-    announcer.politeness.value = opts.politeness || 'polite'
+
+  // Update politeness if different from current
+  if (opts.politeness && opts.politeness !== announcer.politeness.value) {
+    announcer.politeness.value = opts.politeness
   }
   if (import.meta.client && getCurrentScope()) {
     nuxtApp._routeAnnouncerDeps ||= 0

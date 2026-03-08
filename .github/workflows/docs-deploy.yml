@@ -6,6 +6,7 @@ on:
       - "docs/**"
     branches:
       - main
+      - 4.x
       - 3.x
 
 # Remove default permissions of GITHUB_TOKEN for security
@@ -14,7 +15,7 @@ permissions: {}
 
 jobs:
   deploy-docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
       - if: ${{ github.repository_owner == 'nuxt' && github.event_name == 'push' }}

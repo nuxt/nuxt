@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - 4.x
       - 3.x
   pull_request:
 
@@ -13,6 +14,8 @@ permissions:
 
 jobs:
   dependency-review:
+    # already tested in merge queue
+    if: github.event_name != 'push'
     uses: nuxt/.github/.github/workflows/dependency-review.yml@main
     with:
       fail-on-provenance-change: true

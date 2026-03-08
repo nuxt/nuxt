@@ -33,6 +33,7 @@ import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 
+import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
@@ -58,8 +59,13 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
 
   const { callHook, callHookParallel, callHookWith } = hooks
-  hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
-  hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
+  if (options.experimental.asyncCallHook) {
+    hooks.callHook = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHook(...args)))
+    hooks.callHookParallel = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHookParallel(...args)) ?? [])
+  } else {
+    hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
+    hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
+  }
   hooks.callHookWith = (...args) => runWithNuxtContext(nuxt, () => callHookWith(...args))
 
   const nuxt: Nuxt = {
@@ -71,7 +77,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => runWithNuxtContext(nuxt, () => initNuxt(nuxt)),
-    close: () => hooks.callHook('close', nuxt),
+    close: async () => { await hooks.callHook('close', nuxt) },
     vfs: {},
     apps: {},
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
@@ -559,6 +565,14 @@ async function initNuxt (nuxt: Nuxt) {
     mode: 'client',
   })
 
+  // Add <NuxtAnnouncer>
+  addComponent({
+    name: 'NuxtAnnouncer',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-announcer'),
+    mode: 'client',
+  })
+
   // Add <NuxtClientFallback>
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
@@ -637,6 +651,7 @@ async function initNuxt (nuxt: Nuxt) {
     keyedFunctions: normalizedKeyedFunctions,
     alias: nuxt.options.alias,
     getAutoImports: unimport!.getImports,
+    appDir: nuxt.options.appDir,
   }))
 
   // remove duplicate css after modules are done
@@ -891,6 +906,12 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       createDebugger(nuxt.hooks, { tag: 'nuxt' })
     }
   })
+
+  // Restore cached buildId before modules are initialised so that the nitro
+  // module (which captures buildId at init time) uses the correct value.
+  if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
+    nuxt.hooks.hookOnce('modules:before', () => restoreCachedBuildId(nuxt))
+  }
 
   if (opts.ready !== false) {
     await nuxt.ready()

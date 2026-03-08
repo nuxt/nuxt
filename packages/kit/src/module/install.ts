@@ -46,8 +46,22 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
 
   nuxt._moduleOptionsFunctions ||= new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
   const resolvedModules: Array<ResolvedModule> = []
+  // allow moduleDependencies to reference modules by their meta.name
+  const modulesByMetaName = new Map<string, ModuleToInstall>()
   const inlineConfigKeys = new Set(
-    await Promise.all([...modulesToInstall].map(([mod]) => typeof mod !== 'string' && Promise.resolve(mod.getMeta?.())?.then(r => r?.configKey))),
+    await Promise.all([...modulesToInstall].map(async ([mod]) => {
+      if (typeof mod === 'string') { return }
+      const meta = await Promise.resolve(mod.getMeta?.())
+      if (meta?.name) {
+        modulesByMetaName.set(meta.name, mod)
+      }
+      if (meta?.configKey) {
+        if (meta.configKey !== meta.name) {
+          modulesByMetaName.set(meta.configKey, mod)
+        }
+        return meta.configKey
+      }
+    })),
   )
   let error: Error | undefined
   const dependencyMap = new Map<ModuleToInstall, string>()
@@ -65,7 +79,13 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         continue
       }
 
-      const resolvedModule = resolveModuleWithOptions(name, nuxt)
+      // Try to resolve by path/package name first.
+      // If the name matches a meta.name/configKey of an already-loaded module,
+      // resolve using the original module key instead (supports local modules and
+      // modules where meta.name differs from the npm package name).
+      const resolvedModule = modulesByMetaName.has(name)
+        ? resolveModuleWithOptions(modulesByMetaName.get(name)!, nuxt)
+        : resolveModuleWithOptions(name, nuxt)
       const moduleToAttribute = typeof key === 'string' ? `\`${key}\`` : 'a module in `nuxt.options`'
 
       if (!resolvedModule?.module) {
@@ -130,13 +150,13 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     const configKey = meta.configKey as keyof NuxtOptions | undefined
 
     // Merge options
-    const optionsFns = [
+    const optionsFns = new Set([
       ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
       ...meta?.name ? nuxt._moduleOptionsFunctions.get(meta.name) || [] : [],
       // TODO: consider dropping options functions keyed by config key
       ...configKey ? nuxt._moduleOptionsFunctions.get(configKey) || [] : [],
-    ]
-    if (optionsFns.length > 0) {
+    ])
+    if (optionsFns.size > 0) {
       const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
       const defaults: Array<Record<string, unknown> | undefined> = []
       for (const fn of optionsFns) {

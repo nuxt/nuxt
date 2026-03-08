@@ -1,7 +1,7 @@
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { withoutLeadingSlash } from 'ufo'
-import * as vite from 'vite'
+import type { OutputOptions } from 'rolldown'
 import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { useNitro } from '@nuxt/kit'
 import { resolveModulePath } from 'exsolve'
@@ -21,13 +21,10 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
     '#app-manifest': resolveModulePath('mocked-exports/empty', { from: import.meta.url }),
   }
 
-  let viteConfig: vite.InlineConfig
-
   return {
     name: 'nuxt:environments',
     enforce: 'pre', // run before other plugins
-    config (config) {
-      viteConfig = config
+    config () {
       if (!nuxt.options.dev) {
         return {
           base: './',
@@ -35,15 +32,11 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     configEnvironment (name, config) {
-      if (!nuxt.options.experimental.viteEnvironmentApi && viteConfig.ssr) {
-        config.optimizeDeps ||= {}
-        config.optimizeDeps.include = undefined
-      }
       if (name === 'client') {
-        const outputConfig = config.build?.rollupOptions?.output as vite.Rollup.OutputOptions
+        const outputConfig = config.build?.rolldownOptions?.output as OutputOptions | undefined
         return {
           build: {
-            rollupOptions: {
+            rolldownOptions: {
               output: {
                 chunkFileNames: outputConfig?.chunkFileNames ?? (nuxt.options.dev ? undefined : fileNames),
                 entryFileNames: outputConfig?.entryFileNames ?? (nuxt.options.dev ? 'entry.js' : fileNames),
@@ -59,18 +52,6 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
               },
             },
           },
-        }
-      }
-
-      if (name === 'ssr') {
-        // Disable manual chunks for SSR environment to avoid splitting issues
-        if (config.build?.rollupOptions?.output && !Array.isArray(config.build.rollupOptions.output)) {
-          config.build.rollupOptions.output.manualChunks = undefined
-
-          // Also disable advancedChunks when using Rolldown
-          if ((vite as any).rolldownVersion) {
-            (config.build.rollupOptions.output as any).advancedChunks = undefined
-          }
         }
       }
     },
@@ -89,8 +70,6 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
             },
           },
         ]
-      } else if (environment.name === 'ssr') {
-        //
       }
       return false
     },
