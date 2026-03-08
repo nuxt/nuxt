@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks'
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
@@ -768,6 +769,33 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
   await nuxt.callHook('nitro:init', nitro)
+
+  // Instrument Nitro rollup plugins for perf tracking
+  if (nuxt._perf) {
+    nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
+      const plugins = (rollupConfig.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
+      for (const plugin of plugins) {
+        if (!plugin || !plugin.name) { continue }
+        const pluginName = `nitro:${plugin.name}`
+        for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+          const original = plugin[hookName]
+          if (typeof original !== 'function') { continue }
+          plugin[hookName] = function (this: any, ...args: any[]) {
+            const start = performance.now()
+            const result = original.apply(this, args)
+            if (result && typeof result === 'object' && 'then' in result) {
+              return (result as Promise<any>).then((v: any) => {
+                nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start)
+                return v
+              })
+            }
+            nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start)
+            return result
+          } as any
+        }
+      }
+    })
+  }
 
   nuxt['~runtimeDependencies'] ||= []
   nuxt['~runtimeDependencies']!.push(
