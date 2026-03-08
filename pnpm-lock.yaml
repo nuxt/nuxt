@@ -169,8 +169,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.14
-        version: 2.0.1-rc.14(crossws@0.4.4(srvx@0.9.8))
+        specifier: 2.0.1-rc.15
+        version: 2.0.1-rc.15(crossws@0.4.4(srvx@0.9.8))
       happy-dom:
         specifier: 20.8.3
         version: 20.8.3
@@ -826,11 +826,11 @@ importers:
         specifier: 2.25.12
         version: 2.25.12
       h3:
-        specifier: 1.15.5
-        version: 1.15.5
+        specifier: 1.15.6
+        version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.7
-        version: h3@2.0.1-rc.7(crossws@0.4.4(srvx@0.9.8))
+        specifier: npm:h3@2.0.1-rc.15
+        version: h3@2.0.1-rc.15(crossws@0.4.4(srvx@0.9.8))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.3)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
@@ -908,8 +908,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.105.4(esbuild@0.27.3))
       h3:
-        specifier: 2.0.1-rc.14
-        version: 2.0.1-rc.14(crossws@0.4.4(srvx@0.9.8))
+        specifier: 2.0.1-rc.15
+        version: 2.0.1-rc.15(crossws@0.4.4(srvx@0.9.8))
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -1119,11 +1119,11 @@ importers:
         specifier: workspace:*
         version: link:../schema
       h3:
-        specifier: ^1.15.5
-        version: 1.15.5
+        specifier: ^1.15.6
+        version: 1.15.6
       h3-next:
-        specifier: npm:h3@^2.0.1-rc.7
-        version: h3@2.0.1-rc.14(crossws@0.4.4(srvx@0.9.8))
+        specifier: npm:h3@^2.0.1-rc.15
+        version: h3@2.0.1-rc.15(crossws@0.4.4(srvx@0.9.8))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.3)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
@@ -1285,11 +1285,11 @@ importers:
         specifier: 2.25.12
         version: 2.25.12
       h3:
-        specifier: 1.15.5
-        version: 1.15.5
+        specifier: 1.15.6
+        version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.7
-        version: h3@2.0.1-rc.7(crossws@0.4.4(srvx@0.9.8))
+        specifier: npm:h3@2.0.1-rc.15
+        version: h3@2.0.1-rc.15(crossws@0.4.4(srvx@0.9.8))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.3)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
@@ -5795,8 +5795,8 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  h3@1.15.5:
-    resolution: {integrity: sha512-xEyq3rSl+dhGX2Lm0+eFQIAzlDN6Fs0EcC4f7BNUmzaRX/PTzeuM+Tr2lHB8FoXggsQIeXLj8EDVgs5ywxyxmg==}
+  h3@1.15.6:
+    resolution: {integrity: sha512-oi15ESLW5LRthZ+qPCi5GNasY/gvynSKUQxgiovrY63bPAtG59wtM+LSrlcwvOHAXzGrXVLnI97brbkdPF9WoQ==}
 
   h3@2.0.1-rc.11:
     resolution: {integrity: sha512-2myzjCqy32c1As9TjZW9fNZXtLqNedjFSrdFy2AjFBQQ3LzrnGoDdFDYfC0tV2e4vcyfJ2Sfo/F6NQhO2Ly/Mw==}
@@ -5807,19 +5807,10 @@ packages:
       crossws:
         optional: true
 
-  h3@2.0.1-rc.14:
-    resolution: {integrity: sha512-163qbGmTr/9rqQRNuqMqtgXnOUAkE4KTdauiC9y0E5iG1I65kte9NyfWvZw5RTDMt6eY+DtyoNzrQ9wA2BfvGQ==}
+  h3@2.0.1-rc.15:
+    resolution: {integrity: sha512-cYeI6l/IQC3OxY6sz03oaAqdp1rEdM6dyiPdbO2fugsDjB+TYBtBQp34aXSt09K3ugxTnNgOv7fbX83dOIf/iA==}
     engines: {node: '>=20.11.1'}
     hasBin: true
-    peerDependencies:
-      crossws: ^0.4.1
-    peerDependenciesMeta:
-      crossws:
-        optional: true
-
-  h3@2.0.1-rc.7:
-    resolution: {integrity: sha512-qbrRu1OLXmUYnysWOCVrYhtC/m8ZuXu/zCbo3U/KyphJxbPFiC76jHYwVrmEcss9uNAHO5BoUguQ46yEpgI2PA==}
-    engines: {node: '>=20.11.1'}
     peerDependencies:
       crossws: ^0.4.1
     peerDependenciesMeta:
@@ -10229,7 +10220,7 @@ snapshots:
       '@vueuse/core': 14.1.0(vue@3.5.29(typescript@5.9.3))
       consola: 3.4.2
       defu: 6.1.4
-      h3: 1.15.5
+      h3: 1.15.6
       magic-string: 0.30.21
       ofetch: 2.0.0-alpha.3
       ohash: 2.0.11
@@ -10286,7 +10277,7 @@ snapshots:
       exsolve: 1.0.8
       fake-indexeddb: 6.2.5
       get-port-please: 3.2.0
-      h3: 1.15.5
+      h3: 1.15.6
       h3-next: h3@2.0.1-rc.11(crossws@0.4.4(srvx@0.9.8))
       local-pkg: 1.1.2
       magic-string: 0.30.21
@@ -13621,7 +13612,7 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3@1.15.5:
+  h3@1.15.6:
     dependencies:
       cookie-es: 1.2.2
       crossws: 0.3.5
@@ -13640,14 +13631,7 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.4(srvx@0.9.8)
 
-  h3@2.0.1-rc.14(crossws@0.4.4(srvx@0.9.8)):
-    dependencies:
-      rou3: 0.7.12
-      srvx: 0.9.8
-    optionalDependencies:
-      crossws: 0.4.4(srvx@0.9.8)
-
-  h3@2.0.1-rc.7(crossws@0.4.4(srvx@0.9.8)):
+  h3@2.0.1-rc.15(crossws@0.4.4(srvx@0.9.8)):
     dependencies:
       rou3: 0.7.12
       srvx: 0.9.8
@@ -14339,7 +14323,7 @@ snapshots:
       crossws: 0.3.5
       defu: 6.1.4
       get-port-please: 3.2.0
-      h3: 1.15.5
+      h3: 1.15.6
       http-shutdown: 1.2.2
       jiti: 2.6.1
       mlly: 1.8.1
@@ -15010,7 +14994,7 @@ snapshots:
       consola: 3.4.2
       crossws: 0.4.4(srvx@0.9.8)
       db0: 0.3.4
-      h3: 2.0.1-rc.14(crossws@0.4.4(srvx@0.9.8))
+      h3: 2.0.1-rc.15(crossws@0.4.4(srvx@0.9.8))
       hookable: 6.0.1
       nf3: 0.3.10
       ofetch: 2.0.0-alpha.3
@@ -15082,7 +15066,7 @@ snapshots:
       exsolve: 1.0.8
       globby: 16.1.0
       gzip-size: 7.0.0
-      h3: 1.15.5
+      h3: 1.15.6
       hookable: 5.5.3
       httpxy: 0.1.7
       ioredis: 5.9.1
@@ -17196,7 +17180,7 @@ snapshots:
       anymatch: 3.1.3
       chokidar: 5.0.0
       destr: 2.0.5
-      h3: 1.15.5
+      h3: 1.15.6
       lru-cache: 11.2.4
       node-fetch-native: 1.6.7
       ofetch: 2.0.0-alpha.3
