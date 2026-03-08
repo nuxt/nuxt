@@ -8,6 +8,7 @@ overrides:
   '@babel/core': 7.29.0
   '@babel/helper-plugin-utils': 7.28.6
   '@nuxt/cli': 3.33.1
+  '@nuxt/devtools': file:nuxt-devtools-3.2.2.tgz
   '@nuxt/kit': workspace:*
   '@nuxt/nitro-server': workspace:*
   '@nuxt/rspack-builder': workspace:*
@@ -478,8 +479,8 @@ importers:
         specifier: 3.33.1
         version: 3.33.1(@nuxt/schema@packages+schema)(cac@6.7.14)(magicast@0.5.2)
       '@nuxt/devtools':
-        specifier: ^3.2.2
-        version: 3.2.2(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
+        specifier: file:../../nuxt-devtools-3.2.2.tgz
+        version: file:nuxt-devtools-3.2.2.tgz(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -2333,8 +2334,9 @@ packages:
     resolution: {integrity: sha512-FaKV3xZF+Sj2ORxJNWTUalnEV8cpXW2rkg60KzQd7LryEHgUdFMuY/oTSVh9YmURqSzwVlfYd1Su56yi02pxlA==}
     hasBin: true
 
-  '@nuxt/devtools@3.2.2':
-    resolution: {integrity: sha512-b6roSuKed5XMg09oWejXb4bRG+iYPDFRHEP2HpAfwpFWgAhpiQIAdrdjZNt4f/pzbfhDqb1R5TSa1KmztOuMKw==}
+  '@nuxt/devtools@file:nuxt-devtools-3.2.2.tgz':
+    resolution: {integrity: sha512-dOHdykruYNzZNVjQ0mcBCuFjMPiQBTXxUNjkxy5Uf2qnc7mKy2ryhGa2mH11Ug0Ya9Lvzi2Qufy1PVvLFFdOyg==}
+    version: 3.2.2
     hasBin: true
     peerDependencies:
       '@vitejs/devtools': '*'
@@ -10131,7 +10133,7 @@ snapshots:
       pkg-types: 2.3.0
       semver: 7.7.4
 
-  '@nuxt/devtools@3.2.2(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))':
+  '@nuxt/devtools@file:nuxt-devtools-3.2.2.tgz(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))':
     dependencies:
       '@nuxt/devtools-kit': 3.2.2(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(terser@5.44.1)(yaml@2.8.2))
       '@nuxt/devtools-wizard': 3.2.2

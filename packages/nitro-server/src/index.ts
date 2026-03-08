@@ -642,10 +642,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
 
-  // TODO: remove when devtools gains support for nitro v3
-  // @ts-expect-error devtools calls storage.watch() and storage.getMount()
-  nitro.storage ||= { watch: () => {}, getMount: () => ({}) }
-
   // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
   // Add prerender payload support
   if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
