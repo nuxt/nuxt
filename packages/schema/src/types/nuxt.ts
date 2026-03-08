@@ -103,7 +103,11 @@ export interface Nuxt {
     endPhase: (name?: string) => void
     collectModuleTimings: (modules: Array<{ meta?: { name?: string }, timings?: Record<string, number | undefined> }>) => void
     recordBundlerPluginHook: (pluginName: string, hookName: string, durationMs: number) => void
+    startCpuProfile: () => Promise<void>
+    stopCpuProfile: (cwd?: string) => Promise<string | undefined>
+    isCpuProfileActive: boolean
     printReport: (options?: { title?: string }) => void
+    printSessionSummary: () => void
     writeReport: (buildDir: string, options?: { quiet?: boolean }) => Promise<string>
     dispose: () => void
   }

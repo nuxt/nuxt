@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks'
 import process from 'node:process'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { join } from 'pathe'
+import { join, resolve } from 'pathe'
 import { consola } from 'consola'
 import { colors } from 'consola/utils'
 import type { Hookable } from 'hookable'
@@ -120,10 +120,49 @@ export class NuxtPerfProfiler {
   #globalStart: number
   #globalMemoryBefore: MemorySnapshot
   #unsubscribe?: () => void
+  #cpuProfileSession?: import('node:inspector').Session
+  #cpuProfileCount = 0
 
   constructor () {
     this.#globalStart = performance.now()
     this.#globalMemoryBefore = getMemorySnapshot()
+  }
+
+  async startCpuProfile (): Promise<void> {
+    const inspector = await import('node:inspector')
+    const session = new inspector.Session()
+    session.connect()
+    await new Promise<void>((res, rej) => {
+      session.post('Profiler.enable', () => {
+        session.post('Profiler.start', (err) => {
+          if (err) { rej(err) } else { res() }
+        })
+      })
+    })
+    this.#cpuProfileSession = session
+    consola.info('CPU profiler started')
+  }
+
+  stopCpuProfile (cwd?: string): Promise<string | undefined> {
+    const session = this.#cpuProfileSession
+    if (!session) { return Promise.resolve(undefined) }
+    this.#cpuProfileSession = undefined
+    return new Promise((res, rej) => {
+      session.post('Profiler.stop', (err, { profile }) => {
+        if (err) { return rej(err) }
+        const outPath = resolve(cwd || '.', `nuxt-profile-${this.#cpuProfileCount++}.cpuprofile`)
+        writeFile(outPath, JSON.stringify(profile)).then(() => {
+          consola.info(`CPU profile written to ${colors.cyan(outPath)}`)
+          consola.info(`Open it in ${colors.cyan('https://www.speedscope.app')} or Chrome DevTools`)
+          session.disconnect()
+          res(outPath)
+        }).catch(rej)
+      })
+    })
+  }
+
+  get isCpuProfileActive (): boolean {
+    return !!this.#cpuProfileSession
   }
 
   installHookInterceptors (hooks: Hookable<NuxtHooks>): void {
@@ -255,19 +294,31 @@ export class NuxtPerfProfiler {
     // Compute own-time and own-memory for each phase by subtracting
     // child phases nested inside it.
     function computeOwn (phase: PerfPhase) {
+      // Find direct children: phases nested inside this one that aren't
+      // themselves nested inside another child (to avoid double-subtraction).
+      const children = allPhases.filter(other =>
+        other !== phase
+        && other.startTime >= phase.startTime
+        && other.endTime <= phase.endTime,
+      )
+      const directChildren = children.filter(child =>
+        !children.some(other =>
+          other !== child
+          && child.startTime >= other.startTime
+          && child.endTime <= other.endTime,
+        ),
+      )
+
       let childTime = 0
       let childRss = 0
       let childHeap = 0
-      for (const other of allPhases) {
-        if (other === phase) { continue }
-        if (other.startTime >= phase.startTime && other.endTime <= phase.endTime) {
-          childTime += other.duration
-          childRss += other.memoryDelta.rss
-          childHeap += other.memoryDelta.heapUsed
-        }
+      for (const child of directChildren) {
+        childTime += child.duration
+        childRss += child.memoryDelta.rss
+        childHeap += child.memoryDelta.heapUsed
       }
       return {
-        ownDuration: round(phase.duration - childTime),
+        ownDuration: round(Math.max(0, phase.duration - childTime)),
         ownMemoryDelta: {
           rss: phase.memoryDelta.rss - childRss,
           heapUsed: phase.memoryDelta.heapUsed - childHeap,
@@ -346,16 +397,32 @@ export class NuxtPerfProfiler {
     const separator = '  ' + colors.dim('─'.repeat(colPhase + colDuration + colRss + colHeap + 6))
     consola.log(separator)
 
+    const maxRss = Math.max(...topPhases.map(p => Math.abs(p.ownMemoryDelta.rss)), 1)
+    const barMax = 20
+
     for (const phase of topPhases) {
       const dur = phase.ownDuration
       const rss = phase.ownMemoryDelta.rss
       const heap = phase.ownMemoryDelta.heapUsed
-      const barWidth = Math.max(1, Math.round((dur / maxDuration) * 12))
-      const bar = colors.green('█'.repeat(barWidth))
+
+      // Duration bar: log scale so small phases are still visible next to dominant ones
+      const durBar = dur > 0
+        ? Math.max(1, Math.round((Math.log(dur + 1) / Math.log(maxDuration + 1)) * (barMax / 2)))
+        : 0
+      // Memory bar: proportional to RSS delta
+      const memBar = Math.abs(rss) > 0
+        ? Math.max(0, Math.round((Math.abs(rss) / maxRss) * (barMax / 2)))
+        : 0
+
+      const durColor = dur > 1000 ? colors.red : dur > 200 ? colors.yellow : colors.green
+      const memColor = Math.abs(rss) > 50 * 1024 * 1024 ? colors.red : Math.abs(rss) > 10 * 1024 * 1024 ? colors.yellow : colors.green
+
+      const bar = durColor('█'.repeat(durBar)) + memColor('░'.repeat(memBar))
+
       const row = [
         pad(phase.name, colPhase),
-        pad(formatDuration(dur), colDuration, 'right'),
-        pad((rss >= 0 ? '+' : '') + formatBytes(rss), colRss, 'right'),
+        pad(durColor(formatDuration(dur)), colDuration, 'right'),
+        pad(memColor((rss >= 0 ? '+' : '') + formatBytes(rss)), colRss, 'right'),
         pad((heap >= 0 ? '+' : '') + formatBytes(heap), colHeap, 'right'),
       ].join('  ')
       consola.log(`  ${row}  ${bar}`)
@@ -441,6 +508,42 @@ export class NuxtPerfProfiler {
       consola.log('')
     }
     return reportPath
+  }
+
+  printSessionSummary (): void {
+    const report = this.getReport()
+    const elapsed = formatDuration(report.totalDuration)
+
+    consola.log('')
+    consola.log(colors.bold(colors.cyan(' Nuxt Session Summary')))
+    consola.log('')
+    consola.log(`  ${colors.dim('Session duration:')} ${elapsed}`)
+    consola.log(`  ${colors.dim('Memory:')} ${(report.totalMemoryDelta.rss >= 0 ? '+' : '') + formatBytes(report.totalMemoryDelta.rss)} RSS, ${(report.totalMemoryDelta.heapUsed >= 0 ? '+' : '') + formatBytes(report.totalMemoryDelta.heapUsed)} heap`)
+    consola.log('')
+
+    if (report.bundlerPlugins.length > 0) {
+      const rows: Array<{ plugin: string, hook: string, timing: PluginHookTiming }> = []
+      for (const plugin of report.bundlerPlugins) {
+        for (const [hook, timing] of Object.entries(plugin.hooks)) {
+          if (timing.avgTime > 0.5) {
+            rows.push({ plugin: plugin.name, hook, timing })
+          }
+        }
+      }
+      rows.sort((a, b) => b.timing.avgTime - a.timing.avgTime)
+
+      if (rows.length > 0) {
+        consola.log(colors.bold(` Bundler Plugins (session total)`))
+        consola.log('')
+        for (const { plugin, hook, timing } of rows.slice(0, 15)) {
+          const durColor = timing.avgTime > 10 ? colors.red : timing.avgTime > 2 ? colors.yellow : colors.dim
+          const avgLabel = formatDuration(timing.avgTime) + '/file'
+          const maxLabel = timing.maxTime > timing.avgTime * 2 ? `, max ${formatDuration(timing.maxTime)}` : ''
+          consola.log(`  ${colors.dim('•')} ${plugin} ${colors.dim(hook)} ${colors.dim('—')} ${durColor(avgLabel)}${colors.dim(maxLabel)} ${colors.dim(`(${timing.count} calls)`)}`)
+        }
+        consola.log('')
+      }
+    }
   }
 
   dispose (): void {

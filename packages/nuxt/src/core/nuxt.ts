@@ -918,7 +918,20 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   if (perf) {
     nuxt._perf = perf
     perf.installHookInterceptors(nuxt.hooks)
-    nuxt.hook('close', () => perf!.dispose())
+
+    // Start V8 CPU profiler if enabled (captures flame chart data)
+    perf.startCpuProfile().catch(() => {})
+
+    nuxt.hook('close', async () => {
+      const perfOption = nuxt.options.debug && (nuxt.options.debug as any).perf
+      const quiet = perfOption === 'quiet'
+      if (nuxt.options.dev) {
+        if (!quiet) { perf!.printSessionSummary() }
+        await perf!.writeReport(nuxt.options.buildDir, { quiet })
+      }
+      await perf!.stopCpuProfile(nuxt.options.rootDir).catch(() => {})
+      perf!.dispose()
+    })
   }
 
   nuxt.runWithContext(() => {
