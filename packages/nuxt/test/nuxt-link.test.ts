@@ -27,10 +27,13 @@ vi.mock('vue', async () => {
 
 // Mocks Nuxt `useRouter()` and `navigateTo()`
 const navigateToMock = vi.fn()
+const routerPushMock = vi.fn().mockResolvedValue(undefined)
+const routerReplaceMock = vi.fn().mockResolvedValue(undefined)
 vi.mock('../src/app/composables/router', () => ({
   resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
     return withQuery(to.path || '', to.query || {}) + (to.hash || '')
   },
+  encodeRoutePath: (url: string) => url,
   navigateTo: (...args: unknown[]) => navigateToMock(...args),
   useRouter: () => ({
     resolve: (route: string | RouteLocation): Partial<RouteLocation> & { href: string } => {
@@ -44,6 +47,8 @@ vi.mock('../src/app/composables/router', () => ({
         href: route.path || `/${route.name?.toString()}`,
       }
     },
+    push: (...args: unknown[]) => routerPushMock(...args),
+    replace: (...args: unknown[]) => routerReplaceMock(...args),
     currentRoute: { value: { path: '/' } },
   }),
 }))
@@ -56,12 +61,18 @@ const INTERNAL = 'RouterLink'
 const nuxtLink = (
   props: NuxtLinkProps = {},
   nuxtLinkOptions: Partial<NuxtLinkOptions> = {},
+  context?: { emit?: (event: string, ...args: unknown[]) => void },
 ): { type: string, props: Record<string, unknown>, slots: unknown } => {
   const component = defineNuxtLink({ componentName: 'NuxtLink', ...nuxtLinkOptions })
 
+  const setupContext = {
+    slots: { default: () => null },
+    emit: context?.emit ?? (() => {}),
+    attrs: {},
+  }
   const [type, _props, slots] = (
-    component as unknown as { setup: (props: NuxtLinkProps, context: { slots: Record<string, () => unknown> }) => () => [string, Record<string, unknown>, unknown] }
-  ).setup(props, { slots: { default: () => null } })()
+    component as unknown as { setup: (props: NuxtLinkProps, ctx: typeof setupContext) => () => [string, Record<string, unknown>, unknown] }
+  ).setup(props, setupContext)()
 
   return { type, props: _props, slots }
 }
@@ -475,5 +486,46 @@ describe('nuxt-link:useLink', () => {
     const trailingSlash = ref<'append' | 'remove'>('append')
     const link = component.useLink({ to: '/about', trailingSlash })
     expect(link.to.value).toBe('/about/')
+  })
+})
+
+describe('nuxt-link:error-handling', () => {
+  it('renders as `<a>` instead of RouterLink when onError is provided', () => {
+    expect(nuxtLink({ to: '/foo' }).type).toBe(INTERNAL)
+    expect(nuxtLink({ to: '/foo', onError: () => {} }).type).toBe(EXTERNAL)
+  })
+
+  it('has onError prop and error emit defined', () => {
+    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    expect(component.props).toBeDefined()
+    expect((component.props as Record<string, unknown>).onError).toBeDefined()
+    expect(component.emits).toBeDefined()
+    expect((component.emits as Record<string, unknown>).error).toBeDefined()
+  })
+
+  it('calls onError and emit when navigation fails', async () => {
+    const onErrorMock = vi.fn()
+    const emitMock = vi.fn()
+    routerPushMock.mockRejectedValueOnce(new Error('Page not found'))
+
+    const link = nuxtLink(
+      { to: '/non-existent', onError: onErrorMock },
+      {},
+      { emit: emitMock },
+    )
+    expect(link.type).toBe(EXTERNAL)
+    expect(link.props.onClick).toBeDefined()
+
+    const event = { preventDefault: vi.fn() } as unknown as MouseEvent
+    await expect(link.props.onClick(event)).rejects.toThrow('Page not found')
+    expect(onErrorMock).toHaveBeenCalledTimes(1)
+    expect(onErrorMock.mock.calls[0][0]).toMatchObject({
+      name: 'NavigationError',
+      message: 'Page not found',
+    })
+    expect(emitMock).toHaveBeenCalledWith('error', expect.objectContaining({
+      name: 'NavigationError',
+      message: 'Page not found',
+    }))
   })
 })

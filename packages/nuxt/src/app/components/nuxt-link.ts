@@ -84,6 +84,21 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
    * Overrides the global `trailingSlash` option if provided.
    */
   trailingSlash?: 'append' | 'remove'
+  /**
+   * Callback invoked when navigation fails (e.g. route not found, middleware abort).
+   * Use for imperative error handling alongside or instead of the `@error` event.
+   */
+  onError?: (error: NuxtLinkNavigationError) => void
+}
+
+/**
+ * Error emitted when NuxtLink navigation fails.
+ * @see https://nuxt.com/docs/4.x/api/components/nuxt-link#error-event
+ */
+export interface NuxtLinkNavigationError extends Error {
+  name: 'NavigationError' | 'NavigationAborted'
+  cause?: unknown
+  route?: string
 }
 
 /**
@@ -358,12 +373,45 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         default: undefined,
         required: false,
       },
+
+      // Error handling
+      onError: {
+        type: Function as PropType<NuxtLinkProps['onError']>,
+        default: undefined,
+        required: false,
+      },
+    },
+    emits: {
+      error: (error: NuxtLinkNavigationError) => true,
     },
     useLink: useNuxtLink,
-    setup (props, { slots }) {
+    setup (props, { slots, emit, attrs }) {
       const router = useRouter()
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
+
+      const hasErrorHandler = computed(() => !!(props.onError || attrs?.onError))
+
+      function toNavigationError (error: unknown): NuxtLinkNavigationError {
+        const err = error as Error
+        const isAborted = err?.name === 'NavigationAborted' || err?.name === 'NavigationDuplicated'
+        return Object.assign(new Error(err?.message || 'Navigation failed'), {
+          name: isAborted ? 'NavigationAborted' : 'NavigationError',
+          cause: err?.cause,
+          route: typeof href.value === 'string' ? href.value : undefined,
+        }) as NuxtLinkNavigationError
+      }
+
+      async function navigateWithErrorHandling (e?: MouseEvent) {
+        try {
+          await navigate(e)
+        } catch (error) {
+          const navigationError = toNavigationError(error)
+          emit('error', navigationError)
+          props.onError?.(navigationError)
+          throw error
+        }
+      }
 
       // Prefetching
       const prefetched = shallowRef(false)
@@ -430,7 +478,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value) && !hasErrorHandler.value) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -488,7 +536,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
           return slots.default({
             href: href.value,
-            navigate,
+            navigate: hasErrorHandler.value ? navigateWithErrorHandling : navigate,
             prefetch,
             get route () {
               if (!href.value) { return undefined }
@@ -529,7 +577,16 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
             try {
               const encodedHref = encodeRoutePath(href.value)
-              return await (props.replace ? router.replace(encodedHref) : router.push(encodedHref))
+              const result = props.replace ? router.replace(encodedHref) : router.push(encodedHref)
+              await result
+              return result
+            } catch (error) {
+              if (hasErrorHandler.value) {
+                const navigationError = toNavigationError(error)
+                emit('error', navigationError)
+                props.onError?.(navigationError)
+              }
+              throw error
             } finally {
               // Focus the target element for hash links to restore accessibility behavior
               // that was prevented by event.preventDefault()
