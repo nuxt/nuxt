@@ -406,7 +406,7 @@ async function initNuxt (nuxt: Nuxt) {
         vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
         webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
         rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
-      }, { server: false })
+      }, { server: false, prepend: true })
 
       // Add import protection
       const nuxtProtectionConfig = {
@@ -420,9 +420,27 @@ async function initNuxt (nuxt: Nuxt) {
         webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
         rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
       })
-      // TODO: remove in nuxt v5 when we can use vite env api
-      addVitePlugin(() => [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false, warn: 'once' })].flat().map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` })), { client: false })
-      addVitePlugin(() => [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true })].flat().map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` })), { server: false })
+
+      // Register Vite import protection plugins with split enforce:
+      // - The main impound plugin (resolveId) needs prepend to run before Vite's resolver
+      // - The impound:trace plugin (transform) should run after SFC compilation so
+      //   es-module-lexer can parse the compiled JS and produce accurate code snippets
+      for (const envOptions of [
+        { client: false } as const,
+        { server: false } as const,
+      ]) {
+        const error = envOptions.client === false ? false : true
+        const vitePlugins = [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error, ...(error === false && { warn: 'once' as const }) })].flat()
+          .map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` }))
+        const mainPlugins = vitePlugins.filter(p => !p.name.includes('trace'))
+        const tracePlugins = vitePlugins.filter(p => p.name.includes('trace'))
+        if (mainPlugins.length) {
+          addVitePlugin(() => mainPlugins, { ...envOptions, prepend: true })
+        }
+        if (tracePlugins.length) {
+          addVitePlugin(() => tracePlugins, envOptions)
+        }
+      }
     }
   })
 
