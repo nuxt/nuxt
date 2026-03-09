@@ -248,6 +248,8 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
 
     // retry if file has changed during read
     if ((await fd.stat()).mtime.getTime() !== mtime) {
+      await fd.close()
+      fd = undefined
       if (count < 5) {
         return await readFileWithMeta(dir, fileName, count + 1)
       }
