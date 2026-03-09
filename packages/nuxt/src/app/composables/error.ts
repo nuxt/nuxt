@@ -102,6 +102,7 @@ export const createError = <DataT = unknown>(error: string | Error | Partial<Nux
     if (typeof statusCode === 'number') {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       err.statusCode = statusCode
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       if (err.statusText === undefined && err.statusMessage === undefined) {
         const defaultText = DEFAULT_STATUS_TEXT[statusCode] ?? 'Error'
         err.statusText = defaultText
