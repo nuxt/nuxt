@@ -61,7 +61,7 @@
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@babel/plugin-syntax-jsx": "7.28.6",
     "@nuxt/schema": "workspace:*",
-    "h3": "1.15.5",
+    "h3": "1.15.6",
     "h3-next": "npm:h3@2.0.1-rc.14",
     "nitropack": "2.13.1",
     "obuild": "0.4.31",
