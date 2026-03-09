@@ -66,7 +66,7 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
   if (options.context === 'nuxt-app' || options.context === 'shared') {
     const serverRelative = escapeRE(relative(nuxt.options.rootDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server')))
     patterns.push([
-      new RegExp(serverRelative + '\\/(api|routes|middleware|plugins)\\/'),
+      new RegExp('^' + serverRelative + '\\/(api|routes|middleware|plugins)\\/'),
       `Importing from server is not allowed in ${context}.`,
       ['Use `$fetch()` or `useFetch()` to fetch data from server routes.', 'Move shared logic to the `shared/` directory.'],
     ])
