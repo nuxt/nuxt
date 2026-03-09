@@ -52,7 +52,7 @@
     "hookable": "6.0.1",
     "nitro": "3.0.1-alpha.2",
     "nitropack": "2.13.1",
-    "obuild": "0.4.31",
+    "obuild": "0.4.32",
     "unimport": "6.0.1",
     "vite": "8.0.0-beta.16",
     "vitest": "4.0.18",
