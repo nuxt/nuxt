@@ -9,7 +9,7 @@ import type {
   SlotsType,
   VNode,
 } from 'vue'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
+import { computed, defineComponent, getCurrentInstance, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { ComponentSlots } from 'vue-component-type-helpers'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
@@ -469,7 +469,17 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, isActive, isExactActive, route: resolvedRoute } = useNuxtLink(props)
 
-      const hasErrorHandler = computed(() => !!(props.onNavigationError || attrs?.onError))
+      const hasErrorHandler = computed(() => {
+        const instance = getCurrentInstance()
+        const vnodeProps = instance?.vnode?.props
+        return !!(
+          props.onNavigationError ||
+          attrs?.onError ||
+          attrs?.onNavigationError ||
+          vnodeProps?.onError ||
+          vnodeProps?.onNavigationError
+        )
+      })
 
       function toNavigationError (error: unknown): NuxtLinkNavigationError {
         const isAborted = isNavigationFailure(error, NavigationFailureType.aborted | NavigationFailureType.duplicated)
@@ -748,10 +758,13 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             })
             try {
               const encodedHref = encodeRoutePath(href.value ?? '')
-              await Promise.race([
+              const result = await Promise.race([
                 props.replace ? router.replace(encodedHref) : router.push(encodedHref),
                 errorPromise,
               ])
+              if (isNavigationFailure(result)) {
+                throw result
+              }
             } catch (error) {
               if (hasErrorHandler.value) {
                 const navigationError = toNavigationError(error)
