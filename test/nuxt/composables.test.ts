@@ -479,10 +479,15 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     `)
   })
   it('getRouteRules', () => {
-    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot(`
+      {
+        "ssr": true,
+      }
+    `)
     expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
+        "ssr": true,
       }
     `)
     expect(getRouteRules({ path: '/pre/spa/thing' })).toMatchInlineSnapshot(`
@@ -495,6 +500,7 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       {
         "prerender": true,
         "redirect": "/",
+        "ssr": true,
       }
     `)
   })
