@@ -130,7 +130,7 @@ export default defineResolvers({
           nitro: true,
           router: true,
           hydration: true,
-          perf: true,
+          perf: process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true,
         } satisfies Required<NuxtDebugOptions>
       }
       if (val && typeof val === 'object') {

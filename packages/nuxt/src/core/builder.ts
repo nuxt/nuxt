@@ -78,19 +78,6 @@ export async function build (nuxt: Nuxt): Promise<void> {
 
   await nuxt.callHook('build:done')
 
-  // Print and write perf report after build (including Nitro build) is complete
-  if (nuxt._perf) {
-    const perfOption = nuxt.options.debug && (nuxt.options.debug as any).perf
-    const quiet = perfOption === 'quiet'
-    if (!quiet) {
-      const title = nuxt.options.dev
-        ? 'Nuxt Startup Performance'
-        : 'Nuxt Build Performance'
-      nuxt._perf.printReport({ title })
-    }
-    await nuxt._perf.writeReport(nuxt.options.buildDir, { quiet })
-  }
-
   if (!nuxt.options.dev) {
     await nuxt.callHook('close', nuxt)
   }

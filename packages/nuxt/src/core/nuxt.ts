@@ -804,18 +804,20 @@ export default defineNuxtPlugin({
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
-  // Start config phase profiling early (profiler may be replaced once config is loaded)
+  // Early-init profiler when CLI passes perf overrides (captures config loading).
+  // Otherwise, create after config resolves from nuxt.config / env vars.
   let perf: NuxtPerfProfiler | undefined
-  if (process.env.NUXT_DEBUG_PERF || (opts.overrides?.debug && (opts.overrides.debug === true || opts.overrides.debug?.perf))) {
-    perf = new NuxtPerfProfiler()
+  const cliStartTime = (globalThis as any).__nuxt_cli__?.startTime as number | undefined
+  const perfOverride = typeof opts.overrides?.debug === 'object' && opts.overrides.debug.perf
+  if (perfOverride) {
+    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
     perf.startPhase('config')
   }
 
   const options = await loadNuxtConfig(opts)
 
-  // Initialize profiler from resolved config if not already created
-  if (!perf && options.debug && (options.debug as any).perf) {
-    perf = new NuxtPerfProfiler()
+  if (!perf && typeof options.debug === 'object' && options.debug.perf) {
+    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
   }
   perf?.endPhase('config')
 
@@ -919,18 +921,41 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     nuxt._perf = perf
     perf.installHookInterceptors(nuxt.hooks)
 
-    // Start V8 CPU profiler if enabled (captures flame chart data)
+    const quiet = typeof options.debug === 'object' && options.debug.perf === 'quiet'
+
+    // Start V8 CPU profiler
     perf.startCpuProfile().catch(() => {})
 
+    // Flush perf data (report + CPU profile). Runs once — either via the
+    // close hook (async, preferred) or via a signal handler (sync, fallback).
+    let flushed = false
+    const title = nuxt.options.dev ? 'Nuxt Performance Report' : 'Nuxt Build Performance'
+
     nuxt.hook('close', async () => {
-      const perfOption = nuxt.options.debug && (nuxt.options.debug as any).perf
-      const quiet = perfOption === 'quiet'
-      if (nuxt.options.dev) {
-        if (!quiet) { perf!.printSessionSummary() }
-        await perf!.writeReport(nuxt.options.buildDir, { quiet })
-      }
-      await perf!.stopCpuProfile(nuxt.options.rootDir).catch(() => {})
+      if (flushed) { return }
+      flushed = true
+      if (!quiet) { perf!.printReport({ title }) }
+      await perf!.writeReport(nuxt.options.buildDir, { quiet })
+      await perf!.stopCpuProfile(nuxt.options.buildDir).catch(() => {})
       perf!.dispose()
+    })
+
+    // Signal handlers must be synchronous
+    const onSignal = () => {
+      if (!flushed) {
+        flushed = true
+        if (!quiet) { perf!.printReport({ title }) }
+        perf!.writeReportSync(nuxt.options.buildDir, { quiet })
+        perf!.stopCpuProfileSync(nuxt.options.buildDir)
+        perf!.dispose()
+      }
+      process.exit(0)
+    }
+    process.once('SIGINT', onSignal)
+    process.once('SIGTERM', onSignal)
+    nuxt.hook('close', () => {
+      process.off('SIGINT', onSignal)
+      process.off('SIGTERM', onSignal)
     })
   }
 

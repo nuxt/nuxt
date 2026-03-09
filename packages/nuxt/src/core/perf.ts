@@ -1,7 +1,8 @@
 import { performance } from 'node:perf_hooks'
 import process from 'node:process'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { join, resolve } from 'pathe'
+import { join } from 'pathe'
 import { consola } from 'consola'
 import { colors } from 'consola/utils'
 import type { Hookable } from 'hookable'
@@ -123,8 +124,13 @@ export class NuxtPerfProfiler {
   #cpuProfileSession?: import('node:inspector').Session
   #cpuProfileCount = 0
 
-  constructor () {
-    this.#globalStart = performance.now()
+  constructor (options?: { startTime?: number }) {
+    if (options?.startTime) {
+      // Convert absolute Date.now() timestamp to performance.now() space
+      this.#globalStart = performance.now() - (Date.now() - options.startTime)
+    } else {
+      this.#globalStart = performance.now()
+    }
     this.#globalMemoryBefore = getMemorySnapshot()
   }
 
@@ -143,22 +149,46 @@ export class NuxtPerfProfiler {
     consola.info('CPU profiler started')
   }
 
-  stopCpuProfile (cwd?: string): Promise<string | undefined> {
+  stopCpuProfile (buildDir: string): Promise<string | undefined> {
     const session = this.#cpuProfileSession
     if (!session) { return Promise.resolve(undefined) }
     this.#cpuProfileSession = undefined
     return new Promise((res, rej) => {
       session.post('Profiler.stop', (err, { profile }) => {
         if (err) { return rej(err) }
-        const outPath = resolve(cwd || '.', `nuxt-profile-${this.#cpuProfileCount++}.cpuprofile`)
-        writeFile(outPath, JSON.stringify(profile)).then(() => {
-          consola.info(`CPU profile written to ${colors.cyan(outPath)}`)
-          consola.info(`Open it in ${colors.cyan('https://www.speedscope.app')} or Chrome DevTools`)
-          session.disconnect()
-          res(outPath)
-        }).catch(rej)
+        const outPath = join(buildDir, `profile-${this.#cpuProfileCount++}.cpuprofile`)
+        mkdir(buildDir, { recursive: true })
+          .then(() => writeFile(outPath, JSON.stringify(profile)))
+          .then(() => {
+            consola.info(`CPU profile written to ${colors.cyan(outPath)}`)
+            consola.info(`Open it in ${colors.cyan('https://www.speedscope.app')} or Chrome DevTools`)
+            session.disconnect()
+            res(outPath)
+          })
+          .catch(rej)
       })
     })
+  }
+
+  stopCpuProfileSync (buildDir: string): string | undefined {
+    const session = this.#cpuProfileSession
+    if (!session) { return }
+    this.#cpuProfileSession = undefined
+    let outPath: string | undefined
+    session.post('Profiler.stop', (_err, params) => {
+      if (_err || !params?.profile) { return }
+      outPath = join(buildDir, `profile-${this.#cpuProfileCount++}.cpuprofile`)
+      try {
+        mkdirSync(buildDir, { recursive: true })
+        writeFileSync(outPath, JSON.stringify(params.profile))
+        consola.info(`CPU profile written to ${colors.cyan(outPath)}`)
+        consola.info(`Open it in ${colors.cyan('https://www.speedscope.app')} or Chrome DevTools`)
+      } catch {
+        // don't throw an error if we can't write the file
+      }
+      session.disconnect()
+    })
+    return outPath
   }
 
   get isCpuProfileActive (): boolean {
@@ -371,7 +401,7 @@ export class NuxtPerfProfiler {
   printReport (options?: { title?: string }): void {
     const report = this.getReport()
 
-    // Sub-phases are module:* and vite:* — everything else goes in the main table
+    // Sub-phases are module:* and vite:* - everything else goes in the main table
     const isSubPhase = (name: string) => name.startsWith('module:') || name.startsWith('vite:')
     const topPhases = report.phases.filter(p => !isSubPhase(p.name))
     const subPhases = report.phases.filter(p => isSubPhase(p.name))
@@ -506,6 +536,22 @@ export class NuxtPerfProfiler {
     if (!options?.quiet) {
       consola.log(colors.dim(` Full report written to ${reportPath}`))
       consola.log('')
+    }
+    return reportPath
+  }
+
+  writeReportSync (buildDir: string, options?: { quiet?: boolean }): string {
+    const report = this.getReport()
+    const reportPath = join(buildDir, 'perf-report.json')
+    try {
+      mkdirSync(buildDir, { recursive: true })
+      writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf-8')
+      if (!options?.quiet) {
+        consola.log(colors.dim(` Full report written to ${reportPath}`))
+        consola.log('')
+      }
+    } catch {
+      // don't throw an error if we can't write the file
     }
     return reportPath
   }
