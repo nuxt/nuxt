@@ -49,7 +49,7 @@ vi.mock('../src/app/composables/router', () => ({
     },
     push: (...args: unknown[]) => routerPushMock(...args),
     replace: (...args: unknown[]) => routerReplaceMock(...args),
-    onError: (handler: (err: unknown) => void) => () => {},
+    onError: (_handler: (err: unknown) => void) => () => {},
     currentRoute: { value: { path: '/' } },
   }),
 }))
