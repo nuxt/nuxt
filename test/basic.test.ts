@@ -545,7 +545,7 @@ describe('pages', () => {
     const response = await page.goto(url('/server-only'))
     const responseHtml = await response!.text()
     const ssrMatch = responseHtml.match(/id="server-only-content">([^<]+)</)
-    const ssrContent = ssrMatch ? ssrMatch[1].trim() : null
+    const ssrContent = ssrMatch?.[1]?.trim() ?? null
     expect(ssrContent).toBeTruthy()
     expect(ssrContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
