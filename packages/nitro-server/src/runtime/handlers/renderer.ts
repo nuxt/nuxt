@@ -123,6 +123,9 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
 
   // Render app
   const renderer = await getRenderer(ssrContext)
+  // Ensure request-specific runtime config (e.g. app.cdnURL) is used when generating asset URLs
+  const buildAssetsURLForRequest = (path: string) => buildAssetsURL(event, path)
+  renderer.rendererContext.buildAssetsURL = buildAssetsURLForRequest
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
@@ -197,7 +200,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   if (entryFileName && !NO_SCRIPTS) {
     let path = entryPath
     if (!path) {
-      path = buildAssetsURL(entryFileName) as string
+      path = buildAssetsURL(event, entryFileName) as string
       if (ssrContext.runtimeConfig.app.cdnURL || /^(?:\/|\.+\/)/.test(path)) {
         // cache absolute entry path
         entryPath = path
@@ -234,7 +237,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   if (isAppManifestEnabled && ssrContext['~preloadManifest'] && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
-        { rel: 'preload', as: 'fetch', fetchpriority: 'low', crossorigin: 'anonymous', href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) },
+        { rel: 'preload', as: 'fetch', fetchpriority: 'low', crossorigin: 'anonymous', href: buildAssetsURL(event, `builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) },
       ],
     }, { ...headEntryOptions, tagPriority: 'low' })
   }

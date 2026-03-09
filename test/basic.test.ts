@@ -659,6 +659,14 @@ describe('pages', () => {
     expect(html).toContain('Japanese random route')
   })
 
+  it('uses per-request cdnURL when set in middleware', async () => {
+    const html = await fetch(url('/cdn-test'), {
+    }).then(r => r.text())
+
+    // Should use per-request cdnURL (set in server middleware) for asset URLs
+    expect(html).toContain('https://static.foo.com')
+  })
+
   it.skipIf(isDev)('reactive query params in prerendered pages', async () => {
     const { page } = await renderPage('/prerender/query-reactivity?active=true')
 

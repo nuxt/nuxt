@@ -11,6 +11,8 @@ import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
 import { getSSRRenderer } from '../utils/renderer/build-files'
+// @ts-expect-error virtual file
+import { buildAssetsURL } from '#internal/nuxt/paths'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
 
@@ -39,6 +41,9 @@ const handler: EventHandler = defineEventHandler(async (event) => {
 
   // Render app
   const renderer = await getSSRRenderer()
+  // Ensure request-specific runtime config (e.g. app.cdnURL) is used when generating asset URLs
+  const buildAssetsURLForRequest = (path: string) => buildAssetsURL(event, path)
+  renderer.rendererContext.buildAssetsURL = buildAssetsURLForRequest
 
   const renderResult = await renderer.renderToString(ssrContext).catch(async (err) => {
     await ssrContext.nuxt?.hooks.callHook('app:error', err)
