@@ -30,7 +30,7 @@ If you throw an error created with `createError`:
 const route = useRoute()
 const { data } = await useFetch(`/api/movies/${route.params.slug}`)
 if (!data.value) {
-  throw createError({ status: 404 })  // statusText auto-generated as "Not Found"
+  throw createError({ status: 404 }) // statusText auto-generated as "Not Found"
 }
 </script>
 ```
@@ -43,7 +43,7 @@ Use `createError` to trigger error handling in server API routes.
 
 ```ts [server/api/error.ts]
 export default eventHandler(() => {
-  throw createError({ status: 404 })  // statusText auto-generated as "Not Found"
+  throw createError({ status: 404 }) // statusText auto-generated as "Not Found"
 })
 ```
 
