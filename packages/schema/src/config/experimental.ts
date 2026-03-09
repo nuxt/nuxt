@@ -199,7 +199,7 @@ export default defineResolvers({
       },
     },
     browserDevtoolsTiming: {
-      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
+      $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
     chromeDevtoolsProjectSettings: true,
     debugModuleMutation: {
