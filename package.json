@@ -58,7 +58,6 @@
     "@vue/shared": "3.5.29",
     "c12": "3.3.3",
     "compatx": "0.2.0",
-    "h3": "2.0.1-rc.15",
     "jiti": "2.6.1",
     "magic-string": "0.30.21",
     "nitro": "https://pkg.pr.new/nitrojs/nitro@c0b4642",
