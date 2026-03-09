@@ -1,12 +1,15 @@
 ---
 title: "useResponseHeader"
 description: "Use useResponseHeader to set a server response header."
+minimalVersion: "3.14"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
     size: xs
 ---
+
+:badge[v3.14]{color="info" class="align-middle"}
 
 ::important
 This composable is available in Nuxt v3.14+.

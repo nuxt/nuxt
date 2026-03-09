@@ -1,12 +1,15 @@
 ---
 title: 'useRouteAnnouncer'
 description: This composable observes the page title changes and updates the announcer message accordingly.
+minimalVersion: "3.12"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/route-announcer.ts
     size: xs
 ---
+
+:badge[v3.12]{color="info" class="align-middle"}
 
 ::important
 This composable is available in Nuxt v3.12+.

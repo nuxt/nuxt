@@ -1,12 +1,15 @@
 ---
 title: 'useRequestFetch'
 description: 'Forward the request context and headers for server-side fetch requests with the useRequestFetch composable.'
+minimalVersion: "3.2"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
     size: xs
 ---
+
+:badge[v3.2]{color="info" class="align-middle"}
 
 You can use `useRequestFetch` to forward the request context and headers when making server-side fetch requests.
 

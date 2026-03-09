@@ -1,12 +1,15 @@
 ---
 title: 'useNuxtData'
 description: 'Access the current cached value of data fetching composables.'
+minimalVersion: "3.1"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
     size: xs
 ---
+
+:badge[v3.1]{color="info" class="align-middle"}
 
 ::note
 `useNuxtData` gives you access to the current cached value of [`useAsyncData`](/docs/4.x/api/composables/use-async-data) , [`useLazyAsyncData`](/docs/4.x/api/composables/use-lazy-async-data), [`useFetch`](/docs/4.x/api/composables/use-fetch) and [`useLazyFetch`](/docs/4.x/api/composables/use-lazy-fetch) with explicitly provided key.

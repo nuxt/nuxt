@@ -1,12 +1,15 @@
 ---
 title: 'useAnnouncer'
 description: A composable for announcing messages to screen readers.
+minimalVersion: "3.17"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/announcer.ts
     size: xs
 ---
+
+:badge[v3.17]{color="info" class="align-middle"}
 
 ::important
 This composable is available in Nuxt v3.17+.

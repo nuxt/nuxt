@@ -1,12 +1,15 @@
 ---
 title: "onNuxtReady"
 description: The onNuxtReady composable allows running a callback after your app has finished initializing.
+minimalVersion: "3.1"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ready.ts
     size: xs
 ---
+
+:badge[v3.1]{color="info" class="align-middle"}
 
 ::important
 `onNuxtReady` only runs on the client-side. :br

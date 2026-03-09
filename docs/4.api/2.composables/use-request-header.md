@@ -1,12 +1,15 @@
 ---
 title: "useRequestHeader"
 description: "Use useRequestHeader to access a certain incoming request header."
+minimalVersion: "3.9"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
     size: xs
 ---
+
+:badge[v3.9]{color="info" class="align-middle"}
 
 You can use the built-in [`useRequestHeader`](/docs/4.x/api/composables/use-request-header) composable to access any incoming request header within your pages, components, and plugins.
 
