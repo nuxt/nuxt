@@ -415,7 +415,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         } catch (error) {
           const navigationError = toNavigationError(error)
           emit('error', navigationError)
-          props.onError?.(navigationError)
+          // Re-throw original so router.onError receives it; @error/onError listeners get normalized navigationError above
           throw error
         }
       }
@@ -611,8 +611,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               if (hasErrorHandler.value) {
                 const navigationError = toNavigationError(error)
                 emit('error', navigationError)
-                props.onError?.(navigationError)
               }
+              // Re-throw original so router.onError receives it; @error/onError listeners get normalized navigationError above
               throw error
             } finally {
               // Focus the target element for hash links to restore accessibility behavior
