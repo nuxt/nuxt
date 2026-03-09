@@ -72,7 +72,7 @@ export default defineResolvers({
       const rootDir = await get('rootDir')
       return val && typeof val === 'string'
         ? resolve(rootDir, val)
-        : await findWorkspaceDir(rootDir, {
+        : findWorkspaceDir(rootDir, {
             gitConfig: 'closest',
             try: true,
           }).catch(() => rootDir)

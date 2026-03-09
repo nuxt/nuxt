@@ -13,7 +13,7 @@ export default defineResolvers({
    */
   vite: {
     root: {
-      $resolve: async (val, get) => typeof val === 'string' ? val : (await get('srcDir')),
+      $resolve: (val, get) => typeof val === 'string' ? val : (get('srcDir')),
     },
     mode: {
       $resolve: async (val, get) => typeof val === 'string' ? val : (await get('dev') ? 'development' : 'production'),

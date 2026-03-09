@@ -113,6 +113,8 @@ export default createConfigForNuxt({
     },
     rules: {
       '@typescript-eslint/no-deprecated': 'error',
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
+      'no-return-await': 'off',
     },
   })
 

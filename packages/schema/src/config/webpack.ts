@@ -83,7 +83,7 @@ export default defineResolvers({
      * Enables CSS source map support (defaults to `true` in development).
      */
     cssSourceMap: {
-      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
+      $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
 
     /**
@@ -347,7 +347,7 @@ export default defineResolvers({
     postcss: {
       postcssOptions: {
         plugins: {
-          $resolve: async (val, get) => val && typeof val === 'object' ? val : (await get('postcss.plugins')),
+          $resolve: (val, get) => val && typeof val === 'object' ? val : (get('postcss.plugins')),
         },
       },
     },
