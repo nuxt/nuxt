@@ -138,8 +138,8 @@ type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp e
       rel: string | null
       target: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
       isExternal: boolean
-      isActive: false
-      isExactActive: false
+      isActive: boolean
+      isExactActive: boolean
     }
   : UnwrapRef<UseLinkReturn>
 
@@ -380,18 +380,25 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     setup (props, { slots, emit, attrs }) {
       const router = useRouter()
 
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, isActive, isExactActive, route: resolvedRoute } = useNuxtLink(props)
 
       const hasErrorHandler = computed(() => !!(props.onError || attrs?.onError))
 
       function toNavigationError (error: unknown): NuxtLinkNavigationError {
-        const err = error as Error
-        const isAborted = err?.name === 'NavigationAborted' || err?.name === 'NavigationDuplicated'
-        return Object.assign(new Error(err?.message || 'Navigation failed'), {
-          name: isAborted ? 'NavigationAborted' : 'NavigationError',
-          cause: err?.cause,
-          route: typeof href.value === 'string' ? href.value : undefined,
-        }) as NuxtLinkNavigationError
+        const isAborted = error instanceof Error && (error.name === 'NavigationAborted' || error.name === 'NavigationDuplicated')
+        const name = isAborted ? 'NavigationAborted' : 'NavigationError' as const
+        const route = typeof href.value === 'string' ? href.value : undefined
+
+        if (error instanceof Error) {
+          Object.assign(error, { name, route })
+          return error as NuxtLinkNavigationError
+        }
+
+        const err = new Error(typeof error === 'string' ? error : 'Navigation failed') as NuxtLinkNavigationError
+        err.name = name
+        err.cause = error
+        err.route = route
+        return err
       }
 
       async function navigateWithErrorHandling (e?: MouseEvent) {
@@ -531,8 +538,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             navigate: hasErrorHandler.value ? navigateWithErrorHandling : navigate,
             prefetch,
             get route () {
+              const route = resolvedRoute.value
               if (!href.value) { return undefined }
-
+              if (route && 'path' in route) {
+                return { ...route, href: href.value } satisfies RouteLocation & { href: string }
+              }
               const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
               return {
                 path: url.pathname,
@@ -550,9 +560,22 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             rel,
             target,
             isExternal: isExternal.value || hasTarget.value,
-            isActive: false,
-            isExactActive: false,
+            isActive: isActive.value,
+            isExactActive: isExactActive.value,
           } satisfies NuxtLinkDefaultSlotProps<true>)
+        }
+
+        const anchorClasses: string[] = []
+        if (import.meta.client) {
+          if (isActive.value && (props.activeClass || options.activeClass)) {
+            anchorClasses.push(props.activeClass || options.activeClass!)
+          }
+          if (isExactActive.value && (props.exactActiveClass || options.exactActiveClass)) {
+            anchorClasses.push(props.exactActiveClass || options.exactActiveClass!)
+          }
+          if (prefetched.value && (props.prefetchedClass || options.prefetchedClass)) {
+            anchorClasses.push(props.prefetchedClass || options.prefetchedClass!)
+          }
         }
 
         return h('a', {
@@ -560,6 +583,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           href: href.value || null, // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
           rel,
           target,
+          ...(anchorClasses.length > 0 && { class: anchorClasses.join(' ') }),
+          ...(isExactActive.value && props.ariaCurrentValue && { 'aria-current': props.ariaCurrentValue }),
+          ...(import.meta.client && shouldPrefetch('interaction') && {
+            onPointerenter: prefetch.bind(null, undefined),
+            onFocus: prefetch.bind(null, undefined),
+          }),
           onClick: async (event) => {
             if (isExternal.value || hasTarget.value) {
               return
