@@ -96,15 +96,19 @@ export const createError = <DataT = unknown>(error: string | Error | Partial<Nux
       err.message ??= err.statusText
     }
     // Auto-generate statusText from status code when not provided (#34280)
+    // Normalise deprecated statusCode to match status so h3 createError sees consistent values
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const statusCode = typeof err.status === 'number' ? err.status : err.statusCode
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    if (typeof statusCode === 'number' && err.statusText === undefined && err.statusMessage === undefined) {
-      const defaultText = DEFAULT_STATUS_TEXT[statusCode] ?? 'Error'
-      err.statusText = defaultText
-      // statusMessage required for h3 createError; Nuxt getter maps statusText -> statusMessage
+    if (typeof statusCode === 'number') {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
-      err.statusMessage = defaultText
+      err.statusCode = statusCode
+      if (err.statusText === undefined && err.statusMessage === undefined) {
+        const defaultText = DEFAULT_STATUS_TEXT[statusCode] ?? 'Error'
+        err.statusText = defaultText
+        // statusMessage required for h3 createError; Nuxt getter maps statusText -> statusMessage
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        err.statusMessage = defaultText
+      }
     }
   }
 

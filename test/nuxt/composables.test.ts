@@ -138,8 +138,9 @@ describe('errors', () => {
   it('createError', () => {
     expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
       {
-        "message": "",
+        "message": "Not Found",
         "statusCode": 404,
+        "statusMessage": "Not Found",
       }
     `)
     expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
