@@ -87,8 +87,9 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
   /**
    * Callback invoked when navigation fails (e.g. route not found, middleware abort).
    * Use for imperative error handling alongside or instead of the `@error` event.
+   * Named `onNavigationError` to avoid collision with Vue's `@error` → `onError` normalization.
    */
-  onError?: (error: NuxtLinkNavigationError) => void
+  onNavigationError?: (error: NuxtLinkNavigationError) => void
 }
 
 /**
@@ -367,8 +368,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       },
 
       // Error handling
-      onError: {
-        type: Function as PropType<NuxtLinkProps['onError']>,
+      onNavigationError: {
+        type: Function as PropType<NuxtLinkProps['onNavigationError']>,
         default: undefined,
         required: false,
       },
@@ -382,33 +383,43 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, isActive, isExactActive, route: resolvedRoute } = useNuxtLink(props)
 
-      const hasErrorHandler = computed(() => !!(props.onError || attrs?.onError))
+      const hasErrorHandler = computed(() => !!(props.onNavigationError || attrs?.onError))
 
       function toNavigationError (error: unknown): NuxtLinkNavigationError {
         const isAborted = error instanceof Error && (error.name === 'NavigationAborted' || error.name === 'NavigationDuplicated')
         const name = isAborted ? 'NavigationAborted' : 'NavigationError' as const
         const route = typeof href.value === 'string' ? href.value : undefined
 
-        if (error instanceof Error) {
-          Object.assign(error, { name, route })
-          return error as NuxtLinkNavigationError
-        }
-
-        const err = new Error(typeof error === 'string' ? error : 'Navigation failed') as NuxtLinkNavigationError
+        const err = new Error(
+          error instanceof Error ? error.message : (typeof error === 'string' ? error : 'Navigation failed'),
+        ) as NuxtLinkNavigationError
         err.name = name
         err.cause = error
         err.route = route
+        if (error instanceof Error && error.stack) {
+          err.stack = error.stack
+        }
         return err
       }
 
       async function navigateWithErrorHandling (e?: MouseEvent) {
+        let unregister: (() => void) | undefined
+        const errorPromise = new Promise<never>((_, reject) => {
+          unregister = (router as { onError?: (fn: (err: unknown) => void) => () => void }).onError?.((err: unknown) => {
+            unregister?.()
+            reject(err)
+          })
+        })
         try {
-          await navigate(e)
+          await Promise.race([navigate(e), errorPromise])
         } catch (error) {
           const navigationError = toNavigationError(error)
           emit('error', navigationError)
-          // Re-throw original so router.onError receives it; @error/onError listeners get normalized navigationError above
+          props.onNavigationError?.(navigationError)
+          // Re-throw original so router.onError receives it; @error/onNavigationError get normalized navigationError above
           throw error
+        } finally {
+          unregister?.()
         }
       }
 
@@ -582,7 +593,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           rel,
           target,
           ...(anchorClasses.length > 0 && { class: anchorClasses.join(' ') }),
-          ...(isExactActive.value && props.ariaCurrentValue && { 'aria-current': props.ariaCurrentValue }),
+          ...(isExactActive.value && { 'aria-current': props.ariaCurrentValue ?? 'page' }),
           ...(import.meta.client && shouldPrefetch('interaction') && {
             onPointerenter: prefetch.bind(null, undefined),
             onFocus: prefetch.bind(null, undefined),
@@ -591,22 +602,42 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             if (isExternal.value || hasTarget.value) {
               return
             }
+            if (
+              event.defaultPrevented ||
+              event.button !== 0 ||
+              event.metaKey ||
+              event.altKey ||
+              event.ctrlKey ||
+              event.shiftKey
+            ) {
+              return
+            }
 
             event.preventDefault()
 
+            let unregister: (() => void) | undefined
+            const errorPromise = new Promise<never>((_, reject) => {
+              unregister = (router as { onError?: (fn: (err: unknown) => void) => () => void }).onError?.((err: unknown) => {
+                unregister?.()
+                reject(err)
+              })
+            })
             try {
               const encodedHref = encodeRoutePath(href.value)
-              const result = props.replace ? router.replace(encodedHref) : router.push(encodedHref)
-              await result
-              return result
+              await Promise.race([
+                props.replace ? router.replace(encodedHref) : router.push(encodedHref),
+                errorPromise,
+              ])
             } catch (error) {
               if (hasErrorHandler.value) {
                 const navigationError = toNavigationError(error)
                 emit('error', navigationError)
+                props.onNavigationError?.(navigationError)
               }
-              // Re-throw original so router.onError receives it; @error/onError listeners get normalized navigationError above
+              // Re-throw original so router.onError receives it; @error/onNavigationError get normalized navigationError above
               throw error
             } finally {
+              unregister?.()
               // Focus the target element for hash links to restore accessibility behavior
               // that was prevented by event.preventDefault()
               if (import.meta.client && isHashLinkWithoutHashMode(to.value)) {
