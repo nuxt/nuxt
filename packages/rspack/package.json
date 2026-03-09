@@ -35,7 +35,7 @@
     "@vue/compiler-sfc": "3.5.29",
     "autoprefixer": "^10.4.27",
     "css-loader": "^7.1.4",
-    "css-minimizer-webpack-plugin": "^7.0.4",
+    "css-minimizer-webpack-plugin": "^8.0.0",
     "cssnano": "^7.1.2",
     "defu": "^6.1.4",
     "esbuild-loader": "^4.4.2",

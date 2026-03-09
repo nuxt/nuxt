@@ -694,8 +694,8 @@ importers:
         specifier: ^7.1.4
         version: 7.1.4(@rspack/core@1.7.7)(webpack@5.105.3)
       css-minimizer-webpack-plugin:
-        specifier: ^7.0.4
-        version: 7.0.4(webpack@5.105.3)
+        specifier: ^8.0.0
+        version: 8.0.0(webpack@5.105.3)
       cssnano:
         specifier: ^7.1.2
         version: 7.1.2(postcss@8.5.8)
@@ -885,8 +885,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0
       css-minimizer-webpack-plugin:
-        specifier: 7.0.4
-        version: 7.0.4(esbuild@0.27.3)(webpack@5.105.3(esbuild@0.27.3))
+        specifier: 8.0.0
+        version: 8.0.0(esbuild@0.27.3)(webpack@5.105.3(esbuild@0.27.3))
       esbuild:
         specifier: 0.27.3
         version: 0.27.3
@@ -1159,8 +1159,8 @@ importers:
         specifier: ^7.1.4
         version: 7.1.4(@rspack/core@1.7.7)(webpack@5.105.3)
       css-minimizer-webpack-plugin:
-        specifier: ^7.0.4
-        version: 7.0.4(webpack@5.105.3)
+        specifier: ^8.0.0
+        version: 8.0.0(webpack@5.105.3)
       cssnano:
         specifier: ^7.1.2
         version: 7.1.2(postcss@8.5.8)
@@ -5082,9 +5082,9 @@ packages:
       webpack:
         optional: true
 
-  css-minimizer-webpack-plugin@7.0.4:
-    resolution: {integrity: sha512-2iACis+P8qdLj1tHcShtztkGhCNIRUajJj7iX0IM9a5FA0wXGwjV8Nf6+HsBjBfb4LO8TTAVoetBbM54V6f3+Q==}
-    engines: {node: '>= 18.12.0'}
+  css-minimizer-webpack-plugin@8.0.0:
+    resolution: {integrity: sha512-9bEpzHs8gEq6/cbEj418jXL/YWjBUD2YTLLk905Npt2JODqnRITin0+So5Vx4Dp5vyi2Lpt9pp2QHzQ7fdxNrw==}
+    engines: {node: '>= 20.9.0'}
     peerDependencies:
       '@parcel/css': '*'
       '@swc/css': '*'
@@ -8109,6 +8109,10 @@ packages:
 
   serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
+
+  serialize-javascript@7.0.4:
+    resolution: {integrity: sha512-DuGdB+Po43Q5Jxwpzt1lhyFSYKryqoNjQSA9M92tyw0lyHIOur+XCalOUe0KTJpyqzT8+fQ5A0Jf7vCx/NKmIg==}
+    engines: {node: '>=20.0.0'}
 
   seroval@1.5.0:
     resolution: {integrity: sha512-OE4cvmJ1uSPrKorFIH9/w/Qwuvi/IMcGbv5RKgcJ/zjA/IohDLU6SVaxFN9FwajbP7nsX0dQqMDes1whk3y+yw==}
@@ -12864,26 +12868,26 @@ snapshots:
       '@rspack/core': 1.7.7
       webpack: 5.105.3
 
-  css-minimizer-webpack-plugin@7.0.4(esbuild@0.27.3)(webpack@5.105.3(esbuild@0.27.3)):
+  css-minimizer-webpack-plugin@8.0.0(esbuild@0.27.3)(webpack@5.105.3(esbuild@0.27.3)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       cssnano: 7.1.2(postcss@8.5.8)
       jest-worker: 30.2.0
       postcss: 8.5.8
       schema-utils: 4.3.3
-      serialize-javascript: 6.0.2
+      serialize-javascript: 7.0.4
       webpack: 5.105.3(esbuild@0.27.3)
     optionalDependencies:
       esbuild: 0.27.3
 
-  css-minimizer-webpack-plugin@7.0.4(webpack@5.105.3):
+  css-minimizer-webpack-plugin@8.0.0(webpack@5.105.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       cssnano: 7.1.2(postcss@8.5.8)
       jest-worker: 30.2.0
       postcss: 8.5.8
       schema-utils: 4.3.3
-      serialize-javascript: 6.0.2
+      serialize-javascript: 7.0.4
       webpack: 5.105.3
 
   css-select@5.2.2:
@@ -16665,6 +16669,8 @@ snapshots:
   serialize-javascript@6.0.2:
     dependencies:
       randombytes: 2.1.0
+
+  serialize-javascript@7.0.4: {}
 
   seroval@1.5.0: {}
 
