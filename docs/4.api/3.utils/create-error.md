@@ -47,6 +47,6 @@ export default eventHandler(() => {
 })
 ```
 
-You can omit `statusText`—it is auto-generated from the status code. To customize it, pass `statusText` explicitly. In API routes, a short `statusText` (or the auto-generated one) is accessible on the client side. Otherwise, a `message` passed to `createError` on an API route will not propagate to the client. Alternatively, you can use the `data` property to pass data back to the client. In any case, always consider avoiding to put dynamic user input to the message to avoid potential security issues.
+You can omit `statusText`—it is auto-generated from the status code. To customize it, pass `statusText` explicitly. In API routes, a short `statusText` (or the auto-generated one) is accessible on the client side. Otherwise, a `message` passed to `createError` on an API route will not propagate to the client. Alternatively, you can use the `data` property to pass data back to the client. In any case, always consider avoiding putting dynamic user input in the message to avoid potential security issues.
 
 :read-more{to="/docs/4.x/getting-started/error-handling"}
