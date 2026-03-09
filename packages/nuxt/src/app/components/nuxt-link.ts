@@ -374,7 +374,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       },
     },
     emits: {
-      error: (error: NuxtLinkNavigationError) => true,
+      error: (_error: NuxtLinkNavigationError) => true,
     },
     useLink: useNuxtLink,
     setup (props, { slots, emit, attrs }) {
