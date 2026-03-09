@@ -56,7 +56,7 @@
     "nuxt": "workspace:*",
     "ofetch": "2.0.0-alpha.3",
     "send": ">=1.2.1",
-    "vite": "7.3.1",
+    "vite": "8.0.0-beta.16",
     "vue": "3.5.29"
   },
   "devDependencies": {
@@ -125,7 +125,7 @@
     "ts-blank-space": "0.7.0",
     "typescript": "5.9.3",
     "ufo": "1.6.3",
-    "vite": "7.3.1",
+    "vite": "8.0.0-beta.16",
     "vitest": "4.0.18",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.29",

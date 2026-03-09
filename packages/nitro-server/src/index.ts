@@ -14,7 +14,8 @@ import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDi
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
-import { isWindows } from 'std-env'
+import { addDependency } from 'nypm'
+import { hasTTY, isCI, isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
@@ -534,6 +535,69 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
       nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(FORWARD_SLASH_RE, '\\')] = 'export default {}'
+    }
+  }
+
+  // Add decorator support via Babel when experimental.decorators is enabled.
+  if (nuxt.options.experimental.decorators) {
+    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators']
+    let hasDeps = true
+    for (const pkg of nitroDecoratorDeps) {
+      try {
+        await import(pkg)
+      } catch (_err) {
+        const err = _err as NodeJS.ErrnoException
+        if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
+          throw err
+        }
+        if (!isCI && hasTTY) {
+          logger.info('Decorator support requires additional dependencies.')
+          const shouldInstall = await logger.prompt(`Install \`${nitroDecoratorDeps.join('` and `')}\`?`, {
+            type: 'confirm',
+            initial: true,
+          })
+          if (shouldInstall) {
+            logger.start(`Installing ${nitroDecoratorDeps.map(d => `\`${d}\``).join(' and ')}...`)
+            await addDependency(nitroDecoratorDeps, {
+              dev: true,
+              cwd: nuxt.options.rootDir,
+              silent: true,
+            })
+            logger.info('Rerun Nuxt to enable decorator support.')
+            process.exit(1)
+          }
+        }
+        logger.warn(`Cannot find \`${pkg}\`. Install \`${nitroDecoratorDeps.join('` and `')}\` to enable decorator support.`)
+        hasDeps = false
+        break
+      }
+    }
+
+    if (hasDeps) {
+      const { babel } = await import('@rollup/plugin-babel')
+      nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
+      nitroConfig.rollupConfig!.plugins!.unshift(
+        babel({
+          babelHelpers: 'bundled',
+          configFile: false,
+          extensions: ['.ts', '.js', '.mjs', '.mts'],
+          plugins: [
+            // Syntax plugin allows Babel to parse TypeScript without transforming it,
+            // since the actual TS stripping is handled later by the bundler's esbuild plugin.
+            ['@babel/plugin-syntax-typescript', { isTSX: false }],
+            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+          ],
+        }),
+        babel({
+          babelHelpers: 'bundled',
+          configFile: false,
+          extensions: ['.tsx', '.jsx'],
+          plugins: [
+            ['@babel/plugin-syntax-typescript', { isTSX: true }],
+            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+          ],
+        }),
+      )
     }
   }
 
