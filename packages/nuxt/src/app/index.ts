@@ -10,7 +10,7 @@ export { defineNuxtComponent, useAsyncData, useLazyAsyncData, defineUseFetchAddo
 export type { AddRouteMiddlewareOptions, AnnouncerPoliteness, AsyncData, AsyncDataWithExtensions, AugmentedAsyncData, AsyncDataMiddleware, AsyncDataHandlerContext, UseFetchAddon, UseAsyncDataAddon, UseFetchAddonOptions, UseAsyncDataAddonOptions, AsyncDataAddonInstance, MergedAddonsExtensions, UseAsyncData, KeysOf, PickFrom, DeclaredUseFetch, UseFetch, Early404IncompatibleRouterMethods, LayoutName, LoadingIndicator, LoadingIndicatorOpts, AsyncDataOptions, AsyncDataRequestStatus, CookieOptions, CookieRef, UseCookieOptions, AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, FetchResult, TypedFetchOptions, NuxtAnnouncer, NuxtAnnouncerOpts, NuxtAppManifest, NuxtAppManifestMeta, NuxtError, Politeness, ReloadNuxtAppOptions, NuxtRequestEvent, RouteMiddleware, TypedFetch, TypedFetchRequest, TypedServerError, TypedServerResponse, UseFetchOptions, $Fetch } from './composables/index'
 
 export { defineNuxtLink } from './components/index'
-export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
+export type { NuxtLinkNavigationError, NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
 export { getIslandHash, serializeIslandProps } from './island-hash'
 export { hashKey } from './utils/hash'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
