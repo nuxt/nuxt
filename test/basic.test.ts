@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, getBrowser, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import { asyncContext, builder, isBuilt, isDev, isTestingAppManifest, isWebpack, legacyComponentResolution, legacyErrorRendering, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerEnvInMatrix as oncePerEnv, runsOncePerViteBuilderInMatrix as oncePerServer } from './matrix'
@@ -540,9 +540,17 @@ describe('pages', () => {
     expect(html).toContain('data-server-only')
     expect(html).toContain('server-only-content')
     await expectNoClientErrors('/server-only')
-    const { page } = await renderPage('/server-only')
-    const content = await page.locator('#server-only-content').textContent()
-    expect(content).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    const browser = await getBrowser()
+    const page = await browser.newPage({})
+    const response = await page.goto(url('/server-only'))
+    const responseHtml = await response!.text()
+    const ssrMatch = responseHtml.match(/id="server-only-content">([^<]+)</)
+    const ssrContent = ssrMatch ? ssrMatch[1].trim() : null
+    expect(ssrContent).toBeTruthy()
+    expect(ssrContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    const clientContent = await page.locator('#server-only-content').textContent()
+    expect(clientContent).toBe(ssrContent)
     await page.close()
   })
 
