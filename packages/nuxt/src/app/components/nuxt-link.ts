@@ -11,6 +11,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { ComponentSlots } from 'vue-component-type-helpers'
+import { isNavigationFailure, NavigationFailureType } from 'vue-router'
 import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { prefetchRouteComponents } from '../composables/preload'
@@ -471,7 +472,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       const hasErrorHandler = computed(() => !!(props.onNavigationError || attrs?.onError))
 
       function toNavigationError (error: unknown): NuxtLinkNavigationError {
-        const isAborted = error instanceof Error && (error.name === 'NavigationAborted' || error.name === 'NavigationDuplicated')
+        const isAborted = isNavigationFailure(error, NavigationFailureType.aborted | NavigationFailureType.duplicated)
         const name = isAborted ? 'NavigationAborted' : 'NavigationError' as const
         const route = typeof href.value === 'string' ? href.value : undefined
 
