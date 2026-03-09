@@ -73,9 +73,11 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   ssrContext.head.push(appHead, headEntryOptions)
 
   if (ssrError) {
+    // @ts-expect-error TODO: investigate creating new error
     ssrError.status &&= Number.parseInt(ssrError.status.toString())
     if (PARSE_ERROR_DATA && typeof ssrError.data === 'string') {
       try {
+        // @ts-expect-error TODO: investigate creating new error
         ssrError.data = destr(ssrError.data)
       } catch {
         // ignore
