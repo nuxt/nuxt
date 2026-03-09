@@ -11,6 +11,7 @@ import type { NuxtIslandResponse } from 'nuxt/app'
 
 import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+import { getBrowser } from '@nuxt/test-utils/e2e'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -374,9 +375,17 @@ describe('pages', () => {
     expect(html).toContain('data-server-only')
     expect(html).toContain('server-only-content')
     await expectNoClientErrors('/server-only')
-    const { page } = await renderPage('/server-only')
-    const content = await page.locator('#server-only-content').textContent()
-    expect(content).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    const browser = await getBrowser()
+    const page = await browser.newPage({})
+    const response = await page.goto(url('/server-only'))
+    const responseHtml = await response!.text()
+    const ssrMatch = responseHtml.match(/id="server-only-content">([^<]+)</)
+    const ssrContent = ssrMatch ? ssrMatch[1].trim() : null
+    expect(ssrContent).toBeTruthy()
+    expect(ssrContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    const clientContent = await page.locator('#server-only-content').textContent()
+    expect(clientContent).toBe(ssrContent)
     await page.close()
   })
 

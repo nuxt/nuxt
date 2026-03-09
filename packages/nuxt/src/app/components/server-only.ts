@@ -17,12 +17,12 @@ const SERVER_ONLY_WRAPPER = '<div data-server-only></div>'
 export default defineComponent({
   name: 'ServerOnly',
   inheritAttrs: false,
-  setup (_, { slots }) {
+  setup (_, { attrs, slots }) {
     const instance = getCurrentInstance()
     return (): VNode => {
       if (import.meta.server) {
         const vnodes = slots.default?.()
-        return h('div', { 'data-server-only': '' }, vnodes)
+        return h('div', { ...attrs, 'data-server-only': '' }, vnodes)
       }
       // Client: preserve server-rendered HTML as static, never re-run slot
       return elToStaticVNode(instance?.vnode?.el as RendererNode | null, SERVER_ONLY_WRAPPER)
