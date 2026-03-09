@@ -533,6 +533,19 @@ describe('pages', () => {
     await expectNoClientErrors(path)
   })
 
+  it('/server-only', async () => {
+    const html = await $fetch<string>('/server-only')
+    expect(html).toContain('ServerOnly test page')
+    expect(html).toContain('Rendered at')
+    expect(html).toContain('data-server-only')
+    expect(html).toContain('server-only-content')
+    await expectNoClientErrors('/server-only')
+    const { page } = await renderPage('/server-only')
+    const content = await page.locator('#server-only-content').textContent()
+    expect(content).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    await page.close()
+  })
+
   it.skipIf(!componentProjects)('/client-server', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/client-server')
     expect(pageErrors).toEqual([])

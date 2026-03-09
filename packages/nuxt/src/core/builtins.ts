@@ -18,6 +18,7 @@ const builtinComponents: BuiltinComponent[] = [
   ['NuxtErrorBoundary', 'nuxt-error-boundary.vue', { _raw: true, mode: 'client' }],
   ['NuxtErrorBoundary', 'nuxt-error-boundary.server', { _raw: true, mode: 'server', declarationPath: 'nuxt-error-boundary.vue' }],
   ['ClientOnly', 'client-only'],
+  ['ServerOnly', 'server-only'],
   ['DevOnly', 'dev-only'],
   ['ServerPlaceholder', 'server-placeholder'],
   ['NuxtLink', 'nuxt-link'],
