@@ -367,6 +367,19 @@ describe('pages', () => {
     await expectNoClientErrors('/another-parent')
   })
 
+  it('/server-only', async () => {
+    const html = await $fetch<string>('/server-only')
+    expect(html).toContain('ServerOnly test page')
+    expect(html).toContain('Rendered at')
+    expect(html).toContain('data-server-only')
+    expect(html).toContain('server-only-content')
+    await expectNoClientErrors('/server-only')
+    const { page } = await renderPage('/server-only')
+    const content = await page.locator('#server-only-content').textContent()
+    expect(content).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    await page.close()
+  })
+
   it('/client-server', async () => {
     // expect no hydration issues
     await expectNoClientErrors('/client-server')
