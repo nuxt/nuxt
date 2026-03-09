@@ -383,8 +383,8 @@ importers:
         specifier: ^1.15.5
         version: 1.15.5
       impound:
-        specifier: file:/Users/daniel/code/unjs/impound/impound-1.1.3.tgz
-        version: file:../../../../code/unjs/impound/impound-1.1.3.tgz
+        specifier: ^1.1.4
+        version: 1.1.4
       klona:
         specifier: ^2.0.6
         version: 2.0.6
@@ -522,8 +522,8 @@ importers:
         specifier: ^7.0.5
         version: 7.0.5
       impound:
-        specifier: file:/Users/daniel/code/unjs/impound/impound-1.1.3.tgz
-        version: file:../../../../code/unjs/impound/impound-1.1.3.tgz
+        specifier: ^1.1.4
+        version: 1.1.4
       jiti:
         specifier: ^2.6.1
         version: 2.6.1
@@ -6410,9 +6410,8 @@ packages:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
 
-  impound@file:../../../../code/unjs/impound/impound-1.1.3.tgz:
-    resolution: {integrity: sha512-uRyyTl57fwvUg1kJb8gPrwS/j8DtiPjSdrs4eoTQB6Kks2OO+PvGOTJ/blTn6ofMy7aPRUK2UHR+MlcHglqaQA==, tarball: file:../../../../code/unjs/impound/impound-1.1.3.tgz}
-    version: 1.1.3
+  impound@1.1.4:
+    resolution: {integrity: sha512-YPAG2MtLvjKJf/7lRaKScABfZMQxjf33bMRSek3DyDFyLjeXiWIgovXv8p9do++SIt6lnfz7Q42FNXvGErs3cw==}
 
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
@@ -14588,7 +14587,7 @@ snapshots:
       parent-module: 1.0.1
       resolve-from: 4.0.0
 
-  impound@file:../../../../code/unjs/impound/impound-1.1.3.tgz:
+  impound@1.1.4:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       es-module-lexer: 2.0.0
