@@ -62,7 +62,7 @@ const INTERNAL = 'RouterLink'
 const nuxtLink = (
   props: NuxtLinkProps = {},
   nuxtLinkOptions: Partial<NuxtLinkOptions> = {},
-  context?: { emit?: (event: string, ...args: unknown[]) => void; attrs?: Record<string, unknown> },
+  context?: { emit?: (event: string, ...args: unknown[]) => void, attrs?: Record<string, unknown> },
 ): { type: string, props: Record<string, unknown>, slots: unknown } => {
   const component = defineNuxtLink({ componentName: 'NuxtLink', ...nuxtLinkOptions })
 
