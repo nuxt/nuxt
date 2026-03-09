@@ -116,7 +116,7 @@ async function _isPrerenderedInManifest (url: string) {
 /**
  * @internal
  */
-export async function shouldLoadPayload (url = useRoute().path) {
+export function shouldLoadPayload (url = useRoute().path) {
   const rules = getRouteRules({ path: url })
   if (rules.ssr === false) {
     return false
@@ -130,17 +130,17 @@ export async function shouldLoadPayload (url = useRoute().path) {
     return true
   }
 
-  return await _isPrerenderedInManifest(url)
+  return _isPrerenderedInManifest(url)
 }
 
 /** @since 3.0.0 */
-export async function isPrerendered (url = useRoute().path) {
+export function isPrerendered (url = useRoute().path) {
   const res = _shouldLoadPrerenderedPayload(getRouteRules({ path: url }))
   if (res !== undefined) {
     return res
   }
 
-  return await _isPrerenderedInManifest(url)
+  return _isPrerenderedInManifest(url)
 }
 
 let payloadCache: NuxtPayload | null = null

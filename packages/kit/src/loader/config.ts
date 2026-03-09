@@ -128,7 +128,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
 }
 
-async function loadNuxtSchema (cwd: string) {
+function loadNuxtSchema (cwd: string) {
   const url = directoryToURL(cwd)
   const urls: Array<URL | string> = [url]
   const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
@@ -136,7 +136,7 @@ async function loadNuxtSchema (cwd: string) {
     urls.unshift(nuxtPath)
   }
   const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
-  return await import(schemaPath).then(r => r.NuxtConfigSchema)
+  return import(schemaPath).then(r => r.NuxtConfigSchema)
 }
 
 async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {

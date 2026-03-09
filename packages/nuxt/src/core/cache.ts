@@ -249,7 +249,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
     // retry if file has changed during read
     if ((await fd.stat()).mtime.getTime() !== mtime) {
       if (count < 5) {
-        return readFileWithMeta(dir, fileName, count + 1)
+        return await readFileWithMeta(dir, fileName, count + 1)
       }
       console.warn(`Failed to read file \`${fileName}\` as it changed during read.`)
       return
