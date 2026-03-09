@@ -10,6 +10,13 @@ export default defineResolvers({
           if (typeof val === 'string') {
             return val
           }
+          // Only lower to es2024 for non-vite builders (webpack/rspack) where
+          // esbuild handles decorator lowering. The vite builder uses Babel instead.
+          const builder = await get('builder')
+          const isVite = !builder || builder === 'vite' || (builder as any) === '@nuxt/vite-builder'
+          if (isVite) {
+            return 'esnext'
+          }
           // https://github.com/vitejs/vite-plugin-vue/issues/528
           const useDecorators = await get('experimental').then(r => r?.decorators === true)
           if (useDecorators) {
