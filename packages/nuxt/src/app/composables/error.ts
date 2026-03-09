@@ -96,10 +96,50 @@ export class NuxtError<DataT = unknown> extends HTTPError<DataT> implements _Nux
   }
 }
 
+// Default HTTP status text for common codes (RFC 7231, etc.). Used when statusText/statusMessage is not provided.
+const DEFAULT_STATUS_TEXT: Record<number, string> = {
+  400: 'Bad Request',
+  401: 'Unauthorized',
+  402: 'Payment Required',
+  403: 'Forbidden',
+  404: 'Not Found',
+  405: 'Method Not Allowed',
+  408: 'Request Timeout',
+  409: 'Conflict',
+  410: 'Gone',
+  422: 'Unprocessable Entity',
+  429: 'Too Many Requests',
+  500: 'Internal Server Error',
+  501: 'Not Implemented',
+  502: 'Bad Gateway',
+  503: 'Service Unavailable',
+  504: 'Gateway Timeout',
+}
+
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>): NuxtError<DataT> => {
   if (isNuxtError<DataT>(error)) { return error }
-  return typeof error === 'string'
-    ? new NuxtError<DataT>(error)
-    : new NuxtError<DataT>(error.message, error)
+  if (typeof error === 'string') {
+    return new NuxtError<DataT>(error)
+  }
+
+  const err = { ...error } as Partial<NuxtError<DataT>>
+  if (err.statusText) {
+    err.message ??= err.statusText
+  }
+
+  // Auto-generate statusText from status code when not provided (#34280)
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const statusCode = typeof err.status === 'number' ? err.status : err.statusCode
+  if (typeof statusCode === 'number') {
+    err.status ??= statusCode
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    if (err.statusText === undefined && err.statusMessage === undefined) {
+      const defaultText = DEFAULT_STATUS_TEXT[statusCode] ?? 'Error'
+      err.statusText = defaultText
+      err.message ??= defaultText
+    }
+  }
+
+  return new NuxtError<DataT>(err.message, err)
 }
