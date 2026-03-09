@@ -2297,8 +2297,7 @@ describe.skipIf(isDev)('dynamic paths', () => {
     `)
   })
 
-  // TODO: investigate
-  it.skip('should allow setting base URL and build assets directory', async () => {
+  it('should allow setting base URL and build assets directory', async () => {
     await startServer({
       env: {
         NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
@@ -2313,7 +2312,8 @@ describe.skipIf(isDev)('dynamic paths', () => {
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
-    expect(await $fetch<string>('/foo/url')).toContain('path: /foo/url')
+    // TODO: document as breaking change
+    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
   })
 
   it('should allow setting relative baseURL', async () => {
