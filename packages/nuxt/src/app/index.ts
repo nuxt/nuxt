@@ -10,7 +10,7 @@ export { defineNuxtComponent, useAsyncData, useLazyAsyncData, useNuxtData, refre
 export type { AddRouteMiddlewareOptions, AnnouncerPoliteness, AsyncData, AsyncDataOptions, AsyncDataRequestStatus, CookieOptions, CookieRef, FetchResult, NuxtAnnouncer, NuxtAnnouncerOpts, NuxtAppManifest, NuxtAppManifestMeta, NuxtError, Politeness, ReloadNuxtAppOptions, RouteMiddleware, UseFetchOptions, $Fetch } from './composables/index'
 
 export { defineNuxtLink } from './components/index'
-export type { NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
+export type { NuxtLinkNavigationError, NuxtLinkOptions, NuxtLinkProps, NuxtTimeProps } from './components/index'
 export { getIslandHash, serializeIslandProps } from './island-hash'
 export { hashKey } from './utils/hash'
 export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
