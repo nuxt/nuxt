@@ -44,7 +44,7 @@
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
     "h3": "^1.15.5",
-    "impound": "^1.1.4",
+    "impound": "^1.1.5",
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",
     "nitropack": "^2.13.1",
