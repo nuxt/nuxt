@@ -566,16 +566,14 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }
 
         const anchorClasses: string[] = []
-        if (import.meta.client) {
-          if (isActive.value && (props.activeClass || options.activeClass)) {
-            anchorClasses.push(props.activeClass || options.activeClass!)
-          }
-          if (isExactActive.value && (props.exactActiveClass || options.exactActiveClass)) {
-            anchorClasses.push(props.exactActiveClass || options.exactActiveClass!)
-          }
-          if (prefetched.value && (props.prefetchedClass || options.prefetchedClass)) {
-            anchorClasses.push(props.prefetchedClass || options.prefetchedClass!)
-          }
+        if (isActive.value && (props.activeClass || options.activeClass)) {
+          anchorClasses.push(props.activeClass || options.activeClass!)
+        }
+        if (isExactActive.value && (props.exactActiveClass || options.exactActiveClass)) {
+          anchorClasses.push(props.exactActiveClass || options.exactActiveClass!)
+        }
+        if (import.meta.client && prefetched.value && (props.prefetchedClass || options.prefetchedClass)) {
+          anchorClasses.push(props.prefetchedClass || options.prefetchedClass!)
         }
 
         return h('a', {
