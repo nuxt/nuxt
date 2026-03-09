@@ -67,7 +67,7 @@
     "unstorage": "1.17.4",
     "vite": "7.3.1",
     "vue": "3.5.29",
-    "webpack": "5.105.3"
+    "webpack": "5.105.4"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
@@ -140,7 +140,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.29",
     "vue-tsc": "3.2.5",
-    "webpack": "5.105.3"
+    "webpack": "5.105.4"
   },
   "packageManager": "pnpm@10.30.3",
   "version": ""
