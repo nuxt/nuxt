@@ -6,14 +6,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, getBrowser, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
 import { sessionConfig } from './fixtures/basic/server/utils/session'
 import { asyncContext, isDev, isTestingAppManifest, isWebpack, legacyErrorRendering, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
-import { getBrowser } from '@nuxt/test-utils/e2e'
 
 const appSecret = 'nuxt-runtime-app-secret-test-value'
 
@@ -568,7 +567,7 @@ describe('pages', () => {
     const response = await page.goto(url('/server-only'))
     const responseHtml = await response!.text()
     const ssrMatch = responseHtml.match(/id="server-only-content">([^<]+)</)
-    const ssrContent = ssrMatch ? ssrMatch[1].trim() : null
+    const ssrContent = ssrMatch?.[1]?.trim() ?? null
     expect(ssrContent).toBeTruthy()
     expect(ssrContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
