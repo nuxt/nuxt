@@ -1,12 +1,15 @@
 ---
 title: 'prerenderRoutes'
 description: prerenderRoutes hints to Nitro to prerender an additional route.
+minimalVersion: "3.8"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
     size: xs
 ---
+
+:badge[v3.8]{color="info" class="align-middle"}
 
 When prerendering, you can hint to Nitro to prerender additional paths, even if their URLs do not show up in the HTML of the generated page.
 

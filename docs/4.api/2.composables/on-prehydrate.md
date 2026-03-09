@@ -1,12 +1,15 @@
 ---
 title: "onPrehydrate"
 description: "Use onPrehydrate to run a callback on the client immediately before Nuxt hydrates the page."
+minimalVersion: "3.12"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
     size: xs
 ---
+
+:badge[v3.12]{color="info" class="align-middle"}
 
 ::important
 This composable is available in Nuxt v3.12+.

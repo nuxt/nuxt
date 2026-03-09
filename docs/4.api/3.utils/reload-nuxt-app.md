@@ -1,12 +1,15 @@
 ---
 title: 'reloadNuxtApp'
 description: reloadNuxtApp will perform a hard reload of the page.
+minimalVersion: "3.3"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/chunk.ts
     size: xs
 ---
+
+:badge[v3.3]{color="info" class="align-middle"}
 
 ::note
 `reloadNuxtApp` will perform a hard reload of your app, re-requesting a page and its dependencies from the server.

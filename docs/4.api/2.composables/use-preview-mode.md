@@ -1,12 +1,15 @@
 ---
 title: "usePreviewMode"
 description: "Use usePreviewMode to check and control preview mode in Nuxt"
+minimalVersion: "3.11"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/preview.ts
     size: xs
 ---
+
+:badge[v3.11]{color="info" class="align-middle"}
 
 # `usePreviewMode`
 

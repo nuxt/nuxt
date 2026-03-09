@@ -1,12 +1,15 @@
 ---
 title: "callOnce"
 description: "Run a given function or block of code once during SSR or CSR."
+minimalVersion: "3.9"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/once.ts
     size: xs
 ---
+
+:badge[v3.9]{color="info" class="align-middle"}
 
 ::important
 This utility is available since [Nuxt v3.9](/blog/v3-9).
@@ -35,7 +38,7 @@ await callOnce(async () => {
 </script>
 ```
 
-It is also possible to run on every navigation while still avoiding the initial server/client double load. For this, it is possible to use the `navigation` mode:
+It is also possible to run on every navigation while still avoiding the initial server/client double load. For this, it is possible to use the `navigation` mode :badge[v3.15]{color="info" size="xs" class="align-middle"}:
 
 ```vue [app/app.vue]
 <script setup lang="ts">

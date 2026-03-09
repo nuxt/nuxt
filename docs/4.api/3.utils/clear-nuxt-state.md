@@ -1,12 +1,15 @@
 ---
 title: 'clearNuxtState'
 description: Delete the cached state of useState.
+minimalVersion: "3.6"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/state.ts
     size: xs
 ---
+
+:badge[v3.6]{color="info" class="align-middle"}
 
 ::note
 This method is useful if you want to invalidate the state of `useState`. You can also reset the state to its initial value by passing `{ reset: true }` as the second parameter.

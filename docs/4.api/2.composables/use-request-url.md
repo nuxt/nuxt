@@ -1,12 +1,15 @@
 ---
 title: 'useRequestURL'
 description: 'Access the incoming request URL with the useRequestURL composable.'
+minimalVersion: "3.5"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/url.ts
     size: xs
 ---
+
+:badge[v3.5]{color="info" class="align-middle"}
 
 `useRequestURL` is a helper function that returns an [URL object](https://developer.mozilla.org/en-US/docs/Web/API/URL/URL) working on both server-side and client-side.
 

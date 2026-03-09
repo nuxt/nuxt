@@ -1,12 +1,15 @@
 ---
 title: useRuntimeHook
 description: Registers a runtime hook in a Nuxt application and ensures it is properly disposed of when the scope is destroyed.
+minimalVersion: "3.14"
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/runtime-hook.ts
     size: xs
 ---
+
+:badge[v3.14]{color="info" class="align-middle"}
 
 ::important
 This composable is available in Nuxt v3.14+.
