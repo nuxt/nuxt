@@ -515,11 +515,12 @@ describe('nuxt-link:error-handling', () => {
     )
     expect(link.type).toBe(EXTERNAL)
     expect(link.props.onClick).toBeDefined()
+    const { onClick } = link.props as { onClick: (e: MouseEvent) => Promise<void> }
 
     const event = { preventDefault: vi.fn() } as unknown as MouseEvent
-    await expect(link.props.onClick(event)).rejects.toThrow('Page not found')
+    await expect(onClick(event)).rejects.toThrow('Page not found')
     expect(onErrorMock).toHaveBeenCalledTimes(1)
-    expect(onErrorMock.mock.calls[0][0]).toMatchObject({
+    expect(onErrorMock.mock.calls[0]?.[0]).toMatchObject({
       name: 'NavigationError',
       message: 'Page not found',
     })
