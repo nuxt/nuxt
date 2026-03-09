@@ -150,6 +150,32 @@ describe('errors', () => {
     `)
   })
 
+  it('auto-generates statusText from status code when not provided (#34280)', () => {
+    const error = createError({ status: 404 })
+    expect(error.status).toBe(404)
+    expect(error.statusText).toBe('Not Found')
+    const error400 = createError({ status: 400 })
+    expect(error400.statusText).toBe('Bad Request')
+    const error500 = createError({ status: 500 })
+    expect(error500.statusText).toBe('Internal Server Error')
+  })
+
+  it('uses "Error" for unknown status codes', () => {
+    const error = createError({ status: 499 })
+    expect(error.statusText).toBe('Error')
+  })
+
+  it('does not overwrite explicit statusText', () => {
+    const error = createError({ status: 404, statusText: 'Custom Not Found' })
+    expect(error.statusText).toBe('Custom Not Found')
+  })
+
+  it('auto-generates statusText from deprecated statusCode when status is not set', () => {
+    const error = createError({ statusCode: 404 })
+    expect(error.status).toBe(404)
+    expect(error.statusText).toBe('Not Found')
+  })
+
   // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
   it('supports status/statusText getters', () => {
     const error = createError({ status: 404, statusText: 'Not Found' })
