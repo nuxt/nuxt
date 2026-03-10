@@ -68,10 +68,49 @@ export const isNuxtError = <DataT = unknown>(
   error: unknown,
 ): error is NuxtError<DataT> => !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 
+// Default HTTP status text for common codes (RFC 7231, etc.). Used when statusText/statusMessage is not provided.
+const DEFAULT_STATUS_TEXT: Record<number, string> = {
+  400: 'Bad Request',
+  401: 'Unauthorized',
+  402: 'Payment Required',
+  403: 'Forbidden',
+  404: 'Not Found',
+  405: 'Method Not Allowed',
+  408: 'Request Timeout',
+  409: 'Conflict',
+  410: 'Gone',
+  422: 'Unprocessable Entity',
+  429: 'Too Many Requests',
+  500: 'Internal Server Error',
+  501: 'Not Implemented',
+  502: 'Bad Gateway',
+  503: 'Service Unavailable',
+  504: 'Gateway Timeout',
+}
+
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
-  if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>>).statusText) {
-    error.message ??= (error as Partial<NuxtError<DataT>>).statusText
+  if (typeof error !== 'string' && error !== null && typeof error === 'object') {
+    const err = error as Partial<NuxtError<DataT>>
+    if (err.statusText) {
+      err.message ??= err.statusText
+    }
+    // Auto-generate statusText from status code when not provided (#34280)
+    // Normalise deprecated statusCode to match status so h3 createError sees consistent values
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const statusCode = typeof err.status === 'number' ? err.status : err.statusCode
+    if (typeof statusCode === 'number') {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      err.statusCode = statusCode
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      if (err.statusText === undefined && err.statusMessage === undefined) {
+        const defaultText = DEFAULT_STATUS_TEXT[statusCode] ?? 'Error'
+        err.statusText = defaultText
+        // statusMessage required for h3 createError; Nuxt getter maps statusText -> statusMessage
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        err.statusMessage = defaultText
+      }
+    }
   }
 
   const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
