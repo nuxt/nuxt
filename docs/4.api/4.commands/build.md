@@ -10,7 +10,7 @@ links:
 
 <!--build-cmd-->
 ```bash [Terminal]
-npx nuxt build [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--prerender] [--preset] [--dotenv] [--envName] [-e, --extends=<layer-name>]
+npx nuxt build [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--prerender] [--preset] [--dotenv] [--envName] [-e, --extends=<layer-name>] [--profile[=verbose]]
 ```
 <!--/build-cmd-->
 
@@ -36,6 +36,7 @@ The `build` command creates a `.output` directory with all your application, ser
 | `--dotenv`                           |         | Path to `.env` file to load, relative to the root directory                                                                                          |
 | `--envName`                          |         | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server) |
 | `-e, --extends=<layer-name>`         |         | Extend from a Nuxt layer                                                                                                                             |
+| `--profile`                          |         | Profile performance (v4.4+). Writes a V8 CPU profile and JSON report on exit. Use `--profile=verbose` for a full console report.                     |
 <!--/build-opts-->
 
 ::note

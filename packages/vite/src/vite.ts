@@ -41,6 +41,7 @@ import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { PerfPlugin } from './plugins/perf.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -129,7 +130,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 const environments = Object.values(builder.environments)
                 for (const environment of environments) {
                   logger.restoreAll()
+                  nuxt._perf?.startPhase(`vite:${environment.name}`)
                   await builder.build(environment)
+                  nuxt._perf?.endPhase(`vite:${environment.name}`)
                   logger.wrapAll()
                   await nuxt.callHook('vite:compiled')
                 }
@@ -200,6 +203,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ),
       },
       plugins: [
+        // per-plugin timing when profiling is enabled
+        PerfPlugin(nuxt),
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
@@ -305,10 +310,12 @@ async function handleEnvironments (nuxt: Nuxt, config: vite.InlineConfig) {
     return
   }
 
+  nuxt._perf?.startPhase('vite:dev-server')
   await withLogs(async () => {
     const server = await createServer(config)
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
+  nuxt._perf?.endPhase('vite:dev-server')
 
   await writeDevServer(nuxt)
 }
@@ -334,8 +341,12 @@ async function handleSerialBuilds (nuxt: Nuxt, ctx: ViteBuildContext) {
     }
   })
 
+  nuxt._perf?.startPhase(`vite:client`)
   await withLogs(() => buildClient(nuxt, ctx), 'Vite client built', nuxt.options.dev)
+  nuxt._perf?.endPhase(`vite:client`)
+  nuxt._perf?.startPhase(`vite:server`)
   await withLogs(() => buildServer(nuxt, ctx), 'Vite server built', nuxt.options.dev)
+  nuxt._perf?.endPhase(`vite:server`)
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
