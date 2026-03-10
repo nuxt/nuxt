@@ -146,8 +146,8 @@ jobs:
           category: '/language:${{ matrix.language }}'
 
   typecheck:
-    # already tested in merge queue
-    if: github.event_name != 'push'
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     permissions:
@@ -197,9 +197,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   lint-and-test:
-    # autofix workflow will be triggered instead for PRs
+    # autofix workflow will be triggered instead for PRs; run in merge queue and on push to maintenance branches
     needs: changes
-    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
+    if: (github.event_name == 'merge_group' || (github.event_name == 'push' && github.ref_name != 'main')) && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
     permissions:
@@ -239,8 +239,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   test-size:
-    # already tested in merge queue
-    if: github.event_name != 'push'
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ubuntu-24.04-arm
     permissions:
       actions: write
@@ -308,8 +308,8 @@ jobs:
           mode: simulation
 
   test-fixtures:
-    # already tested in merge queue
-    if: github.event_name != 'push'
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
