@@ -102,10 +102,9 @@ export interface Nuxt {
     startPhase: (name: string) => void
     endPhase: (name?: string) => void
     collectModuleTimings: (modules: Array<{ meta?: { name?: string }, timings?: Record<string, number | undefined> }>) => void
-    recordBundlerPluginHook: (pluginName: string, hookName: string, durationMs: number) => void
+    recordBundlerPluginHook: (pluginName: string, hookName: string, durationMs: number, startTime?: number) => void
     printReport: (options?: { title?: string }) => void
-    writeReport: (buildDir: string, options?: { quiet?: boolean }) => Promise<string>
-    writeReportSync: (buildDir: string, options?: { quiet?: boolean }) => string
+    writeReport: (buildDir: string, options?: { quiet?: boolean }) => string
     dispose: () => void
   }
   /** Async local storage for current running Nuxt module instance. */

@@ -1,8 +1,7 @@
 import { performance } from 'node:perf_hooks'
 import process from 'node:process'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { join } from 'pathe'
+import { join, relative } from 'pathe'
 import { consola } from 'consola'
 import { colors } from 'consola/utils'
 import type { Hookable } from 'hookable'
@@ -106,6 +105,26 @@ function round (n: number): number {
   return Math.round(n * 100) / 100
 }
 
+/** Chrome Trace Event format (subset used by Perfetto / chrome://tracing) */
+interface TraceEvent {
+  /** Event name */
+  name: string
+  /** Category */
+  cat: string
+  /** Phase: 'X' = complete, 'M' = metadata, 'C' = counter */
+  ph: string
+  /** Timestamp in microseconds */
+  ts: number
+  /** Duration in microseconds (for ph='X') */
+  dur?: number
+  /** Process ID */
+  pid: number
+  /** Thread ID */
+  tid: number
+  /** Arguments */
+  args?: Record<string, unknown>
+}
+
 const SLOW_HOOK_THRESHOLD_MS = Number(process.env.NUXT_PERF_SLOW_HOOK_MS) || 50
 
 const HOOK_PHASE_THRESHOLD_MS = 5
@@ -117,9 +136,12 @@ export class NuxtPerfProfiler {
   #hookStartStack: Array<{ name: string, time: number, memory: MemorySnapshot }> = []
   #modules: ModuleTiming[] = []
   #bundlerPluginTimings = new Map<string, Map<string, { totalTime: number, count: number, maxTime: number }>>()
+  #bundlerPluginSpans: Array<{ pluginName: string, hookName: string, startTime: number, durationMs: number }> = []
   #globalStart: number
   #globalMemoryBefore: MemorySnapshot
   #unsubscribe?: () => void
+  /** Offset to convert performance.now() (ms) to epoch microseconds for trace events */
+  #baseTs: number
 
   constructor (options?: { startTime?: number }) {
     if (options?.startTime) {
@@ -129,6 +151,8 @@ export class NuxtPerfProfiler {
       this.#globalStart = performance.now()
     }
     this.#globalMemoryBefore = getMemorySnapshot()
+    // Compute offset: epoch_us = (performance.now() * 1000) + baseTs
+    this.#baseTs = Date.now() * 1000 - this.#globalStart * 1000
   }
 
   installHookInterceptors (hooks: Hookable<NuxtHooks>): void {
@@ -215,7 +239,7 @@ export class NuxtPerfProfiler {
     })
   }
 
-  recordBundlerPluginHook (pluginName: string, hookName: string, durationMs: number): void {
+  recordBundlerPluginHook (pluginName: string, hookName: string, durationMs: number, startTime?: number): void {
     let plugin = this.#bundlerPluginTimings.get(pluginName)
     if (!plugin) {
       plugin = new Map()
@@ -228,6 +252,10 @@ export class NuxtPerfProfiler {
       if (durationMs > entry.maxTime) { entry.maxTime = durationMs }
     } else {
       plugin.set(hookName, { totalTime: durationMs, count: 1, maxTime: durationMs })
+    }
+    // Store per-invocation span for trace file (only if startTime provided and duration significant)
+    if (startTime != null && durationMs > 0.1) {
+      this.#bundlerPluginSpans.push({ pluginName, hookName, startTime, durationMs })
     }
   }
 
@@ -469,26 +497,163 @@ export class NuxtPerfProfiler {
     }
   }
 
-  async writeReport (buildDir: string, options?: { quiet?: boolean }): Promise<string> {
-    const report = this.getReport()
-    const reportPath = join(buildDir, 'perf-report.json')
-    await mkdir(buildDir, { recursive: true })
-    await writeFile(reportPath, JSON.stringify(report, null, 2), 'utf-8')
-    if (!options?.quiet) {
-      consola.log(colors.dim(` Full report written to ${reportPath}`))
-      consola.log('')
+  /**
+   * Generate trace events in Chrome Trace Event format.
+   * The output can be loaded in chrome://tracing or https://ui.perfetto.dev
+   */
+  getTraceEvents (): TraceEvent[] {
+    const events: TraceEvent[] = []
+    const pid = 1
+    const tidPhases = 1
+    const tidHooks = 2
+    // Bundler plugin spans use dynamic tids starting from this base
+    const tidPluginBase = 10
+
+    /** Convert performance.now() (ms) to epoch microseconds (integer) */
+    const toUs = (ms: number) => Math.round(ms * 1000 + this.#baseTs)
+
+    // Process/thread metadata
+    events.push(
+      { name: 'process_name', ph: 'M', ts: 0, pid, tid: 0, cat: '', args: { name: 'Nuxt Build' } },
+      { name: 'thread_name', ph: 'M', ts: 0, pid, tid: tidPhases, cat: '', args: { name: 'Build' } },
+      { name: 'thread_name', ph: 'M', ts: 0, pid, tid: tidHooks, cat: '', args: { name: 'Hooks' } },
+    )
+
+    /** Convert ms duration to integer microseconds */
+    const durUs = (ms: number) => Math.round(ms * 1000)
+
+    // Root span using B/E (begin/end) pair so nested phases display correctly
+    const globalEnd = performance.now()
+    events.push(
+      { name: 'nuxt build', cat: 'build', ph: 'B', ts: toUs(this.#globalStart), pid, tid: tidPhases },
+      { name: 'nuxt build', cat: 'build', ph: 'E', ts: toUs(globalEnd), pid, tid: tidPhases },
+    )
+
+    // Manual phases as B/E pairs (they nest: e.g. module:* inside modules, vite:* inside build:bundle)
+    for (const phase of this.#phases) {
+      events.push(
+        {
+          name: phase.name,
+          cat: 'phase',
+          ph: 'B',
+          ts: toUs(phase.startTime),
+          pid,
+          tid: tidPhases,
+          args: {
+            memoryBefore: { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed },
+          },
+        },
+        {
+          name: phase.name,
+          cat: 'phase',
+          ph: 'E',
+          ts: toUs(phase.endTime),
+          pid,
+          tid: tidPhases,
+          args: {
+            memoryDelta: { rss: phase.memoryDelta.rss, heapUsed: phase.memoryDelta.heapUsed },
+          },
+        },
+      )
     }
-    return reportPath
+
+    // Hook invocations as B/E pairs (hooks can nest when one hook triggers another)
+    for (const hp of this.#hookPhases) {
+      const name = hp.name.startsWith('hook:') ? hp.name.slice(5) : hp.name
+      events.push(
+        { name, cat: 'hook', ph: 'B', ts: toUs(hp.startTime), pid, tid: tidHooks },
+        { name, cat: 'hook', ph: 'E', ts: toUs(hp.endTime), pid, tid: tidHooks },
+      )
+    }
+
+    // Bundler plugin per-invocation spans
+    // These can overlap (parallel transforms), so we assign dynamic thread IDs.
+    // Group by prefix (vite vs nitro) and use a simple lane allocator per group.
+    const viteSpans = this.#bundlerPluginSpans.filter(s => !s.pluginName.startsWith('nitro:'))
+    const nitroSpans = this.#bundlerPluginSpans.filter(s => s.pluginName.startsWith('nitro:'))
+
+    const emitPluginSpans = (spans: typeof viteSpans, label: string, baseTid: number) => {
+      if (spans.length === 0) { return }
+      // Sort by start time for lane allocation
+      const sorted = [...spans].sort((a, b) => a.startTime - b.startTime)
+      // Each lane tracks when it becomes free (end time in ms)
+      const laneEnds: number[] = []
+
+      for (const span of sorted) {
+        const endTime = span.startTime + span.durationMs
+        // Find a lane that's free (strictly ended before this span starts)
+        let lane = laneEnds.findIndex(end => end < span.startTime)
+        if (lane === -1) {
+          lane = laneEnds.length
+          laneEnds.push(0)
+        }
+        laneEnds[lane] = endTime
+
+        const tid = baseTid + lane
+        events.push({
+          name: `${span.pluginName}:${span.hookName}`,
+          cat: label,
+          ph: 'X',
+          ts: toUs(span.startTime),
+          dur: durUs(span.durationMs),
+          pid,
+          tid,
+        })
+      }
+
+      // Add thread name metadata for each lane used
+      for (let i = 0; i < laneEnds.length; i++) {
+        const suffix = laneEnds.length > 1 ? ` ${i + 1}` : ''
+        events.push({
+          name: 'thread_name', ph: 'M', ts: 0, pid, tid: baseTid + i, cat: '',
+          args: { name: `${label}${suffix}` },
+        })
+      }
+    }
+
+    emitPluginSpans(viteSpans, 'Vite Plugins', tidPluginBase)
+    emitPluginSpans(nitroSpans, 'Nitro Plugins', tidPluginBase + 100)
+
+    // Memory counter events at phase boundaries
+    for (const phase of this.#phases) {
+      events.push(
+        {
+          name: 'Memory',
+          cat: 'memory',
+          ph: 'C',
+          ts: toUs(phase.startTime),
+          pid,
+          tid: 0,
+          args: { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed },
+        },
+        {
+          name: 'Memory',
+          cat: 'memory',
+          ph: 'C',
+          ts: toUs(phase.endTime),
+          pid,
+          tid: 0,
+          args: { rss: phase.memoryAfter.rss, heapUsed: phase.memoryAfter.heapUsed },
+        },
+      )
+    }
+
+    return events
   }
 
-  writeReportSync (buildDir: string, options?: { quiet?: boolean }): string {
+  writeReport (buildDir: string, options?: { quiet?: boolean }): string {
     const report = this.getReport()
     const reportPath = join(buildDir, 'perf-report.json')
+    const relativeReportPath = relative(process.cwd(), reportPath).replace(/^(?![^.]{1,2}\/)/, './')
+    const tracePath = join(buildDir, 'perf-trace.json')
+    const relativeTracePath = relative(process.cwd(), tracePath).replace(/^(?![^.]{1,2}\/)/, './')
     try {
       mkdirSync(buildDir, { recursive: true })
       writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf-8')
+      writeFileSync(tracePath, JSON.stringify({ traceEvents: this.getTraceEvents() }), 'utf-8')
       if (!options?.quiet) {
-        consola.log(colors.dim(` Full report written to ${reportPath}`))
+        consola.log(colors.dim(` Data dump written to ${relativeReportPath}`))
+        consola.log(colors.dim(` Trace written to ${relativeTracePath} (load in \`https://ui.perfetto.dev\`)`))
         consola.log('')
       }
     } catch {

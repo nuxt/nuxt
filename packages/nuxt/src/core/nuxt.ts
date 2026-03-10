@@ -950,7 +950,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       if (flushed || !perf) { return }
       flushed = true
       if (!quiet) { perf.printReport({ title }) }
-      perf.writeReportSync(nuxt.options.buildDir, { quiet })
+      perf.writeReport(nuxt.options.buildDir, { quiet })
       perf.dispose()
     }
 

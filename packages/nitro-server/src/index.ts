@@ -784,7 +784,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           if (typeof original !== 'function') { continue }
           plugin[hookName] = function (this: any, ...args: any[]) {
             const start = performance.now()
-            const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start)
+            const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start, start)
             try {
               const result = original.apply(this, args)
               if (result && typeof result === 'object' && 'then' in result) {
