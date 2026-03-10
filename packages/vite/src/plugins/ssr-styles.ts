@@ -1,20 +1,21 @@
-import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 import { dirname, relative } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
-import { parseQuery, parseURL } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { IS_CSS_RE, isCSS, isVue } from '../utils/index.ts'
+import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { resolveClientEntry } from '../utils/config.ts'
 import { useNitro } from '@nuxt/kit'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 const QUERY_RE = /\?.+$/
+const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
+const NUXT_COMPONENT_QUERY_RE = /[?&]nuxt_component=/
+const STYLE_QUERY_RE = /[?&]type=style/
 
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
@@ -26,6 +27,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const nitro = useNitro()
   nuxt.hook('build:manifest', (manifest) => {
     const entryIds = new Set<string>()
+
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
       if (!chunk) {
@@ -36,6 +38,23 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       } else {
         chunk.css &&= []
       }
+      // Rolldown may split a component into a facade chunk (with no CSS) and
+      // a shared code chunk (with CSS). Also clear CSS from directly imported
+      // chunks when they are rolldown-generated internal chunks whose CSS belongs
+      // to the same component (matched by filename prefix).
+      if (chunk.imports && chunk.src) {
+        const componentBaseName = _filename(chunk.src)
+        for (const imp of chunk.imports) {
+          const imported = manifest[imp]
+          if (imported?.css?.length && !imported.isEntry && !imported.src) {
+            // Only clear if ALL CSS files in the chunk match this component
+            const allMatch = imported.css.every((css: string) => css.startsWith(componentBaseName + '.'))
+            if (allMatch) {
+              imported.css = []
+            }
+          }
+        }
+      }
     }
 
     nitro.options.virtual['#internal/nuxt/entry-ids.mjs'] = () => `export default ${JSON.stringify(Array.from(entryIds))}`
@@ -44,7 +63,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   })
 
   const cssMap: Record<string, { files: string[], inBundle?: boolean }> = {}
-  const idRefMap: Record<string, string> = {}
+  // Track emitted CSS chunk refs globally to avoid duplicate emissions across transform calls.
+  const emittedFileRefs: Record<string, string> = {}
 
   const options = {
     shouldInline: nuxt.options.features.inlineStyles,
@@ -76,10 +96,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   return {
     name: 'ssr-styles',
     configResolved (config) {
-      // TODO: remove when adopting vite environment api
-      if (!config.build.ssr || nuxt.options.experimental.viteEnvironmentApi) {
-        entry = resolveClientEntry(config)
-      }
+      entry = resolveClientEntry(config)
     },
     applyToEnvironment (environment) {
       return {
@@ -249,12 +266,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               return
             }
 
-            const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+            const { pathname, search } = parseModuleId(id)
 
             if (!(id in clientCSSMap) && !islandPaths.has(pathname)) { return }
 
-            const query = parseQuery(search)
-            if (query.macro || query.nuxt_component) { return }
+            if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
 
             if (!islandPaths.has(pathname)) {
               if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
@@ -281,25 +297,33 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                 continue
               }
               emittedIds.add(file)
-              const ref = this.emitFile({
-                type: 'chunk',
-                name: `${idFilename}-styles-${++styleCtr}.mjs`,
-                id: fileInline,
-              })
 
-              idRefMap[relativeToSrcDir(file)] = ref
+              // Reuse ref from a previous emission of the same file to avoid rolldown
+              // returning incorrect refs when the same chunk ID is emitted multiple times
+              const resolvedInlineId = res.id
+              let ref = emittedFileRefs[resolvedInlineId]
+              if (!ref) {
+                ref = this.emitFile({
+                  type: 'chunk',
+                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  id: fileInline,
+                })
+                emittedFileRefs[resolvedInlineId] = ref
+              }
+
               idMap.files.push(ref)
             }
 
             if (!SUPPORTED_FILES_RE.test(pathname)) { return }
 
             for (const i of findStaticImports(code)) {
-              if (!i.specifier.endsWith('.css') && parseQuery(i.specifier).type !== 'style') { continue }
+              if (!i.specifier.endsWith('.css') && !STYLE_QUERY_RE.test(i.specifier)) { continue }
 
               const resolved = await this.resolve(i.specifier, id)
               if (!resolved) { continue }
               const resolvedIdInline = resolved.id + '?inline&used'
-              if (!(await this.resolve(resolvedIdInline))) {
+              const res = await this.resolve(resolvedIdInline)
+              if (!res) {
                 if (!warnCache.has(resolved.id)) {
                   warnCache.add(resolved.id)
                   this.warn(`[nuxt] Cannot extract styles for \`${i.specifier}\`. Its styles will not be inlined when server-rendering.`)
@@ -308,13 +332,19 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               }
 
               if (emittedIds.has(resolved.id)) { continue }
-              const ref = this.emitFile({
-                type: 'chunk',
-                name: `${idFilename}-styles-${++styleCtr}.mjs`,
-                id: resolvedIdInline,
-              })
 
-              idRefMap[relativeToSrcDir(resolved.id)] = ref
+              // Reuse ref from a previous emission of the same file
+              const resolvedInlineId = res.id
+              let ref = emittedFileRefs[resolvedInlineId]
+              if (!ref) {
+                ref = this.emitFile({
+                  type: 'chunk',
+                  name: `${idFilename}-styles-${++styleCtr}.mjs`,
+                  id: resolvedIdInline,
+                })
+                emittedFileRefs[resolvedInlineId] = ref
+              }
+
               idMap.files.push(ref)
             }
           },

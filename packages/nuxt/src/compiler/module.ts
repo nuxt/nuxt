@@ -56,6 +56,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         keyedFunctions: normalizedKeyedFunctions,
         alias: nuxt.options.alias,
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
+        appDir: nuxt.options.appDir,
       }))
     })
 

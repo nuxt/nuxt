@@ -70,6 +70,10 @@ const formatter = computed(() => {
 })
 
 const formattedDate = computed(() => {
+  if (isInvalidDate.value) {
+    return date.value.toString()
+  }
+
   if (!props.relative) {
     return (formatter.value as Intl.DateTimeFormat).format(date.value)
   }
@@ -95,7 +99,8 @@ const formattedDate = computed(() => {
   return (formatter.value as Intl.RelativeTimeFormat).format(Math.round(value), unit)
 })
 
-const isoDate = computed(() => date.value.toISOString())
+const isInvalidDate = computed(() => Number.isNaN(date.value.getTime()))
+const isoDate = computed(() => isInvalidDate.value ? undefined : date.value.toISOString())
 const title = computed(() => props.title === true ? isoDate.value : typeof props.title === 'string' ? props.title : undefined)
 const dataset: Record<string, string | number | boolean | Date | undefined> = {}
 
@@ -118,7 +123,15 @@ if (import.meta.server) {
       return name
     }
 
-    const date = new Date(el.getAttribute('datetime')!)
+    const datetime = el.getAttribute('datetime')
+    if (!datetime) {
+      return
+    }
+    const date = new Date(datetime)
+    if (Number.isNaN(date.getTime())) {
+      return
+    }
+
     const options: Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions & { locale?: Intl.LocalesArgument, relative?: boolean } = {}
     for (const name of el.getAttributeNames()) {
       if (name.startsWith('data-')) {

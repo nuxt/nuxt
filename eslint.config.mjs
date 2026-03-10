@@ -113,6 +113,8 @@ export default createConfigForNuxt({
     },
     rules: {
       '@typescript-eslint/no-deprecated': 'error',
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
+      'no-return-await': 'off',
     },
   })
 
@@ -240,14 +242,10 @@ export default createConfigForNuxt({
           'patterns': [
             {
               allowTypeImports: true,
-              group: [
-                // disallow everything
-                '[@a-z]*',
-                // except certain dependencies
-                ...[
+              regex: `^(?!(${
+                [
                   // vue ecosystem
                   '@unhead',
-                  '@vue',
                   '@vue/shared',
                   'vue/server-renderer',
                   'vue',
@@ -256,10 +254,8 @@ export default createConfigForNuxt({
                   'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
-                ].map(r => `!${r}`),
-                '!#[a-z]*/**', // aliases
-                '!.*/**', // relative imports
-              ],
+                ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+              })($|/))(?!#)(?!\\.)[a-zA-Z@]`,
             },
           ],
         }],

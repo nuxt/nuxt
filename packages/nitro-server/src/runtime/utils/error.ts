@@ -20,9 +20,9 @@ export function isJsonRequest (event: H3Event): boolean {
   )
 }
 
-export function hasReqHeader (event: H3Event, name: string, includes: string) {
+export function hasReqHeader (event: H3Event, name: string, includes: string): boolean {
   const value = getRequestHeader(event, name)
-  return (
+  return !!(
     value && typeof value === 'string' && value.toLowerCase().includes(includes)
   )
 }

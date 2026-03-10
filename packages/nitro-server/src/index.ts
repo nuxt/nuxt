@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks'
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
@@ -17,7 +18,8 @@ import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDi
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors, setHeader } from 'h3'
-import { isWindows } from 'std-env'
+import { addDependency } from 'nypm'
+import { hasTTY, isCI, isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
@@ -92,7 +94,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // Resolve aliases in user-provided input - so `~/server/test` will work
+  // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
 
@@ -227,7 +229,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
-          `export const NUXT_PAYLOAD_EXTRACTION = ${!!nuxt.options.experimental.payloadExtraction}`,
+          `export const NUXT_PAYLOAD_EXTRACTION = ${nuxt.options.experimental.payloadExtraction !== false}`,
+          `export const NUXT_PAYLOAD_INLINE = ${nuxt.options.experimental.payloadExtraction !== true}`,
           `export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${hasCachedRoutes}`,
         ].join('\n')
       },
@@ -372,7 +375,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
-  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr']
+  const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr']
 
   function getRouteRulesRouter () {
     const routeRulesRouter = createRou3Router<NitroRouteRules>()
@@ -449,6 +452,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       nitro.hooks.hook('build:before', (nitro) => {
         for (const [route, value] of Object.entries(nitro.options.routeRules)) {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
+            if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
               const payloadKey = route + '/_payload.json'
               const defaults = {} as Record<string, any>
@@ -564,6 +568,69 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
+  // Add decorator support via Babel when experimental.decorators is enabled.
+  if (nuxt.options.experimental.decorators) {
+    const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators']
+    let hasDeps = true
+    for (const pkg of nitroDecoratorDeps) {
+      try {
+        await import(pkg)
+      } catch (_err) {
+        const err = _err as NodeJS.ErrnoException
+        if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
+          throw err
+        }
+        if (!isCI && hasTTY) {
+          logger.info('Decorator support requires additional dependencies.')
+          const shouldInstall = await logger.prompt(`Install \`${nitroDecoratorDeps.join('` and `')}\`?`, {
+            type: 'confirm',
+            initial: true,
+          })
+          if (shouldInstall) {
+            logger.start(`Installing ${nitroDecoratorDeps.map(d => `\`${d}\``).join(' and ')}...`)
+            await addDependency(nitroDecoratorDeps, {
+              dev: true,
+              cwd: nuxt.options.rootDir,
+              silent: true,
+            })
+            logger.info('Rerun Nuxt to enable decorator support.')
+            process.exit(1)
+          }
+        }
+        logger.warn(`Cannot find \`${pkg}\`. Install \`${nitroDecoratorDeps.join('` and `')}\` to enable decorator support.`)
+        hasDeps = false
+        break
+      }
+    }
+
+    if (hasDeps) {
+      const { babel } = await import('@rollup/plugin-babel')
+      nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
+      nitroConfig.rollupConfig!.plugins!.unshift(
+        babel({
+          babelHelpers: 'bundled',
+          configFile: false,
+          extensions: ['.ts', '.js', '.mjs', '.mts'],
+          plugins: [
+            // Syntax plugin allows Babel to parse TypeScript without transforming it,
+            // since the actual TS stripping is handled later by the bundler's esbuild plugin.
+            ['@babel/plugin-syntax-typescript', { isTSX: false }],
+            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+          ],
+        }),
+        babel({
+          babelHelpers: 'bundled',
+          configFile: false,
+          extensions: ['.tsx', '.jsx'],
+          plugins: [
+            ['@babel/plugin-syntax-typescript', { isTSX: true }],
+            ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+          ],
+        }),
+      )
+    }
+  }
+
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
@@ -574,11 +641,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitroConfig.rollupConfig!.plugins!.push(
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
+      trace: true,
       include: sharedPatterns,
       patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
     }),
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
+      trace: true,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
       exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
     }),
@@ -656,10 +725,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // Init nitro
+  nuxt._perf?.startPhase('nitro:createNitro')
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
+  nuxt._perf?.endPhase('nitro:createNitro')
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig === false && nitro.options.imports) {
@@ -672,11 +743,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         }))
   }
 
-  // TODO: remove when app manifest support is landed in https://github.com/nuxt/nuxt/pull/21641
-  // Add prerender payload support
-  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === undefined) {
-    logger.warn('Using experimental payload extraction for full-static output. You can opt-out by setting `experimental.payloadExtraction` to `false`.')
-    nuxt.options.experimental.payloadExtraction = true
+  // For full-static output, ensure payload extraction is not disabled
+  if (nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
+    logger.warn('Payload extraction is recommended for full-static output. You can enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.')
   }
 
   // Trigger Nitro reload when SPA loading template changes
@@ -703,6 +772,36 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt._nitro = nitro
   await nuxt.callHook('nitro:init', nitro)
 
+  // Instrument Nitro rollup plugins for perf tracking
+  if (nuxt._perf) {
+    nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
+      const plugins = (rollupConfig.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
+      for (const plugin of plugins) {
+        if (!plugin || !plugin.name) { continue }
+        const pluginName = `nitro:${plugin.name}`
+        for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+          const original = plugin[hookName]
+          if (typeof original !== 'function') { continue }
+          plugin[hookName] = function (this: any, ...args: any[]) {
+            const start = performance.now()
+            const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start, start)
+            try {
+              const result = original.apply(this, args)
+              if (result && typeof result === 'object' && 'then' in result) {
+                return (result as Promise<any>).finally(record)
+              }
+              record()
+              return result
+            } catch (err) {
+              record()
+              throw err
+            }
+          } as any
+        }
+      }
+    })
+  }
+
   nuxt['~runtimeDependencies'] ||= []
   nuxt['~runtimeDependencies']!.push(
     ...runtimeDependencies,
@@ -710,6 +809,29 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // ensure we only have one version of vue if nitro is going to inline anyway
     ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
   )
+
+  addVitePlugin({
+    name: 'nuxt:nitro:ssr-conditions',
+    configEnvironment (name, config) {
+      if (name === 'ssr') {
+        config.resolve ||= {}
+        config.resolve.conditions = [...nitro.options.exportConditions || [], 'import']
+      }
+    },
+  })
+
+  // Tree-shake Vue feature flags for non-node Nitro targets
+  addVitePlugin({
+    name: 'nuxt:nitro:vue-feature-flags',
+    applyToEnvironment: environment => environment.name === 'ssr' && environment.config.isProduction,
+    configResolved (config) {
+      for (const key in config.define) {
+        if (key.startsWith('__VUE')) {
+          nitro.options.replace[key] = config.define[key]
+        }
+      }
+    },
+  })
 
   // Connect vfs storages
   nitro.vfs = nuxt.vfs = nitro.vfs || nuxt.vfs || {}
@@ -861,24 +983,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // nuxt build/dev
-  nuxt.hook('build:done', async () => {
-    await nuxt.callHook('nitro:build:before', nitro)
-    await prepare(nitro)
-    if (nuxt.options.dev) {
-      return build(nitro)
-    }
-
-    await prerender(nitro)
-
-    logger.restoreAll()
-    await build(nitro)
-    logger.wrapAll()
-
-    await symlinkDist()
-  })
-
   // nuxt dev
+  let waitUntilCompile: Promise<void> | undefined
   if (nuxt.options.dev) {
     for (const builder of ['webpack', 'rspack'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
@@ -905,9 +1011,32 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
     nuxt.server = createDevServer(nitro)
 
-    const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
-    nuxt.hook('build:done', () => waitUntilCompile)
+    waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
   }
+
+  // nuxt build/dev
+  nuxt.hook('build:done', async () => {
+    nuxt._perf?.startPhase('nitro:build')
+    try {
+      await nuxt.callHook('nitro:build:before', nitro)
+      await prepare(nitro)
+      if (nuxt.options.dev) {
+        await build(nitro)
+        await waitUntilCompile
+        return
+      }
+
+      await prerender(nitro)
+
+      logger.restoreAll()
+      await build(nitro)
+      logger.wrapAll()
+
+      await symlinkDist()
+    } finally {
+      nuxt._perf?.endPhase('nitro:build')
+    }
+  })
 }
 
 const RELATIVE_RE = /^([^.])/

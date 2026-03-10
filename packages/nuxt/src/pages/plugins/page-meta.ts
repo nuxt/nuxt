@@ -1,17 +1,14 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
-import { parseQuery, parseURL } from 'ufo'
-import type { ParsedQuery } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
-import { isAbsolute } from 'pathe'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
 import { logger } from '../../utils.ts'
+import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
-import type { ParserOptions } from 'oxc-parser'
+import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -51,12 +48,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
-    transformInclude (id) {
-      return !!parseMacroQuery(id).macro
-    },
     transform: {
       filter: {
         id: {
+          include: /[?&]macro=true\b/,
           exclude: [/(?:\?|%3F).*type=(?:style|template)/],
         },
         code: {
@@ -115,7 +110,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
-            const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+            const { pathname } = parseModuleId(id)
             logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
@@ -248,21 +243,46 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             const m = new MagicString(metaCode)
 
             if (meta.type === 'ObjectExpression') {
+              const omitProp = (prop: ObjectPropertyKind, i: number) => {
+                const nextProperty = meta.properties[i + 1]
+                if (nextProperty) {
+                  m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
+                } else if (code[prop.end] === ',') {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
+                } else {
+                  m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                }
+              }
+
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                if (prop.type === 'Property' && prop.key.type === 'Identifier' && options.extractedKeys?.includes(prop.key.name)) {
+                if (prop.type !== 'Property' || prop.key.type !== 'Identifier') {
+                  continue
+                }
+
+                if (options.extractedKeys?.includes(prop.key.name)) {
                   const { serializable } = isSerializable(metaCode, prop.value)
-                  if (!serializable) {
-                    continue
+                  if (serializable) {
+                    omitProp(prop, i)
                   }
-                  const nextProperty = meta.properties[i + 1]
-                  if (nextProperty) {
-                    m.overwrite(prop.start - meta.start, nextProperty.start - meta.start, '')
-                  } else if (code[prop.end] === ',') {
-                    m.overwrite(prop.start - meta.start, prop.end - meta.start + 1, '')
-                  } else {
-                    m.overwrite(prop.start - meta.start, prop.end - meta.start, '')
+                } else if (prop.key.name === 'layout' && prop.value.type === 'ObjectExpression') {
+                  for (const layoutProp of prop.value.properties) {
+                    if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
+                      continue
+                    }
+                    if (layoutProp.key.name === 'name') {
+                      m.appendLeft(
+                        prop.start - meta.start,
+                        `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                      )
+                    } else if (layoutProp.key.name === 'props') {
+                      m.appendLeft(
+                        prop.start - meta.start,
+                        `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
+                      )
+                    }
                   }
+                  omitProp(prop, i)
                 }
               }
             }
@@ -354,13 +374,17 @@ function rewriteQuery (id: string) {
   return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(MACRO_RE, ''))
 }
 
+const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
+const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
+const LANG_PARAM_RE = /[?&]lang=([^?&]+)/
 function parseMacroQuery (id: string) {
-  const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
-  const query = parseQuery<{
-    lang?: ParserOptions['lang']
-  } & ParsedQuery>(search)
-  if (id.includes('?macro=true')) {
-    return { macro: 'true', ...query }
+  const { search } = parseModuleId(id)
+  const query: { macro?: string, type?: string, lang?: ParserOptions['lang'] } = {
+    type: TYPE_PARAM_RE.exec(search)?.[1],
+    lang: LANG_PARAM_RE.exec(search)?.[1] as ParserOptions['lang'] ?? undefined,
+  }
+  if (MACRO_QUERY_RE.test(search)) {
+    query.macro = 'true'
   }
   return query
 }

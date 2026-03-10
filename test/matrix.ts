@@ -6,8 +6,8 @@ export const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.T
 export const isDev = process.env.TEST_ENV === 'dev'
 export const isBuilt = !isDev
 
-const _builder = process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' | 'vite-env-api'
-export const builder = _builder === 'vite-env-api' ? 'vite' : (_builder ?? 'vite')
+const _builder = process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite'
+export const builder = _builder ?? 'vite'
 
 export const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
@@ -26,7 +26,6 @@ export function withMatrix (config: NuxtConfig) {
       asyncContext,
       appManifest: isTestingAppManifest,
       renderJsonPayloads: isRenderingJson,
-      viteEnvironmentApi: _builder === 'vite-env-api',
     },
     compatibilityDate: 'latest',
   })

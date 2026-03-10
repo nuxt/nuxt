@@ -2,12 +2,11 @@ import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode
 import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { NitroRouteRules } from 'nitropack/types'
-
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _wrapInTransition } from './utils'
+import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
 // @ts-expect-error virtual file
@@ -89,15 +88,41 @@ export default defineComponent({
     let lastLayout: string | boolean | undefined
 
     return () => {
-      const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route?.meta.layoutTransition ?? defaultLayoutTransition
+      const hasLayout = !!layout.value && layout.value in layouts
+
+      const hasTransition = hasLayout && !!(route?.meta.layoutTransition ?? defaultLayoutTransition)
+
+      const transitionProps = hasTransition && _mergeTransitionProps([
+        route?.meta.layoutTransition,
+        defaultLayoutTransition,
+        {
+          onBeforeLeave () {
+            // Create the transition promise when the leave animation starts.
+            // This overrides any page transition promise since the layout
+            // is the outermost transition wrapper.
+            nuxtApp['~transitionPromise'] = new Promise((resolve) => {
+              nuxtApp['~transitionFinish'] = resolve
+            })
+          },
+          onAfterLeave () {
+            nuxtApp['~transitionFinish']?.()
+            delete nuxtApp['~transitionFinish']
+            delete nuxtApp['~transitionPromise']
+          },
+        },
+      ])
 
       const previouslyRenderedLayout = lastLayout
       lastLayout = layout.value
 
-      // We avoid rendering layout transition if there is no layout to render
-      return _wrapInTransition(hasLayout && transitionProps, {
-        default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
+      return _wrapInTransition(transitionProps, {
+        default: () => h(Suspense, {
+          suspensible: true,
+          onResolve: async () => {
+            await nextTick(done)
+          },
+        },
+        {
           default: () => h(
             LayoutProvider,
             {
@@ -108,7 +133,7 @@ export default defineComponent({
               isRenderingNewLayout: (name?: string | boolean) => {
                 return (name !== previouslyRenderedLayout && name === layout.value)
               },
-              hasTransition: !!transitionProps,
+              hasTransition,
             }, context.slots),
         }),
       }).default()

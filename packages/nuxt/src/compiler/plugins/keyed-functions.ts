@@ -1,8 +1,7 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
-import { parseQuery, parseURL } from 'ufo'
+
 import { isAbsolute, join, parse } from 'pathe'
 import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
@@ -22,24 +21,17 @@ interface KeyedFunctionsOptions {
   alias: Record<string, string>
   // TODO: remove in Nuxt 5
   getAutoImports: () => Promise<Import[]>
+  // TODO: remove in Nuxt 5
+  appDir: string
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
-const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
-const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
+const NUXT_LIB_RE = /^[^?]*node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
+const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
-
-export function shouldTransformFile (id: string, extensions: RegExp | readonly string[]) {
-  const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
-  return !NUXT_LIB_RE.test(pathname)
-    && (
-      extensions instanceof RegExp
-        ? extensions.test(pathname)
-        : new RegExp(`\\.(${extensions.map(e => escapeRE(e)).join('|')})$`).test(pathname)
-    )
-    && parseQuery(search).type !== 'style' && !parseQuery(search).macro
-}
+const STYLE_QUERY_RE = /[?&]type=style/
+const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 
 // TODO: remove in Nuxt 5
 type BackwardsCompatibleKeyedFunction = Omit<KeyedFunction, 'source'> & { source?: KeyedFunction['source'] | RegExp }
@@ -99,9 +91,12 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   return {
     name: 'nuxt:compiler:keyed-functions',
     enforce: 'post',
-    transformInclude: id => shouldTransformFile(id, SUPPORTED_EXT_RE),
     transform: {
       filter: {
+        id: {
+          include: SUPPORTED_EXT_RE,
+          exclude: [NUXT_LIB_RE, STYLE_QUERY_RE, MACRO_QUERY_RE],
+        },
         code: { include: CODE_INCLUDE_RE },
       },
       async handler (code, _id) {
@@ -156,6 +151,14 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
             const fnMeta = sourcesToMetas.get(source)
             if (fnMeta) { return fnMeta }
+
+            // TODO: remove in Nuxt 5
+            if (source.startsWith(options.appDir)) {
+              for (const [fnSource, meta] of sourcesToMetas) {
+                if (meta.name !== functionName || !fnSource.startsWith(options.appDir)) { continue }
+                return meta
+              }
+            }
 
             const backwardsCompatibleFnMeta = sourcesToMetas.get('') // functions without a source or with a regex fall under ''
             if (backwardsCompatibleFnMeta?.source === undefined) {
@@ -294,6 +297,8 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   || (!fnMeta.source && stripExtension(_resolvePath(autoImportsToSources.get(parsedCall.name) ?? '')) === importSourceResolved)
                   // or the specified function's source RegExp matches the import source
                   || (fnMeta.source instanceof RegExp && fnMeta.source.test(importSourceResolved))
+                  // or the function is from the Nuxt source (`#app` barrel export, for example)
+                  || (typeof fnMeta.source === 'string' && fnMeta.source.startsWith(options.appDir))
                 )
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration

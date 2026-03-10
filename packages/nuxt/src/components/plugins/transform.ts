@@ -3,10 +3,9 @@ import { isIgnored } from '@nuxt/kit'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
-import { parseURL } from 'ufo'
-import { parseQuery } from 'vue-router'
+import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isAbsolute, normalize } from 'pathe'
-import { readPackage } from 'pkg-types'
+import { type PackageJson, readPackage } from 'pkg-types'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module.ts'
 import type { Nuxt } from 'nuxt/schema'
@@ -30,6 +29,8 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     virtualImports: ['#components'],
     injectAtEnd: true,
   })
+
+  const rootDirWithSlash = nuxt.options.rootDir.replace(/\/?$/, '/')
 
   function getComponentsImports (): Import[] {
     const components = options.getComponents(options.mode)
@@ -70,11 +71,11 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
         },
         handler (_code, id) {
           // Virtual component wrapper
-          const { search } = parseURL(id)
-          const query = parseQuery(search)
-          const mode = query.nuxt_component
+          const { search } = parseModuleId(id)
+          const params = new URLSearchParams(search)
+          const mode = params.get('nuxt_component')
           const bare = id.replace(/\?.*/, '')
-          const componentExport = query.nuxt_component_export as string || 'default'
+          const componentExport = params.get('nuxt_component_export') || 'default'
           const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
           if (mode === 'async') {
             return {
@@ -103,7 +104,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else if (mode === 'server' || mode === 'server,async') {
-            const name = query.nuxt_component_name
+            const name = params.get('nuxt_component_name')
             return {
               code: [
                 `import { createServerComponent } from ${JSON.stringify(options.serverComponentRuntime)}`,
@@ -130,11 +131,12 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
         },
         async handler (code, id) {
           // If package defines a "#components" import mapping, assume is used internally by the package.
-          const pkg = isAbsolute(id) && /node_modules[\\/](?!\.virtual)/.test(id)
-            ? await readPackage(id, { try: true })
-            : undefined
-          if (isObject(pkg) && isObject(pkg.imports) && Object.hasOwn(pkg.imports, '#components')) {
-            return
+          if (isAbsolute(id) && (/node_modules[\\/](?!\.virtual)/.test(id) || !id.includes(rootDirWithSlash))) {
+            let pkg: PackageJson | undefined
+            try { pkg = await readPackage(id) } catch { /* ignore */ }
+            if (isObject(pkg) && isObject(pkg.imports) && Object.keys(pkg.imports).some(k => k.includes('#components'))) {
+              return
+            }
           }
 
           componentUnimport.modifyDynamicImports((imports) => {

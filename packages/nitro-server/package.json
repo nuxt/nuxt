@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro-server",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -11,8 +11,16 @@
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.mts",
+  "typesVersions": {
+    "*": {
+      "h3": [
+        "./dist/runtime/h3-compat.d.mts"
+      ]
+    }
+  },
   "exports": {
-    ".": "./dist/index.mjs"
+    ".": "./dist/index.mjs",
+    "./h3": "./dist/runtime/h3-compat.mjs"
   },
   "files": [
     "dist"
@@ -23,44 +31,58 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
+    "@babel/plugin-syntax-typescript": "^7.28.6",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
-    "@unhead/vue": "^2.1.2",
-    "@vue/shared": "^3.5.27",
+    "@unhead/vue": "^2.1.12",
+    "@vue/shared": "^3.5.30",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "destr": "^2.0.5",
-    "devalue": "^5.6.2",
+    "devalue": "^5.6.3",
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
-    "h3": "^1.15.5",
-    "impound": "^1.0.0",
+    "h3": "^1.15.6",
+    "impound": "^1.1.5",
     "klona": "^2.0.6",
     "mocked-exports": "^0.1.1",
     "nitropack": "^2.13.1",
+    "nypm": "^0.6.5",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
-    "rou3": "^0.7.12",
-    "std-env": "^3.10.0",
+    "rou3": "^0.8.1",
+    "std-env": "^4.0.0",
     "ufo": "^1.6.3",
     "unctx": "^2.5.0",
     "unstorage": "^1.17.4",
-    "vue": "^3.5.27",
+    "vue": "^3.5.30",
     "vue-bundle-renderer": "^2.2.0",
     "vue-devtools-stub": "^0.1.0"
   },
   "peerDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.25.0",
+    "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:^"
   },
+  "peerDependenciesMeta": {
+    "@babel/plugin-proposal-decorators": {
+      "optional": true
+    },
+    "@rollup/plugin-babel": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "7.29.0",
     "@nuxt/schema": "workspace:*",
+    "@rollup/plugin-babel": "7.0.0",
     "nuxt": "workspace:*",
-    "obuild": "0.4.14",
-    "vitest": "3.2.4"
+    "obuild": "0.4.32",
+    "vitest": "4.0.18"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=22.12.0"
   }
 }
