@@ -26,10 +26,8 @@ function wrapPluginHook (plugin: Plugin, pluginName: string, hookName: string, n
   if (!original) { return }
 
   if (typeof original === 'function') {
-    ;(plugin as any)[hookName] = {
-      handler (...args: any[]) {
-        return timedCall(original as (...a: any[]) => any, this, args, pluginName, hookName, nuxt)
-      },
+    ;(plugin as any)[hookName] = function (this: any, ...args: any[]) {
+      return timedCall(original as (...a: any[]) => any, this, args, pluginName, hookName, nuxt)
     }
   } else if (typeof original === 'object' && 'handler' in original) {
     const originalHandler = original.handler

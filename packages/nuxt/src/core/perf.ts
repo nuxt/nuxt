@@ -114,8 +114,7 @@ export class NuxtPerfProfiler {
   #phases: PerfPhase[] = []
   #phaseStack: OpenPhase[] = []
   #hookPhases: PerfPhase[] = []
-  #hookStarts = new Map<string, { time: number, memory: MemorySnapshot }>()
-  #hookStack: string[] = []
+  #hookStartStack: Array<{ name: string, time: number, memory: MemorySnapshot }> = []
   #modules: ModuleTiming[] = []
   #bundlerPluginTimings = new Map<string, Map<string, { totalTime: number, count: number, maxTime: number }>>()
   #globalStart: number
@@ -134,18 +133,23 @@ export class NuxtPerfProfiler {
 
   installHookInterceptors (hooks: Hookable<NuxtHooks>): void {
     const unsubBefore = hooks.beforeEach((event) => {
-      this.#hookStarts.set(event.name, {
+      this.#hookStartStack.push({
+        name: event.name,
         time: performance.now(),
         memory: getMemorySnapshot(),
       })
-      this.#hookStack.push(event.name)
     })
 
     const unsubAfter = hooks.afterEach((event) => {
-      const start = this.#hookStarts.get(event.name)
-      if (!start) { return }
-      this.#hookStarts.delete(event.name)
-      this.#hookStack.pop()
+      let startIdx = -1
+      for (let i = this.#hookStartStack.length - 1; i >= 0; i--) {
+        if (this.#hookStartStack[i]!.name === event.name) {
+          startIdx = i
+          break
+        }
+      }
+      if (startIdx === -1) { return }
+      const start = this.#hookStartStack.splice(startIdx, 1)[0]!
 
       const endTime = performance.now()
       const memoryAfter = getMemorySnapshot()
