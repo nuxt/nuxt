@@ -25,6 +25,14 @@ const testsToTriggerOn = [
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
   ['src/server/api/test.ts', 'components/Component.vue', true],
   ['node_modules/nitropack/node_modules/crossws/dist/adapters/bun.mjs', 'node_modules/nitropack/dist/presets/bun/runtime/bun.mjs', false],
+  ['nitro/builder', 'components/Component.vue', true],
+  ['nitro/meta', 'components/Component.vue', true],
+  ['nitro/vite', 'components/Component.vue', true],
+  ['nitro/h3', 'components/Component.vue', false],
+  ['nitro/app', 'components/Component.vue', false],
+  ['nitro/runtime', 'components/Component.vue', false],
+  ['nitro/types', 'components/Component.vue', false],
+  ['nitro', 'components/Component.vue', false],
   ['node_modules/some-pkg/server/api/helper.ts', 'components/Component.vue', false],
 ] as const
 
