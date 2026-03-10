@@ -18,8 +18,8 @@ permissions: {}
 
 jobs:
   lint-docs:
-    # already tested in merge queue; autofix workflow handles PRs
-    if: github.event_name == 'merge_group'
+    # autofix workflow handles PRs; run in merge queue and on push to maintenance branches
+    if: github.event_name == 'merge_group' || (github.event_name == 'push' && github.ref_name != 'main')
     runs-on: ubuntu-24.04-arm
 
     steps:
