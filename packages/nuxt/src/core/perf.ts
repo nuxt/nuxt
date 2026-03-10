@@ -121,8 +121,6 @@ export class NuxtPerfProfiler {
   #globalStart: number
   #globalMemoryBefore: MemorySnapshot
   #unsubscribe?: () => void
-  #cpuProfileSession?: import('node:inspector').Session
-  #cpuProfileCount = 0
 
   constructor (options?: { startTime?: number }) {
     if (options?.startTime) {
@@ -132,67 +130,6 @@ export class NuxtPerfProfiler {
       this.#globalStart = performance.now()
     }
     this.#globalMemoryBefore = getMemorySnapshot()
-  }
-
-  async startCpuProfile (): Promise<void> {
-    const inspector = await import('node:inspector')
-    const session = new inspector.Session()
-    session.connect()
-    await new Promise<void>((res, rej) => {
-      session.post('Profiler.enable', () => {
-        session.post('Profiler.start', (err) => {
-          if (err) { rej(err) } else { res() }
-        })
-      })
-    })
-    this.#cpuProfileSession = session
-    consola.info('CPU profiler started')
-  }
-
-  stopCpuProfile (buildDir: string): Promise<string | undefined> {
-    const session = this.#cpuProfileSession
-    if (!session) { return Promise.resolve(undefined) }
-    this.#cpuProfileSession = undefined
-    return new Promise((res, rej) => {
-      session.post('Profiler.stop', (err, { profile }) => {
-        if (err) { return rej(err) }
-        const outPath = join(buildDir, `profile-${this.#cpuProfileCount++}.cpuprofile`)
-        mkdir(buildDir, { recursive: true })
-          .then(() => writeFile(outPath, JSON.stringify(profile)))
-          .then(() => {
-            consola.info(`CPU profile written to ${colors.cyan(outPath)}`)
-            consola.info(`Open it in ${colors.cyan('https://www.speedscope.app')} or Chrome DevTools`)
-            session.disconnect()
-            res(outPath)
-          })
-          .catch(rej)
-      })
-    })
-  }
-
-  stopCpuProfileSync (buildDir: string): string | undefined {
-    const session = this.#cpuProfileSession
-    if (!session) { return }
-    this.#cpuProfileSession = undefined
-    let outPath: string | undefined
-    session.post('Profiler.stop', (_err, params) => {
-      if (_err || !params?.profile) { return }
-      outPath = join(buildDir, `profile-${this.#cpuProfileCount++}.cpuprofile`)
-      try {
-        mkdirSync(buildDir, { recursive: true })
-        writeFileSync(outPath, JSON.stringify(params.profile))
-        consola.info(`CPU profile written to ${colors.cyan(outPath)}`)
-        consola.info(`Open it in ${colors.cyan('https://www.speedscope.app')} or Chrome DevTools`)
-      } catch {
-        // don't throw an error if we can't write the file
-      }
-      session.disconnect()
-    })
-    return outPath
-  }
-
-  get isCpuProfileActive (): boolean {
-    return !!this.#cpuProfileSession
   }
 
   installHookInterceptors (hooks: Hookable<NuxtHooks>): void {
@@ -554,42 +491,6 @@ export class NuxtPerfProfiler {
       // don't throw an error if we can't write the file
     }
     return reportPath
-  }
-
-  printSessionSummary (): void {
-    const report = this.getReport()
-    const elapsed = formatDuration(report.totalDuration)
-
-    consola.log('')
-    consola.log(colors.bold(colors.cyan(' Nuxt Session Summary')))
-    consola.log('')
-    consola.log(`  ${colors.dim('Session duration:')} ${elapsed}`)
-    consola.log(`  ${colors.dim('Memory:')} ${(report.totalMemoryDelta.rss >= 0 ? '+' : '') + formatBytes(report.totalMemoryDelta.rss)} RSS, ${(report.totalMemoryDelta.heapUsed >= 0 ? '+' : '') + formatBytes(report.totalMemoryDelta.heapUsed)} heap`)
-    consola.log('')
-
-    if (report.bundlerPlugins.length > 0) {
-      const rows: Array<{ plugin: string, hook: string, timing: PluginHookTiming }> = []
-      for (const plugin of report.bundlerPlugins) {
-        for (const [hook, timing] of Object.entries(plugin.hooks)) {
-          if (timing.avgTime > 0.5) {
-            rows.push({ plugin: plugin.name, hook, timing })
-          }
-        }
-      }
-      rows.sort((a, b) => b.timing.avgTime - a.timing.avgTime)
-
-      if (rows.length > 0) {
-        consola.log(colors.bold(` Bundler Plugins (session total)`))
-        consola.log('')
-        for (const { plugin, hook, timing } of rows.slice(0, 15)) {
-          const durColor = timing.avgTime > 10 ? colors.red : timing.avgTime > 2 ? colors.yellow : colors.dim
-          const avgLabel = formatDuration(timing.avgTime) + '/file'
-          const maxLabel = timing.maxTime > timing.avgTime * 2 ? `, max ${formatDuration(timing.maxTime)}` : ''
-          consola.log(`  ${colors.dim('•')} ${plugin} ${colors.dim(hook)} ${colors.dim('—')} ${durColor(avgLabel)}${colors.dim(maxLabel)} ${colors.dim(`(${timing.count} calls)`)}`)
-        }
-        consola.log('')
-      }
-    }
   }
 
   dispose (): void {

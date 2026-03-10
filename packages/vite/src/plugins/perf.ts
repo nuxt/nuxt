@@ -41,13 +41,16 @@ function wrapPluginHook (plugin: Plugin, pluginName: string, hookName: string, n
 
 function timedCall (fn: (...a: any[]) => any, ctx: any, args: any[], pluginName: string, hookName: string, nuxt: Nuxt): any {
   const start = performance.now()
-  const result = fn.apply(ctx, args)
-  if (result && typeof result === 'object' && 'then' in result) {
-    return (result as Promise<any>).then((v: any) => {
-      nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start)
-      return v
-    })
+  const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start)
+  try {
+    const result = fn.apply(ctx, args)
+    if (result && typeof result === 'object' && 'then' in result) {
+      return (result as Promise<any>).finally(record)
+    }
+    record()
+    return result
+  } catch (err) {
+    record()
+    throw err
   }
-  nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start)
-  return result
 }

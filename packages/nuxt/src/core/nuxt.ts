@@ -916,47 +916,25 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  // Attach performance profiler if enabled
   if (perf) {
     nuxt._perf = perf
     perf.installHookInterceptors(nuxt.hooks)
 
     const quiet = typeof options.debug === 'object' && options.debug.perf === 'quiet'
-
-    // Start V8 CPU profiler
-    perf.startCpuProfile().catch(() => {})
-
-    // Flush perf data (report + CPU profile). Runs once — either via the
-    // close hook (async, preferred) or via a signal handler (sync, fallback).
-    let flushed = false
     const title = nuxt.options.dev ? 'Nuxt Performance Report' : 'Nuxt Build Performance'
 
-    nuxt.hook('close', async () => {
-      if (flushed) { return }
+    let flushed = false
+    const flush = () => {
+      if (flushed || !perf) { return }
       flushed = true
-      if (!quiet) { perf!.printReport({ title }) }
-      await perf!.writeReport(nuxt.options.buildDir, { quiet })
-      await perf!.stopCpuProfile(nuxt.options.buildDir).catch(() => {})
-      perf!.dispose()
-    })
-
-    // Signal handlers must be synchronous
-    const onSignal = () => {
-      if (!flushed) {
-        flushed = true
-        if (!quiet) { perf!.printReport({ title }) }
-        perf!.writeReportSync(nuxt.options.buildDir, { quiet })
-        perf!.stopCpuProfileSync(nuxt.options.buildDir)
-        perf!.dispose()
-      }
-      process.exit(0)
+      if (!quiet) { perf.printReport({ title }) }
+      perf.writeReportSync(nuxt.options.buildDir, { quiet })
+      perf.dispose()
     }
-    process.once('SIGINT', onSignal)
-    process.once('SIGTERM', onSignal)
-    nuxt.hook('close', () => {
-      process.off('SIGINT', onSignal)
-      process.off('SIGTERM', onSignal)
-    })
+
+    nuxt.hook('close', flush)
+    process.once('exit', flush)
+    nuxt.hook('close', () => { process.off('exit', flush) })
   }
 
   nuxt.runWithContext(() => {

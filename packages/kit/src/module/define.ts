@@ -125,10 +125,14 @@ function _defineNuxtModule<
     const moduleName = uniqueKey || module.meta.name || '<no name>'
     nuxt._perf?.startPhase(`module:${moduleName}`)
     const start = performance.now()
-    const res = await module.setup?.call(null as any, _options, nuxt) ?? {}
+    let res = {} as ModuleSetupReturn
+    try {
+      res = await module.setup?.call(null as any, _options, nuxt) ?? {}
+    } finally {
+      nuxt._perf?.endPhase(`module:${moduleName}`)
+    }
     const perf = performance.now() - start
     const setupTime = Math.round((perf * 100)) / 100
-    nuxt._perf?.endPhase(`module:${moduleName}`)
 
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
