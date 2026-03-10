@@ -25,8 +25,8 @@ permissions:
 
 jobs:
   lint-monorepo:
-    # already tested in merge queue
-    if: github.event_name != 'push'
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ubuntu-24.04-arm
 
     steps:
