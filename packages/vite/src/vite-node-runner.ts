@@ -11,12 +11,12 @@ function createRunner () {
   return new ViteNodeRunner({
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
-    async resolveId (id, importer) {
-      return await viteNodeFetch.resolveId(id, importer)
+    resolveId (id, importer) {
+      return viteNodeFetch.resolveId(id, importer)
     },
-    async fetchModule (id) {
+    fetchModule (id) {
       id = id.replace(/\/\//g, '/') // TODO: fix in vite-node
-      return await viteNodeFetch.fetchModule(id).catch((err) => {
+      return viteNodeFetch.fetchModule(id).catch((err) => {
         const errorData = err?.data?.data
         if (!errorData) {
           throw err

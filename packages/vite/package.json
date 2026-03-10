@@ -48,8 +48,8 @@
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.8",
-    "seroval": "^1.5.0",
-    "std-env": "^4.0.0-rc.1",
+    "seroval": "^1.5.1",
+    "std-env": "^4.0.0",
     "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
     "vite": "^8.0.0-beta.18",
@@ -68,7 +68,7 @@
     "rolldown": "1.0.0-rc.8",
     "rollup": "4.59.0",
     "rollup-plugin-visualizer": "7.0.1",
-    "vue": "3.5.29"
+    "vue": "3.5.30"
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0",

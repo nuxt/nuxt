@@ -279,6 +279,14 @@ export default defineComponent({
       watch(props, debounce(() => fetchComponent(), 100), { deep: true })
     }
 
+    // Restore head entries from SSR payload during hydration
+    if (import.meta.client && instance.vnode.el) {
+      const headData = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.head
+      if (headData) {
+        activeHead = head.push(headData)
+      }
+    }
+
     if (import.meta.client && !instance.vnode.el && props.lazy) {
       fetchComponent()
     } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {

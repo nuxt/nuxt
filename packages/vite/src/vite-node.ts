@@ -225,7 +225,7 @@ async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload
     try {
       const socket = await connectSocket()
 
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
           pendingRequests.delete(requestId)
           reject(new Error(`Request timeout after ${REQUEST_TIMEOUT_MS}ms for type: ${type}`))

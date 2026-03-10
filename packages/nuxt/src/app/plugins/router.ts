@@ -133,7 +133,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           // Cancel navigation
           if (result === false || result instanceof Error) { return }
           // Redirect
-          if (typeof result === 'string' && result.length) { return handleNavigation(result, true) }
+          if (typeof result === 'string' && result.length) { return await handleNavigation(result, true) }
         }
 
         for (const handler of hooks['resolve:before']) {
