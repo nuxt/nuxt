@@ -30,6 +30,14 @@ concurrency:
 
 jobs:
   changes:
+    # Skip CI entirely for release merge commits (e.g. "v4.1.0" or "Merge ... from nuxt/v4.1.0")
+    if: |-
+      github.event_name != 'push' ||
+      (
+        !contains(github.event.head_commit.message, 'v3.') &&
+        !contains(github.event.head_commit.message, 'v4.') &&
+        !contains(github.event.head_commit.message, 'v5.')
+      )
     runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
@@ -101,7 +109,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   codeql:
-    if: github.event_name != 'merge_group'
+    if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:

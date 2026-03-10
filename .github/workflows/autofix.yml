@@ -2,6 +2,11 @@ name: autofix.ci # needed to securely identify the workflow
 
 on:
   pull_request:
+    branches:
+      - main
+      - 4.x
+      - 3.x
+      - '!v[0-9]*'
     paths-ignore:
       - "docs/**"
 
