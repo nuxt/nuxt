@@ -168,7 +168,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
  * You can pass a filter within the options to selectively regenerate a subset of templates.
  */
 export async function updateTemplates (options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }): Promise<void> {
-  return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
+  await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
 interface LayerPaths {
