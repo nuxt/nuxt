@@ -2766,7 +2766,7 @@ describe.skipIf(isWindows)('payload rendering', () => {
   })
 
   it('should not include server-component HTML in payload', async () => {
-    const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
+    const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
     expect(serializedComponent).toEqual(key)
