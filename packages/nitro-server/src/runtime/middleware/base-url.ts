@@ -16,7 +16,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
     return
   }
 
-  if (event.url.pathname.startsWith(baseURL)) {
+  if (event.url.pathname === baseURL || event.url.pathname.startsWith(baseURL + '/')) {
     const newURL = (event.url.pathname.slice(baseURL.length) || '/') + event.url.search + event.url.hash
 
     return serverFetch(newURL, event.req, {
