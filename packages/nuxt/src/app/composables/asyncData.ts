@@ -227,7 +227,6 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
-      // const factoryOptions = (shouldFactoryOptionsOverride ? options(opts as any) : defu(opts, options)) as typeof opts
 
       // Setup nuxt instance payload
       const nuxtApp = useNuxtApp()

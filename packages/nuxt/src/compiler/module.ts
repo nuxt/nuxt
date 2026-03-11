@@ -107,7 +107,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
 
         if (dirPaths.has(dirPath)) {
           logger.warn(`[nuxt:compiler] Directory \`${dirPath}\` is already registered for scanning.`)
-          return
+          return null
         }
 
         if (!isDirectorySync(dirPath)) {
