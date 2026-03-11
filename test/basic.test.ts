@@ -1215,6 +1215,7 @@ describe('errors', () => {
       status: 422,
       statusText: 'This is a custom error',
     })
+    expect(error).not.toHaveProperty('url')
   })
 
   it('should render a HTML error page', async () => {
@@ -1238,6 +1239,7 @@ describe('errors', () => {
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
     })
+    expect(error).not.toHaveProperty('url')
   })
 
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
