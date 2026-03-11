@@ -38,6 +38,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         factories: nuxt.options.optimization.keyedComposableFactories,
         alias: nuxt.options.alias,
+        getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
       }))
 
       await runScanPlugins()

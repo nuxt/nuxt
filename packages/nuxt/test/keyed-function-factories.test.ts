@@ -6,6 +6,7 @@ import {
 import type { KeyedFunctionFactory, Nuxt } from '@nuxt/schema'
 import { createScanPluginContext } from '../src/compiler/utils'
 import type { DeepPartial } from '#app/config.ts'
+import type { Import } from 'unimport'
 
 // -------- compiler scan plugin for scanning keyed function factories --------
 
@@ -550,7 +551,7 @@ describe('keyed function factories plugin', () => {
     },
   ]
 
-  const transformPlugin = KeyedFunctionFactoriesPlugin({ sourcemap: false, factories, alias: {} }).raw({}, {} as any) as {
+  const transformPlugin = KeyedFunctionFactoriesPlugin({ sourcemap: false, factories, alias: {}, getAutoImports: () => Promise.resolve([]) }).raw({}, {} as any) as {
     transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
   }
 
@@ -826,5 +827,72 @@ describe('keyed function factories plugin', () => {
     }
     `
     expect((await transformPlugin.transform.handler(code, 'fetch.ts'))?.code.trim()).toBeUndefined()
+  })
+
+  describe('auto-imports', () => {
+    const alias = { '#app': '/nuxt/app' }
+    const autoImports: Import[] = [
+      { from: '#app/composables/fetch', name: 'createUseFetch', as: 'createUseFetch' },
+    ]
+
+    const factoriesWithAlias: KeyedFunctionFactory[] = [
+      {
+        name: 'createUseFetch',
+        source: '#app/composables/fetch',
+        argumentLength: 3,
+      },
+    ]
+
+    const transformPluginWithAutoImports = KeyedFunctionFactoriesPlugin({
+      sourcemap: false,
+      factories: factoriesWithAlias,
+      alias,
+      getAutoImports: () => Promise.resolve(autoImports),
+    }).raw({}, {} as any) as {
+      transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
+    }
+
+    it('should transform auto-imported factory without explicit import', async () => {
+      const code = `
+      export const useApiFetch = createUseFetch({ baseURL: '/api' })
+      `
+
+      expect((await transformPluginWithAutoImports.transform.handler(code, '/app/composables/useApiFetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
+        "export const useApiFetch = createUseFetch.__nuxt_factory({ baseURL: '/api' })"
+      `)
+    })
+
+    it('should not transform auto-imported factory from wrong source', async () => {
+      const wrongAutoImports: Import[] = [
+        { from: '#app/some-other-place', name: 'createUseFetch', as: 'createUseFetch' },
+      ]
+
+      const plugin = KeyedFunctionFactoriesPlugin({
+        sourcemap: false,
+        factories: factoriesWithAlias,
+        alias,
+        getAutoImports: () => Promise.resolve(wrongAutoImports),
+      }).raw({}, {} as any) as {
+        transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> }
+      }
+
+      const code = `
+      export const useApiFetch = createUseFetch({ baseURL: '/api' })
+      `
+
+      expect((await plugin.transform.handler(code, '/app/composables/useApiFetch.ts'))?.code.trim()).toBeUndefined()
+    })
+
+    it('should prefer explicit import over auto-import', async () => {
+      const code = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useApiFetch = createUseFetch({ baseURL: '/api' })
+      `
+
+      expect((await transformPluginWithAutoImports.transform.handler(code, '/app/composables/useApiFetch.ts'))?.code.trim()).toMatchInlineSnapshot(`
+        "import { createUseFetch } from '#app/composables/fetch'
+              export const useApiFetch = createUseFetch.__nuxt_factory({ baseURL: '/api' })"
+      `)
+    })
   })
 })

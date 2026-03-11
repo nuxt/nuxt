@@ -15,6 +15,7 @@ import MagicString from 'magic-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import type { KeyedFunction, KeyedFunctionFactory, ScanPlugin } from '@nuxt/schema'
+import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface ParsedKeyedFunctionFactory {
@@ -313,6 +314,7 @@ interface KeyedFunctionFactoriesPluginOptions {
   sourcemap: boolean
   factories: KeyedFunctionFactory[]
   alias: Record<string, string>
+  getAutoImports: () => Promise<Import[]>
 }
 
 /**
@@ -344,17 +346,19 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
         },
         code: { include: KEYED_FUNCTION_FACTORY_NAMES_RE },
       },
-      handler (code, id) {
+      async handler (code, id) {
         const s = new MagicString(code)
         const scopeTracker = new ScopeTracker({
           preserveExitedScopes: true,
         })
+        const autoImports = await options.getAutoImports()
+        const autoImportsToSources = new Map<string, string>(autoImports.map(i => [i.as || i.name, i.from]))
         const { processFactory } = createFactoryProcessor(
           id,
           scopeTracker,
           namesToFactoryMeta,
           findStaticImports(code).map(i => parseStaticImport(i)),
-          undefined, // TODO: add auto-imports
+          autoImportsToSources,
           options.alias,
         )
 
