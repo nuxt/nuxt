@@ -22,7 +22,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       unimport = ctx
     })
 
-    nuxt.hook('compiler:ready', async () => {
+    nuxt.hook('build:before', async () => {
       // scan raw source files for keyed function factories to register their created functions for key injection
       nuxt.options.compiler ||= {}
       nuxt.options.compiler.plugins ||= []

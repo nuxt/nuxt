@@ -258,13 +258,6 @@ export interface NuxtHooks {
    */
   'prerender:routes': (ctx: { routes: Set<string> }) => HookResult
 
-  // Nuxt Compiler
-  /**
-   * Called when the Nuxt compiler is ready to be used.
-   * @returns Promise
-   */
-  'compiler:ready': () => HookResult
-
   // @nuxt/cli
   /**
    * Called when an error occurs at build time.
