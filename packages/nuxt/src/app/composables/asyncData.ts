@@ -260,8 +260,10 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
         }
       }
 
-      // internal property
-      const functionName = (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useAsyncData'
+      // internal property (dev-only, used for warning messages)
+      const functionName = import.meta.dev
+        ? (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useAsyncData'
+        : ''
 
       // check and warn if different defaults/fetcher are provided
       const currentData = nuxtApp._asyncData[key.value]

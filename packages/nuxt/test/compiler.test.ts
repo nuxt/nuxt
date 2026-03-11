@@ -31,18 +31,18 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/TODO\`]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/going-further/compiler\`]`)
 
     vi.unstubAllGlobals()
   })
 
-  it('should produce factory that returns undefined in production when not transformed', () => {
+  it('should produce factory that throws in production when not transformed', () => {
     const factory = defineKeyedFunctionFactory({
       name: 'createUseFetch',
       factory: fn,
     })
 
-    expect(factory('a', 1)).toBeUndefined()
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt] \`createUseFetch\` is a compiler macro and cannot be called at runtime.]`)
   })
 
   it('should have a non-enumerable `__nuxt_factory` property', () => {
@@ -127,7 +127,10 @@ describe('defineKeyedFunctionFactory', () => {
 
     // parameter and return types stay generic
     expectTypeOf(generic).parameter(0).toEqualTypeOf<{ id: string }>()
-    expectTypeOf(generic<{ id: 'a' }>({ id: 'a' }, true)).toMatchObjectType<{ entity: { id: 'a' }, flag: boolean, kind: 'ok' }>()
+
+    // verify generics work through the transformed factory
+    const transformed = transformFactory(generic)
+    expectTypeOf(transformed<{ id: 'a' }>({ id: 'a' }, true)).toMatchObjectType<{ entity: { id: 'a' }, flag: boolean, kind: 'ok' }>()
   })
 })
 
