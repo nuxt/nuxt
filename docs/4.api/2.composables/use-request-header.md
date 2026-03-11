@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.9]{color="info" class="align-middle"}
-
 You can use the built-in [`useRequestHeader`](/docs/4.x/api/composables/use-request-header) composable to access any incoming request header within your pages, components, and plugins.
 
 ```ts

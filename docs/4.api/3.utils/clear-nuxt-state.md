@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.6]{color="info" class="align-middle"}
-
 ::note
 This method is useful if you want to invalidate the state of `useState`. You can also reset the state to its initial value by passing `{ reset: true }` as the second parameter.
 ::

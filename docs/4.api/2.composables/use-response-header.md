@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.14]{color="info" class="align-middle"}
-
 ::important
 This composable is available in Nuxt v3.14+.
 ::

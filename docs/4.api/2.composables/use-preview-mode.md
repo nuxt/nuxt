@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.11]{color="info" class="align-middle"}
-
 # `usePreviewMode`
 
 Preview mode allows you to see how your changes would be displayed on a live site without revealing them to users.

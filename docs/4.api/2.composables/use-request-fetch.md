@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.2]{color="info" class="align-middle"}
-
 You can use `useRequestFetch` to forward the request context and headers when making server-side fetch requests.
 
 When making a client-side fetch request, the browser automatically sends the necessary headers.

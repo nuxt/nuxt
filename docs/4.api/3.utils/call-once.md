@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.9]{color="info" class="align-middle"}
-
 ::important
 This utility is available since [Nuxt v3.9](/blog/v3-9).
 ::
