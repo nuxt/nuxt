@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks'
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
@@ -640,11 +641,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitroConfig.rollupConfig!.plugins!.push(
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
+      trace: true,
       include: sharedPatterns,
       patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
     }),
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
+      trace: true,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
       exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
     }),
@@ -722,10 +725,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // Init nitro
+  nuxt._perf?.startPhase('nitro:createNitro')
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
+  nuxt._perf?.endPhase('nitro:createNitro')
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig === false && nitro.options.imports) {
@@ -766,6 +771,36 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
   await nuxt.callHook('nitro:init', nitro)
+
+  // Instrument Nitro rollup plugins for perf tracking
+  if (nuxt._perf) {
+    nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
+      const plugins = (rollupConfig.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
+      for (const plugin of plugins) {
+        if (!plugin || !plugin.name) { continue }
+        const pluginName = `nitro:${plugin.name}`
+        for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+          const original = plugin[hookName]
+          if (typeof original !== 'function') { continue }
+          plugin[hookName] = function (this: any, ...args: any[]) {
+            const start = performance.now()
+            const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start, start)
+            try {
+              const result = original.apply(this, args)
+              if (result && typeof result === 'object' && 'then' in result) {
+                return (result as Promise<any>).finally(record)
+              }
+              record()
+              return result
+            } catch (err) {
+              record()
+              throw err
+            }
+          } as any
+        }
+      }
+    })
+  }
 
   nuxt['~runtimeDependencies'] ||= []
   nuxt['~runtimeDependencies']!.push(
@@ -948,24 +983,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // nuxt build/dev
-  nuxt.hook('build:done', async () => {
-    await nuxt.callHook('nitro:build:before', nitro)
-    await prepare(nitro)
-    if (nuxt.options.dev) {
-      return build(nitro)
-    }
-
-    await prerender(nitro)
-
-    logger.restoreAll()
-    await build(nitro)
-    logger.wrapAll()
-
-    await symlinkDist()
-  })
-
   // nuxt dev
+  let waitUntilCompile: Promise<void> | undefined
   if (nuxt.options.dev) {
     for (const builder of ['webpack', 'rspack'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
@@ -992,9 +1011,32 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
     nuxt.server = createDevServer(nitro)
 
-    const waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
-    nuxt.hook('build:done', () => waitUntilCompile)
+    waitUntilCompile = new Promise<void>(resolve => nitro.hooks.hook('compiled', () => resolve()))
   }
+
+  // nuxt build/dev
+  nuxt.hook('build:done', async () => {
+    nuxt._perf?.startPhase('nitro:build')
+    try {
+      await nuxt.callHook('nitro:build:before', nitro)
+      await prepare(nitro)
+      if (nuxt.options.dev) {
+        await build(nitro)
+        await waitUntilCompile
+        return
+      }
+
+      await prerender(nitro)
+
+      logger.restoreAll()
+      await build(nitro)
+      logger.wrapAll()
+
+      await symlinkDist()
+    } finally {
+      nuxt._perf?.endPhase('nitro:build')
+    }
+  })
 }
 
 const RELATIVE_RE = /^([^.])/

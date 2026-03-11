@@ -12,11 +12,13 @@ import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
+  nuxt._perf?.startPhase('app:generate')
   const app = createApp(nuxt)
   nuxt.apps.default = app
 
   const generateApp = debounce(() => _generateApp(nuxt, app), undefined, { leading: true })
   await generateApp()
+  nuxt._perf?.endPhase('app:generate')
 
   if (nuxt.options.dev) {
     watch(nuxt)
@@ -51,7 +53,8 @@ export async function build (nuxt: Nuxt): Promise<void> {
     const { restoreCache, collectCache } = await getVueHash(nuxt)
     if (await restoreCache()) {
       await nuxt.callHook('build:done')
-      return await nuxt.callHook('close', nuxt)
+      await nuxt.callHook('close', nuxt)
+      return
     }
     nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
     nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
@@ -70,7 +73,9 @@ export async function build (nuxt: Nuxt): Promise<void> {
     })
   }
 
+  nuxt._perf?.startPhase('build:bundle')
   await bundle(nuxt)
+  nuxt._perf?.endPhase('build:bundle')
 
   await nuxt.callHook('build:done')
 

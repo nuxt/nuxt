@@ -2207,6 +2207,15 @@ describe('server components/islands', () => {
     // test island head
     expect(html).toContain('<meta name="author" content="Nuxt">')
     expect(html).toContain('plugin-style')
+    // #34482 - title should be composed with titleTemplate
+    expect(html).toContain('<title>Server Page - Fixture</title>')
+  })
+
+  it('/server-page - should preserve title after hydration', async () => {
+    const { page } = await renderPage('/server-page')
+    await page.waitForLoadState('networkidle')
+    expect(await page.title()).toBe('Server Page - Fixture')
+    await page.close()
   })
 
   it('/server-page - client side navigation', async () => {

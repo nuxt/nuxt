@@ -30,6 +30,14 @@ concurrency:
 
 jobs:
   changes:
+    # Skip CI entirely for release merge commits (e.g. "v4.1.0" or "Merge ... from nuxt/v4.1.0")
+    if: |-
+      github.event_name != 'push' ||
+      (
+        !contains(github.event.head_commit.message, 'v3.') &&
+        !contains(github.event.head_commit.message, 'v4.') &&
+        !contains(github.event.head_commit.message, 'v5.')
+      )
     runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
@@ -70,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: lts/*
           cache: 'pnpm'
@@ -101,7 +109,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   codeql:
-    if: github.event_name != 'merge_group'
+    if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -116,7 +124,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@c793b717bc78562f491db7b0e93a3a178b099162 # v4.32.5
+        uses: github/codeql-action/init@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
         with:
           config: |
             paths:
@@ -133,13 +141,13 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@c793b717bc78562f491db7b0e93a3a178b099162 # v4.32.5
+        uses: github/codeql-action/analyze@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
         with:
           category: '/language:${{ matrix.language }}'
 
   typecheck:
-    # already tested in merge queue
-    if: github.event_name != 'push'
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     permissions:
@@ -160,7 +168,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: lts/*
           cache: 'pnpm'
@@ -189,9 +197,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   lint-and-test:
-    # autofix workflow will be triggered instead for PRs
+    # autofix workflow will be triggered instead for PRs; run in merge queue and on push to maintenance branches
     needs: changes
-    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
+    if: (github.event_name == 'merge_group' || (github.event_name == 'push' && github.ref_name != 'main')) && needs.changes.outputs.src == 'true'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
     permissions:
@@ -201,7 +209,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: lts/*
           cache: 'pnpm'
@@ -231,8 +239,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   test-size:
-    # already tested in merge queue
-    if: github.event_name != 'push'
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ubuntu-24.04-arm
     permissions:
       actions: write
@@ -243,7 +251,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: lts/*
           cache: 'pnpm'
@@ -275,7 +283,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: lts/*
           cache: 'pnpm'
@@ -293,15 +301,15 @@ jobs:
         run: pnpm test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@2ac572851726409c88c02a307f1ea2632a9ea59b # v4.11.0
+        uses: CodSpeedHQ/action@281164b0f014a4e7badd2c02cecad9b595b70537 # v4.11.1
         with:
           run: pnpm vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
           mode: simulation
 
   test-fixtures:
-    # already tested in merge queue
-    if: github.event_name != 'push'
+    # skip on push to main (already tested in merge queue) but run on push to maintenance branches
+    if: github.event_name != 'push' || github.ref_name != 'main'
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
@@ -345,7 +353,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
@@ -438,7 +446,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: current
           cache: 'pnpm'
@@ -469,7 +477,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: lts/*
           cache: 'pnpm'

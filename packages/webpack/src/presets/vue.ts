@@ -4,11 +4,21 @@ import VueSSRClientPlugin from '../plugins/vue/client.ts'
 import VueSSRServerPlugin from '../plugins/vue/server.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 
-import { webpack } from '#builder'
+import { builder, webpack } from '#builder'
 
 export function vue (ctx: WebpackConfigContext) {
-  // @ts-expect-error de-default vue-loader
-  ctx.config.plugins!.push(new (VueLoaderPlugin.default || VueLoaderPlugin)())
+  // ensure vue-loader is always the first plugin, regardless of plugin ordering.
+  ctx.nuxt.hooks.hookOnce(`${builder}:config`, () => {
+    ctx.nuxt.hook(`${builder}:configResolved`, (configs) => {
+      for (const config of configs) {
+        config.plugins!.unshift(
+          // @ts-expect-error de-default vue-loader
+          new (VueLoaderPlugin.default
+            || VueLoaderPlugin)(),
+        )
+      }
+    })
+  })
 
   ctx.config.module!.rules!.push({
     test: /\.vue$/i,

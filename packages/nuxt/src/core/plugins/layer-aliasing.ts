@@ -64,7 +64,7 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
         filter: {
           id: ALIAS_ID_RE,
         },
-        async handler (id, importer) {
+        handler (id, importer) {
           if (!importer) { return }
 
           const layer = layers.find(l => importer.startsWith(l))
@@ -72,7 +72,7 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
 
           const resolvedId = resolveAlias(id, aliases[layer])
           if (resolvedId !== id) {
-            return await this.resolve(resolvedId, importer, { skipSelf: true })
+            return this.resolve(resolvedId, importer, { skipSelf: true })
           }
         },
       },
