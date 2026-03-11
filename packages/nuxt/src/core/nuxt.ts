@@ -697,11 +697,9 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
   }
 
-  // Add experimental support for custom types in JSON payload
-  if (nuxt.options.experimental.renderJsonPayloads) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
-  }
+  // Add support for custom types in JSON payload
+  addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+  addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
 
   addRouteMiddleware({
     name: 'manifest-route-rule',

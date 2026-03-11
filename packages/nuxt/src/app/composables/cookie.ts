@@ -220,7 +220,14 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 export function refreshCookie (name: string) {
   if (import.meta.server || store || typeof BroadcastChannel === 'undefined') { return }
 
-  new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
+  try {
+    const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
+    channel.postMessage({ refresh: true })
+    channel.close()
+  } catch {
+    // BroadcastChannel will fail in certain situations when cookies are disabled
+    // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
+  }
 }
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
@@ -283,18 +290,22 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
   return customRef((track, trigger) => {
     if (shouldWatch) { unsubscribe = watch(internalRef, trigger) }
 
-    function createExpirationTimeout () {
-      elapsed = 0
-      clearTimeout(timeout)
+    function scheduleTimeout () {
       const timeRemaining = delay - elapsed
       const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY
       timeout = setTimeout(() => {
         elapsed += timeoutLength
-        if (elapsed < delay) { return createExpirationTimeout() }
+        if (elapsed < delay) { return scheduleTimeout() }
 
         internalRef.value = undefined
         trigger()
       }, timeoutLength)
+    }
+
+    function createExpirationTimeout () {
+      elapsed = 0
+      clearTimeout(timeout)
+      scheduleTimeout()
     }
 
     return {

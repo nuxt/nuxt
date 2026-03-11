@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@babel/plugin-syntax-typescript": "^7.28.6",
-    "@nuxt/devalue": "^2.0.2",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "^2.1.12",
     "@vue/shared": "^3.5.30",
