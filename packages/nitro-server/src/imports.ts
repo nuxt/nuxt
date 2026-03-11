@@ -53,7 +53,7 @@ export async function getH3ImportsPreset () {
     url: import.meta.url,
   })
   return {
-    from: 'h3',
+    from: 'nitro/h3',
     imports: h3Exports.filter(n => !/^[A-Z]/.test(n) && n !== 'use'),
   }
 }
