@@ -74,8 +74,10 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   ssrContext.head.push(appHead, headEntryOptions)
 
   if (ssrError) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const status = ssrError.status || ssrError.statusCode
     if (status) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       ssrError.status = ssrError.statusCode = Number.parseInt(status as any)
     }
     if (PARSE_ERROR_DATA && typeof ssrError.data === 'string') {

@@ -43,7 +43,6 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
     const payloadURL = await _getPayloadURL(url, opts)
     const link = { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
 
-
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
@@ -82,7 +81,6 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 async function _importPayload (payloadURL: string) {
   if (import.meta.server || !payloadExtraction) { return null }
   const payloadPromise = fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
-
 
   try {
     return await payloadPromise
