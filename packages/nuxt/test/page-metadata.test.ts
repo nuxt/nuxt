@@ -56,6 +56,9 @@ definePageMeta({
 
     expect(meta).toStrictEqual({
       name: 'multi',
+      meta: {
+        __nuxt_dynamic_meta_key: new Set(['meta']),
+      },
     })
   })
 
@@ -76,6 +79,9 @@ definePageMeta({
 
     expect(meta).toStrictEqual({
       path: '/safe',
+      meta: {
+        __nuxt_dynamic_meta_key: new Set(['meta']),
+      },
     })
   })
 
