@@ -1,5 +1,4 @@
-import type { MatchedRouteRules, RenderResponse } from 'nitro/types'
-import devalue from '@nuxt/devalue'
+import type { RenderResponse } from 'nitro/types'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
@@ -8,17 +7,15 @@ import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 // @ts-expect-error virtual file
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_PAYLOAD_EXTRACTION } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
-    body: NUXT_JSON_PAYLOADS
-      ? encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers']))
-      : `export default ${devalue(splitPayload(ssrContext).payload)}`,
+    body: encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])),
     status: ssrContext.event.res.status || 200,
     statusText: ssrContext.event.res.statusText || '',
     headers: {
-      'content-type': NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
+      'content-type': 'application/json;charset=utf-8',
       'x-powered-by': 'Nuxt',
     },
   }
@@ -58,33 +55,6 @@ function encodeForwardSlashes (str: string): string {
   return str.replaceAll('/', '\\u002F')
 }
 
-export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: MatchedRouteRules, data?: any, src?: string }): Script[] {
-  opts.data.config = opts.ssrContext.config
-  const _PAYLOAD_EXTRACTION = !opts.ssrContext.noSSR && (
-    (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
-    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (opts.routeOptions.isr || opts.routeOptions.cache))
-  )
-  // @nuxt/devalue can't handle the null prototype of HTTPError objects
-  opts.data.error &&= Object.assign({}, opts.data.error)
-  const nuxtData = devalue(opts.data)
-  if (_PAYLOAD_EXTRACTION) {
-    const singleAppPayload = `import p from "${opts.src}";window.__NUXT__={...p,...(${nuxtData})}`
-    const multiAppPayload = `import p from "${opts.src}";window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={...p,...(${nuxtData})}`
-    return [
-      {
-        type: 'module',
-        innerHTML: multiApp ? multiAppPayload : singleAppPayload,
-      },
-    ]
-  }
-  const singleAppPayload = `window.__NUXT__=${nuxtData}`
-  const multiAppPayload = `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]=${nuxtData}`
-  return [
-    {
-      innerHTML: multiApp ? multiAppPayload : singleAppPayload,
-    },
-  ]
-}
 
 interface SplitPayload {
   initial: Omit<NuxtPayload, 'data'>

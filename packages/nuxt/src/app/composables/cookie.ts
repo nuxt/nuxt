@@ -220,7 +220,14 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 export function refreshCookie (name: string) {
   if (import.meta.server || store || typeof BroadcastChannel === 'undefined') { return }
 
-  new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
+  try {
+    const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
+    channel.postMessage({ refresh: true })
+    channel.close()
+  } catch {
+    // BroadcastChannel will fail in certain situations when cookies are disabled
+    // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
+  }
 }
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {

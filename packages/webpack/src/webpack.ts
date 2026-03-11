@@ -145,10 +145,6 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
       return
     }
 
-    event.context.webpack = {
-      ...event.context.webpack,
-      devMiddleware: devMiddleware.context,
-    }
     const body = await new Promise((resolve, reject) => {
       // @ts-expect-error handle injected methods
       res.stream = (stream) => {
