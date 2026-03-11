@@ -290,18 +290,22 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
   return customRef((track, trigger) => {
     if (shouldWatch) { unsubscribe = watch(internalRef, trigger) }
 
-    function createExpirationTimeout () {
-      elapsed = 0
-      clearTimeout(timeout)
+    function scheduleTimeout () {
       const timeRemaining = delay - elapsed
       const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY
       timeout = setTimeout(() => {
         elapsed += timeoutLength
-        if (elapsed < delay) { return createExpirationTimeout() }
+        if (elapsed < delay) { return scheduleTimeout() }
 
         internalRef.value = undefined
         trigger()
       }, timeoutLength)
+    }
+
+    function createExpirationTimeout () {
+      elapsed = 0
+      clearTimeout(timeout)
+      scheduleTimeout()
     }
 
     return {
