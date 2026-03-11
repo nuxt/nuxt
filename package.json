@@ -37,6 +37,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:dev": "TEST_ENV=dev playwright test",
     "test:e2e:webpack": "TEST_BUILDER=webpack playwright test",
+    "test:engines": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' -i rollup-plugin-visualizer",
+    "test:engines:fix": "installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground' -i rollup-plugin-visualizer",
     "typecheck": "vue-tsc --noEmit",
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxt prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
@@ -62,7 +64,7 @@
     "@codspeed/core": "5.2.0",
     "@codspeed/vitest-plugin": "5.2.0",
     "@eslint/markdown": "7.5.1",
-    "@nuxt/cli": "3.33.1",
+    "@nuxt/cli": "3.34.0",
     "@nuxt/eslint-config": "1.15.2",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
@@ -128,6 +130,6 @@
     "vue-tsc": "3.2.5",
     "webpack": "5.105.4"
   },
-  "packageManager": "pnpm@10.32.0",
+  "packageManager": "pnpm@10.32.1",
   "version": ""
 }
