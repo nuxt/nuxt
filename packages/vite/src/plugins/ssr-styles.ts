@@ -96,10 +96,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   return {
     name: 'ssr-styles',
     configResolved (config) {
-      // TODO: remove when adopting vite environment api
-      if (!config.build.ssr || nuxt.options.experimental.viteEnvironmentApi) {
-        entry = resolveClientEntry(config)
-      }
+      entry = resolveClientEntry(config)
     },
     applyToEnvironment (environment) {
       return {

@@ -99,6 +99,7 @@ export default defineResolvers({
     noVueServer: false,
     payloadExtraction: {
       $resolve: async (val, get) => {
+        if ((await get('ssr')) === false) { return false }
         if (val === 'client' || typeof val === 'boolean') { return val }
         return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
       },
@@ -198,7 +199,7 @@ export default defineResolvers({
       },
     },
     browserDevtoolsTiming: {
-      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
+      $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
     chromeDevtoolsProjectSettings: true,
     debugModuleMutation: {
@@ -244,12 +245,12 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
-    viteEnvironmentApi: {
+    nitroAutoImports: {
       $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
-    nitroAutoImports: {
+    asyncCallHook: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },

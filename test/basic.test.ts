@@ -110,6 +110,18 @@ describe('route rules', () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
   })
+
+  it('should not generate payload route rules for non-wildcard ssr: false routes', () => {
+    // @ts-expect-error untyped internal property
+    const routeRules = useTestContext().nuxt._nitro.options.routeRules
+
+    expect(routeRules['/route-rules/isr-spa']).toMatchObject({
+      isr: 60,
+      ssr: false,
+    })
+    expect(routeRules['/route-rules/isr-spa/_payload.json']).toBeUndefined()
+    expect(routeRules['/route-rules/isr-spa/_payload.js']).toBeUndefined()
+  })
 })
 
 describe('modules', () => {
@@ -183,7 +195,8 @@ describe('pages', () => {
 
   it('preserves page metadata added in pages:extend hook', async () => {
     const html = await $fetch<string>('/some-custom-path')
-    expect (html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>')).toMatchInlineSnapshot(`
+    // Normalise arrow function whitespace (esbuild with es2024 target strips spaces around =>)
+    expect(html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>').replace(/\(\)\s*=>\s*/g, '() => ')).toMatchInlineSnapshot(`
       "{
         "name": "some-custom-name",
         "path": "/some-custom-path",
@@ -1927,8 +1940,8 @@ describe.skipIf(isDev)('module identifiers', () => {
 
 describe.skipIf(isDev)('inlining component styles', () => {
   const globalCSS = [
-    '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
-    '{--global:"global";', // global css from nuxt.config
+    '--plugin:"plugin"', // CSS imported ambiently in JS/TS
+    '--global:"global"', // global css from nuxt.config
   ]
   const nonGlobalCSS = [
     '{--assets:"assets"}', // <script>
@@ -1979,7 +1992,7 @@ describe.skipIf(isDev)('inlining component styles', () => {
     // should not include inlined CSS in generated CSS files
     for (const style of inlinedCSS) {
       // TODO: remove 'ambient global' CSS from generated CSS file
-      if (style === '{--plugin:"plugin"}') {
+      if (style === '--plugin:"plugin"') {
         expect.soft(css).toContain(style)
         continue
       }
@@ -2157,6 +2170,15 @@ describe('server components/islands', () => {
     // test island head
     expect(html).toContain('<meta name="author" content="Nuxt">')
     expect(html).toContain('plugin-style')
+    // #34482 - title should be composed with titleTemplate
+    expect(html).toContain('<title>Server Page - Fixture</title>')
+  })
+
+  it('/server-page - should preserve title after hydration', async () => {
+    const { page } = await renderPage('/server-page')
+    await page.waitForLoadState('networkidle')
+    expect(await page.title()).toBe('Server Page - Fixture')
+    await page.close()
   })
 
   it('/server-page - client side navigation', async () => {

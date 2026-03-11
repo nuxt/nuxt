@@ -1296,14 +1296,6 @@ export interface ConfigSchema {
     cookieStore: boolean
 
     /**
-     * Enable experimental Vite Environment API
-     * @see [Vite Environment API](https://vite.dev/guide/api-environment#environment-api)
-     * @default false
-     * @default true with compatibilityVersion >= 5
-     */
-    viteEnvironmentApi: boolean
-
-    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the `app/` directory.
@@ -1601,6 +1593,19 @@ export interface ConfigSchema {
      * @default false with compatibilityVersion >= 5
      */
     nitroAutoImports: boolean
+
+    /**
+     * Whether `callHook` always returns a `Promise`, wrapping synchronous hook results.
+     *
+     * Hookable v6 may return `void` instead of `Promise<void>` when there are no registered
+     * hooks or all hooks are synchronous. When this option is enabled, Nuxt wraps `callHook`
+     * with `Promise.resolve()` so that `.then()` and `.catch()` chaining always works.
+     *
+     * Set to `false` for better performance if your code and modules use `await` with `callHook`.
+     * @default true
+     * @default false with compatibilityVersion >= 5
+     */
+    asyncCallHook: boolean
   }
 
   /**

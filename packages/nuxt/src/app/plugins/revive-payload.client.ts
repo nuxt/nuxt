@@ -1,5 +1,4 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
-import destr from 'destr'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
 import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
@@ -7,10 +6,18 @@ import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
 
+function parseRevivedData (data: string) {
+  try {
+    return JSON.parse(data)
+  } catch {
+    return data
+  }
+}
+
 const revivers: [string, (data: any) => any][] = [
   ['NuxtError', data => createError(data)],
-  ['EmptyShallowRef', data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data))],
-  ['EmptyRef', data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data))],
+  ['EmptyShallowRef', data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : parseRevivedData(data))],
+  ['EmptyRef', data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : parseRevivedData(data))],
   ['ShallowRef', data => shallowRef(data)],
   ['ShallowReactive', data => shallowReactive(data)],
   ['Ref', data => ref(data)],

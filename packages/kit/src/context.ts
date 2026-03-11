@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { createContext, getContext } from 'unctx'
+import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
 
@@ -10,7 +10,7 @@ import type { Nuxt } from '@nuxt/schema'
 export const nuxtCtx: UseContext<Nuxt> = getContext<Nuxt>('nuxt')
 
 /** async local storage for the name of the current nuxt instance */
-const asyncNuxtStorage = createContext<Nuxt>({
+const asyncNuxtStorage = getContext<Nuxt>('asyncNuxtStorage', {
   asyncContext: true,
   AsyncLocalStorage,
 })

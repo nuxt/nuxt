@@ -47,6 +47,7 @@ import { DevOnlyPlugin } from './plugins/dev-only.ts'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing.ts'
 import { addModuleTranspiles } from './modules.ts'
 import { bundleServer } from './server.ts'
+import { NuxtPerfProfiler } from './perf.ts'
 import schemaModule from './schema.ts'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
@@ -59,8 +60,13 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
 
   const { callHook, callHookParallel, callHookWith } = hooks
-  hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
-  hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
+  if (options.experimental.asyncCallHook) {
+    hooks.callHook = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHook(...args)))
+    hooks.callHookParallel = (...args) => Promise.resolve().then(() => runWithNuxtContext(nuxt, () => callHookParallel(...args)) ?? [])
+  } else {
+    hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
+    hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
+  }
   hooks.callHookWith = (...args) => runWithNuxtContext(nuxt, () => callHookWith(...args))
 
   const nuxt: Nuxt = {
@@ -72,7 +78,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => runWithNuxtContext(nuxt, () => initNuxt(nuxt)),
-    close: () => hooks.callHook('close', nuxt),
+    close: async () => { await hooks.callHook('close', nuxt) },
     vfs: {},
     apps: {},
     runWithContext: fn => runWithNuxtContext(nuxt, fn),
@@ -162,6 +168,8 @@ export const keyDependencies: string[] = [
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
+  nuxt._perf?.startPhase('init')
+
   const layerDirs = getLayerDirectories(nuxt)
 
   // Register user hooks
@@ -387,34 +395,56 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     // shared folder import protection
-    const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
-    const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
-    const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
-    const sharedProtectionConfig = {
-      cwd: nuxt.options.rootDir,
-      include: sharedPatterns,
-      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
-    }
-    addBuildPlugin({
-      vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
-      webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
-      rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
-    }, { server: false })
+    if (!nuxt.options.test) {
+      const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+      const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+      const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+      const sharedProtectionConfig = {
+        cwd: nuxt.options.rootDir,
+        trace: true,
+        include: sharedPatterns,
+        patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+      }
+      addBuildPlugin({
+        vite: () => ImpoundPlugin.vite(sharedProtectionConfig),
+        webpack: () => ImpoundPlugin.webpack(sharedProtectionConfig),
+        rspack: () => ImpoundPlugin.rspack(sharedProtectionConfig),
+      }, { server: false, prepend: true })
 
-    // Add import protection
-    const nuxtProtectionConfig = {
-      cwd: nuxt.options.rootDir,
-      // Exclude top-level resolutions by plugins
-      exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
-      patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
+      // Add import protection
+      const nuxtProtectionConfig = {
+        cwd: nuxt.options.rootDir,
+        trace: true,
+        // Exclude top-level resolutions by plugins
+        exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
+        patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
+      }
+      addBuildPlugin({
+        webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
+        rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
+      })
+
+      // Register Vite import protection plugins with split enforce:
+      // - The main impound plugin (resolveId) needs prepend to run before Vite's resolver
+      // - The impound:trace plugin (transform) should run after SFC compilation so
+      //   es-module-lexer can parse the compiled JS and produce accurate code snippets
+      for (const envOptions of [
+        { client: false } as const,
+        { server: false } as const,
+      ]) {
+        const error = envOptions.client === false ? false : true
+        const vitePlugins = [ImpoundPlugin.vite({ ...nuxtProtectionConfig, error, ...(error === false && { warn: 'once' as const }) })].flat()
+          .map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` }))
+        const mainPlugins = vitePlugins.filter(p => !p.name.includes('trace'))
+        const tracePlugins = vitePlugins.filter(p => p.name.includes('trace'))
+        if (mainPlugins.length) {
+          addVitePlugin(() => mainPlugins, { ...envOptions, prepend: true })
+        }
+        if (tracePlugins.length) {
+          addVitePlugin(() => tracePlugins, envOptions)
+        }
+      }
     }
-    addBuildPlugin({
-      webpack: () => ImpoundPlugin.webpack(nuxtProtectionConfig),
-      rspack: () => ImpoundPlugin.rspack(nuxtProtectionConfig),
-    })
-    // TODO: remove in nuxt v5 when we can use vite env api
-    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-    addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
   })
 
   if (!nuxt.options.dev) {
@@ -480,6 +510,8 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Init user modules
+  nuxt._perf?.endPhase('init')
+  nuxt._perf?.startPhase('modules')
   await nuxt.callHook('modules:before')
 
   const { paths: watchedModulePaths, resolvedModulePaths, modules } = await resolveModules(nuxt)
@@ -632,6 +664,8 @@ async function initNuxt (nuxt: Nuxt) {
   })
 
   await nuxt.callHook('modules:done')
+  nuxt._perf?.endPhase('modules')
+  nuxt._perf?.collectModuleTimings(nuxt.options._installedModules)
 
   // Add keys for useFetch, useAsyncData, etc.
   const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
@@ -774,6 +808,7 @@ export default defineNuxtPlugin({
 
   // Init nitro
   await bundleServer(nuxt)
+  nuxt._perf?.startPhase('ready')
 
   // Add prerender payload support
   if (nuxt.options.experimental.payloadExtraction) {
@@ -787,10 +822,26 @@ export default defineNuxtPlugin({
   }
 
   await nuxt.callHook('ready', nuxt)
+  nuxt._perf?.endPhase('ready')
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+  // Early-init profiler when CLI passes perf overrides (captures config loading).
+  // Otherwise, create after config resolves from nuxt.config / env vars.
+  let perf: NuxtPerfProfiler | undefined
+  const cliStartTime = (globalThis as any).__nuxt_cli__?.startTime as number | undefined
+  const perfOverride = typeof opts.overrides?.debug === 'object' && opts.overrides.debug.perf
+  if (perfOverride) {
+    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
+    perf.startPhase('config')
+  }
+
   const options = await loadNuxtConfig(opts)
+
+  if (!perf && typeof options.debug === 'object' && options.debug.perf) {
+    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
+  }
+  perf?.endPhase('config')
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
@@ -886,6 +937,27 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   })
 
   const nuxt = createNuxt(options)
+
+  if (perf) {
+    nuxt._perf = perf
+    perf.installHookInterceptors(nuxt.hooks)
+
+    const quiet = typeof options.debug === 'object' && options.debug.perf === 'quiet'
+    const title = nuxt.options.dev ? 'Nuxt Performance Report' : 'Nuxt Build Performance'
+
+    let flushed = false
+    const flush = () => {
+      if (flushed || !perf) { return }
+      flushed = true
+      if (!quiet) { perf.printReport({ title }) }
+      perf.writeReport(nuxt.options.buildDir, { quiet })
+      perf.dispose()
+    }
+
+    nuxt.hook('close', flush)
+    process.once('exit', flush)
+    nuxt.hook('close', () => { process.off('exit', flush) })
+  }
 
   nuxt.runWithContext(() => {
     // We register hooks layer-by-layer so any overrides need to be registered separately
