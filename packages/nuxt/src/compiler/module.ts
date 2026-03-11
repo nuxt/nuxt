@@ -1,10 +1,11 @@
 import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
-import type { CompilerScanDir, NuxtCompilerOptions, ScanPlugin, ScanPluginFilter } from '@nuxt/schema'
+import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions, ScanPlugin, ScanPluginFilter } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils.ts'
 import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
-import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin } from './plugins/keyed-function-factories.ts'
+import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin, scanFileForFactories } from './plugins/keyed-function-factories.ts'
+import type { KeyedFunctionFactoriesScanResult } from './plugins/keyed-function-factories.ts'
 import type { Unimport } from 'unimport'
 import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
 
@@ -22,16 +23,21 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       unimport = ctx
     })
 
+    // Shared state for HMR — populated during build:before, accessed by builder:watch
+    let scanResult: KeyedFunctionFactoriesScanResult | undefined
+    let scanDirPaths: string[] = []
+    let normalizedKeyedFunctions: KeyedFunction[] = []
+
     nuxt.hook('build:before', async () => {
       // scan raw source files for keyed function factories to register their created functions for key injection
       nuxt.options.compiler ||= {}
       nuxt.options.compiler.plugins ||= []
-      nuxt.options.compiler.plugins.push(
-        KeyedFunctionFactoriesScanPlugin({
-          factories: nuxt.options.optimization.keyedComposableFactories,
-          alias: nuxt.options.alias,
-        }),
-      )
+      const scanPlugin = KeyedFunctionFactoriesScanPlugin({
+        factories: nuxt.options.optimization.keyedComposableFactories,
+        alias: nuxt.options.alias,
+      })
+      scanResult = scanPlugin.result
+      nuxt.options.compiler.plugins.push(scanPlugin)
 
       // replace keyed function factory compiler macro placeholders with actual factories (createUseFetch -> createUseFetch.__nuxt_factory)
       addBuildPlugin(KeyedFunctionFactoriesPlugin({
@@ -45,7 +51,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
 
       // Add keys for useFetch, useAsyncData, etc.
       // Maintained as a mutable list so HMR can add/remove entries
-      const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
+      normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
         ...rest,
         source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
       })))
@@ -133,6 +139,9 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         } satisfies Required<CompilerScanDir>)
       }))).filter(Boolean) as Required<CompilerScanDir>[]
 
+      // Store dir paths for HMR watch handler
+      scanDirPaths = scanDirs.map(d => d.path)
+
       // resolve the files from the scan directories
 
       const _filePaths: string[] = []
@@ -197,7 +206,69 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       }))
     }
 
-    // TODO: add support for HMR
+    // HMR: incrementally re-scan files when composable directories change
+    if (nuxt.options.dev) {
+      nuxt.hook('builder:watch', async (event, relativePath) => {
+        if (!scanResult || !['add', 'change', 'unlink'].includes(event)) { return }
+
+        const absolutePath = resolve(nuxt.options.srcDir, relativePath)
+        const isInScanDir = scanDirPaths.some(dir => absolutePath === dir || absolutePath.startsWith(dir + '/'))
+        if (!isInScanDir) { return }
+
+        const { fileResults, factoryNamesRegex, namesToFactoryMeta } = scanResult
+
+        // Remove old entries for this file from normalizedKeyedFunctions.
+        // All entries from a given scan have source === absolutePath, which gets
+        // normalized via resolvePath. We match on the resolved path.
+        const oldEntries = fileResults.get(absolutePath)
+        if (oldEntries?.length) {
+          const resolvedSource = await resolvePath(absolutePath, { fallbackToOriginal: true })
+          for (let i = normalizedKeyedFunctions.length - 1; i >= 0; i--) {
+            if (normalizedKeyedFunctions[i]!.source === resolvedSource) {
+              normalizedKeyedFunctions.splice(i, 1)
+            }
+          }
+          fileResults.delete(absolutePath)
+        }
+
+        // For deletions, we're done
+        if (event === 'unlink') { return }
+
+        // Read file and check if it contains any factory names (fast prefilter)
+        let contents: string
+        try {
+          contents = await readFile(absolutePath, 'utf-8')
+        } catch {
+          return // file may not exist yet or be temporarily unavailable
+        }
+
+        if (!factoryNamesRegex.test(contents)) { return }
+
+        // Build auto-imports map
+        const autoImports = await unimport?.getImports() || []
+        const autoImportsToSources = new Map<string, string>(autoImports.map(i => [i.as || i.name, i.from]))
+
+        // Scan the single file
+        const newEntries = scanFileForFactories(
+          absolutePath,
+          contents,
+          namesToFactoryMeta,
+          autoImportsToSources,
+          nuxt.options.alias,
+        )
+
+        if (newEntries.length) {
+          fileResults.set(absolutePath, newEntries)
+
+          // Normalize and add to the mutable list
+          const normalized = await Promise.all(newEntries.map(async ({ source, ...rest }) => ({
+            ...rest,
+            source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
+          })))
+          normalizedKeyedFunctions.push(...normalized)
+        }
+      })
+    }
   },
 })
 
