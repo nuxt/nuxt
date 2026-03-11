@@ -136,7 +136,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 
   // Only extract known context fields to prevent arbitrary data injection
   return {
-    url: typeof context.url === 'string' ? context.url : '/',
+    url: typeof context?.url === 'string' ? context.url : '/',
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
