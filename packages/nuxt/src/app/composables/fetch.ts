@@ -161,6 +161,9 @@ export const createUseFetch = defineKeyedFunctionFactory({
 
       const factoryOptions = (typeof options === 'function' ? options(opts as any) : options) as typeof opts
 
+      // Merge factory options with user options:
+      // - defaults mode (plain object): factory < user opts (factory provides defaults)
+      // - override mode (function): user opts < factory (factory overrides user opts)
       const {
         server,
         lazy,
@@ -183,7 +186,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
       const _fetchOptions = reactive<typeof fetchOptions>({
         ...fetchDefaults,
         ...fetchOptions,
-        cache: typeof opts.cache === 'boolean' ? undefined : opts.cache,
+        cache: typeof fetchOptions.cache === 'boolean' ? undefined : fetchOptions.cache,
       })
 
       const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
