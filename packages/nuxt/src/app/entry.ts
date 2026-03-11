@@ -38,8 +38,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:error', error)
       nuxt.payload.error ||= createError(error as any)
     }
-    // TODO: remove _renderResponse in nuxt v5
-    if (ssrContext && (ssrContext['~renderResponse'] || ssrContext._renderResponse)) { throw new Error('skipping render') }
+    if (ssrContext?.['~renderResponse']) { throw new Error('skipping render') }
 
     return vueApp
   }

@@ -140,8 +140,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
     // We use error to bypass full render if we have an early response we can make
-    // TODO: remove _renderResponse in nuxt v5
-    if ((ssrContext['~renderResponse'] || ssrContext._renderResponse) && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
+    if (ssrContext['~renderResponse'] && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
@@ -150,16 +149,14 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   })
 
   // Render inline styles
-  // TODO: remove _renderResponse in nuxt v5
-  const inlinedStyles = NUXT_INLINE_STYLES && !ssrContext['~renderResponse'] && !ssrContext._renderResponse && !isRenderingPayload
+  const inlinedStyles = NUXT_INLINE_STYLES && !ssrContext['~renderResponse'] && !isRenderingPayload
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
 
-  if (ssrContext['~renderResponse'] || ssrContext._renderResponse) {
-    // TODO: remove _renderResponse in nuxt v5
-    return ssrContext['~renderResponse'] || (ssrContext._renderResponse as never)
+  if (ssrContext['~renderResponse']) {
+    return ssrContext['~renderResponse']
   }
 
   // Handle errors
