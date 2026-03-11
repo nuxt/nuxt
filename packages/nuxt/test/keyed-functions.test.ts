@@ -73,7 +73,7 @@ useExisting()
     expect(result2?.code).toContain('/* nuxt-injected */')
   })
 
-  it('should use static code filter in production mode', async () => {
+  it('should use static code filter in production mode', () => {
     const keyedFunctions: KeyedFunction[] = [
       { name: 'useExisting', source: '#app', argumentLength: 1 },
     ]
