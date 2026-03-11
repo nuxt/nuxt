@@ -99,7 +99,7 @@ export function prerenderRoutes (path: string | string[]) {
   if (!import.meta.server || !import.meta.prerender) { return }
 
   const paths = toArray(path)
-  useRequestEvent()?.res.headers.set('x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
+  useRequestEvent()?.res.headers.append('x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
 }
 
 const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
