@@ -1,6 +1,6 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { NitroRouteRules } from 'nitro/types'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -43,9 +43,6 @@ function fetchManifest () {
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
-  }
-  if (import.meta.server) {
-    useNuxtApp().ssrContext!['~preloadManifest'] = true
   }
   return manifest || fetchManifest()
 }
