@@ -55,7 +55,6 @@ function encodeForwardSlashes (str: string): string {
   return str.replaceAll('/', '\\u002F')
 }
 
-
 interface SplitPayload {
   initial: Omit<NuxtPayload, 'data'>
   payload: {
