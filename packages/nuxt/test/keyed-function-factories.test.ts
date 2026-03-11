@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   KeyedFunctionFactoriesPlugin,
   KeyedFunctionFactoriesScanPlugin,
+  scanFileForFactories,
 } from '../src/compiler/plugins/keyed-function-factories'
 import type { KeyedFunctionFactory, Nuxt } from '@nuxt/schema'
 import { createScanPluginContext } from '../src/compiler/utils'
@@ -532,6 +533,148 @@ describe('keyed function factories scan plugin', () => {
   `
     await callScanPlugin('fetch.ts', code, mockNuxt)
     expect(mockNuxt.options.optimization.keyedComposables).toMatchInlineSnapshot(`[]`)
+  })
+})
+
+// -------- scanFileForFactories (standalone, for HMR) --------
+
+describe('scanFileForFactories', () => {
+  const alias = { '#app': '/nuxt/app', '@': '/app' }
+  const factories: KeyedFunctionFactory[] = [
+    { name: 'createUseFetch', source: '#app/composables/fetch', argumentLength: 3 },
+  ]
+  const namesToFactoryMeta = new Map(factories.map(f => [f.name, {
+    ...f,
+    source: f.source.replace('#app', '/nuxt/app').replace(/\.[^.]+$/, ''),
+  }]))
+  const autoImportsToSources = new Map([
+    ['createUseFetch', '#app/composables/fetch'],
+  ])
+
+  it('should find factory calls in a file', () => {
+    const code = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useApiFetch = createUseFetch({ baseURL: '/api' })
+    `
+    const results = scanFileForFactories('/app/composables/api.ts', code, namesToFactoryMeta, autoImportsToSources, alias)
+    expect(results).toMatchInlineSnapshot(`
+      [
+        {
+          "argumentLength": 3,
+          "name": "useApiFetch",
+          "source": "/app/composables/api.ts",
+        },
+      ]
+    `)
+  })
+
+  it('should find auto-imported factory calls', () => {
+    const code = `
+      export const useApiFetch = createUseFetch({ baseURL: '/api' })
+    `
+    const results = scanFileForFactories('/app/composables/api.ts', code, namesToFactoryMeta, autoImportsToSources, alias)
+    expect(results).toMatchInlineSnapshot(`
+      [
+        {
+          "argumentLength": 3,
+          "name": "useApiFetch",
+          "source": "/app/composables/api.ts",
+        },
+      ]
+    `)
+  })
+
+  it('should return empty array when no factories found', () => {
+    const code = `
+      export const myHelper = () => 'hello'
+    `
+    const results = scanFileForFactories('/app/composables/helper.ts', code, namesToFactoryMeta, autoImportsToSources, alias)
+    expect(results).toEqual([])
+  })
+})
+
+// -------- per-file tracking in scan plugin --------
+
+describe('keyed function factories scan plugin per-file tracking', () => {
+  const factories: KeyedFunctionFactory[] = [
+    { name: 'createUseFetch', source: '#app/composables/fetch', argumentLength: 3 },
+  ]
+  const autoImportsToSources = new Map([
+    ['createUseFetch', '#app/composables/fetch'],
+  ])
+
+  it('should track results per file', async () => {
+    const plugin = KeyedFunctionFactoriesScanPlugin({ factories, alias: { '#app': '/nuxt/app' } })
+
+    const file1 = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useApiFetch = createUseFetch()
+    `
+    const file2 = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useOtherFetch = createUseFetch()
+      export const useThirdFetch = createUseFetch()
+    `
+
+    const ctx1 = createScanPluginContext(file1, '/app/composables/api.ts')
+    await plugin.scan.call(ctx1, { id: '/app/composables/api.ts', code: file1, nuxt: createMockNuxt(), autoImportsToSources })
+
+    const ctx2 = createScanPluginContext(file2, '/app/composables/other.ts')
+    await plugin.scan.call(ctx2, { id: '/app/composables/other.ts', code: file2, nuxt: createMockNuxt(), autoImportsToSources })
+
+    expect(plugin.result.fileResults.get('/app/composables/api.ts')).toHaveLength(1)
+    expect(plugin.result.fileResults.get('/app/composables/other.ts')).toHaveLength(2)
+    expect(plugin.result.fileResults.size).toBe(2)
+  })
+
+  it('should overwrite previous results when re-scanning a file', async () => {
+    const plugin = KeyedFunctionFactoriesScanPlugin({ factories, alias: { '#app': '/nuxt/app' } })
+
+    const original = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useApiFetch = createUseFetch()
+    `
+    const ctx1 = createScanPluginContext(original, '/app/composables/api.ts')
+    await plugin.scan.call(ctx1, { id: '/app/composables/api.ts', code: original, nuxt: createMockNuxt(), autoImportsToSources })
+
+    expect(plugin.result.fileResults.get('/app/composables/api.ts')).toHaveLength(1)
+
+    // Re-scan with updated file that adds a second export
+    const updated = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useApiFetch = createUseFetch()
+      export const useApiFetch2 = createUseFetch()
+    `
+    const ctx2 = createScanPluginContext(updated, '/app/composables/api.ts')
+    await plugin.scan.call(ctx2, { id: '/app/composables/api.ts', code: updated, nuxt: createMockNuxt(), autoImportsToSources })
+
+    expect(plugin.result.fileResults.get('/app/composables/api.ts')).toHaveLength(2)
+    expect(plugin.result.fileResults.size).toBe(1)
+  })
+
+  it('should flatten all per-file results in afterScan', async () => {
+    const plugin = KeyedFunctionFactoriesScanPlugin({ factories, alias: { '#app': '/nuxt/app' } })
+    const nuxt = createMockNuxt()
+
+    const file1 = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useApiFetch = createUseFetch()
+    `
+    const file2 = `
+      import { createUseFetch } from '#app/composables/fetch'
+      export const useOtherFetch = createUseFetch()
+    `
+
+    const ctx1 = createScanPluginContext(file1, '/app/composables/api.ts')
+    await plugin.scan.call(ctx1, { id: '/app/composables/api.ts', code: file1, nuxt, autoImportsToSources })
+
+    const ctx2 = createScanPluginContext(file2, '/app/composables/other.ts')
+    await plugin.scan.call(ctx2, { id: '/app/composables/other.ts', code: file2, nuxt, autoImportsToSources })
+
+    plugin.afterScan?.(nuxt)
+
+    expect(nuxt.options.optimization.keyedComposables).toHaveLength(2)
+    expect(nuxt.options.optimization.keyedComposables.map(k => k.name)).toEqual(['useApiFetch', 'useOtherFetch'])
   })
 })
 

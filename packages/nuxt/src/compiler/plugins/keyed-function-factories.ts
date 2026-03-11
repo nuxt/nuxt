@@ -17,6 +17,7 @@ import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'm
 import type { KeyedFunction, KeyedFunctionFactory, ScanPlugin } from '@nuxt/schema'
 import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
+import { createScanPluginContext } from '../utils.ts'
 
 interface ParsedKeyedFunctionFactory {
   factoryName: string
@@ -240,8 +241,74 @@ interface KeyedFunctionFactoriesScanPluginOptions {
  * Scans raw source files for factory functions that need auto-injected keys
  * so that it can register them for key injection.
  */
-export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactoriesScanPluginOptions): ScanPlugin => {
-  const keyedFunctionsCreatedByFactories: KeyedFunction[] = []
+/**
+ * Scans a single file for factory function calls and returns the keyed functions found.
+ * Extracted as a standalone function so it can be reused for HMR (incremental re-scan).
+ */
+export function scanFileForFactories (
+  id: string,
+  code: string,
+  namesToFactoryMeta: Map<string, KeyedFunctionFactory>,
+  autoImportsToSources: Map<string, string>,
+  alias: Record<string, string>,
+): KeyedFunction[] {
+  const results: KeyedFunction[] = []
+  const context = createScanPluginContext(code, id)
+
+  const scopeTracker = new ScopeTracker({
+    preserveExitedScopes: true,
+  })
+  const { processFactory } = createFactoryProcessor(id, scopeTracker, namesToFactoryMeta, context.getParsedStaticImports(), autoImportsToSources, alias)
+
+  context.walkParsed({
+    scopeTracker,
+  })
+
+  scopeTracker.freeze()
+
+  let isWalkingSupportedSubtree = false
+
+  context.walkParsed({
+    scopeTracker,
+    enter (node) {
+      if (node.type !== 'Program' && !isWalkingSupportedSubtree && node.type !== 'ExportNamedDeclaration' && node.type !== 'ExportDefaultDeclaration' && node.type !== 'ImportDeclaration') {
+        this.skip()
+      }
+      if (node.type !== 'ExportNamedDeclaration' && node.type !== 'ExportDefaultDeclaration') {
+        return
+      }
+      isWalkingSupportedSubtree = true
+
+      processFactory(this, node, ({ parseFactoryResult, factory }) => {
+        results.push({
+          name: parseFactoryResult.functionName,
+          source: id,
+          argumentLength: factory.argumentLength,
+        })
+      })
+    },
+    leave (node) {
+      if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration' || node.type === 'ImportDeclaration') {
+        isWalkingSupportedSubtree = false
+      }
+    },
+  })
+
+  return results
+}
+
+export interface KeyedFunctionFactoriesScanResult {
+  /** Per-file map of scanned keyed functions */
+  fileResults: Map<string, KeyedFunction[]>
+  /** Regex matching factory function names, for use as a fast prefilter */
+  factoryNamesRegex: RegExp
+  /** Resolved factory metadata map */
+  namesToFactoryMeta: Map<string, KeyedFunctionFactory>
+}
+
+export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactoriesScanPluginOptions): ScanPlugin & { result: KeyedFunctionFactoriesScanResult } => {
+  // Per-file tracking of discovered keyed functions
+  const fileResults = new Map<string, KeyedFunction[]>()
 
   // DO NOT USE IN SCAN - this is a global copy that doesn't include local import renames
   // - the `source`s have resolved aliases
@@ -253,13 +320,22 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
   // TODO: support default import, which won't have the factory name
   const KEYED_FUNCTION_FACTORY_NAMES_RE = new RegExp(`\\b(${options.factories.map(f => escapeRE(f.name)).join('|')})\\b`)
 
+  const result: KeyedFunctionFactoriesScanResult = {
+    fileResults,
+    factoryNamesRegex: KEYED_FUNCTION_FACTORY_NAMES_RE,
+    namesToFactoryMeta,
+  }
+
   return {
+    result,
     name: 'nuxt:keyed-function-factories',
     filter: {
       id: { include: JS_EXT_RE },
       code: { include: KEYED_FUNCTION_FACTORY_NAMES_RE },
     },
     scan ({ id, autoImportsToSources }) {
+      const results: KeyedFunction[] = []
+
       const scopeTracker = new ScopeTracker({
         preserveExitedScopes: true,
       })
@@ -274,11 +350,8 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
       let isWalkingSupportedSubtree = false
 
       this.walkParsed({
-        // no need for a scope tracker pre-pass, since we only care about imports
-        // and we only consider the root scope (because that's where an export would be - so no shadowing)
         scopeTracker,
         enter (node) {
-          // (perf) skip walking subtrees that can't contain what we're looking for
           if (node.type !== 'Program' && !isWalkingSupportedSubtree && node.type !== 'ExportNamedDeclaration' && node.type !== 'ExportDefaultDeclaration' && node.type !== 'ImportDeclaration') {
             this.skip()
           }
@@ -288,7 +361,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
           isWalkingSupportedSubtree = true
 
           processFactory(this, node, ({ parseFactoryResult, factory }) => {
-            keyedFunctionsCreatedByFactories.push({
+            results.push({
               name: parseFactoryResult.functionName,
               source: id,
               argumentLength: factory.argumentLength,
@@ -301,9 +374,13 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
           }
         },
       })
+
+      fileResults.set(id, results)
     },
     afterScan: (nuxt) => {
-      nuxt.options.optimization.keyedComposables.push(...keyedFunctionsCreatedByFactories)
+      for (const functions of fileResults.values()) {
+        nuxt.options.optimization.keyedComposables.push(...functions)
+      }
     },
   }
 }
