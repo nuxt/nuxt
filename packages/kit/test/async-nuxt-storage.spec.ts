@@ -1,7 +1,12 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 
 import type { Nuxt } from '@nuxt/schema'
 import { runWithNuxtContext, tryUseNuxt } from '@nuxt/kit'
+
+const kitEntry = fileURLToPath(new URL('../dist/index.mjs', import.meta.url))
+const isStubbed = readFileSync(kitEntry, 'utf-8').includes('const _module = await jiti')
 
 describe('asyncNuxtStorage', () => {
   it('should return nuxt instance', () => {
@@ -56,7 +61,7 @@ describe('asyncNuxtStorage', () => {
     expect(sameKit.tryUseNuxt()?.__name).toBeUndefined()
   })
 
-  it('should share ctx with another kit', async () => {
+  it.skipIf(isStubbed)('should share ctx with another kit', async () => {
     vi.resetModules()
     const anotherKit = await import('@nuxt/kit')
 
@@ -74,7 +79,7 @@ describe('asyncNuxtStorage', () => {
     expect(anotherKit.tryUseNuxt()?.__name).toBeUndefined()
   })
 
-  it('should isolate ctx with another kit', async () => {
+  it.skipIf(isStubbed)('should isolate ctx with another kit', async () => {
     vi.resetModules()
     const anotherKit = await import('@nuxt/kit')
 
@@ -91,7 +96,7 @@ describe('asyncNuxtStorage', () => {
     expect(anotherKit.tryUseNuxt()?.__name).toBeUndefined()
   })
 
-  it('should isolate async ctx with another kit', async () => {
+  it.skipIf(isStubbed)('should isolate async ctx with another kit', async () => {
     vi.resetModules()
     const anotherKit = await import('@nuxt/kit')
 
@@ -136,7 +141,7 @@ describe('asyncNuxtStorage', () => {
     )).toThrow(/conflict/)
   })
 
-  it('should conflict error nested ctx with another kit', async () => {
+  it.skipIf(isStubbed)('should conflict error nested ctx with another kit', async () => {
     vi.resetModules()
     const anotherKit = await import('@nuxt/kit')
 
