@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.1]{color="info" class="align-middle"}
-
 ::important
 `onNuxtReady` only runs on the client-side. :br
 It is ideal for running code that should not block the initial rendering of your app.

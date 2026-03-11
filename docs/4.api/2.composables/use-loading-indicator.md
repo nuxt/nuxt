@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.9]{color="info" class="align-middle"}
-
 ## Description
 
 A composable which returns the loading state of the page. Used by [`<NuxtLoadingIndicator>`](/docs/4.x/api/components/nuxt-loading-indicator) and controllable.

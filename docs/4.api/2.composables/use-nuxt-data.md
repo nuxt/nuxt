@@ -9,8 +9,6 @@ links:
     size: xs
 ---
 
-:badge[v3.1]{color="info" class="align-middle"}
-
 ::note
 `useNuxtData` gives you access to the current cached value of [`useAsyncData`](/docs/4.x/api/composables/use-async-data) , [`useLazyAsyncData`](/docs/4.x/api/composables/use-lazy-async-data), [`useFetch`](/docs/4.x/api/composables/use-fetch) and [`useLazyFetch`](/docs/4.x/api/composables/use-lazy-fetch) with explicitly provided key.
 ::
