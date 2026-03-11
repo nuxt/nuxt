@@ -1107,13 +1107,6 @@ export interface ConfigSchema {
     restoreState: boolean
 
     /**
-     * Render JSON payloads with support for revivifying complex types.
-     *
-     * @default true
-     */
-    renderJsonPayloads: boolean
-
-    /**
      * Disable vue server renderer endpoint within nitro.
      *
      * @default false

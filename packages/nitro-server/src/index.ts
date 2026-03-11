@@ -226,7 +226,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           `export const NUXT_NO_SCRIPTS = ${nuxt.options.features.noScripts === 'all' || (!!nuxt.options.features.noScripts && !nuxt.options.dev)}`,
           `export const NUXT_INLINE_STYLES = ${!!nuxt.options.features.inlineStyles}`,
           `export const PARSE_ERROR_DATA = ${!!nuxt.options.experimental.parseErrorData}`,
-          `export const NUXT_JSON_PAYLOADS = ${!!nuxt.options.experimental.renderJsonPayloads}`,
           `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
           `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
           `export const NUXT_PAYLOAD_EXTRACTION = ${nuxt.options.experimental.payloadExtraction !== false}`,
@@ -517,7 +516,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         const prerenderedRoutes = new Set<string>()
         const routeRulesMatcher = getRouteRulesRouter()
         if (nitro._prerenderedRoutes?.length) {
-          const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
+          const payloadSuffix = '/_payload.json'
           for (const route of nitro._prerenderedRoutes) {
             if (!route.error && route.route.endsWith(payloadSuffix)) {
               const url = route.route.slice(0, -payloadSuffix.length) || '/'
@@ -805,7 +804,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt['~runtimeDependencies'] ||= []
   nuxt['~runtimeDependencies']!.push(
     ...runtimeDependencies,
-    'unhead', '@unhead/vue', '@nuxt/devalue', 'unstorage',
+    'unhead', '@unhead/vue', 'unstorage',
     // ensure we only have one version of vue if nitro is going to inline anyway
     ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
   )

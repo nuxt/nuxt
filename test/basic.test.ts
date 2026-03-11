@@ -9,7 +9,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
 
-import { asyncContext, builder, isDev, isRenderingJson, isTestingAppManifest, isWebpack } from './matrix'
+import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 await setup({
@@ -72,9 +72,7 @@ describe('route rules', () => {
 
     const { script, attrs } = parseData(headHtml)
     expect(script.serverRendered).toEqual(false)
-    if (isRenderingJson) {
-      expect(attrs['data-ssr']).toEqual('false')
-    }
+    expect(attrs['data-ssr']).toEqual('false')
     await expectNoClientErrors('/route-rules/spa')
   })
 
@@ -120,7 +118,6 @@ describe('route rules', () => {
       ssr: false,
     })
     expect(routeRules['/route-rules/isr-spa/_payload.json']).toBeUndefined()
-    expect(routeRules['/route-rules/isr-spa/_payload.js']).toBeUndefined()
   })
 })
 
@@ -2193,15 +2190,11 @@ describe('server components/islands', () => {
   it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
-    expect(await readdir(join(publicDir, 'catchall', 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain(
-      isRenderingJson
-        ? '_payload.json'
-        : '_payload.js',
-    )
+    expect(await readdir(join(publicDir, 'catchall', 'some', 'url', 'from', 'server-only', 'component')).catch(() => [])).toContain('_payload.json')
   })
 })
 
-describe.skipIf(isDev || isWindows || !isRenderingJson)('prefetching', () => {
+describe.skipIf(isDev || isWindows)('prefetching', () => {
   it('should prefetch components', async () => {
     await expectNoClientErrors('/prefetch/components')
   })
@@ -2708,7 +2701,7 @@ describe.runIf(isDev && !isWebpack)('vite plugins', () => {
   })
 })
 
-describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
+describe.skipIf(isWindows)('payload rendering', () => {
   it('renders a payload', async () => {
     const payload = await $fetch<string>('/random/a/_payload.json', { responseType: 'text' })
     const data = parsePayload(payload)
@@ -2771,7 +2764,7 @@ describe.skipIf(isWindows || !isRenderingJson)('payload rendering', () => {
     expect(res.status).toBe(404)
   })
 
-  it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
+  it('should not include server-component HTML in payload', async () => {
     const payload = await $fetch<string>('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
     const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []

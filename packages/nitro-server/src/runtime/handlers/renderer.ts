@@ -13,14 +13,14 @@ import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from 'nuxt/ap
 import { getRenderer } from '../utils/renderer/build-files'
 import { payloadCache } from '../utils/cache'
 
-import { renderPayloadJsonScript, renderPayloadResponse, renderPayloadScript, splitPayload } from '../utils/renderer/payload'
+import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, setSSRError } from '../utils/renderer/app'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -45,8 +45,8 @@ const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
-const PAYLOAD_URL_RE = NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
-const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
+const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
+const PAYLOAD_FILENAME = '_payload.json'
 
 let entryPath: string
 
@@ -224,9 +224,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
   if (_PAYLOAD_EXTRACTION && !_PAYLOAD_INLINE && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
-        NUXT_JSON_PAYLOADS
-          ? { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL }
-          : { rel: 'modulepreload', crossorigin: '', href: payloadURL },
+        { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL },
       ],
     }, headEntryOptions)
   }
@@ -279,13 +277,9 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
         // Inline full payload in HTML (payloadExtraction: 'client' | false, or non-cached route)
-        ? NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
-          : renderPayloadScript({ ssrContext, data: ssrContext.payload, routeOptions })
+        ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
         // Split payload: inline initial data, reference external _payload.json via src (payloadExtraction: true)
-        : NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, routeOptions, src: payloadURL }),
+        : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL }),
     }, {
       ...headEntryOptions,
       // this should come before another end of body scripts
@@ -296,8 +290,6 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
 
   // 6. Scripts
   if (!routeOptions.noScripts) {
-    const tagPosition = (_PAYLOAD_EXTRACTION && !_PAYLOAD_INLINE && !NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head'
-
     ssrContext.head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
@@ -305,7 +297,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
         defer: resource.module ? null : true,
         // if we are rendering script tag payloads that import an async payload
         // we need to ensure this resolves before executing the Nuxt entry
-        tagPosition,
+        tagPosition: 'head',
         crossorigin: '',
       })),
     }, headEntryOptions)

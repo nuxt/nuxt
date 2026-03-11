@@ -41,8 +41,6 @@ vi.mock('#build/nuxt.config.mjs', () => {
     appTeleportAttrs: { id: 'teleports' },
     appTeleportTag: 'div',
     appViewTransition: false,
-    // nuxt.config.mjs template exports
-    renderJsonPayloads: true,
     componentIslands: true,
     payloadExtraction: false,
     cookieStore: false,

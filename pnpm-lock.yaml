@@ -346,9 +346,6 @@ importers:
       '@babel/plugin-syntax-typescript':
         specifier: ^7.28.6
         version: 7.28.6(@babel/core@7.29.0)
-      '@nuxt/devalue':
-        specifier: ^2.0.2
-        version: 2.0.2
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -2306,9 +2303,6 @@ packages:
     peerDependenciesMeta:
       '@nuxt/schema':
         optional: true
-
-  '@nuxt/devalue@2.0.2':
-    resolution: {integrity: sha512-GBzP8zOc7CGWyFQS6dv1lQz8VVpz5C2yRszbXufwG/9zhStTIH50EtD87NmWbTMwXDvZLNg8GIpb1UFdH93JCA==}
 
   '@nuxt/devtools-kit@2.7.0':
     resolution: {integrity: sha512-MIJdah6CF6YOW2GhfKnb8Sivu6HpcQheqdjOlZqShBr+1DyjtKQbAKSCAyKPaoIzZP4QOo2SmTFV6aN8jBeEIQ==}
@@ -10571,8 +10565,6 @@ snapshots:
       - commander
       - magicast
       - supports-color
-
-  '@nuxt/devalue@2.0.2': {}
 
   '@nuxt/devtools-kit@2.7.0(vite@8.0.0-beta.18(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))':
     dependencies:
