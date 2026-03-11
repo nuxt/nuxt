@@ -57,6 +57,7 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
   if (arg1 && typeof arg1 !== 'number') {
     arg1.res.status = arg2 as number | undefined
     arg1.res.statusText = arg3
+    return
   }
   const event = useRequestEvent()
   if (event) {
