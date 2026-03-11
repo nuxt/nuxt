@@ -18,7 +18,7 @@ links:
 
 ```ts [app/composables/useCachedData.ts]
 export const useCachedData = createUseAsyncData({
-  getCachedData(key, nuxtApp) {
+  getCachedData (key, nuxtApp) {
     return nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
   },
 })
@@ -38,12 +38,12 @@ The resulting composable has the same signature and return type as [`useAsyncDat
 ## Type
 
 ```ts [Signature]
-function createUseAsyncData(
-  options?: Partial<AsyncDataOptions>
+function createUseAsyncData (
+  options?: Partial<AsyncDataOptions>,
 ): typeof useAsyncData
 
-function createUseAsyncData(
-  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>
+function createUseAsyncData (
+  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>,
 ): typeof useAsyncData
 ```
 
@@ -80,7 +80,7 @@ When you pass a function, the factory options **override** the caller's options.
 
 ```ts [app/composables/useStrictData.ts]
 // deep is always enforced as false
-export const useStrictData = createUseAsyncData((callerOptions) => ({
+export const useStrictData = createUseAsyncData(callerOptions => ({
   deep: false,
 }))
 ```

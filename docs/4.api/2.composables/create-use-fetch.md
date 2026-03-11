@@ -33,12 +33,12 @@ The resulting `useAPI` composable has the same signature and return type as [`us
 ## Type
 
 ```ts [Signature]
-function createUseFetch(
-  options?: Partial<UseFetchOptions>
+function createUseFetch (
+  options?: Partial<UseFetchOptions>,
 ): typeof useFetch
 
-function createUseFetch(
-  options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions>
+function createUseFetch (
+  options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions>,
 ): typeof useFetch
 ```
 
@@ -75,7 +75,7 @@ When you pass a function, the factory options **override** the caller's options.
 
 ```ts [app/composables/useAPI.ts]
 // baseURL is always enforced, regardless of what the caller passes
-export const useAPI = createUseFetch((callerOptions) => ({
+export const useAPI = createUseFetch(callerOptions => ({
   baseURL: 'https://api.nuxt.com',
 }))
 ```
