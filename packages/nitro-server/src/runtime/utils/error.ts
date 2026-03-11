@@ -10,14 +10,14 @@ export function isJsonRequest (event: HTTPEvent): boolean {
   if (event.req.headers.get('accept')?.includes('text/html')) {
     return false
   }
-  const url = new FastURL(event.req.url)
+  const pathname = new FastURL(event.req.url).pathname
   return (
     hasReqHeader(event, 'accept', 'application/json') ||
     hasReqHeader(event, 'user-agent', 'curl/') ||
     hasReqHeader(event, 'user-agent', 'httpie/') ||
     hasReqHeader(event, 'sec-fetch-mode', 'cors') ||
-    url.pathname.startsWith('/api/') ||
-    url.pathname.endsWith('.json')
+    pathname.startsWith('/api/') ||
+    pathname.endsWith('.json')
   )
 }
 
