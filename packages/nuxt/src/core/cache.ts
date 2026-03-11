@@ -294,7 +294,8 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
       // Stat before open('w') since it truncates the file
       const existingStats = await stat(filePath).catch(() => null)
-      if (existingStats?.isFile() && existingStats.size) {
+      const cachedSize = file.data?.byteLength ?? 0
+      if (existingStats?.isFile() && existingStats.size === cachedSize) {
         const lastModified = Number.parseInt(file.attrs?.mtime?.toString().padEnd(13, '0') || '0')
         if (existingStats.mtime.getTime() >= lastModified) {
           consola.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
