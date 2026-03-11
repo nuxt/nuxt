@@ -144,7 +144,7 @@ const greeting = hour < 12 ? 'Good morning' : 'Good afternoon'
 </script>
 ```
 
-**Solution**: Use [`NuxtTime`](/docs/4.x/api/components/nuxt-time) for live time, [`ServerOnly`](/docs/4.x/directory-structure/app/components#built-in-nuxt-components) for fixed build/render timestamps, or handle it client-side:
+**Solution**: Use [`NuxtTime`](/docs/4.x/api/components/nuxt-time) for live time, [`ServerOnly`](/docs/4.x/api/components/server-only) for fixed build/render timestamps, or handle it client-side:
 
 ```html
 <template>
