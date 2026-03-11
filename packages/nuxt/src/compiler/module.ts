@@ -5,11 +5,8 @@ import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, to
 import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin } from './plugins/keyed-function-factories.ts'
-import { distDir } from '../dirs.ts'
 import type { Unimport } from 'unimport'
 import { KeyedFunctionsPlugin } from './plugins/keyed-functions.ts'
-
-const runtimeDir = resolve(distDir, 'compiler/runtime')
 
 export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
   meta: {

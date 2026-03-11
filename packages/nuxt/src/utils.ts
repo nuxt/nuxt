@@ -41,12 +41,10 @@ export function isWhitespace (char: number | string | undefined | null): boolean
   return c === 32 || c === 9 || c === 10 || c === 13 || c === 12
 }
 
-export function isJavascriptExtension (path: string) {
-  if (!path) { return false }
-  return JS_EXTENSIONS.some(ext => path.endsWith(`.${ext}`))
-}
-
-export const JS_EXTENSIONS = ['js', 'ts', 'tsx', 'jsx', 'mjs', 'cjs', 'mts', 'cts']
+export const JS_EXT_RE = /^[^?]*\.(?:[jt]sx?|[cm][jt]s)(?:$|\?)/
+export const NUXT_LIB_RE = /^[^?]*node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
+export const STYLE_QUERY_RE = /[?&]type=style/
+export const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts', 'd.vue.ts', 'd.vue.mts', 'd.vue.cts']
 
 export const logger = useLogger('nuxt')

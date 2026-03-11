@@ -1,4 +1,4 @@
-import { assert, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
+import { afterEach, assert, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
 import { defineKeyedFunctionFactory } from '../src/compiler/runtime'
 import {
   type ExportMetadata,
@@ -7,8 +7,11 @@ import {
   parseStaticFunctionCall,
 } from '../src/core/utils/parse-utils.ts'
 import { createScanPluginContext } from '../src/compiler/utils.ts'
+import * as oxcWalker from 'oxc-walker'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import type { Node } from 'oxc-parser'
+
+vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
 
 function transformFactory<T extends (...args: any[]) => any> (factory: T): T {
   return (factory as unknown as { __nuxt_factory: T }).__nuxt_factory
@@ -128,33 +131,25 @@ describe('defineKeyedFunctionFactory', () => {
   })
 })
 
-async function importModules () {
-  const [{ createScanPluginContext }, walker] = await Promise.all([
-    import('../src/compiler/utils'),
-    import('oxc-walker'),
-  ])
-  return { createScanPluginContext, walker }
-}
-
 describe('createScanPluginContext', () => {
   const code = `
     const a: number = 1
   `
 
   describe('mocked `oxc-walker`', () => {
-    beforeEach(() => {
-      vi.resetModules()
+    let parseAndWalkSpy: ReturnType<typeof vi.fn>
+    let walkSpy: ReturnType<typeof vi.fn>
 
-      vi.doMock('oxc-walker', () => {
-        return {
-          parseAndWalk: vi.fn(),
-          walk: vi.fn(),
-        }
-      })
+    beforeEach(() => {
+      parseAndWalkSpy = vi.spyOn(oxcWalker, 'parseAndWalk').mockReturnValue({ program: {} } as any) as any
+      walkSpy = vi.spyOn(oxcWalker, 'walk').mockImplementation((() => {}) as any) as any
     })
 
-    it('should generate context', async () => {
-      const { createScanPluginContext } = await importModules()
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('should generate context', () => {
       const context = createScanPluginContext(code, 'file.ts')
 
       expect(context).toBeDefined()
@@ -162,47 +157,34 @@ describe('createScanPluginContext', () => {
       expect(typeof context.walkParsed).toBe('function')
     })
 
-    it('should call `parseAndWalk` on first `walkParsed` call', async () => {
-      const { createScanPluginContext, walker } = await importModules()
-      const { parseAndWalk } = walker as unknown as {
-        parseAndWalk: ReturnType<typeof vi.fn>
-      }
-
+    it('should call `parseAndWalk` on first `walkParsed` call', () => {
       const enterCallback = { enter: vi.fn() }
       const mockParseResult = { program: {} }
 
-      parseAndWalk.mockReturnValue(mockParseResult)
+      parseAndWalkSpy.mockReturnValue(mockParseResult)
 
       const context = createScanPluginContext(code, 'file.ts')
       const result = context.walkParsed(enterCallback)
 
-      expect(parseAndWalk).toHaveBeenCalledWith(code, 'file.ts', enterCallback)
+      expect(parseAndWalkSpy).toHaveBeenCalledWith(code, 'file.ts', enterCallback)
       expect(result).toBe(mockParseResult)
-
-      parseAndWalk.mockClear()
     })
 
-    it('should reuse parse result and call `walk` on subsequent `walkParsed` calls', async () => {
-      const { createScanPluginContext, walker } = await importModules()
-      const { parseAndWalk, walk } = walker as unknown as {
-        parseAndWalk: ReturnType<typeof vi.fn>
-        walk: ReturnType<typeof vi.fn>
-      }
-
+    it('should reuse parse result and call `walk` on subsequent `walkParsed` calls', () => {
       const firstCallback = { enter: vi.fn() }
       const secondCallback = { enter: vi.fn() }
       const mockParseResult = { program: {} }
 
-      parseAndWalk.mockReturnValue(mockParseResult)
+      parseAndWalkSpy.mockReturnValue(mockParseResult)
 
       const context = createScanPluginContext(code, 'file.ts')
       context.walkParsed(firstCallback)
 
-      parseAndWalk.mockClear()
+      parseAndWalkSpy.mockClear()
       const result = context.walkParsed(secondCallback)
 
-      expect(parseAndWalk).not.toHaveBeenCalled() // not called again - reused
-      expect(walk).toHaveBeenCalledWith(mockParseResult.program, secondCallback)
+      expect(parseAndWalkSpy).not.toHaveBeenCalled() // not called again - reused
+      expect(walkSpy).toHaveBeenCalledWith(mockParseResult.program, secondCallback)
       expect(result).toBe(mockParseResult)
     })
   })

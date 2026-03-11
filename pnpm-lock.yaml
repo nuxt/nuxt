@@ -833,8 +833,8 @@ importers:
         specifier: ^1.8.0
         version: 1.8.1
       oxc-walker:
-        specifier: ^0.6.0
-        version: 0.6.0(oxc-parser@0.117.0)
+        specifier: ^0.7.0
+        version: 0.7.0(oxc-parser@0.117.0)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -7482,11 +7482,6 @@ packages:
   oxc-transform@0.117.0:
     resolution: {integrity: sha512-u1Stl2uhDh9bFuOGjGXQIqx46IRUNMyHQkq59LayXNGS2flNv7RpZpRSWs5S5deuNP6jJZ12gtMBze+m4dOhmw==}
     engines: {node: ^20.19.0 || >=22.12.0}
-
-  oxc-walker@0.6.0:
-    resolution: {integrity: sha512-BA3hlxq5+Sgzp7TCQF52XDXCK5mwoIZuIuxv/+JuuTzOs2RXkLqWZgZ69d8pJDDjnL7wiREZTWHBzFp/UWH88Q==}
-    peerDependencies:
-      oxc-parser: '>=0.98.0'
 
   oxc-walker@0.7.0:
     resolution: {integrity: sha512-54B4KUhrzbzc4sKvKwVYm7E2PgeROpGba0/2nlNZMqfDyca+yOor5IMb4WLGBatGDT0nkzYdYuzylg7n3YfB7A==}
@@ -16154,11 +16149,6 @@ snapshots:
       '@oxc-transform/binding-win32-arm64-msvc': 0.117.0
       '@oxc-transform/binding-win32-ia32-msvc': 0.117.0
       '@oxc-transform/binding-win32-x64-msvc': 0.117.0
-
-  oxc-walker@0.6.0(oxc-parser@0.117.0):
-    dependencies:
-      magic-regexp: 0.10.0
-      oxc-parser: 0.117.0
 
   oxc-walker@0.7.0(oxc-parser@0.115.0):
     dependencies:

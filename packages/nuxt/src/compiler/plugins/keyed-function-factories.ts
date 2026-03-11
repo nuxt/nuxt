@@ -1,6 +1,6 @@
 import { resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
-import { JS_EXTENSIONS, isJavascriptExtension, logger, stripExtension } from '../../utils.ts'
+import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, logger, stripExtension } from '../../utils.ts'
 import type {
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
@@ -11,7 +11,6 @@ import type {
 } from 'oxc-parser'
 import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
-import { shouldTransformFile } from './keyed-functions.ts'
 import MagicString from 'magic-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
@@ -256,7 +255,7 @@ export const KeyedFunctionFactoriesScanPlugin = (options: KeyedFunctionFactories
   return {
     name: 'nuxt:keyed-function-factories',
     filter: {
-      id: id => isJavascriptExtension(id),
+      id: { include: JS_EXT_RE },
       code: { include: KEYED_FUNCTION_FACTORY_NAMES_RE },
     },
     scan ({ id, autoImportsToSources }) {
@@ -337,9 +336,12 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
   return {
     name: 'nuxt:compiler:keyed-function-factories',
     enforce: 'post',
-    transformInclude: id => shouldTransformFile(id, JS_EXTENSIONS),
     transform: {
       filter: {
+        id: {
+          include: JS_EXT_RE,
+          exclude: [NUXT_LIB_RE, STYLE_QUERY_RE, MACRO_QUERY_RE],
+        },
         code: { include: KEYED_FUNCTION_FACTORY_NAMES_RE },
       },
       handler (code, id) {

@@ -12,7 +12,7 @@ import type { KeyedFunction } from '@nuxt/schema'
 import type { Node } from 'oxc-parser'
 import type { Import } from 'unimport'
 
-import { isWhitespace, logger, stripExtension } from '../../utils.ts'
+import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, logger, stripExtension } from '../../utils.ts'
 import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
@@ -26,12 +26,9 @@ interface KeyedFunctionsOptions {
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
-const NUXT_LIB_RE = /^[^?]*node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
 const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
-const STYLE_QUERY_RE = /[?&]type=style/
-const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 
 // TODO: remove in Nuxt 5
 type BackwardsCompatibleKeyedFunction = Omit<KeyedFunction, 'source'> & { source?: KeyedFunction['source'] | RegExp }
