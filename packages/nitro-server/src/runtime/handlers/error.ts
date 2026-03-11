@@ -15,12 +15,13 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const status = error.status || 500
   const headers = new Headers(error.headers)
   if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
+    const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
       new Headers(defaultRes.headers),
-      ...'res' in event ? [(event.res as Response).headers.entries()] : [],
+      ...('res' in event ? [(event.res as Response).headers.entries()] : []),
     ]
     for (const entries of headerEntries) {
-      mergeHeaders(headers, entries, new Set())
+      mergeHeaders(headers, entries, setCookies)
     }
 
     return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
