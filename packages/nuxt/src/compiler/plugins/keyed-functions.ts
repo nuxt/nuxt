@@ -18,11 +18,13 @@ import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFun
 interface KeyedFunctionsOptions {
   sourcemap: boolean
   keyedFunctions: KeyedFunction[]
+  getKeyedFunctions?: () => KeyedFunction[]
   alias: Record<string, string>
   // TODO: remove in Nuxt 5
   getAutoImports: () => Promise<Import[]>
   // TODO: remove in Nuxt 5
   appDir: string
+  dev?: boolean
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
@@ -33,14 +35,19 @@ const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
 // TODO: remove in Nuxt 5
 type BackwardsCompatibleKeyedFunction = Omit<KeyedFunction, 'source'> & { source?: KeyedFunction['source'] | RegExp }
 
-export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
-  // DO NOT USE IN TRANSFORM - this is a global copy that doesn't include local import names
-  // - the `source`s have resolved aliases and are without extensions
+/**
+ * Builds the lookup state from a list of keyed functions.
+ *
+ * Note: `namesToSourcesToFunctionMeta` is a global copy that maps exported names to sources.
+ * It does NOT include local import renames — the transform handler builds per-file local
+ * name mappings separately. The `source`s have resolved aliases and are without extensions.
+ */
+function buildKeyedFunctionsState (keyedFunctions: KeyedFunction[]) {
   const namesToSourcesToFunctionMeta = new Map<string, Map<string, BackwardsCompatibleKeyedFunction>>()
   // filenames (without extension) of files that have a `default` keyed function export
   const defaultExportSources = new Set<string>()
 
-  for (const f of options.keyedFunctions) {
+  for (const f of keyedFunctions) {
     let functionName = f.name
     const fnSource = typeof f.source === 'string' ? stripExtension(f.source) : ''
 
@@ -83,7 +90,27 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   }
 
   // TODO: come up with a better way to include files importing a `default` export (imported name can be arbitrary)
-  const CODE_INCLUDE_RE = new RegExp(`\\b(${[...namesToSourcesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
+  const codeIncludeRE = new RegExp(`\\b(${[...namesToSourcesToFunctionMeta.keys(), ...defaultExportSources].map(f => escapeRE(f)).join('|')})\\b`)
+
+  return { namesToSourcesToFunctionMeta, defaultExportSources, sources, codeIncludeRE }
+}
+
+export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
+  // Build initial state from the static keyedFunctions list
+  let state = buildKeyedFunctionsState(options.keyedFunctions)
+  let lastKeyedFunctionsLength = options.keyedFunctions.length
+
+  // In dev mode with a reactive getter, rebuild state when data changes
+  function getState () {
+    if (options.dev && options.getKeyedFunctions) {
+      const current = options.getKeyedFunctions()
+      if (current.length !== lastKeyedFunctionsLength) {
+        state = buildKeyedFunctionsState(current)
+        lastKeyedFunctionsLength = current.length
+      }
+    }
+    return state
+  }
 
   return {
     name: 'nuxt:compiler:keyed-functions',
@@ -94,9 +121,19 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           include: SUPPORTED_EXT_RE,
           exclude: [NUXT_LIB_RE, STYLE_QUERY_RE, MACRO_QUERY_RE],
         },
-        code: { include: CODE_INCLUDE_RE },
+        // In dev mode, skip the static code filter to allow HMR-added composables to be processed.
+        // In production, use the static regex for performance.
+        ...(!options.dev && { code: { include: state.codeIncludeRE } }),
       },
       async handler (code, _id) {
+        const { namesToSourcesToFunctionMeta, sources } = getState()
+
+        // In dev mode, do an early return if no known composable names appear in the code
+        if (options.dev) {
+          const { codeIncludeRE } = getState()
+          if (!codeIncludeRE.test(code)) { return }
+        }
+
         const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
         const id = stripExtension(_id)
 

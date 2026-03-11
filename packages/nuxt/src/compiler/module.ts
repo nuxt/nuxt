@@ -44,6 +44,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       await runScanPlugins()
 
       // Add keys for useFetch, useAsyncData, etc.
+      // Maintained as a mutable list so HMR can add/remove entries
       const normalizedKeyedFunctions = await Promise.all(nuxt.options.optimization.keyedComposables.map(async ({ source, ...rest }) => ({
         ...rest,
         source: typeof source === 'string' ? await resolvePath(source, { fallbackToOriginal: true }) : source,
@@ -52,9 +53,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
       addBuildPlugin(KeyedFunctionsPlugin({
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
         keyedFunctions: normalizedKeyedFunctions,
+        getKeyedFunctions: () => normalizedKeyedFunctions,
         alias: nuxt.options.alias,
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
         appDir: nuxt.options.appDir,
+        dev: nuxt.options.dev,
       }))
     })
 
