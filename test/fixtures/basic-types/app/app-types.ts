@@ -155,6 +155,11 @@ describe('aliases', () => {
 })
 
 describe('middleware', () => {
+  it('treats createError as throwable', () => {
+    const error: Error = createError({ statusCode: 404 })
+    expectTypeOf(error).toEqualTypeOf<Error>()
+  })
+
   it('recognizes named middleware', () => {
     definePageMeta({ middleware: 'named' })
     // provided by layer
