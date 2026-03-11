@@ -796,6 +796,21 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   })
 
+  addVitePlugin({
+    name: 'nuxt:nitro:config',
+    configEnvironment (name) {
+      if (name === 'client') {
+        return {
+          optimizeDeps: {
+            exclude: [
+              'nitro/h3',
+            ],
+          },
+        }
+      }
+    },
+  })
+
   // Tree-shake Vue feature flags for non-node Nitro targets
   addVitePlugin({
     name: 'nuxt:nitro:vue-feature-flags',

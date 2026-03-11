@@ -44,7 +44,6 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         'devalue',
         'get-port-please',
         'h3',
-        'nitro/h3',
         'hookable',
         'klona',
         'ofetch',
