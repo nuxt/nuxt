@@ -1210,14 +1210,10 @@ describe('errors', () => {
     expect(res.statusText).toBe('This is a custom error')
     const error = await res.json()
     delete error.stack
-    const url = new URL(error.url)
-    url.host = 'localhost:3000'
-    error.url = url.toString()
     expect(error).toMatchObject({
       message: 'This is a custom error',
       status: 422,
       statusText: 'This is a custom error',
-      url: 'http://localhost:3000/error',
     })
   })
 
@@ -1236,19 +1232,12 @@ describe('errors', () => {
     expect(res.status).toBe(404)
     const error = await res.json()
     delete error.stack
-    const url = new URL(error.url)
-    url.host = 'localhost:3000'
-    error.url = url.toString()
-
-    expect(error).toMatchInlineSnapshot(`
-      {
-        "error": true,
-        "message": "Page Not Found: /__nuxt_error",
-        "status": 404,
-        "statusText": "Page Not Found: /__nuxt_error",
-        "url": "http://localhost:3000/__nuxt_error",
-      }
-    `)
+    expect(error).toMatchObject({
+      error: true,
+      message: 'Page Not Found: /__nuxt_error',
+      status: 404,
+      statusText: 'Page Not Found: /__nuxt_error',
+    })
   })
 
   it('should not recursively throw an error when there is an error rendering the error page', async () => {

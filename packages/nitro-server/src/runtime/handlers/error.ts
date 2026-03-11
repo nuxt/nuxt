@@ -16,7 +16,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   const headers = new Headers(error.headers)
   if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
     const headerEntries = [
-      Object.entries(defaultRes.headers),
+      new Headers(defaultRes.headers),
       ...'res' in event ? [(event.res as Response).headers.entries()] : [],
     ]
     for (const entries of headerEntries) {
@@ -30,17 +30,17 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     })
   }
 
-  if (import.meta.dev && typeof defaultRes.body !== 'string' && Array.isArray(defaultRes.body.stack)) {
+  if (import.meta.dev && defaultRes.body && typeof defaultRes.body !== 'string' && Array.isArray(defaultRes.body.stack)) {
     // normalize to string format expected by nuxt `error.vue`
     defaultRes.body.stack = defaultRes.body.stack.join('\n')
   }
 
-  const errorObject = defaultRes.body as Pick<NonNullable<NuxtPayload['error']>, 'status' | 'statusText' | 'message' | 'stack'> & { url: URL | string, data: any }
+  const errorObject = (defaultRes.body || {}) as Pick<NonNullable<NuxtPayload['error']>, 'status' | 'statusText' | 'message' | 'stack'> & { url?: string, data: any }
   // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ||= error.data
-  errorObject.url = errorObject.url.toString()
+  errorObject.url = event.req.url
 
-  for (const header in defaultRes.headers) {
+  for (const [header, value] of new Headers(defaultRes.headers)) {
     if (
       // this would be set to application/json
       header === 'content-type' ||
@@ -50,7 +50,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     ) {
       continue
     }
-    headers.set(header, defaultRes.headers[header]!)
+    headers.set(header, value)
   }
 
   // Detect to avoid recursion in SSR rendering of errors
