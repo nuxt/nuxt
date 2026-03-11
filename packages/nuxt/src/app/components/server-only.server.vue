@@ -1,5 +1,8 @@
 <template>
-  <div v-bind="$attrs" data-server-only>
+  <div
+    v-bind="$attrs"
+    data-server-only
+  >
     <slot />
   </div>
 </template>
