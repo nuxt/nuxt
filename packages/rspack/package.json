@@ -57,7 +57,7 @@
     "postcss-url": "^10.1.3",
     "pug-plain-loader": "^1.1.0",
     "seroval": "^1.5.1",
-    "std-env": "^3.10.0",
+    "std-env": "^4.0.0",
     "time-fix-plugin": "^2.0.7",
     "ts-checker-rspack-plugin": "^1.3.0",
     "ufo": "^1.6.3",
