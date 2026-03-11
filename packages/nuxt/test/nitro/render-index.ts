@@ -13,7 +13,4 @@ async function renderIndex () {
   console.log(await res.text())
 }
 
-renderIndex().catch((error) => {
-  console.error(error)
-  process.exitCode = 1
-})
+renderIndex()
