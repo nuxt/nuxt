@@ -22,7 +22,7 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 // @ts-expect-error virtual file
 import { NUXT_ASYNC_CONTEXT, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_RUNTIME_PAYLOAD_EXTRACTION, PARSE_ERROR_DATA } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
-import { appHead, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled } from '#internal/nuxt.config.mjs'
+import { appHead, appTeleportAttrs, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import entryIds from '#internal/nuxt/entry-ids.mjs'
 // @ts-expect-error virtual file
@@ -227,14 +227,6 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
         { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL },
       ],
     }, headEntryOptions)
-  }
-
-  if (isAppManifestEnabled && ssrContext['~preloadManifest'] && !NO_SCRIPTS) {
-    ssrContext.head.push({
-      link: [
-        { rel: 'preload', as: 'fetch', fetchpriority: 'low', crossorigin: 'anonymous', href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) },
-      ],
-    }, { ...headEntryOptions, tagPriority: 'low' })
   }
 
   // 2. Styles
