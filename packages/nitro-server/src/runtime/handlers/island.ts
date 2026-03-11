@@ -3,7 +3,7 @@ import type { RenderResponse } from 'nitro/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { H3Event } from 'nitro/h3'
-import { defineEventHandler, getQuery, readBody } from 'nitro/h3'
+import { defineEventHandler, getQuery, HTTPError, readBody } from 'nitro/h3'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
@@ -107,29 +107,37 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
 export default handler
 
+const ISLAND_PATH_PREFIX = '/__nuxt_island/'
+const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
+
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
-  // TODO: Strict validation for url
   let url = event.url.pathname + event.url.search + event.url.hash
   if (import.meta.prerender && url && await islandPropCache!.hasItem(url)) {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
     url = await islandPropCache!.getItem(url) as string
   }
-  const componentParts = url.substring('/__nuxt_island'.length + 1).replace(ISLAND_SUFFIX_RE, '').split('_')
+
+  if (!url.startsWith(ISLAND_PATH_PREFIX)) {
+    throw new HTTPError({ status: 400, statusText: 'Invalid island request path' })
+  }
+
+  const componentParts = url.substring(ISLAND_PATH_PREFIX.length).replace(ISLAND_SUFFIX_RE, '').split('_')
   const hashId = componentParts.length > 1 ? componentParts.pop() : undefined
   const componentName = componentParts.join('_')
 
-  // TODO: Validate context
+  if (!componentName || !VALID_COMPONENT_NAME_RE.test(componentName)) {
+    throw new HTTPError({ status: 400, statusText: 'Invalid island component name' })
+  }
+
   const context = event.req.method === 'GET' ? getQuery<NuxtIslandContext>(event) : await readBody<NuxtIslandContext>(event)
 
-  const ctx: NuxtIslandContext = {
-    url: '/',
-    ...context,
+  // Only extract known context fields to prevent arbitrary data injection
+  return {
+    url: typeof context?.url === 'string' ? context.url : '/',
     id: hashId,
     name: componentName,
     props: destr(context?.props) || {},
     slots: {},
     components: {},
   }
-
-  return ctx
 }
