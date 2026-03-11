@@ -106,12 +106,18 @@
     >
       to 404 server page
     </NuxtLink>
-
     <NuxtLink
       data-testid="route-rules-redirect"
       to="/route-rules/redirect#hello"
     >
       to redirect page with hash
+    </NuxtLink>
+    <NuxtLink
+      id="to-server-only"
+      to="/server-only"
+      :prefetch="false"
+    >
+      to ServerOnly page
     </NuxtLink>
   </div>
 </template>
