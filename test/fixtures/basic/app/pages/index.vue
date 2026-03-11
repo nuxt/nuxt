@@ -68,6 +68,13 @@
     >
       to redirect page with hash
     </NuxtLink>
+    <NuxtLink
+      id="to-server-only"
+      to="/server-only"
+      :prefetch="false"
+    >
+      to ServerOnly page
+    </NuxtLink>
   </div>
 </template>
 
