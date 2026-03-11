@@ -1,4 +1,3 @@
-import { Script, createContext } from 'node:vm'
 import { expect, vi } from 'vitest'
 import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
