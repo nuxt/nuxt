@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@dxup/nuxt": "^0.4.0",
-    "@nuxt/cli": "^3.33.1",
+    "@nuxt/cli": "^3.34.0",
     "@nuxt/devtools": "^3.2.3",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
