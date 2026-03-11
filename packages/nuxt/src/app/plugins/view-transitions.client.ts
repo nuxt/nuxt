@@ -57,7 +57,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       return promise
     })
 
-    transition.finished.then(resetTransitionState)
+    transition.finished.catch(() => {}).finally(resetTransitionState)
 
     await nuxtApp.callHook('page:view-transition:start', transition)
 
