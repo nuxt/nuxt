@@ -14,8 +14,6 @@ export const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 export const asyncContext = process.env.TEST_CONTEXT === 'async'
 export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'node'
 
-export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
-
 export function withMatrix (config: NuxtConfig) {
   return defu(config, {
     builder,
@@ -25,7 +23,6 @@ export function withMatrix (config: NuxtConfig) {
     experimental: {
       asyncContext,
       appManifest: isTestingAppManifest,
-      renderJsonPayloads: isRenderingJson,
     },
     compatibilityDate: 'latest',
   })

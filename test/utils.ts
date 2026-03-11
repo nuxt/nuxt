@@ -6,7 +6,6 @@ import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { isCI } from 'std-env'
-import { isRenderingJson } from './matrix'
 
 export async function renderPage (path = '/', opts?: { retries?: number }) {
   const ctx = useTestContext()
@@ -93,15 +92,6 @@ export function parsePayload (payload: string) {
   return parse(payload || '', revivers)
 }
 export function parseData (html: string) {
-  if (!isRenderingJson) {
-    const { script = '' } = html.match(/<script>(?<script>window.__NUXT__.*?)<\/script>/)?.groups || {}
-    const _script = new Script(script)
-    return {
-      script: _script.runInContext(createContext({ window: {} })),
-      attrs: {},
-    }
-  }
-
   const regexp = /<script type="application\/json" data-nuxt-data="[^"]+"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/
   const { script, attrs = '' } = html.match(regexp)?.groups || {}
   const _attrs: Record<string, string> = {}

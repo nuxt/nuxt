@@ -9,7 +9,7 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -41,9 +41,8 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
       return
     }
     const payloadURL = await _getPayloadURL(url, opts)
-    const link = renderJsonPayloads
-      ? { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
-      : { rel: 'modulepreload', crossorigin: '', href: payloadURL } as const
+    const link = { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
+
 
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
@@ -67,7 +66,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 // --- Internal ---
 
-const filename = renderJsonPayloads ? '_payload.json' : '_payload.js'
+const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
@@ -82,9 +81,8 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 
 async function _importPayload (payloadURL: string) {
   if (import.meta.server || !payloadExtraction) { return null }
-  const payloadPromise = renderJsonPayloads
-    ? fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
-    : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
+  const payloadPromise = fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
+
 
   try {
     return await payloadPromise

@@ -325,7 +325,6 @@ jobs:
         builder: ['vite', 'rspack', 'webpack']
         context: ['async', 'default']
         manifest: ['manifest-on', 'manifest-off']
-        payload: ['json', 'js']
         node: ['lts/-1']
         exclude:
           - builder: 'webpack'
@@ -377,7 +376,6 @@ jobs:
           TEST_BUILDER: ${{ matrix.builder }}
           TEST_MANIFEST: ${{ matrix.manifest }}
           TEST_CONTEXT: ${{ matrix.context }}
-          TEST_PAYLOAD: ${{ matrix.payload }}
           SKIP_BUNDLE_SIZE: true
           NITRO_NO_UNIX_SOCKET: ${{ matrix.env == 'dev' && '1' || '' }}
 
