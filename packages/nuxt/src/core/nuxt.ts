@@ -526,7 +526,8 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'ServerOnly',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/server-only'),
+    filePath: resolve(nuxt.options.appDir, 'components/server-only.server'),
+    mode: 'server',
   })
 
   // Add <DevOnly>
