@@ -3,7 +3,7 @@ import type { ViteNodeRunner } from 'vite-node/client'
 
 export default (nitroApp: NitroApp): void => {
   let runner: ViteNodeRunner
-  nitroApp.hooks.hook('error', async (error) => {
+  nitroApp.hooks?.hook('error', async (error) => {
     if (!error?.stack) { return }
     try {
       // @ts-expect-error virtual alias registered by vite builder
