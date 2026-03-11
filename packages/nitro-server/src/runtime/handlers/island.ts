@@ -20,9 +20,9 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   event.res.headers.set('content-type', 'application/json;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  const url = event.url.pathname + event.url.search + event.url.hash
-  if (import.meta.prerender && url && await islandCache!.hasItem(url)) {
-    return islandCache!.getItem(url) as Promise<Partial<RenderResponse>>
+  const islandPath = event.url.pathname
+  if (import.meta.prerender && await islandCache!.hasItem(islandPath)) {
+    return islandCache!.getItem(islandPath) as Promise<Partial<RenderResponse>>
   }
 
   const islandContext = await getIslandContext(event)
@@ -99,8 +99,9 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
 
   if (import.meta.prerender) {
-    await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, islandResponse)
-    await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, url)
+    const requestUrl = islandPath + event.url.search + event.url.hash
+    await islandCache!.setItem(islandPath, islandResponse)
+    await islandPropCache!.setItem(islandPath, requestUrl)
   }
   return islandResponse
 })
@@ -112,9 +113,10 @@ const VALID_COMPONENT_NAME_RE = /^[a-z][\w.-]*$/i
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   let url = event.url.pathname + event.url.search + event.url.hash
-  if (import.meta.prerender && url && await islandPropCache!.hasItem(url)) {
+  const islandPath = event.url.pathname
+  if (import.meta.prerender && await islandPropCache!.hasItem(islandPath)) {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
-    url = await islandPropCache!.getItem(url) as string
+    url = await islandPropCache!.getItem(islandPath) as string
   }
 
   if (!url.startsWith(ISLAND_PATH_PREFIX)) {
