@@ -804,7 +804,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt['~runtimeDependencies'] ||= []
   nuxt['~runtimeDependencies']!.push(
     ...runtimeDependencies,
-    'unhead', '@unhead/vue', '@nuxt/devalue', 'unstorage',
+    'unhead', '@unhead/vue', 'unstorage',
     // ensure we only have one version of vue if nitro is going to inline anyway
     ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
   )
