@@ -10,7 +10,7 @@ describe('component utilities', () => {
   describe('normalizeComponentName', () => {
     it('should normalize PascalCase names', () => {
       expect(normalizeComponentName('MyComponent')).toBe('MyComponent')
-      expect(normalizeComponentName('MyComponent')).toBe('MyComponent')
+      expect(normalizeComponentName('MyAwesomeComponent')).toBe('MyAwesomeComponent')
     })
 
     it('should normalize kebab-case names', () => {

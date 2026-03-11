@@ -192,3 +192,59 @@ export function _mergeTransitionProps (routeProps: TransitionProps[]): Transitio
   }
   return defu(..._props as [TransitionProps, TransitionProps])
 }
+
+/**
+ * Normalize component name to PascalCase
+ */
+export function normalizeComponentName (name: string): string {
+  if (!name) {
+    return ''
+  }
+  // Already PascalCase
+  if (/^[A-Z]/.test(name) && name === name.replace(/-/g, '')) {
+    return name
+  }
+  // kebab-case to PascalCase
+  return name
+    .split('-')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join('')
+}
+
+/**
+ * Resolve component path with proper extension
+ */
+export function resolveComponentPath (path: string): string {
+  if (!path) {
+    return ''
+  }
+  // Add .vue extension if missing
+  if (!path.endsWith('.vue') && !path.endsWith('.ts')) {
+    return `${path}.vue`
+  }
+  return path
+}
+
+/**
+ * Check if component is a lazy component
+ */
+export function isLazyComponent (name: string): boolean {
+  if (!name) {
+    return false
+  }
+  // Starts with 'Lazy' (case-insensitive)
+  return /^lazy/i.test(name)
+}
+
+/**
+ * Get component priority in a list
+ */
+export function getComponentPriority (
+  name: string,
+  components: string[]
+): number {
+  if (!components || components.length === 0) {
+    return -1
+  }
+  return components.indexOf(name)
+}
