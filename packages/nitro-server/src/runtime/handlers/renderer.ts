@@ -269,7 +269,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
   }
 
   // 6. Scripts
-  if (!routeOptions?.noScripts) {
+  if (!NO_SCRIPTS) {
     ssrContext.head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
