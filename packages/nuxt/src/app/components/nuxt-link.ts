@@ -119,6 +119,7 @@ type NuxtLinkDefaultSlotProps<CustomProp extends boolean = false> = CustomProp e
       href: string
       navigate: (e?: MouseEvent) => Promise<void>
       prefetch: (nuxtApp?: NuxtApp) => Promise<void>
+      prefetched: boolean
       route: (RouteLocation & { href: string }) | undefined
       rel: string | null
       target: '_blank' | '_parent' | '_self' | '_top' | (string & {}) | null
