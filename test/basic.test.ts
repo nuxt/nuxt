@@ -107,6 +107,7 @@ describe('route rules', () => {
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
+    expect(html).toContain('route-meta-layout:custom')
   })
 
   it('should not generate payload route rules for non-wildcard ssr: false routes', () => {

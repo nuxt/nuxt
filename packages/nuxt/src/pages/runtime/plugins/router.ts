@@ -194,6 +194,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
         to.meta.layout = initialLayout as Exclude<PageMeta['layout'], Ref | false>
       }
+      if (to.meta.layout === undefined) {
+        const appLayout = getRouteRules({ path: to.path }).appLayout
+        if (appLayout) {
+          to.meta.layout = appLayout as Exclude<PageMeta['layout'], Ref | false>
+        }
+      }
       nuxtApp._processingMiddleware = true
 
       if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
