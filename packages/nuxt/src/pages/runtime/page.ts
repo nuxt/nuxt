@@ -176,7 +176,7 @@ export default defineComponent({
                 },
               ])
 
-              const routeKeepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
+              const routeKeepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as boolean | KeepAliveProps)
 
               // Track component names from pages that declare per-page keepalive via route meta
               const routerComponentType = routeProps.Component.type as any
@@ -189,15 +189,27 @@ export default defineComponent({
               // Build effective keepalive config
               let keepaliveConfig: boolean | KeepAliveProps
 
-              if (keepAliveInclude.size > 0 && props.keepalive == null) {
+              const shouldAugmentInclude =
+                keepAliveInclude.size > 0 &&
+                props.keepalive == null &&
+                (
+                  !routeKeepaliveConfig ||
+                  (typeof routeKeepaliveConfig === 'object' && routeKeepaliveConfig && routeKeepaliveConfig.include)
+                )
+
+              if (shouldAugmentInclude) {
                 // Per-page keepalive - always render KeepAlive with include list for selective caching
-                const baseConfig = typeof routeKeepaliveConfig === 'object' && routeKeepaliveConfig ? { ...routeKeepaliveConfig } : {}
+                const baseConfig = typeof routeKeepaliveConfig === 'object' && routeKeepaliveConfig
+                  ? { ...routeKeepaliveConfig }
+                  : {}
+
                 const existingInclude = baseConfig.include
                   ? Array.isArray(baseConfig.include)
                     ? baseConfig.include
                     : [baseConfig.include]
                   : []
-                keepaliveConfig = { ...baseConfig, include: [...existingInclude, ...keepAliveInclude] }
+
+                keepaliveConfig = { ...baseConfig, include: Array.from(new Set([...existingInclude, ...keepAliveInclude])) }
               } else {
                 keepaliveConfig = routeKeepaliveConfig
               }

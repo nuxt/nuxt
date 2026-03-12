@@ -2948,23 +2948,21 @@ describe('keepalive', () => {
   })
 
   it('should keepalive with only definePageMeta on the kept-alive page', async () => {
-    const { page, consoleLogs } = await renderPage('/keepalive-definepagemeta/keepalive-in-nuxtpage')
+    const { page, consoleLogs } = await renderPage('/keepalive-definepagemeta/with-definepagemeta')
 
     await page.click('#goto-no-keepalive')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/keepalive-definepagemeta/not-keepalive-in-nuxtpage')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/keepalive-definepagemeta/without-definepagemeta')
 
     await page.click('#goto-keepalive')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/keepalive-definepagemeta/keepalive-in-nuxtpage')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/keepalive-definepagemeta/with-definepagemeta')
 
     expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([
-      'keepalive-in-nuxtpage: onMounted',
-      'keepalive-in-nuxtpage: onActivated',
-      'keepalive-in-nuxtpage: onDeactivated',
-      'not-keepalive-in-nuxtpage: onMounted',
-      'not-keepalive-in-nuxtpage: onActivated',
-      'keepalive-in-nuxtpage: onActivated',
-      'not-keepalive-in-nuxtpage: onDeactivated',
-      'not-keepalive-in-nuxtpage: onUnmounted',
+      'keepalive-with-definepagemeta: onMounted',
+      'keepalive-with-definepagemeta: onActivated',
+      'keepalive-with-definepagemeta: onDeactivated',
+      'keepalive-without-definepagemeta: onMounted',
+      'keepalive-with-definepagemeta: onActivated',
+      'keepalive-without-definepagemeta: onUnmounted',
     ])
 
     await page.close()
