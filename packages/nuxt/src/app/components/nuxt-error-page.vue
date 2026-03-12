@@ -1,5 +1,5 @@
 <template>
-  <ErrorTemplate v-bind="{ status, statusText, statusCode: status, statusMessage: statusText, description, stack }" />
+  <ErrorTemplate v-bind="{ status, statusText, description, stack }" />
 </template>
 
 <script setup>
@@ -34,10 +34,10 @@ const stacktrace = import.meta.dev && _error.stack
   : ''
 
 // Error page props
-const status = Number(_error.statusCode || 500)
+const status = Number(_error.status || 500)
 const is404 = status === 404
 
-const statusText = _error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
+const statusText = _error.statusText ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
 const description = _error.message || _error.toString()
 const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
 

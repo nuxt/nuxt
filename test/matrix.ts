@@ -17,6 +17,7 @@ export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'no
 export function withMatrix (config: NuxtConfig) {
   return defu(config, {
     builder,
+    devtools: { enabled: false },
     future: {
       typescriptBundlerResolution,
     },
