@@ -7,7 +7,9 @@ export default defineNuxtPlugin({
       beforeCreate () {
         const { modules } = this.$nuxt.ssrContext
         const { __moduleIdentifier } = this.$options
-        modules.add(__moduleIdentifier)
+        if (__moduleIdentifier) {
+          modules.add(__moduleIdentifier)
+        }
       },
     })
   },

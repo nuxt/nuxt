@@ -27,7 +27,11 @@ export interface NuxtTimeProps {
   dateStyle?: 'full' | 'long' | 'medium' | 'short'
   timeStyle?: 'full' | 'long' | 'medium' | 'short'
   hourCycle?: 'h11' | 'h12' | 'h23' | 'h24'
+
   relative?: boolean
+  numeric?: 'always' | 'auto'
+  relativeStyle?: 'long' | 'short' | 'narrow'
+
   title?: boolean | string
 }
 
@@ -58,14 +62,18 @@ if (import.meta.client && props.relative) {
 }
 
 const formatter = computed(() => {
-  const { locale: propsLocale, relative, ...rest } = props
+  const { locale: propsLocale, relative, relativeStyle, ...rest } = props
   if (relative) {
-    return new Intl.RelativeTimeFormat(_locale ?? propsLocale, rest)
+    return new Intl.RelativeTimeFormat(_locale ?? propsLocale, { ...rest, style: relativeStyle })
   }
   return new Intl.DateTimeFormat(_locale ?? propsLocale, rest)
 })
 
 const formattedDate = computed(() => {
+  if (isInvalidDate.value) {
+    return date.value.toString()
+  }
+
   if (!props.relative) {
     return (formatter.value as Intl.DateTimeFormat).format(date.value)
   }
@@ -91,7 +99,8 @@ const formattedDate = computed(() => {
   return (formatter.value as Intl.RelativeTimeFormat).format(Math.round(value), unit)
 })
 
-const isoDate = computed(() => date.value.toISOString())
+const isInvalidDate = computed(() => Number.isNaN(date.value.getTime()))
+const isoDate = computed(() => isInvalidDate.value ? undefined : date.value.toISOString())
 const title = computed(() => props.title === true ? isoDate.value : typeof props.title === 'string' ? props.title : undefined)
 const dataset: Record<string, string | number | boolean | Date | undefined> = {}
 
@@ -114,11 +123,23 @@ if (import.meta.server) {
       return name
     }
 
-    const date = new Date(el.getAttribute('datetime')!)
-    const options: Intl.DateTimeFormatOptions & { locale?: Intl.LocalesArgument, relative?: boolean } = {}
+    const datetime = el.getAttribute('datetime')
+    if (!datetime) {
+      return
+    }
+    const date = new Date(datetime)
+    if (Number.isNaN(date.getTime())) {
+      return
+    }
+
+    const options: Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions & { locale?: Intl.LocalesArgument, relative?: boolean } = {}
     for (const name of el.getAttributeNames()) {
       if (name.startsWith('data-')) {
-        const optionName = name.slice(5).split('-').map(toCamelCase).join('') as keyof Intl.DateTimeFormatOptions
+        let optionName = name.slice(5).split('-').map(toCamelCase).join('') as keyof (Intl.DateTimeFormatOptions & Intl.RelativeTimeFormatOptions)
+
+        if ((optionName as string) === 'relativeStyle') {
+          optionName = 'style'
+        }
 
         options[optionName] = el.getAttribute(name) as any
       }

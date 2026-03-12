@@ -1,7 +1,7 @@
 import { basename, dirname, extname, normalize } from 'pathe'
 import { kebabCase, splitByCase } from 'scule'
 import { withTrailingSlash } from 'ufo'
-import { QUOTE_RE } from '.'
+import { QUOTE_RE } from './index.ts'
 
 export function getNameFromPath (path: string, relativeTo?: string) {
   const relativePath = relativeTo

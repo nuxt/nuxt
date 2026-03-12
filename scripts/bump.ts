@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { consola } from 'consola'
 import { loadWorkspace } from './_utils'
 

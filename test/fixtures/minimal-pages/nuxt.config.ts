@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     vite: {
       $client: {
         build: {
-          rollupOptions: {
+          rolldownOptions: {
             output: {
               chunkFileNames: '_nuxt/[name].js',
               entryFileNames: '_nuxt/[name].js',
@@ -19,6 +19,7 @@ export default defineNuxtConfig({
       },
     },
   },
+  devtools: { enabled: false },
   sourcemap: false,
   compatibilityDate: 'latest',
   typescript: {

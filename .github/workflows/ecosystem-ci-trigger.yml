@@ -8,7 +8,7 @@ permissions: {}
 
 jobs:
   trigger:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: github.repository == 'nuxt/nuxt' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/ecosystem-ci run')
     permissions:
       issues: write # to add reactions and post comments

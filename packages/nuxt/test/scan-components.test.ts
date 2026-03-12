@@ -2,8 +2,8 @@ import { resolve } from 'pathe'
 import { consola } from 'consola'
 import { expect, it, vi } from 'vitest'
 
-import { scanComponents } from '../src/components/scan'
-import { componentsFixtureDir } from './utils'
+import { scanComponents } from '../src/components/scan.ts'
+import { componentsFixtureDir } from './utils.ts'
 import type { ComponentsDir } from 'nuxt/schema'
 
 const rFixture = (...p: string[]) => resolve(componentsFixtureDir, ...p)

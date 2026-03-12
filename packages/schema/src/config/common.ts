@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
@@ -6,9 +7,9 @@ import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 
-import type { NuxtDebugOptions } from '../types/debug'
-import type { NuxtModule } from '../types/module'
-import { defineResolvers } from '../utils/definition'
+import type { NuxtDebugOptions } from '../types/debug.ts'
+import type { NuxtModule } from '../types/module.ts'
+import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   extends: undefined,
@@ -22,7 +23,7 @@ export default defineResolvers({
       const rootDir = await get('rootDir')
       return val && typeof val === 'string'
         ? resolve(rootDir, val)
-        : await findWorkspaceDir(rootDir, {
+        : findWorkspaceDir(rootDir, {
             gitConfig: 'closest',
             try: true,
           }).catch(() => rootDir)
@@ -129,10 +130,20 @@ export default defineResolvers({
           nitro: true,
           router: true,
           hydration: true,
+          perf: process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true,
         } satisfies Required<NuxtDebugOptions>
       }
       if (val && typeof val === 'object') {
+        // Support NUXT_DEBUG_PERF env var to enable perf profiling
+        if (process.env.NUXT_DEBUG_PERF) {
+          (val as NuxtDebugOptions).perf = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
+        }
         return val
+      }
+      // Support NUXT_DEBUG_PERF env var without other debug options
+      if (process.env.NUXT_DEBUG_PERF) {
+        const perf: boolean | 'quiet' = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
+        return { perf } satisfies Partial<NuxtDebugOptions>
       }
       return false
     },
@@ -199,7 +210,7 @@ export default defineResolvers({
   },
   alias: {
     $resolve: async (val, get) => {
-      const [srcDir, rootDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('buildDir'), get('dir.shared')])
+      const [srcDir, rootDir, buildDir, sharedDir, serverDir] = await Promise.all([get('srcDir'), get('rootDir'), get('buildDir'), get('dir.shared'), get('serverDir')])
       const srcWithTrailingSlash = withTrailingSlash(srcDir)
       const rootWithTrailingSlash = withTrailingSlash(rootDir)
       return {
@@ -208,6 +219,7 @@ export default defineResolvers({
         '~~': rootWithTrailingSlash,
         '@@': rootWithTrailingSlash,
         '#shared': withTrailingSlash(resolve(rootDir, sharedDir)),
+        '#server': withTrailingSlash(serverDir),
         '#build': withTrailingSlash(buildDir),
         '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...typeof val === 'object' ? val : {},
@@ -225,7 +237,11 @@ export default defineResolvers({
         '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
         '**/*.d.{cts,mts,ts}', // ignore type declarations
-        '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        '**/*.d.vue.{cts,mts,ts}',
+        '**/.{pnpm-store,vercel,netlify,output,git,cache,data,direnv}',
+        '/vendor',
+        '**/node-compile-cache',
+        '**/test-results',
         '**/*.sock',
         relative(rootDir, analyzeDir),
         relative(rootDir, buildDir),

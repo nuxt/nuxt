@@ -1,38 +1,36 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
+import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'
-import { createRoutesContext } from 'unplugin-vue-router'
-import { resolveOptions } from 'unplugin-vue-router/options'
-import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
-import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
-
-import type { NitroRouteConfig } from 'nitropack/types'
+import { createRoutesContext, resolveOptions } from 'vue-router/unplugin'
+import type { EditableTreeNode, Options as TypedRouterOptions } from 'vue-router/unplugin'
+import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
-import { distDir } from '../dirs'
-import { resolveTypePath } from '../core/utils/types'
-import { logger } from '../utils'
-import { resolvePagesRoutes as _resolvePagesRoutes, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils'
-import { globRouteRulesFromPages, removePagesRules } from './route-rules'
-import { PageMetaPlugin } from './plugins/page-meta'
-import { RouteInjectionPlugin } from './plugins/route-injection'
+import { distDir } from '../dirs.ts'
+import { resolveTypePath } from '../core/utils/types.ts'
+import { logger } from '../utils.ts'
+import picomatch from 'picomatch'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, defaultExtractionKeys, normalizeRoutes, resolveRoutePaths, toRou3Patterns } from './utils.ts'
+import type { PagesContext } from './utils.ts'
+import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
+import { PageMetaPlugin } from './plugins/page-meta.ts'
+import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
-const runtimeDir = resolve(distDir, 'pages/runtime')
-
 export const pagesImportPresets: InlinePreset[] = [
-  { imports: ['definePageMeta'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['definePageMeta'], from: '#app/composables/pages' },
+  { imports: ['PageMeta'], from: '#app/composables/pages', type: true },
   { imports: ['useLink'], from: 'vue-router' },
 ]
 
 export const routeRulesPresets: InlinePreset[] = [
-  { imports: ['defineRouteRules'], from: resolve(runtimeDir, 'composables') },
+  { imports: ['defineRouteRules'], from: '#app/composables/pages' },
 ]
 
 async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
@@ -62,6 +60,8 @@ export default defineNuxtModule({
     pattern: `**/*{${nuxt.options.extensions.join(',')}}` as string | string[],
   }),
   async setup (_options, nuxt) {
+    const runtimeDir = resolve(distDir, 'pages/runtime')
+
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
@@ -72,30 +72,52 @@ export default defineNuxtModule({
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
             await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
+            nitro.routing.sync()
             inlineRulesCache = inlineRules
           }
         }
       })
     }
 
-    const resolvePagesRoutes = async (pattern: string | string[], nuxt: Nuxt) => {
-      const pages = await _resolvePagesRoutes(pattern, nuxt)
-
-      if (nuxt.options.experimental.inlineRouteRules) {
-        const routeRules = globRouteRulesFromPages(pages)
-        await updateRouteConfig?.(routeRules)
-      } else {
-        // also remove rules when disabled
-        removePagesRules(pages)
-      }
-
-      return pages
-    }
-
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
 
     const pagesDirs = getLayerDirectories(nuxt).map(dirs => dirs.appPages)
+
+    // Persistent route tree for incremental dev-mode updates
+    const pagesCtx: PagesContext | undefined = nuxt.options.dev
+      ? createPagesContext({
+          roots: pagesDirs,
+          shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
+        })
+      : undefined
+
+    // Compile page pattern to a fast matcher for watcher add events
+    const isPagePattern = picomatch(
+      Array.isArray(options.pattern) ? options.pattern : [options.pattern],
+    )
+
+    const handleRouteRules = async (pages: NuxtPage[]) => {
+      if (nuxt.options.experimental.inlineRouteRules) {
+        const routeRules = globRouteRulesFromPages(pages)
+        await updateRouteConfig?.(routeRules)
+      } else {
+        removePagesRules(pages)
+      }
+    }
+
+    const resolvePagesRoutes = async (pattern: string | string[], nuxt: Nuxt) => {
+      const pages = await _resolvePagesRoutes(pattern, nuxt, pagesCtx)
+      await handleRouteRules(pages)
+      return pages
+    }
+
+    /** Emit from existing tree + augment + hooks + route rules (used for incremental updates). */
+    const augmentAndResolvePages = async (pages: NuxtPage[], trackedFiles: Set<string>, nuxt: Nuxt) => {
+      const resolved = await augmentAndResolve(pages, trackedFiles, nuxt)
+      await handleRouteRules(resolved)
+      return resolved
+    }
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
     const routerPath = await resolveTypePath('vue-router', '', nuxt.options.modulesDir) || 'vue-router'
@@ -193,12 +215,12 @@ export default defineNuxtModule({
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
         getContents: () => [
-          'declare module \'nitropack/types\' {',
+          'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
           '}',
-          'declare module \'nitropack\' {',
+          'declare module \'nitro\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
@@ -215,6 +237,7 @@ export default defineNuxtModule({
       nuxt.hook('nitro:init', (nitro) => {
         if (nuxt.options.dev || !nuxt.options.ssr || !nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
 
+        nitro.options.prerender.routes ||= []
         nitro.options.prerender.routes.push('/')
       })
       return
@@ -256,7 +279,7 @@ export default defineNuxtModule({
               route.addToMeta(page.meta)
             }
             if (page.alias) {
-              route.addAlias(page.alias)
+              route.addAlias(Array.isArray(page.alias) ? page.alias : [page.alias])
             }
             if (page.name) {
               route.name = page.name
@@ -277,9 +300,8 @@ export default defineNuxtModule({
       }
 
       nuxt.hook('prepare:types', ({ references }) => {
-        // This file will be generated by unplugin-vue-router
+        // This file will be generated by vue-router
         references.push({ path: declarationFile })
-        references.push({ types: 'unplugin-vue-router/client' })
       })
 
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
@@ -303,9 +325,24 @@ export default defineNuxtModule({
       })
     }
 
-    // Add $router types
-    nuxt.hook('prepare:types', ({ references }) => {
+    // Add $router types and vue-router volar plugins
+    nuxt.hook('prepare:types', ({ references, tsConfig }) => {
       references.push({ types: useExperimentalTypedPages ? 'vue-router/auto-routes' : 'vue-router' })
+
+      // Add vue-router volar plugins to tsconfig
+      tsConfig.vueCompilerOptions ||= {}
+      tsConfig.vueCompilerOptions.plugins ||= []
+
+      // Always add <route> block support
+      tsConfig.vueCompilerOptions.plugins.push('vue-router/volar/sfc-route-blocks')
+
+      // Add typed useRoute() when typedPages is enabled
+      if (useExperimentalTypedPages) {
+        tsConfig.vueCompilerOptions.plugins.push({
+          name: 'vue-router/volar/sfc-typed-router',
+          options: { rootDir: nuxt.options.rootDir },
+        })
+      }
     })
 
     // Add vue-router route guard imports
@@ -339,7 +376,29 @@ export default defineNuxtModule({
 
       if (event === 'change' && !shouldAlwaysRegenerate) { return }
 
-      if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
+      // Attempt incremental tree update for page file add/unlink in dev mode
+      const layerIndex = pagesDirs.findIndex(dir => path.startsWith(dir))
+      const isInPagesDir = layerIndex !== -1
+
+      if (pagesCtx && isInPagesDir && !shouldAlwaysRegenerate) {
+        try {
+          if (event === 'add') {
+            const relativeToDir = relative(pagesDirs[layerIndex]!, path)
+            if (!isPagePattern(relativeToDir) || isIgnored(path)) { return }
+            pagesCtx.addFile(path, layerIndex)
+          } else if (event === 'unlink') {
+            if (!pagesCtx.removeFile(path)) { return }
+          }
+          // Re-emit from mutated tree + run downstream pipeline
+          const pages = pagesCtx.emit()
+          nuxt.apps.default!.pages = await augmentAndResolvePages(pages, pagesCtx.trackedFiles, nuxt)
+        } catch (err) {
+          // Fallback: full rebuild on unexpected tree error
+          logger.warn('Incremental route update failed, performing full rebuild', err)
+          nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
+        }
+      } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
+        // Full rebuild: scanPageMeta content change, layout/middleware change, or no pagesCtx
         nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
       }
     })
@@ -358,7 +417,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
+      if (nitro.options.prerender.crawlLinks || ('routing' in nitro && nitro.routing.routeRules.routes.some(r => r.data.prerender))) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -371,6 +430,9 @@ export default defineNuxtModule({
 
     function processPages (pages: NuxtPage[], currentPath = '/') {
       for (const page of pages) {
+        // Skip internal stub routes (redirects, test routes) from prerendering
+        if (page._sync) { continue }
+
         // Add root of optional dynamic paths and catchalls
         if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) {
           prerenderRoutes.add(currentPath)
@@ -388,7 +450,7 @@ export default defineNuxtModule({
       }
     }
 
-    nuxt.hook('pages:extend', (pages) => {
+    nuxt.hook('pages:resolved', (pages) => {
       if (nuxt.options.dev) { return }
 
       prerenderRoutes.clear()
@@ -403,11 +465,12 @@ export default defineNuxtModule({
         ...toRou3Patterns(nuxt.apps.default?.pages || []),
       ]
 
+      nitro.options.prerender.routes ||= []
+
       // Inject page patterns that explicitly match `prerender: true` route rule
-      if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
-        const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
+      if (!nitro.options.static) {
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...routeRulesMatcher.matchAll(route).reverse())
+          const rules = defu({} as Record<string, any>, ...nitro.routing.routeRules.matchAll('', route).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
@@ -449,25 +512,23 @@ export default defineNuxtModule({
         })
       })
     }
-    if (nuxt.options.experimental.appManifest) {
-      // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
-      // when the app manifest is enabled.
-      nuxt.hook('pages:extend', (routes) => {
-        const nitro = useNitro()
-        let resolvedRoutes: string[]
-        for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
-          if (!rule.redirect) { continue }
-          resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
-          // skip if there's already a route matching this path
-          if (resolvedRoutes.includes(path)) { continue }
-          routes.push({
-            _sync: true,
-            path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
-            file: componentStubPath,
-          })
-        }
-      })
-    }
+
+    // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
+    nuxt.hook('pages:extend', (routes) => {
+      const nitro = useNitro()
+      let resolvedRoutes: string[]
+      for (const route of 'routing' in nitro ? nitro.routing.routeRules.routes : []) {
+        if (!route.data.redirect) { continue }
+        resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
+        // skip if there's already a route matching this path
+        if (resolvedRoutes.includes(route.route)) { continue }
+        routes.push({
+          _sync: true,
+          path: route.route.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
+          file: componentStubPath,
+        })
+      }
+    })
 
     // Extract macros from pages
     const extraPageMetaExtractionKeys = nuxt.options?.experimental?.extraPageMetaExtractionKeys || []
@@ -602,12 +663,12 @@ export default defineNuxtModule({
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
           `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'never'}`,
-          'declare module \'nitropack/types\' {',
+          'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}',
-          'declare module \'nitropack\' {',
+          'declare module \'nitro\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
@@ -621,10 +682,23 @@ export default defineNuxtModule({
       getContents: ({ app }) => {
         return [
           'import type { ComputedRef, MaybeRef } from \'vue\'',
-          `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
+          '',
+          'type ComponentProps<T> = T extends new(...args: any) => { $props: infer P } ? NonNullable<P>',
+          '  : T extends (props: infer P, ...args: any) => any ? P',
+          '  : {}',
+          '',
           'declare module \'nuxt/app\' {',
+          '  interface NuxtLayouts {',
+          ...Object.values(app.layouts).map(layout => `    ${genObjectKey(layout.name)}: ComponentProps<${genInlineTypeImport(layout.file)}>`),
+          '  }',
+          '  export type LayoutKey = keyof NuxtLayouts extends never ? string : keyof NuxtLayouts',
           '  interface PageMeta {',
-          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
+          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false> | {',
+          '      [K in LayoutKey]: {',
+          '        name?: MaybeRef<K | false> | ComputedRef<K | false>',
+          '        props?: NuxtLayouts[K]',
+          '      }',
+          '    }[LayoutKey]',
           '  }',
           '}',
         ].join('\n')
@@ -637,9 +711,10 @@ export default defineNuxtModule({
         filename: 'types/view-transitions.d.ts',
         getContents: () => {
           return [
+            'import type { ViewTransitionPageOptions } from \'../types/config\'',
             'declare module \'nuxt/app\' {',
             '  interface PageMeta {',
-            '    viewTransition?: boolean | \'always\'',
+            '    viewTransition?: ViewTransitionPageOptions[\'enabled\'] | ViewTransitionPageOptions',
             '  }',
             '}',
             'export {}',
@@ -666,13 +741,28 @@ if (import.meta.hot) {
       import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
       return
     }
+    const addedRoutes = router.getRoutes().filter(r => !r._initial)
     router.clearRoutes()
     const routes = generateRoutes(mod.default || mod)
     function addRoutes (routes) {
       for (const route of routes) {
         router.addRoute(route)
       }
-      router.replace(router.currentRoute.value.fullPath)
+      for (const route of router.getRoutes()) {
+        route._initial = true
+      }
+      for (const route of addedRoutes) {
+        router.addRoute(route)
+      }
+      router.isReady().then(() => {
+        // Resolve the current path against the new routes to get updated meta
+        const newRoute = router.resolve(router.currentRoute.value.fullPath)
+        // Clear old meta values and assign new ones
+        for (const key of Object.keys(router.currentRoute.value.meta)) {
+          delete router.currentRoute.value.meta[key]
+        }
+        Object.assign(router.currentRoute.value.meta, newRoute.meta)
+      })
     }
     if (routes && 'then' in routes) {
       routes.then(addRoutes)
@@ -687,6 +777,9 @@ export function handleHotUpdate(_router, _generateRoutes) {
     import.meta.hot.data ||= {}
     import.meta.hot.data.router = _router
     import.meta.hot.data.generateRoutes = _generateRoutes
+    for (const route of _router.getRoutes()) {
+      route._initial = true
+    }
   }
 }
 `

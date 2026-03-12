@@ -2,8 +2,8 @@ import { resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, defineNuxtModule, directoryToURL } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
-import { distDir } from '../dirs'
-import { UnheadImportsPlugin } from './plugins/unhead-imports'
+import { distDir } from '../dirs.ts'
+import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 

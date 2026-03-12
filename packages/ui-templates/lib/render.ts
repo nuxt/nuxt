@@ -9,8 +9,8 @@ import htmlnano from 'htmlnano'
 import { glob } from 'tinyglobby'
 import { camelCase } from 'scule'
 
-import { version } from '../../nuxt/package.json'
-import genericMessages from '../templates/messages.json'
+import pkg from '../../nuxt/package.json' with { type: 'json' }
+import genericMessages from '../templates/messages.json' with { type: 'json' }
 
 const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
 const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)
@@ -93,7 +93,7 @@ export const RenderPlugin = () => {
           html = html.replace('</body></html>', '')
         }
 
-        html = html.replace(/\{\{ version \}\}/g, version)
+        html = html.replace(/\{\{ version \}\}/g, pkg.version)
 
         // Load messages
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
@@ -116,7 +116,7 @@ export const RenderPlugin = () => {
           hasExpression ? 'import { escapeHtml } from \'@vue/shared\'\n' : '',
           hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
           hasMessages ? `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}` : '',
-          `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}) => {`,
+          `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}): string => {`,
           hasMessages ? '  messages = { ..._messages, ...messages }' : '',
           `  return ${templateString}`,
           '}',
@@ -200,11 +200,12 @@ export const RenderPlugin = () => {
 
       // we manually copy files across rather than using symbolic links for better windows support
       const nuxtRoot = r('../nuxt')
+      const nitroRoot = r('../nitro-server')
       for (const file of ['error-404.vue', 'error-500.vue', 'welcome.vue']) {
         await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
       }
-      await mkdir(join(nuxtRoot, 'src/core/runtime/nitro/templates'), { recursive: true })
-      await copyFile(r(`dist/templates/error-500.ts`), join(nuxtRoot, 'src/core/runtime/nitro/templates/error-500.ts'))
+      await mkdir(join(nitroRoot, 'src/runtime/templates'), { recursive: true })
+      await copyFile(r(`dist/templates/error-500.ts`), join(nitroRoot, 'src/runtime/templates/error-500.ts'))
     },
   }
 }

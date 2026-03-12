@@ -5,6 +5,8 @@ type CallOnceOptions = {
   mode?: 'navigation' | 'render'
 }
 
+let _isHmrUpdating = false
+
 /**
  * An SSR-friendly utility to call a method once
  * @param key a unique key ensuring the function can be properly de-duplicated across requests
@@ -15,7 +17,7 @@ type CallOnceOptions = {
  */
 export function callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
 export function callOnce (fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
-export async function callOnce (...args: any): Promise<void> {
+export async function callOnce (...args: any[]): Promise<void> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, fn, options] = args as [string, (() => any | Promise<any>), CallOnceOptions | undefined]
@@ -40,7 +42,10 @@ export async function callOnce (...args: any): Promise<void> {
 
   // If key already ran
   if (nuxtApp.payload.once.has(_key)) {
-    return
+    // Allow re-execution during HMR
+    if (!import.meta.dev || !_isHmrUpdating) {
+      return
+    }
   }
 
   nuxtApp._once ||= {}
@@ -48,4 +53,18 @@ export async function callOnce (...args: any): Promise<void> {
   await nuxtApp._once[_key]
   nuxtApp.payload.once.add(_key)
   delete nuxtApp._once[_key]
+}
+
+if (import.meta.hot) {
+  import.meta.hot.on('vite:beforeUpdate', (payload) => {
+    if (payload.updates.some((u: any) => u.type === 'js-update')) {
+      _isHmrUpdating = true
+    }
+  })
+
+  import.meta.hot.on('vite:afterUpdate', (payload) => {
+    if (payload.updates.some((u: any) => u.type === 'js-update')) {
+      _isHmrUpdating = false
+    }
+  })
 }

@@ -37,8 +37,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
       _res[key] = computed({
         get: () => data.value?.[key],
         set (v) {
-          data.value ||= {}
-          data.value[key] = v
+          data.value = data.value ? { ...data.value, [key]: v } : { [key]: v }
         },
       })
     }

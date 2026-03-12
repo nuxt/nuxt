@@ -3,8 +3,9 @@ import type { NuxtPage } from 'nuxt/schema'
 import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
+import { withMatrix } from '../../matrix'
 
-export default defineNuxtConfig({
+export default withMatrix({
   appId: 'nuxt-app-basic',
   extends: [
     './extends/node_modules/foo',
@@ -32,7 +33,8 @@ export default defineNuxtConfig({
     './modules/test',
     '~~/modules/example',
     function (_, nuxt) {
-      if (typeof nuxt.options.builder === 'string' && nuxt.options.builder.includes('webpack')) { return }
+      // Virtual CSS modules only work with Vite, not with webpack/rspack
+      if (typeof nuxt.options.builder === 'string' && (nuxt.options.builder.includes('webpack') || nuxt.options.builder.includes('rspack'))) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')
@@ -130,7 +132,6 @@ export default defineNuxtConfig({
       needsFallback: undefined,
     },
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   build: {
     transpile: [
       (ctx) => {
@@ -152,6 +153,8 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    nitroAutoImports: true,
+    runtimeBaseURL: true,
     decorators: true,
     typedPages: true,
     clientFallback: true,
@@ -160,34 +163,28 @@ export default defineNuxtConfig({
     componentIslands: {
       selectiveClient: 'deep',
     },
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     inlineRouteRules: true,
   },
-  compatibilityDate: 'latest',
   nitro: {
     publicAssets: [
       {
-        dir: '../custom-public',
+        dir: './custom-public',
         baseURL: '/custom',
       },
     ],
-    esbuild: {
-      options: {
-        // in order to test bigint serialization
-        target: 'es2022',
-      },
-    },
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      '/route-rules/layout': { appLayout: 'custom' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
+      '/isr': { isr: 60 },
+      '/route-rules/isr-spa': { isr: 60, ssr: false },
+      '/swr': { swr: 60 },
     },
     prerender: {
       routes: [

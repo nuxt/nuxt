@@ -10,7 +10,7 @@ import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
-import { logger } from '../utils'
+import { logger } from '../utils.ts'
 
 export default defineNuxtModule({
   meta: {

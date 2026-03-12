@@ -8,7 +8,7 @@ interface Envs {
   isServer?: boolean
 }
 
-export function transpile (envs: Envs): Array<string | RegExp> {
+export function getTranspilePatterns (envs: Envs): Array<string | RegExp> {
   const nuxt = useNuxt()
   const transpile: RegExp[] = []
 
@@ -25,4 +25,25 @@ export function transpile (envs: Envs): Array<string | RegExp> {
   }
 
   return transpile
+}
+
+/**
+ * Get transpile patterns as strings for use with Vite's optimizeDeps.exclude
+ * This resolves functions and filters to only string patterns
+ */
+export function getTranspileStrings (envs: Envs): string[] {
+  const nuxt = useNuxt()
+  const patterns: string[] = []
+
+  for (let pattern of nuxt.options.build.transpile) {
+    if (typeof pattern === 'function') {
+      const result = pattern(envs)
+      if (result) { pattern = result }
+    }
+    if (typeof pattern === 'string') {
+      patterns.push(normalize(pattern))
+    }
+  }
+
+  return patterns
 }

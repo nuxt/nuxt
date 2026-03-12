@@ -8,7 +8,7 @@ import { useRouter } from '#app/composables/router'
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
 // Default router options
-// https://router.vuejs.org/api/interfaces/RouterOptions.html
+// https://router.vuejs.org/api/interfaces/routeroptions
 export default <RouterConfig> {
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
@@ -31,16 +31,21 @@ export default <RouterConfig> {
 
     if (routeAllowsScrollToTop === false) { return false }
 
-    const hookToWait = nuxtApp._runningTransition ? 'page:transition:finish' : 'page:loading:end'
+    if (from === START_LOCATION) {
+      return _calculatePosition(to, from, savedPosition, hashScrollBehaviour)
+    }
 
     return new Promise((resolve) => {
-      if (from === START_LOCATION) {
-        resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour))
-        return
-      }
-
-      nuxtApp.hooks.hookOnce(hookToWait, () => {
+      const doScroll = () => {
         requestAnimationFrame(() => resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour)))
+      }
+      nuxtApp.hooks.hookOnce('page:loading:end', () => {
+        const transitionPromise = nuxtApp['~transitionPromise'] as Promise<void> | undefined
+        if (transitionPromise) {
+          transitionPromise.then(doScroll)
+        } else {
+          doScroll()
+        }
       })
     })
   },

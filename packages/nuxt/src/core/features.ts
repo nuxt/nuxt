@@ -2,7 +2,7 @@ import { addDependency } from 'nypm'
 import { resolvePackageJSON } from 'pkg-types'
 import { useNuxt } from '@nuxt/kit'
 import { isCI, provider } from 'std-env'
-import { logger } from '../utils'
+import { logger } from '../utils.ts'
 
 const isStackblitz = provider === 'stackblitz'
 

@@ -5,8 +5,8 @@ import { camelCase, pascalCase } from 'scule'
 import { tryUseNuxt } from '@nuxt/kit'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
-import { isVue } from '../../core/utils'
-import { logger, resolveToAlias } from '../../utils'
+import { isVue } from '../../core/utils/index.ts'
+import { logger, resolveToAlias } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
