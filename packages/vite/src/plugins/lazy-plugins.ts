@@ -22,12 +22,13 @@ export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
     buildEnd () {
       const clientPlugins = nuxt.apps.default?.plugins?.filter(p => !p.mode || p.mode !== 'server') || []
       for (const plugin of clientPlugins) {
-        // Check explicit lazy flag (from nuxt.config or addPlugin)
+        // Plugin objects in nuxt.apps don't carry lazy annotations from extractMetadata
+        // (those only exist during template generation via annotatePlugins), so we check both
+        // the explicit flag from nuxt.config/addPlugin and the source for defineLazyNuxtPlugin.
         if (plugin.lazy) {
           lazyPluginSrcs.add(normalize(plugin.src))
           continue
         }
-        // Detect defineLazyNuxtPlugin in source
         try {
           const code = nuxt.vfs[plugin.src] ?? readFileSync(plugin.src, 'utf-8')
           if (LAZY_PLUGIN_RE.test(code)) {
