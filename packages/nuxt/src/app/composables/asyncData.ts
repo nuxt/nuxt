@@ -104,6 +104,16 @@ export interface AsyncDataOptions<
    * A timeout in milliseconds after which the request will be aborted if it has not resolved yet.
    */
   timeout?: number
+  /**
+   * When `true`, the promise returned by `useAsyncData` / `execute` / `refresh` will reject
+   * when the handler throws, instead of silently capturing the error in the `error` ref.
+   *
+   * The `error` ref, `data` ref and `status` ref are still updated before the error is
+   * re-thrown, so reactive state remains consistent.
+   *
+   * @default false
+   */
+  throwOnError?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -122,6 +132,12 @@ export interface AsyncDataExecuteOptions {
   signal?: AbortSignal
 
   timeout?: number
+
+  /**
+   * When `true`, the promise returned by `execute` / `refresh` will reject
+   * when the handler throws, overriding the composable-level `throwOnError` option.
+   */
+  throwOnError?: boolean
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -251,6 +267,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       opts.immediate ??= true
       opts.deep ??= asyncDataDefaults.deep
       opts.dedupe ??= 'cancel'
+      opts.throwOnError ??= asyncDataDefaults.throwOnError ?? false
 
       // assign overrides from factory
       if (shouldFactoryOptionsOverride) {
@@ -754,6 +771,10 @@ function buildAsyncData<
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
+
+          if (opts.throwOnError ?? options.throwOnError) {
+            throw asyncData.error.value
+          }
         })
         .finally(() => {
           if (pendingWhenIdle) {

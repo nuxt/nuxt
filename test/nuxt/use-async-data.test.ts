@@ -128,6 +128,23 @@ describe('useAsyncData', () => {
     vi.unstubAllGlobals()
   })
 
+  it('should throw on error when throwOnError option is set', async () => {
+    await expect(
+      useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { throwOnError: true }),
+    ).rejects.toThrow()
+  })
+
+  it('should throw on error via execute option override', async () => {
+    const { execute } = useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { immediate: false })
+    await expect(execute({ throwOnError: true })).rejects.toThrow()
+  })
+
+  it('should not throw when throwOnError is false (default)', async () => {
+    const { error, status } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')))
+    expect(error.value).toBeTruthy()
+    expect(status.value).toBe('error')
+  })
+
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
     const { error, execute } = useAsyncData(() => Promise.resolve({}), { immediate: false })

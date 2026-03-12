@@ -1316,6 +1316,19 @@ export interface ConfigSchema {
        */
       useAsyncData: {
         deep: boolean
+        /**
+         * When `true`, `useAsyncData` will throw (reject) when the handler errors
+         * instead of silently capturing the error in the `error` ref.
+         *
+         * The `error` ref, `data` ref and `status` ref are still updated before
+         * the error is re-thrown, so reactive state remains consistent.
+         *
+         * Can be overridden per-call via `useAsyncData(handler, { throwOnError: true })`
+         * or per-execute via `execute({ throwOnError: true })`.
+         *
+         * @default false
+         */
+        throwOnError: boolean
       }
 
       /**
