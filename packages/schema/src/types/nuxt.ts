@@ -7,7 +7,6 @@ import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
 
-
 export interface NuxtPlugin {
   /** @deprecated use mode */
   ssr?: boolean
