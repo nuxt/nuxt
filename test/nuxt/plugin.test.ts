@@ -379,9 +379,9 @@ describe('lazy plugins', () => {
       const nuxtApp = useNuxtApp()
       const sequence: string[] = []
 
-      const lazyPlugin = _createLazyPlugin(async () => {
+      const lazyPlugin = _createLazyPlugin(() => {
         sequence.push('lazy-loaded')
-        return { default: defineNuxtPlugin(() => { sequence.push('lazy-setup') }) }
+        return Promise.resolve({ default: defineNuxtPlugin(() => { sequence.push('lazy-setup') }) })
       }, 'lazy')
 
       const normalPlugin = defineNuxtPlugin({
