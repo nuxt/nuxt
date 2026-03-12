@@ -1,7 +1,6 @@
 import { joinRelativeURL } from 'ufo'
 import { useRuntimeConfig } from 'nitropack/runtime'
 import type { H3Event } from 'h3'
-import { isEvent as isH3Event } from 'h3'
 
 export function baseURL (event?: H3Event): string {
   return useRuntimeConfig(event).app.baseURL
@@ -13,8 +12,8 @@ export function buildAssetsDir (event?: H3Event): string {
 
 function parseEventAndSegments (args: unknown[]): { event?: H3Event, segments: string[] } {
   const [first, ...rest] = args as any[]
-  const event = isH3Event(first) ? first : undefined
-  const segments = isH3Event(first) ? rest : (args as string[])
+  const event = typeof first !== 'string' ? first : undefined
+  const segments = typeof first !== 'string' ? rest : (args as string[])
   return { event, segments }
 }
 
