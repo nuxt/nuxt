@@ -446,17 +446,17 @@ export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPl
  * only when executed, keeping it out of the critical entry bundle.
  * @internal
  */
-export function _createLazyPlugin (loader: () => Promise<{ default: Plugin & ObjectPlugin<any> }>, name?: string): Plugin & ObjectPlugin<any> {
+export function _createLazyPlugin (loader: () => Promise<{ default: Plugin | ObjectPlugin<any> }>, name?: string): Plugin & ObjectPlugin<any> {
   const wrapper = ((nuxtApp: NuxtApp) => {
     // Fire-and-forget: load and execute after hydration, don't block plugin pipeline
     nuxtApp.hooks.hookOnce('app:suspense:resolve', () => {
       loader().then((mod) => {
         const plugin = mod.default
-        registerPluginHooks(nuxtApp, plugin)
+        registerPluginHooks(nuxtApp, plugin as Plugin & ObjectPlugin<any>)
         if (typeof plugin === 'function') {
           return nuxtApp.runWithContext(() => plugin(nuxtApp))
         }
-        if (plugin.setup) {
+        if ('setup' in plugin && plugin.setup) {
           return nuxtApp.runWithContext(() => plugin.setup!(nuxtApp))
         }
       }).catch((err) => {
