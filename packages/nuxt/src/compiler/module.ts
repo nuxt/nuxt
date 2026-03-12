@@ -18,7 +18,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
   defaults: {
     scan: true,
   },
-  async setup (_options, nuxt) {
+  setup (_options, nuxt) {
     let unimport: Unimport | undefined
     nuxt.hook('imports:context', (ctx) => {
       unimport = ctx
