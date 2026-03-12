@@ -22,6 +22,7 @@ export default defineNuxtConfig({
     },
   },
   pages: false,
+  devtools: { enabled: false },
   buildDir: testWithInlineVue ? '.nuxt-inline' : '.nuxt',
   sourcemap: false,
   experimental: {

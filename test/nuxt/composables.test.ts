@@ -27,8 +27,8 @@ import { NuxtPage } from '#components'
 import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
 describe('app config', () => {
@@ -138,31 +138,22 @@ describe('errors', () => {
   it('createError', () => {
     expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
       {
-        "message": "",
-        "statusCode": 404,
+        "data": undefined,
+        "message": "HTTPError 404",
+        "status": 404,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
     expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
       {
+        "data": undefined,
         "message": "Message",
-        "statusCode": 500,
+        "status": 500,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
-  })
-
-  // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
-  it('supports status/statusText getters', () => {
-    const error = createError({ status: 404, statusText: 'Not Found' })
-    expect(error.status).toBe(404)
-    expect(error.statusText).toBe('Not Found')
-    // backwards compat
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(error.statusCode).toBe(404)
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(error.statusMessage).toBe('Not Found')
-    // non-enumerable (no duplicate in toJSON)
-    expect(Object.keys(error.toJSON())).not.toContain('status')
-    expect(Object.keys(error.toJSON())).not.toContain('statusText')
   })
 
   it('isNuxtError', () => {
@@ -175,7 +166,7 @@ describe('errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
     showError('new error')
-    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
   })
@@ -488,10 +479,15 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     `)
   })
   it('getRouteRules', () => {
-    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot(`
+      {
+        "ssr": true,
+      }
+    `)
     expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
+        "ssr": true,
       }
     `)
     expect(getRouteRules({ path: '/pre/spa/thing' })).toMatchInlineSnapshot(`
@@ -504,6 +500,7 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
       {
         "prerender": true,
         "redirect": "/",
+        "ssr": true,
       }
     `)
   })
@@ -794,7 +791,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[HTTPError: Page not found]')
     expect(error.value).toBe(undefined)
   })
   it('should block navigation if no error is provided', () => {

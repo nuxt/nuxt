@@ -45,7 +45,13 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
     }
   }
 
-  for (const i of [/(^|node_modules\/)@nuxt\/(cli|kit|test-utils)/, /(^|node_modules\/)nuxi/, /(^|node_modules\/)nitro(?:pack)?(?:-nightly)?(?:$|\/)(?!(?:dist\/)?(?:node_modules|presets|runtime|types))/, /(^|node_modules\/)nuxt\/(config|kit|schema)/]) {
+  for (const i of [
+    /(^|node_modules\/)@nuxt\/(cli|kit|test-utils)/,
+    /(^|node_modules\/)nuxi/,
+    /(^|node_modules\/)nitropack(?:-nightly)?(?:$|\/)(?!(?:dist\/)?(?:node_modules|presets|runtime|types))/,
+    /(^|node_modules\/)nitro(?:-nightly)?\/(builder|meta|vite|tsconfig)/,
+    /(^|node_modules\/)nuxt\/(config|kit|schema)/,
+  ]) {
     patterns.push([
       i,
       `This module cannot be imported in ${context}.`,

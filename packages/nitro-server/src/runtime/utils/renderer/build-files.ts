@@ -3,7 +3,8 @@ import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
-import { useRuntimeConfig } from 'nitropack/runtime'
+import { useRuntimeConfig } from 'nitro/runtime-config'
+
 import type { NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
@@ -99,7 +100,7 @@ const getSPARenderer = lazyCachedFunction(async (): Promise<Renderer> => {
   const result = await renderer.renderToString({})
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
-    const config = useRuntimeConfig(ssrContext.event)
+    const config = useRuntimeConfig()
     ssrContext.modules ||= new Set<string>()
     ssrContext.payload.serverRendered = false
     ssrContext.config = {
