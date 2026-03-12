@@ -145,6 +145,25 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('error')
   })
 
+  it('should not cause unhandled rejection when watch triggers re-fetch with throwOnError', async () => {
+    const trigger = ref(0)
+    let callCount = 0
+    const { error } = await useAsyncData(uniqueKey, () => {
+      callCount++
+      // First call succeeds, subsequent (watch-triggered) calls fail
+      if (callCount === 1) { return Promise.resolve('ok') }
+      return Promise.reject(new Error('watch-triggered error'))
+    }, { throwOnError: true, watch: [trigger] })
+
+    expect(error.value).toBeFalsy()
+
+    // Without _rethrow guard, this would throw as an unhandled rejection.
+    trigger.value++
+    await flushPromises()
+
+    expect(error.value).toBeTruthy()
+  })
+
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
     const { error, execute } = useAsyncData(() => Promise.resolve({}), { immediate: false })
