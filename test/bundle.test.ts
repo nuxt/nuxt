@@ -125,7 +125,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"300k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1451k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1458k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
