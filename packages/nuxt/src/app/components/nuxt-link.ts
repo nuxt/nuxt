@@ -482,7 +482,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             href: href.value,
             navigate,
             prefetch,
-            prefetched,
+            prefetched: prefetched.value,
             get route () {
               if (!href.value) { return undefined }
 
