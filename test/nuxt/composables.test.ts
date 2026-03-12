@@ -362,6 +362,35 @@ describe('clearNuxtState', () => {
     const state3 = useState('clearNuxtState-test', () => 'test')
     expect(state3.value).toBe('test')
   })
+
+  it('should only enumerate useState keys, ignoring internal payload.state entries', () => {
+    const nuxtApp = useNuxtApp()
+    // Simulate internal state entries that don't use the useState prefix
+    nuxtApp.payload.state._layout = 'default'
+    nuxtApp.payload.state._layoutProps = { foo: 'bar' }
+
+    const state = useState('clearNuxtState-test', () => 'test')
+    expect(state.value).toBe('test')
+
+    const matchedKeys: string[] = []
+    clearNuxtState((key) => {
+      matchedKeys.push(key)
+      return true
+    })
+
+    // Filter function should only receive actual useState keys, not garbled internal keys
+    expect(matchedKeys).not.toContain('ayout')
+    expect(matchedKeys).not.toContain('ayoutProps')
+    expect(matchedKeys).toContain('clearNuxtState-test')
+
+    // Internal state entries should not be affected
+    expect(nuxtApp.payload.state._layout).toBe('default')
+    expect(nuxtApp.payload.state._layoutProps).toEqual({ foo: 'bar' })
+
+    // Clean up
+    delete nuxtApp.payload.state._layout
+    delete nuxtApp.payload.state._layoutProps
+  })
 })
 
 describe('url', () => {
