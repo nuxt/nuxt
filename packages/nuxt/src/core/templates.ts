@@ -74,7 +74,7 @@ export const clientPluginTemplate: NuxtTemplate = {
       if (plugin.lazy) {
         hasLazy = true
         // Lazy plugins are dynamically imported after hydration, keeping them out of the critical entry bundle
-        imports.push(`const ${variable} = /*#__PURE__*/ _createLazyPlugin(() => ${genDynamicImport(plugin.src, { wrapper: false })}, ${JSON.stringify(plugin.name || filename(plugin.src) || path)})`)
+        imports.push(`const ${variable} = /*#__PURE__*/ _createLazyPlugin(() => ${genDynamicImport(plugin.src, { wrapper: false })}, ${genString(plugin.name || filename(plugin.src) || path)})`)
         exports.push(variable)
       } else {
         exports.push(variable)
