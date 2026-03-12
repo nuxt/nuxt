@@ -1,4 +1,4 @@
-import type { NitroApp } from 'nitropack/types'
+import type { NitroApp } from 'nitro/types'
 import type { ViteNodeRunner } from 'vite-node/client'
 
 export default (nitroApp: NitroApp): void => {

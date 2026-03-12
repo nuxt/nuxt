@@ -2,14 +2,16 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import type { LogObject } from 'consola'
 import { consola } from 'consola'
 import { stringify } from 'devalue'
-import type { H3Event } from 'h3'
 import { withTrailingSlash } from 'ufo'
+import { toRequest } from 'nitro/h3'
+import { definePlugin } from 'nitro'
+import { useNitroHooks } from 'nitro/app'
 import { getContext } from 'unctx'
+import type { ServerRequest } from 'srvx'
 import { captureRawStackTrace, parseRawStackTrace } from 'errx'
 import type { ParsedTrace } from 'errx'
 
 import { isVNode } from 'vue'
-import type { NitroApp } from 'nitropack/types'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
@@ -23,15 +25,18 @@ const devReducers: Record<string, (data: any) => any> = {
 
 interface NuxtDevAsyncContext {
   logs: LogObject[]
-  event: H3Event
+  request: ServerRequest
 }
 
 const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
 
-export default (nitroApp: NitroApp): void => {
-  const handler = nitroApp.h3App.handler
-  nitroApp.h3App.handler = (event) => {
-    return asyncContext.callAsync({ logs: [], event }, () => handler(event))
+const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
+  // TODO: Use nitro asyncContext
+  const originalFetch = nitroApp.fetch
+  nitroApp.fetch = (input: ServerRequest | URL | string, init?: RequestInit, context?: any) => {
+    const req = toRequest(input, init)
+    req.context = { ...req.context, ...context }
+    return asyncContext.callAsync({ logs: [], request: req }, () => originalFetch(req))
   }
 
   onConsoleLog((_log) => {
@@ -66,25 +71,31 @@ export default (nitroApp: NitroApp): void => {
     ctx.logs.push(log)
   })
 
-  nitroApp.hooks.hook('afterResponse', () => {
+  const nitroHooks = useNitroHooks()
+
+  nitroHooks.hook('response', () => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
-    return nitroApp.hooks.callHook('dev:ssr-logs', { logs: ctx.logs, path: ctx.event.path })
+    const url = new URL(ctx.request.url)
+    const path = url.pathname + url.search + url.hash
+    return nitroHooks.callHook('dev:ssr-logs', { logs: ctx.logs, path })
   })
 
   // Pass any logs to the client
-  nitroApp.hooks.hook('render:html', (htmlContext) => {
+  nitroHooks.hook('render:html', (htmlContext) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     try {
-      const reducers = Object.assign(Object.create(null), devReducers, ctx.event.context['~payloadReducers'])
+      const reducers = Object.assign(Object.create(null), devReducers, ctx.request.context?.['~payloadReducers'])
       htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
     } catch (e) {
       const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''
       console.warn(`[nuxt] Failed to stringify dev server logs.${shortError} You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/4.x/api/composables/use-nuxt-app#payload.`)
     }
   })
-}
+})
+
+export default plugin
 
 const EXCLUDE_TRACE_RE = /\/node_modules\/(?:.*\/)?(?:nuxt|nuxt-nightly|nuxt-edge|nuxt3|consola|@vue)\/|core\/runtime\/nitro/
 

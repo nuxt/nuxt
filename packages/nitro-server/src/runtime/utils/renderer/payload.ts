@@ -1,5 +1,4 @@
-import type { RenderResponse } from 'nitropack/types'
-import { getResponseStatus, getResponseStatusText } from 'h3'
+import type { RenderResponse } from 'nitro/types'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
@@ -13,8 +12,8 @@ import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
     body: encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])),
-    statusCode: getResponseStatus(ssrContext.event),
-    statusMessage: getResponseStatusText(ssrContext.event),
+    status: ssrContext.event.res.status || 200,
+    statusText: ssrContext.event.res.statusText || '',
     headers: {
       'content-type': 'application/json;charset=utf-8',
       'x-powered-by': 'Nuxt',

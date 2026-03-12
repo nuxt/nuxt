@@ -1,17 +1,15 @@
-// Workaround for 'The inferred type of 'payloadCache' cannot be named without a reference to '.pnpm/unstorage@1.16.0_db0@0.3.2_ioredis@5.6.1/node_modules/unstorage'.
-// This is likely not portable. A type annotation is necessary.
-import type { Storage } from 'unstorage'
-import { useStorage } from 'nitropack/runtime'
+import type { Storage, StorageValue } from 'unstorage'
+import { useStorage } from 'nitro/storage'
 // @ts-expect-error virtual file
 import { NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 
 export const payloadCache: Storage | null = import.meta.prerender
-  ? useStorage('internal:nuxt:prerender:payload')
+  ? useStorage<StorageValue>('internal:nuxt:prerender:payload')
   : NUXT_RUNTIME_PAYLOAD_EXTRACTION
-    ? useStorage('cache:nuxt:payload')
+    ? useStorage<StorageValue>('cache:nuxt:payload')
     : null
-export const islandCache: Storage | null = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
-export const islandPropCache: Storage | null = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
+export const islandCache: Storage | null = import.meta.prerender ? useStorage<StorageValue>('internal:nuxt:prerender:island') : null
+export const islandPropCache: Storage | null = import.meta.prerender ? useStorage<StorageValue>('internal:nuxt:prerender:island-props') : null
 export const sharedPrerenderPromises: Map<string, Promise<any>> | null = import.meta.prerender && NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 
 const sharedPrerenderKeys = new Set<string>()
