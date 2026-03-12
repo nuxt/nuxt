@@ -41,7 +41,6 @@ export interface UseFetchOptions<
   watch?: MultiWatchSources | false
 }
 
-
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
