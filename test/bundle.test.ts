@@ -42,7 +42,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'))
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"176k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"180k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -122,10 +122,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"300k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"292k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1458k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1451k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
