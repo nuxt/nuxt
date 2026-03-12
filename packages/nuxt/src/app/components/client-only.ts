@@ -2,9 +2,14 @@ import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, ge
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
+import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 import ServerPlaceholder from './server-placeholder'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
+
+function createPlaceholder () {
+  return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
+}
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -74,13 +79,14 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
           ? cloneVNode(res)
           : h(res)
       }
-      return createCommentVNode('placeholder')
+      return createPlaceholder()
     }
   } else {
     // handle runtime-compiler template
+    const placeholderTemplate = clientNodePlaceholder ? '<!--placeholder-->' : '<div></div>'
     clone.template &&= `
       <template v-if="mounted$">${component.template}</template>
-      <template v-else><!--placeholder--></template>
+      <template v-else>${placeholderTemplate}</template>
     `
   }
 
@@ -93,7 +99,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
       const attrs = { ...instance.attrs }
       // remove existing directives during hydration
       const directives = extractDirectives(instance)
-      // prevent attrs inheritance since a staticVNode is rendered before hydration
+      // prevent attrs inheritance since a placeholder is rendered before hydration
       for (const key in attrs) {
         delete instance.attrs[key]
       }
@@ -123,7 +129,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
               ? cloneVNode(res)
               : h(res)
           }
-          return createCommentVNode('placeholder')
+          return createPlaceholder()
         }
       })
     } else {
@@ -137,7 +143,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
               ? cloneVNode(res, attrs)
               : h(res, attrs)
           }
-          return createCommentVNode('placeholder')
+          return createPlaceholder()
         }
       }
       return Object.assign(setupState, { mounted$ })

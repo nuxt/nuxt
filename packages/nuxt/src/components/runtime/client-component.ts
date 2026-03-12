@@ -2,8 +2,13 @@ import { createCommentVNode, getCurrentInstance, h, onMounted, provide, shallowR
 import type { AsyncComponentLoader, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
+import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 import ServerPlaceholder from '#app/components/server-placeholder'
 import { clientOnlySymbol } from '#app/components/client-only'
+
+function createPlaceholder () {
+  return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
+}
 
 /* @__NO_SIDE_EFFECTS__ */
 export async function createClientPage (loader: AsyncComponentLoader) {
@@ -34,12 +39,13 @@ function pageToClientOnly<T extends ComponentOptions> (component: T) {
     // override the component render (non script setup component) or dev mode
     clone.render = (ctx: any, cache: any, $props: any, $setup: any, $data: any, $options: any) => ($setup.mounted$ ?? ctx.mounted$)
       ? h(component.render?.bind(ctx)(ctx, cache, $props, $setup, $data, $options))
-      : createCommentVNode('placeholder')
+      : createPlaceholder()
   } else {
     // handle runtime-compiler template
+    const placeholderTemplate = clientNodePlaceholder ? '<!--placeholder-->' : '<div></div>'
     clone.template &&= `
       <template v-if="mounted$">${component.template}</template>
-      <template v-else><!--placeholder--></template>
+      <template v-else>${placeholderTemplate}</template>
     `
   }
 
@@ -62,13 +68,13 @@ function pageToClientOnly<T extends ComponentOptions> (component: T) {
           setupState.mounted$ = mounted$
           return setupState
         }
-        return (...args: any[]) => (mounted$.value || !nuxtApp.isHydrating) ? h(setupState(...args)) : createCommentVNode('placeholder')
+        return (...args: any[]) => (mounted$.value || !nuxtApp.isHydrating) ? h(setupState(...args)) : createPlaceholder()
       })
     } else {
       return typeof setupState === 'function'
         ? (...args: any[]) => (mounted$.value || !nuxtApp.isHydrating)
             ? h(setupState(...args))
-            : createCommentVNode('placeholder')
+            : createPlaceholder()
         : Object.assign(setupState, { mounted$ })
     }
   }
