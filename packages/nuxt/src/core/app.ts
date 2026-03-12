@@ -270,6 +270,18 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
     }
   }
 
+  for (const plugin of _plugins) {
+    if (plugin.lazy) {
+      const name = plugin.name || relative(nuxt.options.rootDir, plugin.src)
+      if (plugin.dependsOn?.length) {
+        logger.warn(`Lazy plugin \`${name}\` has \`dependsOn\` which is ignored — lazy plugins run after hydration.`)
+      }
+      if (plugin.order != null && plugin.order < orderMap.default) {
+        logger.warn(`Lazy plugin \`${name}\` has early ordering which is contradictory — lazy plugins run after hydration.`)
+      }
+    }
+  }
+
   return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
 }
 
