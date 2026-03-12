@@ -1,8 +1,11 @@
+import { readFileSync } from 'node:fs'
 import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { normalize } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
+
+const LAZY_PLUGIN_RE = /defineLazyNuxtPlugin/
 
 export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
@@ -17,9 +20,20 @@ export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
       return environment.name === 'client'
     },
     buildEnd () {
-      const clientPlugins = nuxt.apps.default?.plugins?.filter(p => p.lazy && (!p.mode || p.mode !== 'server')) || []
+      const clientPlugins = nuxt.apps.default?.plugins?.filter(p => !p.mode || p.mode !== 'server') || []
       for (const plugin of clientPlugins) {
-        lazyPluginSrcs.add(normalize(plugin.src))
+        // Check explicit lazy flag (from nuxt.config or addPlugin)
+        if (plugin.lazy) {
+          lazyPluginSrcs.add(normalize(plugin.src))
+          continue
+        }
+        // Detect defineLazyNuxtPlugin in source
+        try {
+          const code = nuxt.vfs[plugin.src] ?? readFileSync(plugin.src, 'utf-8')
+          if (LAZY_PLUGIN_RE.test(code)) {
+            lazyPluginSrcs.add(normalize(plugin.src))
+          }
+        } catch {}
       }
     },
     generateBundle (_options, bundle) {
