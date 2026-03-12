@@ -11,6 +11,7 @@ links:
 `defineLazyNuxtPlugin` creates a plugin that is excluded from the critical entry bundle. The plugin is dynamically imported and executed after hydration completes (on `app:suspense:resolve`), reducing initial JS parse time for code that doesn't need to run before the app is interactive.
 
 ```ts twoslash [plugins/analytics.client.ts]
+// @errors: 2307
 import { init } from 'my-analytics-library'
 
 export default defineLazyNuxtPlugin(() => {
@@ -71,6 +72,7 @@ Lazy loading only applies on the client side — on the server, lazy plugins are
 ### Analytics Plugin
 
 ```ts twoslash [plugins/analytics.client.ts]
+// @errors: 2307
 import { init, trackPageView } from 'my-analytics-library'
 
 export default defineLazyNuxtPlugin((nuxtApp) => {
@@ -89,6 +91,7 @@ export default defineLazyNuxtPlugin((nuxtApp) => {
 Object syntax lets you declare hooks declaratively rather than imperatively:
 
 ```ts twoslash [plugins/error-reporting.client.ts]
+// @errors: 2307
 import { captureError, initErrorReporter } from 'my-error-reporter'
 
 export default defineLazyNuxtPlugin({
