@@ -59,6 +59,8 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
+    const keepAliveInclude = new Set<string>()
+
     let previousPageKey: string | undefined | false
 
     expose({ pageRef })
@@ -174,7 +176,32 @@ export default defineComponent({
                 },
               ])
 
-              const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
+              const routeKeepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
+
+              // Track component names from pages that declare per-page keepalive via route meta
+              const routerComponentType = routeProps.Component.type as any
+              const componentName = routerComponentType.name || routerComponentType.__name
+
+              if (routeProps.route.meta.keepalive && componentName) {
+                keepAliveInclude.add(componentName)
+              }
+
+              // Build effective keepalive config
+              let keepaliveConfig: boolean | KeepAliveProps
+
+              if (keepAliveInclude.size > 0 && props.keepalive == null) {
+                // Per-page keepalive - always render KeepAlive with include list for selective caching
+                const baseConfig = typeof routeKeepaliveConfig === 'object' && routeKeepaliveConfig ? { ...routeKeepaliveConfig } : {}
+                const existingInclude = baseConfig.include
+                  ? Array.isArray(baseConfig.include)
+                    ? baseConfig.include
+                    : [baseConfig.include]
+                  : []
+                keepaliveConfig = { ...baseConfig, include: [...existingInclude, ...keepAliveInclude] }
+              } else {
+                keepaliveConfig = routeKeepaliveConfig
+              }
+
               vnode = _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                   key: suspenseKey,
@@ -217,12 +244,11 @@ export default defineComponent({
                       return h(RouteProvider, routeProviderProps)
                     }
 
-                    const routerComponentType = routeProps.Component.type as any
-                    const routeProviderKey = import.meta.dev ? routerComponentType.name || routerComponentType.__name : routerComponentType
+                    const routeProviderKey = import.meta.dev ? componentName : routerComponentType
                     let PageRouteProvider = _routeProviders.get(routeProviderKey)
 
                     if (!PageRouteProvider) {
-                      PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
+                      PageRouteProvider = defineRouteProvider(componentName)
                       _routeProviders.set(routeProviderKey, PageRouteProvider)
                     }
 

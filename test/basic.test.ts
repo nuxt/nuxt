@@ -2946,6 +2946,29 @@ describe('keepalive', () => {
 
     await page.close()
   })
+
+  it('should keepalive with only definePageMeta on the kept-alive page', async () => {
+    const { page, consoleLogs } = await renderPage('/keepalive-definepagemeta/keepalive-in-nuxtpage')
+
+    await page.click('#goto-no-keepalive')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/keepalive-definepagemeta/not-keepalive-in-nuxtpage')
+
+    await page.click('#goto-keepalive')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/keepalive-definepagemeta/keepalive-in-nuxtpage')
+
+    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([
+      'keepalive-in-nuxtpage: onMounted',
+      'keepalive-in-nuxtpage: onActivated',
+      'keepalive-in-nuxtpage: onDeactivated',
+      'not-keepalive-in-nuxtpage: onMounted',
+      'not-keepalive-in-nuxtpage: onActivated',
+      'keepalive-in-nuxtpage: onActivated',
+      'not-keepalive-in-nuxtpage: onDeactivated',
+      'not-keepalive-in-nuxtpage: onUnmounted',
+    ])
+
+    await page.close()
+  })
 })
 
 describe('teleports', () => {
