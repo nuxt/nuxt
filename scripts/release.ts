@@ -19,6 +19,73 @@ function readPackageJson (dir: string): PackageJson {
   return JSON.parse(readFileSync(pkgPath, 'utf-8'))
 }
 
+/**
+ * Exchange a GitHub Actions OIDC token for a short-lived npm registry token.
+ *
+ * This replicates what `npm publish` does internally with trusted publishing:
+ * 1. Request a GitHub OIDC id_token with audience "npm:registry.npmjs.org"
+ * 2. Exchange it with npm's OIDC endpoint for a scoped registry token
+ */
+async function getOidcToken (packageName: string): Promise<string> {
+  const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL
+  const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN
+
+  if (!requestUrl || !requestToken) {
+    throw new Error('GitHub Actions OIDC environment not available (ACTIONS_ID_TOKEN_REQUEST_URL/TOKEN not set)')
+  }
+
+  // Step 1: Request GitHub OIDC id_token with npm audience
+  const idTokenUrl = `${requestUrl}&audience=${encodeURIComponent('npm:registry.npmjs.org')}`
+  const idTokenResponse = await fetch(idTokenUrl, {
+    headers: { authorization: `Bearer ${requestToken}` },
+  })
+  if (!idTokenResponse.ok) {
+    throw new Error(`Failed to get GitHub OIDC token: ${idTokenResponse.status} ${idTokenResponse.statusText}`)
+  }
+  const { value: idToken } = await idTokenResponse.json() as { value: string }
+
+  // Step 2: Exchange with npm registry for a short-lived publish token
+  const encodedName = packageName.replace('/', '%2f')
+  const exchangeUrl = `https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/${encodedName}`
+  const exchangeResponse = await fetch(exchangeUrl, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${idToken}` },
+  })
+  if (!exchangeResponse.ok) {
+    const body = await exchangeResponse.text()
+    throw new Error(`Failed to exchange OIDC token for npm token (${packageName}): ${exchangeResponse.status} ${exchangeResponse.statusText} - ${body}`)
+  }
+  const { token } = await exchangeResponse.json() as { token: string }
+  return token
+}
+
+/**
+ * Add a dist-tag to a package using the npm registry HTTP API.
+ *
+ * With trusted publishing (OIDC), only `npm publish` can authenticate via OIDC
+ * internally. Other commands like `npm dist-tag` cannot. This function obtains
+ * an npm token via the OIDC exchange and calls the registry dist-tags API directly.
+ */
+async function addDistTag (packageName: string, version: string, tag: string): Promise<void> {
+  const token = await getOidcToken(packageName)
+  const encodedName = packageName.replace('/', '%2f')
+  const url = `https://registry.npmjs.org/-/package/${encodedName}/dist-tags/${encodeURIComponent(tag)}`
+
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'authorization': `Bearer ${token}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(version),
+  })
+
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`Failed to add dist-tag ${tag} to ${packageName}@${version}: ${response.status} ${response.statusText} - ${body}`)
+  }
+}
+
 async function main () {
   const originalCwd = process.cwd()
   const isNightly = process.argv.includes('--nightly')
@@ -66,6 +133,8 @@ async function main () {
 
     // Release packages
     const packagesToSkip = ['packages/nuxi', 'packages/test-utils', 'packages/ui-templates']
+    const published: Array<{ name: string, version: string }> = []
+
     for (const pkgDir of packageDirs) {
       if (packagesToSkip.includes(pkgDir)) {
         continue
@@ -82,23 +151,28 @@ async function main () {
         copyFileSync(resolve(repoRoot, 'README.md'), 'README.md')
       }
 
-      // Publish with first tag, then add additional tags
+      // Publish with primary tag with trusted publishing
       console.info(`🏷️ Publishing ${pkgDir} with tag: ${tag}`)
       execCommand(`pnpm publish --access public --no-git-checks --tag ${tag}`)
 
-      // Add additional tags if there are more than one
       const pkg = readPackageJson('.')
-      for (const additionalTag of additionalTags) {
-        console.info(`🏷️ Adding tag ${additionalTag} to ${pkg.name}@${pkg.version}`)
-        try {
-          execCommand(`npm dist-tag add "${pkg.name}@${pkg.version}" ${additionalTag}`)
-        } catch (error) {
-          console.error(`❌ Failed to add tag ${additionalTag} to ${pkg.name}@${pkg.version}:`, error)
-          throw error
-        }
-      }
+      published.push({ name: pkg.name, version: pkg.version })
 
       process.chdir(repoRoot)
+    }
+
+    if (additionalTags.length > 0) {
+      console.info(`\n🏷️ Adding additional dist-tags: ${additionalTags.join(', ')}`)
+      for (const pkg of published) {
+        for (const additionalTag of additionalTags) {
+          try {
+            console.info(`  🏷️ Adding tag ${additionalTag} to ${pkg.name}@${pkg.version}`)
+            await addDistTag(pkg.name, pkg.version, additionalTag)
+          } catch (error) {
+            console.error(`  💥 Failed to add tag ${additionalTag} to ${pkg.name}@${pkg.version}:`, error)
+          }
+        }
+      }
     }
 
     // Restore README
