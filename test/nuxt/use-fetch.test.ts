@@ -299,7 +299,8 @@ describe('useFetch', () => {
     }))
 
     await expect(
-      useFetch('/api/throw-test-default', { throwOnError: false }),
+      useFetch('/api/throw-test-default'),
     ).resolves.toBeDefined()
+  })
   })
 })
