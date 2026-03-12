@@ -1,6 +1,6 @@
 import { useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { relative } from 'pathe'
+import { normalize } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
 
@@ -8,7 +8,7 @@ export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
 
   const nitro = useNitro()
-  const lazyPluginFiles: string[] = []
+  const lazyPluginSrcs = new Set<string>()
 
   return {
     name: 'nuxt:lazy-plugin-preload',
@@ -19,7 +19,7 @@ export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
     buildEnd () {
       const clientPlugins = nuxt.apps.default?.plugins?.filter(p => p.lazy && (!p.mode || p.mode !== 'server')) || []
       for (const plugin of clientPlugins) {
-        lazyPluginFiles.push(relative(nuxt.options.rootDir, plugin.src))
+        lazyPluginSrcs.add(normalize(plugin.src))
       }
     },
     generateBundle (_options, bundle) {
@@ -27,8 +27,8 @@ export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
       const lazyChunkFiles: string[] = []
       for (const chunk of Object.values(bundle)) {
         if (chunk.type !== 'chunk' || !chunk.isDynamicEntry || !chunk.facadeModuleId) { continue }
-        const relativeId = relative(nuxt.options.rootDir, chunk.facadeModuleId)
-        if (lazyPluginFiles.includes(relativeId)) {
+        const moduleId = normalize(chunk.facadeModuleId.replace(/\?.*$/, ''))
+        if (lazyPluginSrcs.has(moduleId)) {
           let file = chunk.fileName
           if (file.startsWith(prefix)) {
             file = file.slice(prefix.length)
