@@ -27,9 +27,9 @@ export function publicAssetsURL (...args: [H3Event | string | undefined, ...stri
   return segments.length ? joinRelativeURL(publicBase, ...segments) : publicBase
 }
 
-export function buildAssetsURL (event: H3Event, ...path: string[]): string
+export function buildAssetsURL (event: H3Event | undefined, ...path: string[]): string
 export function buildAssetsURL (...path: string[]): string
-export function buildAssetsURL (...args: [H3Event | string, ...string[]]): string {
+export function buildAssetsURL (...args: [H3Event | string | undefined, ...string[]]): string {
   const { event, segments } = parseEventAndSegments(args)
   return joinRelativeURL(publicAssetsURL(event), buildAssetsDir(event), ...segments)
 }
