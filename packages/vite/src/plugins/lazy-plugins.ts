@@ -33,7 +33,7 @@ export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
           if (LAZY_PLUGIN_RE.test(code)) {
             lazyPluginSrcs.add(normalize(plugin.src))
           }
-        } catch {}
+        } catch { /* plugin may be virtual or unreadable */ }
       }
     },
     generateBundle (_options, bundle) {
