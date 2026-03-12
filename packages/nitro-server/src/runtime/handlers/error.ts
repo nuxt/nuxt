@@ -38,21 +38,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   const errorObject = (defaultRes.body || {}) as Pick<NonNullable<NuxtPayload['error']>, 'status' | 'statusText' | 'message' | 'stack'> & { url?: string, data: any }
   // we will be rendering this error internally so we pass along the error.data safely
-  errorObject.data ||= error.data
+  errorObject.data ??= error.data
   errorObject.url = event.req.url
 
-  for (const [header, value] of new Headers(defaultRes.headers)) {
-    if (
-      // this would be set to application/json
-      header === 'content-type' ||
-      // this would disable JS execution in the error page
-      header === 'content-security-policy' ||
-      headers.has(header)
-    ) {
-      continue
-    }
-    headers.set(header, value)
-  }
+  // Merge defaultRes headers, skipping content-type (would be application/json)
+  // and content-security-policy (would disable JS execution in the error page)
+  mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
 
   // Detect to avoid recursion in SSR rendering of errors
   const isRenderingError = (event as H3Event).url?.pathname.startsWith('/__nuxt_error') || !!event.req.headers.get('x-nuxt-error')
@@ -112,8 +103,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     statusText: res.statusText || defaultRes.statusText,
   })
 }
-function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>, setCookies: Set<string>): Headers {
+// Headers that should not be forwarded from the default handler or SSR render to the error page
+const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy'])
+
+function mergeHeaders (target: Headers, overrides: Headers | [string, string][] | HeadersIterator<[string, string]>, setCookies: Set<string>, ignore?: Set<string>): Headers {
   for (const [name, value] of overrides) {
+    if (ignore?.has(name)) { continue }
     if (name === 'set-cookie') {
       if (!setCookies.has(value)) {
         setCookies.add(value)
