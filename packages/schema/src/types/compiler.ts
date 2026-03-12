@@ -1,5 +1,4 @@
 import type { JavascriptExtension } from '../utils/definition.ts'
-import type { ScanPlugin } from './nuxt.ts'
 
 export interface KeyedFunction {
   /**
@@ -46,17 +45,6 @@ export interface NuxtCompilerOptions {
    * Enable scanning of directories for Nuxt compiler transformations.
    */
   scan?: boolean
-  /**
-   * The directories to scan for files.
-   */
-  dirs?: (string | CompilerScanDir)[]
-  /**
-   * An array of nuxt compiler plugins.
-   * These plugins are run before the build transformations to allow for preprocessing of files.
-   *
-   * All plugins are deduplicated by their `name` property.
-   */
-  plugins?: ScanPlugin[]
 }
 
 export interface CompilerScanDir {

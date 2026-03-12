@@ -1,6 +1,6 @@
 import { type ParsedStaticImport, findStaticImports, parseStaticImport } from 'mlly'
 import { parseAndWalk, walk } from 'oxc-walker'
-import type { ScanPlugin } from '@nuxt/schema'
+import type { ScanPlugin } from './types.ts'
 import type { ParseResult } from 'oxc-parser'
 
 /**
