@@ -302,5 +302,4 @@ describe('useFetch', () => {
       useFetch('/api/throw-test-default'),
     ).resolves.toBeDefined()
   })
-  })
 })
