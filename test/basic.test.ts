@@ -1456,6 +1456,81 @@ describe('plugins', () => {
     expect(html).toContain('asyncPlugin: Async plugin works! 123')
     expect(html).toContain('useFetch works!')
   })
+
+  it('lazy .client plugin is not included in SSR', async () => {
+    const html = await $fetch<string>('/lazy-plugin')
+    // lazy.client.ts runs post-hydration, so SSR shows default false
+    expect(html).toContain('<div data-testid="lazy-ran">false</div>')
+  })
+
+  it('lazy universal plugin runs on the server', async () => {
+    const html = await $fetch<string>('/lazy-plugin')
+    // lazy-universal.ts has no .client suffix — on server it runs as a normal plugin
+    expect(html).toContain('<div data-testid="lazy-universal-ran">true</div>')
+  })
+
+  it('lazy plugin runs after hydration on client', async () => {
+    const { page } = await renderPage('/lazy-plugin')
+
+    // Wait for hydration + lazy plugin to execute
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="lazy-ran"]')?.textContent?.trim() === 'true',
+      { timeout: 5_000 },
+    )
+
+    const ran = await page.textContent('[data-testid="lazy-ran"]')
+    expect(ran?.trim()).toBe('true')
+
+    await page.close()
+  })
+
+  it.skipIf(isDev || isWebpack)('lazy plugin chunks have low-priority modulepreload links', async () => {
+    const html = await $fetch<string>('/lazy-plugin')
+    const modulepreloadLinks = html.match(/<link[^>]*rel="modulepreload"[^>]*>/g) || []
+    const lazyPreloads = modulepreloadLinks.filter(link => link.includes('fetchpriority="low"'))
+
+    expect(lazyPreloads.length).toBeGreaterThanOrEqual(1)
+
+    const hrefs = lazyPreloads.map(link => link.match(/href="([^"]+)"/)?.[1])
+    for (const href of hrefs) {
+      expect(href).toMatch(/\/_nuxt\/.*\.js$/)
+    }
+
+    // Low-priority modulepreloads should NOT also appear in normal (high-priority) modulepreloads
+    const normalPreloads = modulepreloadLinks.filter(link => !link.includes('fetchpriority="low"'))
+    const normalHrefs = new Set(normalPreloads.map(link => link.match(/href="([^"]+)"/)?.[1]))
+    for (const href of hrefs) {
+      expect(normalHrefs.has(href), `${href} should not be in both normal and lazy preloads`).toBe(false)
+    }
+
+    for (const link of lazyPreloads) {
+      expect(link).toContain('crossorigin')
+    }
+  })
+
+  it('lazy plugin hooks fire on navigation', async () => {
+    const { page } = await renderPage('/lazy-plugin')
+
+    // Wait for lazy plugin to initialize
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="lazy-ran"]')?.textContent?.trim() === 'true',
+      { timeout: 5_000 },
+    )
+
+    // Navigate to trigger page:finish hook
+    await page.click('a')
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="lazy-navigated"]')?.textContent?.trim() === 'true',
+      { timeout: 5_000 },
+    )
+
+    const navigated = await page.textContent('[data-testid="lazy-navigated"]')
+    expect(navigated?.trim()).toBe('true')
+
+    await page.close()
+  })
 })
 
 describe('layouts', () => {

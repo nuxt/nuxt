@@ -701,7 +701,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (nuxt.options.experimental.appManifest) {
     if (nuxt.options.experimental.checkOutdatedBuildInterval !== false) {
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+      addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'), lazy: true })
     }
   }
 
