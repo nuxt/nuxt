@@ -24,6 +24,7 @@ describe('scrollBehavior of router options with global transition', () => {
 
     // Ensure everything is settled
     await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
 
     expect(pageTransitionFinish).toHaveBeenCalled()
     expect(pageLoadingEnd).toHaveBeenCalled()
