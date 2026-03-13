@@ -18,6 +18,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (!await ensureDependencyInstalled('rollup-plugin-visualizer', {
     rootDir: nuxt.options.rootDir,
     searchPaths: nuxt.options.modulesDir,
+    from: import.meta.url,
   })) {
     logger.warn('Skipping bundle analysis.')
     return

@@ -14,6 +14,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       const result = await ensureDependencyInstalled([...BABEL_DECORATOR_DEPS], {
         rootDir: nuxt.options.rootDir,
         searchPaths: nuxt.options.modulesDir,
+        from: import.meta.url,
       })
 
       if (result !== true) {

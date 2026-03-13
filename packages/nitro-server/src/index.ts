@@ -543,6 +543,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
       rootDir: nuxt.options.rootDir,
       searchPaths: nuxt.options.modulesDir,
+      from: import.meta.url,
     })
 
     if (result !== true) {

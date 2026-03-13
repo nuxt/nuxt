@@ -45,6 +45,7 @@ async function resolvePostcssPlugin (jiti: ReturnType<typeof createJiti>, plugin
   const installed = await ensureDependencyInstalled(pluginName, {
     rootDir: nuxt.options.rootDir,
     searchPaths: nuxt.options.modulesDir,
+    from: import.meta.url,
   })
 
   if (installed) {

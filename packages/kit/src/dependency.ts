@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { addDependency } from 'nypm'
-import { resolvePackageJSON } from 'pkg-types'
+import { resolveModulePath } from 'exsolve'
 import { hasTTY, isCI, provider } from 'std-env'
 import { logger } from './logger.ts'
 import { tryUseNuxt } from './context.ts'
@@ -10,6 +10,11 @@ const isStackblitz = provider === 'stackblitz'
 export interface EnsureDependencyInstalledOptions {
   rootDir?: string
   searchPaths?: string[]
+  /**
+   * Additional URL or path to resolve packages from (e.g. `import.meta.url`).
+   * Useful when the calling package ships optional deps as peer dependencies.
+   */
+  from?: string
   /**
    * Whether to prompt the user to install the dependency.
    *
@@ -39,7 +44,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   const rootDir = options.rootDir || nuxt?.options.rootDir || process.cwd()
   const searchPaths = options.searchPaths || nuxt?.options.modulesDir || []
 
-  const missing = await findMissing(packages, rootDir, searchPaths)
+  const missing = findMissing(packages, [rootDir, ...options.from ? [options.from] : [], ...searchPaths])
 
   if (missing.length === 0) {
     return true
@@ -82,24 +87,22 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 }
 
-async function findMissing (packages: string[], rootDir: string, searchPaths: string[]): Promise<string[]> {
+function findMissing (packages: string[], searchPaths: string[]): string[] {
   const missing: string[] = []
   for (const name of packages) {
-    // First try resolving from rootDir using standard Node resolution (walks up)
-    if (await resolvePackageJSON(name, { url: rootDir }).catch(() => null)) {
+    if (isResolvable(name, searchPaths)) {
       continue
     }
-    // Then check explicit search paths (e.g. additional modulesDir entries)
-    let found = false
-    for (const parent of searchPaths) {
-      if (await resolvePackageJSON(name, { parent }).catch(() => null)) {
-        found = true
-        break
-      }
-    }
-    if (!found) {
-      missing.push(name)
-    }
+    missing.push(name)
   }
   return missing
+}
+
+function isResolvable(name: string, searchPaths: string[]): boolean {
+  for (const from of searchPaths) {
+    if (resolveModulePath(name, { from, try: true })) {
+      return true
+    }
+  }
+  return false
 }
