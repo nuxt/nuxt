@@ -139,7 +139,7 @@ type UseFetchOptions<DataT> = {
   body?: MaybeRefOrGetter<RequestInit['body'] | Record<string, any>>
   headers?: MaybeRefOrGetter<Record<string, string> | [key: string, value: string][] | Headers>
   baseURL?: MaybeRefOrGetter<string>
-  cache?: undefined | "default" | "force-cache" | "no-cache" | "no-store" | "only-if-cached" | "reload"
+  cache?: undefined | 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload'
   server?: boolean
   lazy?: boolean
   immediate?: boolean
