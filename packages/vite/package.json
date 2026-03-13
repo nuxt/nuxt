@@ -44,7 +44,6 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.1",
     "mocked-exports": "^0.1.1",
-    "nypm": "^0.6.5",
     "pathe": "^2.0.3",
     "pkg-types": "^2.3.0",
     "postcss": "^8.5.8",
