@@ -260,5 +260,10 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
+    clientNodePlaceholder: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
   },
 })
