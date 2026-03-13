@@ -39,7 +39,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   const rootDir = options.rootDir || nuxt?.options.rootDir || process.cwd()
   const searchPaths = options.searchPaths || nuxt?.options.modulesDir || []
 
-  const missing = await findMissing(packages, searchPaths)
+  const missing = await findMissing(packages, rootDir, searchPaths)
 
   if (missing.length === 0) {
     return true
@@ -82,9 +82,14 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 }
 
-async function findMissing (packages: string[], searchPaths: string[]): Promise<string[]> {
+async function findMissing (packages: string[], rootDir: string, searchPaths: string[]): Promise<string[]> {
   const missing: string[] = []
   for (const name of packages) {
+    // First try resolving from rootDir using standard Node resolution (walks up)
+    if (await resolvePackageJSON(name, { url: rootDir }).catch(() => null)) {
+      continue
+    }
+    // Then check explicit search paths (e.g. additional modulesDir entries)
     let found = false
     for (const parent of searchPaths) {
       if (await resolvePackageJSON(name, { parent }).catch(() => null)) {
