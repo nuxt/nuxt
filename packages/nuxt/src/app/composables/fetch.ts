@@ -185,7 +185,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
       const _fetchOptions = reactive<typeof fetchOptions>({
         ...fetchDefaults,
         ...fetchOptions,
-        cache: typeof fetchOptions.cache === 'boolean' ? undefined : fetchOptions.cache,
+        cache: fetchOptions.cache,
       })
 
       const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
