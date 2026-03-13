@@ -34,4 +34,11 @@ jobs:
       - name: Typecheck (docs)
         run: pnpm typecheck:docs
 
+      - uses: crate-ci/typos@631208b7aac2daa8b707f55e7331f9112b0e062d # v1.44.0
+        with:
+          write_changes: true
+          files: |
+            docs
+            **/*.md
+
       - uses: autofix-ci/action@7a166d7532b277f34e16238930461bf77f9d7ed8 # 7a166d7532b277f34e16238930461bf77f9d7ed8
