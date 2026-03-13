@@ -251,6 +251,31 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
   })
 
+  it('should not overwrite cleared data when in-flight request completes', async () => {
+    vi.useFakeTimers()
+
+    const { data, status, refresh } = await useAsyncData(uniqueKey, () => Promise.resolve('initial'))
+    expect(data.value).toBe('initial')
+
+    // Start a slow refresh
+    const refreshPromise = refresh()
+
+    // Clear while the refresh is in flight
+    clearNuxtData(uniqueKey)
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+
+    // Let the refresh complete
+    vi.advanceTimersByTime(0)
+    await refreshPromise
+
+    // Data should stay cleared
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+
+    vi.useRealTimers()
+  })
+
   it('should have correct status for previously fetched requests', async () => {
     vi.useFakeTimers()
 
