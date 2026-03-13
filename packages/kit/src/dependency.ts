@@ -70,6 +70,9 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     if (!shouldInstall) {
       return Array.isArray(names) ? missing : false
     }
+  } else if (!isStackblitz) {
+    // prompt: false should only auto-install on StackBlitz
+    return Array.isArray(names) ? missing : false
   }
 
   logger.start(`Installing ${formattedNames}...`)
