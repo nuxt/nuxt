@@ -3,8 +3,7 @@ import { defineResolvers } from '../utils/definition.ts'
 export default defineResolvers({
   future: {
     compatibilityVersion: {
-      // force resolution to `4` no matter what users pass
-      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 4,
+      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 5,
     },
     multiApp: false,
     typescriptBundlerResolution: {
