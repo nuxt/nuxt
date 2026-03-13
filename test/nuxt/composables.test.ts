@@ -210,7 +210,7 @@ describe('useHydration', () => {
 describe('useState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState()
+    clearNuxtState(undefined, { reset: false })
   })
 
   it('expect providing only init function to use autoKey default', () => {
@@ -245,7 +245,7 @@ describe('useState', () => {
 describe('clearNuxtState', () => {
   // be sure to not have colliding keys in tests
   afterEach(() => {
-    clearNuxtState()
+    clearNuxtState(undefined, { reset: false })
   })
 
   it('expect state in payload for single key to be removed', () => {
@@ -253,7 +253,9 @@ describe('clearNuxtState', () => {
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
     clearNuxtState(key)
-    expect(state.value).toBeUndefined()
+    // In v5 (resetOnClear: true), clearNuxtState resets to init value by default
+    // In v4 (resetOnClear: false), clearNuxtState sets to undefined
+    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
   })
 
   it('expect state in payload for array of keys to be removed', () => {
@@ -264,11 +266,13 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState([key1, 'other'])
-    expect(state1.value).toBeUndefined()
+    // In v5, resetOnClear resets to init value; in v4, it sets to undefined
+    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
+    expect(state1.value).toBe(cleared)
     expect(state2.value).toBe('test')
     clearNuxtState([key1, key2])
-    expect(state1.value).toBeUndefined()
-    expect(state2.value).toBeUndefined()
+    expect(state1.value).toBe(cleared)
+    expect(state2.value).toBe(cleared)
   })
 
   it('expect state in payload for function to be removed', () => {
@@ -278,7 +282,7 @@ describe('clearNuxtState', () => {
     clearNuxtState(() => false)
     expect(state.value).toBe('test')
     clearNuxtState(k => k === key)
-    expect(state.value).toBeUndefined()
+    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
   })
 
   it('expect all states to be removed when no key is provided', () => {
@@ -287,8 +291,9 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState(undefined)
-    expect(state1.value).toBeUndefined()
-    expect(state2.value).toBeUndefined()
+    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
+    expect(state1.value).toBe(cleared)
+    expect(state2.value).toBe(cleared)
   })
 
   it('expect state in payload for single key to reset', () => {
