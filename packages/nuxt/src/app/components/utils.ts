@@ -1,5 +1,5 @@
-import { Transition, h } from 'vue'
-import type { RendererNode, TransitionProps } from 'vue'
+import { Transition, createStaticVNode, h } from 'vue'
+import type { RendererNode, TransitionProps, VNode } from 'vue'
 import { defu } from 'defu'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
@@ -148,6 +148,20 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     getFragmentChildren(element.nextSibling, blocks, withoutSlots)
   }
   return blocks
+}
+
+/**
+ * Return a static vnode from an element
+ * Default to a div if the element is not found and if a fallback is not provided
+ * @param el renderer node retrieved from the component internal instance
+ * @param staticNodeFallback fallback string to use if the element is not found. Must be a valid HTML string
+ */
+export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: string): VNode {
+  const fragment: string[] | undefined = el ? getFragmentHTML(el) : staticNodeFallback ? [staticNodeFallback] : undefined
+  if (fragment) {
+    return createStaticVNode(fragment.join(''), fragment.length)
+  }
+  return h('div')
 }
 
 export function isStartFragment (element: RendererNode) {
