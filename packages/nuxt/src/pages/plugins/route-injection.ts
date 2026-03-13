@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { Nuxt } from '@nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
-import { isVue } from '../../core/utils'
+import { isVue } from '../../core/utils/index.ts'
 
 const INJECTION_SINGLE_RE = /\bthis\.\$route\b|\b_ctx\.\$route\b/
 

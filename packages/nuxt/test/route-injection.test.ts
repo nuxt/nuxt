@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
 import type { Nuxt } from '@nuxt/schema'
-import { RouteInjectionPlugin } from '../src/pages/plugins/route-injection'
+import { RouteInjectionPlugin } from '../src/pages/plugins/route-injection.ts'
 
 describe('route-injection:transform', () => {
   const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } } } as Nuxt).raw({}, { framework: 'rollup' }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }

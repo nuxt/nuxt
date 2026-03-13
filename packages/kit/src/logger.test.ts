@@ -1,47 +1,43 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { consola } from 'consola'
-import { logger, useLogger } from './logger'
-
-vi.mock('consola', () => {
-  const logger = {} as any
-
-  logger.create = vi.fn(() => ({ ...logger }))
-  logger.withTag = vi.fn(() => ({ ...logger }))
-
-  return { consola: logger }
-})
+import { logger, useLogger } from './logger.ts'
 
 describe('logger', () => {
   it('should expose consola', () => {
-    expect(logger).toBe(consola)
+    expect(logger).toBeDefined()
+    expect(logger.create).toBeDefined()
+    expect(logger.withTag).toBeDefined()
   })
 })
 
 describe('useLogger', () => {
-  it('should expose consola when not passing a tag', () => {
-    expect(useLogger()).toBe(consola)
+  it('should expose logger when not passing a tag', () => {
+    expect(useLogger()).toBe(logger)
   })
 
   it('should create a new instance when passing a tag', () => {
-    const logger = vi.mocked(consola)
+    const mockWithTag = vi.fn().mockReturnValue({})
+    const mockInstance = { withTag: mockWithTag }
+    const createSpy = vi.spyOn(logger, 'create').mockReturnValue(mockInstance as any)
 
-    const instance = useLogger('tag')
+    useLogger('tag')
 
-    expect(instance).toEqual(logger)
-    expect(instance).not.toBe(logger)
-    expect(logger.create).toBeCalledWith({})
-    expect(logger.withTag).toBeCalledWith('tag')
+    expect(createSpy).toHaveBeenCalledWith({})
+    expect(mockWithTag).toHaveBeenCalledWith('tag')
+
+    createSpy.mockRestore()
   })
 
   it('should create a new instance when passing a tag and options', () => {
-    const logger = vi.mocked(consola)
+    const mockWithTag = vi.fn().mockReturnValue({})
+    const mockInstance = { withTag: mockWithTag }
+    const createSpy = vi.spyOn(logger, 'create').mockReturnValue(mockInstance as any)
 
-    const instance = useLogger('tag', { level: 0 })
+    useLogger('tag', { level: 0 })
 
-    expect(instance).toEqual(logger)
-    expect(instance).not.toBe(logger)
-    expect(logger.create).toBeCalledWith({ level: 0 })
-    expect(logger.withTag).toBeCalledWith('tag')
+    expect(createSpy).toHaveBeenCalledWith({ level: 0 })
+    expect(mockWithTag).toHaveBeenCalledWith('tag')
+
+    createSpy.mockRestore()
   })
 })

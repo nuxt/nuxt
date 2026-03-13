@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Component } from '@nuxt/schema'
 import { compileScript, parse } from '@vue/compiler-sfc'
 
-import { ComponentNamePlugin } from '../src/components/plugins/component-names'
+import { ComponentNamePlugin } from '../src/components/plugins/component-names.ts'
 
 describe('component names', () => {
   const components = [

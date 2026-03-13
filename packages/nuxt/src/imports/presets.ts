@@ -30,7 +30,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/component',
   },
   {
-    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
+    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData', 'createUseAsyncData'],
     from: '#app/composables/asyncData',
   },
   {
@@ -50,7 +50,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/error',
   },
   {
-    imports: ['useFetch', 'useLazyFetch'],
+    imports: ['useFetch', 'useLazyFetch', 'createUseFetch'],
     from: '#app/composables/fetch',
   },
   {
@@ -102,6 +102,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/route-announcer',
   },
   {
+    imports: ['useAnnouncer'],
+    from: '#app/composables/announcer',
+  },
+  {
     imports: ['useRuntimeHook'],
     from: '#app/composables/runtime-hook',
   },
@@ -140,6 +144,9 @@ export const scriptsStubsPreset = {
     'useScriptUmamiAnalytics',
     'useScriptSnapchatPixel',
     'useScriptRybbitAnalytics',
+    'useScriptDatabuddyAnalytics',
+    'useScriptRedditPixel',
+    'useScriptPayPal',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',
@@ -220,7 +227,6 @@ const vuePreset = defineUnimportPreset({
     'hasInjectionContext',
     'nextTick',
     'provide',
-    'mergeModels',
     'toValue',
     'useModel',
     'useAttrs',

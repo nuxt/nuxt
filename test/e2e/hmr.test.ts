@@ -1,11 +1,10 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { expect, test } from './test-utils'
-
-const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
+import { isBuilt, isWebpack } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
@@ -18,12 +17,11 @@ test.use({
     env: { TEST: '1' },
     nuxtConfig: {
       test: true,
-      builder: isWebpack ? 'webpack' : 'vite',
     },
   },
 })
 
-if (process.env.TEST_ENV === 'built' || isWindows) {
+if (isBuilt || isWindows) {
   test.skip('Skipped: HMR tests are skipped on Windows or in built mode', () => {})
 } else {
   test.describe.configure({ mode: 'serial' })
@@ -95,6 +93,42 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
     await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev')
   })
 
+  test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) => {
+    // Verify CSS <link> is present in initial SSR HTML
+    const configPath = join(fixtureDir, 'nuxt.config.ts')
+    const configContents = readFileSync(configPath, 'utf8')
+
+    await expect(async () => {
+      const res = await fetch('/')
+      const html = await res.text()
+      return /href="[^"]*test\.css[^"]*"/.test(html)
+    }).toBeWithPolling(true)
+
+    // Trigger a config restart by modifying nuxt.config.ts
+    writeFileSync(configPath, configContents.replace(
+      'experimental: {',
+      '// trigger restart\n  experimental: {',
+    ))
+
+    // Wait for the restart to begin and complete
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Verify CSS <link> is still present after restart
+    await expect(async () => {
+      const res = await fetch('/')
+      const html = await res.text()
+      return /href="[^"]*test\.css[^"]*"/.test(html)
+    }).toBeWithPolling(true, { timeout: 30000, interval: 1000 })
+
+    // Restore original config and wait for restart to complete
+    writeFileSync(configPath, configContents)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    await expect(async () => {
+      const res = await fetch('/')
+      return res.status
+    }).toBeWithPolling(200, { timeout: 30000, interval: 1000 })
+  })
+
   test('HMR for island components', async ({ page, goto }) => {
     // Navigate to the page with the island components
     await goto('/server-component')
@@ -140,6 +174,64 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
       expect(page).toHaveNoErrorsOrWarnings()
     })
 
+    test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
+      await goto('/state-component')
+
+      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pageContents = readFileSync(pagePath, 'utf8')
+
+      const button = page.getByTestId('button')
+      await expect(button).toHaveText('0')
+      await button.click()
+      await expect(button).toHaveText('1')
+
+      writeFileSync(
+        pagePath,
+        pageContents.replace('#hmr-template', '#hmr-template updated'),
+      )
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Wait for HMR to process the new route
+      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+
+      await expect.soft(button).toHaveText('1')
+    })
+
+    test('HMR on page should keep ref state when updating script', async ({ goto, page }) => {
+      await goto('/state-component')
+
+      const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
+      const pageContents = readFileSync(pagePath, 'utf8')
+
+      const button = page.getByTestId('button')
+      await expect(button).toHaveText('0')
+      await button.click()
+      await expect(button).toHaveText('1')
+
+      writeFileSync(
+        pagePath,
+        pageContents.replace('#hmr-script', '#hmr-script updated'),
+      )
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Wait for HMR to process the new route
+      await expect(() => consoleLogs.some(log => log.text.includes('hmr'))).toBeWithPolling(true)
+
+      await expect.soft(button).toHaveText('1')
+    })
+
     test('HMR for routes', async ({ page, goto }) => {
       await goto('/routes')
 
@@ -172,6 +264,112 @@ if (process.env.TEST_ENV === 'built' || isWindows) {
 
       // Verify no unexpected errors
       expect(filteredLogs).toStrictEqual([])
+    })
+
+    test.fail('should support renaming files to same import name', async ({ page, goto }) => {
+      await goto('/rename-component')
+
+      await expect(page.getByTestId('example')).toHaveText('test.vue')
+
+      renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
+
+      writeFileSync(
+        join(fixtureDir, 'app/components/example/example-test.vue'),
+        `<template><div data-testid="example">example-test.vue</div></template>`,
+      )
+
+      await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+
+      await page.reload()
+
+      await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+    })
+
+    test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
+      await goto('/issues/32177')
+
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/issues/32177.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
+      await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
+    })
+
+    test('HMR with top-level await', async ({ page, goto }) => {
+      const pageContents = readFileSync(join(sourceDir, 'app/pages/top-level-await.vue'), 'utf8')
+      writeFileSync(join(fixtureDir, 'app/pages/top-level-await.vue'), pageContents)
+
+      // Navigate and wait for full load
+      await goto('/top-level-await')
+      await expect(page.getByTestId('content')).toHaveText('loaded')
+
+      // Trigger HMR by editing script
+      writeFileSync(
+        join(fixtureDir, 'app/pages/top-level-await.vue'),
+        pageContents.replace('console.log(\'page loaded\')', '// console.log(\'page loaded\')'),
+      )
+
+      // Wait for HMR to process and check no errors
+      await page.waitForTimeout(1000)
+    })
+
+    test('custom routes added via router.addRoute() should survive HMR (#32027)', async ({ page, goto }) => {
+      // Navigate to the custom route (SSR will warn but client plugin will add route)
+      await goto('/custom-route')
+      await expect(page.getByTestId('custom-route')).toHaveText('Custom route added via plugin')
+
+      // Verify custom route is in the router before HMR
+      const routeExistsBefore = await page.evaluate(() => {
+        const router = window.useNuxtApp?.().$router
+        // @ts-expect-error - accessing nuxt internals
+        return router?.hasRoute('custom-route') ?? false
+      })
+      expect(routeExistsBefore).toBe(true)
+
+      // Start tracking console logs after initial navigation
+      // This way we only capture warnings that occur during/after HMR
+      const consoleLogs: Array<{ type: string, text: string }> = []
+      page.on('console', (msg) => {
+        consoleLogs.push({
+          type: msg.type(),
+          text: msg.text(),
+        })
+      })
+
+      // Trigger ROUTES HMR by adding a new page file (this regenerates routes.mjs)
+      writeFileSync(
+        join(fixtureDir, 'app/pages/hmr-trigger.vue'),
+        `<template><div data-testid="hmr-trigger">HMR trigger page</div></template>`,
+      )
+
+      // Wait for routes HMR to process
+      await expect(async () => {
+        const newRouteExists = await page.evaluate(() => {
+          const router = window.useNuxtApp?.().$router
+          // @ts-expect-error - accessing nuxt internals
+          return router?.getRoutes().some((r: { path: string }) => r.path === '/hmr-trigger') ?? false
+        })
+        return newRouteExists
+      }).toBeWithPolling(true)
+
+      // Verify custom route still exists after HMR
+      const routeExistsAfter = await page.evaluate(() => {
+        const router = window.useNuxtApp?.().$router
+        // @ts-expect-error - accessing nuxt internals
+        return router?.hasRoute('custom-route') ?? false
+      })
+      expect(routeExistsAfter).toBe(true)
+
+      // Verify no "No match found" warnings for custom-route after HMR
+      const customRouteWarnings = consoleLogs.filter(log =>
+        log.text.includes('No match found for location with path "/custom-route"'),
+      )
+      expect(customRouteWarnings).toStrictEqual([])
+
+      // Filter out other expected warnings/errors
+      const errors = consoleLogs.filter(log =>
+        (log.type === 'warning' || log.type === 'error') &&
+        !log.text.includes('No match found for location with path "/hmr-trigger"'),
+      )
+      expect(errors).toStrictEqual([])
     })
   }
 }

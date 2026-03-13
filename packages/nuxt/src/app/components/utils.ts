@@ -1,5 +1,6 @@
 import { Transition, createStaticVNode, h } from 'vue'
-import type { RendererNode, VNode } from 'vue'
+import type { RendererNode, TransitionProps, VNode } from 'vue'
+import { defu } from 'defu'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
@@ -18,7 +19,7 @@ const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
 const ROUTE_KEY_NORMAL_RE = /:\w+/g
 // TODO: consider refactoring into single utility
-// See https://github.com/nuxt/nuxt/tree/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
+// See https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
 function generateRouteKey (route: RouteLocationNormalized) {
   const source = route?.meta.key ?? route.path
     .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
@@ -169,4 +170,25 @@ export function isStartFragment (element: RendererNode) {
 
 export function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+
+export function toArray<T> (value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value]
+}
+
+/**
+ * Internal utility
+ * @private
+ */
+export function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
+  const _props: TransitionProps[] = []
+  for (const prop of routeProps) {
+    if (!prop) { continue }
+    _props.push({
+      ...prop,
+      onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
+      onBeforeLeave: prop.onBeforeLeave ? toArray(prop.onBeforeLeave) : undefined,
+    })
+  }
+  return defu(..._props as [TransitionProps, TransitionProps])
 }

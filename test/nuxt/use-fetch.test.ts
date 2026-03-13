@@ -16,9 +16,21 @@ interface TestData {
 }
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
+
+registerEndpoint('/api/sleep', defineEventHandler((event) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ method: event.req.method, headers: Object.fromEntries(event.req.headers.entries()) })
+    }, 100)
+  })
+}))
+
+beforeEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('useFetch', () => {
   beforeEach(() => {
@@ -232,16 +244,12 @@ describe('useFetch', () => {
     expect(data.value).toEqual({ custom: 'GET' })
   })
 
-  it('should use default value with lazy', async () => {
+  it('should use default value with lazy', () => {
     const { data, pending } = useLazyFetch<TestData>('/api/test', { default: () => ({ method: 'default', headers: {} }) })
     expect(pending.value).toBe(true)
     expect(data.value).toEqual({ method: 'default', headers: {} })
-    await nextTick()
-    await flushPromises()
     expect(data.value).not.toBeNull()
-    if (data.value) {
-      expect(data.value.method).toEqual('default')
-    }
+    expect(data.value.method).toEqual('default')
   })
 
   it('should not execute with immediate: false and be executable', async () => {
@@ -254,5 +262,24 @@ describe('useFetch', () => {
       expect(data.value.method).toEqual('GET')
     }
     expect(status.value).toBe('success')
+  })
+
+  it('should cancel fetch request on clear', () => {
+    let aborted = false
+
+    class Mock {
+      signal = { aborted: false }
+      abort = () => {
+        this.signal.aborted = true
+        aborted = true
+      }
+    }
+    vi.stubGlobal('AbortController',
+      Mock,
+    )
+    const { clear } = useLazyFetch('/api/sleep')
+    expect(aborted).toBe(false)
+    clear()
+    expect(aborted).toBe(true)
   })
 })

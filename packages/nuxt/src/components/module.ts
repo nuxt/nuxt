@@ -1,33 +1,34 @@
-import { existsSync, statSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
 
 import { resolveModulePath } from 'exsolve'
-import { distDir } from '../dirs'
-import { logger } from '../utils'
-import { lazyHydrationMacroPreset } from '../imports/presets'
-import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
-import { scanComponents } from './scan'
+import { distDir } from '../dirs.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
+import { lazyHydrationMacroPreset } from '../imports/presets.ts'
+import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
+import { scanComponents } from './scan.ts'
 
-import { LoaderPlugin } from './plugins/loader'
-import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
-import { TransformPlugin } from './plugins/transform'
-import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
-import { ComponentNamePlugin } from './plugins/component-names'
-import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform'
-import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform'
+import { LoaderPlugin } from './plugins/loader.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
+import { TransformPlugin } from './plugins/transform.ts'
+import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
+import { ComponentNamePlugin } from './plugins/component-names.ts'
+import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
+import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 const SLASH_SEPARATOR_RE = /[\\/]/
 /**
  * Compare two directory entries by the number of path segments.
  *
  * Returns a sort comparator value based on the count of path segments (split on slashes). Deeper (more segments) paths are ordered before shallower ones.
  *
- * @param param0 - First directory object with a `path` string
- * @param param1 - Second directory object with a `path` string
+ * @param dirA - First directory
+ * @param dirA.path - Path string
+ * @param dirB - Second directory
+ * @param dirB.path - Path string
  * @returns A negative number if the first directory should come before the second, positive if after, or 0 if equal
  */
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
@@ -69,8 +70,12 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
       const allDirs: ComponentsDir[] = []
-      for (const layer of nuxt.options._layers) {
-        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 })
+      const layerCount = nuxt.options._layers.length
+      for (const [i, layer] of nuxt.options._layers.entries()) {
+        // Assign priority based on layer position: lower index = higher priority
+        // This ensures correct override order: root > auto-scanned > extends layers
+        const priority = layerCount - i
+        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority })
         allDirs.push(...layerDirs)
       }
 
@@ -93,7 +98,7 @@ export default defineNuxtModule<ComponentsOptions>({
           nuxt.options.build.transpile.push(dirPath)
         }
 
-        const present = isDirectory(dirPath)
+        const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
           logger.warn('Components directory not found: `' + dirPath + '`')
         }
@@ -108,7 +113,7 @@ export default defineNuxtModule<ComponentsOptions>({
           pattern: dirOptions.pattern || (extensions.length > 1 ? `**/*.{${extensions.join(',')}}` : `**/*.${extensions[0] || '*'}`),
           ignore: [
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.{cts,mts,ts}', // .d.ts files
+            `**/*.{${DECLARATION_EXTENSIONS.join(',')},}`, // .d.ts files
             ...(dirOptions.ignore || []),
           ],
           transpile,
@@ -130,7 +135,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // component-names.mjs
     addTemplate(componentNamesTemplate)
     // components.islands.mjs
-    addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
+    addTemplate(componentsIslandsTemplate)
 
     if (moduleOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
@@ -253,7 +258,7 @@ export default defineNuxtModule<ComponentsOptions>({
         },
       }, { server: false })
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false, prepend: true })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
         addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
@@ -281,6 +286,7 @@ export default defineNuxtModule<ComponentsOptions>({
  * @param dir - The raw `dirs` configuration value (single entry, array, true/undefined for defaults, or an options object).
  * @param cwd - Base directory used to resolve relative `path` values.
  * @param options - Optional settings; currently supports `priority` to assign a priority to all returned entries.
+ * @param options.priority - Priority number to assign to all returned entries (default 0).
  * @returns A normalized, flat, and sorted array of ComponentsDir objects ready for component scanning.
  */
 function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {

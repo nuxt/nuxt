@@ -7,6 +7,7 @@ import { isCSSRequest } from 'vite'
 import type { Plugin } from 'vite'
 
 const PREFIX = 'virtual:public?'
+const PREFIX_RE = /^virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
 const RENDER_CHUNK_RE = /(?<= = )['"`]/
@@ -51,17 +52,21 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
       },
       load: {
         order: 'pre',
+        filter: {
+          id: PREFIX_RE,
+        },
         handler (id) {
-          if (id.startsWith(PREFIX)) {
-            return `import { publicAssetsURL } from '#internal/nuxt/paths';export default publicAssetsURL(${JSON.stringify(decodeURIComponent(id.slice(PREFIX.length)))})`
-          }
+          return `import { publicAssetsURL } from '#internal/nuxt/paths';export default publicAssetsURL(${JSON.stringify(decodeURIComponent(id.slice(PREFIX.length)))})`
         },
       },
       resolveId: {
         order: 'post',
+        filter: {
+          id: {
+            exclude: [/^\/__skip_vite$/, /^[^/]/, /^\/@fs/],
+          },
+        },
         handler (id) {
-          if (id === '/__skip_vite' || id[0] !== '/' || id.startsWith('/@fs')) { return }
-
           if (resolveFromPublicAssets(id)) {
             return PREFIX + encodeURIComponent(id)
           }

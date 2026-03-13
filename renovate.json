@@ -7,6 +7,7 @@
   ],
   "baseBranchPatterns": [
     "main",
+    "4.x",
     "3.x"
   ],
   "ignoreDeps": [
@@ -24,7 +25,6 @@
     {
       "groupName": "vitest",
       "matchPackageNames": [
-        "vite-node",
         "vitest",
         "/^@vitest//"
       ]
@@ -32,6 +32,7 @@
     {
       "matchBaseBranches": [
         "main",
+        "4.x",
         "3.x"
       ],
       "ignoreDeps": [

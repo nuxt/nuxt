@@ -1,24 +1,18 @@
-# Dependency Review Action
-#
-# This Action will scan dependency manifest files that change as part of a Pull Request,
-# surfacing known-vulnerable versions of the packages declared or updated in the PR.
-# Once installed, if the workflow run is marked as required,
-# PRs introducing known-vulnerable packages will be blocked from merging.
-#
-# Source repository: https://github.com/actions/dependency-review-action
-name: 'Dependency Review'
+name: 'Dependency review'
+
 on:
-  merge_group:
   pull_request:
+    branches:
+      - main
+      - 4.x
+      - 3.x
+      - '!v[0-9]*'
 
 permissions:
   contents: read
 
 jobs:
   dependency-review:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout Repository'
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - name: 'Dependency Review'
-        uses: actions/dependency-review-action@595b5aeba73380359d98a5e087f648dbb0edce1b # v4.7.3
+    uses: nuxt/.github/.github/workflows/dependency-review.yml@main
+    with:
+      fail-on-provenance-change: true

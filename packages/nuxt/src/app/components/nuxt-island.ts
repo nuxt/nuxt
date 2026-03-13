@@ -2,14 +2,13 @@ import type { Component, PropType, RendererNode, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
-import type { FetchResponse } from 'ofetch'
 
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
@@ -93,8 +92,6 @@ export default defineComponent({
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
@@ -201,18 +198,20 @@ export default defineComponent({
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
-      // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await fetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined,
       }))
+      if (!r.ok) {
+        throw createError({ status: r.status, statusText: r.statusText })
+      }
       try {
-        const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
+        const result = await r.json()
         // TODO: support passing on more headers
         if (import.meta.server && import.meta.prerender) {
           const hints = r.headers.get('x-nitro-prerender')
           if (hints) {
-            appendResponseHeader(event!, 'x-nitro-prerender', hints)
+            event!.res.headers.append('x-nitro-prerender', hints)
           }
         }
         setPayload(key, result)
@@ -278,6 +277,14 @@ export default defineComponent({
 
     if (import.meta.client) {
       watch(props, debounce(() => fetchComponent(), 100), { deep: true })
+    }
+
+    // Restore head entries from SSR payload during hydration
+    if (import.meta.client && instance.vnode.el) {
+      const headData = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.head
+      if (headData) {
+        activeHead = head.push(headData)
+      }
     }
 
     if (import.meta.client && !instance.vnode.el && props.lazy) {

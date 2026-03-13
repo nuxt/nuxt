@@ -1,32 +1,6 @@
 import type { UseHeadInput } from '@unhead/vue/types'
+import type { $Fetch } from 'nitro/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
-
-declare module 'nitropack' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-}
-declare module 'nitropack/types' {
-  interface NitroRuntimeConfigApp {
-    buildAssetsDir: string
-    cdnURL: string
-  }
-  interface NitroRouteRules {
-    ssr?: boolean
-    noScripts?: boolean
-    /** @deprecated Use `noScripts` instead */
-    experimentalNoScripts?: boolean
-    appMiddleware?: Record<string, boolean>
-  }
-}
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -57,6 +31,10 @@ declare global {
     __NUXT__?: Record<string, any> | Record<string, Record<string, any>>
     useNuxtApp?: typeof useNuxtApp
   }
+
+  // TODO: typed fetch
+  // @ts-expect-error type is coming in from `nitropack` v2
+  const $fetch: $Fetch
 }
 
 declare module 'vue' {

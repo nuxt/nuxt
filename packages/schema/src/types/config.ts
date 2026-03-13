@@ -3,12 +3,12 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { NitroConfig, NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack/types'
 import type { SnakeCase } from 'scule'
 import type { ResolvedConfig } from 'c12'
-import type { ConfigSchema } from './schema'
-import type { Nuxt } from './nuxt'
-import type { AppHeadMetaObject } from './head'
+import type { RouteLocationNormalizedGeneric } from 'vue-router'
+import type { ConfigSchema } from './schema.ts'
+import type { Nuxt } from './nuxt.ts'
+import type { AppHeadMetaObject } from './head.ts'
 
 export type { SchemaDefinition } from 'untyped'
 
@@ -17,8 +17,8 @@ type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? {
 
 export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
 
-const message = Symbol('message')
-export type RuntimeValue<T, B extends string> = T & { [message]?: B }
+const message: symbol = Symbol('message')
+export type RuntimeValue<T, B extends string> = T & { [message]?: B } | T
 type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
   [K in keyof T]?: K extends string
     ? unknown extends T[K]
@@ -39,20 +39,20 @@ type RuntimeConfigNamespace = Record<string, unknown>
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
-  app: NitroRuntimeConfigApp
-  /** Only available on the server. */
-  nitro?: NitroRuntimeConfig['nitro']
   public: PublicRuntimeConfig
 }
 
-// User configuration in `nuxt.config` file
+// Avoid DeepPartial for some problematic config, including:
+// - nitro config interface (#31908) located in packages/nitro-server/src/augments.ts
+// - vite config interface (#4772)
+
+/**
+ * User configuration in `nuxt.config` file
+ */
 export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
   components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
-  // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
-  // Avoid DeepPartial for nitro config interface (#31908)
-  nitro?: NitroConfig
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
@@ -120,11 +120,14 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   /**
    * Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`.
    *
-   * You can read more in <https://nuxt.com/docs/api/nuxt-config#public>.
+   * You can read more in <https://nuxt.com/docs/4.x/api/nuxt-config#public>.
    * @deprecated
    */
   publicDir?: never
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ViteOptions extends ViteConfig {}
 
 // App Config
 export interface CustomAppConfig {
@@ -152,10 +155,24 @@ export interface NuxtAppConfig {
   head: Serializable<AppHeadMetaObject>
   layoutTransition: boolean | Serializable<TransitionProps>
   pageTransition: boolean | Serializable<TransitionProps>
-  viewTransition?: boolean | 'always'
+  viewTransition?: ViewTransitionOptions['enabled'] | ViewTransitionOptions
   keepalive: boolean | Serializable<KeepAliveProps>
 }
 
 export interface AppConfig {
   [key: string]: unknown
+}
+
+export interface ViewTransitionOptions {
+  enabled: boolean | 'always'
+  types?: string[]
+}
+
+type ViewTransitionTypesFn = (to: RouteLocationNormalizedGeneric, from: RouteLocationNormalizedGeneric) => string[]
+
+export interface ViewTransitionPageOptions {
+  enabled?: boolean | 'always'
+  types?: string[] | ViewTransitionTypesFn
+  toTypes?: string[] | ViewTransitionTypesFn
+  fromTypes?: string[] | ViewTransitionTypesFn
 }

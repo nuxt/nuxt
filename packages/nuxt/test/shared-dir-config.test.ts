@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import type { NuxtConfig } from '@nuxt/schema'
-import { loadNuxt } from '../src'
+import { loadNuxt } from '../src/index.ts'
 import { findWorkspaceDir } from 'pkg-types'
 
 const repoRoot = await findWorkspaceDir()

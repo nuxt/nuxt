@@ -2,9 +2,14 @@
   <div>
     <Head>
       <Link
-        rel="alternate"
-        href="/"
+        key="dedupe-key"
+        rel="x-test"
+        :href="isServer ? 'server' : 'client'"
       />
     </Head>
   </div>
 </template>
+
+<script setup lang="ts">
+const isServer = import.meta.server
+</script>
