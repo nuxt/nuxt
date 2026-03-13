@@ -12,11 +12,15 @@ export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-o
 
 const STATIC_DIV = '<div></div>'
 
+function isPlaceholderComment (el: RendererNode) {
+  return el.nodeName === '#comment' && el.nodeValue === 'placeholder'
+}
+
 function createPlaceholder (el?: RendererNode | null) {
-  if (clientNodePlaceholder) {
-    return createCommentVNode('placeholder')
+  if (el && !isPlaceholderComment(el)) {
+    return elToStaticVNode(el, STATIC_DIV)
   }
-  return elToStaticVNode(el ?? null, STATIC_DIV)
+  return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
 }
 
 export default defineComponent({
