@@ -1,9 +1,9 @@
 import { existsSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
 import { isAbsolute, join } from 'pathe'
-import type { Nitro } from 'nitropack/types'
 import { createDefu } from 'defu'
 import type { ContentSecurityPolicyConfig, ContentSecurityPolicyValue } from '../types'
+import type { Nitro } from 'nitro/types'
 
 export async function hashBundledAssets (nitro: Nitro) {
   const hashAlgorithm = 'SHA-384'

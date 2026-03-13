@@ -1,6 +1,6 @@
-import type { NitroApp } from 'nitropack/types'
 // @ts-expect-error : we are importing from the virtual file system
 import contentSecurityPolicyConfig from '#content-security-policy'
+import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig } from '../../../types'
 import { headerStringFromObject } from '../../../utils'
 
@@ -11,7 +11,7 @@ export default (nitroApp: NitroApp) => {
 
   const cspConfig = contentSecurityPolicyConfig as ContentSecurityPolicyConfig
 
-  nitroApp.hooks.hook('render:html', (html) => {
+  nitroApp.hooks?.hook('render:html', (html) => {
     if (cspConfig.ssg && cspConfig.ssg.meta && cspConfig.value) {
       const csp = structuredClone(cspConfig.value)
       csp['frame-ancestors'] = false

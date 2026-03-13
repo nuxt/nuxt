@@ -1,9 +1,9 @@
-import type { NitroApp } from 'nitropack/types'
 // @ts-expect-error : we are importing from the virtual file system
 import sriHashes from '#sri-hashes'
 // @ts-expect-error : we are importing from the virtual file system
 import contentSecurityPolicyConfig from '#content-security-policy'
 import type { ContentSecurityPolicyConfig, Section } from '../../../types'
+import type { NitroApp } from 'nitro/types'
 
 const SCRIPT_RE = /<script((?=[^>]+\bsrc="([^"]+)")(?![^>]+\bintegrity="[^"]+")[^>]+)(?:\/>|><\/script>)/g
 const LINK_RE = /<link((?=[^>]+\brel="(?:stylesheet|preload|modulepreload)")(?=[^>]+\bhref="([^"]+)")(?![^>]+\bintegrity="[\w\-+/=]+")[^>]+)>/g
@@ -14,7 +14,7 @@ const LINK_RE = /<link((?=[^>]+\brel="(?:stylesheet|preload|modulepreload)")(?=[
 export default (nitroApp: NitroApp) => {
   const cspConfig = contentSecurityPolicyConfig as ContentSecurityPolicyConfig
 
-  nitroApp.hooks.hook('render:html', (html) => {
+  nitroApp.hooks?.hook('render:html', (html) => {
     // Exit if SRI not enabled for this route
     if (!cspConfig.sri) {
       return

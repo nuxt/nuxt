@@ -1,6 +1,6 @@
-import type { NitroApp } from 'nitropack/types'
 // @ts-expect-error : we are importing from the virtual file system
 import contentSecurityPolicyConfig from '#content-security-policy'
+import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig } from '../../../types'
 import { generateRandomNonce } from '../../../utils'
 
@@ -22,7 +22,7 @@ export default (nitroApp: NitroApp) => {
   const cspConfig = contentSecurityPolicyConfig as ContentSecurityPolicyConfig
 
   // Genearate a 16-byte random nonce for each request.
-  nitroApp.hooks.hook('request', (event) => {
+  nitroApp.hooks?.hook('request', (event) => {
     event.context.security ||= {}
 
     if (event.context.security?.nonce) {
@@ -39,7 +39,7 @@ export default (nitroApp: NitroApp) => {
   })
 
   // Set the nonce attribute on all script, style, and link tags.
-  nitroApp.hooks.hook('render:html', (html, { event }) => {
+  nitroApp.hooks?.hook('render:html', (html, { event }) => {
     // event.context.security ||= {}
     // Exit if no CSP defined
     if (

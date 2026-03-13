@@ -42,9 +42,6 @@ export default defineNuxtModule<Partial<ContentSecurityPolicyConfig>>({
       })
     }
 
-    // Set CSP response headers
-    addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins'))
-
     if (contentSecurityPolicyConfig.nonce) {
       addServerPlugin(resolve(distDir, 'csp/runtime/nitro/plugins/nonce'))
     }

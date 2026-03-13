@@ -1,6 +1,6 @@
-import type { NitroApp } from 'nitropack/types'
 // @ts-expect-error : we are importing from the virtual file system
 import contentSecurityPolicyConfig from '#content-security-policy'
+import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig, Section } from '../../../types'
 import { generateHash } from '../../../utils'
 
@@ -23,7 +23,7 @@ export default (nitroApp: NitroApp) => {
 
   const cspConfig = contentSecurityPolicyConfig as ContentSecurityPolicyConfig
 
-  nitroApp.hooks.hook('render:html', async (html, { event }) => {
+  nitroApp.hooks?.hook('render:html', async (html, { event }) => {
     // Exit if no CSP defined
     if (!cspConfig || !cspConfig.value) {
       return
