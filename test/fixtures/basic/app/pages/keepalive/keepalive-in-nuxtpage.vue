@@ -2,7 +2,7 @@
 useLifecycleLogs('keepalive-in-nuxtpage')
 
 definePageMeta({
-  name: 'keepalive-in-nuxtpage'
+  name: 'keepalive-in-nuxtpage',
 })
 </script>
 

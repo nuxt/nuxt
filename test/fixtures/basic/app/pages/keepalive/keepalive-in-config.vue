@@ -2,7 +2,7 @@
 useLifecycleLogs('keepalive-in-config')
 
 definePageMeta({
-  name: 'keepalive-in-config'
+  name: 'keepalive-in-config',
 })
 </script>
 
