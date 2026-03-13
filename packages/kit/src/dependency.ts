@@ -98,7 +98,7 @@ function findMissing (packages: string[], searchPaths: string[]): string[] {
   return missing
 }
 
-function isResolvable(name: string, searchPaths: string[]): boolean {
+function isResolvable (name: string, searchPaths: string[]): boolean {
   for (const from of searchPaths) {
     if (resolveModulePath(name, { from, try: true })) {
       return true
