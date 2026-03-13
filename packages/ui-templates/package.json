@@ -31,6 +31,6 @@
     "tinyexec": "1.0.2",
     "tinyglobby": "0.2.15",
     "unocss": "66.6.6",
-    "vite": "8.0.0-beta.18"
+    "vite": "8.0.0"
   }
 }

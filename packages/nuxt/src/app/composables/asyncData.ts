@@ -713,6 +713,11 @@ function buildAsyncData<
           }
         })
         .then(async (_result) => {
+          // If the promise was replaced or cleared (e.g. by clearNuxtData), skip the update
+          if (nuxtApp._asyncDataPromises[key] !== promise) {
+            return
+          }
+
           let result = _result as unknown as DataT
           if (options.transform) {
             result = await options.transform(_result)
@@ -735,8 +740,8 @@ function buildAsyncData<
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
-          // If the promise was replaced by another one, we do not update the asyncData
-          if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
+          // If the promise was replaced or cleared (e.g. by clearNuxtData), do not update the asyncData
+          if (nuxtApp._asyncDataPromises[key] !== promise) {
             return nuxtApp._asyncDataPromises[key]
           }
 
@@ -756,12 +761,15 @@ function buildAsyncData<
           asyncData.status.value = 'error'
         })
         .finally(() => {
-          if (pendingWhenIdle) {
-            asyncData.pending.value = false
-          }
           cleanupController.abort()
 
-          delete nuxtApp._asyncDataPromises[key]
+          // Only clean up if this promise is still the current one
+          if (nuxtApp._asyncDataPromises[key] === promise) {
+            if (pendingWhenIdle) {
+              asyncData.pending.value = false
+            }
+            delete nuxtApp._asyncDataPromises[key]
+          }
         })
       nuxtApp._asyncDataPromises[key] = promise
       return nuxtApp._asyncDataPromises[key]!

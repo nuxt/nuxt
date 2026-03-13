@@ -30,8 +30,8 @@
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.3",
-    "@vitejs/plugin-vue": "^6.0.4",
-    "@vitejs/plugin-vue-jsx": "^5.1.4",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "@vitejs/plugin-vue-jsx": "^5.1.5",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "escape-string-regexp": "^5.0.0",
@@ -48,7 +48,7 @@
     "std-env": "^4.0.0",
     "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
-    "vite": "^8.0.0-beta.18",
+    "vite": "^8.0.0",
     "vite-node": "^5.3.0",
     "vite-plugin-checker": "^0.12.0",
     "vue-bundle-renderer": "^2.2.0"
@@ -64,7 +64,7 @@
     "nitropack": "2.13.1",
     "obuild": "0.4.32",
     "postcss": "8.5.8",
-    "rolldown": "1.0.0-rc.8",
+    "rolldown": "1.0.0-rc.9",
     "rollup": "4.59.0",
     "rollup-plugin-visualizer": "7.0.1",
     "vue": "3.5.30"
