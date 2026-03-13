@@ -444,7 +444,7 @@ importers:
         specifier: 7.0.0
         version: 7.0.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.59.0)
       hookable:
-        specifier: ^6.0.1
+        specifier: 6.0.1
         version: 6.0.1
       nuxt:
         specifier: workspace:*
