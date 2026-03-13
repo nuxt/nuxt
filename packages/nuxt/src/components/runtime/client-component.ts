@@ -2,6 +2,7 @@ import { createCommentVNode, getCurrentInstance, h, onMounted, provide, shallowR
 import type { AsyncComponentLoader, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '#app/nuxt'
+// @ts-expect-error virtual file
 import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 import ServerPlaceholder from '#app/components/server-placeholder'
 import { clientOnlySymbol } from '#app/components/client-only'

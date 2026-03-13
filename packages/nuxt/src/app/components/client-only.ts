@@ -2,8 +2,10 @@ import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, ge
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
-import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 import ServerPlaceholder from './server-placeholder'
+
+// @ts-expect-error virtual file
+import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
