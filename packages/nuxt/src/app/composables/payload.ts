@@ -82,12 +82,19 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 
 async function _importPayload (payloadURL: string) {
   if (import.meta.server || !payloadExtraction) { return null }
-  const payloadPromise = renderJsonPayloads
-    ? fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
-    : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
-
   try {
-    return await payloadPromise
+    if (renderJsonPayloads) {
+      const res = await fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' })
+      if (!res.ok) {
+        if (import.meta.dev) {
+          console.warn(`[nuxt] Cannot load payload ${payloadURL}: ${res.status} ${res.statusText}`)
+        }
+        return null
+      }
+      return await parsePayload(await res.text())
+    } else {
+      return await import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
+    }
   } catch (err) {
     console.warn('[nuxt] Cannot load payload ', payloadURL, err)
   }
