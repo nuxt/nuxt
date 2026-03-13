@@ -200,7 +200,6 @@ export function parseStaticFunctionCall (node: CallExpression | ChainExpression,
     return null
   }
 
-  // TODO: handle optional chaining, type assertions, non-null assertions, etc.
   // Member Expressions
   // foo.bar()
   if (callExpression.callee.type === 'MemberExpression') {
@@ -211,14 +210,31 @@ export function parseStaticFunctionCall (node: CallExpression | ChainExpression,
         callExpression,
       }
     }
-  // (foo.bar)()
-  } else if (callExpression.callee.type === 'ParenthesizedExpression' && callExpression.callee.expression.type === 'MemberExpression') {
-    const val = getParsedMemberExpression(callExpression.callee.expression)
-    if (val) {
-      return {
-        ...val,
-        node: callExpression.callee,
-        callExpression,
+  } else if (callExpression.callee.type === 'ParenthesizedExpression') {
+    let innerExpression = callExpression.callee.expression
+
+    // (foo.bar as any)()
+    // (<any>foo.bar)()
+    // (foo.bar!)()
+    if (
+      (
+        innerExpression.type === 'TSAsExpression'
+        || innerExpression.type === 'TSTypeAssertion'
+        || innerExpression.type === 'TSNonNullExpression'
+      )
+    ) {
+      innerExpression = innerExpression.expression
+    }
+
+    // (foo.bar)()
+    if (innerExpression.type === 'MemberExpression') {
+      const val = getParsedMemberExpression(innerExpression)
+      if (val) {
+        return {
+          ...val,
+          node: callExpression.callee,
+          callExpression,
+        }
       }
     }
   }
