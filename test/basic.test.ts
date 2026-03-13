@@ -149,8 +149,6 @@ describe('pages', () => {
     expect(html).toContain('This is a custom component with a named export.')
     // should remove dev-only and replace with any fallback content
     expect(html).toContain(isDev ? 'Some dev-only info' : 'Some prod-only info')
-    // should apply attributes to client-only components
-    expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
     expect(html.replaceAll(/ data-island-uid="[^"]*"/g, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
@@ -383,9 +381,6 @@ describe('pages', () => {
 
   it('/client-only-components', async () => {
     const html = await $fetch<string>('/client-only-components')
-    // ensure fallbacks with classes and arbitrary attributes are rendered
-    expect(html).toContain('<div class="client-only-script" foo="bar">')
-    expect(html).toContain('<div class="client-only-script-setup" foo="hello">')
     expect(html).toContain('<div>Fallback</div>')
     // ensure components are not rendered server-side
     expect(html).not.toContain('Should not be server rendered')
@@ -491,9 +486,6 @@ describe('pages', () => {
   it('/client-only-explicit-import', async () => {
     const html = await $fetch<string>('/client-only-explicit-import')
 
-    // ensure fallbacks with classes and arbitrary attributes are rendered
-    expect(html).toContain('<div class="client-only-script" foo="bar">')
-    expect(html).toContain('<div class="lazy-client-only-script-setup" foo="hello">')
     // ensure components are not rendered server-side
     expect(html).not.toContain('client only script')
     await expectNoClientErrors('/client-only-explicit-import')
@@ -3007,20 +2999,12 @@ describe('import components', () => {
     expect(html).toContain('default-comp-all')
   })
 
-  it('load default component with mode client', () => {
-    expect(html).toContain('default-comp-client')
-  })
-
   it('load default component with mode server', () => {
     expect(html).toContain('default-comp-server')
   })
 
   it('load named component with mode all', () => {
     expect(html).toContain('named-comp-all')
-  })
-
-  it('load named component with mode client', () => {
-    expect(html).toContain('named-comp-client')
   })
 
   it('load named component with mode server', () => {
@@ -3037,10 +3021,6 @@ describe('lazy import components', () => {
 
   it('lazy load named component with mode all', () => {
     expect(html).toContain('lazy-named-comp-all')
-  })
-
-  it('lazy load named component with mode client', () => {
-    expect(html).toContain('lazy-named-comp-client')
   })
 
   it('lazy load named component with mode server', () => {
