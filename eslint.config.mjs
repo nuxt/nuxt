@@ -164,7 +164,6 @@ export default createConfigForNuxt({
         ],
       },
     },
-    // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
@@ -300,6 +299,7 @@ export default createConfigForNuxt({
         'vue/multi-word-component-names': 'off',
       },
     },
+    // @ts-expect-error type issues between @types/eslint and @eslint/core
     {
       files: ['**/*.md'],
       language: 'markdown/commonmark',
