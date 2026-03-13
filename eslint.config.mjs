@@ -164,7 +164,6 @@ export default createConfigForNuxt({
         ],
       },
     },
-    // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
