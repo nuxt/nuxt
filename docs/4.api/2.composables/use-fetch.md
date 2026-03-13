@@ -139,7 +139,7 @@ type UseFetchOptions<DataT> = {
   body?: MaybeRefOrGetter<RequestInit['body'] | Record<string, any>>
   headers?: MaybeRefOrGetter<Record<string, string> | [key: string, value: string][] | Headers>
   baseURL?: MaybeRefOrGetter<string>
-  cache?: boolean  | 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload'
+  cache?: false | 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload'
   server?: boolean
   lazy?: boolean
   immediate?: boolean
@@ -193,7 +193,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `body`          | `MaybeRefOrGetter<RequestInit['body'] \| Record<string, any>>`          | -          | Request body. Objects are automatically stringified.                                                             |
 | `headers`       | `MaybeRefOrGetter<Record<string, string> \| [key, value][] \| Headers>` | -          | Request headers.                                                                                                 |
 | `baseURL`       | `MaybeRefOrGetter<string>`                                              | -          | Base URL for the request.                                                                                        |
-| `cache`         | `boolean \| string`                                                     | -          | Cache control. Boolean disables cache, or use Fetch API values: `default`, `no-store`, etc.                      |
+| `cache`         | `false \| string`                                                       | -          | Cache control. Boolean disables cache, or use Fetch API values: `default`, `no-store`, etc.                      |
 | `server`        | `boolean`                                                               | `true`     | Whether to fetch on the server.                                                                                  |
 | `lazy`          | `boolean`                                                               | `false`    | If true, resolves after route loads (does not block navigation).                                                 |
 | `immediate`     | `boolean`                                                               | `true`     | If false, prevents request from firing immediately.                                                              |
