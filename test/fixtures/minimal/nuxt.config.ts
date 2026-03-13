@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     vite: {
       $client: {
         build: {
-          rollupOptions: {
+          rolldownOptions: {
             output: {
               chunkFileNames: '_nuxt/[name].js',
               entryFileNames: '_nuxt/[name].js',
@@ -22,6 +22,7 @@ export default defineNuxtConfig({
     },
   },
   pages: false,
+  devtools: { enabled: false },
   buildDir: testWithInlineVue ? '.nuxt-inline' : '.nuxt',
   sourcemap: false,
   experimental: {

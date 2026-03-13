@@ -1,31 +1,15 @@
 import type { Plugin } from 'vite'
-import { tryImportModule, useNitro } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import escapeStringRegexp from 'escape-string-regexp'
-import { runtimeDependencies as runtimeNuxtDependencies } from 'nuxt/meta'
 
 export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
   let external: Set<string> = new Set()
-  const nitro = useNitro()
-
   return {
     name: 'nuxt:resolve-externals',
     enforce: 'pre',
-    async config () {
-      const { runtimeDependencies: runtimeNitroDependencies = [] } = await tryImportModule<typeof import('nitropack/runtime/meta')>('nitropack/runtime/meta', {
-        url: new URL(import.meta.url),
-      }) || {}
-
-      external = new Set([
-        // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', '@unhead/vue', '@nuxt/devalue', 'unstorage',
-        // ensure we only have one version of vue if nitro is going to inline anyway
-        ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
-        ...runtimeNuxtDependencies,
-        // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...runtimeNitroDependencies,
-      ])
+    config () {
+      external = new Set(nuxt['~runtimeDependencies'])
 
       return {
         optimizeDeps: {

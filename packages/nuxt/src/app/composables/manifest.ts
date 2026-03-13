@@ -1,6 +1,6 @@
-import type { H3Event } from 'h3'
-import type { NitroRouteRules } from 'nitropack/types'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { H3Event } from '@nuxt/nitro-server/h3'
+import type { NitroRouteRules } from 'nitro/types'
+import { useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -44,9 +44,6 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
-  if (import.meta.server) {
-    useNuxtApp().ssrContext!['~preloadManifest'] = true
-  }
   return manifest || fetchManifest()
 }
 
@@ -56,7 +53,7 @@ export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
 export function getRouteRules (url: string): Record<string, any>
 export function getRouteRules (arg: string | H3Event | { path: string }) {
-  const path = typeof arg === 'string' ? arg : arg.path
+  const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
   try {
     return routeRulesMatcher(path)
   } catch (e) {

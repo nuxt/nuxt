@@ -1,8 +1,12 @@
-import type { Plugin } from 'vite'
-import { transform } from 'esbuild'
+import process from 'node:process'
+import type { Plugin, ResolvedConfig } from 'vite'
+import { transformWithOxc } from 'vite'
 import { defu } from 'defu'
+import { addDependency } from 'nypm'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import type { RenderedModule } from 'rollup'
+import type { RenderedModule } from 'rolldown'
+import { logger } from '@nuxt/kit'
+import { hasTTY, isCI } from 'std-env'
 
 export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (nuxt.options.test) {
@@ -14,10 +18,49 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     return
   }
 
-  const { visualizer } = await import('rollup-plugin-visualizer')
+  let visualizer: typeof import('rollup-plugin-visualizer').visualizer
+  let config: ResolvedConfig
+
+  try {
+    visualizer = await import('rollup-plugin-visualizer').then(r => r.visualizer)
+  } catch (_err) {
+    const err = _err as NodeJS.ErrnoException
+
+    if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
+      throw err
+    }
+
+    if (!isCI && hasTTY) {
+      logger.info('Analyzing bundles requires an additional dependency.')
+      const shouldInstall = await logger.prompt('Install `rollup-plugin-visualizer`?', {
+        type: 'confirm',
+        choices: [
+          { name: 'Yes', value: true },
+          { name: 'No', value: false },
+        ],
+      })
+
+      if (shouldInstall) {
+        logger.start('Installing `rollup-plugin-visualizer`...')
+        await addDependency('rollup-plugin-visualizer', {
+          dev: true,
+          cwd: nuxt.options.rootDir,
+          silent: true,
+        })
+        logger.info('Rerun Nuxt to analyze your bundle.')
+        process.exit(1)
+      }
+    }
+
+    logger.info('Cannot find `rollup-plugin-visualizer`.')
+    process.exit(1)
+  }
 
   return {
     name: 'nuxt:analyze',
+    configResolved (_config) {
+      config = _config
+    },
     applyToEnvironment (environment) {
       if (environment.name !== 'client') {
         return false
@@ -32,7 +75,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
               const minifiedModuleEntryPromises: Array<Promise<[string, RenderedModule]>> = []
               for (const [moduleId, module] of Object.entries(bundle.modules)) {
                 minifiedModuleEntryPromises.push(
-                  transform(module.code || '', { minify: true })
+                  transformWithOxc(module.code || '', _bundleId, {}, undefined, config)
                     .then(result => [moduleId, { ...module, code: result.code }]),
                 )
               }

@@ -1,15 +1,13 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
-import { destr } from 'destr'
-
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
-
 import { hasProtocol } from 'ufo'
-import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
-import * as composables from '#app/composables'
 
+import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
+
+import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
@@ -20,16 +18,17 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
-import { encodeURL, resolveRouteObject } from '#app/composables/router'
+import { useAnnouncer } from '#app/composables/announcer'
+import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-
 import { shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
+
 import { isTestingAppManifest } from '../matrix'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
 describe('app config', () => {
@@ -69,6 +68,7 @@ describe('composables', () => {
   it('are all tested', () => {
     const testedComposables: string[] = [
       'useRouteAnnouncer',
+      'useAnnouncer',
       'clearNuxtData',
       'refreshNuxtData',
       'useAsyncData',
@@ -138,14 +138,20 @@ describe('errors', () => {
   it('createError', () => {
     expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
       {
-        "message": "",
-        "statusCode": 404,
+        "data": undefined,
+        "message": "HTTPError 404",
+        "status": 404,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
     expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
       {
+        "data": undefined,
         "message": "Message",
-        "statusCode": 500,
+        "status": 500,
+        "statusText": undefined,
+        "unhandled": undefined,
       }
     `)
   })
@@ -160,7 +166,7 @@ describe('errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
     showError('new error')
-    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
   })
@@ -202,18 +208,47 @@ describe('useHydration', () => {
 })
 
 describe('useState', () => {
-  it('default', () => {
+  // be sure to not have colliding keys in tests
+  afterEach(() => {
+    clearNuxtState()
+  })
+
+  it('expect providing only init function to use autoKey default', () => {
     expect(useState(() => 'default').value).toBe('default')
   })
 
-  it('registers state in payload', () => {
+  it('expect state in nuxtApp payload to be registered', () => {
     useState('key', () => 'value')
     expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$skey', 'value'])
+  })
+
+  it('expect state to be a plain ref and not nested', () => {
+    const state1 = useState('key', () => ref({
+      test: 1,
+    }))
+    expect(isRef(state1)).toBeTruthy()
+    expect(isRef(state1.value)).toBeFalsy()
+  })
+
+  it('expect same state is provided with the same ref', () => {
+    const state1 = useState('key', () => ref({
+      test: 1,
+    }))
+    const state2 = useState('key', () => ref({
+      test: 2,
+    }))
+    state1.value.test = 3
+    expect(state1.value).toBe(state2.value)
   })
 })
 
 describe('clearNuxtState', () => {
-  it('clears state in payload for single key', () => {
+  // be sure to not have colliding keys in tests
+  afterEach(() => {
+    clearNuxtState()
+  })
+
+  it('expect state in payload for single key to be removed', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
@@ -221,7 +256,7 @@ describe('clearNuxtState', () => {
     expect(state.value).toBeUndefined()
   })
 
-  it('clears state in payload for array of keys', () => {
+  it('expect state in payload for array of keys to be removed', () => {
     const key1 = 'clearNuxtState-test'
     const key2 = 'clearNuxtState-test2'
     const state1 = useState(key1, () => 'test')
@@ -236,7 +271,7 @@ describe('clearNuxtState', () => {
     expect(state2.value).toBeUndefined()
   })
 
-  it('clears state in payload for function', () => {
+  it('expect state in payload for function to be removed', () => {
     const key = 'clearNuxtState-test'
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
@@ -246,14 +281,86 @@ describe('clearNuxtState', () => {
     expect(state.value).toBeUndefined()
   })
 
-  it('clears all state when no key is provided', () => {
+  it('expect all states to be removed when no key is provided', () => {
     const state1 = useState('clearNuxtState-test', () => 'test')
     const state2 = useState('clearNuxtState-test2', () => 'test')
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
-    clearNuxtState()
+    clearNuxtState(undefined)
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBeUndefined()
+  })
+
+  it('expect state in payload for single key to reset', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
+    state.value = 'test-2'
+    expect(state.value).toBe('test-2')
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect state in payload for array of keys to reset ', () => {
+    const key1 = 'clearNuxtState-test'
+    const key2 = 'clearNuxtState-test2'
+    const state1 = useState(key1, () => 'test')
+    const state2 = useState(key2, () => 'test')
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+    state1.value = 'test-2'
+    state2.value = 'test-2'
+    clearNuxtState([key1, 'other'], { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState([key1, key2], { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+  })
+
+  it('expect state in payload for function to reset', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
+    expect(state.value).toBe('test')
+    clearNuxtState(() => false, { reset: true })
+    expect(state.value).toBe('test')
+    state.value = 'test-2'
+    clearNuxtState(k => k === key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect all states to reset when no key is provided', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    const state2 = useState('clearNuxtState-test2', () => 'test')
+    state1.value = 'test-2'
+    state2.value = 'test-2'
+    expect(state1.value).toBe('test-2')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState(undefined, { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+  })
+
+  it('expect fetching state twice to reset both', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    const state2 = useState('clearNuxtState-test', () => 'test')
+    state1.value = 'test-2'
+    expect(state1.value).toBe('test-2')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState(undefined, { reset: true })
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+  })
+
+  it('expect fetching state after reset has init value', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    state1.value = 'test-2'
+    expect(state1.value).toBe('test-2')
+    const state2 = useState('clearNuxtState-test', () => 'test')
+    expect(state2.value).toBe('test-2')
+    clearNuxtState(undefined, { reset: true })
+    expect(state1.value).toBe('test')
+    const state3 = useState('clearNuxtState-test', () => 'test')
+    expect(state3.value).toBe('test')
   })
 })
 
@@ -361,6 +468,10 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             "/pre": {
               "prerender": true,
             },
+            "/pre/spa": {
+              "prerender": true,
+              "ssr": false,
+            },
           },
         },
         "prerendered": [],
@@ -368,16 +479,28 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     `)
   })
   it('getRouteRules', () => {
-    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(getRouteRules({ path: '/' })).toMatchInlineSnapshot(`
+      {
+        "ssr": true,
+      }
+    `)
     expect(getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
+        "ssr": true,
+      }
+    `)
+    expect(getRouteRules({ path: '/pre/spa/thing' })).toMatchInlineSnapshot(`
+      {
+        "prerender": true,
+        "ssr": false,
       }
     `)
     expect(getRouteRules({ path: '/pre/test' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
         "redirect": "/",
+        "ssr": true,
       }
     `)
   })
@@ -390,12 +513,17 @@ describe('compiled route rules', () => {
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+    expect(await isPrerendered('/pre/spa/thing')).toBeTruthy()
   })
 
   it('should determine if payload should be loaded based on route rules', async () => {
     // wildcard routes with prerender: true should load payloads
     const shouldLoadPre = await shouldLoadPayload('/pre/thing')
     expect(shouldLoadPre).toBe(true)
+
+    // prerendered routes with ssr: false should not load payloads
+    const shouldLoadSpaPre = await shouldLoadPayload('/pre/spa/thing')
+    expect(shouldLoadSpaPre).toBe(false)
 
     // specific prerendered routes should load payloads
     const shouldLoadSpecific = await shouldLoadPayload('/specific-prerendered')
@@ -440,6 +568,18 @@ describe('useRuntimeHook', () => {
 })
 
 describe('routing utilities: `navigateTo`', () => {
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let router: ReturnType<typeof useRouter>
+
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    router = useRouter()
+  })
+
+  function waitForPageChange () {
+    return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
+  }
+
   it('navigateTo should disallow navigation to external URLs by default', () => {
     expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
@@ -464,6 +604,30 @@ describe('routing utilities: `navigateTo`', () => {
       }
     `)
     nuxtApp._processingMiddleware = false
+  })
+
+  it('#28425', async () => {
+    router.addRoute({
+      name: 'slug',
+      path: '/28425/:slug',
+      component: defineComponent({
+        template: '<div> slug page </div>',
+        async setup () {
+          await new Promise(res => setTimeout(res, 200))
+        },
+      }),
+    })
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage) })
+    const route = useRoute()
+    await navigateTo('/28425/p1') // remove this line to prevent the issue.
+    await navigateTo('/28425/p1')
+    await navigateTo('/28425/p2')
+    await navigateTo('/28425/p3')
+    await waitForPageChange()
+    expect(el.html()).toContain('<div> slug page </div>')
+    expect(route.fullPath).toMatchInlineSnapshot(`"/28425/p3"`)
+    el.unmount()
+    router.removeRoute('slug')
   })
 })
 
@@ -490,9 +654,66 @@ describe('routing utilities: `encodeURL`', () => {
   })
 })
 
+describe('routing utilities: `encodeRoutePath`', () => {
+  it('should encode decoded unicode paths', () => {
+    expect(encodeRoutePath('/café')).toBe(`/${encodeURIComponent('café')}`)
+    expect(encodeRoutePath('/测试')).toBe(`/${encodeURIComponent('测试')}`)
+    expect(encodeRoutePath('/товары')).toBe(`/${encodeURIComponent('товары')}`)
+  })
+
+  it('should not double-encode already-encoded paths', () => {
+    const encoded = `/${encodeURIComponent('café')}`
+    expect(encodeRoutePath(encoded)).toBe(encoded)
+    expect(encodeRoutePath('/%E6%B5%8B%E8%AF%95')).toBe('/%E6%B5%8B%E8%AF%95')
+  })
+
+  it('should preserve query and hash', () => {
+    expect(encodeRoutePath('/café?q=foo')).toBe(`/${encodeURIComponent('café')}?q=foo`)
+    expect(encodeRoutePath('/café?q=foo#bar')).toBe(`/${encodeURIComponent('café')}?q=foo#bar`)
+  })
+
+  it('should encode special characters in path segments', () => {
+    expect(encodeRoutePath('/a&b')).toBe(`/a${encodeURIComponent('&')}b`)
+    expect(encodeRoutePath('/normal')).toBe('/normal')
+  })
+})
+
+describe('routing utilities: `navigateTo` path encoding', () => {
+  it('should encode decoded unicode paths for vue-router', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    await navigateTo('/café')
+    expect(push).toHaveBeenCalledWith(`/${encodeURIComponent('café')}`)
+    push.mockRestore()
+  })
+
+  it('should not double-encode already-encoded paths', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    const encoded = `/${encodeURIComponent('café')}`
+    await navigateTo(encoded)
+    expect(push).toHaveBeenCalledWith(encoded)
+    push.mockRestore()
+  })
+
+  it('should not encode object locations', async () => {
+    const router = useRouter()
+    const push = vi.spyOn(router, 'push')
+    const to = { path: '/test', query: { foo: 'bar' } }
+    await navigateTo(to)
+    expect(push).toHaveBeenCalledWith(to)
+    push.mockRestore()
+  })
+})
+
 describe('routing utilities: `useRoute`', () => {
-  const nuxtApp = useNuxtApp()
-  const router = useRouter()
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let router: ReturnType<typeof useRouter>
+
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    router = useRouter()
+  })
 
   function waitForPageChange () {
     return new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
@@ -502,7 +723,8 @@ describe('routing utilities: `useRoute`', () => {
     router.clearRoutes()
   })
 
-  it('should provide a route', () => {
+  it('should provide a route', async () => {
+    await navigateTo('/')
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
@@ -569,7 +791,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[HTTPError: Page not found]')
     expect(error.value).toBe(undefined)
   })
   it('should block navigation if no error is provided', () => {
@@ -672,7 +894,7 @@ describe('useCookie', () => {
       default: () => ({ s2: -1 }),
       decode (value) {
         barCallCount++
-        return destr(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     bazCookie.value.s2++
@@ -685,7 +907,7 @@ describe('useCookie', () => {
       filter: key => key === 'bar' || key === 'baz',
       decode (value) {
         quxCallCount++
-        return destr(decodeURIComponent(value))
+        return JSON.parse(decodeURIComponent(value))
       },
     })
     quxCookie.value.s3++
@@ -717,6 +939,44 @@ describe('useCookie', () => {
     useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
     expect(document.cookie).toContain('cookie-readonly=foo')
   })
+
+  it('should re-write cookie on same-value assignment when refresh is true', async () => {
+    const { nextTick } = await import('vue')
+
+    document.cookie = 'refresh-test=initial; Max-Age=3600'
+    const cookie = useCookie('refresh-test', {
+      maxAge: 3600,
+      refresh: true,
+    })
+    expect(cookie.value).toBe('initial')
+
+    // Assign the same value — should still trigger a cookie write
+    cookie.value = 'initial'
+    await nextTick()
+
+    expect(document.cookie).toContain('refresh-test=initial')
+  })
+
+  it('should not re-write cookie on same-value assignment when refresh is false', async () => {
+    const { nextTick } = await import('vue')
+
+    document.cookie = 'no-refresh-test=original'
+    const cookie = useCookie('no-refresh-test', {
+      maxAge: 3600,
+      refresh: false,
+    })
+    expect(cookie.value).toBe('original')
+
+    // Clear document.cookie to detect if a write happens
+    document.cookie = 'no-refresh-test=; Max-Age=0'
+    expect(document.cookie).not.toContain('no-refresh-test=original')
+
+    // Assign the same value — should NOT trigger a cookie write
+    cookie.value = 'original'
+    await nextTick()
+
+    expect(document.cookie).not.toContain('no-refresh-test=original')
+  })
 })
 
 describe('callOnce', () => {
@@ -725,7 +985,10 @@ describe('callOnce', () => {
     ['with "render" option', { mode: 'render' as const }],
     ['with "navigation" option', { mode: 'navigation' as const }],
   ])('%s', (_name, options) => {
-    const nuxtApp = useNuxtApp()
+    let nuxtApp: ReturnType<typeof useNuxtApp>
+    beforeEach(() => {
+      nuxtApp = useNuxtApp()
+    })
     afterEach(() => {
       nuxtApp.payload.once.clear()
     })
@@ -802,5 +1065,75 @@ describe('route announcer', () => {
     announcer.assertive('Test message assertive')
     expect(announcer.message.value).toBe('Test message assertive')
     expect(announcer.politeness.value).toBe('assertive')
+  })
+})
+
+describe('announcer', () => {
+  it('should create an announcer with default politeness', () => {
+    const announcer = useAnnouncer()
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should create an announcer with provided politeness', () => {
+    const announcer = useAnnouncer({ politeness: 'assertive' })
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message and politeness', () => {
+    const announcer = useAnnouncer()
+    announcer.set('Test message with politeness', 'assertive')
+    expect(announcer.message.value).toBe('Test message with politeness')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message with polite politeness', () => {
+    const announcer = useAnnouncer()
+    announcer.polite('Test message polite')
+    expect(announcer.message.value).toBe('Test message polite')
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should set message with assertive politeness', () => {
+    const announcer = useAnnouncer()
+    announcer.assertive('Test message assertive')
+    expect(announcer.message.value).toBe('Test message assertive')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should cleanup announcer when last scope is disposed', () => {
+    const nuxtApp = useNuxtApp()
+
+    // Clean up any pre-existing announcer state
+    delete nuxtApp._announcer
+    delete nuxtApp._announcerDeps
+
+    const scope1 = effectScope()
+    let announcer: ReturnType<typeof useAnnouncer>
+
+    scope1.run(() => {
+      announcer = useAnnouncer()
+      announcer.set('Test message', 'assertive')
+    })
+
+    expect(nuxtApp._announcerDeps).toBe(1)
+    expect(nuxtApp._announcer).toBeDefined()
+
+    // Create a second consumer in a separate scope
+    const scope2 = effectScope()
+    scope2.run(() => {
+      useAnnouncer()
+    })
+
+    expect(nuxtApp._announcerDeps).toBe(2)
+
+    // Dispose first scope — announcer should still exist
+    scope1.stop()
+    expect(nuxtApp._announcerDeps).toBe(1)
+    expect(nuxtApp._announcer).toBeDefined()
+
+    // Dispose second scope — announcer should be cleaned up
+    scope2.stop()
+    expect(nuxtApp._announcerDeps).toBe(0)
+    expect(nuxtApp._announcer).toBeUndefined()
   })
 })

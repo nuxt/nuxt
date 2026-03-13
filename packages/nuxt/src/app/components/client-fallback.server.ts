@@ -5,6 +5,11 @@ import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
 import { createBuffer } from './utils'
 
+const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
+function sanitizeTag (tag: string, fallback: string): string {
+  return VALID_TAG_RE.test(tag) ? tag : fallback
+}
+
 const NuxtClientFallbackServer = defineComponent({
   name: 'NuxtClientFallback',
   inheritAttrs: false,
@@ -75,7 +80,7 @@ const NuxtClientFallbackServer = defineComponent({
         ssrRenderSlot(ctx.$slots, fallback ? 'fallback' : 'placeholder', {}, null, push, parent)
       } else {
         const content = ctx.placeholder || ctx.fallback
-        const tag = ctx.placeholderTag || ctx.fallbackTag
+        const tag = sanitizeTag(ctx.placeholderTag || ctx.fallbackTag, 'div')
         push(`<${tag}${ssrRenderAttrs(ctx.$attrs)}>${content}</${tag}>`)
       }
     } else {

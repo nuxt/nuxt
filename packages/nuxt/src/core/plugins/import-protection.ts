@@ -2,10 +2,12 @@ import { relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { NuxtOptions } from 'nuxt/schema'
 
+type ImportPattern = [importPattern: string | RegExp | ((id: string, importer: string) => boolean | string), warning?: string, suggestions?: string[]]
+
 interface ImportProtectionOptions {
   rootDir: string
   modulesDir: string[]
-  patterns: [importPattern: string | RegExp, warning?: string][]
+  patterns: ImportPattern[]
   exclude?: Array<RegExp | string>
 }
 
@@ -19,12 +21,16 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
 
   patterns.push([
     /^(nuxt|nuxt3|nuxt-nightly)$/,
-    `\`nuxt\`, or \`nuxt-nightly\` cannot be imported directly in ${context}.` + (options.context === 'nuxt-app' ? ' Instead, import runtime Nuxt composables from `#app` or `#imports`.' : ''),
+    `\`nuxt\` or \`nuxt-nightly\` cannot be imported directly in ${context}.`,
+    options.context === 'nuxt-app'
+      ? ['Import runtime Nuxt composables from `#app` or `#imports` instead.']
+      : ['Use `#app` or `#imports` for runtime composables in your Vue app code.'],
   ])
 
   patterns.push([
     /^((~|~~|@|@@)?\/)?nuxt\.config(\.|$)/,
-    'Importing directly from a `nuxt.config` file is not allowed. Instead, use runtime config or a module.',
+    'Importing directly from a `nuxt.config` file is not allowed.',
+    ['Use `useRuntimeConfig()` to access runtime config in your app.', 'Use `useAppConfig()` to access config that doesn\'t need to be changed at runtime.', 'Use a Nuxt module to access build-time configuration.'],
   ])
 
   patterns.push([/(^|node_modules\/)@vue\/composition-api/])
@@ -34,28 +40,46 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
       patterns.push([
         new RegExp(`^${escapeRE(mod.entryPath)}$`),
         'Importing directly from module entry-points is not allowed.',
+        ['Import from the module\'s runtime directory instead (e.g. `my-module/runtime/...`).'],
       ])
     }
   }
 
-  for (const i of [/(^|node_modules\/)@nuxt\/(cli|kit|test-utils)/, /(^|node_modules\/)nuxi/, /(^|node_modules\/)nitro(?:pack)?(?:-nightly)?(?:$|\/)(?!(?:dist\/)?(?:node_modules|presets|runtime|types))/, /(^|node_modules\/)nuxt\/(config|kit|schema)/]) {
-    patterns.push([i, `This module cannot be imported in ${context}.`])
+  for (const i of [
+    /(^|node_modules\/)@nuxt\/(cli|kit|test-utils)/,
+    /(^|node_modules\/)nuxi/,
+    /(^|node_modules\/)nitropack(?:-nightly)?(?:$|\/)(?!(?:dist\/)?(?:node_modules|presets|runtime|types))/,
+    /(^|node_modules\/)nitro(?:-nightly)?\/(builder|meta|vite|tsconfig)/,
+    /(^|node_modules\/)nuxt\/(config|kit|schema)/,
+  ]) {
+    patterns.push([
+      i,
+      `This module cannot be imported in ${context}.`,
+      ['These are build-time only packages and cannot be used at runtime.'],
+    ])
   }
 
   if (options.context === 'nitro-app' || options.context === 'shared') {
     for (const i of ['#app', /^#build(\/|$)/]) {
-      patterns.push([i, `Vue app aliases are not allowed in ${context}.`])
+      patterns.push([
+        i,
+        `Vue app aliases are not allowed in ${context}.`,
+        ['Move this code to your Vue app directory or use a shared utility.'],
+      ])
     }
   }
 
   if (options.context === 'nuxt-app' || options.context === 'shared') {
+    const serverRelative = escapeRE(relative(nuxt.options.rootDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server')))
     patterns.push([
-      new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
+      new RegExp('^' + serverRelative + '\\/(api|routes|middleware|plugins)\\/'),
       `Importing from server is not allowed in ${context}.`,
+      ['Use `$fetch()` or `useFetch()` to fetch data from server routes.', 'Move shared logic to the `shared/` directory.'],
     ])
     patterns.push([
       /^#server(\/|$)/,
       `Server aliases are not allowed in ${context}.`,
+      ['Use `$fetch()` or `useFetch()` to call server endpoints.', 'Move shared logic to the `shared/` directory.'],
     ])
   }
 

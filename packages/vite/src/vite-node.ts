@@ -144,11 +144,9 @@ function connectSocket (): Promise<Socket> {
               if (requestHandlers) {
                 const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
                 if (response.type === 'error') {
-                  const err = new Error(response.error.message)
+                  const err: Error & { stack?: string, data?: unknown, status?: number, statusCode?: number } = new Error(response.error.message)
                   err.stack = response.error.stack
-                  // @ts-expect-error We are augmenting the error object
                   err.data = response.error.data
-                  // @ts-expect-error We are augmenting the error object
                   err.statusCode = err.status = response.error.status || response.error.statusCode
                   rejectRequest(err)
                 } else {
@@ -227,7 +225,7 @@ async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload
     try {
       const socket = await connectSocket()
 
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
           pendingRequests.delete(requestId)
           reject(new Error(`Request timeout after ${REQUEST_TIMEOUT_MS}ms for type: ${type}`))

@@ -12,11 +12,13 @@ import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
+  nuxt._perf?.startPhase('app:generate')
   const app = createApp(nuxt)
   nuxt.apps.default = app
 
   const generateApp = debounce(() => _generateApp(nuxt, app), undefined, { leading: true })
   await generateApp()
+  nuxt._perf?.endPhase('app:generate')
 
   if (nuxt.options.dev) {
     watch(nuxt)
@@ -51,7 +53,8 @@ export async function build (nuxt: Nuxt): Promise<void> {
     const { restoreCache, collectCache } = await getVueHash(nuxt)
     if (await restoreCache()) {
       await nuxt.callHook('build:done')
-      return await nuxt.callHook('close', nuxt)
+      await nuxt.callHook('close', nuxt)
+      return
     }
     nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
     nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
@@ -70,7 +73,9 @@ export async function build (nuxt: Nuxt): Promise<void> {
     })
   }
 
+  nuxt._perf?.startPhase('build:bundle')
   await bundle(nuxt)
+  nuxt._perf?.endPhase('build:bundle')
 
   await nuxt.callHook('build:done')
 
@@ -102,7 +107,17 @@ function createWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidarWatch(getLayerDirectories(nuxt).map(dirs => dirs.app), {
+  const layerDirs = getLayerDirectories(nuxt)
+  const paths: string[] = []
+  for (const layer of layerDirs) {
+    paths.push(layer.app)
+    // Only add server if it's not inside app (avoid double-watching)
+    if (!layer.server.startsWith(layer.app.replace(/\/?$/, '/'))) {
+      paths.push(layer.server)
+    }
+  }
+
+  const watcher = chokidarWatch(paths, {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
@@ -248,9 +263,13 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
 function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
   for (const dirs of getLayerDirectories(nuxt)) {
-    if (!dirs.app || isIgnored(dirs.app)) { continue }
-
-    pathsToWatch.add(dirs.app)
+    if (!isIgnored(dirs.app)) {
+      pathsToWatch.add(dirs.app)
+    }
+    // Only add server if it's not inside app (avoid double-watching)
+    if (!isIgnored(dirs.server) && !dirs.server.startsWith(dirs.app.replace(/\/?$/, '/'))) {
+      pathsToWatch.add(dirs.server)
+    }
   }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
