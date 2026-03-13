@@ -572,7 +572,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
 /** @since 3.0.0 */
 export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
   const nuxtApp = useNuxtApp()
-  const _allKeys = Object.keys(nuxtApp.payload.data)
+  const _allKeys = Object.keys(nuxtApp._asyncData)
   const _keys: string[] = !keys
     ? _allKeys
     : typeof keys === 'function'
