@@ -36,7 +36,10 @@ const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 if (import.meta.client && nuxtApp.isHydrating) {
   const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', onResolve)
-  useRouter().beforeEach(removeErrorHook)
+  const removeGuard = useRouter().beforeEach(() => {
+    removeErrorHook()
+    removeGuard()
+  })
 }
 
 const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
