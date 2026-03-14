@@ -917,7 +917,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // prevent replacement of options.nitro
   Object.defineProperties(options, {
     nitro: {
-      configurable: false,
+      configurable: true,
       enumerable: true,
       get: () => nitroOptions,
       set (value) {
@@ -1010,7 +1010,7 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
 
     Object.defineProperties(parent, {
       [key]: {
-        configurable: false,
+        configurable: true,
         enumerable: true,
         get: () => sharedValue,
         set (value) {
