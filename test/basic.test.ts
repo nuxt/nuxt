@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, createTest, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 import type { NuxtIslandResponse } from 'nuxt/app'
@@ -12,8 +12,11 @@ import type { NuxtIslandResponse } from 'nuxt/app'
 import { asyncContext, builder, isDev, isTestingAppManifest, isWebpack } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
+const basicFixtureDir = fileURLToPath(new URL('./fixtures/basic', import.meta.url))
+const inlineStylesDedupeFixtureDir = fileURLToPath(new URL('./fixtures/inline-styles-dedupe', import.meta.url))
+
 await setup({
-  rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
+  rootDir: basicFixtureDir,
   dev: isDev,
   server: true,
   browser: true,
@@ -2016,6 +2019,23 @@ describe.skipIf(isDev)('inlining component styles', () => {
       `)
     }
   })
+
+  it.skipIf(isWebpack || isDev)('inline styles dedupe: drops entry stylesheet when css is fully inlineable', async () => {
+    const dedupeTest = createTest({
+      rootDir: inlineStylesDedupeFixtureDir,
+      browser: false,
+    })
+
+    await dedupeTest.beforeAll()
+    try {
+      const html = await globalThis.fetch(new URL('/', dedupeTest.ctx.url!)).then(r => r.text())
+      expect(html).toContain('--inline-dedupe-token')
+      const cssLinks = [...html.matchAll(/<link [^>]*href="([^"]*\.css)"/g)].map(m => m[1]!)
+      expect(cssLinks).toHaveLength(0)
+    } finally {
+      await dedupeTest.afterAll()
+    }
+  }, 30_000)
 
   it('still downloads client-only styles', async () => {
     const page = await createPage()
