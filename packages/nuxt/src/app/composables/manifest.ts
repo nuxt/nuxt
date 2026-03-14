@@ -19,24 +19,31 @@ export interface NuxtAppManifest extends NuxtAppManifestMeta {
   prerendered: string[]
 }
 
-let manifest: Promise<NuxtAppManifest>
+let manifest: Promise<NuxtAppManifest> | undefined
 
-function fetchManifest () {
+function fetchManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
+  let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
     // @ts-expect-error virtual file
-    manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest')
+    _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest')
   } else {
-    manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
+    _manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',
     })
   }
-  manifest.catch((e) => {
+  manifest = _manifest
+  _manifest.catch((e) => {
+    // Reset so subsequent calls to getAppManifest() retry instead of
+    // returning the same rejected promise permanently.
+    if (manifest === _manifest) {
+      manifest = undefined
+    }
     console.error('[nuxt] Error fetching app manifest.', e)
   })
-  return manifest
+  return _manifest
 }
 
 /** @since 3.7.4 */
