@@ -207,7 +207,7 @@ async function createParcelWatcher () {
     const pathsToWatch = resolvePathsToWatch(nuxt, { parentDirectories: true })
     for (const dir of pathsToWatch) {
       if (!await isDirectory(dir)) { continue }
-      const watcher = subscribe(dir, (err, events) => {
+      const subscription = await subscribe(dir, (err, events) => {
         if (err) { return }
         for (const event of events) {
           if (isIgnored(event.path)) { continue }
@@ -219,13 +219,11 @@ async function createParcelWatcher () {
           'node_modules',
         ],
       })
-      watcher.then((subscription) => {
-        if (nuxt.options.debug && nuxt.options.debug.watchers) {
+      if (nuxt.options.debug && nuxt.options.debug.watchers) {
         // eslint-disable-next-line no-console
-          console.timeEnd('[nuxt] builder:parcel:watch')
-        }
-        nuxt.hook('close', () => subscription.unsubscribe())
-      })
+        console.timeEnd('[nuxt] builder:parcel:watch')
+      }
+      nuxt.hook('close', () => subscription.unsubscribe())
     }
     return true
   } catch {
