@@ -100,7 +100,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
     FDefaultT = undefined,
   >(options:
       Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>
-      | ((currentOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>) = {},
+      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>>) = {},
   ) {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
