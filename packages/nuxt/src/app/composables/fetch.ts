@@ -168,6 +168,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
         deep,
         dedupe,
         timeout,
+        throwOnError,
         ...fetchOptions
       } = {
         ...(typeof options === 'function' ? {} : factoryOptions),
@@ -200,6 +201,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
         deep,
         dedupe,
         timeout,
+        throwOnError,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
 

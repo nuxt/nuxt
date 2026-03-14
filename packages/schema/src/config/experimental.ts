@@ -163,6 +163,7 @@ export default defineResolvers({
       },
       useAsyncData: {
         deep: false,
+        throwOnError: false,
       },
       useState: {
         resetOnClear: {
