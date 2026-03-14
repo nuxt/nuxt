@@ -402,9 +402,6 @@ importers:
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
-      pkg-types:
-        specifier: ^2.3.0
-        version: 2.3.0
       rou3:
         specifier: ^0.8.1
         version: 0.8.1
