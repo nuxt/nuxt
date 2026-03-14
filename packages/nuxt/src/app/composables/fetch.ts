@@ -151,14 +151,6 @@ export const createUseFetch = defineKeyedFunctionFactory({
     ) {
       const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-      const _request = computed(() => toValue(request))
-
-      const key = computed(() => toValue(opts.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])))
-
-      if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-        throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
-      }
-
       const factoryOptions = (typeof options === 'function' ? options(opts as any) : options) as typeof opts
 
       // Merge factory options with user options:
@@ -181,6 +173,14 @@ export const createUseFetch = defineKeyedFunctionFactory({
         ...(typeof options === 'function' ? {} : factoryOptions),
         ...opts,
         ...(typeof options === 'function' ? factoryOptions : {}),
+      }
+
+      const _request = computed(() => toValue(request))
+
+      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
+
+      if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
+        throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
       }
 
       const _fetchOptions = reactive<typeof fetchOptions>({
@@ -218,7 +218,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
       }
 
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(watchSources === false ? key.value : key, (_, { signal }) => {
-        const _$fetch: $Fetch<unknown, NitroFetchRequest> = opts.$fetch || $fetch
+        const _$fetch: $Fetch<unknown, NitroFetchRequest> = fetchOptions.$fetch || $fetch
 
         return _$fetch(_request.value, { signal, ..._fetchOptions } as any) as Promise<_ResT>
       }, _asyncDataOptions)
