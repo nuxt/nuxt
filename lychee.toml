@@ -37,6 +37,9 @@ exclude = [
   'https://router.vuejs.org/(.*)',
   'https://vitest.dev/(.*)',
   'https://vite.dev/(.*)',
+  'https://vuejs.org/(.*)',
+  'https://www.vuejs.org/(.*)',
+  'https://www.netlify.com/(.*)',
   # dummy example URLs
   "https://myawesome-lib.js/",
   "https://awesome-lib.js/",
