@@ -279,7 +279,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     sourcemap: !!nuxt.options.sourcemap.server,
     traceDeps: [
       // force include files used in generated code from the runtime-compiler
-      ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
+      ...(nuxt.options.vue.runtimeCompiler)
         ? [
             ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
               const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
@@ -293,7 +293,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       ...(nuxt.options.dev
         ? []
         : [
-            ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
             '@nuxt/',
             nuxt.options.buildDir,
           ]),
@@ -308,7 +307,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     ],
     alias: {
       // Vue 3 mocks
-      ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
+      ...nuxt.options.vue.runtimeCompiler
         ? {}
         : {
             'estree-walker': mockProxy,

@@ -1071,14 +1071,6 @@ export interface ConfigSchema {
     asyncEntry: boolean
 
     /**
-     * Externalize `vue`, `@vue/*` and `vue-router` when building.
-     *
-     * @default true
-     * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
-     */
-    externalVue: boolean
-
-    /**
      * Enable accessing `appConfig` from server routes.
      *
      * @default true

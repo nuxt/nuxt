@@ -67,9 +67,6 @@ export default defineResolvers({
       $resolve: val => typeof val === 'boolean' ? val : false,
     },
 
-    // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/nitrojs/nitro/issues/1118
-    externalVue: true,
     serverAppConfig: true,
     emitRouteChunkError: {
       $resolve: (val) => {
