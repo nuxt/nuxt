@@ -30,7 +30,7 @@ export default defineNuxtConfig({
 })
 ```
 
-You can also disable this header by setting `csp: false`.
+You can also disable this header by setting `csp: { value: false }`.
 
 ## Default value
 

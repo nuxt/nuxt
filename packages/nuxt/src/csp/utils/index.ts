@@ -71,8 +71,6 @@ export const defaultCSPConfig: ContentSecurityPolicyConfig = {
     meta: true,
     hashScripts: true,
     hashStyles: false,
-    // Will be added later
-    exportToPresets: true,
   },
 }
 

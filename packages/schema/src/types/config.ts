@@ -226,7 +226,7 @@ export type ContentSecurityPolicyValue = {
 }
 
 export type ContentSecurityPolicyConfig = {
-  value: ContentSecurityPolicyValue
+  value: ContentSecurityPolicyValue | false
   reportOnly?: boolean // false
   nonce?: boolean // true
   sri?: boolean // true
@@ -234,7 +234,6 @@ export type ContentSecurityPolicyConfig = {
     meta?: boolean // true
     hashScripts?: boolean // true
     hashStyles?: boolean // false
-    exportToPresets?: boolean // true
   }
 }
 

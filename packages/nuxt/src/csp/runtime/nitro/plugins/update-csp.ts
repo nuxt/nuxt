@@ -33,6 +33,9 @@ export default (nitroApp: NitroApp) => {
 }
 
 function updateCspVariables (csp: ContentSecurityPolicyValue, nonce?: string, scriptHashes?: Set<string>, styleHashes?: Set<string>) {
+  if (csp === false) {
+    return false
+  }
   const generatedCsp = <ContentSecurityPolicyValue>Object.fromEntries(Object.entries(csp).map(([directive, value]) => {
     // Return boolean values unchanged
     if (typeof value === 'boolean') {

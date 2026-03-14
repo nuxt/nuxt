@@ -14,6 +14,10 @@ export default defineNuxtModule<Partial<ContentSecurityPolicyConfig>>({
   },
   defaults: defaultCSPConfig,
   setup (options, nuxt) {
+    if (options.value === false) {
+      return
+    }
+
     const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...nuxt.options.csp }, { ...defaultCSPConfig })
 
     // Warn if reportOnly is used with ssg.meta, as meta tags don't support Content-Security-Policy-Report-Only
