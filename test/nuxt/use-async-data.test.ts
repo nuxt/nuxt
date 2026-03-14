@@ -189,6 +189,35 @@ describe('useAsyncData', () => {
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
+  it('should only enumerate async data keys, ignoring other payload.data entries', async () => {
+    const nuxtApp = useNuxtApp()
+
+    // Simulate internal payload entries (e.g. island component data)
+    nuxtApp.payload.data.IslandComponent_abc123 = { __nuxt_island: true, html: '<div />' }
+    nuxtApp.payload.data._internal_key = { some: 'data' }
+
+    await useAsyncData(uniqueKey, () => Promise.resolve('test'))
+
+    const matchedKeys: string[] = []
+    clearNuxtData((key) => {
+      matchedKeys.push(key)
+      return true
+    })
+
+    // Filter function should only receive async data keys, not internal payload entries
+    expect(matchedKeys).not.toContain('IslandComponent_abc123')
+    expect(matchedKeys).not.toContain('_internal_key')
+    expect(matchedKeys).toContain(uniqueKey)
+
+    // Internal payload entries should not be affected
+    expect(nuxtApp.payload.data.IslandComponent_abc123).toEqual({ __nuxt_island: true, html: '<div />' })
+    expect(nuxtApp.payload.data._internal_key).toEqual({ some: 'data' })
+
+    // Clean up
+    delete nuxtApp.payload.data.IslandComponent_abc123
+    delete nuxtApp.payload.data._internal_key
+  })
+
   it('should allow overriding requests', async () => {
     vi.useFakeTimers()
 
