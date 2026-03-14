@@ -802,7 +802,7 @@ function buildAsyncData<
 // Used to get default values
 const getDefault = () => undefined
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
-  if (nuxtApp.isHydrating) {
+  if (nuxtApp.payload.data[key] && ctx.cause === 'initial') {
     return nuxtApp.payload.data[key]
   }
 
