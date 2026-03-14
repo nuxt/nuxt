@@ -100,9 +100,6 @@ importers:
       acorn:
         specifier: 8.16.0
         version: 8.16.0
-      autoprefixer:
-        specifier: 10.4.27
-        version: 10.4.27(postcss@8.5.8)
       case-police:
         specifier: 2.2.0
         version: 2.2.0
@@ -112,9 +109,6 @@ importers:
       consola:
         specifier: 3.4.2
         version: 3.4.2
-      cssnano:
-        specifier: 7.1.3
-        version: 7.1.3(postcss@8.5.8)
       defu:
         specifier: 6.1.4
         version: 6.1.4
@@ -276,6 +270,9 @@ importers:
       mlly:
         specifier: ^1.8.1
         version: 1.8.1
+      nypm:
+        specifier: ^0.6.5
+        version: 0.6.5
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -394,9 +391,6 @@ importers:
       nitro:
         specifier: ^3.0.260311-beta
         version: 3.0.260311-beta(chokidar@5.0.0)(dotenv@17.3.1)(giget@3.1.2)(ioredis@5.10.0)(jiti@2.6.1)(lru-cache@11.2.6)(rollup@4.59.0)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))
-      nypm:
-        specifier: ^0.6.5
-        version: 0.6.5
       ohash:
         specifier: ^2.0.11
         version: 2.0.11
@@ -545,9 +539,6 @@ importers:
       nanotar:
         specifier: ^0.3.0
         version: 0.3.0
-      nypm:
-        specifier: ^0.6.5
-        version: 0.6.5
       ofetch:
         specifier: ^2.0.0-alpha.3
         version: 2.0.0-alpha.3
@@ -869,6 +860,9 @@ importers:
       '@vue/language-core':
         specifier: 3.2.5
         version: 3.2.5
+      autoprefixer:
+        specifier: 10.4.27
+        version: 10.4.27(postcss@8.5.8)
       c12:
         specifier: 3.3.3
         version: 3.3.3(magicast@0.5.2)
@@ -881,6 +875,9 @@ importers:
       css-minimizer-webpack-plugin:
         specifier: 8.0.0
         version: 8.0.0(esbuild@0.27.4)(webpack@5.105.4(esbuild@0.27.4))
+      cssnano:
+        specifier: 7.1.3
+        version: 7.1.3(postcss@8.5.8)
       esbuild:
         specifier: 0.27.4
         version: 0.27.4
@@ -1019,15 +1016,9 @@ importers:
       '@vitejs/plugin-vue-jsx':
         specifier: ^5.1.5
         version: 5.1.5(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))(vue@3.5.30(typescript@5.9.3))
-      autoprefixer:
-        specifier: ^10.4.27
-        version: 10.4.27(postcss@8.5.8)
       consola:
         specifier: ^3.4.2
         version: 3.4.2
-      cssnano:
-        specifier: ^7.1.3
-        version: 7.1.3(postcss@8.5.8)
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -1058,18 +1049,12 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
-      nypm:
-        specifier: ^0.6.5
-        version: 0.6.5
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
       pkg-types:
         specifier: ^2.3.0
         version: 2.3.0
-      postcss:
-        specifier: ^8.5.8
-        version: 8.5.8
       seroval:
         specifier: ^1.5.1
         version: 1.5.1
@@ -1104,6 +1089,12 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      autoprefixer:
+        specifier: ^10.4.27
+        version: 10.4.27(postcss@8.5.8)
+      cssnano:
+        specifier: 7.1.3
+        version: 7.1.3(postcss@8.5.8)
       h3:
         specifier: 1.15.6
         version: 1.15.6
@@ -1116,6 +1107,9 @@ importers:
       obuild:
         specifier: 0.4.32
         version: 0.4.32(chokidar@5.0.0)(dotenv@17.3.1)(giget@3.1.2)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.3)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
+      postcss:
+        specifier: 8.5.8
+        version: 8.5.8
       rolldown:
         specifier: 1.0.0-rc.9
         version: 1.0.0-rc.9

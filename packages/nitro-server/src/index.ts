@@ -11,12 +11,11 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
-import { addDependency } from 'nypm'
-import { hasTTY, isCI, isWindows } from 'std-env'
+import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
@@ -542,39 +541,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Add decorator support via Babel when experimental.decorators is enabled.
   if (nuxt.options.experimental.decorators) {
     const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators']
-    let hasDeps = true
-    for (const pkg of nitroDecoratorDeps) {
-      try {
-        await import(pkg)
-      } catch (_err) {
-        const err = _err as NodeJS.ErrnoException
-        if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
-          throw err
-        }
-        if (!isCI && hasTTY) {
-          logger.info('Decorator support requires additional dependencies.')
-          const shouldInstall = await logger.prompt(`Install \`${nitroDecoratorDeps.join('` and `')}\`?`, {
-            type: 'confirm',
-            initial: true,
-          })
-          if (shouldInstall) {
-            logger.start(`Installing ${nitroDecoratorDeps.map(d => `\`${d}\``).join(' and ')}...`)
-            await addDependency(nitroDecoratorDeps, {
-              dev: true,
-              cwd: nuxt.options.rootDir,
-              silent: true,
-            })
-            logger.info('Rerun Nuxt to enable decorator support.')
-            process.exit(1)
-          }
-        }
-        logger.warn(`Cannot find \`${pkg}\`. Install \`${nitroDecoratorDeps.join('` and `')}\` to enable decorator support.`)
-        hasDeps = false
-        break
-      }
+    const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
+      rootDir: nuxt.options.rootDir,
+      searchPaths: nuxt.options.modulesDir,
+      from: import.meta.url,
+    })
+
+    if (result !== true) {
+      logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
     }
 
-    if (hasDeps) {
+    if (result === true) {
       const { babel } = await import('@rollup/plugin-babel')
       nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
       nitroConfig.rollupConfig!.plugins!.unshift(
