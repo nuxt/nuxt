@@ -1,6 +1,7 @@
 ---
 title: 'clearNuxtState'
 description: Delete the cached state of useState.
+minimalVersion: "3.6"
 links:
   - label: Source
     icon: i-simple-icons-github

@@ -272,7 +272,7 @@ Native async context support works currently in Bun and Node.
 
 :read-more{to="/docs/4.x/guide/going-further/experimental-features#asynccontext"}
 
-## tryUseNuxtApp
+## tryUseNuxtApp :badge[v3.10]{color="info" size="xs" class="align-middle"}
 
 This function works exactly the same as `useNuxtApp`, but returns `null` if context is unavailable instead of throwing an exception.
 
