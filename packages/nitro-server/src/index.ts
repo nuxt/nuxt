@@ -39,6 +39,8 @@ const logLevelMapReverse = {
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
+const APP_CONFIG_RE = /(?:^|[/\\])app\.config(?:\.[^/\\]+)?$/
+const DEFINE_APP_CONFIG_IMPORT_RE = /\bimport\s*(?:\{[^}]*\bdefineAppConfig\b[^}]*\}|defineAppConfig)\s*from\b/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
@@ -731,6 +733,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
   nuxt._perf?.endPhase('nitro:createNitro')
+
+  if (nuxt.options.experimental.nitroAutoImports === false) {
+    const defineAppConfigImport = `import { defineAppConfig } from ${JSON.stringify(resolve(distDir, 'runtime/utils/config'))}\n`
+    nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
+      rollupConfig.plugins.push({
+        name: 'nuxt:app-config-imports',
+        transform (code, id) {
+          const normalizedId = id.replace(/\\/g, '/')
+          if (!APP_CONFIG_RE.test(normalizedId) || !/\bdefineAppConfig\b/.test(code) || DEFINE_APP_CONFIG_IMPORT_RE.test(code)) {
+            return
+          }
+          return defineAppConfigImport + code
+        },
+      })
+    })
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig === false && nitro.options.imports) {
