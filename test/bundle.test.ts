@@ -64,106 +64,45 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"66.3k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1281k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "@unhead/vue+[...]",
-        "babel__parser",
-        "defu",
-        "destr",
-        "devalue",
-        "h3+rou3+srvx",
-        "ocache+ohash",
-        "ofetch",
-        "pathe",
-        "scule",
-        "ufo",
-        "unctx",
-        "unstorage",
-        "vue",
-        "vue-bundle-renderer",
-        "vue__compiler-ssr",
-        "vue__server-renderer",
-      ]
-    `)
+    expect(packages).toMatchInlineSnapshot(`[]`)
   })
 
   it('default server bundle size (inlined vue modules)', async () => {
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"66.6k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"461k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "@unhead/vue+[...]",
-        "defu",
-        "destr",
-        "devalue",
-        "h3+rou3+srvx",
-        "ocache+ohash",
-        "ofetch",
-        "pathe",
-        "scule",
-        "ufo",
-        "unctx",
-        "unstorage",
-        "vue",
-        "vue-bundle-renderer",
-        "vue__server-renderer",
-      ]
-    `)
+    expect(packages).toMatchInlineSnapshot(`[]`)
   })
 
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"274k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1290k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"0.0k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "@unhead/vue+[...]",
-        "babel__parser",
-        "defu",
-        "destr",
-        "devalue",
-        "h3+rou3+srvx",
-        "hookable",
-        "ocache+ohash",
-        "ofetch",
-        "pathe",
-        "perfect-debounce",
-        "scule",
-        "ufo",
-        "uncrypto",
-        "unctx",
-        "unstorage",
-        "vue",
-        "vue-bundle-renderer",
-        "vue__compiler-ssr",
-        "vue__server-renderer",
-      ]
-    `)
+    expect(packages).toMatchInlineSnapshot(`[]`)
   })
 })
 

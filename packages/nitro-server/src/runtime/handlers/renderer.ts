@@ -17,6 +17,7 @@ import { payloadCache } from '../utils/cache'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '../utils/renderer/payload'
 import { createSSRContext, setSSRError } from '../utils/renderer/app'
+import { renderEarlyHintsFromAppHead } from '../utils/renderer/early-hints'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
@@ -49,7 +50,6 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
 const PAYLOAD_FILENAME = '_payload.json'
-
 let entryPath: string
 
 const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
@@ -119,7 +119,9 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async 
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
-    const { link } = renderResourceHeaders({}, renderer.rendererContext)
+    const resourceEarlyHints = renderResourceHeaders({}, renderer.rendererContext).link
+    const appEarlyHints = await renderEarlyHintsFromAppHead(ssrContext.head, renderSSRHeadOptions)
+    const link = [resourceEarlyHints, ...appEarlyHints].filter(Boolean).join(', ')
     if (link) {
       writeEarlyHints(event, { link })
     }
