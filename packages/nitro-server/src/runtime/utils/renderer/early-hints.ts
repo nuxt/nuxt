@@ -30,7 +30,7 @@ export function renderEarlyHintsFromHeadTags (headTags: string) {
 
 export function extractLinkTagAttributes (html: string) {
   const links: Record<string, string>[] = []
-  for (const match of html.matchAll(/<link\b([^>]*?)>/g)) {
+  for (const match of html.matchAll(/<link\b([^>]*)>/g)) {
     const attrs: Record<string, string> = {}
     for (const [, key, value1, value2, value3] of match[1]!.matchAll(/\s+([^\s=/>]+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) {
       attrs[key.toLowerCase()] = value1 ?? value2 ?? value3 ?? ''
