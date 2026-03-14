@@ -3,6 +3,7 @@ import contentSecurityPolicyConfig from '#content-security-policy'
 import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig } from '../../../types'
 import { generateRandomNonce } from '../../../utils'
+import type { ServerRequestContext } from 'srvx'
 
 const LINK_RE = /<link([^>]*>)/gi
 const NONCE_RE = /nonce="[^"]+"/i
@@ -23,9 +24,11 @@ export default (nitroApp: NitroApp) => {
 
   // Genearate a 16-byte random nonce for each request.
   nitroApp.hooks?.hook('request', (event) => {
-    event.context.security ||= {}
+    event.req.context!.security ||= {}
 
-    if (event.context.security?.nonce) {
+    const securityContext = event.req.context!.security as ServerRequestContext[string] & { nonce?: string }
+
+    if (securityContext.nonce) {
       // When rendering server-only (NuxtIsland) components, each component will trigger a request event.
       // The request context is shared between the event that renders the actual page and the island request events.
       // Make sure to only generate the nonce once.
@@ -34,7 +37,7 @@ export default (nitroApp: NitroApp) => {
 
     if (cspConfig && cspConfig.nonce && !import.meta.prerender) {
       const nonce = generateRandomNonce()
-      event.context.security!.nonce = nonce
+      securityContext.nonce = nonce
     }
   })
 
@@ -50,7 +53,9 @@ export default (nitroApp: NitroApp) => {
       return
     }
 
-    const nonce = event.context.security!.nonce!
+    const securityContext = event.req.context!.security as ServerRequestContext[string] & { nonce: string }
+
+    const nonce = securityContext.nonce
     // Scan all relevant sections of the NuxtRenderHtmlContext
     type Section = 'body' | 'bodyAppend' | 'bodyPrepend' | 'head'
     const sections = ['body', 'bodyAppend', 'bodyPrepend', 'head'] as Section[]

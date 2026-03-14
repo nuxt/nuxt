@@ -3,6 +3,7 @@ import contentSecurityPolicyConfig from '#content-security-policy'
 import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig, Section } from '../../../types'
 import { generateHash } from '../../../utils'
+import type { ServerRequestContext } from 'srvx'
 
 // eslint-disable-next-line regexp/no-contradiction-with-assertion
 const INLINE_SCRIPT_RE = /<script(?![^>]*?\bsrc="[\w:.\-\\/]+")[^>]*>([\s\S]*?)<\/script>/gi
@@ -31,12 +32,14 @@ export default (nitroApp: NitroApp) => {
 
     event.context.security ||= {}
 
-    event.context.security!.hashes = {
+    const securityContext = event.req.context!.security as ServerRequestContext[string] & { hashes?: { script?: Set<string>, style?: Set<string> } }
+
+    securityContext.hashes = {
       script: new Set(),
       style: new Set(),
     }
-    const scriptHashes = event.context.security!.hashes.script
-    const styleHashes = event.context.security!.hashes.style
+    const scriptHashes = securityContext.hashes?.script
+    const styleHashes = securityContext.hashes?.style
     const hashAlgorithm = 'SHA-256'
 
     // Parse HTML if SSG is enabled for this route
@@ -53,12 +56,12 @@ export default (nitroApp: NitroApp) => {
             for (const [, scriptText] of inlineScriptMatches) {
               if (typeof scriptText === 'string') {
                 const hash = await generateHash(scriptText, hashAlgorithm)
-                scriptHashes.add(`'${hash}'`)
+                scriptHashes?.add(`'${hash}'`)
               }
             }
             const externalScriptMatches = element.matchAll(SCRIPT_RE)
             for (const [, integrity] of externalScriptMatches) {
-              scriptHashes.add(`'${integrity}'`)
+              scriptHashes?.add(`'${integrity}'`)
             }
           }
 
@@ -68,7 +71,7 @@ export default (nitroApp: NitroApp) => {
             for (const [, styleText] of styleMatches) {
               if (typeof styleText === 'string') {
                 const hash = await generateHash(styleText, hashAlgorithm)
-                styleHashes.add(`'${hash}'`)
+                styleHashes?.add(`'${hash}'`)
               }
             }
           }
@@ -82,7 +85,7 @@ export default (nitroApp: NitroApp) => {
               // https://html.spec.whatwg.org/multipage/semantics.html#attr-link-integrity
               if (rel === 'stylesheet' && hashStyles) {
                 // style: add to style-src
-                styleHashes.add(`'${integrity}'`)
+                styleHashes?.add(`'${integrity}'`)
               } else if (rel === 'preload' && hashScripts) {
                 // Fetch standard defines the destination (https://fetch.spec.whatwg.org/#destination-table)
                 // This table is the official mapping between HTML and CSP
@@ -92,14 +95,14 @@ export default (nitroApp: NitroApp) => {
                   case 'audioworklet':
                   case 'paintworklet':
                   case 'xlst':
-                    scriptHashes.add(`'${integrity}'`)
+                    scriptHashes?.add(`'${integrity}'`)
                     break
                   default:
                     break
                 }
               } else if (rel === 'modulepreload' && hashScripts) {
                 // script is the default and only possible destination
-                scriptHashes.add(`'${integrity}'`)
+                scriptHashes?.add(`'${integrity}'`)
               }
             }
           }
