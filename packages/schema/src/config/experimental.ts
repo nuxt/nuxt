@@ -3,8 +3,7 @@ import { defineResolvers } from '../utils/definition.ts'
 export default defineResolvers({
   future: {
     compatibilityVersion: {
-      // force resolution to `4` no matter what users pass
-      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 4,
+      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 5,
     },
     multiApp: false,
     typescriptBundlerResolution: {
@@ -68,9 +67,6 @@ export default defineResolvers({
       $resolve: val => typeof val === 'boolean' ? val : false,
     },
 
-    // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/nitrojs/nitro/issues/1118
-    externalVue: true,
     serverAppConfig: true,
     emitRouteChunkError: {
       $resolve: (val) => {
@@ -252,6 +248,11 @@ export default defineResolvers({
     asyncCallHook: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
+      },
+    },
+    clientNodePlaceholder: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
   },

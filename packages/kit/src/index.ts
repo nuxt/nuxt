@@ -40,6 +40,10 @@ export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRou
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { logger, useLogger } from './logger.ts'
 
+// Dependencies
+export { ensureDependencyInstalled } from './dependency.ts'
+export type { EnsureDependencyInstalledOptions } from './dependency.ts'
+
 // Internal Utils
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { directoryToURL, resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm.ts'

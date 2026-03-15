@@ -70,11 +70,11 @@
     "consola": "^3.4.2",
     "cookie-es": "^2.0.0",
     "defu": "^6.1.4",
-    "devalue": "^5.6.3",
+    "devalue": "^5.6.4",
     "errx": "^0.1.0",
     "escape-string-regexp": "^5.0.0",
     "exsolve": "^1.0.8",
-    "hookable": "^6.0.1",
+    "hookable": "^6.1.0",
     "ignore": "^7.0.5",
     "impound": "^1.1.5",
     "jiti": "^2.6.1",
@@ -83,13 +83,12 @@
     "magic-string": "^0.30.21",
     "mlly": "^1.8.1",
     "nanotar": "^0.3.0",
-    "nypm": "^0.6.5",
     "ofetch": "^2.0.0-alpha.3",
     "ohash": "^2.0.11",
     "on-change": "^6.0.2",
-    "oxc-minify": "^0.117.0",
-    "oxc-parser": "^0.117.0",
-    "oxc-transform": "^0.117.0",
+    "oxc-minify": "^0.118.0",
+    "oxc-parser": "^0.118.0",
+    "oxc-transform": "^0.118.0",
     "oxc-walker": "^0.7.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.1.0",
@@ -116,12 +115,12 @@
     "@parcel/watcher": "2.5.6",
     "@types/estree": "1.0.8",
     "@types/picomatch": "4.0.2",
-    "@vitejs/plugin-vue": "6.0.4",
-    "@vitejs/plugin-vue-jsx": "5.1.4",
+    "@vitejs/plugin-vue": "6.0.5",
+    "@vitejs/plugin-vue-jsx": "5.1.5",
     "@vue/compiler-sfc": "3.5.30",
-    "rolldown": "1.0.0-rc.8",
+    "rolldown": "1.0.0-rc.9",
     "unbuild": "3.6.1",
-    "vite": "8.0.0-beta.18",
+    "vite": "8.0.0",
     "vitest": "4.0.18",
     "vue-bundle-renderer": "2.2.0",
     "vue-sfc-transformer": "0.1.17"
@@ -137,6 +136,9 @@
     "@types/node": {
       "optional": true
     }
+  },
+  "publishConfig": {
+    "devDependencies": {}
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

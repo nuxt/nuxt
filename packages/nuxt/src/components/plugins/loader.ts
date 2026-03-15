@@ -182,7 +182,7 @@ function findComponent (components: Component[], name: string, mode: LoaderOptio
 
   const otherModeComponent = components.find(component => id === component.pascalName)
 
-  // Render client-only components on the server with <ServerPlaceholder> (a simple div)
+  // Render client-only components on the server with <ServerPlaceholder>
   if (mode === 'server' && otherModeComponent) {
     return components.find(c => c.pascalName === 'ServerPlaceholder')
   }

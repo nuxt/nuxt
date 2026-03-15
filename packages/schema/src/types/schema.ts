@@ -1071,14 +1071,6 @@ export interface ConfigSchema {
     asyncEntry: boolean
 
     /**
-     * Externalize `vue`, `@vue/*` and `vue-router` when building.
-     *
-     * @default true
-     * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
-     */
-    externalVue: boolean
-
-    /**
      * Enable accessing `appConfig` from server routes.
      *
      * @default true
@@ -1610,6 +1602,23 @@ export interface ConfigSchema {
      * @default false with compatibilityVersion >= 5
      */
     asyncCallHook: boolean
+
+    /**
+     * Whether to use comment nodes instead of `<div>` elements as placeholders for client-only
+     * components during server-side rendering.
+     *
+     * When enabled, `.client.vue` components and `createClientOnly()` wrappers render an HTML
+     * comment (`<!--placeholder-->`) on the server instead of an empty `<div>`. This fixes a
+     * Vue hydration issue where scoped styles may not be applied when the placeholder `<div>`
+     * and the actual component root share the same tag name.
+     *
+     * Note: enabling this means attributes (class, style, etc.) passed to `.client.vue`
+     * components will not be rendered in the SSR HTML. If you need styled placeholders,
+     * use `<ClientOnly>` with a `#fallback` slot instead.
+     * @default false
+     * @default true with compatibilityVersion >= 5
+     */
+    clientNodePlaceholder: boolean
   }
 
   /**
