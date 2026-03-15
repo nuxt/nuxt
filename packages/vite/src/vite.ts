@@ -6,7 +6,6 @@ import { basename, dirname, join, resolve } from 'pathe'
 import type { NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
 import { sanitizeFilePath } from 'mlly'
-import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -18,6 +17,7 @@ import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
+import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
@@ -185,7 +185,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
         vuePlugin(viteConfig.vue),
-        viteJsxPlugin(viteConfig.vueJsx),
+        ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
         ViteNodePlugin(nuxt),
         ClientManifestPlugin(nuxt),
         DevServerPlugin(nuxt),
