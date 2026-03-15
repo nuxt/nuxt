@@ -154,6 +154,12 @@ describe('pages', () => {
     expect(html).toContain(isDev ? 'Some dev-only info' : 'Some prod-only info')
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
+    // should strip dev-only with attributes in production
+    if (isDev) {
+      expect(html).toContain('Dev-only with attributes')
+    } else {
+      expect(html).not.toContain('Dev-only with attributes')
+    }
     // should render server-only components
     expect(html.replaceAll(/ data-island-uid="[^"]*"/g, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
