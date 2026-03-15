@@ -231,11 +231,11 @@ async function createParcelWatcher () {
           'node_modules',
         ],
       })
-      if (nuxt.options.debug && nuxt.options.debug.watchers) {
-        // eslint-disable-next-line no-console
-        console.timeEnd('[nuxt] builder:parcel:watch')
-      }
       nuxt.hook('close', () => subscription.unsubscribe())
+    }
+    if (nuxt.options.debug && nuxt.options.debug.watchers) {
+      // eslint-disable-next-line no-console
+      console.timeEnd('[nuxt] builder:parcel:watch')
     }
     return true
   } catch {
