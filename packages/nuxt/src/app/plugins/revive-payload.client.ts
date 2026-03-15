@@ -5,6 +5,7 @@ import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
+import { isValidIslandKey } from './utils'
 
 function parseRevivedData (data: string) {
   try {
@@ -27,7 +28,7 @@ const revivers: [string, (data: any) => any][] = [
 if (componentIslands) {
   revivers.push(['Island', ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
-    if (!nuxtApp.isHydrating) {
+    if (!nuxtApp.isHydrating && isValidIslandKey(key)) {
       nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
         responseType: 'json',
         ...params ? { params } : {},
