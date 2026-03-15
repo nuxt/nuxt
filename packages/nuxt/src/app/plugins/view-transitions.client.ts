@@ -17,7 +17,6 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const resetTransitionState = () => {
     transition = undefined
-    hasUAVisualTransition = false
     abortTransition = undefined
     finishTransition = undefined
   }
@@ -42,6 +41,12 @@ export default defineNuxtPlugin((nuxtApp) => {
   router.beforeResolve(async (to, from) => {
     if (to.matched.length === 0) { return }
 
+    // Capture and reset the flag so it only applies to the current (popstate) navigation.
+    // Without this, a popstate with hasUAVisualTransition would permanently disable
+    // view transitions for subsequent programmatic/click navigations.
+    const skipForUATransition = hasUAVisualTransition
+    hasUAVisualTransition = false
+
     const toViewTransitionOptions = normalizeViewTransitionOptions(to.meta.viewTransition)
     const fromViewTransitionOptions = normalizeViewTransitionOptions(from.meta.viewTransition)
     const viewTransitionMode = toViewTransitionOptions.enabled ?? defaultViewTransition.enabled
@@ -51,7 +56,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (
       viewTransitionMode === false ||
       prefersNoTransition ||
-      hasUAVisualTransition ||
+      skipForUATransition ||
       !isChangingPage(to, from)
     ) {
       return
