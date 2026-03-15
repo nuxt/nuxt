@@ -77,7 +77,7 @@
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "7.0.0",
-    "hookable": "6.0.1",
+    "hookable": "6.1.0",
     "nuxt": "workspace:*",
     "obuild": "0.4.32",
     "vitest": "4.0.18"
