@@ -60,9 +60,6 @@
     "obuild": "0.4.32",
     "vitest": "4.0.18"
   },
-  "publishConfig": {
-    "devDependencies": {}
-  },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   }
