@@ -50,7 +50,7 @@ const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server
 provide(PageRouteSymbol, useRoute())
 
 // vue:setup hook
-const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup')
+const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup', [])
 if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
   console.error('[nuxt] Error in `vue:setup`. Callbacks must be synchronous.')
 }
