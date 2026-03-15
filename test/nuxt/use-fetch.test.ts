@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -8,7 +8,10 @@ import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 
-import { useFetch, useLazyFetch } from '#app/composables/fetch'
+import { createUseFetch as _createUseFetch, useFetch, useLazyFetch } from '#app/composables/fetch'
+import type { EffectScope } from 'vue'
+
+const createUseFetch = (_createUseFetch as unknown as { __nuxt_factory: typeof _createUseFetch }).__nuxt_factory
 
 interface TestData {
   method: string
@@ -281,5 +284,70 @@ describe('useFetch', () => {
     expect(aborted).toBe(false)
     clear()
     expect(aborted).toBe(true)
+  })
+})
+
+describe('createUseFetch', () => {
+  let scope: EffectScope
+  beforeEach(() => {
+    scope = effectScope()
+  })
+  afterEach(() => {
+    scope.stop()
+  })
+
+  it('should use custom $fetch from factory (defaults mode)', async () => {
+    const customFetch = vi.fn().mockResolvedValue({ variant: 'factory' })
+
+    const { data } = await scope.run(() => {
+      const useCustomFetch = createUseFetch({ $fetch: customFetch as unknown as typeof $fetch })
+      return useCustomFetch('/api/test')
+    })!
+
+    expect(customFetch).toHaveBeenCalledOnce()
+    expect(data.value).toEqual({ variant: 'factory' })
+  })
+
+  it('should allow per-call $fetch to override factory $fetch', async () => {
+    const factoryFetch = vi.fn().mockResolvedValue({ variant: 'factory' })
+    const callFetch = vi.fn().mockResolvedValue({ variant: 'call' })
+
+    const { data } = await scope.run(() => {
+      const useCustomFetch = createUseFetch({ $fetch: factoryFetch as unknown as typeof $fetch })
+      return useCustomFetch('/api/test', { $fetch: callFetch as unknown as typeof $fetch })
+    })!
+
+    expect(factoryFetch).not.toHaveBeenCalled()
+    expect(callFetch).toHaveBeenCalledOnce()
+    expect(data.value).toEqual({ variant: 'call' })
+  })
+
+  it('should use baseURL from factory for URL validation', async () => {
+    const customFetch = vi.fn().mockResolvedValue({ ok: true })
+
+    await scope.run(async () => {
+      const useCustomFetch = createUseFetch({ baseURL: 'https://example.com', $fetch: customFetch as unknown as typeof $fetch })
+      // should not throw because factory provides baseURL
+      await useCustomFetch('//api/test')
+    })
+
+    expect(customFetch).toHaveBeenCalledOnce()
+  })
+
+  it('should include factory options in cache key', async () => {
+    const nuxtApp = useNuxtApp()
+    const originalKeys = Object.keys(nuxtApp.payload.data)
+
+    await scope.run(async () => {
+      const customFetch = vi.fn().mockResolvedValue({ foo: 'bar' })
+      const useCustomFetch = createUseFetch({ baseURL: 'https://example.com', $fetch: customFetch as unknown as typeof $fetch })
+      // @ts-expect-error Overriding auto-key
+      await useFetch('/api/test', {}, '')
+      // @ts-expect-error Overriding auto-key
+      await useCustomFetch('/api/test', {}, '')
+    })
+
+    const keysAfter = Object.keys(nuxtApp.payload.data)
+    expect(keysAfter.length - originalKeys.length).toEqual(2)
   })
 })

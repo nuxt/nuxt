@@ -71,7 +71,10 @@ export default defineComponent({
     let suspenseKey = 0
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      useRouter().beforeEach(removeErrorHook)
+      const removeGuard = useRouter().beforeEach(() => {
+        removeErrorHook()
+        removeGuard()
+      })
     }
     if (import.meta.client && props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {

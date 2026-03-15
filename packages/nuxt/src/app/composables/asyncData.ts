@@ -145,7 +145,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     FDefaultT = undefined,
   >(options:
     Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
-    | ((currentOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
+    | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
   ) {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
