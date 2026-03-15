@@ -3,7 +3,7 @@ import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
-import type { Import, InlinePreset, Unimport } from 'unimport'
+import type { Import, Preset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
@@ -217,7 +217,7 @@ export interface NuxtHooks {
    * @param presets Array containing presets objects
    * @returns Promise
    */
-  'imports:sources': (presets: InlinePreset[]) => HookResult
+  'imports:sources': (presets: Preset[]) => HookResult
   /**
    * Called at setup allowing modules to extend imports.
    * @param imports Array containing the imports to extend
