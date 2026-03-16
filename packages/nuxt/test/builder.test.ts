@@ -36,11 +36,15 @@ describe('builder:watch', { sequential: true }, async () => {
     // Allow watcher to stabilize before writing files (chokidar/parcel need time after ready)
     await new Promise(r => setTimeout(r, 100))
 
-    const watchPromise = new Promise(resolve => nuxt.hooks.hookOnce('builder:watch', resolve))
     writeFileSync(resolve(rootDir, '../higher'), 'something')
     writeFileSync(join(rootDir, 'test'), 'something')
     writeFileSync(join(rootDir, 'other'), 'something')
-    await watchPromise
+
+    // Wait for all three file events before closing (hookOnce would only wait for the first)
+    const deadline = Date.now() + 5000
+    while (events.length < 3 && Date.now() < deadline) {
+      await new Promise(r => setTimeout(r, 50))
+    }
 
     await nuxt.close()
 

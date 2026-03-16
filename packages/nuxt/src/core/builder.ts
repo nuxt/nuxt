@@ -4,7 +4,7 @@ import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { existsSync } from 'node:fs'
-import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { dirname, normalize, relative, resolve } from 'pathe'
 
 import { isDirectory, isDirectorySync, logger } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
@@ -142,9 +142,9 @@ function createWatcher () {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
     if (!path.startsWith(srcDir)) {
-      // Chokidar does not fire events for non-existent paths; watch parent directory instead
+      // Watch parent directory when the target path does not exist or exists but is not a directory (e.g. a file)
       const pathToAdd = !existsSync(path) || !isDirectorySync(path)
-        ? join(dirname(path), '')
+        ? dirname(path)
         : path
       restartPaths.add(pathToAdd)
     }
@@ -325,9 +325,9 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const resolvedPath = resolve(nuxt.options.srcDir, pattern)
-    // Use parent directory for paths outside srcDir (chokidar does not fire for non-existent paths)
+    // Use parent directory when parentDirectories is set or path is outside srcDir
     const path = opts?.parentDirectories || !resolvedPath.startsWith(srcDir)
-      ? join(dirname(resolvedPath), '')
+      ? dirname(resolvedPath)
       : resolvedPath
     let shouldAdd = true
     for (const w of [...pathsToWatch]) {
