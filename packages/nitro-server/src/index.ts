@@ -608,7 +608,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // onViolation: fallback when id is bare (srvx) before resolution or when excludeFiles misses edge cases.
       excludeFiles: [IMPORT_PROTECTION_ALLOWED.srvxPattern],
       onViolation (info) {
-        if (info.id?.includes('srvx') || info.message?.includes('srvx/node')) {
+        if (info.id && IMPORT_PROTECTION_ALLOWED.isAllowed(info.id)) {
           return false
         }
       },
