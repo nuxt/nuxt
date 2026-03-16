@@ -58,7 +58,7 @@
     "ignore": "7.0.5",
     "mini-css-extract-plugin": "2.10.1",
     "ofetch": "1.5.1",
-    "oxc-transform": "0.118.0",
+    "oxc-transform": "0.120.0",
     "postcss": "8.5.8",
     "rollup-plugin-visualizer": "7.0.1",
     "sass-loader": "16.0.7",
