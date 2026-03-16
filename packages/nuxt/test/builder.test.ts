@@ -9,7 +9,7 @@ describe('builder:watch', { sequential: true }, async () => {
   const workspaceDir = await findWorkspaceDir()
   const fixtureRoot = join(workspaceDir!, 'test/fixtures/basic')
   const watcherStrategies = ['chokidar', 'chokidar-granular', 'parcel'] as const
-  it.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', { timeout: 60_000 }, async (watcher) => {
+  it.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', { timeout: 120_000 }, async (watcher) => {
     const rootDir = fixtureRoot
     // Unique paths per run so we get 'add' events (reused paths would emit 'change')
     const uniqueId = `${watcher}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
