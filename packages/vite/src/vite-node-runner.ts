@@ -2,8 +2,8 @@ import { ViteNodeRunner } from 'vite-node/client'
 
 import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from '#vite-node'
-import process from 'node:process'
 import type { ErrorPartial } from './types'
+import { formatViteError } from './utils/format-vite-error'
 
 const runner: ViteNodeRunner = createRunner()
 
@@ -45,35 +45,5 @@ function createRunner () {
   })
 }
 
-function formatViteError (errorData: any, id: string) {
-  const errorCode = errorData.name || errorData.reasonCode || errorData.code
-  const frame = errorData.frame || errorData.source || errorData.pluginCode
-
-  const getLocId = (locObj: { file?: string, id?: string, url?: string } = {}) => locObj.file || locObj.id || locObj.url || id || ''
-  const getLocPos = (locObj: { line?: string, column?: string } = {}) => locObj.line ? `${locObj.line}:${locObj.column || 0}` : ''
-  const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData)
-  const locPos = getLocPos(errorData.loc) || getLocPos(errorData.location) || getLocPos(errorData.input) || getLocPos(errorData)
-  const loc = locId.replace(process.cwd(), '.') + (locPos ? `:${locPos}` : '')
-
-  const message = [
-    '[vite-node]',
-    errorData.plugin && `[plugin:${errorData.plugin}]`,
-    errorCode && `[${errorCode}]`,
-    loc,
-    errorData.reason && `: ${errorData.reason}`,
-    frame && `<br><pre>${frame.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><br>`,
-  ].filter(Boolean).join(' ')
-
-  const stack = [
-    message,
-    `at ${loc}`,
-    errorData.stack,
-  ].filter(Boolean).join('\n')
-
-  return {
-    message,
-    stack,
-  }
-}
-
+export { formatViteError } from './utils/format-vite-error'
 export default runner
