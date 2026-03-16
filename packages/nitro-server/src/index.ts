@@ -30,7 +30,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { createImportProtectionPatterns, IMPORT_PROTECTION_ALLOWED } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
@@ -649,7 +649,21 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
       {
         patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' as const }),
-        exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
+        exclude: [
+          /node_modules[\\/]/, // Don't apply import protection to deps (ufo, unhead, @vue/server-renderer, srvx, etc.)
+          /[\\/]h3[\\/]/, // h3 legitimately imports srvx/node for Node adapter
+          /[\\/]\.nuxt[\\/]dist[\\/]/, // Nuxt server build output (styles.mjs, server.mjs, _nuxt/*)
+          /(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/,
+          ...sharedPatterns,
+        ],
+        // excludeFiles: skips when resolved import target matches (e.g. srvx/node after resolution).
+        // onViolation: fallback when id is bare (srvx) before resolution or when excludeFiles misses edge cases.
+        excludeFiles: [IMPORT_PROTECTION_ALLOWED.srvxPattern],
+        onViolation (info) {
+          if (info.id?.includes('srvx') || info.message?.includes('srvx/node')) {
+            return false
+          }
+        },
       },
     ],
   }
