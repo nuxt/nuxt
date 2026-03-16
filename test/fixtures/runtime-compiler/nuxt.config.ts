@@ -7,6 +7,5 @@ export default withMatrix({
   },
   experimental: {
     nitroAutoImports: true,
-    externalVue: false,
   },
 })

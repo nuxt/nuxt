@@ -1,5 +1,9 @@
 <script setup lang="ts">
 useLifecycleLogs('keepalive-in-config')
+
+definePageMeta({
+  name: 'keepalive-in-config',
+})
 </script>
 
 <template>
