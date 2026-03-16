@@ -417,7 +417,7 @@ importers:
         version: 2.5.0
       unstorage:
         specifier: ^2.0.0-alpha.6
-        version: 2.0.0-alpha.6(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.0)(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3)
+        version: 2.0.0-alpha.6(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.0)(lru-cache@11.2.7)(ofetch@1.5.1)
       vue:
         specifier: 3.5.30
         version: 3.5.30(typescript@5.9.3)
@@ -1093,7 +1093,7 @@ importers:
         specifier: 5.1.5
         version: 5.1.5(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2))(vue@3.5.30(typescript@5.9.3))
       autoprefixer:
-        specifier: ^10.4.27
+        specifier: 10.4.27
         version: 10.4.27(postcss@8.5.8)
       cssnano:
         specifier: 7.1.3
@@ -17547,6 +17547,14 @@ snapshots:
     optionalDependencies:
       db0: 0.3.4
       ioredis: 5.10.0
+
+  unstorage@2.0.0-alpha.6(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.0)(lru-cache@11.2.7)(ofetch@1.5.1):
+    optionalDependencies:
+      chokidar: 5.0.0
+      db0: 0.3.4
+      ioredis: 5.10.0
+      lru-cache: 11.2.7
+      ofetch: 1.5.1
 
   unstorage@2.0.0-alpha.6(chokidar@5.0.0)(db0@0.3.4)(ioredis@5.10.0)(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3):
     optionalDependencies:
