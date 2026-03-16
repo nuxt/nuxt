@@ -46,7 +46,11 @@ const nitroAppTests: [id: string, importer: string, isProtected: boolean][] = [
   ['src/composables/foo', 'server/api/bar.ts', true],
   ['../../src/utils/helper', '/root/server/api/bar.ts', true],
   ['~~/shared/utils', 'server/api/bar.ts', false],
+  ['~/server/utils/helper', 'server/api/bar.ts', false],
   ['nitro/h3', 'server/api/bar.ts', false],
+  ['srvx/node', 'node_modules/h3/dist/_entries/node.mjs', false],
+  ['srvx', 'node_modules/h3/dist/something.mjs', false],
+  ['~/server-utils/foo', 'server/api/bar.ts', true],
 ]
 
 const nuxtAppRelativeServerTests: [id: string, importer: string, isProtected: boolean][] = [

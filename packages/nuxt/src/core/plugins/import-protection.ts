@@ -18,17 +18,46 @@ interface NuxtImportProtectionOptions {
 }
 
 /**
+ * Shared exclusions for import protection. Used by createResolvedPathBlocker and nitro-server
+ * ImpoundPlugin config so allowed imports stay in sync.
+ */
+export const IMPORT_PROTECTION_ALLOWED = {
+  /** Matches srvx (bare, srvx/, srvx/...) for excludeFiles. */
+  srvxPattern: /srvx(\/|$)/,
+  /** Returns true if id is allowed (srvx, node_modules, .nuxt/dist). */
+  isAllowed (id: string, normalized?: string): boolean {
+    if (id === 'srvx' || id.startsWith('srvx/') || id.includes('/srvx/')) {
+      return true
+    }
+    const pathToCheck = normalized ?? id
+    return pathToCheck.includes('node_modules') || pathToCheck.includes('.nuxt/dist/')
+  },
+}
+
+/**
  * Returns a pattern that blocks imports whose resolved path is under the given directory.
  * normalized !== dir excludes the directory itself (e.g. /root/src/), only nested paths are blocked.
+ * @param excludeDir - When provided, paths under this directory are not blocked (e.g. serverDir in nitro-app).
  */
 function createResolvedPathBlocker (
   rootDir: string,
   dir: string,
   message: string,
+  excludeDir?: string,
 ): (id: string) => false | string {
+  const excludeDirNorm = excludeDir ? withTrailingSlash(resolve(excludeDir)) : ''
   return (id: string) => {
+    if (IMPORT_PROTECTION_ALLOWED.isAllowed(id)) {
+      return false
+    }
     const absolute = isAbsolute(id) ? id : resolve(rootDir, id)
     const normalized = resolve(absolute)
+    if (IMPORT_PROTECTION_ALLOWED.isAllowed(id, normalized)) {
+      return false
+    }
+    if (excludeDirNorm && normalized.startsWith(excludeDirNorm)) {
+      return false
+    }
     return normalized.startsWith(dir) && normalized !== dir ? message : false
   }
 }
@@ -85,31 +114,41 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
         ['Move this code to your Vue app directory or use a shared utility.'],
       ])
     }
-    // App directory aliases ~ and @ (resolve to srcDir). Order matters: these run before
-    // createResolvedPathBlocker, so alias paths are handled here, not by the general blocker.
+    // App directory aliases ~ and @ (resolve to srcDir). Exclude ~/server/ and @/server/ so
+    // nitro-app can import from serverDir. Order matters: these run before createResolvedPathBlocker.
     patterns.push([
-      /^~\//,
+      /^~\/(?!server\/)/,
       `Vue app aliases are not allowed in ${context}.`,
       ['Move this code to your Vue app directory or use a shared utility.'],
     ])
     patterns.push([
-      /^@\//,
+      /^@\/(?!server\/)/,
       `Vue app aliases are not allowed in ${context}.`,
       ['Move this code to your Vue app directory or use a shared utility.'],
     ])
-    // ~~ and @@ resolve to rootDir; block only when resolved path is under srcDir (app).
-    // Slash after ~~/@@ is required; forms like ~~foo without slash are not standard Nuxt imports.
+    // Resolve aliases (~~, @@, or custom) and block when resolved path is under srcDir (app) but not serverDir.
     const rootDir = withTrailingSlash(nuxt.options.rootDir)
     const srcDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.srcDir))
+    const serverDir = withTrailingSlash(resolve(nuxt.options.rootDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server')))
     const alias = nuxt.options.alias || {}
     patterns.push([
+      /**
+       * resolved === id means no alias matched; such imports (e.g. ./foo, ../bar) are
+       * checked by createResolvedPathBlocker, so we return false here.
+       */
       (id: string, _importer: string) => {
-        if (!/^~~\/|^@@\//.test(id)) {
+        const resolved = resolveAlias(id, alias)
+        if (!resolved || resolved === id) {
           return false
         }
-        const resolved = resolveAlias(id, alias)
         const absolute = isAbsolute(resolved) ? resolved : resolve(rootDir, resolved)
-        return absolute.startsWith(srcDir) && absolute !== srcDir
+        const normalized = resolve(absolute)
+        const srcDirNorm = resolve(srcDir)
+        const serverDirNorm = resolve(serverDir)
+        if (normalized.startsWith(serverDirNorm)) {
+          return false
+        }
+        return normalized.startsWith(srcDirNorm) && normalized !== srcDirNorm
           ? `Vue app aliases are not allowed in ${context}.`
           : false
       },
@@ -120,7 +159,7 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
     // then normalizes to cwd; we use rootDir as the unified base for the startsWith check.
     const appBlockMessage = `Vue app aliases are not allowed in ${context}.`
     patterns.push([
-      createResolvedPathBlocker(nuxt.options.rootDir, srcDir, appBlockMessage),
+      createResolvedPathBlocker(nuxt.options.rootDir, srcDir, appBlockMessage, serverDir),
       appBlockMessage,
       ['Move this code to your Vue app directory or use a shared utility.'],
     ])
@@ -140,8 +179,10 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
       ['Use `$fetch()` or `useFetch()` to call server endpoints.', 'Move shared logic to the `shared/` directory.'],
     ])
     const alias = nuxt.options.alias || {}
-    // Resolve aliases (e.g. custom module alias to server) and block when resolved path is under serverDir.
-    // resolved === id: resolveAlias returns the original path when no alias matched; we must not block those.
+    /**
+     * Resolve aliases (e.g. custom module alias to server) and block when resolved path is under serverDir.
+     * resolved === id means no alias matched; such imports are checked by createResolvedPathBlocker.
+     */
     patterns.push([
       (id: string) => {
         const resolved = resolveAlias(id, alias)
