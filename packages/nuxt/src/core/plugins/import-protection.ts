@@ -21,16 +21,25 @@ interface NuxtImportProtectionOptions {
  * Shared exclusions for import protection. Used by createResolvedPathBlocker and nitro-server
  * ImpoundPlugin config so allowed imports stay in sync.
  */
+/** Matches app.config.js, app.config.ts, etc. - merged by #build/app.config.mjs in nitro-app. */
+const APP_CONFIG_FILE_RE = /[/\\]app\.config\.(js|ts|mjs|cts|mts)$/
+
 export const IMPORT_PROTECTION_ALLOWED = {
   /** Matches srvx (bare, srvx/, srvx/...) for excludeFiles. */
   srvxPattern: /srvx(\/|$)/,
-  /** Returns true if id is allowed (srvx, node_modules, .nuxt/dist). */
+  /** Returns true if id is allowed (srvx, node_modules, .nuxt/dist, app.config.*). */
   isAllowed (id: string, normalized?: string): boolean {
     if (id === 'srvx' || id.startsWith('srvx/') || id.includes('/srvx/')) {
       return true
     }
     const pathToCheck = normalized ?? id
-    return pathToCheck.includes('node_modules') || pathToCheck.includes('.nuxt/dist/')
+    if (pathToCheck.includes('node_modules') || pathToCheck.includes('.nuxt/dist/')) {
+      return true
+    }
+    if (APP_CONFIG_FILE_RE.test(pathToCheck)) {
+      return true
+    }
+    return false
   },
 }
 
