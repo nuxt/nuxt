@@ -219,13 +219,11 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
 
       // Validate arguments
       const key = computed(() => toValue(_key))
-      if (import.meta.dev) {
-        if (!key.value || typeof key.value !== 'string') {
-          throw new TypeError('[nuxt] [useAsyncData] key must be a non-empty string.')
-        }
-        if (typeof _handler !== 'function') {
-          throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
-        }
+      if (!key.value || typeof key.value !== 'string') {
+        throw new TypeError('[nuxt] [useAsyncData] key must be a non-empty string.')
+      }
+      if (typeof _handler !== 'function') {
+        throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
