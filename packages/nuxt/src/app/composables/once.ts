@@ -50,7 +50,12 @@ export async function callOnce (...args: any[]): Promise<void> {
 
   nuxtApp._once ||= {}
   nuxtApp._once[_key] ||= fn() || true
-  await nuxtApp._once[_key]
+  try {
+    await nuxtApp._once[_key]
+  } catch (e) {
+    delete nuxtApp._once[_key]
+    throw e
+  }
   nuxtApp.payload.once.add(_key)
   delete nuxtApp._once[_key]
 }
