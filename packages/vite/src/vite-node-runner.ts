@@ -3,7 +3,7 @@ import { ViteNodeRunner } from 'vite-node/client'
 import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from '#vite-node'
 import type { ErrorPartial } from './types'
-import { formatViteError } from './utils/format-vite-error'
+import { formatViteError } from './utils/format-vite-error.ts'
 
 const runner: ViteNodeRunner = createRunner()
 
@@ -45,5 +45,5 @@ function createRunner () {
   })
 }
 
-export { formatViteError } from './utils/format-vite-error'
+export { formatViteError } from './utils/format-vite-error.ts'
 export default runner

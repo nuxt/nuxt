@@ -4,9 +4,9 @@ export function formatViteError (errorData: any, id: string): { message: string,
   const errorCode = errorData.name || errorData.reasonCode || errorData.code
   const frame = errorData.frame || errorData.source || errorData.pluginCode
 
-  const getLocId = (locObj: { file?: string, id?: string, url?: string } = {}) => locObj.file || locObj.id || locObj.url || id || ''
+  const getLocId = (locObj: { file?: string, id?: string, url?: string } = {}) => locObj.file || locObj.id || locObj.url || ''
   const getLocPos = (locObj: { line?: string, column?: string } = {}) => locObj.line ? `${locObj.line}:${locObj.column || 0}` : ''
-  const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData)
+  const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData) || id
   const locPos = getLocPos(errorData.loc) || getLocPos(errorData.location) || getLocPos(errorData.input) || getLocPos(errorData)
   const loc = locId.replace(process.cwd(), '.') + (locPos ? `:${locPos}` : '')
 
