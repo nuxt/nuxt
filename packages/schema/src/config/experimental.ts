@@ -255,11 +255,6 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
-    /**
-     * When enabled, Nuxt will clear build-related hooks after bundling, freeing
-     * memory before the Nitro build. Disable this if you need to call `build()`
-     * multiple times on the same Nuxt instance (e.g. in benchmarks).
-     */
     clearBuildHooks: true,
   },
 })
