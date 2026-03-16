@@ -622,7 +622,7 @@ describe('routing utilities: `navigateTo`', () => {
       ['\0data:alert("hi")', 'data'],
     ]
     for (const [url, protocol] of urls) {
-      expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {
