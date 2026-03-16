@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { definePlugin } from 'nitro'
 </script>
 
 <template>
