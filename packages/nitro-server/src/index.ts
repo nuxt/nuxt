@@ -25,7 +25,7 @@ import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, toArray } from './utils.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { createImportProtectionPatterns, IMPORT_PROTECTION_ALLOWED } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { getH3ImportsPreset, v2ImportsPreset } from './imports.ts'
 
@@ -597,7 +597,21 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       cwd: nuxt.options.rootDir,
       trace: true,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
-      exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
+      exclude: [
+        /node_modules[\\/]/, // Don't apply import protection to deps (ufo, unhead, @vue/server-renderer, srvx, etc.)
+        /[\\/]h3[\\/]/, // h3 legitimately imports srvx/node for Node adapter
+        /[\\/]\.nuxt[\\/]dist[\\/]/, // Nuxt server build output (styles.mjs, server.mjs, _nuxt/*)
+        /(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/,
+        ...sharedPatterns,
+      ],
+      // excludeFiles: skips when resolved import target matches (e.g. srvx/node after resolution).
+      // onViolation: fallback when id is bare (srvx) before resolution or when excludeFiles misses edge cases.
+      excludeFiles: [IMPORT_PROTECTION_ALLOWED.srvxPattern],
+      onViolation (info) {
+        if (info.id?.includes('srvx') || info.message?.includes('srvx/node')) {
+          return false
+        }
+      },
     }),
   )
 
