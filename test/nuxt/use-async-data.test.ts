@@ -640,7 +640,7 @@ describe('useAsyncData', () => {
     comp.unmount()
   })
 
-  it('should work with static string key without creating key watcher', async () => {
+  it('should work with static string key and sync data with useNuxtData', async () => {
     const staticKey = 'static-key-no-watcher'
     const promiseFn = vi.fn(() => Promise.resolve('ok'))
     const { data } = await useAsyncData(staticKey, promiseFn)
