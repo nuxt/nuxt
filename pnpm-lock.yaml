@@ -1345,6 +1345,8 @@ importers:
         specifier: 4.0.18
         version: 4.0.18(@types/node@24.12.0)(esbuild@0.27.4)(happy-dom@20.8.4)(jiti@2.6.1)(terser@5.46.0)(yaml@2.8.2)
 
+  test/fixtures/csp: {}
+
   test/fixtures/hmr:
     dependencies:
       nuxt:
