@@ -3213,7 +3213,7 @@ describe('nuxt-time', () => {
     const html = await $fetch<string>('/components/nuxt-time')
     const snap = html.match(/<time[^>]*data-testid="fixed"[^>]*>[^<]*<\/time>/)?.[0].replace(/ data-prehydrate-id="[^"]*"/g, '')
     expect(snap).toContain(
-      '<time data-month="long" data-day="numeric" datetime="2023-02-11T08:24:08.396Z" data-testid="fixed">',
+      '<time data-month="long" data-day="numeric" data-relative="false" data-title="false" datetime="2023-02-11T08:24:08.396Z" data-testid="fixed">',
     )
   })
 
