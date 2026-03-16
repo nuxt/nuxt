@@ -179,7 +179,7 @@ const defaultNuxtOptions = {
     '~~': '/root/',
     '@@': '/root/',
   },
-} satisfies Partial<NuxtOptions> as NuxtOptions
+} satisfies Partial<NuxtOptions> as unknown as NuxtOptions
 
 const transformWithImportProtection = (id: string, importer: string, context: 'nitro-app' | 'nuxt-app' | 'shared', errors: string[] = []) => {
   const plugin = ImpoundPlugin.rollup({
