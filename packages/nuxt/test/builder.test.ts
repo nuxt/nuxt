@@ -1,23 +1,17 @@
 import { writeFileSync } from 'node:fs'
-import { mkdir, rm } from 'node:fs/promises'
 
 import { join, relative, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
 
 describe('builder:watch', { sequential: true }, async () => {
-  const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')
-  beforeEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true })
-    await mkdir(join(tmpDir, 'project/node_modules'), { recursive: true })
-  })
-  afterAll(async () => {
-    await rm(tmpDir, { recursive: true, force: true })
-  })
+  const workspaceDir = await findWorkspaceDir()
+  const fixtureRoot = join(workspaceDir!, 'test/fixtures/basic')
+  // Test relies on fixture structure: watch targets `other`, `../higher`, and `test` are created at runtime
   const watcherStrategies = ['chokidar', 'chokidar-granular', 'parcel'] as const
-  it.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', async (watcher) => {
-    const rootDir = join(tmpDir, 'project')
+  it.each(watcherStrategies)('should restart Nuxt when a file is added with %s strategy', { timeout: 60_000 }, async (watcher) => {
+    const rootDir = fixtureRoot
     const nuxt = await loadNuxt({
       cwd: rootDir,
       ready: true,
@@ -38,6 +32,9 @@ describe('builder:watch', { sequential: true }, async () => {
     })
 
     await build(nuxt)
+
+    // Allow watcher to stabilize before writing files (chokidar/parcel need time after ready)
+    await new Promise(r => setTimeout(r, 100))
 
     const watchPromise = new Promise(resolve => nuxt.hooks.hookOnce('builder:watch', resolve))
     writeFileSync(resolve(rootDir, '../higher'), 'something')

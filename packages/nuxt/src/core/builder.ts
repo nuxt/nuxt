@@ -3,9 +3,10 @@ import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
+import { existsSync } from 'node:fs'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
-import { isDirectory, logger } from '../utils.ts'
+import { isDirectory, isDirectorySync, logger } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
@@ -141,7 +142,11 @@ function createWatcher () {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
     if (!path.startsWith(srcDir)) {
-      restartPaths.add(path)
+      // Chokidar does not fire events for non-existent paths; watch parent directory instead
+      const pathToAdd = !existsSync(path) || !isDirectorySync(path)
+        ? join(dirname(path), '')
+        : path
+      restartPaths.add(pathToAdd)
     }
   }
 
@@ -316,11 +321,14 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
       pathsToWatch.add(dirs.server)
     }
   }
+  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
-    const path = opts?.parentDirectories
-      ? join(dirname(resolve(nuxt.options.srcDir, pattern)), '')
-      : resolve(nuxt.options.srcDir, pattern)
+    const resolvedPath = resolve(nuxt.options.srcDir, pattern)
+    // Use parent directory for paths outside srcDir (chokidar does not fire for non-existent paths)
+    const path = opts?.parentDirectories || !resolvedPath.startsWith(srcDir)
+      ? join(dirname(resolvedPath), '')
+      : resolvedPath
     let shouldAdd = true
     for (const w of [...pathsToWatch]) {
       if (w.startsWith(path)) {

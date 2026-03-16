@@ -51,6 +51,8 @@ const nitroAppTests: [id: string, importer: string, isProtected: boolean][] = [
   ['srvx/node', 'node_modules/h3/dist/_entries/node.mjs', false],
   ['srvx', 'node_modules/h3/dist/something.mjs', false],
   ['~/server-utils/foo', 'server/api/bar.ts', true],
+  // Custom alias to server-utils (not serverDir) - resolves outside srcDir, not protected
+  ['~~/shared/server-utils/helper', 'server/api/bar.ts', false],
 ]
 
 const nuxtAppRelativeServerTests: [id: string, importer: string, isProtected: boolean][] = [
@@ -60,6 +62,8 @@ const nuxtAppRelativeServerTests: [id: string, importer: string, isProtected: bo
 
 const nuxtAppAliasToServerTests: [id: string, importer: string, isProtected: boolean][] = [
   ['#api/foo', 'components/bar.vue', true],
+  // Custom alias to server-utils (not serverDir) - should NOT be treated as server import
+  ['~~/shared/server-utils/helper', 'components/bar.vue', false],
 ]
 
 describe('import protection', () => {
@@ -114,6 +118,33 @@ describe('import protection', () => {
       expect(result).toBeDefined()
       expect(result).toContain('impound:proxy')
     }
+  })
+
+  it('nitro-app with custom serverDir: ~/backend/ allowed when serverDir is backend', async () => {
+    const customOptions = {
+      ...defaultNuxtOptions,
+      serverDir: '/root/src/backend',
+    } as NuxtOptions
+    const plugin = ImpoundPlugin.rollup({
+      cwd: '/root',
+      patterns: createImportProtectionPatterns({ options: customOptions }, { context: 'nitro-app' }),
+    })
+    const result = (plugin as any).resolveId.call({ error: () => {} }, '~/backend/utils/helper', 'backend/api/bar.ts')
+    expect(result).toBeNull()
+  })
+
+  it('nitro-app with custom serverDir: ~/server-utils/ still protected (sibling of serverDir)', async () => {
+    const customOptions = {
+      ...defaultNuxtOptions,
+      serverDir: '/root/src/backend',
+    } as NuxtOptions
+    const plugin = ImpoundPlugin.rollup({
+      cwd: '/root',
+      patterns: createImportProtectionPatterns({ options: customOptions }, { context: 'nitro-app' }),
+    })
+    const result = (plugin as any).resolveId.call({ error: () => {} }, '~/server-utils/foo', 'backend/api/bar.ts')
+    expect(result).toBeDefined()
+    expect(result).toContain('impound:proxy')
   })
 })
 

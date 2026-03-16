@@ -39,12 +39,18 @@ export const IMPORT_PROTECTION_ALLOWED = {
  * normalized !== dir excludes the directory itself (e.g. /root/src/), only nested paths are blocked.
  * @param excludeDir - When provided, paths under this directory are not blocked (e.g. serverDir in nitro-app).
  */
+function isSubpath (parent: string, child: string): boolean {
+  const rel = relative(parent, child)
+  return rel !== '' && !rel.startsWith('..') && !rel.startsWith('/')
+}
+
 function createResolvedPathBlocker (
   rootDir: string,
   dir: string,
   message: string,
   excludeDir?: string,
 ): (id: string) => false | string {
+  const dirNorm = withTrailingSlash(resolve(dir))
   const excludeDirNorm = excludeDir ? withTrailingSlash(resolve(excludeDir)) : ''
   return (id: string) => {
     if (IMPORT_PROTECTION_ALLOWED.isAllowed(id)) {
@@ -55,10 +61,10 @@ function createResolvedPathBlocker (
     if (IMPORT_PROTECTION_ALLOWED.isAllowed(id, normalized)) {
       return false
     }
-    if (excludeDirNorm && normalized.startsWith(excludeDirNorm)) {
+    if (excludeDirNorm && isSubpath(excludeDirNorm, normalized)) {
       return false
     }
-    return normalized.startsWith(dir) && normalized !== dir ? message : false
+    return isSubpath(dirNorm, normalized) ? message : false
   }
 }
 
@@ -114,15 +120,19 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
         ['Move this code to your Vue app directory or use a shared utility.'],
       ])
     }
-    // App directory aliases ~ and @ (resolve to srcDir). Exclude ~/server/ and @/server/ so
+    // App directory aliases ~ and @ (resolve to srcDir). Exclude ~/serverDir/ and @/serverDir/ so
     // nitro-app can import from serverDir. Order matters: these run before createResolvedPathBlocker.
+    const srcDirResolved = resolve(nuxt.options.rootDir, nuxt.options.srcDir)
+    const serverDirPath = resolve(srcDirResolved, nuxt.options.serverDir || 'server')
+    const serverDirRelative = relative(srcDirResolved, serverDirPath) || 'server'
+    const escapedServerDir = escapeRE(serverDirRelative.replace(/[/\\]+$/, ''))
     patterns.push([
-      /^~\/(?!server\/)/,
+      new RegExp(`^~\\/(?!${escapedServerDir}\\/)`),
       `Vue app aliases are not allowed in ${context}.`,
       ['Move this code to your Vue app directory or use a shared utility.'],
     ])
     patterns.push([
-      /^@\/(?!server\/)/,
+      new RegExp(`^@\\/(?!${escapedServerDir}\\/)`),
       `Vue app aliases are not allowed in ${context}.`,
       ['Move this code to your Vue app directory or use a shared utility.'],
     ])
@@ -143,12 +153,14 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
         }
         const absolute = isAbsolute(resolved) ? resolved : resolve(rootDir, resolved)
         const normalized = resolve(absolute)
-        const srcDirNorm = resolve(srcDir)
-        const serverDirNorm = resolve(serverDir)
-        if (normalized.startsWith(serverDirNorm)) {
+        const relToServer = relative(serverDir, normalized)
+        const relToSrc = relative(srcDir, normalized)
+        const isInsideServer = relToServer !== '' && !relToServer.startsWith('..') && !relToServer.startsWith('/')
+        const isInsideSrc = relToSrc !== '' && !relToSrc.startsWith('..') && !relToSrc.startsWith('/')
+        if (isInsideServer) {
           return false
         }
-        return normalized.startsWith(srcDirNorm) && normalized !== srcDirNorm
+        return isInsideSrc
           ? `Vue app aliases are not allowed in ${context}.`
           : false
       },
@@ -191,7 +203,7 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
         }
         const absolute = isAbsolute(resolved) ? resolved : resolve(nuxt.options.rootDir, resolved)
         const normalized = resolve(absolute)
-        return normalized.startsWith(serverDir) && normalized !== serverDir
+        return isSubpath(serverDir, normalized)
           ? `Importing from server is not allowed in ${context}.`
           : false
       },
