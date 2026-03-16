@@ -78,7 +78,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
   nuxt._perf?.endPhase('build:bundle')
 
   // release hooks that will never fire again.
-  if (!nuxt.options.dev) {
+  if (!nuxt.options.dev && nuxt.options.experimental.clearBuildHooks) {
     clearBuildHooks(nuxt)
   }
 
