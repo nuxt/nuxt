@@ -7,7 +7,7 @@ import type { NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, resolvePath, useNitro } from '@nuxt/kit'
 import { sanitizeFilePath } from 'mlly'
 import vuePlugin from '@vitejs/plugin-vue'
-import { joinURL, withoutTrailingSlash, withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 
@@ -144,9 +144,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       resolve: {
         alias: {
           [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
-          // TODO: fix upstream in vite
-          ...Object.fromEntries(Object.entries(nuxt.options.alias).map(([key, value]) => [key, withoutTrailingSlash(value)])),
-          '#app': withoutTrailingSlash(nuxt.options.appDir),
+          ...nuxt.options.alias,
+          '#app': nuxt.options.appDir,
           'web-streams-polyfill/ponyfill/es2018': mockEmpty,
           // Cannot destructure property 'AbortController' of ..
           'abort-controller': mockEmpty,
