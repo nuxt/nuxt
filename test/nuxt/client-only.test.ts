@@ -6,6 +6,9 @@ import { flushPromises, mount } from '@vue/test-utils'
 
 import { createClientOnly } from '../../packages/nuxt/src/app/components/client-only'
 import { createClientPage } from '../../packages/nuxt/dist/components/runtime/client-component'
+import ServerPlaceholder from '../../packages/nuxt/src/app/components/server-placeholder'
+import { clientNodePlaceholder } from '#build/nuxt.config.mjs'
+import { useNuxtApp } from '#app/nuxt'
 import { ClientOnly } from '#components'
 
 describe('client pages', () => {
@@ -92,6 +95,50 @@ describe('createClientOnly', () => {
     })
     const wrapper = await mountSuspended(component)
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div>foo</div>"`)
+  })
+})
+
+describe('ServerPlaceholder', () => {
+  it('should render the correct placeholder based on clientNodePlaceholder flag', () => {
+    const wrapper = mount(ServerPlaceholder)
+    if (clientNodePlaceholder) {
+      // v5 behavior: comment node placeholder
+      expect(wrapper.html()).toBe('<!--placeholder-->')
+    } else {
+      // v4 behavior: empty div placeholder
+      expect(wrapper.html()).toBe('<div></div>')
+    }
+  })
+})
+
+describe('createClientOnly - placeholder during hydration', () => {
+  it('should render the correct placeholder during hydration based on clientNodePlaceholder flag', async () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp.isHydrating = true
+
+    try {
+      const comp = defineComponent({
+        setup: () => () => h('div', { id: 'real' }, 'real content'),
+      })
+
+      const ClientComp = createClientOnly(comp as ComponentOptions)
+      const wrapper = mount(ClientComp)
+
+      // Before onMounted fires, should show placeholder
+      expect(wrapper.find('#real').exists()).toBe(false)
+      if (clientNodePlaceholder) {
+        expect(wrapper.html()).toBe('<!--placeholder-->')
+      } else {
+        expect(wrapper.html()).toBe('<div></div>')
+      }
+
+      // After mounting, should show real content regardless of flag
+      await flushPromises()
+      expect(wrapper.find('#real').exists()).toBe(true)
+      expect(wrapper.html()).toBe('<div id="real">real content</div>')
+    } finally {
+      nuxtApp.isHydrating = false
+    }
   })
 })
 

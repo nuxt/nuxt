@@ -25,8 +25,15 @@ const commonSettings: NuxtConfig = {
 }
 
 const projects: Record<string, NuxtConfig> = {
-  'nuxt': {},
+  'nuxt': {
+    future: {
+      compatibilityVersion: 5,
+    },
+  },
   'nuxt-legacy': {
+    future: {
+      compatibilityVersion: 4,
+    },
     experimental: {
       alwaysRunFetchOnKeyChange: true,
     },

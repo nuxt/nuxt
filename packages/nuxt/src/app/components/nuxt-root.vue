@@ -36,7 +36,10 @@ const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 if (import.meta.client && nuxtApp.isHydrating) {
   const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', onResolve)
-  useRouter().beforeEach(removeErrorHook)
+  const removeGuard = useRouter().beforeEach(() => {
+    removeErrorHook()
+    removeGuard()
+  })
 }
 
 const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
@@ -47,7 +50,7 @@ const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server
 provide(PageRouteSymbol, useRoute())
 
 // vue:setup hook
-const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup')
+const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup', [])
 if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
   console.error('[nuxt] Error in `vue:setup`. Callbacks must be synchronous.')
 }

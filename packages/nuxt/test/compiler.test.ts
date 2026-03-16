@@ -361,6 +361,12 @@ describe('parseFunctionCall', () => {
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })
 
+  it('should handle a TS as-cast wrapping a member expression callee', () => {
+    const code = `const x = (factories.createUseFetch as any)()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
   it('should handle a TS non-null assertion callee', () => {
     const code = `const x = (createUseFetch!)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
@@ -373,6 +379,12 @@ describe('parseFunctionCall', () => {
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })
 
+  it('should handle a TS non-null assertion wrapping a member expression callee', () => {
+    const code = `const x = (factories.createUseFetch!)()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
   it('should handle a TS type-assertion in parenthesized expression callee', () => {
     const code = `const x = (<any>createUseFetch)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
@@ -381,6 +393,12 @@ describe('parseFunctionCall', () => {
 
   it('should handle a TS type-assertion in member expression object', () => {
     const code = `const x = (<any>factories).createUseFetch()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
+  it('should handle a TS type-assertion wrapping a member expression callee', () => {
+    const code = `const x = (<any>factories.createUseFetch)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })

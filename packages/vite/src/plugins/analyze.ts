@@ -1,12 +1,9 @@
-import process from 'node:process'
 import type { Plugin, ResolvedConfig } from 'vite'
 import { transformWithOxc } from 'vite'
 import { defu } from 'defu'
-import { addDependency } from 'nypm'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { RenderedModule } from 'rolldown'
-import { logger } from '@nuxt/kit'
-import { hasTTY, isCI } from 'std-env'
+import { ensureDependencyInstalled, logger } from '@nuxt/kit'
 
 export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (nuxt.options.test) {
@@ -18,43 +15,17 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     return
   }
 
-  let visualizer: typeof import('rollup-plugin-visualizer').visualizer
-  let config: ResolvedConfig
-
-  try {
-    visualizer = await import('rollup-plugin-visualizer').then(r => r.visualizer)
-  } catch (_err) {
-    const err = _err as NodeJS.ErrnoException
-
-    if (err.code !== 'ERR_MODULE_NOT_FOUND' && err.code !== 'MODULE_NOT_FOUND') {
-      throw err
-    }
-
-    if (!isCI && hasTTY) {
-      logger.info('Analyzing bundles requires an additional dependency.')
-      const shouldInstall = await logger.prompt('Install `rollup-plugin-visualizer`?', {
-        type: 'confirm',
-        choices: [
-          { name: 'Yes', value: true },
-          { name: 'No', value: false },
-        ],
-      })
-
-      if (shouldInstall) {
-        logger.start('Installing `rollup-plugin-visualizer`...')
-        await addDependency('rollup-plugin-visualizer', {
-          dev: true,
-          cwd: nuxt.options.rootDir,
-          silent: true,
-        })
-        logger.info('Rerun Nuxt to analyze your bundle.')
-        process.exit(1)
-      }
-    }
-
-    logger.info('Cannot find `rollup-plugin-visualizer`.')
-    process.exit(1)
+  if (!await ensureDependencyInstalled('rollup-plugin-visualizer', {
+    rootDir: nuxt.options.rootDir,
+    searchPaths: nuxt.options.modulesDir,
+    from: import.meta.url,
+  })) {
+    logger.warn('Skipping bundle analysis.')
+    return
   }
+
+  let config: ResolvedConfig
+  const { visualizer } = await import('rollup-plugin-visualizer')
 
   return {
     name: 'nuxt:analyze',

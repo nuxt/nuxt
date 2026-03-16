@@ -457,7 +457,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime-config\'',
 
       nuxt.options.dev
         ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
@@ -570,6 +570,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const pendingWhenIdle = ${!!ctx.nuxt.options.experimental.pendingWhenIdle}`,
       `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
       `export const asyncCallHook = ${!!ctx.nuxt.options.experimental.asyncCallHook}`,
+      `export const clientNodePlaceholder = ${!!ctx.nuxt.options.experimental.clientNodePlaceholder}`,
     ].join('\n\n')
   },
 }
