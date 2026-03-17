@@ -1,5 +1,6 @@
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { $Fetch } from 'nitro/types'
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 declare global {
@@ -44,6 +45,9 @@ declare module 'vue' {
   }
   interface ComponentCustomProperties {
     $nuxt: NuxtApp
+    $route: RouteLocationNormalizedLoaded
+    $router: Router
+    navigateTo: typeof import('../composables/router').navigateTo
   }
   interface ComponentInternalInstance {
     _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>

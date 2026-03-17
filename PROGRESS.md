@@ -17,3 +17,7 @@
 - Started issue `#34593`: improved `packages/vite/src/vite-node-runner.ts` error formatting to preserve original plugin error messages (`errorData.message`) and avoid noisy `undefined:undefined` location output.
 - Added regression tests in `packages/vite/test/vite-node-runner.test.ts` for message preservation and location sanitization.
 - Next: run targeted Vite tests for the new formatter behavior.
+- Started issue `#34562`: added explicit `ComponentCustomProperties` typings for `$route`, `$router`, and `navigateTo` in `packages/nuxt/src/app/types/augments.ts` to harden Vue component-instance typing even when generated injection unions become large.
+- Added fixture component `test/fixtures/basic-types/app/components/routing-instance-types.vue` that exercises `this.$route`, `this.$router`, and `this.navigateTo` in Options API style.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/test/typed-router.test.ts --root /home/josef/Projekte/Github/nuxt` passed (1/1 tests).
+- Validation caveat: fixture-level `vue-tsc` in this local environment reports pre-existing workspace typing errors unrelated to these changes, so full `test:types` could not be used here as a clean signal.
