@@ -53,10 +53,10 @@ function updateCspVariables (csp: ContentSecurityPolicyValue, nonce?: string, sc
       })
       .filter(source => source)
 
-    if (directive === 'script-src' && scriptHashes) {
+    if (['script-src', 'script-src-elem'].includes(directive) && scriptHashes) {
       modifiedSources.push(...scriptHashes)
     }
-    if (directive === 'style-src' && styleHashes) {
+    if (['style-src', 'style-src-elem'].includes(directive) && styleHashes) {
       modifiedSources.push(...styleHashes)
     }
 
