@@ -219,6 +219,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
+        if (routeRules.appLayout !== undefined && to.meta.layout === undefined) {
+          to.meta.layout = routeRules.appLayout as string | false
+        }
+
         for (const entry of middlewareEntries) {
           const middleware: RouteMiddleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 

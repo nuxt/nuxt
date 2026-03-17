@@ -263,6 +263,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             }
           }
 
+          if (routeRules.appLayout !== undefined && to.meta.layout === undefined) {
+            to.meta.layout = routeRules.appLayout as string | false
+          }
+
           for (const middleware of middlewareEntries) {
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || true
