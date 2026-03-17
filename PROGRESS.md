@@ -21,3 +21,7 @@
 - Added fixture component `test/fixtures/basic-types/app/components/routing-instance-types.vue` that exercises `this.$route`, `this.$router`, and `this.navigateTo` in Options API style.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/test/typed-router.test.ts --root /home/josef/Projekte/Github/nuxt` passed (1/1 tests).
 - Validation caveat: fixture-level `vue-tsc` in this local environment reports pre-existing workspace typing errors unrelated to these changes, so full `test:types` could not be used here as a clean signal.
+- Started JavaScript-focused issue queue and implemented `#33033` (`ENOENT` on missing `*.js.map` requests).
+- Added `isMissingSourceMapRequestError` guard in `packages/nitro-server/src/runtime/handlers/error.ts` to return HTTP 404 for missing sourcemap asset requests instead of surfacing a 500 crash.
+- Added regression tests in `packages/nitro-server/test/error-handler.test.ts` covering ENOENT detection and early 404 response behavior.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/error-handler.test.ts /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/early-hints.test.ts --root /home/josef/Projekte/Github/nuxt` passed (6/6 tests).

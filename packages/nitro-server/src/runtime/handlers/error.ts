@@ -7,7 +7,32 @@ import { serverFetch } from 'nitro'
 import { isJsonRequest } from '../utils/error'
 import { generateErrorOverlayHTML } from '../utils/dev'
 
+type ErrorLike = {
+  code?: string
+  message?: string
+  cause?: {
+    code?: string
+  }
+}
+
+export function isMissingSourceMapRequestError (error: ErrorLike, event: Pick<H3Event, 'path' | 'req'>) {
+  const requestPath = String(event.path || event.req.url || '').split('?')[0]
+  if (!requestPath.endsWith('.map')) {
+    return false
+  }
+
+  const errorCode = error.cause?.code || error.code
+  return errorCode === 'ENOENT' || error.message?.includes('ENOENT: no such file or directory') || false
+}
+
 export default <NitroErrorHandler> async function errorhandler (error, event, { defaultHandler }) {
+  if (isMissingSourceMapRequestError(error, event)) {
+    return new Response('', {
+      status: 404,
+      statusText: 'Not Found',
+    })
+  }
+
   // invoke default Nitro error handler (which will log appropriately if required)
   const defaultRes = await defaultHandler(error, event, { json: true })
 
