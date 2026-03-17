@@ -4,7 +4,7 @@ import { compileScript, parse } from '@vue/compiler-sfc'
 import { klona } from 'klona'
 import { parse as toAst } from 'acorn'
 
-import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
+import { dedupeHotUpdateModules, PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
 import { getRouteMeta, normalizeRoutes } from '../src/pages/utils.ts'
 import type { NuxtPage } from '../schema.ts'
 
@@ -27,6 +27,43 @@ vi.mock('@nuxt/kit', async (original) => {
   }
 })
 describe('page metadata', () => {
+  it('dedupes duplicated modules during page meta hot updates', () => {
+    const plugin = PageMetaPlugin({
+      routesPath: '/tmp/routes.mjs',
+      isPage: file => file.endsWith('.vue'),
+    }).raw({}, {} as any) as any
+
+    const pageModule = { id: '/app/pages/index.vue' }
+    const macroModule = { id: '/app/pages/index.vue?macro=true' }
+    const routesModule = { id: 'virtual:nuxt:' + encodeURIComponent('/tmp/routes.mjs') }
+
+    const result = plugin.vite.handleHotUpdate.handler({
+      file: '/app/pages/index.vue',
+      modules: [pageModule, macroModule],
+      server: {
+        moduleGraph: {
+          getModuleById: (id: string) => {
+            if (id === '/app/pages/index.vue?macro=true') {
+              return macroModule
+            }
+            if (id === 'virtual:nuxt:' + encodeURIComponent('/tmp/routes.mjs')) {
+              return routesModule
+            }
+            return null
+          },
+        },
+      },
+    })
+
+    expect(result).toEqual([pageModule, macroModule, routesModule])
+  })
+
+  it('dedupeHotUpdateModules keeps unique ids only', () => {
+    const duplicate = { id: 'foo' }
+    const unique = { id: 'bar' }
+    expect(dedupeHotUpdateModules([duplicate, duplicate, unique])).toEqual([duplicate, unique])
+  })
+
   it('should not extract metadata from empty files', () => {
     expect(getRouteMeta('', filePath)).toEqual({})
     expect(getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})

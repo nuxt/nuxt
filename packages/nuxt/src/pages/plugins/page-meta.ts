@@ -44,6 +44,22 @@ if (import.meta.webpackHot) {
   })
 }`
 
+interface HotUpdateModuleLike {
+  id?: string
+}
+
+export function dedupeHotUpdateModules<T extends HotUpdateModuleLike> (modules: T[]) {
+  const seen = new Set<string | T>()
+  return modules.filter((mod) => {
+    const key = mod.id || mod
+    if (seen.has(key)) {
+      return false
+    }
+    seen.add(key)
+    return true
+  })
+}
+
 export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
   return {
     name: 'nuxt:pages-macros-transform',
@@ -354,11 +370,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (options.routesPath && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
             const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + encodeURIComponent(options.routesPath))
-            return [
+            return dedupeHotUpdateModules([
               ...modules,
               ...macroModule ? [macroModule] : [],
               ...routesModule ? [routesModule] : [],
-            ]
+            ])
           }
         },
       },

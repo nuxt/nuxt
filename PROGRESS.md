@@ -39,3 +39,8 @@
 - This forces filename hash changes when `__vite__mapDeps`-relevant dependency lists change, preventing stale immutable-cache content from mismatching SRI.
 - Added regression test `packages/vite/test/stable-entry.test.ts` covering order-insensitive but dependency-sensitive hash seed behavior.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/vite/test/stable-entry.test.ts /home/josef/Projekte/Github/nuxt/packages/vite/test/dev-server.test.ts --root /home/josef/Projekte/Github/nuxt` passed (4/4 tests).
+- Started JavaScript issue `#31479` (pages hot-reloaded twice from duplicated `?macro=true` module updates).
+- Added `dedupeHotUpdateModules` in `packages/nuxt/src/pages/plugins/page-meta.ts` and applied it to `vite.handleHotUpdate` output.
+- This removes duplicate module entries when the macro module is already present in Vite's module list, reducing duplicate HMR execution.
+- Added regression tests in `packages/nuxt/test/page-metadata.test.ts` for hot-update deduplication and helper behavior.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nuxt/test/page-metadata.test.ts --root /home/josef/Projekte/Github/nuxt` passed (38/38 tests).
