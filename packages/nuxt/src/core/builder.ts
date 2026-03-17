@@ -9,9 +9,16 @@ import { isDirectory, logger } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
+import { acquireBuildLock } from './build-lock.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
+  // Acquire build lock to prevent concurrent builds
+  if (!nuxt.options.dev && !nuxt.options._prepare && !nuxt.options.test) {
+    const releaseLock = acquireBuildLock(nuxt.options.buildDir)
+    nuxt.hooks.hookOnce('close', releaseLock)
+  }
+
   nuxt._perf?.startPhase('app:generate')
   const app = createApp(nuxt)
   nuxt.apps.default = app
