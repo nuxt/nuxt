@@ -219,7 +219,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        if (routeRules.appLayout !== undefined && to.meta.layout === undefined) {
+        if (routeRules.appLayout != null && to.meta.layout == null) {
           to.meta.layout = routeRules.appLayout as string | false
         }
 

@@ -263,7 +263,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             }
           }
 
-          if (routeRules.appLayout !== undefined && to.meta.layout === undefined) {
+          if (routeRules.appLayout != null && to.meta.layout == null) {
             to.meta.layout = routeRules.appLayout as string | false
           }
 
