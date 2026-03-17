@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { close as fdClose, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
-import { join } from 'pathe'
+import { join, relative } from 'pathe'
 
 const LOCK_FILENAME = '.build.lock'
 
@@ -37,8 +37,20 @@ function readLock (lockPath: string): LockData | null {
 }
 
 function isLockStale (lock: LockData): boolean {
-  const age = Date.now() - new Date(lock.startedAt).getTime()
-  return age > MAX_LOCK_AGE_MS
+  return lockAge(lock) > MAX_LOCK_AGE_MS
+}
+
+function lockAge (lock: LockData): number {
+  return Date.now() - new Date(lock.startedAt).getTime()
+}
+
+function formatAge (ms: number): string {
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'always', style: 'long' })
+  const seconds = Math.round(ms / 1000)
+  if (seconds < 60) { return rtf.format(-seconds, 'second') }
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) { return rtf.format(-minutes, 'minute') }
+  return rtf.format(-Math.round(minutes / 60), 'hour')
 }
 
 /**
@@ -46,16 +58,18 @@ function isLockStale (lock: LockData): boolean {
  * Returns a release function on success, or throws with `pid` and `startedAt`
  * properties on the error so callers can implement their own retry strategy.
  */
-export function acquireBuildLock (buildDir: string): () => void {
+export function acquireBuildLock (buildDir: string, rootDir?: string): () => void {
   mkdirSync(buildDir, { recursive: true })
 
   const lockPath = join(buildDir, LOCK_FILENAME)
 
   const existing = readLock(lockPath)
   if (existing && existing.pid !== process.pid && isProcessAlive(existing.pid) && !isLockStale(existing)) {
+    const age = formatAge(lockAge(existing))
+    const displayPath = rootDir ? relative(rootDir, lockPath) : lockPath
     const err = new Error(
-      `Another Nuxt build is already running (PID ${existing.pid}, started ${existing.startedAt}).\n`
-      + `If this is unexpected, you can remove the lock file: ${lockPath}`,
+      `Another Nuxt build is already running (PID ${existing.pid}, started ${age}).\n`
+      + `If this is unexpected, you can remove the lock file: ${displayPath}`,
     ) as Error & BuildLockError
     err.pid = existing.pid
     err.startedAt = existing.startedAt

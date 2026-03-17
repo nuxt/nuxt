@@ -54,6 +54,7 @@ describe('build-lock', async () => {
       const error = err as Error & BuildLockError
       expect(error.message).toContain('Another Nuxt build is already running')
       expect(error.message).toContain('remove the lock file')
+      expect(error.message).toMatch(/started \d+ seconds? ago/)
       expect(error.pid).toBe(1)
       expect(error.startedAt).toBeTruthy()
     }

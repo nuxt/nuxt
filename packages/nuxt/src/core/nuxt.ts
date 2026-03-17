@@ -33,6 +33,7 @@ import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
 
+import { acquireBuildLock } from './build-lock.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -805,6 +806,14 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const options = await loadNuxtConfig(opts)
 
+  // Acquire build lock as early as possible, before modules/init work.
+  // There is no explicit `_build` flag set by @nuxt/cli, so we infer
+  // build mode by excluding dev, prepare, and test.
+  let releaseBuildLock: (() => void) | undefined
+  if (!options.dev && !options._prepare && !options.test) {
+    releaseBuildLock = acquireBuildLock(options.buildDir, options.rootDir)
+  }
+
   if (!perf && typeof options.debug === 'object' && options.debug.perf) {
     perf = new NuxtPerfProfiler({ startTime: cliStartTime })
   }
@@ -905,6 +914,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   })
 
   const nuxt = createNuxt(options)
+
+  if (releaseBuildLock) {
+    nuxt.hooks.hookOnce('close', releaseBuildLock)
+  }
 
   if (perf) {
     nuxt._perf = perf
