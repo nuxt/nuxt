@@ -212,6 +212,9 @@ export default withMatrix({
     },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
+  serverHandlers: [
+    { middleware: true, handler: '#server/utils/configured-middleware.ts' },
+  ],
   hooks: {
     'webpack:config' (configs) {
       // in order to test bigint serialization we need to set target to a more modern one

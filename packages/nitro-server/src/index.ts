@@ -6,11 +6,11 @@ import process from 'node:process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import { join, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
-import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroEventHandler, NitroRouteRules } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -37,6 +37,83 @@ const logLevelMapReverse = {
 
 const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
 const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
+
+const NUXT_ERROR_ROUTE = '/__nuxt_error'
+
+function normalizeHandlerPath (path: string): string {
+  return normalize(path).replace(/\.[cm]?[tj]sx?$/, '')
+}
+
+/**
+ * Intercepts writes to `nitro.scannedHandlers` so that every time Nitro
+ * rescans server directories, configured middleware handlers are moved
+ * before scanned middleware handlers in the array.
+ *
+ * Nitro internally builds globalMiddleware as `[...scannedHandlers, ...options.handlers]`,
+ * so without this interception, scanned middleware always runs before configured.
+ *
+ * Our strategy: move configured middleware handlers from `options.handlers`
+ * into the front of `scannedHandlers`, so they appear first in the combined list.
+ */
+export function installMiddlewareReorder (nuxt: Nuxt, nitro: Nitro, distDir: string): void {
+  const alias = nitro.options.alias || nuxt.options.alias
+  const configuredPaths = new Set<string>()
+
+  if (nuxt.options.experimental.runtimeBaseURL) {
+    configuredPaths.add(normalizeHandlerPath(resolve(distDir, 'runtime/middleware/base-url')))
+  }
+  for (const h of nuxt.options.serverHandlers) {
+    if (typeof h.handler === 'string') {
+      const resolved = resolve(nuxt.options.rootDir, resolveAlias(h.handler, alias))
+      configuredPaths.add(normalizeHandlerPath(resolved))
+    }
+  }
+
+  if (configuredPaths.size === 0) { return }
+
+  const isConfiguredHandler = (h: NitroEventHandler): boolean => {
+    if (!h.handler || typeof h.handler !== 'string') { return false }
+    return configuredPaths.has(normalizeHandlerPath(h.handler))
+  }
+
+  // Intercept scannedHandlers assignment via a property trap.
+  // Every time Nitro sets scannedHandlers (after scanning dirs), we
+  // move configured middleware from options.handlers into the front of
+  // scannedHandlers so that the sync() call produces the right order.
+  let _scannedHandlers = nitro.scannedHandlers || []
+
+  // Build configured middleware handlers once at install time
+  const configuredMiddlewareSnapshot: NitroEventHandler[] = []
+  for (const h of nitro.options.handlers) {
+    if (h.middleware && isConfiguredHandler(h)) {
+      configuredMiddlewareSnapshot.push(h)
+    }
+  }
+
+  if (configuredMiddlewareSnapshot.length === 0) { return }
+
+  const configuredHandlerPaths = new Set(
+    configuredMiddlewareSnapshot.map(h => normalizeHandlerPath(h.handler as string)),
+  )
+
+  Object.defineProperty(nitro, 'scannedHandlers', {
+    get: () => _scannedHandlers,
+    set (value: NitroEventHandler[]) {
+      // Filter out configured middleware from incoming scanned handlers (avoid duplicates)
+      const filteredValue = value.filter((h) => {
+        if (!h.middleware || typeof h.handler !== 'string') { return true }
+        return !configuredHandlerPaths.has(normalizeHandlerPath(h.handler))
+      })
+      _scannedHandlers = [...configuredMiddlewareSnapshot, ...filteredValue]
+    },
+    configurable: true,
+    enumerable: true,
+  })
+
+  // Apply reorder for current state
+  nitro.scannedHandlers = nitro.scannedHandlers
+}
+
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve config
   const layerDirs = getLayerDirectories(nuxt)
@@ -867,6 +944,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     lazy: true,
     handler: resolve(distDir, 'runtime/handlers/renderer'),
   })
+
+  // Run configured server handlers before scanned ones (issue #26012)
+  if (nuxt.options.serverMiddlewareOrder !== 'scannedFirst') {
+    installMiddlewareReorder(nuxt, nitro, distDir)
+  }
 
   // TODO: refactor into a module when this is more full-featured
   // add Chrome devtools integration
