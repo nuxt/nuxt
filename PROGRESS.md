@@ -58,3 +58,11 @@
 - Updated `packages/nuxt/src/imports/transform.ts` to treat worker query module IDs (`?worker`, `?worker_file`) as transformable even when they omit explicit JS/TS file extensions.
 - Added regression tests in `packages/nuxt/test/auto-imports.test.ts` for worker query IDs without extension and worker build module IDs.
 - Validation: `runTests` on `packages/nuxt/test/auto-imports.test.ts` passed (181/181 tests).
+- Started JavaScript issue `#34498` (first request to `/__nuxt_island/*` can crash with `__buildAssetsURL is not defined`).
+- Added shared helper `packages/nitro-server/src/runtime/utils/renderer/asset-url-globals.ts` and used it in both renderer and island handlers.
+- Updated `packages/nitro-server/src/runtime/handlers/island.ts` to initialize asset URL globals using `#internal/nuxt/paths`, so island-first requests have Vite runtime URL helpers ready before server chunk evaluation.
+- Added unit coverage in `packages/nitro-server/test/asset-url-globals.test.ts`.
+- Validation: `runTests` on Nitro server tests passed (4/4 tests):
+	- `packages/nitro-server/test/asset-url-globals.test.ts`
+	- `packages/nitro-server/test/error-handler.test.ts`
+	- `packages/nitro-server/test/early-hints.test.ts`

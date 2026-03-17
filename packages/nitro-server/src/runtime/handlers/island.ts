@@ -10,11 +10,16 @@ import { getQuery as getURLQuery } from 'ufo'
 import type { NuxtIslandContext, NuxtIslandResponse } from 'nuxt/app'
 import { islandCache, islandPropCache } from '../utils/cache'
 import { createSSRContext } from '../utils/renderer/app'
+import { setAssetURLGlobals } from '../utils/renderer/asset-url-globals'
 import { getSSRRenderer } from '../utils/renderer/build-files'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from '../utils/renderer/islands'
+// @ts-expect-error virtual file
+import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
+
+setAssetURLGlobals(buildAssetsURL, publicAssetsURL)
 
 const handler: ReturnType<typeof defineEventHandler> = defineEventHandler(async (event) => {
   event.res.headers.set('content-type', 'application/json;charset=utf-8')

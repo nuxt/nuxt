@@ -19,6 +19,7 @@ import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from '..
 import { createSSRContext, setSSRError } from '../utils/renderer/app'
 import { renderEarlyHintsFromLinks } from '../utils/renderer/early-hints'
 import { renderInlineStyles } from '../utils/renderer/inline-styles'
+import { setAssetURLGlobals } from '../utils/renderer/asset-url-globals'
 import { replaceIslandTeleports } from '../utils/renderer/islands'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
@@ -34,10 +35,7 @@ import { entryFileName } from '#internal/entry-chunk.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import type { AppConfig } from '@nuxt/schema'
 
-// @ts-expect-error private property consumed by vite-generated url helpers
-globalThis.__buildAssetsURL = buildAssetsURL
-// @ts-expect-error private property consumed by vite-generated url helpers
-globalThis.__publicAssetsURL = publicAssetsURL
+setAssetURLGlobals(buildAssetsURL, publicAssetsURL)
 
 // Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
 if (NUXT_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
