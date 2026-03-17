@@ -128,6 +128,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       },
       options,
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      rootDir: nuxt.options.rootDir,
+      workspaceDir: nuxt.options.workspaceDir,
     }))
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)

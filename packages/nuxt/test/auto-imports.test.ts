@@ -22,10 +22,15 @@ describe('imports:transform', () => {
     imports,
   })
 
-  const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup' }) as Plugin
-  const transform = async (source: string) => {
+  const transformPlugin = TransformPlugin({
+    ctx,
+    options: { transform: { exclude: [/node_modules/] } },
+    rootDir: '/project/app',
+    workspaceDir: '/project',
+  }).raw({}, { framework: 'rollup' }) as Plugin
+  const transform = async (source: string, id = '/project/app/app.vue') => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, '')
+    const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, id)
     return typeof result === 'string' ? result : result?.code
   }
 
@@ -54,6 +59,14 @@ describe('imports:transform', () => {
 
   it('should exclude files from transform', async () => {
     expect(await transform('excluded')).toEqual(undefined)
+  })
+
+  it('should not inject auto imports into linked dependency files outside workspace', async () => {
+    expect(await transform('const a = ref(0)', '/linked-lib/dist/lib.mjs')).toEqual(undefined)
+  })
+
+  it('should still inject auto imports for files inside workspace', async () => {
+    expect(await transform('const a = ref(0)', '/project/packages/ui/composable.ts')).toMatchInlineSnapshot('"import { ref } from \'vue\';\nconst a = ref(0)"')
   })
 })
 

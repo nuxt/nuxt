@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import type { Unimport } from 'unimport'
-import { normalize } from 'pathe'
+import { isAbsolute, normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 
 import { isJS, isVue } from '../core/utils/index.ts'
@@ -14,9 +14,17 @@ interface TransformPluginOptions {
   ctx: Pick<Unimport, 'injectImports'>
   options: Partial<ImportsOptions>
   sourcemap?: boolean
+  rootDir?: string
+  workspaceDir?: string
 }
 
-export const TransformPlugin = ({ ctx, options, sourcemap }: TransformPluginOptions) => createUnplugin(() => {
+function isPathInside (targetPath: string, basePath: string) {
+  const normalizedTarget = normalize(targetPath)
+  const normalizedBase = normalize(basePath).replace(/\/+$/, '')
+  return normalizedTarget === normalizedBase || normalizedTarget.startsWith(normalizedBase + '/')
+}
+
+export const TransformPlugin = ({ ctx, options, sourcemap, rootDir, workspaceDir }: TransformPluginOptions) => createUnplugin(() => {
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',
@@ -40,7 +48,10 @@ export const TransformPlugin = ({ ctx, options, sourcemap }: TransformPluginOpti
     },
     async transform (code, id) {
       id = normalize(id)
-      const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
+      const isLinkedDependency = isAbsolute(id) && !!workspaceDir && !!rootDir
+        ? !isPathInside(id, workspaceDir) && !isPathInside(id, rootDir)
+        : false
+      const isNodeModule = (NODE_MODULES_RE.test(id) || isLinkedDependency) && !options.transform?.include?.some(pattern => pattern.test(id))
       // For modules in node_modules, we only transform `#imports` but not doing imports
       if (isNodeModule && !IMPORTS_RE.test(code)) {
         return

@@ -44,3 +44,8 @@
 - This removes duplicate module entries when the macro module is already present in Vite's module list, reducing duplicate HMR execution.
 - Added regression tests in `packages/nuxt/test/page-metadata.test.ts` for hot-update deduplication and helper behavior.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nuxt/test/page-metadata.test.ts --root /home/josef/Projekte/Github/nuxt` passed (38/38 tests).
+- Started JavaScript issue `#19525` (auto-import transform applied to linked dependency library files).
+- Updated `packages/nuxt/src/imports/transform.ts` to treat absolute files outside `workspaceDir`/`rootDir` as dependency files for auto-import purposes.
+- Passed `rootDir` and `workspaceDir` into `TransformPlugin` via `packages/nuxt/src/imports/module.ts`.
+- Added regression tests in `packages/nuxt/test/auto-imports.test.ts` to ensure linked external files do not get injected imports while workspace files still do.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nuxt/test/auto-imports.test.ts /home/josef/Projekte/Github/nuxt/packages/nuxt/test/page-metadata.test.ts --root /home/josef/Projekte/Github/nuxt` passed (217/217 tests).
