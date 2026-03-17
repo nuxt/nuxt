@@ -30,7 +30,7 @@ const testsToTriggerOn = [
   ['nitro/vite', 'components/Component.vue', true],
   ['nitro/h3', 'components/Component.vue', false],
   ['nitro/app', 'components/Component.vue', false],
-  ['nitro/runtime', 'components/Component.vue', false],
+  ['nitro/runtime-config', 'components/Component.vue', false],
   ['nitro/types', 'components/Component.vue', false],
   ['nitro', 'components/Component.vue', false],
   ['node_modules/some-pkg/server/api/helper.ts', 'components/Component.vue', false],

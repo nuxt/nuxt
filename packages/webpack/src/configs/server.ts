@@ -61,7 +61,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
   ]
 
   const external = new Set([
-    'nitro/runtime',
+    'nitro/runtime-config',
     // TODO: remove in v5
     '#internal/nitro',
     'nitropack/runtime',
