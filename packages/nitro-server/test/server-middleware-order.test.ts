@@ -56,8 +56,12 @@ describe('server middleware order (issue #26012)', () => {
 
     installMiddlewareReorder(nuxt, nitro, distDir)
 
-    expect(nitro.scannedHandlers[0].handler).toBe(configuredHandler)
-    expect(nitro.scannedHandlers[1].handler).toBe(scannedHandler)
+    expect(nitro.scannedHandlers).toHaveLength(2)
+    const [first, second] = nitro.scannedHandlers
+    expect(first).toBeDefined()
+    expect(second).toBeDefined()
+    expect(first!.handler).toBe(configuredHandler)
+    expect(second!.handler).toBe(scannedHandler)
   })
 
   it('reorders correctly on subsequent scannedHandlers assignments (simulating rescan)', () => {
