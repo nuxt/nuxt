@@ -5,7 +5,7 @@ import {
   generateHash,
   generateRandomNonce,
   headerStringFromObject,
-} from '../src/csp/utils'
+} from '../src/csp/runtime/nitro/utils'
 
 describe('CSP Utils', () => {
   describe('headerStringFromObject', () => {
