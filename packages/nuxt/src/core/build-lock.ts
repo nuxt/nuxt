@@ -1,11 +1,9 @@
 import process from 'node:process'
-import { close as fdClose, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'pathe'
 
 const LOCK_FILENAME = '.build.lock'
 
-// Max age before a lock is considered stale regardless of PID status (10 min).
-// Guards against PID recycling on all platforms.
 const MAX_LOCK_AGE_MS = 10 * 60 * 1000
 
 interface LockData {
@@ -36,10 +34,6 @@ function readLock (lockPath: string): LockData | null {
   }
 }
 
-function isLockStale (lock: LockData): boolean {
-  return lockAge(lock) > MAX_LOCK_AGE_MS
-}
-
 function lockAge (lock: LockData): number {
   return Date.now() - new Date(lock.startedAt).getTime()
 }
@@ -53,27 +47,33 @@ function formatAge (ms: number): string {
   return rtf.format(-Math.round(minutes / 60), 'hour')
 }
 
-/**
- * Attempts to acquire an exclusive build lock.
- * Returns a release function on success, or throws with `pid` and `startedAt`
- * properties on the error so callers can implement their own retry strategy.
- */
+function isLockActive (lock: LockData): boolean {
+  if (lock.pid === process.pid) { return false }
+  if (!isProcessAlive(lock.pid)) { return false }
+  if (lockAge(lock) > MAX_LOCK_AGE_MS) { return false }
+  return true
+}
+
+function throwLockError (lock: LockData, lockPath: string, rootDir?: string): never {
+  const age = formatAge(lockAge(lock))
+  const displayPath = rootDir ? relative(rootDir, lockPath) : lockPath
+  const err = new Error(
+    `Another Nuxt build is already running (PID ${lock.pid}, started ${age}).\n`
+    + `If the previous build process crashed, you can remove the stale lock file: ${displayPath}`,
+  ) as Error & BuildLockError
+  err.pid = lock.pid
+  err.startedAt = lock.startedAt
+  throw err
+}
+
 export function acquireBuildLock (buildDir: string, rootDir?: string): () => void {
   mkdirSync(buildDir, { recursive: true })
 
   const lockPath = join(buildDir, LOCK_FILENAME)
 
   const existing = readLock(lockPath)
-  if (existing && existing.pid !== process.pid && isProcessAlive(existing.pid) && !isLockStale(existing)) {
-    const age = formatAge(lockAge(existing))
-    const displayPath = rootDir ? relative(rootDir, lockPath) : lockPath
-    const err = new Error(
-      `Another Nuxt build is already running (PID ${existing.pid}, started ${age}).\n`
-      + `If this is unexpected, you can remove the lock file: ${displayPath}`,
-    ) as Error & BuildLockError
-    err.pid = existing.pid
-    err.startedAt = existing.startedAt
-    throw err
+  if (existing && isLockActive(existing)) {
+    throwLockError(existing, lockPath, rootDir)
   }
 
   const lockData: LockData = {
@@ -81,15 +81,23 @@ export function acquireBuildLock (buildDir: string, rootDir?: string): () => voi
     startedAt: new Date().toISOString(),
   }
 
-  // Use exclusive create (wx) to reduce race window between two concurrent acquires.
-  // If it fails (file exists from stale lock we're overwriting), fall back to normal write.
+  const content = JSON.stringify(lockData, null, 2)
+
   try {
     const fd = openSync(lockPath, 'wx')
-    const content = JSON.stringify(lockData, null, 2)
-    writeFileSync(fd, content)
-    fdClose(fd, () => {})
-  } catch {
-    writeFileSync(lockPath, JSON.stringify(lockData, null, 2))
+    try {
+      writeFileSync(fd, content)
+    } finally {
+      closeSync(fd)
+    }
+  } catch (error: any) {
+    if (error?.code === 'EEXIST') {
+      const current = readLock(lockPath)
+      if (current && isLockActive(current)) {
+        throwLockError(current, lockPath, rootDir)
+      }
+    }
+    writeFileSync(lockPath, content)
   }
 
   let released = false

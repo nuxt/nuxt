@@ -53,16 +53,16 @@ describe('build-lock', async () => {
     } catch (err: unknown) {
       const error = err as Error & BuildLockError
       expect(error.message).toContain('Another Nuxt build is already running')
-      expect(error.message).toContain('remove the lock file')
+      expect(error.message).toContain('remove the stale lock file')
       expect(error.message).toMatch(/started \d+ seconds? ago/)
       expect(error.pid).toBe(1)
       expect(error.startedAt).toBeTruthy()
     }
   })
 
-  it('overwrites stale lock from dead process', () => {
+  it('overwrites lock from dead process', () => {
     const lockPath = join(tmpDir, '.build.lock')
-    // PID 99999999 should not exist
+    // PID 99999999 should not exist — dead process lock is always overwritten
     writeFileSync(lockPath, JSON.stringify({ pid: 99999999, startedAt: new Date().toISOString() }))
 
     const release = acquireBuildLock(tmpDir)
@@ -72,9 +72,9 @@ describe('build-lock', async () => {
     release()
   })
 
-  it('overwrites lock from live process if older than max age', () => {
+  it('overwrites old lock from live process (PID recycling)', () => {
     const lockPath = join(tmpDir, '.build.lock')
-    // PID 1 is alive, but timestamp is 20 minutes ago (past MAX_LOCK_AGE_MS of 10 min)
+    // PID 1 is alive but lock is 20min old — likely a recycled PID, not the original build
     const oldDate = new Date(Date.now() - 20 * 60 * 1000).toISOString()
     writeFileSync(lockPath, JSON.stringify({ pid: 1, startedAt: oldDate }))
 

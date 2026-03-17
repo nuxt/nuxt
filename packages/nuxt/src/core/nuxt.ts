@@ -810,6 +810,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   if (!options.dev && !options._prepare && !options.test) {
     try {
       releaseBuildLock = acquireBuildLock(options.buildDir, options.rootDir)
+      // Ensure lock is released if process exits before close-hook is registered
+      process.once('exit', () => releaseBuildLock?.())
     } catch (err: any) {
       if (err.pid) { throw err }
     }
@@ -918,6 +920,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   if (releaseBuildLock) {
     nuxt.hooks.hookOnce('close', releaseBuildLock)
+    // Release is idempotent, so the process.exit handler registered earlier is harmless
   }
 
   if (perf) {
