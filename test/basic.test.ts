@@ -149,6 +149,12 @@ describe('pages', () => {
     expect(html).toContain('This is a custom component with a named export.')
     // should remove dev-only and replace with any fallback content
     expect(html).toContain(isDev ? 'Some dev-only info' : 'Some prod-only info')
+    // should strip dev-only with attributes in production
+    if (isDev) {
+      expect(html).toContain('Dev-only with attributes')
+    } else {
+      expect(html).not.toContain('Dev-only with attributes')
+    }
     // should render server-only components
     expect(html.replaceAll(/ data-island-uid="[^"]*"/g, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
@@ -3231,7 +3237,7 @@ describe('nuxt-time', () => {
     const html = await $fetch<string>('/components/nuxt-time')
     const snap = html.match(/<time[^>]*data-testid="fixed"[^>]*>[^<]*<\/time>/)?.[0].replace(/ data-prehydrate-id="[^"]*"/g, '')
     expect(snap).toContain(
-      '<time data-month="long" data-day="numeric" datetime="2023-02-11T08:24:08.396Z" data-testid="fixed">',
+      '<time data-month="long" data-day="numeric" data-relative="false" data-title="false" datetime="2023-02-11T08:24:08.396Z" data-testid="fixed">',
     )
   })
 

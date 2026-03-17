@@ -31,7 +31,6 @@
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^6.0.3",
     "@vitejs/plugin-vue": "^6.0.5",
-    "@vitejs/plugin-vue-jsx": "^5.1.5",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
     "escape-string-regexp": "^5.0.0",
@@ -49,7 +48,7 @@
     "ufo": "^1.6.3",
     "unenv": "^2.0.0-rc.24",
     "vite": "^8.0.0",
-    "vite-node": "^5.3.0",
+    "vite-node": "^6.0.0",
     "vite-plugin-checker": "^0.12.0",
     "vue-bundle-renderer": "^2.2.0"
   },
@@ -57,7 +56,8 @@
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@babel/plugin-syntax-jsx": "7.28.6",
     "@nuxt/schema": "workspace:*",
-    "autoprefixer": "^10.4.27",
+    "@vitejs/plugin-vue-jsx": "5.1.5",
+    "autoprefixer": "10.4.27",
     "cssnano": "7.1.3",
     "h3": "1.15.6",
     "h3-next": "npm:h3@2.0.1-rc.16",
@@ -72,6 +72,7 @@
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0",
     "@babel/plugin-syntax-jsx": "^7.25.0",
+    "@vitejs/plugin-vue-jsx": "^5.1.5",
     "autoprefixer": "^10.4.27",
     "cssnano": "^7.1.3",
     "nuxt": "workspace:*",
@@ -84,6 +85,9 @@
       "optional": true
     },
     "@babel/plugin-syntax-jsx": {
+      "optional": true
+    },
+    "@vitejs/plugin-vue-jsx": {
       "optional": true
     },
     "autoprefixer": {

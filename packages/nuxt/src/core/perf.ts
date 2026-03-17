@@ -21,6 +21,7 @@ interface PerfPhase {
   memoryBefore: MemorySnapshot
   memoryAfter: MemorySnapshot
   memoryDelta: { rss: number, heapUsed: number }
+  retainedMemory?: MemorySnapshot
 }
 
 interface OpenPhase {
@@ -56,6 +57,7 @@ export interface BundlerPluginTiming {
 export interface PerfReport {
   totalDuration: number
   totalMemoryDelta: { rss: number, heapUsed: number }
+  hasGCSnapshots: boolean
   phases: Array<{
     name: string
     duration: number
@@ -64,6 +66,7 @@ export interface PerfReport {
     memoryAfter: MemorySnapshot
     memoryDelta: { rss: number, heapUsed: number }
     ownMemoryDelta: { rss: number, heapUsed: number }
+    retainedHeap?: number
   }>
   slowHooks: SlowHook[]
   modules: ModuleTiming[]
@@ -71,7 +74,17 @@ export interface PerfReport {
   timestamp: string
 }
 
+const hasGC = typeof globalThis.gc === 'function'
+
 function getMemorySnapshot (): MemorySnapshot {
+  const mem = process.memoryUsage()
+  return { rss: mem.rss, heapUsed: mem.heapUsed, heapTotal: mem.heapTotal }
+}
+
+function getRetainedMemorySnapshot (): MemorySnapshot {
+  if (hasGC) {
+    globalThis.gc!()
+  }
   const mem = process.memoryUsage()
   return { rss: mem.rss, heapUsed: mem.heapUsed, heapTotal: mem.heapTotal }
 }
@@ -225,6 +238,12 @@ export class NuxtPerfProfiler {
     const endTime = performance.now()
     const memoryAfter = getMemorySnapshot()
 
+    // For top-level phases (nothing else on the stack), take a GC'd snapshot
+    // to measure truly retained memory. This is expensive so we only do it
+    // at major phase boundaries when --expose-gc is available.
+    const isTopLevel = this.#phaseStack.length === 0
+    const retainedMemory = isTopLevel && hasGC ? getRetainedMemorySnapshot() : undefined
+
     this.#phases.push({
       name: open.name,
       startTime: open.startTime,
@@ -236,6 +255,7 @@ export class NuxtPerfProfiler {
         rss: memoryAfter.rss - open.memoryBefore.rss,
         heapUsed: memoryAfter.heapUsed - open.memoryBefore.heapUsed,
       },
+      retainedMemory,
     })
   }
 
@@ -331,6 +351,7 @@ export class NuxtPerfProfiler {
         rss: globalMemoryAfter.rss - this.#globalMemoryBefore.rss,
         heapUsed: globalMemoryAfter.heapUsed - this.#globalMemoryBefore.heapUsed,
       },
+      hasGCSnapshots: hasGC,
       phases: allPhases.map((p) => {
         const own = computeOwn(p)
         return {
@@ -341,6 +362,7 @@ export class NuxtPerfProfiler {
           memoryAfter: p.memoryAfter,
           memoryDelta: p.memoryDelta,
           ownMemoryDelta: own.ownMemoryDelta,
+          retainedHeap: p.retainedMemory?.heapUsed,
         }
       }),
       slowHooks: this.#computeSlowHooks(new Set(allPhases.map(p => p.name))),
@@ -383,17 +405,23 @@ export class NuxtPerfProfiler {
     const colDuration = 10
     const colRss = 14
     const colHeap = 14
+    const colRetained = 16
+    const showRetained = report.hasGCSnapshots
     const maxDuration = Math.max(...topPhases.map(p => p.ownDuration), 1)
 
-    const header = [
+    const headerCols = [
       pad(colors.bold('Phase'), colPhase),
       pad(colors.bold('Duration'), colDuration, 'right'),
       pad(colors.bold('RSS Delta'), colRss, 'right'),
       pad(colors.bold('Heap Delta'), colHeap, 'right'),
-    ].join('  ')
-    consola.log(`  ${header}`)
+    ]
+    if (showRetained) {
+      headerCols.push(pad(colors.bold('Retained Heap'), colRetained, 'right'))
+    }
+    consola.log(`  ${headerCols.join('  ')}`)
 
-    const separator = '  ' + colors.dim('─'.repeat(colPhase + colDuration + colRss + colHeap + 6))
+    const separatorWidth = colPhase + colDuration + colRss + colHeap + 6 + (showRetained ? colRetained + 2 : 0)
+    const separator = '  ' + colors.dim('─'.repeat(separatorWidth))
     consola.log(separator)
 
     const maxRss = Math.max(...topPhases.map(p => Math.abs(p.ownMemoryDelta.rss)), 1)
@@ -418,23 +446,37 @@ export class NuxtPerfProfiler {
 
       const bar = durColor('█'.repeat(durBar)) + memColor('░'.repeat(memBar))
 
-      const row = [
+      const rowCols = [
         pad(phase.name, colPhase),
         pad(durColor(formatDuration(dur)), colDuration, 'right'),
         pad(memColor((rss >= 0 ? '+' : '') + formatBytes(rss)), colRss, 'right'),
         pad((heap >= 0 ? '+' : '') + formatBytes(heap), colHeap, 'right'),
-      ].join('  ')
-      consola.log(`  ${row}  ${bar}`)
+      ]
+      if (showRetained) {
+        if (phase.retainedHeap != null) {
+          const retainedColor = phase.retainedHeap > 200 * 1024 * 1024 ? colors.red : phase.retainedHeap > 100 * 1024 * 1024 ? colors.yellow : colors.green
+          rowCols.push(pad(retainedColor(formatBytes(phase.retainedHeap)), colRetained, 'right'))
+        } else {
+          rowCols.push(pad(colors.dim('—'), colRetained, 'right'))
+        }
+      }
+      consola.log(`  ${rowCols.join('  ')}  ${bar}`)
     }
 
     consola.log(separator)
-    const totalRow = [
+    const totalCols = [
       pad(colors.bold('Total'), colPhase),
       pad(colors.bold(formatDuration(report.totalDuration)), colDuration, 'right'),
       pad(colors.bold((report.totalMemoryDelta.rss >= 0 ? '+' : '') + formatBytes(report.totalMemoryDelta.rss)), colRss, 'right'),
       pad(colors.bold((report.totalMemoryDelta.heapUsed >= 0 ? '+' : '') + formatBytes(report.totalMemoryDelta.heapUsed)), colHeap, 'right'),
-    ].join('  ')
-    consola.log(`  ${totalRow}`)
+    ]
+    if (showRetained) {
+      totalCols.push(pad('', colRetained))
+    }
+    consola.log(`  ${totalCols.join('  ')}`)
+    if (!showRetained) {
+      consola.log(colors.dim('  Tip: run with NODE_OPTIONS=--expose-gc to see retained heap per phase'))
+    }
     consola.log('')
 
     const significantModules = report.modules.filter(m => m.setupTime > 5)
@@ -636,6 +678,19 @@ export class NuxtPerfProfiler {
           args: { rss: phase.memoryAfter.rss, heapUsed: phase.memoryAfter.heapUsed },
         },
       )
+      // If we have a GC'd retained memory snapshot, emit it as a separate counter
+      // so it's visible in Perfetto as a distinct series
+      if (phase.retainedMemory) {
+        events.push({
+          name: 'Retained Memory',
+          cat: 'memory',
+          ph: 'C',
+          ts: toUs(phase.endTime) + 1, // slightly after to ensure ordering
+          pid,
+          tid: 0,
+          args: { heapRetained: phase.retainedMemory.heapUsed, rssRetained: phase.retainedMemory.rss },
+        })
+      }
     }
 
     return events
