@@ -107,7 +107,7 @@ export default defineResolvers({
         let current = rootDir
         for (let depth = 0; depth < maxAncestorDepth; depth++) {
           const parent = dirname(current)
-          if (parent === current) break
+          if (parent === current) { break }
           if (basename(parent) === 'node_modules' && existsSync(parent)) {
             modulesDir.add(parent)
           }
