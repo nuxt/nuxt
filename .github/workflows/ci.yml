@@ -321,7 +321,11 @@ jobs:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
-        shard: [1, 2]
+        # Group 1: vite-dev (4) + rspack (2) = 6 projects
+        # Group 2: vite-built (4) + webpack (2) = 6 projects
+        projects:
+          - '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
+          - '--project "fixtures:vite-built-*" --project "fixtures:webpack-*"'
 
     timeout-minutes: 45
 
@@ -349,7 +353,7 @@ jobs:
         run: pnpm test:prepare
 
       - name: Test (fixtures)
-        run: pnpm vitest run --project 'fixtures:*' --shard=${{ matrix.shard }}/2
+        run: pnpm vitest run ${{ matrix.projects }}
 
       - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         if: github.event_name != 'push' && matrix.os == 'ubuntu-24.04-arm'
