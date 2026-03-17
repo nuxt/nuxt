@@ -6,7 +6,7 @@ import process from 'node:process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import { join, relative, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
@@ -359,6 +359,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const validManifestKeys = ['prerender', 'redirect', 'appMiddleware', 'appLayout', 'cache', 'isr', 'swr', 'ssr']
 
+  async function writeStubIfMissing (path: string, contents: string) {
+    if (existsSync(path)) {
+      return
+    }
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(path, contents, 'utf8')
+  }
+
+  // Ensure route-rules can be resolved during early transform phases.
+  await writeStubIfMissing(join(nuxt.options.buildDir, 'route-rules.mjs'), 'export default () => ({})\n')
+
   addTemplate({
     filename: 'route-rules.mjs',
     getContents () {
@@ -468,6 +479,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     )
 
     nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+
+    // Ensure #app-manifest exists before build hooks run to avoid early resolve errors.
+    await writeStubIfMissing(join(tempDir, `meta/${buildId}.json`), JSON.stringify({}) + '\n')
 
     // write stub manifest before build so external import of #app-manifest can be resolved
     if (!nuxt.options.dev) {
