@@ -29,3 +29,8 @@
 - Added `resolveNodeModuleWorkerAssetPath` in `packages/vite/src/plugins/dev-server.ts` and integrated it into dev middleware to serve worker assets from `node_modules` with `application/javascript` before router fallback.
 - Added regression tests in `packages/vite/test/dev-server.test.ts` for regular package resolution, scoped package resolution, and non-worker request filtering.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/vite/test/dev-server.test.ts /home/josef/Projekte/Github/nuxt/packages/vite/test/shared-client.test.ts --root /home/josef/Projekte/Github/nuxt` passed (4/4 tests).
+- Started JavaScript issue `#32972` (module startup crash when `installModule` and `addServerImportsDir` are used together).
+- Added Nitro import exclusion helper `packages/nitro-server/src/imports-exclude.ts` and excluded declaration files (`.d.ts`, `.d.mts`, `.d.cts`) from Nitro auto-import scanning.
+- Wired the helper into `packages/nitro-server/src/index.ts` imports config (`imports.exclude`).
+- Added regression tests in `packages/nitro-server/test/imports-exclude.test.ts` for declaration-file filtering and existing exclusion preservation.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/imports-exclude.test.ts /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/error-handler.test.ts --root /home/josef/Projekte/Github/nuxt` passed (5/5 tests).

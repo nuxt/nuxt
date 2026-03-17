@@ -23,6 +23,7 @@ import './augments.ts'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, toArray } from './utils.ts'
+import { createNitroImportsExcludePatterns } from './imports-exclude.ts'
 import { template as defaultSpaLoadingTemplate } from '../../ui-templates/dist/templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -176,7 +177,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
               priority: -1,
             },
           ],
-          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+          exclude: createNitroImportsExcludePatterns(excludePattern),
         },
     // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
     scanDirs: layerDirs.map(dirs => dirs.server),
