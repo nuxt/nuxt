@@ -33,7 +33,7 @@ export const IMPORT_PROTECTION_ALLOWED = {
       return true
     }
     const pathToCheck = normalized ?? id
-    if (pathToCheck.includes('node_modules') || pathToCheck.includes('.nuxt/dist/')) {
+    if (pathToCheck.includes('node_modules') || pathToCheck.includes('.nuxt/')) {
       return true
     }
     if (APP_CONFIG_FILE_RE.test(pathToCheck)) {
