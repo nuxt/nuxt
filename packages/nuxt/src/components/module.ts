@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, tryUseNuxt } from '@nuxt/kit'
+import type { ModuleNode } from 'vite'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -175,6 +176,101 @@ export default defineNuxtModule<ComponentsOptions>({
         return nuxt.callHook('restart')
       }
     })
+
+    // HMR: when a component file is renamed, invalidate importers after generateApp so they resolve to the new path (fixes #31569)
+    const getComponentDirs = () => componentDirs
+    // Delay to allow filesystem "add" after rename before we invalidate (so generateApp sees the new file)
+    const UNLINK_INVALIDATE_DELAY_MS = 200
+    if (nuxt.options.dev && nuxt.options.builder === '@nuxt/vite-builder') {
+      const pendingUnlinkInvalidations = new Map<string, { modules: ModuleNode[], timeoutId?: ReturnType<typeof setTimeout> }>()
+
+      const getComponentDirForFile = (filePath: string): string | null => {
+        const normalized = normalize(filePath)
+        for (const dir of getComponentDirs()) {
+          const dirPath = normalize(dir.path)
+          if (normalized === dirPath || normalized.startsWith(dirPath + '/')) {
+            return dirPath
+          }
+        }
+        return null
+      }
+
+      const scheduleUnlinkInvalidation = (dirPath: string, modules: ModuleNode[], server: { moduleGraph: { invalidateModule: (m: ModuleNode) => void }, reloadModule: (m: ModuleNode) => Promise<void> }) => {
+        const existing = pendingUnlinkInvalidations.get(dirPath)
+        if (existing?.timeoutId) {
+          clearTimeout(existing.timeoutId)
+        }
+        const merged = new Set<ModuleNode>(existing?.modules ?? [])
+        for (const m of modules) {
+          merged.add(m)
+        }
+        const timeoutId = setTimeout(async () => {
+          pendingUnlinkInvalidations.delete(dirPath)
+          const nuxtInstance = tryUseNuxt()
+          if (nuxtInstance) {
+            await nuxtInstance.callHook('builder:generateApp', {})
+          }
+          for (const mod of merged) {
+            server.moduleGraph.invalidateModule(mod)
+            await server.reloadModule(mod)
+          }
+        }, UNLINK_INVALIDATE_DELAY_MS)
+        pendingUnlinkInvalidations.set(dirPath, { modules: [...merged], timeoutId })
+      }
+
+      addVitePlugin({
+        name: 'nuxt:components-rename-hmr',
+        configureServer (server) {
+          server.watcher.on('unlink', (path) => {
+            const normalizedPath = normalize(path)
+            const dirPath = getComponentDirForFile(normalizedPath)
+            if (!dirPath) {
+              return
+            }
+            const mods = server.moduleGraph.getModulesByFile(normalizedPath) || []
+            const importers = new Set<ModuleNode>()
+            for (const mod of mods) {
+              for (const imp of mod.importers) {
+                importers.add(imp)
+              }
+            }
+            if (importers.size > 0) {
+              scheduleUnlinkInvalidation(dirPath, [...importers], server)
+            }
+          })
+        },
+        async handleHotUpdate (ctx) {
+          const normalizedFile = normalize(ctx.file)
+          const componentDir = getComponentDirForFile(normalizedFile)
+          if (!componentDir) {
+            return
+          }
+          const isUnlink = !existsSync(ctx.file)
+          if (isUnlink) {
+            if (ctx.modules.length > 0) {
+              scheduleUnlinkInvalidation(componentDir, ctx.modules, ctx.server)
+            }
+            return []
+          }
+          const pending = pendingUnlinkInvalidations.get(componentDir)
+          if (pending?.timeoutId) {
+            clearTimeout(pending.timeoutId)
+            pendingUnlinkInvalidations.delete(componentDir)
+          }
+          // pending.modules is expected non-empty here (set on unlink with importers)
+          if (!pending?.modules.length) {
+            return
+          }
+          await tryUseNuxt()?.callHook('builder:generateApp', {})
+          for (const mod of pending.modules) {
+            ctx.server.moduleGraph.invalidateModule(mod)
+            await ctx.server.reloadModule(mod)
+          }
+          const allModules = new Set<ModuleNode>([...ctx.modules, ...pending.modules])
+          return [...allModules]
+        },
+      }, { server: false })
+    }
 
     const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 
