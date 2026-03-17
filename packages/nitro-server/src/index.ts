@@ -111,7 +111,8 @@ export function installMiddlewareReorder (nuxt: Nuxt, nitro: Nitro, distDir: str
   })
 
   // Apply reorder for current state
-  nitro.scannedHandlers = nitro.scannedHandlers
+  const currentScannedHandlers = nitro.scannedHandlers
+  nitro.scannedHandlers = currentScannedHandlers
 }
 
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
