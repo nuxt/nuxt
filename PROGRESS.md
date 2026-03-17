@@ -34,3 +34,8 @@
 - Wired the helper into `packages/nitro-server/src/index.ts` imports config (`imports.exclude`).
 - Added regression tests in `packages/nitro-server/test/imports-exclude.test.ts` for declaration-file filtering and existing exclusion preservation.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/imports-exclude.test.ts /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/error-handler.test.ts --root /home/josef/Projekte/Github/nuxt` passed (5/5 tests).
+- Started JavaScript issue `#33247` (`entryImportMap` + integrity mismatch when chunk content changes under a stable filename).
+- Added `getStableEntryChunkHashSeed` in `packages/vite/src/plugins/stable-entry.ts` and used it in `augmentChunkHash` to include dynamic imports and Vite metadata assets/CSS in hash derivation.
+- This forces filename hash changes when `__vite__mapDeps`-relevant dependency lists change, preventing stale immutable-cache content from mismatching SRI.
+- Added regression test `packages/vite/test/stable-entry.test.ts` covering order-insensitive but dependency-sensitive hash seed behavior.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/vite/test/stable-entry.test.ts /home/josef/Projekte/Github/nuxt/packages/vite/test/dev-server.test.ts --root /home/josef/Projekte/Github/nuxt` passed (4/4 tests).

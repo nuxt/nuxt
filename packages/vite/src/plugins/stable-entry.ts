@@ -7,6 +7,24 @@ import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
 import { toArray } from '../utils/index.ts'
 
+interface ChunkLike {
+  dynamicImports?: string[]
+  viteMetadata?: {
+    importedAssets?: Set<string>
+    importedCss?: Set<string>
+  }
+}
+
+export function getStableEntryChunkHashSeed (chunk: ChunkLike) {
+  const dynamicImports = chunk.dynamicImports || []
+  const importedCss = chunk.viteMetadata?.importedCss ? [...chunk.viteMetadata.importedCss] : []
+  const importedAssets = chunk.viteMetadata?.importedAssets ? [...chunk.viteMetadata.importedAssets] : []
+
+  return [...dynamicImports, ...importedCss, ...importedAssets]
+    .sort()
+    .join('|')
+}
+
 export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let sourcemap: boolean
   let entryFileName: string | undefined
@@ -54,6 +72,9 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
           map: sourcemap ? s.generateMap({ hires: true }) : undefined,
         }
       }
+    },
+    augmentChunkHash (chunk) {
+      return getStableEntryChunkHashSeed(chunk)
     },
     writeBundle (_options, bundle) {
       let entry = Object.values(bundle).find(chunk => chunk.type === 'chunk' && chunk.isEntry && chunk.name === 'entry')?.fileName
