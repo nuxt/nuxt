@@ -15,8 +15,13 @@
 
 <script setup lang="ts">
 import type { NuxtError } from '#app'
+import { useHead } from '#imports'
 
-defineProps({
+const props = defineProps({
   error: Object as () => NuxtError,
 })
+
+useHead(() => ({
+  title: `${props.error?.statusCode || 500} - ${props.error?.statusMessage || 'Error'} | Basic Error Page`,
+}))
 </script>

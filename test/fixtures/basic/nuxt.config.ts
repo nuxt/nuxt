@@ -101,6 +101,7 @@ export default withMatrix({
     teleportId: 'nuxt-teleport',
     teleportTag: 'span',
     head: {
+      title: 'Nuxt Fixture App Title',
       charset: 'utf-8',
       link: [undefined],
       meta: [

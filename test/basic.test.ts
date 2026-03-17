@@ -1104,6 +1104,17 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
   })
 
+  it('SPA fallback should allow error.vue head to override app.head.title', async () => {
+    const { page } = await renderPage('/head-spa')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    await vi.waitFor(async () => {
+      expect(await page.title()).toBe('404 - Page Not Found | Basic Error Page')
+    })
+
+    await page.close()
+  })
+
   it('should render http-equiv correctly', async () => {
     const html = await $fetch<string>('/head')
     // http-equiv should be rendered kebab case

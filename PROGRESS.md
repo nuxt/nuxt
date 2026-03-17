@@ -63,6 +63,10 @@
 - Updated `packages/nitro-server/src/runtime/handlers/island.ts` to initialize asset URL globals using `#internal/nuxt/paths`, so island-first requests have Vite runtime URL helpers ready before server chunk evaluation.
 - Added unit coverage in `packages/nitro-server/test/asset-url-globals.test.ts`.
 - Validation: `runTests` on Nitro server tests passed (4/4 tests):
-	- `packages/nitro-server/test/asset-url-globals.test.ts`
-	- `packages/nitro-server/test/error-handler.test.ts`
-	- `packages/nitro-server/test/early-hints.test.ts`
+  - `packages/nitro-server/test/asset-url-globals.test.ts`
+  - `packages/nitro-server/test/error-handler.test.ts`
+  - `packages/nitro-server/test/early-hints.test.ts`
+- Started JavaScript issue `#34579` (in SSG/noSSR fallback, `error.vue` `useHead` title can be overridden by `app.head.title` unless deferred).
+- Updated `packages/nuxt/src/head/runtime/plugins/unhead.ts` to also flush head updates on `app:mounted`, ensuring early error-page head entries are applied during initial client-only fallback rendering.
+- Updated basic test fixture to include `app.head.title` and added `useHead` title in `test/fixtures/basic/app/error.vue` to model the reported regression conditions.
+- Added regression test in `test/basic.test.ts` (`SPA fallback should allow error.vue head to override app.head.title`).

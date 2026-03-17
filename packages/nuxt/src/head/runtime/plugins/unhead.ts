@@ -28,6 +28,8 @@ export default defineNuxtPlugin({
         // app:suspense:resolve hook will unpause the DOM
         if (!nuxtApp.isHydrating) { syncHead() }
       })
+      // Ensure initial mount flushes head updates from early client-only error states.
+      nuxtApp.hooks.hook('app:mounted', syncHead)
       // unpause on error
       nuxtApp.hooks.hook('app:error', syncHead)
       // unpause the DOM once the mount suspense is resolved
