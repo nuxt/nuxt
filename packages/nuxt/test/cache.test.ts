@@ -168,4 +168,24 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
     const appManifestMeta = join(nuxt.options.buildDir, 'manifest', 'meta', 'manifest-stub-test.json')
     expect(existsSync(appManifestMeta)).toBe(true)
   })
+
+  it('should build app config using defineAppConfig with compatibilityVersion 5', async () => {
+    const rootDir = join(tmpDir, 'project')
+    await mkdir(join(rootDir, 'app'), { recursive: true })
+    await writeFile(join(rootDir, 'app', 'app.config.ts'), 'export default defineAppConfig({ featureFlag: true })')
+
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        dev: false,
+        future: { compatibilityVersion: 5 },
+        workspaceDir: tmpDir,
+      },
+    })
+
+    await build(nuxt)
+
+    const appConfigFile = join(nuxt.options.buildDir, 'app.config.mjs')
+    expect(existsSync(appConfigFile)).toBe(true)
+  })
 })

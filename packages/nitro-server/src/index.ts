@@ -451,6 +451,27 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
+  if (nuxt.options.experimental.nitroAutoImports === false) {
+    const appConfigPaths = new Set((nuxt.apps.default?.configs || []).map(path => normalize(path)))
+    if (appConfigPaths.size) {
+      nitroConfig.rollupConfig ||= {}
+      nitroConfig.rollupConfig.plugins = toArray(await nitroConfig.rollupConfig.plugins || [])
+      nitroConfig.rollupConfig.plugins.unshift({
+        name: 'nuxt:nitro-define-app-config-shim',
+        transform (code, id) {
+          const normalizedId = normalize(id.split('?')[0] || id)
+          if (!appConfigPaths.has(normalizedId) || !code.includes('defineAppConfig')) {
+            return
+          }
+          if (/\b(import|const|let|var|function)\s+defineAppConfig\b/.test(code)) {
+            return
+          }
+          return 'const defineAppConfig = (config) => config\n' + code
+        },
+      })
+    }
+  }
+
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
     const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
