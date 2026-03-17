@@ -2,7 +2,7 @@
 import contentSecurityPolicyConfig from '#content-security-policy'
 import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig, Section } from '../../../types'
-import { generateHash } from '../../../utils'
+import { generateHash } from '../utils'
 import type { ServerRequestContext } from 'srvx'
 
 // eslint-disable-next-line regexp/no-contradiction-with-assertion

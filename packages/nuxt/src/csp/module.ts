@@ -2,7 +2,7 @@ import { addServerPlugin, defineNuxtModule } from '@nuxt/kit'
 import { resolve } from 'pathe'
 
 import defu from 'defu'
-import { defaultCSPConfig, defuReplaceArray, hashBundledAssets } from './utils/index.ts'
+import { defaultCSPConfig, defuReplaceArray, hashBundledAssets } from './runtime/nitro/utils/index.ts'
 import type { ContentSecurityPolicyConfig } from './types/index.ts'
 import { distDir } from '../dirs.ts'
 import { logger } from '../utils.ts'

@@ -2,7 +2,7 @@
 import contentSecurityPolicyConfig from '#content-security-policy'
 import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig } from '../../../types'
-import { headerStringFromObject } from '../../../utils'
+import { headerStringFromObject } from '../utils'
 
 export default (nitroApp: NitroApp) => {
   if (!import.meta.prerender) {

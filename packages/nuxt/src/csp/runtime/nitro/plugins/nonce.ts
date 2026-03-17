@@ -2,7 +2,7 @@
 import contentSecurityPolicyConfig from '#content-security-policy'
 import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig } from '../../../types'
-import { generateRandomNonce } from '../../../utils'
+import { generateRandomNonce } from '../utils'
 import type { ServerRequestContext } from 'srvx'
 
 const LINK_RE = /<link\b([^>]*>)/gi

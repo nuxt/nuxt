@@ -2,7 +2,7 @@
 import contentSecurityPolicyConfig from '#content-security-policy'
 import type { NitroApp } from 'nitro/types'
 import type { ContentSecurityPolicyConfig, ContentSecurityPolicyValue } from '../../../types'
-import { headerStringFromObject } from '../../../utils'
+import { headerStringFromObject } from '../utils'
 import type { ServerRequestContext } from 'srvx'
 
 /**
