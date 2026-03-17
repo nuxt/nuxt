@@ -415,10 +415,7 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.env }}
           TEST_BUILDER: ${{ matrix.builder }}
-          TEST_CONTEXT: default
-          TEST_MANIFEST: manifest-on
-          SKIP_BUNDLE_SIZE: true
-          NITRO_NO_UNIX_SOCKET: ${{ matrix.env == 'dev' && '1' || '' }}
+          SKIP_BUNDLE_SIZE: 'true'
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'

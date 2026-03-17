@@ -77,7 +77,6 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_CONTEXT: entry.context,
     TEST_MANIFEST: entry.manifest,
     SKIP_BUNDLE_SIZE: 'true',
-    ...(entry.env === 'dev' ? { NITRO_NO_UNIX_SOCKET: '1' } : {}),
   }
 }
 
