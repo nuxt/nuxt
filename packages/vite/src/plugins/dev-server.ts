@@ -1,12 +1,98 @@
 import type { Connect, Plugin, ServerOptions } from 'vite'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
+import { existsSync, statSync } from 'node:fs'
+import { readFile, readdir } from 'node:fs/promises'
 import { getPort } from 'get-port-please'
 import { defu } from 'defu'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type { H3Event as H3V1Event } from 'h3'
 import { useNitro } from '@nuxt/kit'
+import { join } from 'pathe'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+
+function isFile (path: string) {
+  try {
+    return statSync(path).isFile()
+  } catch {
+    return false
+  }
+}
+
+async function findWorkerAssetInPackage (packageDir: string, relativeAssetPath: string) {
+  const packageRelativePath = relativeAssetPath.replace(/^assets\//, '')
+  for (const candidate of [
+    join(packageDir, relativeAssetPath),
+    join(packageDir, 'dist', relativeAssetPath),
+    join(packageDir, 'dist', 'assets', packageRelativePath),
+  ]) {
+    if (isFile(candidate)) {
+      return candidate
+    }
+  }
+  return null
+}
+
+export async function resolveNodeModuleWorkerAssetPath (
+  url: string,
+  moduleRoots: string[],
+  cache?: Map<string, string | null>,
+) {
+  const pathname = String(url).split(/[?#]/)[0]
+  if (!/^\/?assets\/.*worker.*\.js$/i.test(pathname)) {
+    return null
+  }
+
+  if (cache?.has(pathname)) {
+    return cache.get(pathname) || null
+  }
+
+  const relativeAssetPath = pathname.replace(/^\/+/, '')
+  const uniqueRoots = [...new Set(moduleRoots)]
+
+  for (const root of uniqueRoots) {
+    if (!existsSync(root)) {
+      continue
+    }
+
+    if (isFile(join(root, relativeAssetPath))) {
+      const path = join(root, relativeAssetPath)
+      cache?.set(pathname, path)
+      return path
+    }
+
+    const packages = await readdir(root, { withFileTypes: true }).catch(() => [])
+    for (const pkg of packages) {
+      if (!pkg.isDirectory() || pkg.name.startsWith('.')) {
+        continue
+      }
+
+      if (pkg.name.startsWith('@')) {
+        const scopedPackages = await readdir(join(root, pkg.name), { withFileTypes: true }).catch(() => [])
+        for (const scopedPackage of scopedPackages) {
+          if (!scopedPackage.isDirectory()) {
+            continue
+          }
+          const found = await findWorkerAssetInPackage(join(root, pkg.name, scopedPackage.name), relativeAssetPath)
+          if (found) {
+            cache?.set(pathname, found)
+            return found
+          }
+        }
+        continue
+      }
+
+      const found = await findWorkerAssetInPackage(join(root, pkg.name), relativeAssetPath)
+      if (found) {
+        cache?.set(pathname, found)
+        return found
+      }
+    }
+  }
+
+  cache?.set(pathname, null)
+  return null
+}
 
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
@@ -75,6 +161,13 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
         }
       }
+
+      const workerAssetCache = new Map<string, string | null>()
+      const workerSearchRoots = [
+        join(nuxt.options.rootDir, 'node_modules'),
+        join(nuxt.options.workspaceDir, 'node_modules'),
+        ...nuxt.options.modulesDir,
+      ]
 
       const devHandlerRegexes: RegExp[] = []
       for (const handler of nuxt.options.devServerHandlers) {
@@ -147,6 +240,18 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }
 
         const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+
+        if (!isViteRoute) {
+          const workerAssetPath = await resolveNodeModuleWorkerAssetPath(url, workerSearchRoots, workerAssetCache)
+          if (workerAssetPath) {
+            const contents = await readFile(workerAssetPath)
+            res!.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+            res!.statusCode = 200
+            res!.end(contents)
+            return
+          }
+        }
+
         if (!isViteRoute) {
           // @ts-expect-error _skip_transform is a private property
           req._skip_transform = true

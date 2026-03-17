@@ -25,3 +25,7 @@
 - Added `isMissingSourceMapRequestError` guard in `packages/nitro-server/src/runtime/handlers/error.ts` to return HTTP 404 for missing sourcemap asset requests instead of surfacing a 500 crash.
 - Added regression tests in `packages/nitro-server/test/error-handler.test.ts` covering ENOENT detection and early 404 response behavior.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/error-handler.test.ts /home/josef/Projekte/Github/nuxt/packages/nitro-server/test/early-hints.test.ts --root /home/josef/Projekte/Github/nuxt` passed (6/6 tests).
+- Started JavaScript issue `#33506` (dev server resolving prebuilt dependency workers imported via `?worker`).
+- Added `resolveNodeModuleWorkerAssetPath` in `packages/vite/src/plugins/dev-server.ts` and integrated it into dev middleware to serve worker assets from `node_modules` with `application/javascript` before router fallback.
+- Added regression tests in `packages/vite/test/dev-server.test.ts` for regular package resolution, scoped package resolution, and non-worker request filtering.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/vite/test/dev-server.test.ts /home/josef/Projekte/Github/nuxt/packages/vite/test/shared-client.test.ts --root /home/josef/Projekte/Github/nuxt` passed (4/4 tests).
