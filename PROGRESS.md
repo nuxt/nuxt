@@ -54,3 +54,7 @@
 - This avoids rewriting internal `.nuxt/*.ts` template paths into partial `node_modules`-relative strings that can miss Nitro transpilation and crash in rollup inject parsing.
 - Added regression test in `packages/nuxt/test/load-nuxt.test.ts` to verify buildDir-contained transpile entries are preserved when buildDir is under `node_modules/.cache/nuxt/.nuxt`.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nuxt/test/load-nuxt.test.ts --root /home/josef/Projekte/Github/nuxt` passed (13/13 tests).
+- Started JavaScript issue `#33884` (auto-imported APIs in worker modules only resolved in dev).
+- Updated `packages/nuxt/src/imports/transform.ts` to treat worker query module IDs (`?worker`, `?worker_file`) as transformable even when they omit explicit JS/TS file extensions.
+- Added regression tests in `packages/nuxt/test/auto-imports.test.ts` for worker query IDs without extension and worker build module IDs.
+- Validation: `runTests` on `packages/nuxt/test/auto-imports.test.ts` passed (181/181 tests).

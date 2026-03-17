@@ -9,6 +9,7 @@ import type { ImportsOptions } from 'nuxt/schema'
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const IMPORTS_RE = /(['"])#imports\1/
+const WORKER_QUERY_RE = /[?&](worker|worker_file)(?:=|&|$)/
 
 interface TransformPluginOptions {
   ctx: Pick<Unimport, 'injectImports'>
@@ -40,6 +41,12 @@ export const TransformPlugin = ({ ctx, options, sourcemap, rootDir, workspaceDir
 
       // Vue files
       if (isVue(id, { type: ['script', 'template'] })) {
+        return true
+      }
+
+      // Worker entry/module IDs can omit file extensions (e.g. `./foo?worker`)
+      // but still need auto-import transforms in production builds.
+      if (WORKER_QUERY_RE.test(id)) {
         return true
       }
 

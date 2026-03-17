@@ -68,6 +68,18 @@ describe('imports:transform', () => {
   it('should still inject auto imports for files inside workspace', async () => {
     expect(await transform('const a = ref(0)', '/project/packages/ui/composable.ts')).toMatchInlineSnapshot('"import { ref } from \'vue\';\nconst a = ref(0)"')
   })
+
+  it('should inject auto imports for worker query ids without extension', async () => {
+    const result = await transform('const data = ref(0)', '/project/workers/quotes?worker')
+    expect(result).toContain('import { ref }')
+    expect(result).toContain('const data = ref(0)')
+  })
+
+  it('should inject auto imports for worker module ids in build pipeline', async () => {
+    const result = await transform('const data = ref(0)', '/project/workers/quotes?worker_file&type=module')
+    expect(result).toContain('import { ref }')
+    expect(result).toContain('const data = ref(0)')
+  })
 })
 
 const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']
