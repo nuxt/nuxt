@@ -3,10 +3,9 @@ import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
-import { existsSync } from 'node:fs'
-import { dirname, normalize, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 
-import { isDirectory, isDirectorySync, logger } from '../utils.ts'
+import { isDirectory, logger } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
@@ -142,11 +141,7 @@ function createWatcher () {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
     if (!path.startsWith(srcDir)) {
-      // Watch parent directory when the target path does not exist or exists but is not a directory (e.g. a file)
-      const pathToAdd = !existsSync(path) || !isDirectorySync(path)
-        ? dirname(path)
-        : path
-      restartPaths.add(pathToAdd)
+      restartPaths.add(path)
     }
   }
 
@@ -321,14 +316,11 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
       pathsToWatch.add(dirs.server)
     }
   }
-  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
-    const resolvedPath = resolve(nuxt.options.srcDir, pattern)
-    // Use parent directory when parentDirectories is set or path is outside srcDir
-    const path = opts?.parentDirectories || !resolvedPath.startsWith(srcDir)
-      ? dirname(resolvedPath)
-      : resolvedPath
+    const path = opts?.parentDirectories
+      ? join(dirname(resolve(nuxt.options.srcDir, pattern)), '')
+      : resolve(nuxt.options.srcDir, pattern)
     let shouldAdd = true
     for (const w of [...pathsToWatch]) {
       if (w.startsWith(path)) {

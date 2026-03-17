@@ -600,7 +600,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       exclude: [
         /node_modules[\\/]/, // Don't apply import protection to deps (ufo, unhead, @vue/server-renderer, srvx, etc.)
         /[\\/]h3[\\/]/, // h3 legitimately imports srvx/node for Node adapter
-        /[\\/]\.nuxt[\\/]dist[\\/]/, // Nuxt server build output (styles.mjs, server.mjs, _nuxt/*)
+        /[\\/]\.nuxt[\\/]/, // Nuxt build output (styles.mjs, server.mjs, _nuxt/*)
         /(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/,
         ...sharedPatterns,
       ],
