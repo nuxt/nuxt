@@ -18,12 +18,13 @@ export default defineNuxtConfig({
     value: {
       // See interface below
     },
+    strict: false,
     reportOnly: false,
-    nonce: true,
-    sri: true,
+    nonce: false,
+    sri: false,
     ssg: {
-      meta: true,
-      hashScripts: true,
+      meta: false,
+      hashScripts: false,
       hashStyles: false,
     },
   },
@@ -35,6 +36,12 @@ You can also disable this header by setting `csp: { value: false }`.
 ## Default value
 
 By default, Nuxt will set the following value for this header:
+
+```http
+Content-Security-Policy: default-src 'none'; connect-src 'self'; form-action 'self'; frame-ancestors 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';
+```
+
+But you can also set the property `strict` to true and the header will have following value:
 
 ```http
 Content-Security-Policy: base-uri 'none'; font-src 'self' https: data:; form-action 'self'; img-src 'self' data:; object-src 'none'; script-src-attr 'none'; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'strict-dynamic' 'nonce-{{nonce}}'; upgrade-insecure-requests;
@@ -106,7 +113,7 @@ type CSPSandboxValue =
 
 ## Strict CSP
 
-Nuxt helps you increase the security of your site by enabling **Strict CSP** support for both SSR and SSG applications.
+Nuxt helps you increase the security of your site by enabling **Strict CSP** support for both SSR and SSG applications when `strict` option is set to true.
 
 For further reading about Strict CSP and how to handle specific cases, please consult our [Adanced Section about Strict CSP](/advanced/strict-csp)
 

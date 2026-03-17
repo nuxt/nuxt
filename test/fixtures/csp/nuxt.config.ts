@@ -6,4 +6,7 @@ export default defineNuxtConfig({
       },
     },
   },
+  csp: {
+    strict: true,
+  },
 })

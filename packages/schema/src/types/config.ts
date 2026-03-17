@@ -227,6 +227,7 @@ export type ContentSecurityPolicyValue = {
 
 export type ContentSecurityPolicyConfig = {
   value: ContentSecurityPolicyValue | false
+  strict?: boolean // false
   reportOnly?: boolean // false
   nonce?: boolean // true
   sri?: boolean // true

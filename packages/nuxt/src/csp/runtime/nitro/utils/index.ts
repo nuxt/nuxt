@@ -52,24 +52,24 @@ export async function hashBundledAssets (nitro: Nitro) {
 }
 
 export const defaultCSPConfig: ContentSecurityPolicyConfig = {
+  // https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html#basic-non-strict-csp-policy
   value: {
-    'base-uri': ['\'none\''],
-    'font-src': ['\'self\'', 'https:', 'data:'],
+    'default-src': ['\'none\''],
+    'connect-src': ['\'self\''],
     'form-action': ['\'self\''],
     'frame-ancestors': ['\'self\''],
-    'img-src': ['\'self\'', 'data:'],
-    'object-src': ['\'none\''],
-    'script-src-attr': ['\'none\''],
-    'style-src': ['\'self\'', 'https:', '\'unsafe-inline\''],
-    'script-src': ['\'self\'', 'https:', '\'unsafe-inline\'', '\'strict-dynamic\'', '\'nonce-{{nonce}}\''],
-    'upgrade-insecure-requests': true,
+    'img-src': ['\'self\''],
+    // unsafe-inline is needed for both style and script src by Nuxt
+    'style-src': ['\'self\'', '\'unsafe-inline\''],
+    'script-src': ['\'self\'', '\'unsafe-inline\''],
   },
+  strict: false,
   reportOnly: false,
-  nonce: true,
-  sri: true,
+  nonce: false,
+  sri: false,
   ssg: {
     meta: true,
-    hashScripts: true,
+    hashScripts: false,
     hashStyles: false,
   },
 }

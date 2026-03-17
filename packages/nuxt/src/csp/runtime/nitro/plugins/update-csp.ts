@@ -19,9 +19,9 @@ export default (nitroApp: NitroApp) => {
 
       if (config.value) {
         const csp = config.value
-        const nonce = securityContext.nonce
-        const scriptHashes = securityContext.hashes?.script
-        const styleHashes = securityContext.hashes?.style
+        const nonce = securityContext?.nonce
+        const scriptHashes = securityContext?.hashes?.script
+        const styleHashes = securityContext?.hashes?.style
         config.value = updateCspVariables(csp, nonce, scriptHashes, styleHashes)
       }
 

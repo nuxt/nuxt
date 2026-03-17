@@ -18,7 +18,35 @@ export default defineNuxtModule<Partial<ContentSecurityPolicyConfig>>({
       return
     }
 
-    const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...nuxt.options.csp }, { ...defaultCSPConfig })
+    let cspConfig = defaultCSPConfig
+
+    if (nuxt.options.csp.strict) {
+      cspConfig = {
+        value: {
+          'base-uri': ['\'none\''],
+          'font-src': ['\'self\'', 'https:', 'data:'],
+          'form-action': ['\'self\''],
+          'frame-ancestors': ['\'self\''],
+          'img-src': ['\'self\'', 'data:'],
+          'object-src': ['\'none\''],
+          'script-src-attr': ['\'none\''],
+          'style-src': ['\'self\'', 'https:', '\'unsafe-inline\''],
+          'script-src': ['\'self\'', 'https:', '\'unsafe-inline\'', '\'strict-dynamic\'', '\'nonce-{{nonce}}\''],
+          'upgrade-insecure-requests': true,
+        },
+        strict: true,
+        reportOnly: false,
+        nonce: true,
+        sri: true,
+        ssg: {
+          meta: true,
+          hashScripts: true,
+          hashStyles: false,
+        },
+      }
+    }
+
+    const contentSecurityPolicyConfig: ContentSecurityPolicyConfig = defuReplaceArray({ ...nuxt.options.csp }, { ...cspConfig })
 
     // Warn if reportOnly is used with ssg.meta, as meta tags don't support Content-Security-Policy-Report-Only
     if (contentSecurityPolicyConfig.reportOnly && contentSecurityPolicyConfig.ssg?.meta) {
