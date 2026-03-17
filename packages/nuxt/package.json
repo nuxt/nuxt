@@ -56,7 +56,7 @@
   "dependencies": {
     "@dxup/nuxt": "^0.4.0",
     "@nuxt/cli": "^3.34.0",
-    "@nuxt/devtools": "^3.2.3",
+    "@nuxt/devtools": "^3.2.4",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",
@@ -103,7 +103,7 @@
     "ultrahtml": "^1.6.0",
     "uncrypto": "^0.1.3",
     "unctx": "^2.5.0",
-    "unimport": "^6.0.1",
+    "unimport": "^6.0.2",
     "unplugin": "^3.0.0",
     "unrouting": "^0.1.7",
     "untyped": "^2.0.0",
