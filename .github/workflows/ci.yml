@@ -344,6 +344,9 @@ jobs:
           name: dist
           path: packages
 
+      - name: Prepare test fixtures
+        run: pnpm test:prepare
+
       - name: Test (fixtures)
         run: pnpm test:fixtures
 
@@ -403,6 +406,9 @@ jobs:
         with:
           name: dist
           path: packages
+
+      - name: Prepare test fixtures
+        run: pnpm test:prepare
 
       - name: Test (e2e)
         run: pnpm test:e2e
