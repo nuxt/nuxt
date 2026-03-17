@@ -45,22 +45,38 @@ function createRunner () {
   })
 }
 
-function formatViteError (errorData: any, id: string) {
+export function formatViteError (errorData: any, id: string) {
   const errorCode = errorData.name || errorData.reasonCode || errorData.code
   const frame = errorData.frame || errorData.source || errorData.pluginCode
+  const detail = errorData.reason || errorData.message
 
-  const getLocId = (locObj: { file?: string, id?: string, url?: string } = {}) => locObj.file || locObj.id || locObj.url || id || ''
-  const getLocPos = (locObj: { line?: string, column?: string } = {}) => locObj.line ? `${locObj.line}:${locObj.column || 0}` : ''
+  const getLocId = (locObj: { file?: string, id?: string, url?: string } = {}) => {
+    const locId = locObj.file || locObj.id || locObj.url
+    if (typeof locId === 'string' && locId && locId !== 'undefined') {
+      return locId
+    }
+    return id || ''
+  }
+  const getLocPos = (locObj: { line?: string | number, column?: string | number } = {}) => {
+    const line = locObj.line
+    if (line === undefined || line === null || line === '' || line === 'undefined') {
+      return ''
+    }
+    const column = locObj.column
+    const safeColumn = (column === undefined || column === null || column === '' || column === 'undefined') ? 0 : column
+    return `${line}:${safeColumn}`
+  }
   const locId = getLocId(errorData.loc) || getLocId(errorData.location) || getLocId(errorData.input) || getLocId(errorData)
   const locPos = getLocPos(errorData.loc) || getLocPos(errorData.location) || getLocPos(errorData.input) || getLocPos(errorData)
-  const loc = locId.replace(process.cwd(), '.') + (locPos ? `:${locPos}` : '')
+  const rawLoc = locId.replace(process.cwd(), '.') + (locPos ? `:${locPos}` : '')
+  const loc = rawLoc.includes('undefined:undefined') ? locId.replace(process.cwd(), '.') : rawLoc
 
   const message = [
     '[vite-node]',
     errorData.plugin && `[plugin:${errorData.plugin}]`,
     errorCode && `[${errorCode}]`,
     loc,
-    errorData.reason && `: ${errorData.reason}`,
+    detail && `: ${detail}`,
     frame && `<br><pre>${frame.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><br>`,
   ].filter(Boolean).join(' ')
 

@@ -14,3 +14,6 @@
 - Added regression test in `packages/nuxt/test/cache.test.ts` to verify build succeeds with `app/app.config.ts` using `defineAppConfig` and `future.compatibilityVersion: 5`.
 - Refined the fix to a targeted Nitro rollup shim for app config files when `nitroAutoImports` is disabled, avoiding broader Nitro import side effects.
 - Validation: `pnpm vitest run packages/nuxt/test/cache.test.ts --reporter=json --outputFile .test-cache-v5.json` passed (5/5 tests).
+- Started issue `#34593`: improved `packages/vite/src/vite-node-runner.ts` error formatting to preserve original plugin error messages (`errorData.message`) and avoid noisy `undefined:undefined` location output.
+- Added regression tests in `packages/vite/test/vite-node-runner.test.ts` for message preservation and location sanitization.
+- Next: run targeted Vite tests for the new formatter behavior.
