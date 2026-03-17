@@ -263,7 +263,7 @@ test.describe('vite-only HMR tests', () => {
     expect(filteredLogs).toStrictEqual([])
   })
 
-  test.fail('should support renaming files to same import name', async ({ page, goto }) => {
+  test('should support renaming files to same import name (#31569)', async ({ page, goto }) => {
     await goto('/rename-component')
 
     await expect(page.getByTestId('example')).toHaveText('test.vue')
@@ -275,11 +275,14 @@ test.describe('vite-only HMR tests', () => {
       `<template><div data-testid="example">example-test.vue</div></template>`,
     )
 
-    await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+    // HMR should update without "Pre-transform error: Failed to load url"
+    await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
 
     await page.reload()
 
     await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+
+    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
