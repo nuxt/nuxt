@@ -77,6 +77,10 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe('test')
   })
 
+  it('should throw TypeError when key is empty', () => {
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[TypeError: [nuxt] [useAsyncData] key must be a non-empty string.]')
+  })
+
   it('should keep promise methods after destructuring', async () => {
     const asyncData = useAsyncData(() => Promise.resolve('test'))
     const destructured = { ...asyncData, foo: 'foo' }
