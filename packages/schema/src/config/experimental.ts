@@ -67,9 +67,6 @@ export default defineResolvers({
       $resolve: val => typeof val === 'boolean' ? val : false,
     },
 
-    // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/nitrojs/nitro/issues/1118
-    externalVue: true,
     serverAppConfig: true,
     emitRouteChunkError: {
       $resolve: (val) => {
@@ -253,5 +250,11 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
       },
     },
+    clientNodePlaceholder: {
+      $resolve: async (val, get) => {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
+    clearBuildHooks: true,
   },
 })

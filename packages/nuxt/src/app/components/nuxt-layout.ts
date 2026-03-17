@@ -79,7 +79,10 @@ export default defineComponent({
     const done = nuxtApp.deferHydration()
     if (import.meta.client && nuxtApp.isHydrating) {
       const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      useRouter().beforeEach(removeErrorHook)
+      const removeGuard = useRouter().beforeEach(() => {
+        removeErrorHook()
+        removeGuard()
+      })
     }
 
     if (import.meta.dev) {

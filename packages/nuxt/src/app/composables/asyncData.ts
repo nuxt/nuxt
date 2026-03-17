@@ -145,7 +145,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
     FDefaultT = undefined,
   >(options:
     Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
-    | ((currentOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
+    | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
   ) {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -214,13 +214,13 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
       // eslint-disable-next-line prefer-const
-      let [_key, _handler, opts = {}] = args as [string, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+      let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
       let keyChanging = false
 
       // Validate arguments
-      const key = computed(() => toValue(_key)!)
-      if (typeof key.value !== 'string') {
-        throw new TypeError('[nuxt] [useAsyncData] key must be a string.')
+      const key = computed(() => toValue(_key))
+      if (!key.value || typeof key.value !== 'string') {
+        throw new TypeError('[nuxt] [useAsyncData] key must be a non-empty string.')
       }
       if (typeof _handler !== 'function') {
         throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
@@ -713,6 +713,11 @@ function buildAsyncData<
           }
         })
         .then(async (_result) => {
+          // If the promise was replaced or cleared (e.g. by clearNuxtData), skip the update
+          if (nuxtApp._asyncDataPromises[key] !== promise) {
+            return
+          }
+
           let result = _result as unknown as DataT
           if (options.transform) {
             result = await options.transform(_result)
@@ -735,8 +740,8 @@ function buildAsyncData<
           asyncData.status.value = 'success'
         })
         .catch((error: any) => {
-          // If the promise was replaced by another one, we do not update the asyncData
-          if (nuxtApp._asyncDataPromises[key] && nuxtApp._asyncDataPromises[key] !== promise) {
+          // If the promise was replaced or cleared (e.g. by clearNuxtData), do not update the asyncData
+          if (nuxtApp._asyncDataPromises[key] !== promise) {
             return nuxtApp._asyncDataPromises[key]
           }
 
@@ -756,12 +761,15 @@ function buildAsyncData<
           asyncData.status.value = 'error'
         })
         .finally(() => {
-          if (pendingWhenIdle) {
-            asyncData.pending.value = false
-          }
           cleanupController.abort()
 
-          delete nuxtApp._asyncDataPromises[key]
+          // Only clean up if this promise is still the current one
+          if (nuxtApp._asyncDataPromises[key] === promise) {
+            if (pendingWhenIdle) {
+              asyncData.pending.value = false
+            }
+            delete nuxtApp._asyncDataPromises[key]
+          }
         })
       nuxtApp._asyncDataPromises[key] = promise
       return nuxtApp._asyncDataPromises[key]!

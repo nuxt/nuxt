@@ -77,6 +77,10 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe('test')
   })
 
+  it('should throw TypeError when key is empty', () => {
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[TypeError: [nuxt] [useAsyncData] key must be a non-empty string.]')
+  })
+
   it('should keep promise methods after destructuring', async () => {
     const asyncData = useAsyncData(() => Promise.resolve('test'))
     const destructured = { ...asyncData, foo: 'foo' }
@@ -247,6 +251,31 @@ describe('useAsyncData', () => {
     expect(error.value).toBe(undefined)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
+  })
+
+  it('should not overwrite cleared data when in-flight request completes', async () => {
+    vi.useFakeTimers()
+
+    const { data, status, refresh } = await useAsyncData(uniqueKey, () => Promise.resolve('initial'))
+    expect(data.value).toBe('initial')
+
+    // Start a slow refresh
+    const refreshPromise = refresh()
+
+    // Clear while the refresh is in flight
+    clearNuxtData(uniqueKey)
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+
+    // Let the refresh complete
+    vi.advanceTimersByTime(0)
+    await refreshPromise
+
+    // Data should stay cleared
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+
+    vi.useRealTimers()
   })
 
   it('should have correct status for previously fetched requests', async () => {
@@ -1023,7 +1052,7 @@ describe('useAsyncData', () => {
     // Manual implementation of Promise.withResolvers for compatibility
     let resolve: (value: boolean) => void
     const promise = new Promise<boolean>((res) => { resolve = res })
-    const { clear } = useAsyncData('', () => promise)
+    const { clear } = useAsyncData('clear', () => promise)
     expect(aborted).toBe(false)
     clear()
     resolve!(true)

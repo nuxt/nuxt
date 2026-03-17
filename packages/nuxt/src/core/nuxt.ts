@@ -7,7 +7,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -339,7 +339,7 @@ async function initNuxt (nuxt: Nuxt) {
     mode: 'client',
     alias: {
       '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
-      'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+      'nitro/runtime-config': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     },
   }), { server: false })
@@ -840,10 +840,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
-    if (!await import('./features.ts').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
+    if (!await ensureDependencyInstalled('@nuxt/webpack-builder', {
       rootDir: options.rootDir,
       searchPaths: options.modulesDir,
-    }))) {
+    })) {
       logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
     }
   }
@@ -895,7 +895,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // prevent replacement of options.nitro
   Object.defineProperties(options, {
     nitro: {
-      configurable: false,
+      configurable: true,
       enumerable: true,
       get: () => nitroOptions,
       set (value) {
@@ -989,7 +989,7 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
 
     Object.defineProperties(parent, {
       [key]: {
-        configurable: false,
+        configurable: true,
         enumerable: true,
         get: () => sharedValue,
         set (value) {

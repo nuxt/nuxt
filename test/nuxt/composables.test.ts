@@ -624,7 +624,7 @@ describe('routing utilities: `navigateTo`', () => {
       ['\0data:alert("hi")', 'data'],
     ]
     for (const [url, protocol] of urls) {
-      expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+      expect(() => navigateTo(url, { external: true })).toThrow(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {
@@ -1063,6 +1063,18 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(1)
 
       await navigateTo('/test')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it('should retry after a rejected promise', async () => {
+      const fn = vi.fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValueOnce(undefined)
+      const execute = () => options ? callOnce('retry-key', fn, options) : callOnce('retry-key', fn)
+      await expect(execute()).rejects.toThrow('fail')
+      expect(fn).toHaveBeenCalledTimes(1)
+
       await execute()
       expect(fn).toHaveBeenCalledTimes(2)
     })

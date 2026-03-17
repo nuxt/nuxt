@@ -80,10 +80,15 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 
 async function _importPayload (payloadURL: string) {
   if (import.meta.server || !payloadExtraction) { return null }
-  const payloadPromise = fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
-
   try {
-    return await payloadPromise
+    const res = await fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' })
+    if (!res.ok) {
+      if (import.meta.dev) {
+        console.warn(`[nuxt] Cannot load payload ${payloadURL}: ${res.status} ${res.statusText}`)
+      }
+      return null
+    }
+    return await parsePayload(await res.text())
   } catch (err) {
     console.warn('[nuxt] Cannot load payload ', payloadURL, err)
   }

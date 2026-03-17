@@ -15,22 +15,17 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
 
   beforeAll(async () => {
     await Promise.all([
-      exec('pnpm', ['nuxt', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'false' } } }),
-      exec('pnpm', ['nuxt', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'true' } } }),
+      exec('pnpm', ['nuxt', 'build', rootDir]),
       exec('pnpm', ['nuxt', 'build', pagesRootDir]),
     ])
   }, 120 * 1000)
 
-  // Identical behaviour between inline/external vue options as this should only affect the server build
-
   it('default client bundle size', async () => {
-    const [clientStats, clientStatsInlined] = await Promise.all((['.output', '.output-inline'])
-      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))))
+    const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'))
 
     expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"113k"`)
-    expect.soft(roundToKilobytes(clientStatsInlined!.totalBytes)).toMatchInlineSnapshot(`"113k"`)
 
-    const files = new Set([...clientStats!.files, ...clientStatsInlined!.files].map(f => f.replace(/\..*\.js/, '.js')))
+    const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
     expect([...files]).toMatchInlineSnapshot(`
       [
@@ -64,45 +59,10 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"66.3k"`)
-
-    const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1281k"`)
-
-    const packages = modules.files
-      .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
-      .sort()
-    expect(packages).toMatchInlineSnapshot(`
-      [
-        "@unhead/vue+[...]",
-        "babel__parser",
-        "defu",
-        "destr",
-        "devalue",
-        "h3+rou3+srvx",
-        "ocache+ohash",
-        "ofetch",
-        "pathe",
-        "scule",
-        "ufo",
-        "unctx",
-        "unstorage",
-        "vue",
-        "vue-bundle-renderer",
-        "vue__compiler-ssr",
-        "vue__server-renderer",
-      ]
-    `)
-  })
-
-  it('default server bundle size (inlined vue modules)', async () => {
-    const serverDir = join(rootDir, '.output-inline/server')
-
-    const serverStats = await analyzeSizes(['**/*.mjs', '!_libs'], serverDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"66.6k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"461k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"462k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
@@ -135,7 +95,7 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"274k"`)
 
     const modules = await analyzeSizes(['_libs/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1290k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"471k"`)
 
     const packages = modules.files
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
@@ -143,7 +103,6 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/vue+[...]",
-        "babel__parser",
         "defu",
         "destr",
         "devalue",
@@ -160,7 +119,6 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
         "unstorage",
         "vue",
         "vue-bundle-renderer",
-        "vue__compiler-ssr",
         "vue__server-renderer",
       ]
     `)
