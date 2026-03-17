@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { normalize } from 'pathe'
+import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
@@ -165,6 +165,26 @@ describe('loadNuxt', () => {
 
     expect(tsConfigPaths).toHaveProperty('#server')
     expect(tsConfigPaths).toHaveProperty('#server/*')
+
+    await nuxt.close()
+  })
+
+  it('preserves transpile entries inside buildDir when buildDir is in node_modules cache', async () => {
+    const buildDir = join(repoRoot, 'node_modules/.cache/nuxt/.nuxt')
+    const templatePath = join(buildDir, 'example.serverOptions.ts')
+
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      ready: true,
+      overrides: {
+        buildDir,
+        build: {
+          transpile: [templatePath],
+        },
+      },
+    })
+
+    expect(nuxt.options.build.transpile).toContain(normalize(templatePath))
 
     await nuxt.close()
   })

@@ -49,3 +49,8 @@
 - Passed `rootDir` and `workspaceDir` into `TransformPlugin` via `packages/nuxt/src/imports/module.ts`.
 - Added regression tests in `packages/nuxt/test/auto-imports.test.ts` to ensure linked external files do not get injected imports while workspace files still do.
 - Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nuxt/test/auto-imports.test.ts /home/josef/Projekte/Github/nuxt/packages/nuxt/test/page-metadata.test.ts --root /home/josef/Projekte/Github/nuxt` passed (217/217 tests).
+- Started JavaScript issue `#28995` (TypeScript templates via `addTemplate` fail when build cache/compat mode places buildDir in `node_modules/.cache`).
+- Updated `packages/nuxt/src/core/nuxt.ts` transpile normalization to preserve absolute transpile entries that live inside `nuxt.options.buildDir`.
+- This avoids rewriting internal `.nuxt/*.ts` template paths into partial `node_modules`-relative strings that can miss Nitro transpilation and crash in rollup inject parsing.
+- Added regression test in `packages/nuxt/test/load-nuxt.test.ts` to verify buildDir-contained transpile entries are preserved when buildDir is under `node_modules/.cache/nuxt/.nuxt`.
+- Validation: `pnpm vitest run /home/josef/Projekte/Github/nuxt/packages/nuxt/test/load-nuxt.test.ts --root /home/josef/Projekte/Github/nuxt` passed (13/13 tests).

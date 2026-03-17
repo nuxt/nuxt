@@ -767,8 +767,17 @@ export default defineNuxtPlugin({
     if (typeof t !== 'string') {
       return t
     }
-    // Normalize windows transpile paths added by modules
-    return normalize(t).split('node_modules/').pop()!
+    const normalizedPath = normalize(t)
+    const normalizedBuildDir = normalize(nuxt.options.buildDir)
+
+    // Keep internal buildDir entries absolute, even when buildDir lives in
+    // node_modules/.cache, so Nitro can still match and transpile them.
+    if (normalizedPath.startsWith(normalizedBuildDir)) {
+      return normalizedPath
+    }
+
+    // Normalize windows transpile paths added by modules.
+    return normalizedPath.split('node_modules/').pop()!
   })
 
   addModuleTranspiles(nuxt)
