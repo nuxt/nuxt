@@ -54,6 +54,8 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
 
         // this will never be imported on the client
         '#app-manifest',
+        // guard against optimizer pre-transform resolution for virtual build artifacts
+        '#build/route-rules.mjs',
         // these should all be valid ESM
         '#imports',
         '#app',
