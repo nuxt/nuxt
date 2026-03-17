@@ -60,7 +60,7 @@ export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
             }
           }
           // Prefer host/ancestor node_modules for virtual templates without _path (e.g. when app runs from node_modules).
-          // TODO(perf): when measuring Bit-style scenarios, consider caching existsSync(searchDir) per request or per modulesDir.
+          // TODO(perf): when measuring nested node_modules scenarios, consider caching existsSync(searchDir) per request or per modulesDir.
           for (const searchDir of nuxt.options.modulesDir) {
             if (existsSync(searchDir)) {
               const res = await this.resolve?.(normalisedId, searchDir, { skipSelf: true })

@@ -101,7 +101,7 @@ export default defineResolvers({
           }
         }
       }
-      // When app runs from inside node_modules (e.g. Bit), add ancestor node_modules dirs for resolution
+      // When app runs from inside node_modules, add ancestor node_modules dirs for resolution
       const maxAncestorDepth = 10
       if (rootDir.includes('node_modules')) {
         let current = rootDir
