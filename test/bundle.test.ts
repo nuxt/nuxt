@@ -123,6 +123,13 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
       ]
     `)
   })
+
+  it('generates route-rules build module', async () => {
+    const routeRulesPath = join(pagesRootDir, '.nuxt/route-rules.mjs')
+    const routeRulesFile = await fsp.readFile(routeRulesPath, 'utf8')
+
+    expect(routeRulesFile).toContain('export default')
+  })
 })
 
 async function analyzeSizes (pattern: string[], rootDir: string) {

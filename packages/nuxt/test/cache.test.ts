@@ -143,4 +143,29 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
     const latestJson = JSON.parse(await readFile(join(nuxt2.options.buildDir, 'manifest', 'latest.json'), 'utf-8'))
     expect(latestJson.id).toBe('build-2')
   })
+
+  it('should generate route-rules and app-manifest build artifacts', async () => {
+    const rootDir = join(tmpDir, 'project')
+
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'manifest-stub-test',
+        dev: false,
+        experimental: {
+          appManifest: true,
+        },
+        workspaceDir: tmpDir,
+      },
+    })
+
+    await build(nuxt)
+
+    const routeRulesFile = join(nuxt.options.buildDir, 'route-rules.mjs')
+    expect(existsSync(routeRulesFile)).toBe(true)
+    expect(await readFile(routeRulesFile, 'utf-8')).toContain('export default')
+
+    const appManifestMeta = join(nuxt.options.buildDir, 'manifest', 'meta', 'manifest-stub-test.json')
+    expect(existsSync(appManifestMeta)).toBe(true)
+  })
 })
