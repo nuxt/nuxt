@@ -66,7 +66,8 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       segments.push(hash(Object.fromEntries([...new Uint8Array(value).entries()].map(([k, v]) => [k, v.toString()]))))
     } else if (value instanceof FormData) {
       const entries: Array<[string, string]> = []
-      for (const [key, val] of value.entries()) {
+      for (const entry of value.entries()) {
+        const [key, val] = entry
         entries.push([key, val instanceof File ? `${val.name}:${val.size}:${val.lastModified}` : val])
       }
       segments.push(hash(entries))
