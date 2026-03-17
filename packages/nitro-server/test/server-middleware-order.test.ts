@@ -43,7 +43,7 @@ describe('server middleware order (issue #26012)', () => {
 
     const { nuxt, nitro, distDir } = createMocks({
       serverHandlers: [
-        { middleware: true, handler: '#server/utils/configured.ts' },
+        { route: '/**', middleware: true, handler: '#server/utils/configured.ts' },
       ],
       optionsHandlers: [
         { route: '/__nuxt_error', handler: resolve('/fake/nuxt/dist', 'runtime/handlers/renderer') },
