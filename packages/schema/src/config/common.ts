@@ -2,7 +2,7 @@ import process from 'node:process'
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { relative, resolve } from 'pathe'
+import { basename, dirname, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -99,6 +99,19 @@ export default defineResolvers({
           if (dir && typeof dir === 'string') {
             modulesDir.add(resolve(rootDir, dir))
           }
+        }
+      }
+      // When app runs from inside node_modules (e.g. Bit), add ancestor node_modules dirs for resolution
+      const maxAncestorDepth = 10
+      if (rootDir.includes('node_modules')) {
+        let current = rootDir
+        for (let depth = 0; depth < maxAncestorDepth; depth++) {
+          const parent = dirname(current)
+          if (parent === current) break
+          if (basename(parent) === 'node_modules' && existsSync(parent)) {
+            modulesDir.add(parent)
+          }
+          current = parent
         }
       }
       return [...modulesDir]

@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { parseNodeModulePath } from 'mlly'
 import { resolveModulePath } from 'exsolve'
 import { isAbsolute, normalize, resolve } from 'pathe'
@@ -56,6 +57,16 @@ export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
             const res = await this.resolve?.(normalisedId, template._path, { skipSelf: true })
             if (res !== undefined && res !== null) {
               return res
+            }
+          }
+          // Prefer host/ancestor node_modules for virtual templates without _path (e.g. when app runs from node_modules).
+          // TODO(perf): when measuring Bit-style scenarios, consider caching existsSync(searchDir) per request or per modulesDir.
+          for (const searchDir of nuxt.options.modulesDir) {
+            if (existsSync(searchDir)) {
+              const res = await this.resolve?.(normalisedId, searchDir, { skipSelf: true })
+              if (res !== undefined && res !== null) {
+                return res
+              }
             }
           }
         }
