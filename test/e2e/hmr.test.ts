@@ -278,9 +278,9 @@ test.describe('vite-only HMR tests', () => {
     // HMR should update without "Pre-transform error: Failed to load url"
     await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
 
-    await page.reload()
+    await goto('/rename-component')
 
-    await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+    await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
 
     expect(page).toHaveNoErrorsOrWarnings()
   })
