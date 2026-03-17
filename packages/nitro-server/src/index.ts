@@ -84,11 +84,13 @@ export function installMiddlewareReorder (nuxt: Nuxt, nitro: Nitro, distDir: str
 
   // Build configured middleware handlers once at install time
   const configuredMiddlewareSnapshot: NitroEventHandler[] = []
-  for (const h of nitro.options.handlers) {
+  nitro.options.handlers = nitro.options.handlers.filter((h) => {
     if (h.middleware && isConfiguredHandler(h)) {
       configuredMiddlewareSnapshot.push(h)
+      return false
     }
-  }
+    return true
+  })
 
   if (configuredMiddlewareSnapshot.length === 0) { return }
 
