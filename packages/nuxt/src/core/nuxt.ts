@@ -806,12 +806,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const options = await loadNuxtConfig(opts)
 
-  // Acquire build lock as early as possible, before modules/init work.
-  // There is no explicit `_build` flag set by @nuxt/cli, so we infer
-  // build mode by excluding dev, prepare, and test.
   let releaseBuildLock: (() => void) | undefined
   if (!options.dev && !options._prepare && !options.test) {
-    releaseBuildLock = acquireBuildLock(options.buildDir, options.rootDir)
+    try {
+      releaseBuildLock = acquireBuildLock(options.buildDir, options.rootDir)
+    } catch (err: any) {
+      if (err.pid) { throw err }
+    }
   }
 
   if (!perf && typeof options.debug === 'object' && options.debug.perf) {
