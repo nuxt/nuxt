@@ -1048,7 +1048,7 @@ describe('useAsyncData', () => {
     // Manual implementation of Promise.withResolvers for compatibility
     let resolve: (value: boolean) => void
     const promise = new Promise<boolean>((res) => { resolve = res })
-    const { clear } = useAsyncData('', () => promise)
+    const { clear } = useAsyncData('clear', () => promise)
     expect(aborted).toBe(false)
     clear()
     resolve!(true)
