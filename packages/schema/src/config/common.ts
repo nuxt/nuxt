@@ -101,17 +101,20 @@ export default defineResolvers({
           }
         }
       }
-      // When app runs from inside node_modules, add ancestor node_modules dirs for resolution
-      const maxAncestorDepth = 10
+      // App may run from inside node_modules (e.g. component libs). Add ancestor node_modules
+      // dirs so host deps resolve. Stop once the path has no node_modules segment so we never
+      // walk toward the OS root.
       if (rootDir.includes('node_modules')) {
         let current = rootDir
-        for (let depth = 0; depth < maxAncestorDepth; depth++) {
+        for (let depth = 0; depth < 10; depth++) {
           const parent = dirname(current)
           if (parent === current) { break }
           if (basename(parent) === 'node_modules' && existsSync(parent)) {
             modulesDir.add(parent)
           }
           current = parent
+          const pathSegments = current.split(/[/\\]/)
+          if (!pathSegments.includes('node_modules')) { break }
         }
       }
       return [...modulesDir]
