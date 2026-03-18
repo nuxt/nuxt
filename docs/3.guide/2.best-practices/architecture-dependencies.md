@@ -29,6 +29,38 @@ description: Logical dependency map between Nuxt core packages and runtime/build
 - Server runtime, handlers, rendering, route rules, h3 integration: start in `packages/nitro-server`.
 - Type and config contract mismatches: inspect `packages/schema` and generated `.nuxt/types` outputs.
 
+## Entry Points by Area
+
+### Nuxt Core
+
+- Scope: module orchestration, templates, app wiring, composable/runtime integration.
+- Start from: `packages/nuxt/src`.
+
+### Vite Builder
+
+- Scope: dev server startup, optimizeDeps, vite-node bridge, transform/build behavior.
+- Start from: `packages/vite/src/vite.ts` and `packages/vite/src/plugins`.
+
+### Nitro Server Runtime
+
+- Scope: server handlers, rendering, middleware, route rules, runtime utilities.
+- Start from: `packages/nitro-server/src/index.ts` and `packages/nitro-server/src/runtime`.
+
+### Schema and Type Contracts
+
+- Scope: public config and runtime type contracts shared across packages.
+- Start from: `packages/schema/src`.
+
+### CLI
+
+- Scope: command execution flow for dev/build/prepare and local tooling entry.
+- Start from: `packages/nuxi/src`.
+
+### Tests and Regression Safety
+
+- Scope: package-level unit tests and integration fixtures.
+- Start from: `packages/nuxt/test`, `packages/vite/test`, `packages/nitro-server/test`, and `test`.
+
 ## Maintenance Notes
 
 - Keep this dependency map updated when package boundaries or orchestration behavior change.
