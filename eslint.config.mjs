@@ -113,6 +113,8 @@ export default createConfigForNuxt({
     },
     rules: {
       '@typescript-eslint/no-deprecated': 'error',
+      '@typescript-eslint/return-await': ['error', 'in-try-catch'],
+      'no-return-await': 'off',
     },
   })
 
@@ -162,7 +164,6 @@ export default createConfigForNuxt({
         ],
       },
     },
-    // @ts-expect-error type issues
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
@@ -240,15 +241,12 @@ export default createConfigForNuxt({
           'patterns': [
             {
               allowTypeImports: true,
-              group: [
-                // disallow everything
-                '[@a-z]*',
-                // except certain dependencies
-                ...[
+              regex: `^(?!(${
+                [
                   // vue ecosystem
                   '@unhead',
-                  '@vue',
                   '@vue/shared',
+                  'ofetch',
                   'vue/server-renderer',
                   'vue',
                   'vue-router',
@@ -256,10 +254,8 @@ export default createConfigForNuxt({
                   'errx', /* only used in dev */
                   // internal deps
                   'nuxt/app',
-                ].map(r => `!${r}`),
-                '!#[a-z]*/**', // aliases
-                '!.*/**', // relative imports
-              ],
+                ].map(r => r.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+              })($|/))(?!#)(?!\\.)[a-zA-Z@]`,
             },
           ],
         }],
@@ -304,6 +300,7 @@ export default createConfigForNuxt({
         'vue/multi-word-component-names': 'off',
       },
     },
+    // @ts-expect-error type issues between @types/eslint and @eslint/core
     {
       files: ['**/*.md'],
       language: 'markdown/commonmark',
@@ -330,8 +327,4 @@ export default createConfigForNuxt({
   )
 
   // Generate type definitions for the eslint config
-  // @ts-expect-error type issues in eslint
-  .onResolved((configs) => {
-    // @ts-expect-error type issues in eslint
-    return typegen(configs)
-  })
+  .onResolved(configs => typegen(configs))

@@ -25,8 +25,8 @@ const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
 </script>
 ```
 
-::warning{to="/docs/4.x/guide/recipes/custom-usefetch#custom-usefetchuseasyncdata"}
-If you're using a custom `useFetch` wrapper, do not await it in the composable as that can cause unexpected behavior. See recipe for custom async data fetcher.
+::tip{to="/docs/4.x/guide/recipes/custom-usefetch#custom-usefetch-with-createusefetch"}
+Need a custom `useFetch` with pre-defined defaults (like `baseURL` or auth headers)? Use `createUseFetch` to create a fully typed custom composable.
 ::
 
 ::note
@@ -87,7 +87,7 @@ Keyed state created using `useFetch` can be retrieved across your Nuxt applicati
 ::
 
 ::warning
-`useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
+`useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`. To create a custom variant with pre-defined options, use [`createUseFetch`](/docs/4.x/guide/recipes/custom-usefetch#custom-usefetch-with-createusefetch) instead.
 ::
 
 ::warning
@@ -139,6 +139,7 @@ type UseFetchOptions<DataT> = {
   body?: MaybeRefOrGetter<RequestInit['body'] | Record<string, any>>
   headers?: MaybeRefOrGetter<Record<string, string> | [key: string, value: string][] | Headers>
   baseURL?: MaybeRefOrGetter<string>
+  cache?: false | 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload'
   server?: boolean
   lazy?: boolean
   immediate?: boolean
@@ -151,7 +152,6 @@ type UseFetchOptions<DataT> = {
   pick?: string[]
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
-  timeout?: MaybeRefOrGetter<number>
 }
 
 type AsyncDataRequestContext = {
@@ -161,6 +161,7 @@ type AsyncDataRequestContext = {
 
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | undefined>
+  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
@@ -192,8 +193,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `body`          | `MaybeRefOrGetter<RequestInit['body'] \| Record<string, any>>`          | -          | Request body. Objects are automatically stringified.                                                             |
 | `headers`       | `MaybeRefOrGetter<Record<string, string> \| [key, value][] \| Headers>` | -          | Request headers.                                                                                                 |
 | `baseURL`       | `MaybeRefOrGetter<string>`                                              | -          | Base URL for the request.                                                                                        |
-| `timeout`       | `MaybeRefOrGetter<number>`                                              | -          | Timeout in milliseconds to abort the request.                                                                    |
-| `cache`         | `boolean \| string`                                                     | -          | Cache control. Boolean disables cache, or use Fetch API values: `default`, `no-store`, etc.                      |
+| `cache`         | `false \| string`                                                       | -          | Cache control. Boolean disables cache, or use Fetch API values: `default`, `no-store`, etc.                      |
 | `server`        | `boolean`                                                               | `true`     | Whether to fetch on the server.                                                                                  |
 | `lazy`          | `boolean`                                                               | `false`    | If true, resolves after route loads (does not block navigation).                                                 |
 | `immediate`     | `boolean`                                                               | `true`     | If false, prevents request from firing immediately.                                                              |
@@ -229,6 +229,7 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`.                                                                                                                                              |
 | `error`   | `Ref<ErrorT \| undefined>`                          | Error object if the data fetching failed.                                                                                                                         |
 | `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the data request. See below for possible values.                                                                                                        |
+| `pending` | `Ref<boolean>`                                      | Boolean flag indicating whether the current request is in progress.                                                                                                |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined` (or the value of `options.default()` if provided), `error` to `undefined`, set `status` to `idle`, and cancels any pending requests. |
 
 ### Status values

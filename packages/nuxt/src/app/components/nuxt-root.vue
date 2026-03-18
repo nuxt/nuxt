@@ -36,7 +36,10 @@ const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 if (import.meta.client && nuxtApp.isHydrating) {
   const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', onResolve)
-  useRouter().beforeEach(removeErrorHook)
+  const removeGuard = useRouter().beforeEach(() => {
+    removeErrorHook()
+    removeGuard()
+  })
 }
 
 const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
@@ -47,7 +50,7 @@ const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server
 provide(PageRouteSymbol, useRoute())
 
 // vue:setup hook
-const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup')
+const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup', [])
 if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
   console.error('[nuxt] Error in `vue:setup`. Callbacks must be synchronous.')
 }
@@ -58,7 +61,7 @@ const error = useError()
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
 const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
 onErrorCaptured((err, target, info) => {
-  nuxtApp.hooks.callHook('vue:error', err, target, info).catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
+  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
   if (import.meta.client && BOT_RE.test(navigator.userAgent)) {
     nuxtApp.hooks.callHook('app:error', err)
     console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, err)

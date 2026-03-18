@@ -1,11 +1,227 @@
-import { assert, describe, expect, it } from 'vitest'
+import { afterEach, assert, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
+import { defineKeyedFunctionFactory } from '../src/compiler/runtime'
 import {
   type ExportMetadata,
   type FunctionCallMetadata,
   parseStaticExportIdentifiers,
   parseStaticFunctionCall,
-} from '../src/core/utils/parse-utils'
-import { parseAndWalk } from 'oxc-walker'
+} from '../src/core/utils/parse-utils.ts'
+import { createScanPluginContext } from '../src/compiler/utils.ts'
+import * as oxcWalker from 'oxc-walker'
+import { ScopeTracker, parseAndWalk } from 'oxc-walker'
+import type { Node } from 'oxc-parser'
+
+vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
+
+function transformFactory<T extends (...args: any[]) => any> (factory: T): T {
+  return (factory as unknown as { __nuxt_factory: T }).__nuxt_factory
+}
+
+describe('defineKeyedFunctionFactory', () => {
+  const fn = (a: string, b: number): string => {
+    return `${a}-${b}-value`
+  }
+
+  it('should produce factory that throws an error in dev when not transformed', () => {
+    // mock import.meta.dev to `true`
+    vi.stubGlobal('__TEST_DEV__', true)
+
+    const factory = defineKeyedFunctionFactory({
+      name: 'createUseFetch',
+      factory: fn,
+    })
+
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/going-further/compiler\`]`)
+
+    vi.unstubAllGlobals()
+  })
+
+  it('should produce factory that throws in production when not transformed', () => {
+    const factory = defineKeyedFunctionFactory({
+      name: 'createUseFetch',
+      factory: fn,
+    })
+
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt] \`createUseFetch\` is a compiler macro and cannot be called at runtime.]`)
+  })
+
+  it('should have a non-enumerable `__nuxt_factory` property', () => {
+    const fn = (a: string): string => a
+
+    const factory = defineKeyedFunctionFactory({
+      name: 'testFactory',
+      factory: fn,
+    })
+
+    const descriptor = Object.getOwnPropertyDescriptor(factory, '__nuxt_factory')
+
+    // property descriptor checks
+    expect(descriptor).toBeDefined()
+    expect(descriptor?.enumerable).toBe(false)
+    expect(descriptor?.get?.()).toBe(fn)
+
+    // sanity check
+    expect(Object.keys(factory)).not.toContain('__nuxt_factory')
+  })
+
+  it('should return the factory function when transformed', () => {
+    const factory = defineKeyedFunctionFactory({
+      name: 'createUseFetch',
+      factory: fn,
+    })
+
+    const transformedFactory = transformFactory(factory)
+
+    expect(transformedFactory).toBeDefined()
+    expect(typeof transformedFactory).toBe('function')
+    expect(transformedFactory.length).toBe(fn.length)
+    expect(transformedFactory('a', 1)).toBe('a-1-value')
+  })
+
+  it('should not catch errors from the factory function', () => {
+    const errorFn = () => {
+      throw new Error('Factory error')
+    }
+    const factory = defineKeyedFunctionFactory({
+      name: 'errorFactory',
+      factory: errorFn,
+    })
+
+    const transformedFactory = transformFactory(factory)
+
+    expect(() => transformedFactory()).toThrowError('Factory error')
+  })
+
+  it('should preserve parameter and return types', () => {
+    type Args = [id: string, label: string, options?: { silent?: boolean }]
+    type Ret = { id: number, label: string, ok: true }
+
+    const fn = (..._args: Args): Ret => {
+      return undefined as unknown as Ret
+    }
+
+    const factory = defineKeyedFunctionFactory({
+      name: 'createUseFetch',
+      factory: fn,
+    })
+
+    // callable type
+    expectTypeOf(factory).not.toBeAny()
+    expectTypeOf(factory).toEqualTypeOf<typeof fn>()
+    expectTypeOf(factory).parameters.toEqualTypeOf<Args>()
+    expectTypeOf(factory).returns.toEqualTypeOf<Ret>()
+  })
+
+  it('should work with generics in the real factory', () => {
+    const fn = <T extends { id: string }>(entity: T, flag: boolean) => {
+      return { entity, flag, kind: 'ok' as const }
+    }
+
+    const generic = defineKeyedFunctionFactory({
+      name: 'createGeneric',
+      factory: fn,
+    })
+
+    // check that generics are preserved on call signature
+    expectTypeOf(generic).toBeCallableWith({ id: 'x' }, true)
+
+    // parameter and return types stay generic
+    expectTypeOf(generic).parameter(0).toEqualTypeOf<{ id: string }>()
+
+    // verify generics work through the transformed factory
+    const transformed = transformFactory(generic)
+    expectTypeOf(transformed<{ id: 'a' }>({ id: 'a' }, true)).toMatchObjectType<{ entity: { id: 'a' }, flag: boolean, kind: 'ok' }>()
+  })
+})
+
+describe('createScanPluginContext', () => {
+  const code = `
+    const a: number = 1
+  `
+
+  describe('mocked `oxc-walker`', () => {
+    let parseAndWalkSpy: ReturnType<typeof vi.fn>
+    let walkSpy: ReturnType<typeof vi.fn>
+
+    beforeEach(() => {
+      parseAndWalkSpy = vi.spyOn(oxcWalker, 'parseAndWalk').mockReturnValue({ program: {} } as any) as any
+      walkSpy = vi.spyOn(oxcWalker, 'walk').mockImplementation((() => {}) as any) as any
+    })
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('should generate context', () => {
+      const context = createScanPluginContext(code, 'file.ts')
+
+      expect(context).toBeDefined()
+      expect(context).toHaveProperty('walkParsed')
+      expect(typeof context.walkParsed).toBe('function')
+    })
+
+    it('should call `parseAndWalk` on first `walkParsed` call', () => {
+      const enterCallback = { enter: vi.fn() }
+      const mockParseResult = { program: {} }
+
+      parseAndWalkSpy.mockReturnValue(mockParseResult)
+
+      const context = createScanPluginContext(code, 'file.ts')
+      const result = context.walkParsed(enterCallback)
+
+      expect(parseAndWalkSpy).toHaveBeenCalledWith(code, 'file.ts', enterCallback)
+      expect(result).toBe(mockParseResult)
+    })
+
+    it('should reuse parse result and call `walk` on subsequent `walkParsed` calls', () => {
+      const firstCallback = { enter: vi.fn() }
+      const secondCallback = { enter: vi.fn() }
+      const mockParseResult = { program: {} }
+
+      parseAndWalkSpy.mockReturnValue(mockParseResult)
+
+      const context = createScanPluginContext(code, 'file.ts')
+      context.walkParsed(firstCallback)
+
+      parseAndWalkSpy.mockClear()
+      const result = context.walkParsed(secondCallback)
+
+      expect(parseAndWalkSpy).not.toHaveBeenCalled() // not called again - reused
+      expect(walkSpy).toHaveBeenCalledWith(mockParseResult.program, secondCallback)
+      expect(result).toBe(mockParseResult)
+    })
+  })
+
+  it('should parse and walk the AST and track variables', () => {
+    const code = `const a: number = 1`
+    const nodes: Node[] = []
+    const context = createScanPluginContext(code, 'file.ts')
+
+    const scopeTracker = new ScopeTracker()
+    let foundDecl = false
+
+    context.walkParsed({
+      scopeTracker,
+      enter (node) {
+        nodes.push(node)
+        if (node.type === 'Identifier' && node.name === 'a') {
+          const decl = scopeTracker.getDeclaration(node.name)
+          expect(decl?.type).toBe('Variable')
+          foundDecl = true
+        }
+      },
+    })
+
+    // ensure scope tracking worked
+    expect(foundDecl).toBe(true)
+
+    // ensure we walked the AST
+    expect(nodes.length).toBe(7)
+    expect(nodes.some(n => n.type === 'Program')).toBe(true)
+    expect(nodes.some(n => n.type === 'VariableDeclarator')).toBe(true)
+    expect(nodes.some(n => n.type === 'Identifier' && n.name === 'a')).toBe(true)
+  })
+})
 
 describe('parseFunctionCall', () => {
   function getFirstParsedFunctionCall (code: string, functions: RegExp): FunctionCallMetadata | null {
@@ -145,6 +361,12 @@ describe('parseFunctionCall', () => {
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })
 
+  it('should handle a TS as-cast wrapping a member expression callee', () => {
+    const code = `const x = (factories.createUseFetch as any)()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
   it('should handle a TS non-null assertion callee', () => {
     const code = `const x = (createUseFetch!)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
@@ -157,6 +379,12 @@ describe('parseFunctionCall', () => {
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })
 
+  it('should handle a TS non-null assertion wrapping a member expression callee', () => {
+    const code = `const x = (factories.createUseFetch!)()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
   it('should handle a TS type-assertion in parenthesized expression callee', () => {
     const code = `const x = (<any>createUseFetch)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
@@ -165,6 +393,12 @@ describe('parseFunctionCall', () => {
 
   it('should handle a TS type-assertion in member expression object', () => {
     const code = `const x = (<any>factories).createUseFetch()`
+    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
+    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  })
+
+  it('should handle a TS type-assertion wrapping a member expression callee', () => {
+    const code = `const x = (<any>factories.createUseFetch)()`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
     expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
   })

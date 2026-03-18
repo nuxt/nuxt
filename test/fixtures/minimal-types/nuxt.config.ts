@@ -1,5 +1,6 @@
 export default defineNuxtConfig({
   modules: [],
+  devtools: { enabled: false },
   routeRules: {
     // Should accept any string
     '/named': { appMiddleware: 'named' },

@@ -13,14 +13,14 @@ import { clearNuxtData, refreshNuxtData, useAsyncData, useLazyAsyncData, useNuxt
 import { NuxtPage } from '#components'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
-  method: event.method,
-  headers: Object.fromEntries(event.headers.entries()),
+  method: event.req.method,
+  headers: Object.fromEntries(event.req.headers.entries()),
 })))
 
 registerEndpoint('/api/sleep', defineEventHandler((event) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve({ method: event.method, headers: Object.fromEntries(event.headers.entries()) })
+      resolve({ method: event.req.method, headers: Object.fromEntries(event.req.headers.entries()) })
     }, 100)
   })
 }))
@@ -37,37 +37,61 @@ describe('useAsyncData', () => {
     uniqueKey = `key-${++counter}`
   })
 
-  function mountWithAsyncData (...args: any[]) {
-    return new Promise<ReturnType<typeof useAsyncData> & ReturnType<typeof mountSuspended<unknown>>>((resolve) => {
-      let res: ReturnType<typeof useAsyncData & ReturnType<typeof mountSuspended>>
-      const component = defineComponent({
-        setup () {
-          res = useAsyncData(...args as [any])
-          return () => h('div', [res.data.value as any])
-        },
-      })
+  type AsyncDataWithoutPromiseMethods = Omit<ReturnType<typeof useAsyncData>, 'then' | 'catch' | 'finally'>
+  type MountedWrapper = Awaited<ReturnType<typeof mountSuspended<unknown>>>
 
-      mountSuspended(component).then(c => resolve(Object.assign(c, res)))
+  async function mountWithAsyncData (...args: any[]) {
+    let res!: ReturnType<typeof useAsyncData>
+    const component = defineComponent({
+      setup () {
+        res = useAsyncData(...args as [any])
+        return () => h('div', [res.data.value as any])
+      },
     })
+
+    const c = await mountSuspended(component)
+    // Avoid returning a thenable here, otherwise Promise will unwrap it.
+    const { then: _then, catch: _catch, finally: _finally, ...asyncData } = res
+    return Object.assign(c, asyncData) as AsyncDataWithoutPromiseMethods & MountedWrapper
   }
 
   it('should work at basic level', async () => {
     const res = useAsyncData(() => Promise.resolve('test'))
     expect(Object.keys(res).sort()).toMatchInlineSnapshot(`
       [
+        "catch",
         "clear",
         "data",
         "error",
         "execute",
+        "finally",
         "pending",
         "refresh",
         "status",
+        "then",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
     expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
+  })
+
+  it('should throw TypeError when key is empty', () => {
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot('[TypeError: [nuxt] [useAsyncData] key must be a non-empty string.]')
+  })
+
+  it('should keep promise methods after destructuring', async () => {
+    const asyncData = useAsyncData(() => Promise.resolve('test'))
+    const destructured = { ...asyncData, foo: 'foo' }
+
+    expect(typeof destructured.then).toBe('function')
+    expect(typeof destructured.catch).toBe('function')
+    expect(typeof destructured.finally).toBe('function')
+
+    expect(destructured.data.value).toBe(undefined)
+    await (destructured as Promise<unknown>)
+    expect(destructured.data.value).toBe('test')
   })
 
   it('should not execute with immediate: false', async () => {
@@ -89,10 +113,10 @@ describe('useAsyncData', () => {
 
     const { data, error, status, pending } = await useAsyncData(uniqueKey, () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
-    expect(error.value).toMatchInlineSnapshot('[Error: test]')
+    expect(error.value).toMatchInlineSnapshot('[HTTPError: test]')
     expect(status.value).toBe('error')
     expect(pending.value).toBe(false)
-    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[Error: test]')
+    expect(useNuxtApp().payload._errors[uniqueKey]).toMatchInlineSnapshot('[HTTPError: test]')
 
     const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData(uniqueKey, () => ({} as any), { immediate: false })
 
@@ -227,6 +251,31 @@ describe('useAsyncData', () => {
     expect(error.value).toBe(undefined)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
+  })
+
+  it('should not overwrite cleared data when in-flight request completes', async () => {
+    vi.useFakeTimers()
+
+    const { data, status, refresh } = await useAsyncData(uniqueKey, () => Promise.resolve('initial'))
+    expect(data.value).toBe('initial')
+
+    // Start a slow refresh
+    const refreshPromise = refresh()
+
+    // Clear while the refresh is in flight
+    clearNuxtData(uniqueKey)
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+
+    // Let the refresh complete
+    vi.advanceTimersByTime(0)
+    await refreshPromise
+
+    // Data should stay cleared
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+
+    vi.useRealTimers()
   })
 
   it('should have correct status for previously fetched requests', async () => {
@@ -500,6 +549,33 @@ describe('useAsyncData', () => {
     route.value = '/about'
     await nextTick()
     expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should resolve to latest value when watched dependency is rapidly updated', async () => {
+    const route = ref('/')
+    const promiseFn = vi.fn(() => Promise.resolve(route.value))
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [route] })
+        return () => h('div', [data.value])
+      },
+    })
+
+    await mountSuspended(component)
+
+    await mountSuspended(component)
+
+    const c = await mountSuspended(component)
+
+    for (let i = 0; i < 20; i++) {
+      route.value = `/about/${i}`
+      if (i % 7 === 0) {
+        await nextTick()
+      }
+    }
+    await vi.waitFor(() => {
+      expect(c.html()).toBe('<div>/about/19</div>')
+    })
   })
 
   it('should work correctly with nested components accessing the same asyncData', async () => {
@@ -976,7 +1052,7 @@ describe('useAsyncData', () => {
     // Manual implementation of Promise.withResolvers for compatibility
     let resolve: (value: boolean) => void
     const promise = new Promise<boolean>((res) => { resolve = res })
-    const { clear } = useAsyncData('', () => promise)
+    const { clear } = useAsyncData('clear', () => promise)
     expect(aborted).toBe(false)
     clear()
     resolve!(true)
@@ -1091,21 +1167,42 @@ describe('useAsyncData', () => {
   it('should work when AbortSignal.reason is unavailable (older browsers)', async () => {
     vi.useFakeTimers()
 
+    const originalAbortSignalAny = AbortSignal.any
+
     // Mock older AbortController without .reason property
-    class OldAbortController {
-      signal: any = {
-        aborted: false,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
+    class OldAbortSignal {
+      aborted = false
+      private listeners: Array<{ event: string, callback: () => void }> = []
+
+      addEventListener (event: string, callback: () => void, _options?: { once?: boolean, signal?: AbortSignal }) {
+        this.listeners.push({ event, callback })
       }
 
-      abort () {
-        this.signal.aborted = true
+      removeEventListener (event: string, callback: () => void) {
+        this.listeners = this.listeners.filter(l => !(l.event === event && l.callback === callback))
+      }
+
+      dispatchAbort () {
+        this.aborted = true
         // No reason property in old browsers
+        for (const listener of this.listeners.filter(l => l.event === 'abort')) {
+          listener.callback()
+        }
+      }
+    }
+
+    class OldAbortController {
+      signal = new OldAbortSignal()
+
+      abort () {
+        this.signal.dispatchAbort()
       }
     }
 
     vi.stubGlobal('AbortController', OldAbortController)
+    // Also remove AbortSignal.any to force polyfill usage
+    // @ts-expect-error - deliberately removing method
+    AbortSignal.any = undefined
 
     const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 1000)))
 
@@ -1117,6 +1214,7 @@ describe('useAsyncData', () => {
 
     expect(status.value).toBe('idle')
 
+    AbortSignal.any = originalAbortSignalAny
     vi.unstubAllGlobals()
     vi.useRealTimers()
   })

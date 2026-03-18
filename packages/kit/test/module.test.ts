@@ -3,7 +3,7 @@ import { appendFileSync } from 'node:fs'
 
 import type { Nuxt } from 'nuxt/schema'
 
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { read as readRc, write as writeRc } from 'rc9'
@@ -181,6 +181,83 @@ export default Object.assign((options) => {
     })
 
     expect(globalThis.someModuleLoaded).toBeUndefined()
+  })
+
+  it('should resolve moduleDependencies by meta.name when it differs from package name', async () => {
+    const depSetupFn = vi.fn()
+
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          // Module with meta.name that differs from any package path
+          defineNuxtModule({
+            meta: { name: 'my-custom-name' },
+            setup: depSetupFn,
+          }),
+          // Module that depends on the above by meta.name
+          defineNuxtModule({
+            meta: { name: 'consumer' },
+            moduleDependencies: {
+              'my-custom-name': {},
+            },
+          }),
+        ],
+      },
+    })
+
+    // The dependency module should have been found (not re-installed) via meta.name lookup
+    expect(depSetupFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should resolve moduleDependencies by meta.name and apply overrides/defaults', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        // @ts-expect-error untyped nuxt option
+        localMod: {
+          user: 'provided by user',
+        },
+        modules: [
+          defineNuxtModule({
+            meta: { name: 'local-module', configKey: 'localMod' },
+            defaults: {
+              value: 'default',
+              user: 'default',
+              fromDefault: 'default',
+            },
+            setup (options) {
+              expect(options).toMatchObject({
+                value: 'from override',
+                user: 'provided by user',
+                fromDefault: 'from consumer default',
+              })
+            },
+          }),
+          defineNuxtModule({
+            meta: { name: 'consumer' },
+            moduleDependencies: {
+              'local-module': {
+                overrides: {
+                  value: 'from override',
+                },
+                defaults: {
+                  fromDefault: 'from consumer default',
+                  user: 'from consumer default',
+                },
+              },
+            },
+          }),
+        ],
+      },
+    })
+
+    // @ts-expect-error untyped nuxt option
+    expect(nuxt.options.localMod).toMatchObject({
+      value: 'from override',
+      user: 'provided by user',
+      fromDefault: 'from consumer default',
+    })
   })
 
   it('should not load a module from disk if it is present inline', async () => {

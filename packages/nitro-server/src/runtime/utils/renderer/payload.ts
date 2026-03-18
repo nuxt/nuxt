@@ -1,6 +1,4 @@
-import type { NitroRouteRules, RenderResponse } from 'nitropack/types'
-import { getResponseStatus, getResponseStatusText } from 'h3'
-import devalue from '@nuxt/devalue'
+import type { RenderResponse } from 'nitro/types'
 import { stringify, uneval } from 'devalue'
 import type { Script } from '@unhead/vue'
 
@@ -9,24 +7,22 @@ import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 // @ts-expect-error virtual file
 import { appId, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { NUXT_JSON_PAYLOADS, NUXT_NO_SSR, NUXT_PAYLOAD_EXTRACTION, NUXT_RUNTIME_PAYLOAD_EXTRACTION } from '#internal/nuxt/nitro-config.mjs'
+import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext): RenderResponse {
   return {
-    body: NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])
-      : `export default ${devalue(splitPayload(ssrContext).payload)}`,
-    statusCode: getResponseStatus(ssrContext.event),
-    statusMessage: getResponseStatusText(ssrContext.event),
+    body: encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])),
+    status: ssrContext.event.res.status || 200,
+    statusText: ssrContext.event.res.statusText || '',
     headers: {
-      'content-type': NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
+      'content-type': 'application/json;charset=utf-8',
       'x-powered-by': 'Nuxt',
     },
   }
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? stringify(opts.data, opts.ssrContext['~payloadReducers']) : ''
+  const contents = opts.data ? encodeForwardSlashes(stringify(opts.data, opts.ssrContext['~payloadReducers'])) : ''
   const payload: Script = {
     'type': 'application/json',
     'innerHTML': contents,
@@ -50,30 +46,13 @@ export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, dat
   ]
 }
 
-export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOptions: NitroRouteRules, data?: any, src?: string }): Script[] {
-  opts.data.config = opts.ssrContext.config
-  const _PAYLOAD_EXTRACTION = !opts.ssrContext.noSSR && (
-    (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
-    || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (opts.routeOptions.isr || opts.routeOptions.cache))
-  )
-  const nuxtData = devalue(opts.data)
-  if (_PAYLOAD_EXTRACTION) {
-    const singleAppPayload = `import p from "${opts.src}";window.__NUXT__={...p,...(${nuxtData})}`
-    const multiAppPayload = `import p from "${opts.src}";window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={...p,...(${nuxtData})}`
-    return [
-      {
-        type: 'module',
-        innerHTML: multiApp ? multiAppPayload : singleAppPayload,
-      },
-    ]
-  }
-  const singleAppPayload = `window.__NUXT__=${nuxtData}`
-  const multiAppPayload = `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]=${nuxtData}`
-  return [
-    {
-      innerHTML: multiApp ? multiAppPayload : singleAppPayload,
-    },
-  ]
+/**
+ * Encode forward slashes as unicode escape sequences to prevent
+ * Google from treating them as internal links and trying to crawl them.
+ * @see https://github.com/nuxt/nuxt/issues/24175
+ */
+function encodeForwardSlashes (str: string): string {
+  return str.replaceAll('/', '\\u002F')
 }
 
 interface SplitPayload {

@@ -9,7 +9,7 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -36,10 +36,12 @@ function detectLinkRelType () {
 /** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
-  const promise = _getPayloadURL(url, opts).then((payloadURL) => {
-    const link = renderJsonPayloads
-      ? { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
-      : { rel: 'modulepreload', crossorigin: '', href: payloadURL } as const
+  const promise = shouldLoadPayload(url).then(async (shouldPreload) => {
+    if (!shouldPreload) {
+      return
+    }
+    const payloadURL = await _getPayloadURL(url, opts)
+    const link = { rel: detectLinkRelType(), as: 'fetch', crossorigin: 'anonymous', href: payloadURL } as const
 
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
@@ -63,14 +65,14 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 // --- Internal ---
 
-const filename = renderJsonPayloads ? '_payload.json' : '_payload.js'
+const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const config = useRuntimeConfig()
-  const hash = opts.hash || (opts.fresh ? Date.now() : config.app.buildId)
+  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   return joinURL(baseOrCdnURL, u.pathname, filename + (hash ? `?${hash}` : ''))
@@ -78,12 +80,15 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
 
 async function _importPayload (payloadURL: string) {
   if (import.meta.server || !payloadExtraction) { return null }
-  const payloadPromise = renderJsonPayloads
-    ? fetch(payloadURL, { cache: 'force-cache' }).then(res => res.text().then(parsePayload))
-    : import(/* webpackIgnore: true */ /* @vite-ignore */ payloadURL).then(r => r.default || r)
-
   try {
-    return await payloadPromise
+    const res = await fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' })
+    if (!res.ok) {
+      if (import.meta.dev) {
+        console.warn(`[nuxt] Cannot load payload ${payloadURL}: ${res.status} ${res.statusText}`)
+      }
+      return null
+    }
+    return await parsePayload(await res.text())
   } catch (err) {
     console.warn('[nuxt] Cannot load payload ', payloadURL, err)
   }
@@ -114,6 +119,9 @@ async function _isPrerenderedInManifest (url: string) {
  */
 export async function shouldLoadPayload (url = useRoute().path) {
   const rules = getRouteRules({ path: url })
+  if (rules.ssr === false) {
+    return false
+  }
   const res = _shouldLoadPrerenderedPayload(rules)
   if (res !== undefined) {
     return res
@@ -123,7 +131,8 @@ export async function shouldLoadPayload (url = useRoute().path) {
     return true
   }
 
-  return await _isPrerenderedInManifest(url)
+  const prerendered = await _isPrerenderedInManifest(url)
+  return prerendered
 }
 
 /** @since 3.0.0 */
@@ -133,7 +142,8 @@ export async function isPrerendered (url = useRoute().path) {
     return res
   }
 
-  return await _isPrerenderedInManifest(url)
+  const prerendered = await _isPrerenderedInManifest(url)
+  return prerendered
 }
 
 let payloadCache: NuxtPayload | null = null

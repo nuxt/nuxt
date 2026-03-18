@@ -12,6 +12,7 @@ import { useNitro } from '@nuxt/kit'
 import { annotatePlugins, checkForCircularDependencies } from './app.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
+import type { Nitro } from 'nitro/types'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -456,7 +457,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitropack/runtime\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime-config\'',
 
       nuxt.options.dev
         ? `const getAppConfig = () => (${JSON.stringify(nuxt.options.app)})`
@@ -494,7 +495,24 @@ if (!("global" in globalThis)) {
 }
 
 export const dollarFetchTemplate: NuxtTemplate = {
-  filename: 'fetch.mjs',
+  filename: 'fetch.server.mjs',
+  getContents () {
+    return [
+      'import { $fetch } from \'ofetch\'',
+      'import { baseURL } from \'#internal/nuxt/paths\'',
+      'import { serverFetch } from "nitro";',
+      'globalThis.fetch = serverFetch',
+      'if (!globalThis.$fetch) {',
+      '  globalThis.$fetch = $fetch.create({',
+      '    baseURL: baseURL()',
+      '  })',
+      '}',
+    ].join('\n')
+  },
+}
+
+export const dollarFetchClientTemplate: NuxtTemplate = {
+  filename: 'fetch.client.mjs',
   getContents () {
     return [
       'import { $fetch } from \'ofetch\'',
@@ -520,12 +538,12 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
       ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
     )
-    const nitro = useNitro()
-    const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
-    const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (nitro.options.static || hasCachedRoutes || nitro.options.prerender.routes.length > 0 || Object.values(nitro.options.routeRules).some(r => r.prerender))
+    const nitro = useNitro() as Nitro
+
+    const hasCachedRoutes = nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)
+    const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (nitro.options.static || hasCachedRoutes || (nitro.options.prerender.routes && nitro.options.prerender.routes.length > 0) || nitro.routing.routeRules.routes.some(r => r.data.prerender))
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
-      `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
       `export const componentIslands = ${shouldEnableComponentIslands}`,
       `export const payloadExtraction = ${payloadExtraction}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
@@ -537,6 +555,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
       `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
+      `export const useStateDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useState)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
@@ -550,6 +569,8 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
       `export const pendingWhenIdle = ${!!ctx.nuxt.options.experimental.pendingWhenIdle}`,
       `export const alwaysRunFetchOnKeyChange = ${!!ctx.nuxt.options.experimental.alwaysRunFetchOnKeyChange}`,
+      `export const asyncCallHook = ${!!ctx.nuxt.options.experimental.asyncCallHook}`,
+      `export const clientNodePlaceholder = ${!!ctx.nuxt.options.experimental.clientNodePlaceholder}`,
     ].join('\n\n')
   },
 }

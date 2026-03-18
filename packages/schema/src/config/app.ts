@@ -3,7 +3,7 @@ import { defu } from 'defu'
 import { resolve } from 'pathe'
 import { defineResolvers } from '../utils/definition.ts'
 import type { AppHeadMetaObject } from '../types/head.ts'
-import type { NuxtAppConfig } from '../types/config.ts'
+import type { NuxtAppConfig, ViewTransitionOptions } from '../types/config.ts'
 
 export default defineResolvers({
   vue: {
@@ -86,11 +86,26 @@ export default defineResolvers({
     pageTransition: false,
     viewTransition: {
       $resolve: async (val, get) => {
-        if (val === 'always' || typeof val === 'boolean') {
-          return val
+        const isEnabled = (val === 'always' || typeof val === 'boolean')
+        const hasEnabled = val && typeof val === 'object' && 'enabled' in val
+        const hasTypes = val && typeof val === 'object' && 'types' in val
+
+        const appOptions: Partial<ViewTransitionOptions> = {
+          enabled: isEnabled ? val : (hasEnabled ? val.enabled as ViewTransitionOptions['enabled'] : undefined),
+          types: hasTypes ? val.types as ViewTransitionOptions['types'] : undefined,
         }
 
-        return await get('experimental').then(e => e.viewTransition) ?? false
+        if (appOptions.enabled !== undefined && appOptions.types !== undefined) {
+          return appOptions as ViewTransitionOptions
+        }
+
+        const _configOptions = await get('experimental').then(e => e.viewTransition) ?? { enabled: false }
+        const configOptions = typeof _configOptions === 'object' ? _configOptions : { enabled: _configOptions }
+
+        return {
+          enabled: appOptions.enabled ?? configOptions.enabled,
+          types: appOptions.types ?? configOptions.types,
+        }
       },
     },
     keepalive: false,

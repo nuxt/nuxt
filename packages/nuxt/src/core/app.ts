@@ -88,10 +88,10 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     }
 
     const perf = performance.now() - start
-    const setupTime = Math.round((perf * 100)) / 100
+    const compileTime = Math.round((perf * 100)) / 100
 
-    if ((nuxt.options.debug && nuxt.options.debug.templates) || setupTime > 500) {
-      logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
+    if ((nuxt.options.debug && nuxt.options.debug.templates) || compileTime > 500) {
+      logger.info(`Compiled \`${template.filename}\` in ${compileTime}ms`)
     }
 
     if (template.modified && template.write) {
@@ -254,7 +254,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     try {
-      const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src]! : await fsp.readFile(plugin.src!, 'utf-8')
+      const code = nuxt.vfs[plugin.src] ?? await fsp.readFile(plugin.src!, 'utf-8')
       _plugins.push({
         ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
         ...plugin,

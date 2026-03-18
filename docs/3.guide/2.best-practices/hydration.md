@@ -1,37 +1,37 @@
 ---
-navigation.title: 'Nuxt and hydration'
-title: Nuxt and hydration
+navigation.title: 'Nuxt and Hydration'
+title: Nuxt and Hydration
 description: Why fixing hydration issues is important
 ---
 
 When developing, you may face hydration issues. Don't ignore those warnings.
 
-# Why is it important to fix them?
+## Why is it important to fix them?
 
 Hydration mismatches are not just warnings - they are indicators of serious problems that can break your application:
 
-## Performance Impact
+### Performance Impact
 
 - **Increased time to interactive**: Hydration errors force Vue to re-render the entire component tree, which will increase the time for your Nuxt app to become interactive
 - **Poor user experience**: Users may see content flashing or unexpected layout shifts
 
-## Functionality Issues
+### Functionality Issues
 
 - **Broken interactivity**: Event listeners may not attach properly, leaving buttons and forms non-functional
 - **State inconsistencies**: Application state can become out of sync between what the user sees and what the application thinks is rendered
 - **SEO problems**: Search engines may index different content than what users actually see
 
-# How to detect them
+## How to detect them
 
-## Development Console Warnings
+### Development Console Warnings
 
 Vue will log hydration mismatch warnings in the browser console during development:
 
 ![Screenshot of Vue hydration mismatch warning in the browser console](/assets/docs/best-practices/vue-console-hydration.png)
 
-# Common reasons
+## Common reasons
 
-## Browser-only APIs in Server Context
+### Browser-only APIs in Server Context
 
 **Problem**: Using browser-specific APIs during server-side rendering.
 
@@ -60,7 +60,7 @@ const userTheme = useCookie('theme', { default: () => 'light' })
 </script>
 ```
 
-## Inconsistent Data
+### Inconsistent Data
 
 **Problem**: Different data between server and client.
 
@@ -82,7 +82,7 @@ const state = useState('random', () => Math.random())
 </script>
 ```
 
-## Conditional Rendering Based on Client State
+### Conditional Rendering Based on Client State
 
 **Problem**: Using client-only conditions during SSR.
 
@@ -105,7 +105,7 @@ const state = useState('random', () => Math.random())
 </template>
 ```
 
-## Third-party Libraries with Side Effects
+### Third-party Libraries with Side Effects
 
 **Problem**: Libraries that modify the DOM or have browser dependencies (this happens a LOT with tag managers).
 
@@ -129,7 +129,7 @@ onMounted(async () => {
 </script>
 ```
 
-## Dynamic Content Based on Time
+### Dynamic Content Based on Time
 
 **Problem**: Content that changes based on current time.
 

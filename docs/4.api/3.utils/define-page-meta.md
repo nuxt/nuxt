@@ -35,10 +35,10 @@ interface PageMeta {
   groups?: string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
-  viewTransition?: boolean | 'always'
+  viewTransition?: ViewTransitionPageOptions['enabled'] | ViewTransitionPageOptions
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
-  layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
+  layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey> | { name?: LayoutKey | false, props?: Record<string, unknown> /* or the selected layout's props */ }
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
   [key: string]: unknown
@@ -97,9 +97,11 @@ interface PageMeta {
 
   **`layout`**
 
-  - **Type**: `false` | `LayoutKey` | `Ref<LayoutKey>` | `ComputedRef<LayoutKey>`
+  - **Type**: `false` | `LayoutKey` | `Ref<LayoutKey>` | `ComputedRef<LayoutKey>` | `{ name?: LayoutKey | false; props?: Record<string, unknown> /* or the selected layout's props */ }`
 
     Set a static or dynamic name of the layout for each route. This can be set to `false` in case the default layout needs to be disabled.
+
+    You can also pass an object with `name` and `props` to pass typed props to your layout component. When your layout defines props with `defineProps`, they will be fully typed in `definePageMeta`.
 
   **`layoutTransition`**
 
@@ -121,11 +123,17 @@ interface PageMeta {
 
   **`viewTransition`**
 
-  - **Type**: `boolean | 'always'`
+  - **Type**: `boolean | 'always' | ViewTransitionPageOptions`
 
     **Experimental feature, only available when [enabled in your nuxt.config file](/docs/4.x/getting-started/transitions#view-transitions-api-experimental)**</br>
     Enable/disable View Transitions for the current page.
     If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
+
+    You can also pass a `ViewTransitionPageOptions` object to configure [view transition types](/docs/4.x/getting-started/transitions#view-transition-types):
+    - `enabled`: `boolean | 'always'` - enable/disable the transition
+    - `types`: `string[] | (to, from) => string[]` - types applied to any transition involving this page
+    - `toTypes`: `string[] | (to, from) => string[]` - types applied only when navigating **to** this page
+    - `fromTypes`: `string[] | (to, from) => string[]` - types applied only when navigating **from** this page
 
   **`redirect`**
 
@@ -239,3 +247,52 @@ definePageMeta({
 })
 </script>
 ```
+
+### Passing Props to a Layout
+
+You can pass props to a layout by using the object syntax for `layout`. If your layout defines props with `defineProps`, the props will be fully typed.
+
+::code-group
+
+```vue [app/pages/dashboard.vue]
+<script setup lang="ts">
+definePageMeta({
+  layout: {
+    name: 'panel',
+    props: {
+      sidebar: true,
+      title: 'Dashboard',
+    },
+  },
+})
+</script>
+```
+
+```vue [app/layouts/panel.vue]
+<script setup lang="ts">
+const props = defineProps<{
+  sidebar?: boolean
+  title?: string
+}>()
+</script>
+
+<template>
+  <div>
+    <aside v-if="sidebar">
+      Sidebar
+    </aside>
+    <main>
+      <h1>{{ title }}</h1>
+      <slot />
+    </main>
+  </div>
+</template>
+```
+
+::
+
+::tip
+Layout props set via `definePageMeta` are fully typed based on the layout's `defineProps`. You'll get autocomplete and type-checking in your editor.
+::
+
+:read-more{to="/docs/4.x/directory-structure/app/layouts#passing-props-to-layouts"}

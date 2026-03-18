@@ -1,12 +1,12 @@
 name: 'Dependency review'
 
 on:
-  merge_group:
-  push:
+  pull_request:
     branches:
       - main
+      - 4.x
       - 3.x
-  pull_request:
+      - '!v[0-9]*'
 
 permissions:
   contents: read

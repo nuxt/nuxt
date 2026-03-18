@@ -11,11 +11,86 @@ import type { NuxtPage } from '../schema.ts'
 const filePath = '/app/pages/index.vue'
 
 vi.mock('klona', { spy: true })
-
+vi.mock('@nuxt/kit', async (original) => {
+  const mod = await original<typeof import('@nuxt/kit')>()
+  return {
+    ...mod,
+    useNuxt: vi.fn(() => {
+      return {
+        options: {
+          experimental: {
+            normalizePageNames: false,
+          },
+        },
+      }
+    }),
+  }
+})
 describe('page metadata', () => {
   it('should not extract metadata from empty files', () => {
     expect(getRouteMeta('', filePath)).toEqual({})
     expect(getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})
+  })
+
+  it('should not confuse Script* component tags with <script> blocks', () => {
+    const meta = getRouteMeta(`
+<template>
+  <div>
+    <ScriptYouTubePlayer video-id="dQw4w9WgXcQ" />
+  </div>
+</template>
+
+<script setup lang="ts">
+definePageMeta({
+  layout: 'dark',
+})
+</script>`, filePath)
+
+    expect(meta).toStrictEqual({
+      meta: {
+        __nuxt_dynamic_meta_key: new Set(['meta']),
+      },
+    })
+  })
+
+  it('should handle multiple script blocks and escaped closing tags', () => {
+    const meta = getRouteMeta(`
+<script>
+export default { inheritAttrs: false }
+</script>
+
+<script setup lang="ts">
+const snippet = '<\\/script>'
+definePageMeta({
+  name: 'multi',
+})
+</script>
+
+<template><div /></template>`, filePath)
+
+    expect(meta).toStrictEqual({
+      name: 'multi',
+    })
+  })
+
+  it('should handle script tag references inside template without extracting them', () => {
+    const meta = getRouteMeta(`
+<template>
+  <div>
+    <script-placeholder />
+    <component is="script" />
+  </div>
+</template>
+
+<script setup lang="ts">
+definePageMeta({
+  path: '/safe',
+})
+</script>`, filePath)
+
+    expect(meta).toStrictEqual({
+      path: '/safe',
+    })
   })
 
   it('should extract metadata from JS/JSX files', () => {
@@ -793,6 +868,32 @@ const hoisted = ref('hoisted')
         validate: (route) => {
           return route.params.id === 'test'
         }
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should transform layout written in object syntax', () => {
+    const sfc = `
+<script setup lang="ts">
+definePageMeta({
+  layout: {
+    name: 'foo',
+    props: {
+      bar: 'bar',
+    },
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        layout: 'foo',
+      layoutProps: {
+            bar: 'bar',
+          },
+
       }
       export default __nuxt_page_meta"
     `)
