@@ -24,7 +24,7 @@ export default defineConfig<E2eConfigOptions>({
   testDir: './test/e2e',
   testMatch: '**/*.test.ts',
   timeout: (isWindows ? 360 : 120) * 1000,
-  fullyParallel: true,
+  fullyParallel: !isCI,
   forbidOnly: !!isCI,
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
