@@ -14,6 +14,8 @@
   - `packages/vite/test/optimize-deps-hint.test.ts`
   - `packages/nuxt/test/import-protection.test.ts`
 
+- Moved the architecture dependency documentation to docs: `docs/3.guide/2.best-practices/architecture-dependencies.md`.
+
 ## 2026-03-17
 
 - Added early stub generation in `packages/nitro-server/src/index.ts` to prevent resolve races for `#build/route-rules.mjs` and `#app-manifest` during early transform/build phases.
