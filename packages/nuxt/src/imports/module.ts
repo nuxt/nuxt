@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
-import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile } from 'unimport'
+import { createUnimport, scanDirExports, toExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
@@ -297,6 +297,10 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
 
       await cacheImportPaths(sharedImports)
 
+      const sharedCtx = createUnimport({
+        imports: sharedImports,
+      })
+
       // Utilities that exist in both Nuxt and Nitro contexts but with different implementations.
       // These are safe to use in the shared context.
       const handCraftedDeclarations = `
@@ -306,7 +310,7 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
   const createError: typeof import('h3')['createError']
   const setResponseStatus: typeof import('h3')['setResponseStatus']`
 
-      return GENERATED_BY_COMMENT + toTypeDeclarationFile(sharedImports, { resolvePath: r }).replace(
+      return GENERATED_BY_COMMENT + (await sharedCtx.generateTypeDeclarations({ resolvePath: r })).replace(
         /^declare global \{$/m,
         `declare global {${handCraftedDeclarations}`,
       )

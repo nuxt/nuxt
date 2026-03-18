@@ -1,4 +1,4 @@
-import { relative, resolve } from 'pathe'
+import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { NuxtOptions } from 'nuxt/schema'
 
@@ -18,6 +18,31 @@ interface NuxtImportProtectionOptions {
 export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, options: NuxtImportProtectionOptions) {
   const patterns: ImportProtectionOptions['patterns'] = []
   const context = contextFlags[options.context]
+
+  const resolveAliasPath = (id: string) => {
+    const aliases = nuxt.options.alias || {}
+    for (const [alias, target] of Object.entries(aliases)) {
+      if (id === alias) {
+        return String(target)
+      }
+      if (id.startsWith(`${alias}/`)) {
+        return String(target) + id.slice(alias.length)
+      }
+    }
+    return id
+  }
+
+  const resolveImportPath = (id: string, importer: string) => {
+    if (!id || id.startsWith('\0')) { return null }
+
+    if (id.startsWith('.')) {
+      if (!importer || !isAbsolute(importer)) { return null }
+      return normalize(resolve(dirname(importer), id))
+    }
+
+    const resolved = resolveAliasPath(id)
+    return isAbsolute(resolved) ? normalize(resolved) : null
+  }
 
   patterns.push([
     /^(nuxt|nuxt3|nuxt-nightly)$/,
@@ -67,6 +92,31 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
         ['Move this code to your Vue app directory or use a shared utility.'],
       ])
     }
+
+    const appRoots = [
+      resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app'),
+      resolve(nuxt.options.srcDir, nuxt.options.dir?.pages || 'pages'),
+      resolve(nuxt.options.srcDir, nuxt.options.dir?.layouts || 'layouts'),
+      resolve(nuxt.options.srcDir, nuxt.options.dir?.middleware || 'middleware'),
+      resolve(nuxt.options.srcDir, nuxt.options.dir?.plugins || 'plugins'),
+      resolve(nuxt.options.srcDir, 'components'),
+      resolve(nuxt.options.srcDir, 'composables'),
+      resolve(nuxt.options.srcDir, 'utils'),
+    ].map(path => normalize(path))
+
+    patterns.push([
+      (id, importer) => {
+        const resolvedPath = resolveImportPath(id, importer)
+        if (!resolvedPath) {
+          if (!id.startsWith('.')) { return false }
+          const normalizedRelative = normalize(id)
+          return /(^|\/)\.\.\/(?:.*\/)?(app|pages|layouts|middleware|plugins|components|composables)(\/|$)/.test(normalizedRelative)
+        }
+        return appRoots.some(root => resolvedPath === root || resolvedPath.startsWith(`${root}/`))
+      },
+      `Vue app aliases are not allowed in ${context}.`,
+      ['Move this code to your Vue app directory or use a shared utility.'],
+    ])
   }
 
   if (options.context === 'nuxt-app' || options.context === 'shared') {

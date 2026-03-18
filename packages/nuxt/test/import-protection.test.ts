@@ -46,6 +46,20 @@ describe('import protection', () => {
       expect(result).toContain('impound:proxy')
     }
   })
+
+  it.each([
+    ['~/utils/helper', '/root/src/server/api/test.ts', true],
+    ['@/composables/use-foo', '/root/src/server/api/test.ts', true],
+    ['../utils/internal', '/root/src/server/api/test.ts', false],
+  ])('should protect nitro-app import %s', async (id, importer, isProtected) => {
+    const result = await transformWithImportProtection(id, importer, 'nitro-app')
+    if (!isProtected) {
+      expect(result).toBeNull()
+    } else {
+      expect(result).toBeDefined()
+      expect(result).toContain('impound:proxy')
+    }
+  })
 })
 
 const transformWithImportProtection = (id: string, importer: string, context: 'nitro-app' | 'nuxt-app' | 'shared') => {
@@ -57,6 +71,10 @@ const transformWithImportProtection = (id: string, importer: string, context: 'n
           // @ts-expect-error an incomplete module
           { entryPath: 'some-nuxt-module' },
         ],
+        alias: {
+          '~': '/root/src',
+          '@': '/root/src',
+        },
         rootDir: '/root',
         srcDir: '/root/src/',
         serverDir: '/root/src/server',

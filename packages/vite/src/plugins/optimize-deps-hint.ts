@@ -57,6 +57,29 @@ export function formatStaleDepsHint (userStale: string[], moduleStale: string[])
   return `Unresolvable \`optimizeDeps.include\` entries:\n${lines.join('\n')}`
 }
 
+export function formatIncludeDiff (before: string[], after: string[], cjsDeps?: Set<string>): string {
+  const beforeSet = new Set(before)
+  const afterSet = new Set(after)
+
+  const additions = after.filter(dep => !beforeSet.has(dep))
+  const removals = before.filter(dep => !afterSet.has(dep))
+
+  if (!additions.length && !removals.length) { return '' }
+
+  const lines: string[] = []
+
+  for (const dep of additions) {
+    const cjs = cjsDeps?.has(dep) ? ` ${colorize('yellow', '(CJS)')}` : ''
+    lines.push(`  ${colorize('green', '+')} ${colorize('cyan', dep)}${cjs}`)
+  }
+
+  for (const dep of removals) {
+    lines.push(`  ${colorize('red', '-')} ${colorize('cyan', dep)}`)
+  }
+
+  return `Suggested diff for \`vite.optimizeDeps.include\`:\n${lines.join('\n')}`
+}
+
 // Snapshotted in bundle() before vite:extend can mutate shared array references
 export const userOptimizeDepsInclude = new WeakMap<Nuxt, string[]>()
 
@@ -116,6 +139,11 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
             parts.push(formatStaleDepsHint([...userStale], [...moduleStale]))
           }
 
+          const includeDiff = formatIncludeDiff(getUserInclude(), snippetDeps, cjsDeps)
+          if (includeDiff) {
+            parts.push(includeDiff)
+          }
+
           parts.push(
             `Pre-bundle them in your \`nuxt.config.ts\` to avoid page reloads:\n\n` +
             configBlock(snippetDeps, cjsDeps),
@@ -125,11 +153,18 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
         }
       } else if (hasStale) {
         hasShownStaleHint = true
+        const snippetDeps = getSnippetDeps()
         const parts: string[] = []
         parts.push(formatStaleDepsHint([...userStale], [...moduleStale]))
+
+        const includeDiff = formatIncludeDiff(getUserInclude(), snippetDeps)
+        if (includeDiff) {
+          parts.push(includeDiff)
+        }
+
         parts.push(
           `Update your \`nuxt.config.ts\`:\n\n` +
-          configBlock(getSnippetDeps()),
+          configBlock(snippetDeps),
         )
         logger.warn(parts.join('\n\n'))
       }

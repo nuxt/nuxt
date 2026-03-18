@@ -1,5 +1,19 @@
 # Progress
 
+## 2026-03-18
+
+- Investigated issue `#34589` (server middleware typing reported as `any` with Deno/VS Code extension combo).
+- Current status: not reliably reproducible in this workspace and also reported as non-reproducible by a maintainer comment; no safe code change was applied without a deterministic repro.
+- Investigated issue `#34577` (`ModuleNotFound` resolving `./.nuxt/dev/index.mjs` on dev start).
+- Current status: existing `vite-node` error formatting coverage is green and no deterministic local repro was found for the intermittent startup path race described in the issue.
+- Implemented issue `#34624`: added an explicit include diff in `packages/vite/src/plugins/optimize-deps-hint.ts` so hints now show suggested `vite.optimizeDeps.include` changes with `+`/`-` lines (and CJS annotation for additions).
+- Added regression coverage in `packages/vite/test/optimize-deps-hint.test.ts` for the new diff formatter and merged-hint output.
+- Implemented issue `#34576` hardening in `packages/nuxt/src/core/plugins/import-protection.ts` by resolving alias-based imports and blocking Vue app directory imports from `nitro-app` / `shared` contexts beyond only `#app` and `#build`.
+- Added regression coverage in `packages/nuxt/test/import-protection.test.ts` for alias-based Nitro import protection (`~/...`, `@/...`).
+- Validation: `runTests` passed for updated suites:
+  - `packages/vite/test/optimize-deps-hint.test.ts`
+  - `packages/nuxt/test/import-protection.test.ts`
+
 ## 2026-03-17
 
 - Added early stub generation in `packages/nitro-server/src/index.ts` to prevent resolve races for `#build/route-rules.mjs` and `#app-manifest` during early transform/build phases.

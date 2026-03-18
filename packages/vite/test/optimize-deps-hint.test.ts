@@ -3,6 +3,7 @@ import { stripAnsi } from 'consola/utils'
 import {
   OptimizeDepsHintPlugin,
   formatDepLines,
+  formatIncludeDiff,
   formatIncludeSnippet,
   formatStaleDepsHint,
   optimizerCallbacks,
@@ -131,6 +132,24 @@ describe('formatStaleDepsHint', () => {
     expect(plain).toContain('user-dep')
     expect(plain).toContain('mod-dep (from a Nuxt module)')
     expect(plain.match(/Unresolvable/g)).toHaveLength(1)
+  })
+})
+
+describe('formatIncludeDiff', () => {
+  it('shows additions and removals', () => {
+    const plain = stripAnsi(formatIncludeDiff(['a', 'old'], ['a', 'new']))
+    expect(plain).toContain('Suggested diff')
+    expect(plain).toContain('+ new')
+    expect(plain).toContain('- old')
+  })
+
+  it('includes CJS marker on added CJS deps', () => {
+    const plain = stripAnsi(formatIncludeDiff([], ['lodash'], new Set(['lodash'])))
+    expect(plain).toContain('+ lodash (CJS)')
+  })
+
+  it('returns empty string when no changes', () => {
+    expect(formatIncludeDiff(['same'], ['same'])).toBe('')
   })
 })
 
@@ -324,6 +343,9 @@ describe('OptimizeDepsHintPlugin', () => {
       expect(infoCalls[0]).toContain('new-dep')
       expect(infoCalls[0]).toContain('Unresolvable')
       expect(infoCalls[0]).toContain('stale-dep')
+      expect(infoCalls[0]).toContain('Suggested diff for `vite.optimizeDeps.include`')
+      expect(infoCalls[0]).toContain('+ new-dep')
+      expect(infoCalls[0]).toContain('- stale-dep')
       // Only one config block
       expect(infoCalls[0]!.match(/defineNuxtConfig/g)).toHaveLength(1)
       // No separate warn call
