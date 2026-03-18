@@ -320,12 +320,17 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
-        os: [ubuntu-24.04-arm, windows-latest]
-        # Group 1: vite-dev (4) + rspack (2) = 6 projects
-        # Group 2: vite-built (4) + webpack (2) = 6 projects
-        projects:
-          - '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
-          - '--project "fixtures:vite-built-*" --project "fixtures:webpack-*"'
+        include:
+          - os: ubuntu-24.04-arm
+            projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
+          - os: ubuntu-24.04-arm
+            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-*"'
+          - os: windows-latest
+            projects: '--project "fixtures:vite-dev-*"'
+          - os: windows-latest
+            projects: '--project "fixtures:vite-built-*"'
+          - os: windows-latest
+            projects: '--project "fixtures:rspack-*" --project "fixtures:webpack-*"'
 
     timeout-minutes: 45
 
@@ -380,15 +385,6 @@ jobs:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
-        env: ['dev', 'built']
-        builder: ['vite', 'rspack', 'webpack']
-        exclude:
-          - env: 'dev'
-            builder: 'rspack'
-          - env: 'dev'
-            builder: 'webpack'
-          - env: 'dev'
-            os: windows-latest
 
     timeout-minutes: 25
 
@@ -417,10 +413,6 @@ jobs:
 
       - name: Test (e2e)
         run: pnpm test:e2e
-        env:
-          TEST_ENV: ${{ matrix.env }}
-          TEST_BUILDER: ${{ matrix.builder }}
-          SKIP_BUNDLE_SIZE: 'true'
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
