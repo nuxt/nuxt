@@ -14,6 +14,8 @@ import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
+const NUXT_LAYOUT_FROM_ROUTE_RULES = '__nuxt_layout_from_route_rules'
+
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 // @ts-expect-error virtual file
@@ -208,6 +210,18 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
 
         const routeRules = getRouteRules({ path: to.path })
+        if (!isReadonly(to.meta.layout)) {
+          if (routeRules.appLayout !== undefined) {
+            if (to.meta.layout === undefined || to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES]) {
+              to.meta.layout = routeRules.appLayout as Exclude<PageMeta['layout'], Ref | false>
+              to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES] = true
+            }
+          } else if (to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES]) {
+            to.meta.layout = undefined
+            to.meta.layoutProps = undefined
+            delete to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES]
+          }
+        }
 
         if (routeRules.appMiddleware) {
           for (const key in routeRules.appMiddleware) {

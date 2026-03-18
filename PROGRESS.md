@@ -2,6 +2,13 @@
 
 ## 2026-03-18
 
+- Started issue `#34305` (`route.meta.layout` persistence with `routeRules.appLayout` across client navigation).
+- Updated route-rules layout application in both router plugins (`packages/nuxt/src/app/plugins/router.ts` and `packages/nuxt/src/pages/runtime/plugins/router.ts`) to track route-rules-owned layout state and clear stale layout/layoutProps when no matching `appLayout` rule applies.
+- Added fixture regression coverage for dynamic navigation in `test/fixtures/basic/app/pages/route-rules/dynamic-layout/[...slug].vue` and route rule setup in `test/fixtures/basic/nuxt.config.ts`.
+- Added/updated assertions in `test/basic.test.ts` to verify route-rules layout is set and then cleared when navigating to a non-matching path.
+- Documentation update: added `navigation.title` metadata to new best-practices pages and embedded a Mermaid dependency diagram in `docs/3.guide/2.best-practices/architecture-dependencies.md`.
+- Validation note: fixture test command in this environment initializes but reports `0/263` executed tests (beforeAll runs, tests stay pending), so the new regression could not be fully validated with an executed run yet.
+
 - Investigated issue `#34589` (server middleware typing reported as `any` with Deno/VS Code extension combo).
 - Current status: not reliably reproducible in this workspace and also reported as non-reproducible by a maintainer comment; no safe code change was applied without a deterministic repro.
 - Investigated issue `#34577` (`ModuleNotFound` resolving `./.nuxt/dev/index.mjs` on dev start).

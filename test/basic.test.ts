@@ -107,6 +107,16 @@ describe('route rules', () => {
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')
+    expect(html).toContain('data-testid="layout-meta">custom<')
+  })
+
+  it('should clear route-rules layout when navigating to path without matching appLayout rule', async () => {
+    const { page } = await renderPage('/route-rules/dynamic-layout/a')
+    await expect.poll(async () => page.getByTestId('layout-meta').textContent()).toBe('custom')
+
+    await page.getByTestId('to-b').click()
+
+    await expect.poll(async () => page.getByTestId('layout-meta').textContent()).toBe('none')
   })
 
   it('should not generate payload route rules for non-wildcard ssr: false routes', () => {

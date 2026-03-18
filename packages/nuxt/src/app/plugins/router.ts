@@ -10,6 +10,8 @@ import { navigateTo } from '../composables/router'
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
 
+const NUXT_LAYOUT_FROM_ROUTE_RULES = '__nuxt_layout_from_route_rules'
+
 interface Route {
   /** Percentage encoded pathname section of the URL. */
   path: string
@@ -250,6 +252,18 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
           const routeRules = getRouteRules({ path: to.path })
+          if (!isReadonly(to.meta.layout)) {
+            if (routeRules.appLayout !== undefined) {
+              if (to.meta.layout === undefined || to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES]) {
+                to.meta.layout = routeRules.appLayout
+                to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES] = true
+              }
+            } else if (to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES]) {
+              to.meta.layout = undefined
+              to.meta.layoutProps = undefined
+              delete to.meta[NUXT_LAYOUT_FROM_ROUTE_RULES]
+            }
+          }
           if (routeRules.appMiddleware) {
             for (const key in routeRules.appMiddleware) {
               const guard = nuxtApp._middleware.named[key] as RouteGuard | undefined

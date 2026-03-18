@@ -179,6 +179,7 @@ export default withMatrix({
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
+      '/route-rules/dynamic-layout/a': { appLayout: 'custom' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },

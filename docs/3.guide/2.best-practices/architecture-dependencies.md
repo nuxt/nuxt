@@ -1,4 +1,5 @@
 ---
+navigation.title: Architecture Dependencies
 title: Architecture Dependencies
 description: Logical dependency map between Nuxt core packages and runtime/build/test flows.
 ---
@@ -13,6 +14,21 @@ description: Logical dependency map between Nuxt core packages and runtime/build
   - `packages/nitro-server` for server runtime integration.
 - `packages/vite` and `packages/nitro-server` are tightly coupled in dev SSR flow (module resolution, vite-node runner, server execution).
 - `test`, `packages/nuxt/test`, `packages/vite/test`, and Nitro tests provide regression coverage across package boundaries.
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+  nuxi[packages/nuxi\nCLI] --> nuxt[packages/nuxt\nCore Orchestrator]
+  schema[packages/schema\nType Contracts] --> nuxt
+  kit[packages/kit\nModule/Template Utilities] --> nuxt
+  nuxt --> vite[packages/vite\nBuilder + Dev Server]
+  nuxt --> nitro[packages/nitro-server\nServer Runtime]
+  vite <--> nitro
+  tests[test + package tests\nRegression Coverage] --> nuxt
+  tests --> vite
+  tests --> nitro
+```
 
 ## Build, Runtime, and Test Flow
 

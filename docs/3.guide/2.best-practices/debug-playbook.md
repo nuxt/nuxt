@@ -1,4 +1,5 @@
 ---
+navigation.title: Debug Playbook
 title: Debug Playbook
 description: Practical first steps for debugging issues across Nuxt core packages.
 ---
