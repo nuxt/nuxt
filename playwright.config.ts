@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 import type { ConfigOptions } from '@nuxt/test-utils/playwright'
 import { isCI, isWindows } from 'std-env'
-import { join } from 'pathe'
 import type { MatrixOptions } from './test/e2e/test-utils'
 
 type E2eConfigOptions = ConfigOptions & MatrixOptions
@@ -39,7 +38,7 @@ export default defineConfig<E2eConfigOptions>({
       name: 'cleanup fixtures',
       testMatch: /global\.teardown\.ts/,
     },
-    ...e2eMatrix.map((entry, index) => {
+    ...e2eMatrix.map((entry) => {
       const name = `e2e-${entry.builder}-${entry.isDev ? 'dev' : 'built'}`
       return {
         name,
@@ -55,7 +54,6 @@ export default defineConfig<E2eConfigOptions>({
               test: true,
               dev: entry.isDev,
               nuxtConfig: {
-                buildDir: join('.nuxt', 'test', name + '-' + index),
                 builder: entry.builder,
                 devtools: { enabled: false },
                 experimental: {
