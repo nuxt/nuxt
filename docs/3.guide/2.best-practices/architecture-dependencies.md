@@ -65,3 +65,4 @@ description: Logical dependency map between Nuxt core packages and runtime/build
 
 - Keep this dependency map updated when package boundaries or orchestration behavior change.
 - Add links to concrete source files when documenting issue-specific architecture notes.
+- Use the debug checklist in `docs/3.guide/2.best-practices/debug-playbook.md` for issue triage and regression workflow.
