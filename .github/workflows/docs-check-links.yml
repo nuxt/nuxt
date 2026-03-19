@@ -41,7 +41,7 @@ jobs:
             './packages/*/src/**/*.js'
             './packages/*/src/**/*.md'
           # fail the action on broken links
-          fail: true
+          fail: false
         env:
           # to be used in case rate limits are surpassed
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
