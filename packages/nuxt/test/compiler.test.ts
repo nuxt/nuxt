@@ -13,7 +13,7 @@ import type { Node } from 'oxc-parser'
 
 vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
 
-function transformFactory<T extends (...args: any[]) => any> (factory: T): T {
+function transformFactory<T extends (...args: any[]) => any>(factory: T): T {
   return (factory as unknown as { __nuxt_factory: T }).__nuxt_factory
 }
 
@@ -31,7 +31,7 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/going-further/compiler\`]`)
+    expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[Error: [nuxt:compiler] \`createUseFetch\` is a compiler macro that is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: \`https://nuxt.com/docs/guide/concepts/typescript\`]`)
 
     vi.unstubAllGlobals()
   })
@@ -145,7 +145,7 @@ describe('createScanPluginContext', () => {
 
     beforeEach(() => {
       parseAndWalkSpy = vi.spyOn(oxcWalker, 'parseAndWalk').mockReturnValue({ program: {} } as any) as any
-      walkSpy = vi.spyOn(oxcWalker, 'walk').mockImplementation((() => {}) as any) as any
+      walkSpy = vi.spyOn(oxcWalker, 'walk').mockImplementation((() => { }) as any) as any
     })
 
     afterEach(() => {
@@ -202,7 +202,7 @@ describe('createScanPluginContext', () => {
 
     context.walkParsed({
       scopeTracker,
-      enter (node) {
+      enter(node) {
         nodes.push(node)
         if (node.type === 'Identifier' && node.name === 'a') {
           const decl = scopeTracker.getDeclaration(node.name)
@@ -224,11 +224,11 @@ describe('createScanPluginContext', () => {
 })
 
 describe('parseFunctionCall', () => {
-  function getFirstParsedFunctionCall (code: string, functions: RegExp): FunctionCallMetadata | null {
+  function getFirstParsedFunctionCall(code: string, functions: RegExp): FunctionCallMetadata | null {
     let result: FunctionCallMetadata | null = null
 
     parseAndWalk(code, 'file.ts', {
-      enter (node) {
+      enter(node) {
         if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') {
           return
         }
@@ -243,7 +243,7 @@ describe('parseFunctionCall', () => {
     return result
   }
 
-  function expectFunctionCallMeta (meta: FunctionCallMetadata | null, expected: {
+  function expectFunctionCallMeta(meta: FunctionCallMetadata | null, expected: {
     name: string
     namespace?: string | null
   }) {
@@ -533,7 +533,7 @@ describe('parseFunctionCall', () => {
     expect(result).toBeNull()
   })
 
-  it ('should return null for call made via call', () => {
+  it('should return null for call made via call', () => {
     const code = `createUseFetch.call(null)`
     const result = getFirstParsedFunctionCall(code, /createUseFetch/)
     expect(result).toBeNull()
@@ -541,11 +541,11 @@ describe('parseFunctionCall', () => {
 })
 
 describe('parseExport', () => {
-  function getAllParsedExports (code: string, exportedNameFilter?: RegExp) {
+  function getAllParsedExports(code: string, exportedNameFilter?: RegExp) {
     const results: ExportMetadata[] = []
 
     parseAndWalk(code, 'file.ts', {
-      enter (node) {
+      enter(node) {
         if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration' || node.type === 'TSExportAssignment') {
           results.push(...parseStaticExportIdentifiers(node, exportedNameFilter))
         }

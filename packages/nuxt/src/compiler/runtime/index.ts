@@ -14,12 +14,12 @@ export interface ObjectFactory<T extends Function> {
  * @param factory
  */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export function defineKeyedFunctionFactory<T extends Function> (factory: ObjectFactory<T>): T {
+export function defineKeyedFunctionFactory<T extends Function>(factory: ObjectFactory<T>): T {
   const placeholder = function () {
     if (import.meta.dev) {
       throw new Error(
         `[nuxt:compiler] \`${factory.name}\` is a compiler macro that is only usable inside ` +
-        'the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: `https://nuxt.com/docs/guide/going-further/compiler`',
+        'the directories scanned by the Nuxt compiler as an exported function and imported statically. Learn more: `https://nuxt.com/docs/guide/concepts/typescript`',
       )
     }
     throw new Error(`[nuxt] \`${factory.name}\` is a compiler macro and cannot be called at runtime.`)
