@@ -40,7 +40,7 @@ jobs:
             './packages/*/src/**/*.ts'
             './packages/*/src/**/*.js'
             './packages/*/src/**/*.md'
-          # fail the action on broken links
+          # do not fail the action on broken links to avoid transient network errors
           fail: false
         env:
           # to be used in case rate limits are surpassed
