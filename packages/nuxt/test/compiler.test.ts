@@ -13,7 +13,7 @@ import type { Node } from 'oxc-parser'
 
 vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
 
-function transformFactory<T extends (...args: any[]) => any>(factory: T): T {
+function transformFactory<T extends (...args: any[]) => any> (factory: T): T {
   return (factory as unknown as { __nuxt_factory: T }).__nuxt_factory
 }
 
@@ -202,7 +202,7 @@ describe('createScanPluginContext', () => {
 
     context.walkParsed({
       scopeTracker,
-      enter(node) {
+      enter (node) {
         nodes.push(node)
         if (node.type === 'Identifier' && node.name === 'a') {
           const decl = scopeTracker.getDeclaration(node.name)
@@ -224,11 +224,11 @@ describe('createScanPluginContext', () => {
 })
 
 describe('parseFunctionCall', () => {
-  function getFirstParsedFunctionCall(code: string, functions: RegExp): FunctionCallMetadata | null {
+  function getFirstParsedFunctionCall (code: string, functions: RegExp): FunctionCallMetadata | null {
     let result: FunctionCallMetadata | null = null
 
     parseAndWalk(code, 'file.ts', {
-      enter(node) {
+      enter (node) {
         if (node.type !== 'CallExpression' && node.type !== 'ChainExpression') {
           return
         }
@@ -243,7 +243,7 @@ describe('parseFunctionCall', () => {
     return result
   }
 
-  function expectFunctionCallMeta(meta: FunctionCallMetadata | null, expected: {
+  function expectFunctionCallMeta (meta: FunctionCallMetadata | null, expected: {
     name: string
     namespace?: string | null
   }) {
@@ -541,11 +541,11 @@ describe('parseFunctionCall', () => {
 })
 
 describe('parseExport', () => {
-  function getAllParsedExports(code: string, exportedNameFilter?: RegExp) {
+  function getAllParsedExports (code: string, exportedNameFilter?: RegExp) {
     const results: ExportMetadata[] = []
 
     parseAndWalk(code, 'file.ts', {
-      enter(node) {
+      enter (node) {
         if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration' || node.type === 'TSExportAssignment') {
           results.push(...parseStaticExportIdentifiers(node, exportedNameFilter))
         }

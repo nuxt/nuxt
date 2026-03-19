@@ -14,7 +14,7 @@ export interface ObjectFactory<T extends Function> {
  * @param factory
  */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export function defineKeyedFunctionFactory<T extends Function>(factory: ObjectFactory<T>): T {
+export function defineKeyedFunctionFactory<T extends Function> (factory: ObjectFactory<T>): T {
   const placeholder = function () {
     if (import.meta.dev) {
       throw new Error(
