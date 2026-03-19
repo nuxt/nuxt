@@ -1,7 +1,8 @@
+import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isIgnored, useNuxt, writeTypes } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -64,6 +65,11 @@ export async function build (nuxt: Nuxt): Promise<void> {
   if (nuxt.options._prepare) {
     nuxt.hook('prepare:types', () => nuxt.close())
     return
+  }
+
+  // vite/rolldown requires a `tsconfig.json` to exist on disk
+  if (!nuxt.options._prepare && !existsSync(join(nuxt.options.typesDir || nuxt.options.buildDir, 'tsconfig.json'))) {
+    await writeTypes(nuxt)
   }
 
   if (nuxt.options.dev && !nuxt.options.test) {
