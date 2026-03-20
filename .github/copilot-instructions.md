@@ -1,24 +1,16 @@
-# Copilot Coding Agent Instructions
+# Core Requirements
 
-## Mandatory Workflow (MUST follow in order)
+- The end goal is stability, speed and great user experience.
 
-### Phase 1: Reproduce (MUST complete before Phase 2)
-- Read the issue description and understand the problem.
-- Write a failing test or run the existing test suite to confirm the bug.
-- **Do NOT proceed to Phase 2 until you have a confirmed failure.**
+## Code Quality Requirements
 
-### Phase 2: Implement (MUST complete before Phase 3)
-- Make the minimal code change to fix the bug.
-- Do NOT refactor unrelated code or add features.
-
-### Phase 3: Verify (MUST complete before committing)
-- Re-run the specific test from Phase 1 and confirm it passes.
-- Run the full test suite to check for regressions.
-- **Do NOT commit until all tests pass.**
-
-## Rules
-- DO NOT reference, close, or link any external issues. No Closes, Fixes, or Resolves directives.
-- DO NOT use GitHub MCP tools to look up issues on other repositories.
-- DO NOT modify or weaken a test to make it pass.
-- DO NOT commit __pycache__/ directories. Add to .gitignore if missing.
-- Keep changes minimal and focused.
+- Follow standard TypeScript conventions and best practices
+- Use `<script setup lang="ts">` and the composition API when creating Vue components
+- Use clear, descriptive variable and function names
+- Add comments only to explain complex logic or non-obvious implementations
+- Write unit tests for core functionality using `vitest`
+- Write end-to-end tests using Playwright and `@nuxt/test-utils`
+- Keep functions focused and manageable (generally under 50 lines), and extract complex logic into separate domain-specific files
+- Remove code that is not used or needed
+- Use error handling patterns consistently
+- Create and maintain a `PROGRESS.md` file to track ongoing work and issues
