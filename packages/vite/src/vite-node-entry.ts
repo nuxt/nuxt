@@ -11,7 +11,7 @@ export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   // eslint-disable-next-line nuxt/prefer-import-meta
-  process.server = true
+  (process as typeof process & { server?: boolean }).server = true
   import.meta.server = true
 
   // Invalidate cache for files changed since last rendering
