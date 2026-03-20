@@ -79,7 +79,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   addTemplate(nitroSchemaTemplate)
 
   const sharedDirs = new Set<string>()
-  if (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false) {
+  const hasServerAppConfig = (nuxt.options.experimental as { serverAppConfig?: boolean }).serverAppConfig === true
+  if (hasServerAppConfig && nitroConfig.imports) {
     for (const layer of nuxt.options._layers) {
       // Layer disabled scanning for itself
       if (layer.config?.imports?.scan === false) {
