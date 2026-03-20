@@ -5,9 +5,10 @@ import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
+import { getContext } from 'unctx'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, nuxtCtx, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getLayerDirectories, installModules, loadNuxtConfig, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, runWithNuxtContext } from '@nuxt/kit'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -54,6 +55,8 @@ import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
+
+const legacyNuxtCtx = getContext<Nuxt>('nuxt')
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -134,12 +137,12 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
   // TODO: remove in nuxt v5
 
-  if (!nuxtCtx.tryUse()) {
+  if (!legacyNuxtCtx.tryUse()) {
     // backward compatibility with 3.x
 
-    nuxtCtx.set(nuxt)
+    legacyNuxtCtx.set(nuxt)
     nuxt.hook('close', () => {
-      nuxtCtx.unset()
+      legacyNuxtCtx.unset()
     })
   }
 
