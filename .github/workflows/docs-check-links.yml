@@ -40,8 +40,8 @@ jobs:
             './packages/*/src/**/*.ts'
             './packages/*/src/**/*.js'
             './packages/*/src/**/*.md'
-          # do not fail the action on broken links to avoid transient network errors
-          fail: false
+          # fail the action on broken links
+          fail: true
         env:
           # to be used in case rate limits are surpassed
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
