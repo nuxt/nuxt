@@ -43,7 +43,8 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
 
   // Normalize mode
 
-  if (plugin.ssr) {
+  const hasSSR = (plugin as { ssr?: boolean }).ssr
+  if (hasSSR) {
     plugin.mode = 'server'
   }
   if (!plugin.mode) {
