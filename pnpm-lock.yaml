@@ -140,8 +140,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.1-rc.16
-        version: 2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
+        specifier: 2.0.1-rc.17
+        version: 2.0.1-rc.17(crossws@0.4.4(srvx@0.11.12))
       happy-dom:
         specifier: 20.8.4
         version: 20.8.4
@@ -891,8 +891,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.105.4(esbuild@0.27.4))
       h3:
-        specifier: 2.0.1-rc.16
-        version: 2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
+        specifier: 2.0.1-rc.17
+        version: 2.0.1-rc.17(crossws@0.4.4(srvx@0.11.12))
       hookable:
         specifier: 6.1.0
         version: 6.1.0
@@ -1528,6 +1528,11 @@ packages:
 
   '@babel/parser@7.29.0':
     resolution: {integrity: sha512-IyDgFV5GeDUVX4YdF/3CPULtVGSXXMLh1xVIgdCgxApktqnQV0r7/8Nqthg+8YLGaAtdyIlo2qIdZrbCv4+7ww==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  '@babel/parser@7.29.2':
+    resolution: {integrity: sha512-4GgRzy/+fsBa72/RZVJmGKPmZu9Byn8o4MoLpmNe1m8ZfYnz5emHLQz3U4gLud6Zwl0RZIcgiLD7Uq7ySFuDLA==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -5956,6 +5961,16 @@ packages:
       crossws:
         optional: true
 
+  h3@2.0.1-rc.17:
+    resolution: {integrity: sha512-9rPJs68qMj7HJH78z7uSIAw6rl3EElLdVSirTeAf6B5ogwiFVIr9AKMMS4u00Gp8DYIPnnjtw3ZWN7EkYcPBrQ==}
+    engines: {node: '>=20.11.1'}
+    hasBin: true
+    peerDependencies:
+      crossws: ^0.4.1
+    peerDependenciesMeta:
+      crossws:
+        optional: true
+
   happy-dom@20.8.4:
     resolution: {integrity: sha512-GKhjq4OQCYB4VLFBzv8mmccUadwlAusOZOI7hC1D9xDIT5HhzkJK17c4el2f6R6C715P9xB4uiMxeKUa2nHMwQ==}
     engines: {node: '>=20.0.0'}
@@ -7260,6 +7275,9 @@ packages:
 
   oniguruma-to-es@4.3.4:
     resolution: {integrity: sha512-3VhUGN3w2eYxnTzHn+ikMI+fp/96KoRSVK9/kMTcFqj1NRDh2IhQCKvYxDnWePKRXY/AqH+Fuiyb7VHSzBjHfA==}
+
+  oniguruma-to-es@4.3.5:
+    resolution: {integrity: sha512-Zjygswjpsewa0NLTsiizVuMQZbp0MDyM6lIt66OxsF21npUDlzpHi1Mgb/qhQdkb+dWFTzJmFbEWdvZgRho8eQ==}
 
   open@10.2.0:
     resolution: {integrity: sha512-YgBpdJHPyQ2UE5x+hlSXcnejzAvD0b22U2OuAP+8OnlJT+PjWPxtgmGqKKc+RgTM63U9gN0YzrYc71R2WT/hTA==}
@@ -9656,6 +9674,10 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.0
 
+  '@babel/parser@7.29.2':
+    dependencies:
+      '@babel/types': 7.29.0
+
   '@babel/parser@8.0.0-rc.2':
     dependencies:
       '@babel/types': 8.0.0-rc.2
@@ -11438,7 +11460,7 @@ snapshots:
     dependencies:
       '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
-      oniguruma-to-es: 4.3.4
+      oniguruma-to-es: 4.3.5
 
   '@shikijs/engine-javascript@4.0.2':
     dependencies:
@@ -12952,7 +12974,7 @@ snapshots:
 
   constantinople@4.0.1:
     dependencies:
-      '@babel/parser': 7.29.0
+      '@babel/parser': 7.29.2
       '@babel/types': 7.29.0
 
   convert-gitmoji@0.1.5: {}
@@ -13993,6 +14015,13 @@ snapshots:
       crossws: 0.4.4(srvx@0.11.12)
 
   h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12)):
+    dependencies:
+      rou3: 0.8.1
+      srvx: 0.11.12
+    optionalDependencies:
+      crossws: 0.4.4(srvx@0.11.12)
+
+  h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.12)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.12
@@ -15708,6 +15737,12 @@ snapshots:
   oniguruma-parser@0.12.1: {}
 
   oniguruma-to-es@4.3.4:
+    dependencies:
+      oniguruma-parser: 0.12.1
+      regex: 6.1.0
+      regex-recursion: 6.0.2
+
+  oniguruma-to-es@4.3.5:
     dependencies:
       oniguruma-parser: 0.12.1
       regex: 6.1.0
@@ -18082,7 +18117,7 @@ snapshots:
 
   with@7.0.2:
     dependencies:
-      '@babel/parser': 7.29.0
+      '@babel/parser': 7.29.2
       '@babel/types': 7.29.0
       assert-never: 1.4.0
       babel-walk: 3.0.0-canary-5
