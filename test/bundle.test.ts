@@ -68,24 +68,27 @@ describe.skipIf(isStubbed || process.env.SKIP_BUNDLE_SIZE === 'true' || process.
       .map(m => m.replace('_libs/', '').replace(/\.mjs$/, ''))
       .sort()
     expect(packages).toMatchInlineSnapshot(`
-      [
-        "@unhead/vue+[...]",
-        "defu",
-        "destr",
-        "devalue",
-        "h3+rou3+srvx",
-        "ocache+ohash",
-        "ofetch",
-        "pathe",
-        "scule",
-        "ufo",
-        "unctx",
-        "unstorage",
-        "vue",
-        "vue-bundle-renderer",
-        "vue__server-renderer",
-      ]
-    `)
+        [
+          "@unhead/vue+[...]",
+          "defu",
+          "destr",
+          "devalue",
+          "h3+rou3+srvx",
+          "hookable",
+          "ocache+ohash",
+          "ofetch",
+          "pathe",
+          "perfect-debounce",
+          "scule",
+          "ufo",
+          "uncrypto",
+          "unctx",
+          "unstorage",
+          "vue",
+          "vue-bundle-renderer",
+          "vue__server-renderer",
+        ]
+      `)
   })
 
   it('default server bundle size (pages)', async () => {
