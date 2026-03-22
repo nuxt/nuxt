@@ -88,7 +88,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
  * A factory function to create a custom `useFetch` composable with pre-defined default options.
  * @since 4.2.0
  */
-export const createUseFetch = defineKeyedFunctionFactory({
+export const createUseFetch = /* @__PURE__ */ defineKeyedFunctionFactory({
   name: 'createUseFetch',
   factory<
     FResT = void,
@@ -230,9 +230,9 @@ export const createUseFetch = defineKeyedFunctionFactory({
   },
 })
 
-export const useFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory()
+export const useFetch = /* @__PURE__ */ (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory()
 
-export const useLazyFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory({
+export const useLazyFetch = /* @__PURE__ */ (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory({
   lazy: true,
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',
