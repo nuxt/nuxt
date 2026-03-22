@@ -802,8 +802,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
+        specifier: npm:h3@2.0.1-rc.17
+        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.12))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(chokidar@5.0.0)(dotenv@17.2.3)(giget@3.1.2)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.3)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
@@ -1104,8 +1104,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
+        specifier: npm:h3@2.0.1-rc.17
+        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.12))
       nitropack:
         specifier: 2.13.1
         version: 2.13.1(rolldown@1.0.0-rc.9)
@@ -1276,8 +1276,8 @@ importers:
         specifier: 1.15.6
         version: 1.15.6
       h3-next:
-        specifier: npm:h3@2.0.1-rc.16
-        version: h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
+        specifier: npm:h3@2.0.1-rc.17
+        version: h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.12))
       obuild:
         specifier: 0.4.32
         version: 0.4.32(chokidar@5.0.0)(dotenv@17.2.3)(giget@3.1.2)(jiti@2.6.1)(magicast@0.5.2)(oxc-resolver@11.19.1)(picomatch@4.0.3)(rollup@4.59.0)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
@@ -6177,8 +6177,8 @@ packages:
       crossws:
         optional: true
 
-  h3@2.0.1-rc.16:
-    resolution: {integrity: sha512-h+pjvyujdo9way8qj6FUbhaQcHlR8FEq65EhTX9ViT5pK8aLj68uFl4hBkF+hsTJAH+H1END2Yv6hTIsabGfag==}
+  h3@2.0.1-rc.17:
+    resolution: {integrity: sha512-9rPJs68qMj7HJH78z7uSIAw6rl3EElLdVSirTeAf6B5ogwiFVIr9AKMMS4u00Gp8DYIPnnjtw3ZWN7EkYcPBrQ==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -14349,14 +14349,14 @@ snapshots:
     optionalDependencies:
       crossws: 0.4.4(srvx@0.11.12)
 
-  h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.10.1)):
+  h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.10.1)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.12
     optionalDependencies:
       crossws: 0.4.4(srvx@0.10.1)
 
-  h3@2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12)):
+  h3@2.0.1-rc.17(crossws@0.4.4(srvx@0.11.12)):
     dependencies:
       rou3: 0.8.1
       srvx: 0.11.12
@@ -15717,7 +15717,7 @@ snapshots:
       consola: 3.4.2
       crossws: 0.4.4(srvx@0.10.1)
       db0: 0.3.4
-      h3: 2.0.1-rc.16(crossws@0.4.4(srvx@0.10.1))
+      h3: 2.0.1-rc.17(crossws@0.4.4(srvx@0.10.1))
       jiti: 2.6.1
       nf3: 0.3.10
       ofetch: 2.0.0-alpha.3
