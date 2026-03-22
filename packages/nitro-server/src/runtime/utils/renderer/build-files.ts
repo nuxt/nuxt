@@ -12,7 +12,12 @@ import { NUXT_NO_SSR } from '#internal/nuxt/nitro-config.mjs'
 // @ts-expect-error virtual file
 import { appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { buildAssetsURL } from '#internal/nuxt/paths'
+import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+
+// @ts-expect-error private property consumed by vite-generated url helpers
+globalThis.__buildAssetsURL = buildAssetsURL
+// @ts-expect-error private property consumed by vite-generated url helpers
+globalThis.__publicAssetsURL = publicAssetsURL
 
 const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
