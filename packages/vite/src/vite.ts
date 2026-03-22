@@ -37,7 +37,7 @@ import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
-import { ViteNodePlugin, writeDevServer } from './plugins/vite-node.ts'
+import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
@@ -316,8 +316,6 @@ async function handleEnvironments (nuxt: Nuxt, config: vite.InlineConfig) {
     await server.environments.ssr.pluginContainer.buildStart({})
   }, 'Vite dev server built')
   nuxt._perf?.endPhase('vite:dev-server')
-
-  await writeDevServer(nuxt)
 }
 
 export interface ViteBuildContext {
