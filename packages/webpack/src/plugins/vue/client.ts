@@ -3,15 +3,14 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/client.js
  */
 
-import { mkdir, writeFile } from 'node:fs/promises'
-
 import { normalizeWebpackManifest, precomputeDependencies } from 'vue-bundle-renderer'
-import { join, normalize, relative, resolve } from 'pathe'
+import { normalize, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import { serialize } from 'seroval'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'
+import { useNitro } from '@nuxt/kit'
 
 import { isCSS, isHotUpdate, isJS } from './util.ts'
 
@@ -22,10 +21,27 @@ interface PluginOptions {
 export default class VueSSRClientPlugin {
   serverDist: string
   nuxt: Nuxt
+  precomputedCode = 'export default undefined'
+  manifestCode?: string
+
+  vfs = {
+    'client.precomputed.mjs': () => this.precomputedCode,
+    'client.manifest.mjs': () => this.manifestCode,
+  }
 
   constructor (options: PluginOptions) {
     this.serverDist = resolve(options.nuxt.options.buildDir, 'dist/server')
     this.nuxt = options.nuxt
+
+    const nitro = useNitro()
+    nitro.options.virtual ||= {}
+    nitro.options._config.virtual ||= {}
+
+    for (const key in this.vfs) {
+      const filename = `#build/dist/server/${key}`
+      nitro.options.virtual[filename] = this.vfs[key as keyof typeof this.vfs] as () => string
+      nitro.options._config.virtual[filename] = this.vfs[key as keyof typeof this.vfs] as () => string
+    }
   }
 
   private getRelativeModuleId (identifier: string, context: string): string {
@@ -138,13 +154,8 @@ export default class VueSSRClientPlugin {
 
       const manifest = normalizeWebpackManifest(webpackManifest as any)
       await this.nuxt.callHook('build:manifest', manifest)
-
-      await mkdir(this.serverDist, { recursive: true })
-
-      const precomputed = precomputeDependencies(manifest)
-      await writeFile(join(this.serverDist, `client.manifest.json`), JSON.stringify(manifest, null, 2))
-      await writeFile(join(this.serverDist, 'client.manifest.mjs'), 'export default ' + serialize(manifest), 'utf8')
-      await writeFile(join(this.serverDist, 'client.precomputed.mjs'), 'export default ' + serialize(precomputed), 'utf8')
+      this.precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
+      this.manifestCode = 'export default ' + serialize(manifest)
 
       // assets[this.options.filename] = {
       //   source: () => src,
