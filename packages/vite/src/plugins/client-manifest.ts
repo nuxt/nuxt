@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 
 import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
@@ -100,6 +100,13 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       manifestCode = 'export default ' + serialize(manifest)
 
       if (!nuxt.options.dev) {
+        if (nuxt.options.experimental.buildCache) {
+          const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
+          await mkdir(serverDist, { recursive: true })
+          await writeFile(resolve(serverDist, 'client.manifest.mjs'), manifestCode, 'utf8')
+          await writeFile(resolve(serverDist, 'client.precomputed.mjs'), precomputedCode, 'utf8')
+        }
+
         await rm(manifestFile, { force: true })
       }
     },

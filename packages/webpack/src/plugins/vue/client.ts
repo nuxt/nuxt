@@ -3,8 +3,10 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/client.js
  */
 
+import { mkdir, writeFile } from 'node:fs/promises'
+
 import { normalizeWebpackManifest, precomputeDependencies } from 'vue-bundle-renderer'
-import { normalize, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { hash } from 'ohash'
 import { serialize } from 'seroval'
 
@@ -156,6 +158,12 @@ export default class VueSSRClientPlugin {
       await this.nuxt.callHook('build:manifest', manifest)
       this.precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
       this.manifestCode = 'export default ' + serialize(manifest)
+
+      if (!this.nuxt.options.dev && this.nuxt.options.experimental.buildCache) {
+        await mkdir(this.serverDist, { recursive: true })
+        await writeFile(join(this.serverDist, 'client.manifest.mjs'), this.manifestCode, 'utf8')
+        await writeFile(join(this.serverDist, 'client.precomputed.mjs'), this.precomputedCode, 'utf8')
+      }
 
       // assets[this.options.filename] = {
       //   source: () => src,
