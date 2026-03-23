@@ -9,7 +9,6 @@ import { getPort } from 'get-port-please'
 
 import type { ViteBuildContext } from './vite.ts'
 import { createViteLogger } from './utils/logger.ts'
-import { writeDevServer } from './plugins/vite-node.ts'
 import { writeManifest } from './manifest.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
@@ -111,9 +110,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
   // Initialize plugins
   await ssrServer.pluginContainer.buildStart({})
 
-  if (ctx.config.devBundler !== 'legacy') {
-    await writeDevServer(nuxt)
-  } else {
+  if (ctx.config.devBundler === 'legacy') {
     logger.info('Vite server using legacy server bundler...')
     await import('./dev-bundler.ts').then(r => r.initViteDevBundler(ctx, () => nuxt.callHook('vite:compiled')))
   }
