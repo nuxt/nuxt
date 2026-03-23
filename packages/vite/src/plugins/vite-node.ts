@@ -212,6 +212,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
     'server.mjs': `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
     'runner.mjs': `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`,
     'client.manifest.mjs': `import { viteNodeFetch } from ${JSON.stringify(pathToFileURL(fetchResolvedPath))};export default () => viteNodeFetch.getManifest()`,
+    'client.precomputed.mjs': 'export default undefined',
   }
 
   nitro.options.virtual ||= {}
