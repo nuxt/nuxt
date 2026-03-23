@@ -209,6 +209,7 @@ export interface NuxtHooks {
    * Adding a router options file will switch on page-based routing, unless `optional` is set, in which case
    * it will only apply when page-based routing is already enabled.
    * @param context An object with `files` containing an array of router options files.
+   * @param context.files Array of router options files
    * @returns Promise
    */
   'pages:routerOptions': (context: { files: Array<{ path: string, optional?: boolean }> }) => HookResult
@@ -255,6 +256,7 @@ export interface NuxtHooks {
   /**
    * Allows extending the routes to be pre-rendered.
    * @param ctx Nuxt context
+   * @param ctx.routes Set of routes to be pre-rendered
    * @returns Promise
    */
   'prerender:routes': (ctx: { routes: Set<string> }) => HookResult
@@ -269,6 +271,13 @@ export interface NuxtHooks {
   /**
    * Called before @nuxt/cli writes `.nuxt/tsconfig.json` and `.nuxt/nuxt.d.ts`, allowing addition of custom references and declarations in `nuxt.d.ts`, or directly modifying the options in `tsconfig.json`
    * @param options Objects containing `references`, `declarations`, `tsConfig`
+   * @param options.references Array of TypeScript references to add
+   * @param options.declarations Array of declaration strings to add
+   * @param options.tsConfig The Vue TypeScript config object
+   * @param options.nodeTsConfig The Node TypeScript config object
+   * @param options.nodeReferences Array of Node TypeScript references
+   * @param options.sharedTsConfig The shared TypeScript config object
+   * @param options.sharedReferences Array of shared TypeScript references
    * @returns Promise
    */
   'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig }) => HookResult
@@ -309,6 +318,8 @@ export interface NuxtHooks {
   /**
    * Allows to extend Vite default context.
    * @param viteBuildContext The vite build context object
+   * @param viteBuildContext.nuxt The Nuxt instance
+   * @param viteBuildContext.config The Vite config object
    * @returns Promise
    */
   'vite:extend': (viteBuildContext: { nuxt: Nuxt, config: ViteConfig }) => HookResult
@@ -316,6 +327,8 @@ export interface NuxtHooks {
    * Allows to extend Vite default config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
+   * @param env.isClient Whether the config is for the client build
+   * @param env.isServer Whether the config is for the server build
    * @returns Promise
    * @deprecated
    */
@@ -324,6 +337,8 @@ export interface NuxtHooks {
    * Allows to read the resolved Vite config.
    * @param viteInlineConfig The vite inline config object
    * @param env Server or client
+   * @param env.isClient Whether the config is for the client build
+   * @param env.isServer Whether the config is for the server build
    * @returns Promise
    * @deprecated
    */
@@ -332,6 +347,8 @@ export interface NuxtHooks {
    * Called when the Vite server is created.
    * @param viteServer Vite development server
    * @param env Server or client
+   * @param env.isClient Whether the server is for the client build
+   * @param env.isServer Whether the server is for the server build
    * @returns Promise
    */
   'vite:serverCreated': (viteServer: ViteDevServer, env: { isClient: boolean, isServer: boolean }) => HookResult
@@ -357,12 +374,17 @@ export interface NuxtHooks {
   /**
    * Called right before compilation.
    * @param options The options to be added
+   * @param options.name The name of the compiler
+   * @param options.compiler The webpack compiler instance
    * @returns Promise
    */
   'webpack:compile': (options: { name: string, compiler: Compiler }) => HookResult
   /**
    * Called after resources are loaded.
    * @param options The compiler options
+   * @param options.name The name of the compiler
+   * @param options.compiler The webpack compiler instance
+   * @param options.stats The webpack compilation stats
    * @returns Promise
    */
   'webpack:compiled': (options: { name: string, compiler: Compiler, stats: Stats }) => HookResult
@@ -406,12 +428,17 @@ export interface NuxtHooks {
   /**
    * Called right before compilation.
    * @param options The options to be added
+   * @param options.name The name of the compiler
+   * @param options.compiler The rspack compiler instance
    * @returns Promise
    */
   'rspack:compile': (options: { name: string, compiler: Compiler }) => HookResult
   /**
    * Called after resources are loaded.
    * @param options The compiler options
+   * @param options.name The name of the compiler
+   * @param options.compiler The rspack compiler instance
+   * @param options.stats The rspack compilation stats
    * @returns Promise
    */
   'rspack:compiled': (options: { name: string, compiler: Compiler, stats: Stats }) => HookResult
