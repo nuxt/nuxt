@@ -622,6 +622,21 @@ describe('composables', () => {
       getCachedData: () => ({ bar: 2 }),
     })
   })
+
+  it('correctly infers types when using transform with getCachedData', () => {
+    // should not error: handler returns { foo: string }, transform narrows to string
+    const { data } = useAsyncData(
+      'test',
+      () => Promise.resolve({ foo: 'hello' }),
+      {
+        transform: response => response.foo,
+        getCachedData: (key: string) => {
+          return useNuxtApp().payload.data[key] as string ?? undefined
+        },
+      },
+    )
+    expectTypeOf(data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
 })
 
 describe('app config', () => {
