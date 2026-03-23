@@ -49,6 +49,8 @@ declare module '@nuxt/schema' {
     /**
      * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
      * @param options Objects containing `references`, `declarations`
+     * @param options.references Array of TypeScript references to add
+     * @param options.declarations Array of declaration strings to add
      * @returns Promise
      */
     'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
@@ -154,6 +156,8 @@ declare module 'nuxt/schema' {
     /**
      * Called before Nitro writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
      * @param options Objects containing `references`, `declarations`
+     * @param options.references Array of TypeScript references to add
+     * @param options.declarations Array of declaration strings to add
      * @returns Promise
      */
     'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
