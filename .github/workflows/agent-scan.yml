@@ -1,0 +1,60 @@
+name: agent-scan
+
+on:
+  issues:
+    types:
+        - opened
+        - reopened
+  pull_request_target:
+    types:
+        - opened
+        - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  agentscan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: AgentScan
+        id: agentscan
+        uses: MatteoGabriele/agentscan-action@a584774dd15cabe6df4c6ab45fc43514a3b56b2d
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-members: "dependabot,renovate"
+          agent-scan-comment: false
+      - name: Apply label and close PR if automation detected
+        if: steps.agentscan.outputs.classification == 'automation'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['possible bot'],
+            });
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              state: 'closed',
+            });
+      - name: Apply label if suspicious activity detected
+        if: steps.agentscan.outputs.classification == 'suspicious'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              labels: ['possible bot'],
+            });
