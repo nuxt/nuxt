@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, tryUseNuxt } from '@nuxt/kit'
+import type { DevEnvironment, EnvironmentModuleNode } from 'vite'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
@@ -175,6 +176,91 @@ export default defineNuxtModule<ComponentsOptions>({
         return nuxt.callHook('restart')
       }
     })
+
+    // HMR: when a component file is renamed, invalidate importers after generateApp so they resolve to the new path (fixes #31569)
+    // Applies to client and SSR Vite environments so full navigation (SSR + hydration) still resolves `#components` after a rename.
+    // Uses `hotUpdate` hook (not deprecated `handleHotUpdate`) which fires for all event types: create, update, delete.
+    const getComponentDirs = () => componentDirs
+    const UNLINK_INVALIDATE_DELAY_MS = 200
+    if (nuxt.options.dev && nuxt.options.builder === '@nuxt/vite-builder') {
+      const pendingUnlinkInvalidations = new Map<string, { importers: EnvironmentModuleNode[], timeoutId?: ReturnType<typeof setTimeout> }>()
+
+      const getComponentDirForFile = (filePath: string): string | null => {
+        const normalized = normalize(filePath)
+        for (const dir of getComponentDirs()) {
+          const dirPath = normalize(dir.path)
+          if (normalized === dirPath || normalized.startsWith(dirPath + '/')) {
+            return dirPath
+          }
+        }
+        return null
+      }
+
+      const scheduleUnlinkInvalidation = (dirPath: string, importers: EnvironmentModuleNode[], environment: DevEnvironment) => {
+        const existing = pendingUnlinkInvalidations.get(dirPath)
+        if (existing?.timeoutId) {
+          clearTimeout(existing.timeoutId)
+        }
+        const merged = new Set<EnvironmentModuleNode>(existing?.importers ?? [])
+        for (const m of importers) {
+          merged.add(m)
+        }
+        const timeoutId = setTimeout(async () => {
+          pendingUnlinkInvalidations.delete(dirPath)
+          const nuxtInstance = tryUseNuxt()
+          if (nuxtInstance) {
+            await nuxtInstance.callHook('builder:generateApp', {})
+          }
+          for (const mod of merged) {
+            environment.moduleGraph.invalidateModule(mod)
+            await environment.reloadModule(mod)
+          }
+        }, UNLINK_INVALIDATE_DELAY_MS)
+        pendingUnlinkInvalidations.set(dirPath, { importers: [...merged], timeoutId })
+      }
+
+      addVitePlugin({
+        name: 'nuxt:components-rename-hmr',
+        async hotUpdate (options) {
+          const normalizedFile = normalize(options.file)
+          const componentDir = getComponentDirForFile(normalizedFile)
+          if (!componentDir) {
+            return
+          }
+
+          if (options.type === 'delete') {
+            const importers = new Set<EnvironmentModuleNode>()
+            for (const mod of options.modules) {
+              for (const imp of mod.importers) {
+                importers.add(imp)
+              }
+            }
+            if (importers.size > 0) {
+              scheduleUnlinkInvalidation(componentDir, [...importers], this.environment)
+            }
+            return []
+          }
+
+          // For 'create' or 'update' — check for a pending rename in the same component dir
+          const pending = pendingUnlinkInvalidations.get(componentDir)
+          if (!pending?.importers.length) {
+            return
+          }
+          if (pending.timeoutId) {
+            clearTimeout(pending.timeoutId)
+          }
+          pendingUnlinkInvalidations.delete(componentDir)
+
+          await tryUseNuxt()?.callHook('builder:generateApp', {})
+          const environment = this.environment
+          for (const mod of pending.importers) {
+            environment.moduleGraph.invalidateModule(mod)
+            await environment.reloadModule(mod)
+          }
+          return [...new Set([...options.modules, ...pending.importers])]
+        },
+      })
+    }
 
     const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 
