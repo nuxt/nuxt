@@ -293,8 +293,7 @@ test.describe('vite-only HMR tests', () => {
       await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
 
       expect(page).toHaveNoErrorsOrWarnings()
-    }
-    finally {
+    } finally {
       restoreExampleTestComponent()
     }
   })
