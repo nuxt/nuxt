@@ -1,4 +1,4 @@
-import { readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { isWindows } from 'std-env'
@@ -8,6 +8,15 @@ import { isBuilt, isWebpack } from '../matrix'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
 const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
+
+function restoreExampleTestComponent () {
+  const renamed = join(fixtureDir, 'app/components/example/example-test.vue')
+  const dest = join(fixtureDir, 'app/components/example/test.vue')
+  if (existsSync(renamed)) {
+    unlinkSync(renamed)
+  }
+  copyFileSync(join(sourceDir, 'app/components/example/test.vue'), dest)
+}
 
 test.use({
   nuxt: {
@@ -266,26 +275,31 @@ if (isBuilt || isWindows) {
       expect(filteredLogs).toStrictEqual([])
     })
 
-    test('should support renaming files to same import name (#31569)', async ({ page, goto }) => {
-      await goto('/rename-component')
+    test('should support renaming files to same import name', async ({ page, goto }) => {
+      try {
+        await goto('/rename-component')
 
-      await expect(page.getByTestId('example')).toHaveText('test.vue')
+        await expect(page.getByTestId('example')).toHaveText('test.vue')
 
-      renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
+        renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
 
-      writeFileSync(
-        join(fixtureDir, 'app/components/example/example-test.vue'),
-        `<template><div data-testid="example">example-test.vue</div></template>`,
-      )
+        writeFileSync(
+          join(fixtureDir, 'app/components/example/example-test.vue'),
+          `<template><div data-testid="example">example-test.vue</div></template>`,
+        )
 
-      // HMR should update without "Pre-transform error: Failed to load url"
-      await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
+        // HMR should update without "Pre-transform error: Failed to load url"
+        await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
 
-      await goto('/rename-component')
+        await goto('/rename-component')
 
-      await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
+        await expect(page.getByTestId('example')).toHaveText('example-test.vue', { timeout: 15000 })
 
-      expect(page).toHaveNoErrorsOrWarnings()
+        expect(page).toHaveNoErrorsOrWarnings()
+      }
+      finally {
+        restoreExampleTestComponent()
+      }
     })
 
     test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
