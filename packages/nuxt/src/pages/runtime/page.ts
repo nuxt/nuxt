@@ -156,7 +156,9 @@ export default defineComponent({
 
               // force suspense remount and restart async tracking
               // if suspense is already pending and page key changed
-              if (isSuspensePending && previousPageKey !== key) {
+              // skip when inside a layout - destroying a suspensible child suspense
+              // while pending leaves the parent layout suspense permanently stuck
+              if (isSuspensePending && previousPageKey !== key && !_layoutMeta) {
                 suspenseKey++
               }
 
