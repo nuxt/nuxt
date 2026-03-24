@@ -178,6 +178,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // HMR: when a component file is renamed, invalidate importers after generateApp so they resolve to the new path (fixes #31569)
+    // Applies to client and SSR Vite environments so full navigation (SSR + hydration) still resolves `#components` after a rename.
     // Uses `hotUpdate` hook (not deprecated `handleHotUpdate`) which fires for all event types: create, update, delete.
     const getComponentDirs = () => componentDirs
     const UNLINK_INVALIDATE_DELAY_MS = 200
@@ -258,7 +259,7 @@ export default defineNuxtModule<ComponentsOptions>({
           }
           return [...new Set([...options.modules, ...pending.importers])]
         },
-      }, { server: false })
+      })
     }
 
     const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
