@@ -164,7 +164,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
     If you want to always reuse cached data during client-side navigation (regardless of `payloadExtraction`), provide a custom `getCachedData` function:
     ```ts
     const { data } = await useAsyncData('mountains', () => $fetch('/api/mountains'), {
-      getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key]
+      getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key],
     })
     ```
     This keeps the data in `payload.data` and reuses it as long as the app is alive.
