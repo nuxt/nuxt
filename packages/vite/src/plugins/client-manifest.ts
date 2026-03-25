@@ -71,7 +71,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
 
       const manifestFile = resolve(clientDist, 'manifest.json')
       const clientManifest = nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
-      const manifestEntries = Object.values(clientManifest)
+      const manifestEntries = Object.values(clientManifest) as ViteClientManifest[string][]
 
       const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
       const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
