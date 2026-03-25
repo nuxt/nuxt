@@ -1467,7 +1467,7 @@ export interface ConfigSchema {
      * </template>
      * ```
      *
-     * @see [PR #26468](https://github.com/nuxt/nuxt/pull/26468)
+    * @see PR #26468
      */
     lazyHydration: boolean
 
