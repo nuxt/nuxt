@@ -4,7 +4,18 @@ import type { Page } from '@playwright/test'
 import { fetch } from 'ofetch'
 import { joinURL } from 'ufo'
 
-const test = base.extend<{ fetch: (path: string) => Promise<Response> }>({
+export interface MatrixOptions {
+  isDev: boolean
+  isBuilt: boolean
+  isWebpack: boolean
+  builder: 'vite' | 'rspack' | 'webpack'
+}
+
+const test = base.extend<{ fetch: (path: string) => Promise<Response> } & MatrixOptions>({
+  isDev: [false, { option: true }],
+  isBuilt: [true, { option: true }],
+  isWebpack: [false, { option: true }],
+  builder: ['vite' as const, { option: true }],
   fetch: ({ request, _nuxtHooks }, use) => {
     use(async (path) => {
       let res: Response | undefined
