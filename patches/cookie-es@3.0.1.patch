@@ -1,8 +1,8 @@
 diff --git a/dist/index.mjs b/dist/index.mjs
-index 4b6950a0a6be4f594f98933b2e95395d8d02f8e9..60472b6d8249d93c5e5dfcb1216deb4f08558fd7 100644
+index 4b6950a0a6be4f594f98933b2e95395d8d02f8e9..54a4f85650b71b16695a733613127599d5d42365 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
-@@ -87,12 +87,10 @@ function stringifyCookie(cookie, options) {
+@@ -87,12 +87,14 @@ function stringifyCookie(cookie, options) {
  	return str;
  }
  function serialize(_name, _val, _opts) {
@@ -13,8 +13,12 @@ index 4b6950a0a6be4f594f98933b2e95395d8d02f8e9..60472b6d8249d93c5e5dfcb1216deb4f
 -	};
 -	const enc = (typeof _val === "object" ? _val : _opts)?.encode || encodeURIComponent;
 +	const cookie =
-+    typeof _name === "object" ? _name : { ..._opts, name: _name, value: String(_val ?? "") };
-+  const options = typeof _name === "object" ? (_val) : _opts;
++    typeof _name === "object" ? _name : { ..._opts, name: _name, value: "" };
++	const options = typeof _name === "object" ? (_val) : _opts;
++	 if (typeof _name !== "object") {
++    const str = options?.stringify || JSON.stringify;
++    cookie.value = _val == undefined ? "" : typeof _val === "string" ? _val : str(_val);
++  }
 +  const enc = options?.encode || encodeURIComponent;
  	if (!cookieNameRegExp.test(cookie.name)) throw new TypeError(`argument name is invalid: ${cookie.name}`);
  	const value = cookie.value ? enc(cookie.value) : "";
