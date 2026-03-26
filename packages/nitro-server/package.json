@@ -58,7 +58,7 @@
     "@nuxt/schema": "workspace:*",
     "nuxt": "workspace:*",
     "obuild": "0.4.32",
-    "vitest": "4.0.18"
+    "vitest": "4.1.2"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
