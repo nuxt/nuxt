@@ -1,0 +1,21 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 4b6950a0a6be4f594f98933b2e95395d8d02f8e9..60472b6d8249d93c5e5dfcb1216deb4f08558fd7 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -87,12 +87,10 @@ function stringifyCookie(cookie, options) {
+ 	return str;
+ }
+ function serialize(_name, _val, _opts) {
+-	const cookie = typeof _name === "object" ? _name : {
+-		..._opts,
+-		name: _name,
+-		value: String(_val)
+-	};
+-	const enc = (typeof _val === "object" ? _val : _opts)?.encode || encodeURIComponent;
++	const cookie =
++    typeof _name === "object" ? _name : { ..._opts, name: _name, value: String(_val ?? "") };
++  const options = typeof _name === "object" ? (_val) : _opts;
++  const enc = options?.encode || encodeURIComponent;
+ 	if (!cookieNameRegExp.test(cookie.name)) throw new TypeError(`argument name is invalid: ${cookie.name}`);
+ 	const value = cookie.value ? enc(cookie.value) : "";
+ 	if (!cookieValueRegExp.test(value)) throw new TypeError(`argument val is invalid: ${cookie.value}`);

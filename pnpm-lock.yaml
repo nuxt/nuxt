@@ -23,6 +23,9 @@ patchedDependencies:
   changelogen:
     hash: 8aee9e31504b2889cfb6b9bae91ba797bea8acef312c723134cb1e70cc7e4c2b
     path: patches/changelogen.patch
+  cookie-es@3.0.1:
+    hash: 9a2c7efecf5754cdb245569538ed66f47b18b547f38c63bbcf00b55a1f4d291b
+    path: patches/cookie-es@3.0.1.patch
 
 importers:
 
@@ -499,7 +502,7 @@ importers:
         version: 3.4.2
       cookie-es:
         specifier: ^3.0.1
-        version: 3.0.1
+        version: 3.0.1(patch_hash=9a2c7efecf5754cdb245569538ed66f47b18b547f38c63bbcf00b55a1f4d291b)
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -13222,7 +13225,7 @@ snapshots:
 
   cookie-es@2.0.0: {}
 
-  cookie-es@3.0.1: {}
+  cookie-es@3.0.1(patch_hash=9a2c7efecf5754cdb245569538ed66f47b18b547f38c63bbcf00b55a1f4d291b): {}
 
   core-js-compat@3.48.0:
     dependencies:
