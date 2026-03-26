@@ -169,7 +169,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
           return undefined
         }
         return nuxtApp.payload.data[key]
-      }
+      },
     })
     ```
     This keeps the data in `payload.data` and reuses it during navigation, while still allowing `refresh()` to re-fetch when called manually.
