@@ -92,7 +92,7 @@
     "oxc-walker": "^0.7.0",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.1.0",
-    "picomatch": "^4.0.3",
+    "picomatch": "^4.0.4",
     "pkg-types": "^2.3.0",
     "rou3": "^0.8.1",
     "scule": "^1.3.0",
