@@ -76,8 +76,8 @@
     "@nuxt/schema": "workspace:*",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.12",
-    "h3": "1.15.6",
-    "h3-next": "npm:h3@2.0.1-rc.16",
+    "h3": "1.15.10",
+    "h3-next": "npm:h3@2.0.1-rc.19",
     "obuild": "0.4.32",
     "rollup": "4.60.0",
     "vue": "3.5.31"

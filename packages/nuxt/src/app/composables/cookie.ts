@@ -240,9 +240,9 @@ function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | un
 
 function serializeCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (value === null || value === undefined) {
-    return serialize(name, value, { ...opts, maxAge: -1 })
+    return serialize({ name, value, maxAge: -1 }, opts)
   }
-  return serialize(name, value, opts)
+  return serialize({ name, value }, opts)
 }
 
 function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
