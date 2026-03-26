@@ -50,10 +50,11 @@
       "groupSlug": "all",
       "matchPackageNames": [
         "*"
-      ],
-      "matchVulnerabilities": [
-        "*"
       ]
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "groupName": "all dependencies",
+    "groupSlug": "all"
+  }
 }
