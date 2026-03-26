@@ -1066,6 +1066,18 @@ describe('callOnce', () => {
       await execute()
       expect(fn).toHaveBeenCalledTimes(2)
     })
+
+    it('should retry after a rejected promise', async () => {
+      const fn = vi.fn()
+        .mockRejectedValueOnce(new Error('fail'))
+        .mockResolvedValueOnce(undefined)
+      const execute = () => options ? callOnce('retry-key', fn, options) : callOnce('retry-key', fn)
+      await expect(execute()).rejects.toThrow('fail')
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
   })
 })
 
