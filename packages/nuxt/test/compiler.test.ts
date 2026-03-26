@@ -89,7 +89,7 @@ describe('defineKeyedFunctionFactory', () => {
 
     const transformedFactory = transformFactory(factory)
 
-    expect(() => transformedFactory()).toThrowError('Factory error')
+    expect(() => transformedFactory()).toThrow('Factory error')
   })
 
   it('should preserve parameter and return types', () => {
