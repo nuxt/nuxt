@@ -164,13 +164,18 @@ The `handler` function should be **side-effect free** to ensure predictable beha
     If you want to always reuse cached data during client-side navigation (regardless of `payloadExtraction`), provide a custom `getCachedData` function:
     ```ts
     const { data } = await useAsyncData('mountains', () => $fetch('/api/mountains'), {
-      getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key],
+      getCachedData: (key, nuxtApp, ctx) => {
+        if (ctx.cause === 'refresh:manual' || ctx.cause === 'refresh:hook') {
+          return undefined
+        }
+        return nuxtApp.payload.data[key]
+      }
     })
     ```
-    This keeps the data in `payload.data` and reuses it as long as the app is alive.
+    This keeps the data in `payload.data` and reuses it during navigation, while still allowing `refresh()` to re-fetch when called manually.
 
     ::warning
-    When using a custom `getCachedData` that always returns cached data, the fetch will never be re-executed automatically. You must call `refresh()` manually to update the data.
+    When using a custom `getCachedData` that returns cached data unconditionally (without checking `ctx.cause`), calling `refresh()` will have no effect since the cached value will still be returned.
     ::
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
