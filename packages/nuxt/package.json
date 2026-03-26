@@ -121,7 +121,7 @@
     "rolldown": "1.0.0-rc.9",
     "unbuild": "3.6.1",
     "vite": "8.0.0",
-    "vitest": "4.0.18",
+    "vitest": "4.1.2",
     "vue-bundle-renderer": "2.2.0",
     "vue-sfc-transformer": "0.1.17"
   },
