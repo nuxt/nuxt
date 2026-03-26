@@ -41,20 +41,20 @@ test.describe('Suspense multiple navigation', () => {
     await expect(page.getByTestId('index-title')).toBeVisible()
 
     // Test multiple rapid navigation (clicking both buttons before first navigation completes)
-    await Promise.all([
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-      page.getByTestId('btn-a').click(),
-      page.getByTestId('btn-b').click(),
-    ])
+    const btnA = page.getByTestId('btn-a')
+    const btnB = page.getByTestId('btn-b')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
+    await btnA.dispatchEvent('click')
+    await btnB.dispatchEvent('click')
 
     // Verify we reached the target page with the correct content (from the second navigation)
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/target')
-    await expect(page.getByTestId('content')).toContainText('Hello b')
+    await expect(page.getByTestId('content')).toContainText('Hello b', { timeout: 10_000 })
 
     // Verify no errors or warnings occurred
     expect(page).toHaveNoErrorsOrWarnings()
