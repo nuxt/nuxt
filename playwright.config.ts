@@ -14,6 +14,20 @@ const e2eMatrix = [
 
 const devOnlyTests = ['**/hmr.test.ts']
 const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/lazy-hydration.test.ts']
+const viteOnlyTests = ['**/lazy-hydration.test.ts']
+
+function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
+  const ignore: string[] = []
+  if (entry.isDev) {
+    ignore.push(...builtOnlyTests)
+  } else {
+    ignore.push(...devOnlyTests)
+  }
+  if (entry.builder !== 'vite') {
+    ignore.push(...viteOnlyTests)
+  }
+  return ignore
+}
 
 /**
  * Playwright configuration for Nuxt e2e tests
@@ -42,7 +56,7 @@ export default defineConfig<E2eConfigOptions>({
       const name = `e2e-${entry.builder}-${entry.isDev ? 'dev' : 'built'}`
       return {
         name,
-        testIgnore: entry.isDev ? builtOnlyTests : devOnlyTests,
+        testIgnore: testIgnoreForProject(entry),
         use: {
           ...devices['Desktop Chrome'],
           isDev: entry.isDev,
@@ -51,7 +65,6 @@ export default defineConfig<E2eConfigOptions>({
           builder: entry.builder,
           defaults: {
             nuxt: {
-              test: true,
               dev: entry.isDev,
               nuxtConfig: {
                 builder: entry.builder,
