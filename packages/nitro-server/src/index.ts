@@ -109,17 +109,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   if (nuxt.options.experimental.componentIslands) {
-    const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
-    const h3Path = JSON.stringify(resolve(distDir, 'runtime/h3-compat'))
-    const ISLAND_RENDERER_KEY = '#internal/nuxt/island-renderer.mjs'
-
+    // sync conditions with /packages/nuxt/src/core/templates.ts#L539
     nuxt.options.nitro.virtual ||= {}
-    nuxt.options.nitro.virtual[ISLAND_RENDERER_KEY] = () => {
-      // sync conditions with /packages/nuxt/src/core/templates.ts#L539
+    nuxt.options.nitro.virtual['#internal/nuxt/island-renderer.mjs'] = () => {
       if (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))) {
-        return `export { default } from ${islandHandlerPath}`
+        return `export { default } from '${resolve(distDir, 'runtime/handlers/island')}'`
       }
-      return `import { defineEventHandler } from ${h3Path}; export default defineEventHandler(() => {});`
+      return `import { defineEventHandler } from 'h3'; export default defineEventHandler(() => {});`
     }
     nuxt.options.nitro.handlers ||= []
     nuxt.options.nitro.handlers.push({
