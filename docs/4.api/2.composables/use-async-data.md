@@ -175,7 +175,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
     This keeps the data in `payload.data` and reuses it during navigation, while still allowing `refresh()` to re-fetch when called manually.
 
     ::warning
-    When using a custom `getCachedData` that returns cached data unconditionally (without checking `ctx.cause`), calling `refresh()` will have no effect since the cached value will still be returned.
+    When using a custom `getCachedData` that returns cached data unconditionally (without checking `ctx.cause`), calling `refresh()` will have no effect since the cached value will still be returned. If you also use the `watch` option, make sure to also return `undefined` when `ctx.cause === 'watch'`, otherwise watched source changes will not trigger a re-fetch.
     ::
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
