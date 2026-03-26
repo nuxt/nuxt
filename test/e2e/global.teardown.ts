@@ -8,15 +8,13 @@ const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url
 teardown('remove temporary hmr fixture directory', async () => {
   if (!existsSync(fixtureDir)) { return }
 
-  // try to work around windows flakiness with file locks
-  const maxRetries = 5
-  for (let i = 0; i < maxRetries; i++) {
+  for (let i = 0; i < 5; i++) {
     try {
       await rm(fixtureDir, { force: true, recursive: true, maxRetries: 3, retryDelay: 500 })
       return
-    } catch (err: unknown) {
-      if (i === maxRetries - 1) { throw err }
+    } catch {
       await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)))
     }
   }
+  console.warn(`[teardown] Could not remove ${fixtureDir} — file handles may still be held by a dev server process.`)
 })
