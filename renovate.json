@@ -54,6 +54,9 @@
     }
   ],
   "vulnerabilityAlerts": {
+    "postUpdateOptions": [
+      "pnpmDedupe"
+    ],
     "groupName": "all dependencies",
     "groupSlug": "all"
   }
