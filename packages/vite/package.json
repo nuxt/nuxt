@@ -62,7 +62,7 @@
     "@babel/plugin-syntax-jsx": "7.28.6",
     "@nuxt/schema": "workspace:*",
     "h3": "1.15.6",
-    "h3-next": "npm:h3@2.0.1-rc.17",
+    "h3-next": "npm:h3@2.0.1-rc.18",
     "nitropack": "2.13.1",
     "obuild": "0.4.32",
     "rolldown": "1.0.0-rc.9",
