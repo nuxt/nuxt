@@ -30,7 +30,7 @@ jobs:
         uses: MatteoGabriele/agentscan-action@a584774dd15cabe6df4c6ab45fc43514a3b56b2d
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          skip-members: "dependabot,renovate[bot]"
+          skip-members: "dependabot[bot],renovate[bot]"
           agent-scan-comment: false
           cache-path: .agentscan-cache
       - name: Label flagged PR
