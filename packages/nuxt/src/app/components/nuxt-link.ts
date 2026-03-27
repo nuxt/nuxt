@@ -383,7 +383,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch((err) => {
             if (import.meta.dev) {
-              runtimeWarn(`Failed to prefetch \`${normalizedPath}\`.`, { code: E2010, cause: err })
+              runtimeWarn(`Failed to prefetch \`${normalizedPath}\`.`, { code: E2010, fix: 'This may be a transient network error. Check that the target route exists and is accessible.', cause: err })
             }
           }),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
