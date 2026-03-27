@@ -42,6 +42,8 @@ export { logger, useLogger } from './logger.ts'
 export { createBuildErrorUtils } from './errors.ts'
 export type { BuildErrorUtilsOptions, NuxtErrorOptions } from './errors.ts'
 export * as ErrorCodes from './error-codes.ts'
+export { createLog, nuxtBuildLog, formatDiagnostic } from './log.ts'
+export type { CreateLogOptions, Diagnostic, EmitContext, ErrorDefinition, Log } from './log.ts'
 
 // Dependencies
 export { ensureDependencyInstalled } from './dependency.ts'
