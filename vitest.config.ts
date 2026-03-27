@@ -81,6 +81,7 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
 }
 
 const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js']
+const fixtureTestExclude = [...fixtureExclude, 'test/error-codes.test.ts']
 
 export default defineConfig({
   test: {
@@ -112,7 +113,7 @@ export default defineConfig({
           setupFiles: ['./test/setup-env.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           retry: isCI ? 2 : 0,
-          exclude: fixtureExclude,
+          exclude: fixtureTestExclude,
           benchmark: { include: [] },
           env: fixtureProjectEnv(entry),
         },
@@ -134,7 +135,7 @@ export default defineConfig({
           name: 'unit',
           benchmark: { include: [] },
           setupFiles: ['./test/setup-env.ts'],
-          include: ['packages/**/*.{test,spec}.ts'],
+          include: ['packages/**/*.{test,spec}.ts', 'test/error-codes.test.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
           exclude: fixtureExclude,
