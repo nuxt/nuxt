@@ -24,6 +24,7 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         '.goff/**',
+        'flow-demo/**',
         'packages/schema/schema/**',
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
