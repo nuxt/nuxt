@@ -1,6 +1,5 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  compatibilityDate: 'latest',
   app: {
     head: {
       link: [
@@ -8,4 +7,5 @@ export default defineNuxtConfig({
       ],
     },
   },
+  compatibilityDate: 'latest',
 })

@@ -12,6 +12,8 @@ onMounted(() => {
 <template>
   <div>
     <h1>Logging out...</h1>
-    <p v-if="showMessage">You will be redirected to the home page in 2 seconds.</p>
+    <p v-if="showMessage">
+      You will be redirected to the home page in 2 seconds.
+    </p>
   </div>
 </template>

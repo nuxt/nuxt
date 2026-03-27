@@ -1,11 +1,11 @@
 <script setup lang="ts">
 const pageUrl = 'https://nuxt.com'
 
-function shareOnTwitter() {
+function shareOnTwitter () {
   navigateTo(`https://twitter.com/intent/tweet?text=Check%20this%20out!&url=${pageUrl}`)
 }
 
-function shareOnFacebook() {
+function shareOnFacebook () {
   navigateTo(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`)
 }
 </script>
@@ -16,8 +16,12 @@ function shareOnFacebook() {
     <h1>Share this page</h1>
     <p>Spread the word about Nuxt!</p>
     <div>
-      <button @click="shareOnTwitter">Share on Twitter</button>
-      <button @click="shareOnFacebook">Share on Facebook</button>
+      <button @click="shareOnTwitter">
+        Share on Twitter
+      </button>
+      <button @click="shareOnFacebook">
+        Share on Facebook
+      </button>
     </div>
   </div>
 </template>

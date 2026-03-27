@@ -22,6 +22,9 @@ const post = ref({
       <p>Discover how Nuxt improves your search engine rankings.</p>
     </NuxtLink>
 
-    <NuxtLink to="/blog-post" href="/blog-post">Read more articles</NuxtLink>
+    <NuxtLink
+      to="/blog-post"
+      href="/blog-post"
+    >Read more articles</NuxtLink>
   </div>
 </template>

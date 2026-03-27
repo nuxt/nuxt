@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const theme = useCookie('theme', { default: () => 'dark' })
 
-function toggle() {
+function toggle () {
   theme.value = theme.value === 'light' ? 'dark' : 'light'
 }
 
@@ -13,7 +13,10 @@ useHead({
 </script>
 
 <template>
-  <button class="theme-toggle" @click="toggle">
+  <button
+    class="theme-toggle"
+    @click="toggle"
+  >
     {{ theme === 'dark' ? '☀️' : '🌙' }}
   </button>
 </template>

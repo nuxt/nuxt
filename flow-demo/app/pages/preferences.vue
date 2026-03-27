@@ -3,7 +3,7 @@ const theme = useCookie('theme', { default: () => 'dark' })
 const session = useCookie('session', { maxAge: -1 })
 const language = useCookie('language', { default: () => 'en' })
 
-function toggleTheme() {
+function toggleTheme () {
   theme.value = theme.value === 'light' ? 'dark' : 'light'
 }
 </script>
@@ -16,7 +16,9 @@ function toggleTheme() {
     <div>
       <h2>Theme</h2>
       <p>Current: {{ theme }}</p>
-      <button @click="toggleTheme">Toggle Theme</button>
+      <button @click="toggleTheme">
+        Toggle Theme
+      </button>
     </div>
 
     <div>

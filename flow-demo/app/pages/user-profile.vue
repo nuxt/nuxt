@@ -14,7 +14,7 @@ onMounted(() => {
   useFetch(`/api/test`)
 })
 
-function switchUser() {
+function switchUser () {
   userId.value++
 }
 </script>
@@ -27,7 +27,9 @@ function switchUser() {
     <div>
       <h2>User #{{ userId }}</h2>
       <p>Avatar: {{ avatar ?? 'No avatar' }}</p>
-      <button @click="switchUser">Next User</button>
+      <button @click="switchUser">
+        Next User
+      </button>
     </div>
   </div>
 </template>

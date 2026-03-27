@@ -2,11 +2,11 @@
 // @ts-expect-error passing initial value directly
 const count = useState('counter', 0)
 
-function increment() {
+function increment () {
   count.value++
 }
 
-function decrement() {
+function decrement () {
   count.value--
 }
 </script>
@@ -17,8 +17,12 @@ function decrement() {
     <h1>Counter</h1>
     <p>{{ count }}</p>
     <div>
-      <button @click="decrement">-</button>
-      <button @click="increment">+</button>
+      <button @click="decrement">
+        -
+      </button>
+      <button @click="increment">
+        +
+      </button>
     </div>
   </div>
 </template>
