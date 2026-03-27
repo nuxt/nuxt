@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata.ts'
 import { checkForCircularDependencies } from '../src/core/app.ts'
-import { logger } from '../src/utils.ts'
+import { logger } from '@nuxt/kit'
 
 describe('plugin-metadata', () => {
   const properties = Object.entries({

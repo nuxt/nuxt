@@ -103,15 +103,27 @@ export const RenderPlugin = () => {
         const hasMessages = chunks.length > 1
         let hasExpression = false
         let templateString = chunks.shift()
-        for (const [_, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
+        for (const [_match, braces, expression] of html.matchAll(/(\{{2,3})([^{}]+)\}{2,3}/g)) {
           if (expression) {
             hasExpression = true
-            templateString += ` + escapeHtml(${expression.trim()}) + ${chunks.shift()}`
+            const isRawHtml = braces === '{{{'
+            const expr = expression.trim()
+            templateString += isRawHtml
+              ? ` + (${expr}) + ${chunks.shift()}`
+              : ` + escapeHtml(${expr}) + ${chunks.shift()}`
           }
         }
         if (chunks.length > 0) {
           templateString += ' + ' + chunks.join(' + ')
         }
+        // Strip data-error-* markers from the .ts template (they're only meaningful for Vue v-if conversion)
+        templateString &&= templateString
+          .replaceAll(' data-error-context', '')
+          .replaceAll(' data-error-code', '')
+          .replaceAll(' data-error-why', '')
+          .replaceAll(' data-error-fix', '')
+          .replaceAll(' data-error-docs', '')
+
         const functionalCode = [
           hasExpression ? 'import { escapeHtml } from \'@vue/shared\'\n' : '',
           hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
@@ -122,7 +134,25 @@ export const RenderPlugin = () => {
           '}',
         ].join('\n')
 
-        const templateContent = html
+        // Extract complex triple-brace expressions into computed properties
+        // so they can be referenced cleanly in the Vue template
+        const computedProps: Array<{ name: string, expression: string }> = []
+        let processedHtml = html
+
+        // First pass: extract complex {{{ expr }}} (multi-word expressions) into computed props
+        processedHtml = processedHtml.replace(/\{\{\{((?:(?!\}\}\}).)+)\}\}\}/g, (_match, expr: string) => {
+          const trimmed = expr.trim()
+          // Skip simple single-word expressions — those are handled by the existing regex
+          if (/^\s*\w+\s*$/.test(trimmed)) {
+            return _match
+          }
+          const propName = `_computed${computedProps.length}`
+          // Strip `messages.` prefix for the Vue context where props are direct
+          computedProps.push({ name: propName, expression: trimmed.replace(/messages\./g, 'props.') })
+          return `{{{ ${propName} }}}`
+        })
+
+        const templateContent = processedHtml
           .match(/<body[^>]*>[\s\S]*<\/body>/)?.[0]
           .replace(/(?<=<\/|<)body/g, 'div')
           .replace(/messages\./g, '')
@@ -130,8 +160,18 @@ export const RenderPlugin = () => {
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
 
           .replace(/<([^>]+) ([a-z]+)="([^"]*)\{\{\s*(\w+)\s*\}\}([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$4}$5`"$6>')
-          .replace(/>\{\{\s*(\w+)\s*\}\}<\/[\w-]*>/g, ' v-text="$1" />')
-          .replace(/>\{\{\{\s*(\w+)\s*\}\}\}<\/[\w-]*>/g, ' v-html="$1" />')
+          // Convert element text content: >{{ word }}</tag> → v-text="word"
+          // Use a negative lookbehind to avoid matching self-closing tags (/>)
+          .replace(/(?<!\/)>\{\{\s*(\w+)\s*\}\}<\/[\w-]*>/g, ' v-text="$1" />')
+          .replace(/(?<!\/)>\{\{\{\s*(\w+)\s*\}\}\}<\/[\w-]*>/g, ' v-html="$1" />')
+          // Handle standalone {{{ word }}} (not inside an element's text content)
+          .replace(/\{\{\{\s*(\w+)\s*\}\}\}/g, '<div v-html="$1" />')
+          // Convert data-error-* marker attributes into v-if directives
+          .replace(/\s*data-error-context/g, ' v-if="fix || why || docsUrl"')
+          .replace(/\s*data-error-code/g, ' v-if="errorCode"')
+          .replace(/\s*data-error-why/g, ' v-if="why"')
+          .replace(/\s*data-error-fix/g, ' v-if="fix"')
+          .replace(/\s*data-error-docs/g, ' v-if="docsUrl"')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
         const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1]?.replace(/\{\{[\s\S]+?\}\}/g, (r) => {
@@ -166,6 +206,8 @@ export const RenderPlugin = () => {
             ['script', inlineScripts.map(s => ({ innerHTML: `\`${s.replace(/[`$]/g, '\\$&')}\`` }))],
             ['style', [{ innerHTML: `\`${globalStyles.replace(/[`$]/g, '\\$&')}\`` }]],
           ]) + ')',
+          // Inject computed properties extracted from complex {{{ }}} expressions
+          ...computedProps.map(({ name, expression }) => `const ${name} = ${expression}`),
           '</script>',
           '<template>',
           templateContent,

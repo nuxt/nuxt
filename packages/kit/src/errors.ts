@@ -174,8 +174,22 @@ export function createBuildErrorUtils (options: BuildErrorUtilsOptions): BuildEr
    * Sets `err.code` on the Error object for programmatic access.
    */
   function throwBuildError (message: string, opts: NuxtErrorOptions): never {
-    const err = new Error(formatBuildError(message, opts), { cause: opts.cause })
+    const err = new Error(`[${prefix}_${opts.code}] ${message}`, { cause: opts.cause })
     ;(err as any).code = `${prefix}_${opts.code}`
+
+    // Structured fields for HTML error page rendering
+    if (opts.fix) { (err as any).fix = opts.fix }
+    if (opts.why) { (err as any).why = opts.why }
+    const docsURL = opts.docs || (options.docsBase ? `${options.docsBase}/${opts.code}` : undefined)
+    if (docsURL) { (err as any).docsUrl = docsURL }
+
+    // Log the rich frame-formatted version to the console for terminal users
+    if (opts.cause) {
+      logger.error(formatBuildError(message, opts), opts.cause)
+    } else {
+      logger.error(formatBuildError(message, opts))
+    }
+
     throw err
   }
 

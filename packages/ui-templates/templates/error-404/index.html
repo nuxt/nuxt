@@ -10,10 +10,27 @@
 
 <body
   class="font-sans antialiased bg-white dark:bg-[#020420] text-[#020420] tracking-wide dark:text-white grid min-h-screen place-content-center overflow-hidden ">
-  <div class="max-w-520px text-center">
+  <div class="max-w-620px text-center px-4">
     <h1 class="text-[80px] sm:text-[110px] font-semibold mb-4 tabular-nums leading-none">{{ messages.status }}</h1>
     <h2 class="text-2xl font-semibold sm:text-3xl mb-2">{{ messages.statusText }}</h2>
-    <p class="text-[#64748B] text-md mb-4 px-2">{{ messages.description }}</p>
+    <div class="flex flex-wrap items-center justify-center gap-2 mb-4 px-2">
+      <span class="inline-block px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-[#fee2e2] text-[#991b1b] dark:bg-[#450a0a] dark:text-[#fca5a5] tracking-wide shrink-0" data-error-code>{{ messages.errorCode }}</span>
+      <p class="text-[#64748B] text-md">{{ messages.description }}</p>
+    </div>
+    <div class="error-context text-left border border-[#e2e8f0] dark:border-[#334155] rounded-lg mt-4 mb-4 overflow-hidden text-sm leading-relaxed" data-error-context>
+      <div class="error-context-item px-4 py-3 border-b border-[#e2e8f0] dark:border-[#334155] flex gap-3 items-baseline" data-error-why>
+        <span class="font-semibold text-xs uppercase tracking-wider text-[#64748b] dark:text-[#94a3b8] shrink-0 min-w-10">Why</span>
+        <span>{{ messages.why }}</span>
+      </div>
+      <div class="error-context-item px-4 py-3 border-b border-[#e2e8f0] dark:border-[#334155] flex gap-3 items-baseline bg-[#f0fdfa] dark:bg-[#042f2e]" data-error-fix>
+        <span class="font-semibold text-xs uppercase tracking-wider text-[#0891b2] dark:text-[#22d3ee] shrink-0 min-w-10">Fix</span>
+        <span>{{ messages.fix }}</span>
+      </div>
+      <div class="error-context-item px-4 py-3 flex gap-3 items-baseline" data-error-docs>
+        <span class="font-semibold text-xs uppercase tracking-wider text-[#64748b] dark:text-[#94a3b8] shrink-0 min-w-10">Docs</span>
+        <a href="{{ messages.docsUrl }}" class="text-[#2563eb] dark:text-[#60a5fa] underline underline-offset-2 break-all hover:text-[#1d4ed8] dark:hover:text-[#93c5fd]">{{ messages.docsUrl }}</a>
+      </div>
+    </div>
     <div class="w-full flex items-center justify-center">
       <a href="/" class="underline underline-offset-3 text-sm font-medium hover:text-[#00DC82]">
         {{ messages.backHome }}

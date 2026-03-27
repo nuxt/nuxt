@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Component } from '@nuxt/schema'
 import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
 import { normalizeLineEndings } from './utils.ts'
-import { logger } from '../src/utils.ts'
+import { logger } from '@nuxt/kit'
 
 const getComponents = () => [{
   filePath: '/root/hello.server.vue',
@@ -452,7 +452,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
                 "
         `)
 
-        expect(spyOnWarn).toHaveBeenCalledWith('The `nuxt-client` attribute and client components within islands are only supported with Vite. file: `hello.server.vue`')
+        expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('The `nuxt-client` attribute and client components within islands are only supported with Vite. file: `hello.server.vue`'))
       })
     })
   })

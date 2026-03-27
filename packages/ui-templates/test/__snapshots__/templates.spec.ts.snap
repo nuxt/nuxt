@@ -10,11 +10,20 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .mb-4 {
   margin-bottom: 1rem;
 }
-.max-w-520px {
-  max-width: 520px;
+.mt-4 {
+  margin-top: 1rem;
+}
+.inline-block {
+  display: inline-block;
+}
+.max-w-620px {
+  max-width: 620px;
 }
 .min-h-screen {
   min-height: 100vh;
+}
+.min-w-10 {
+  min-width: 2.5rem;
 }
 .w-full {
   width: 100%;
@@ -22,17 +31,59 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .flex {
   display: flex;
 }
+.shrink-0 {
+  flex-shrink: 0;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
 .place-content-center {
   place-content: center;
 }
 .items-center {
   align-items: center;
 }
+.items-baseline {
+  align-items: baseline;
+}
 .justify-center {
   justify-content: center;
 }
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-3 {
+  gap: 0.75rem;
+}
 .overflow-hidden {
   overflow: hidden;
+}
+.break-all {
+  word-break: break-all;
+}
+.border {
+  border-width: 1px;
+}
+.border-b {
+  border-bottom-width: 1px;
+}
+.border-\\[\\#e2e8f0\\] {
+  --un-border-opacity: 1;
+  border-color: rgb(226 232 240 / var(--un-border-opacity));
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+.bg-\\[\\#f0fdfa\\] {
+  --un-bg-opacity: 1;
+  background-color: rgb(240 253 250 / var(--un-bg-opacity));
+}
+.bg-\\[\\#fee2e2\\] {
+  --un-bg-opacity: 1;
+  background-color: rgb(254 226 226 / var(--un-bg-opacity));
 }
 .bg-white {
   --un-bg-opacity: 1;
@@ -42,8 +93,27 @@ exports[`template > produces correct output for error-404 template 1`] = `
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
+.px-2\\.5 {
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.py-1 {
+  padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
+}
+.py-3 {
+  padding-bottom: 0.75rem;
+  padding-top: 0.75rem;
+}
 .text-center {
   text-align: center;
+}
+.text-left {
+  text-align: left;
 }
 .text-\\[80px\\] {
   font-size: 80px;
@@ -56,17 +126,38 @@ exports[`template > produces correct output for error-404 template 1`] = `
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
 .text-\\[\\#020420\\] {
   --un-text-opacity: 1;
   color: rgb(2 4 32 / var(--un-text-opacity));
 }
-.text-\\[\\#64748B\\] {
+.text-\\[\\#0891b2\\] {
+  --un-text-opacity: 1;
+  color: rgb(8 145 178 / var(--un-text-opacity));
+}
+.text-\\[\\#2563eb\\] {
+  --un-text-opacity: 1;
+  color: rgb(37 99 235 / var(--un-text-opacity));
+}
+.text-\\[\\#64748B\\],
+.text-\\[\\#64748b\\] {
   --un-text-opacity: 1;
   color: rgb(100 116 139 / var(--un-text-opacity));
+}
+.text-\\[\\#991b1b\\] {
+  --un-text-opacity: 1;
+  color: rgb(153 27 27 / var(--un-text-opacity));
 }
 .hover\\:text-\\[\\#00DC82\\]:hover {
   --un-text-opacity: 1;
   color: rgb(0 220 130 / var(--un-text-opacity));
+}
+.hover\\:text-\\[\\#1d4ed8\\]:hover {
+  --un-text-opacity: 1;
+  color: rgb(29 78 216 / var(--un-text-opacity));
 }
 .font-medium {
   font-weight: 500;
@@ -77,8 +168,25 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .leading-none {
   line-height: 1;
 }
+.leading-relaxed {
+  line-height: 1.625;
+}
 .tracking-wide {
   letter-spacing: 0.025em;
+}
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+.font-mono {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    Liberation Mono,
+    Courier New,
+    monospace;
 }
 .font-sans {
   font-family:
@@ -97,6 +205,9 @@ exports[`template > produces correct output for error-404 template 1`] = `
     Segoe UI Symbol,
     Noto Color Emoji;
 }
+.uppercase {
+  text-transform: uppercase;
+}
 .tabular-nums {
   --un-numeric-spacing: tabular-nums;
   font-variant-numeric: var(--un-ordinal) var(--un-slashed-zero)
@@ -106,6 +217,9 @@ exports[`template > produces correct output for error-404 template 1`] = `
 .underline {
   text-decoration-line: underline;
 }
+.underline-offset-2 {
+  text-underline-offset: 2px;
+}
 .underline-offset-3 {
   text-underline-offset: 3px;
 }
@@ -114,13 +228,45 @@ exports[`template > produces correct output for error-404 template 1`] = `
   -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
+  .dark\\:border-\\[\\#334155\\] {
+    --un-border-opacity: 1;
+    border-color: rgb(51 65 85 / var(--un-border-opacity));
+  }
   .dark\\:bg-\\[\\#020420\\] {
     --un-bg-opacity: 1;
     background-color: rgb(2 4 32 / var(--un-bg-opacity));
   }
+  .dark\\:bg-\\[\\#042f2e\\] {
+    --un-bg-opacity: 1;
+    background-color: rgb(4 47 46 / var(--un-bg-opacity));
+  }
+  .dark\\:bg-\\[\\#450a0a\\] {
+    --un-bg-opacity: 1;
+    background-color: rgb(69 10 10 / var(--un-bg-opacity));
+  }
+  .dark\\:text-\\[\\#22d3ee\\] {
+    --un-text-opacity: 1;
+    color: rgb(34 211 238 / var(--un-text-opacity));
+  }
+  .dark\\:text-\\[\\#60a5fa\\] {
+    --un-text-opacity: 1;
+    color: rgb(96 165 250 / var(--un-text-opacity));
+  }
+  .dark\\:text-\\[\\#94a3b8\\] {
+    --un-text-opacity: 1;
+    color: rgb(148 163 184 / var(--un-text-opacity));
+  }
+  .dark\\:text-\\[\\#fca5a5\\] {
+    --un-text-opacity: 1;
+    color: rgb(252 165 165 / var(--un-text-opacity));
+  }
   .dark\\:text-white {
     --un-text-opacity: 1;
     color: rgb(255 255 255 / var(--un-text-opacity));
+  }
+  .dark\\:hover\\:text-\\[\\#93c5fd\\]:hover {
+    --un-text-opacity: 1;
+    color: rgb(147 197 253 / var(--un-text-opacity));
   }
 }
 @media (width>=640px) {
@@ -250,17 +396,77 @@ exports[`template > produces correct output for error-500 template 1`] = `
 .mb-4 {
   margin-bottom: 1rem;
 }
-.max-w-520px {
-  max-width: 520px;
+.mt-4 {
+  margin-top: 1rem;
+}
+.inline-block {
+  display: inline-block;
+}
+.max-w-620px {
+  max-width: 620px;
 }
 .min-h-screen {
   min-height: 100vh;
 }
+.min-w-10 {
+  min-width: 2.5rem;
+}
+.flex {
+  display: flex;
+}
+.shrink-0 {
+  flex-shrink: 0;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
 .place-content-center {
   place-content: center;
 }
+.items-center {
+  align-items: center;
+}
+.items-baseline {
+  align-items: baseline;
+}
+.justify-center {
+  justify-content: center;
+}
+.gap-2 {
+  gap: 0.5rem;
+}
+.gap-3 {
+  gap: 0.75rem;
+}
 .overflow-hidden {
   overflow: hidden;
+}
+.break-all {
+  word-break: break-all;
+}
+.border {
+  border-width: 1px;
+}
+.border-b {
+  border-bottom-width: 1px;
+}
+.border-\\[\\#e2e8f0\\] {
+  --un-border-opacity: 1;
+  border-color: rgb(226 232 240 / var(--un-border-opacity));
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+.bg-\\[\\#f0fdfa\\] {
+  --un-bg-opacity: 1;
+  background-color: rgb(240 253 250 / var(--un-bg-opacity));
+}
+.bg-\\[\\#fee2e2\\] {
+  --un-bg-opacity: 1;
+  background-color: rgb(254 226 226 / var(--un-bg-opacity));
 }
 .bg-white {
   --un-bg-opacity: 1;
@@ -270,8 +476,27 @@ exports[`template > produces correct output for error-500 template 1`] = `
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
+.px-2\\.5 {
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.py-1 {
+  padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
+}
+.py-3 {
+  padding-bottom: 0.75rem;
+  padding-top: 0.75rem;
+}
 .text-center {
   text-align: center;
+}
+.text-left {
+  text-align: left;
 }
 .text-\\[80px\\] {
   font-size: 80px;
@@ -280,13 +505,41 @@ exports[`template > produces correct output for error-500 template 1`] = `
   font-size: 1.5rem;
   line-height: 2rem;
 }
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
 .text-\\[\\#020420\\] {
   --un-text-opacity: 1;
   color: rgb(2 4 32 / var(--un-text-opacity));
 }
-.text-\\[\\#64748B\\] {
+.text-\\[\\#0891b2\\] {
+  --un-text-opacity: 1;
+  color: rgb(8 145 178 / var(--un-text-opacity));
+}
+.text-\\[\\#2563eb\\] {
+  --un-text-opacity: 1;
+  color: rgb(37 99 235 / var(--un-text-opacity));
+}
+.text-\\[\\#64748B\\],
+.text-\\[\\#64748b\\] {
   --un-text-opacity: 1;
   color: rgb(100 116 139 / var(--un-text-opacity));
+}
+.text-\\[\\#991b1b\\] {
+  --un-text-opacity: 1;
+  color: rgb(153 27 27 / var(--un-text-opacity));
+}
+.hover\\:text-\\[\\#1d4ed8\\]:hover {
+  --un-text-opacity: 1;
+  color: rgb(29 78 216 / var(--un-text-opacity));
+}
+.font-medium {
+  font-weight: 500;
 }
 .font-semibold {
   font-weight: 600;
@@ -294,8 +547,25 @@ exports[`template > produces correct output for error-500 template 1`] = `
 .leading-none {
   line-height: 1;
 }
+.leading-relaxed {
+  line-height: 1.625;
+}
 .tracking-wide {
   letter-spacing: 0.025em;
+}
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+.font-mono {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    Liberation Mono,
+    Courier New,
+    monospace;
 }
 .font-sans {
   font-family:
@@ -314,24 +584,65 @@ exports[`template > produces correct output for error-500 template 1`] = `
     Segoe UI Symbol,
     Noto Color Emoji;
 }
+.uppercase {
+  text-transform: uppercase;
+}
 .tabular-nums {
   --un-numeric-spacing: tabular-nums;
   font-variant-numeric: var(--un-ordinal) var(--un-slashed-zero)
     var(--un-numeric-figure) var(--un-numeric-spacing)
     var(--un-numeric-fraction);
 }
+.underline {
+  text-decoration-line: underline;
+}
+.underline-offset-2 {
+  text-underline-offset: 2px;
+}
 .antialiased {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
+  .dark\\:border-\\[\\#334155\\] {
+    --un-border-opacity: 1;
+    border-color: rgb(51 65 85 / var(--un-border-opacity));
+  }
   .dark\\:bg-\\[\\#020420\\] {
     --un-bg-opacity: 1;
     background-color: rgb(2 4 32 / var(--un-bg-opacity));
   }
+  .dark\\:bg-\\[\\#042f2e\\] {
+    --un-bg-opacity: 1;
+    background-color: rgb(4 47 46 / var(--un-bg-opacity));
+  }
+  .dark\\:bg-\\[\\#450a0a\\] {
+    --un-bg-opacity: 1;
+    background-color: rgb(69 10 10 / var(--un-bg-opacity));
+  }
+  .dark\\:text-\\[\\#22d3ee\\] {
+    --un-text-opacity: 1;
+    color: rgb(34 211 238 / var(--un-text-opacity));
+  }
+  .dark\\:text-\\[\\#60a5fa\\] {
+    --un-text-opacity: 1;
+    color: rgb(96 165 250 / var(--un-text-opacity));
+  }
+  .dark\\:text-\\[\\#94a3b8\\] {
+    --un-text-opacity: 1;
+    color: rgb(148 163 184 / var(--un-text-opacity));
+  }
+  .dark\\:text-\\[\\#fca5a5\\] {
+    --un-text-opacity: 1;
+    color: rgb(252 165 165 / var(--un-text-opacity));
+  }
   .dark\\:text-white {
     --un-text-opacity: 1;
     color: rgb(255 255 255 / var(--un-text-opacity));
+  }
+  .dark\\:hover\\:text-\\[\\#93c5fd\\]:hover {
+    --un-text-opacity: 1;
+    color: rgb(147 197 253 / var(--un-text-opacity));
   }
 }
 @media (width>=640px) {
@@ -383,6 +694,11 @@ h1,
 h2 {
   font-size: inherit;
   font-weight: inherit;
+}
+a {
+  color: inherit;
+  -webkit-text-decoration: inherit;
+  text-decoration: inherit;
 }
 h1,
 h2,

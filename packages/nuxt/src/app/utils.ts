@@ -19,6 +19,12 @@ export interface RuntimeErrorOptions {
 }
 
 const DOCS_BASE = 'https://nuxt.com/docs/e'
+
+/** Escape `%` so user-controlled strings cannot inject format specifiers into `console.*` calls. */
+function escapeFormatSpecifiers (str: string): string {
+  return str.replaceAll('%', '%%')
+}
+
 const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
 
 type Trace = { source: string, line?: number, column?: number }
@@ -120,11 +126,13 @@ export function throwError (message: string, opts: RuntimeErrorOptions): never {
     if (opts.why) { (err as any).why = opts.why }
     ;(err as any).docsUrl = `${DOCS_BASE}/${opts.code}`
 
-    // Log the rich frame-formatted version to the console for terminal users
+    // Log the rich frame-formatted version to the console for terminal users.
+    // Escape `%` in the message so user-controlled text cannot inject format specifiers.
+    const safeMessage = escapeFormatSpecifiers(message)
     if (opts.cause) {
-      console.error(formatRuntimeError(message, opts), opts.cause)
+      console.error(formatRuntimeError(safeMessage, opts), opts.cause)
     } else {
-      console.error(formatRuntimeError(message, opts))
+      console.error(formatRuntimeError(safeMessage, opts))
     }
   }
 

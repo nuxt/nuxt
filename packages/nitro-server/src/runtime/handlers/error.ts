@@ -24,6 +24,15 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       mergeHeaders(headers, entries, setCookies)
     }
 
+    // Forward structured error properties in dev JSON responses
+    if (import.meta.dev && defaultRes.body && typeof defaultRes.body !== 'string') {
+      const src = error as any
+      if (src.fix) { defaultRes.body.fix = src.fix }
+      if (src.why) { defaultRes.body.why = src.why }
+      if (src.docsUrl) { defaultRes.body.docsUrl = src.docsUrl }
+      if (src.code) { defaultRes.body.errorCode = src.code }
+    }
+
     return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
       headers,
       status: defaultRes.status,
@@ -40,6 +49,15 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // we will be rendering this error internally so we pass along the error.data safely
   errorObject.data ??= error.data
   errorObject.url = event.req.url
+
+  // Forward structured error properties (fix, why, docsUrl, code) for error pages
+  if (import.meta.dev) {
+    const src = error as any
+    if (src.fix) { (errorObject as any).fix = src.fix }
+    if (src.why) { (errorObject as any).why = src.why }
+    if (src.docsUrl) { (errorObject as any).docsUrl = src.docsUrl }
+    if (src.code) { (errorObject as any).errorCode = src.code }
+  }
 
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)

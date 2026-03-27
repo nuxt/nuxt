@@ -9,9 +9,29 @@ import {
   userOptimizeDepsInclude,
 } from '../src/plugins/optimize-deps-hint.ts'
 
-vi.mock('@nuxt/kit', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+const { mockLogger } = vi.hoisted(() => ({
+  mockLogger: { info: vi.fn(), warn: vi.fn(), debug: vi.fn(), error: vi.fn() },
 }))
+
+vi.mock('@nuxt/kit', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@nuxt/kit')>()
+  return {
+    ...mod,
+    logger: mockLogger,
+    createBuildErrorUtils: (options: any) => {
+      const utils = mod.createBuildErrorUtils(options)
+      return {
+        ...utils,
+        warnBuild: (message: string, opts: any) => {
+          mockLogger.warn(utils.formatBuildError(message, opts))
+        },
+        errorBuild: (message: string, opts: any) => {
+          mockLogger.error(utils.formatBuildError(message, opts))
+        },
+      }
+    },
+  }
+})
 
 const { logger } = await import('@nuxt/kit')
 
