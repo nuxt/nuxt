@@ -17,6 +17,7 @@ export default defineNuxtPlugin({
       if (!error.value && !nuxtApp._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
         runtimeWarn('Your project has layouts but the `<NuxtLayout />` component has not been used.', {
           code: E4007,
+          fix: 'Add `<NuxtLayout>` to your `app.vue`, or set `pages: false` in `nuxt.config` if you don\'t need layouts.',
         })
       }
     }

@@ -331,7 +331,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           instance.sp = []
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
-          runtimeWarn(`[${functionName}] Component is already mounted, please use $fetch instead.`, { code: E3003, fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.' })
+          runtimeWarn(`[${functionName}] Component is already mounted.`, { code: E3003, fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.' })
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
           instance._nuxtOnBeforeMountCbs = []
@@ -667,7 +667,7 @@ function buildAsyncData<
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
         // @ts-expect-error private property
-        runtimeWarn(`[${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`, { code: E3005, fix: 'Wrap the call: `watch(source, () => execute())` instead of `watch(source, execute)`.' })
+        runtimeWarn(`[${options._functionName}] \`execute\` was passed directly to \`watch\`, which causes unintended behavior.`, { code: E3005, fix: 'Wrap the call: `watch(source, () => execute())` instead of `watch(source, execute)`.' })
       }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {

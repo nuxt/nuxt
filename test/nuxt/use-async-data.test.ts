@@ -126,7 +126,7 @@ describe('useAsyncData', () => {
     expect(syncedPending.value).toBe(false)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[NUXT_E3004\].*\[useAsyncData\] Incompatible options detected for "[^"]+":\n- different handler\n- different `default` value You can use a different key or move the call to a composable to ensure the options are shared across calls\./,
+      /\[NUXT_E3004\] \[useAsyncData\] Incompatible options detected for "[^"]+":\n- different handler\n- different `default` value.*\n\s+Fix: You can use a different key or move the call to a composable to ensure the options are shared across calls\./,
     ))
     warn.mockRestore()
     vi.unstubAllGlobals()
@@ -500,7 +500,7 @@ describe('useAsyncData', () => {
     warn.mockClear()
     await mountWithAsyncData('dedupedKey3', () => Promise.resolve('test'), { deep: true })
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
-      /\[NUXT_E3004\].*\[useAsyncData\] Incompatible options detected for "dedupedKey3":\n- mismatching `deep` option You can use a different key or move the call to a composable to ensure the options are shared across calls\./,
+      /\[NUXT_E3004\] \[useAsyncData\] Incompatible options detected for "dedupedKey3":\n- mismatching `deep` option.*\n\s+Fix: You can use a different key or move the call to a composable to ensure the options are shared across calls\./,
     ))
 
     let count = 0
@@ -514,7 +514,7 @@ describe('useAsyncData', () => {
       await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
       expect(warn).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`\\[NUXT_E3004\\].*\\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different \`${opt}\` option You can use a different key or move the call to a composable to ensure the options are shared across calls\\.`),
+          new RegExp(`\\[NUXT_E3004\\] \\[useAsyncData\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different \`${opt}\` option.*\n\\s+Fix: You can use a different key or move the call to a composable to ensure the options are shared across calls\\.`),
         ))
     }
 

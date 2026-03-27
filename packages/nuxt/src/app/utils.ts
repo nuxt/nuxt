@@ -1,4 +1,5 @@
 import { captureStackTrace } from 'errx'
+import { isAgent } from 'std-env'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
@@ -8,10 +9,14 @@ export function toArray<T> (value: T | T[]): T[] {
 export interface RuntimeErrorOptions {
   /** Error code (e.g., 'E1001'). Derives docs URL and is always shown, even in production. Displayed with NUXT_ prefix. */
   code: string
+  /** Why the error occurred — the underlying reason, shown on its own line below the message (dev only) */
+  why?: string
   /** A concrete suggestion for how to fix the issue (dev only) */
   fix?: string
   /** The underlying error that caused this one */
   cause?: unknown
+  /** Extra context to include (only shown in dev when an AI agent is detected) */
+  context?: Record<string, unknown>
 }
 
 const DOCS_BASE = 'https://nuxt.com/docs/e'
@@ -36,10 +41,20 @@ export function formatRuntimeError (message: string, opts: RuntimeErrorOptions):
     if (caller) {
       result += ` (at ${caller.source}${caller.line ? `:${caller.line}` : ''}${caller.column ? `:${caller.column}` : ''})`
     }
+    if (opts.why) {
+      result += `\n  Why: ${opts.why}`
+    }
     if (opts.fix) {
       result += `\n  Fix: ${opts.fix}`
     }
     result += `\n  See: ${DOCS_BASE}/${opts.code}`
+
+    if (isAgent && opts.context) {
+      const entries = Object.entries(opts.context)
+        .map(([k, v]) => `  ${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
+        .join('\n')
+      result += `\n\nDiagnostic context:\n${entries}`
+    }
   }
 
   return result

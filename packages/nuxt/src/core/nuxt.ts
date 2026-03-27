@@ -185,7 +185,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     if (nuxt.options.dev && hasTTY && !isCI && !isAgent && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      warnBuild(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback.`, { code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
+      warnBuild(`No \`compatibilityDate\` is set in \`nuxt.config\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, { code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
     }
 
     if (nuxt.options.dev && isAgent && !warnedAboutCompatDate) {

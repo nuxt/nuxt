@@ -5,6 +5,8 @@ import { logger } from './logger.ts'
 export interface NuxtErrorOptions {
   /** Error code (e.g., 'B1001'). Combined with the module prefix to form the error tag. */
   code: string
+  /** Why the error occurred — the underlying reason, shown on its own line below the message */
+  why?: string
   /** A concrete suggestion for how to fix the issue */
   fix?: string
   /** A documentation URL (overrides code-derived URL) */
@@ -68,6 +70,10 @@ export function createBuildErrorUtils (options: BuildErrorUtilsOptions) {
    */
   function formatBuildError (message: string, opts: NuxtErrorOptions): string {
     let result = `[${prefix}_${opts.code}] ${message}`
+
+    if (opts.why) {
+      result += `\n  ${colors.dim('Why:')} ${opts.why}`
+    }
 
     if (opts.fix) {
       result += `\n  ${colors.cyan('Fix:')} ${opts.fix}`

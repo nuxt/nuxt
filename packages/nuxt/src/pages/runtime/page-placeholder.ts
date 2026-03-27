@@ -8,7 +8,7 @@ export default defineComponent({
   name: 'NuxtPage',
   setup (_, props) {
     if (import.meta.dev) {
-      runtimeWarn(`Create a Vue component in the \`${devPagesDir}/\` directory to enable \`<NuxtPage>\`.`, { code: E4014 })
+      runtimeWarn(`No pages found. \`<NuxtPage>\` requires at least one page component in the \`${devPagesDir}/\` directory.`, { code: E4014, fix: `Create an \`index.vue\` file inside the \`${devPagesDir}/\` directory.` })
     }
     return () => props.slots.default?.()
   },

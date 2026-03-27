@@ -342,7 +342,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throwBuildError(`Multiple \`definePageMeta\` calls are not supported. Consolidate them into a single call. File: \`${id.replace(/\?.+$/, '')}\``, {
+          throwBuildError(`Multiple \`definePageMeta\` calls are not supported. File: \`${id.replace(/\?.+$/, '')}\``, {
             code: ErrorCodes.B4003,
             fix: 'Merge all `definePageMeta()` calls into a single call.',
             context: { callCount: instances },

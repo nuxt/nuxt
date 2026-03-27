@@ -23,8 +23,9 @@ export function injectHead (nuxtApp?: NuxtApp): VueHeadClient {
       const head = inject<VueHeadClient>(headSymbol)
       // should not be possible
       if (!head) {
-        throwError('[unhead] Missing Unhead instance. Make sure `useHead()` is called inside a component `setup()` function, a Nuxt plugin, or Nuxt middleware.', {
+        throwError('[unhead] Missing Unhead instance.', {
           code: E6001,
+          fix: 'Ensure `useHead()` is called inside a component `setup()` function, a Nuxt plugin, or Nuxt middleware.',
         })
       }
       return head

@@ -41,6 +41,7 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
             const filename = (vnode?.type as any)?.__file
             runtimeWarn(`\`${filename}\` does not have a single root node and will cause errors when navigating between routes.`, {
               code: E4004,
+              fix: 'Wrap the page component\'s template in a single root element (e.g., a `<div>`).',
             })
           }
         })

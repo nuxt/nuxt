@@ -29,7 +29,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
   // When running inside an AI coding agent, skip the interactive prompt
   // but log the exact command needed so the agent can act on it.
   if (isAgent) {
-    warnBuild(`Run \`npx nuxt add ${name}\` to install it.`, { code: ErrorCodes.B5012, fix: `Run \`npx nuxt add ${name}\` to install the missing package.` })
+    warnBuild(`Package \`${name}\` is required but not installed.`, { code: ErrorCodes.B5012, fix: `Run \`npx nuxt add ${name}\` to install it.` })
     return false
   }
 

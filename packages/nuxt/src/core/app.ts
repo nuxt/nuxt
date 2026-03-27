@@ -173,7 +173,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        warnBuild(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`, { code: ErrorCodes.B4009, fix: 'Rename the layout file to something other than `index` (e.g., `layouts/default.vue`).' })
+        warnBuild(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\` (\`index\` is ignored for the purpose of creating a layout name).`, { code: ErrorCodes.B4009, fix: 'Rename the layout file to something other than `index` (e.g., `layouts/default.vue`).' })
         continue
       }
       layouts[name] ||= { name, file }
@@ -191,7 +191,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        warnBuild(`No middleware name could be resolved for \`${resolveToAlias(file, nuxt)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`, { code: ErrorCodes.B4010, fix: 'Rename the middleware file to something other than `index` (e.g., `middleware/auth.ts`).' })
+        warnBuild(`No middleware name could be resolved for \`${resolveToAlias(file, nuxt)}\` (\`index\` is ignored for the purpose of creating a middleware name).`, { code: ErrorCodes.B4010, fix: 'Rename the middleware file to something other than `index` (e.g., `middleware/auth.ts`).' })
         continue
       }
       middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
