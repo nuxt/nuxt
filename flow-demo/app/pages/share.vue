@@ -15,7 +15,7 @@ function shareOnFacebook() {
     <NuxtLink to="/">← Back</NuxtLink>
     <h1>Share this page</h1>
     <p>Spread the word about Nuxt!</p>
-    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+    <div>
       <button @click="shareOnTwitter">Share on Twitter</button>
       <button @click="shareOnFacebook">Share on Facebook</button>
     </div>

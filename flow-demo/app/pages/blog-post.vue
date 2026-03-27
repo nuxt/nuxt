@@ -17,7 +17,7 @@ const post = ref({
     <p>{{ post.excerpt }}</p>
 
     <h2>Related Posts</h2>
-    <NuxtLink to="/blog-post" style="display: block; padding: 1rem; border: 1px solid #ccc; margin-bottom: 0.5rem;">
+    <NuxtLink to="/blog-post">
       <NuxtLink to="/blog-post">Why Nuxt is Great for SEO</NuxtLink>
       <p>Discover how Nuxt improves your search engine rankings.</p>
     </NuxtLink>

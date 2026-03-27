@@ -13,6 +13,5 @@
       <li><NuxtLink to="/blog-post">Blog Post</NuxtLink></li>
       <li><NuxtLink to="/preferences">Preferences</NuxtLink></li>
     </ul>
-    <MyButton />
   </div>
 </template>

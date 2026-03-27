@@ -15,8 +15,8 @@ function decrement() {
   <div>
     <NuxtLink to="/">← Back</NuxtLink>
     <h1>Counter</h1>
-    <p style="font-size: 2rem;">{{ count }}</p>
-    <div style="display: flex; gap: 1rem;">
+    <p>{{ count }}</p>
+    <div>
       <button @click="decrement">-</button>
       <button @click="increment">+</button>
     </div>

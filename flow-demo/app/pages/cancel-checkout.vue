@@ -12,7 +12,7 @@ function cancelOrder() {
     <h1>Cancel Order</h1>
     <p>Are you sure you want to cancel order <strong>{{ orderNumber }}</strong>?</p>
     <p>This action cannot be undone.</p>
-    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+    <div>
       <button @click="cancelOrder">Yes, cancel my order</button>
       <NuxtLink to="/">No, keep my order</NuxtLink>
     </div>
