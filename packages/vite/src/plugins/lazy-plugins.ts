@@ -8,7 +8,7 @@ import type { Plugin } from 'vite'
 const LAZY_PLUGIN_RE = /defineLazyNuxtPlugin/
 
 export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
-  if (nuxt.options.dev) { return }
+  if (nuxt.options.dev || !nuxt.options.experimental.lazyPlugins) { return }
 
   const nitro = useNitro()
   const lazyPluginSrcs = new Set<string>()

@@ -8,6 +8,10 @@ links:
     size: xs
 ---
 
+::callout{icon="i-heroicons-beaker" color="amber"}
+This feature is experimental. Enable it with `experimental.lazyPlugins: true` in your `nuxt.config.ts`.
+::
+
 `defineLazyNuxtPlugin` creates a plugin that is excluded from the critical entry bundle. The plugin is dynamically imported and executed after hydration completes (on `app:suspense:resolve`), reducing initial JS parse time for code that doesn't need to run before the app is interactive.
 
 ```ts twoslash [plugins/analytics.client.ts]
@@ -116,13 +120,16 @@ Any plugin can be made lazy via config instead of using `defineLazyNuxtPlugin`:
 
 ```ts twoslash [nuxt.config.ts]
 export default defineNuxtConfig({
+  experimental: {
+    lazyPlugins: true,
+  },
   plugins: [
     { src: '~/plugins/analytics.client', lazy: true },
   ],
 })
 ```
 
-Or with object syntax in the plugin file itself:
+Or with object syntax in the plugin file itself (requires `experimental.lazyPlugins: true`):
 
 ```ts twoslash [plugins/analytics.client.ts]
 export default defineNuxtPlugin({

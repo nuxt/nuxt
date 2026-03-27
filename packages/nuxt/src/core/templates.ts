@@ -67,11 +67,12 @@ export const clientPluginTemplate: NuxtTemplate = {
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
+    const lazyEnabled = ctx.nuxt.options.experimental.lazyPlugins
     let hasLazy = false
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
-      if (plugin.lazy) {
+      if (lazyEnabled && plugin.lazy) {
         hasLazy = true
         // Lazy plugins are dynamically imported after hydration, keeping them out of the critical entry bundle
         imports.push(`const ${variable} = /*#__PURE__*/ _createLazyPlugin(() => ${genDynamicImport(plugin.src, { wrapper: false })}, ${genString(plugin.name || filename(plugin.src) || path)})`)
