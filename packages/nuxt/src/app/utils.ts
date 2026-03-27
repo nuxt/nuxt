@@ -94,7 +94,7 @@ export function formatRuntimeError (message: string, opts: RuntimeErrorOptions):
       lines.push(wrapRuntimeLine(opts.why))
     }
 
-    lines.push(wrapRuntimeLine(`see: ${DOCS_BASE}/${opts.code}`))
+    lines.push(wrapRuntimeLine(`see: ${DOCS_BASE}/${opts.code.toLowerCase()}`))
 
     if (opts.fix) {
       lines.push(wrapRuntimeLine(`fix: ${opts.fix}`))
@@ -124,7 +124,7 @@ export function throwError (message: string, opts: RuntimeErrorOptions): never {
     // Structured fields for HTML error page rendering
     if (opts.fix) { (err as any).fix = opts.fix }
     if (opts.why) { (err as any).why = opts.why }
-    ;(err as any).docsUrl = `${DOCS_BASE}/${opts.code}`
+    ;(err as any).docsUrl = `${DOCS_BASE}/${opts.code.toLowerCase()}`
 
     // Log the rich frame-formatted version to the console for terminal users.
     // Escape `%` in the message so user-controlled text cannot inject format specifiers.

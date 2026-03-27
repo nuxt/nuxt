@@ -141,7 +141,7 @@ export function createBuildErrorUtils (options: BuildErrorUtilsOptions): BuildEr
       lines.push(wrapFrameLine(opts.why))
     }
 
-    const docsURL = opts.docs || (options.docsBase ? `${options.docsBase}/${opts.code}` : undefined)
+    const docsURL = opts.docs || (options.docsBase ? `${options.docsBase}/${opts.code.toLowerCase()}` : undefined)
     if (docsURL) {
       lines.push(wrapFrameLine(`${colors.bold('see:')} ${colors.underline(docsURL)}`))
     }
@@ -180,7 +180,7 @@ export function createBuildErrorUtils (options: BuildErrorUtilsOptions): BuildEr
     // Structured fields for HTML error page rendering
     if (opts.fix) { (err as any).fix = opts.fix }
     if (opts.why) { (err as any).why = opts.why }
-    const docsURL = opts.docs || (options.docsBase ? `${options.docsBase}/${opts.code}` : undefined)
+    const docsURL = opts.docs || (options.docsBase ? `${options.docsBase}/${opts.code.toLowerCase()}` : undefined)
     if (docsURL) { (err as any).docsUrl = docsURL }
 
     // Log the rich frame-formatted version to the console for terminal users
