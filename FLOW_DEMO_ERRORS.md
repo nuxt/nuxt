@@ -1,5 +1,8 @@
 # Error Code Demos
 
+> [!IMPORTANT]
+> This shouldn't be read by the agent, that would be cheating
+
 Each file triggers a specific build-time error. Run `pnpm dev` and check terminal output.
 
 ## Startup warnings (non-fatal)
