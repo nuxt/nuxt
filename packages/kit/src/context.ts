@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
-import { buildErrorUtils } from './errors.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 
 /**

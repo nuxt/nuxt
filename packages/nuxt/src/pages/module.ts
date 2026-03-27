@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { ErrorCodes, addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, buildErrorUtils, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, useNitro } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../core/utils/error-format.ts'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString } from 'knitwork'
 import { joinURL } from 'ufo'

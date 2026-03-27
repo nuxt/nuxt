@@ -6,7 +6,7 @@ import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
 import { isJS, isVue } from '../../core/utils/index.ts'
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import { distDir } from '../../dirs.ts'
 
 interface UnheadImportsPluginOptions {

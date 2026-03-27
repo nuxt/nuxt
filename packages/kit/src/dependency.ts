@@ -4,7 +4,7 @@ import { resolveModulePath } from 'exsolve'
 import { hasTTY, isCI, provider } from 'std-env'
 import { logger } from './logger.ts'
 import { tryUseNuxt } from './context.ts'
-import { buildErrorUtils } from './errors.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 
 const isStackblitz = provider === 'stackblitz'

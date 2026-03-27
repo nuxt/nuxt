@@ -1,5 +1,6 @@
 import { resolvePackageJSON } from 'pkg-types'
-import { ErrorCodes, buildErrorUtils, useNuxt } from '@nuxt/kit'
+import { useNuxt } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 import { isAgent, isCI, provider } from 'std-env'
 import { logger } from '../utils.ts'
 

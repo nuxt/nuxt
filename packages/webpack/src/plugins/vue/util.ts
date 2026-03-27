@@ -3,7 +3,8 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/util.js
  */
 
-import { ErrorCodes, buildErrorUtils, logger } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../nuxt-errors.ts'
 import type { Compiler } from 'webpack'
 
 export const validate = (compiler: Compiler) => {

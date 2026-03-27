@@ -4,7 +4,7 @@ import { applyDefaults } from 'untyped'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
 import { logger } from '../logger.ts'
 import { tryUseNuxt, useNuxt } from '../context.ts'
-import { buildErrorUtils } from '../errors.ts'
+import { buildErrorUtils } from '../nuxt-errors.ts'
 import * as ErrorCodes from '../error-codes.ts'
 import { checkNuxtCompatibility } from '../compatibility.ts'
 

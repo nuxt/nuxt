@@ -6,7 +6,7 @@ import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
 import { normalize } from 'pathe'
 import { isVue, parseModuleId } from '../../core/utils/index.ts'
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]

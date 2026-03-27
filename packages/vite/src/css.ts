@@ -2,7 +2,8 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { InlineConfig as ViteConfig } from 'vite'
 import type { Plugin } from 'postcss'
 import { createJiti } from 'jiti'
-import { ErrorCodes, buildErrorUtils, ensureDependencyInstalled } from '@nuxt/kit'
+import { ensureDependencyInstalled } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './nuxt-errors.ts'
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)

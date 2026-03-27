@@ -2,7 +2,7 @@ import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 
 import { useNuxt } from './context.ts'
-import { buildErrorUtils } from './errors.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from './nitro-types.ts'
 import { toArray } from './utils.ts'

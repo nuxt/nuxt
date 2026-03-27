@@ -1,4 +1,5 @@
-import { ErrorCodes, buildErrorUtils, logger, resolveAlias } from '@nuxt/kit'
+import { logger, resolveAlias } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, stripExtension } from '../../utils.ts'
 import type {

@@ -3,7 +3,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import type { Plugin } from 'postcss'
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 

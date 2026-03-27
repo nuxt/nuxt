@@ -1,5 +1,6 @@
 import { isObject } from '@vue/shared'
-import { ErrorCodes, buildErrorUtils, isIgnored } from '@nuxt/kit'
+import { isIgnored } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'

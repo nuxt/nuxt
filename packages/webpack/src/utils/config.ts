@@ -1,6 +1,6 @@
 import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 import { toArray } from './index.ts'
 
 export interface WebpackConfigContext {

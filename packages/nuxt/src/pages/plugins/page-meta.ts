@@ -5,7 +5,7 @@ import MagicString from 'magic-string'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
 import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'

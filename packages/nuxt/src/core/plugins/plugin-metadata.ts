@@ -8,7 +8,7 @@ import { normalize } from 'pathe'
 import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../utils/error-format.ts'
 import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
 
 const internalOrderMap = {

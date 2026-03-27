@@ -5,7 +5,7 @@ import { resolveModulePath } from 'exsolve'
 import { interopDefault } from 'mlly'
 import { directoryToURL, importModule, tryImportModule } from '../internal/esm.ts'
 import { runWithNuxtContext } from '../context.ts'
-import { buildErrorUtils } from '../errors.ts'
+import { buildErrorUtils } from '../nuxt-errors.ts'
 import * as ErrorCodes from '../error-codes.ts'
 import type { LoadNuxtConfigOptions } from './config.ts'
 

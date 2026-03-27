@@ -1,5 +1,5 @@
 import type { ResolvedConfig } from 'vite'
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 
 export function resolveClientEntry (config: ResolvedConfig) {
   const input = config.environments.client?.build.rolldownOptions.input ?? config.build.rolldownOptions.input

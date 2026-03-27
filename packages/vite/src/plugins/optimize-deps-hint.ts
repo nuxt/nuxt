@@ -1,7 +1,8 @@
 import { relative } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { ErrorCodes, buildErrorUtils, logger } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 import { colorize } from 'consola/utils'
 
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {

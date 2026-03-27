@@ -2,7 +2,7 @@ import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
 import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
-import { buildErrorUtils } from './errors.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 
 const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/

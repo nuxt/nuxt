@@ -1,4 +1,5 @@
-import { ErrorCodes, buildErrorUtils, directoryToURL, importModule } from '@nuxt/kit'
+import { directoryToURL, importModule } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 

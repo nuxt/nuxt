@@ -39,10 +39,8 @@ export type { ResolvePathOptions, Resolver } from './resolve.ts'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro.ts'
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { logger, useLogger } from './logger.ts'
-export { buildErrorUtils, createErrorUtils } from './errors.ts'
+export { createErrorUtils } from './errors.ts'
 export type { ErrorUtils, ErrorUtilsOptions, ErrorOptions } from './errors.ts'
-/** @deprecated */
-export type { NuxtErrorOptions, BuildErrorUtils, BuildErrorUtilsOptions } from './errors.ts'
 export * as ErrorCodes from './error-codes.ts'
 
 // Dependencies

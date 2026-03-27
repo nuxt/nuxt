@@ -1,5 +1,5 @@
 import type { Compilation, Compiler } from 'webpack'
-import { ErrorCodes, buildErrorUtils } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../../nuxt-errors.ts'
 import { extractQueryPartJS, isJS, validate } from './util.ts'
 import { webpack } from '#builder'
 

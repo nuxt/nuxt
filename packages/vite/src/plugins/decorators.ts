@@ -1,5 +1,6 @@
 import type { Plugin } from 'vite'
-import { ErrorCodes, buildErrorUtils, ensureDependencyInstalled } from '@nuxt/kit'
+import { ensureDependencyInstalled } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 import type { Nuxt } from '@nuxt/schema'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const

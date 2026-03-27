@@ -1,4 +1,5 @@
-import { ErrorCodes, buildErrorUtils, findPath } from '@nuxt/kit'
+import { findPath } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 import { basename } from 'pathe'
 
 /**

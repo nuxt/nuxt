@@ -1,4 +1,5 @@
-import { ErrorCodes, addBuildPlugin, buildErrorUtils, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../core/utils/error-format.ts'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'

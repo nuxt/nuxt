@@ -13,7 +13,7 @@ import semver from 'semver'
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
-import { buildErrorUtils } from '../errors.ts'
+import { buildErrorUtils } from '../nuxt-errors.ts'
 import * as ErrorCodes from '../error-codes.ts'
 import { getLayerDirectories } from '../layers.ts'
 
