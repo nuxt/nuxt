@@ -11,7 +11,7 @@ import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError } from './composables/error'
-import { runtimeWarn } from './utils'
+import { runtimeErrorUtils } from './utils'
 import { E1008, E1011 } from './error-codes'
 
 // @ts-expect-error virtual file
@@ -105,7 +105,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    runtimeWarn('Error while mounting app.', { code: E1011, fix: 'Check your plugins and app initialization code for unhandled errors.', cause: error })
+    runtimeErrorUtils.warn('Error while mounting app.', { code: E1011, fix: 'Check your plugins and app initialization code for unhandled errors.', cause: error })
     throw error
   })
 }

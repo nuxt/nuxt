@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
-import { throwBuildError } from './nuxt-errors.ts'
+import { buildErrorUtils } from './errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 
 /**
@@ -33,7 +33,7 @@ export function useNuxt (): Nuxt {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const instance = asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
   if (!instance) {
-    return throwBuildError('Nuxt instance is unavailable!', { code: ErrorCodes.B8001, fix: 'Ensure this is called within a Nuxt module `setup()` function, or inside a `nuxt.hook()` callback.' })
+    return buildErrorUtils.throw('Nuxt instance is unavailable!', { code: ErrorCodes.B8001, fix: 'Ensure this is called within a Nuxt module `setup()` function, or inside a `nuxt.hook()` callback.' })
   }
   return instance
 }

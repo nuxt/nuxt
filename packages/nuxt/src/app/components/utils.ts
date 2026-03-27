@@ -1,7 +1,7 @@
 import { Transition, createStaticVNode, h } from 'vue'
 import type { RendererNode, TransitionProps, VNode } from 'vue'
 import { defu } from 'defu'
-import { runtimeWarn } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E4013 } from '../error-codes'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
@@ -89,7 +89,7 @@ export function vforToArray (source: any): any[] {
     return source.split('')
   } else if (typeof source === 'number') {
     if (import.meta.dev && !Number.isInteger(source)) {
-      runtimeWarn(`The v-for range expects an integer value but got ${source}.`, { code: E4013, fix: 'Use `Math.floor()` or `Math.round()` to convert the value to an integer.' })
+      runtimeErrorUtils.warn(`The v-for range expects an integer value but got ${source}.`, { code: E4013, fix: 'Use `Math.floor()` or `Math.round()` to convert the value to an integer.' })
     }
     const array: number[] = []
     for (let i = 0; i < source; i++) {

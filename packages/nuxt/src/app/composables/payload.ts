@@ -2,7 +2,7 @@ import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { runtimeWarn, throwError } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E7001, E7002, E7004 } from '../error-codes'
 import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
@@ -71,7 +71,7 @@ const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
-    throwError('Payload URL must not include hostname: ' + url, { code: E7001, fix: 'Use a relative path (e.g., `/page`) instead of a full URL with hostname.' })
+    runtimeErrorUtils.throw('Payload URL must not include hostname: ' + url, { code: E7001, fix: 'Use a relative path (e.g., `/page`) instead of a full URL with hostname.' })
   }
   const config = useRuntimeConfig()
   const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
@@ -86,13 +86,13 @@ async function _importPayload (payloadURL: string) {
     const res = await fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' })
     if (!res.ok) {
       if (import.meta.dev) {
-        runtimeWarn(`Cannot load payload \`${payloadURL}\`: ${res.status} ${res.statusText}`, { code: E7002, fix: 'Ensure the payload file is generated and accessible. This may be caused by a prerendering issue or a server misconfiguration.' })
+        runtimeErrorUtils.warn(`Cannot load payload \`${payloadURL}\`: ${res.status} ${res.statusText}`, { code: E7002, fix: 'Ensure the payload file is generated and accessible. This may be caused by a prerendering issue or a server misconfiguration.' })
       }
       return null
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    runtimeWarn('Cannot load payload ' + payloadURL, { code: E7002, fix: 'Check your network connection and server configuration. The payload file may not be accessible.', cause: err })
+    runtimeErrorUtils.warn('Cannot load payload ' + payloadURL, { code: E7002, fix: 'Check your network connection and server configuration. The payload file may not be accessible.', cause: err })
   }
   return null
 }
@@ -209,7 +209,7 @@ export function definePayloadReviver (
   revive: (data: any) => any | undefined,
 ) {
   if (import.meta.dev && getCurrentInstance()) {
-    runtimeWarn('[definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.', { code: E7004, fix: 'Move this call into a Nuxt plugin file and ensure the plugin is registered early in the plugin order.' })
+    runtimeErrorUtils.warn('[definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.', { code: E7004, fix: 'Move this call into a Nuxt plugin file and ensure the plugin is registered early in the plugin order.' })
   }
   if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive

@@ -1,8 +1,7 @@
 import { relative } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { logger } from '@nuxt/kit'
-import { ErrorCodes, warnBuild } from '../nuxt-errors.ts'
+import { ErrorCodes, buildErrorUtils, logger } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
 
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {
@@ -132,7 +131,7 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
           `Update your \`nuxt.config.ts\`:\n\n` +
           configBlock(getSnippetDeps()),
         )
-        warnBuild(parts.join('\n\n'), { code: ErrorCodes.B7002, fix: 'Update the `vite.optimizeDeps.include` array in your `nuxt.config.ts` with the values shown above.' })
+        buildErrorUtils.warn(parts.join('\n\n'), { code: ErrorCodes.B7002, fix: 'Update the `vite.optimizeDeps.include` array in your `nuxt.config.ts` with the values shown above.' })
       }
     }, 3000)
   }

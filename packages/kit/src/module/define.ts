@@ -4,7 +4,7 @@ import { applyDefaults } from 'untyped'
 import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions } from '@nuxt/schema'
 import { logger } from '../logger.ts'
 import { tryUseNuxt, useNuxt } from '../context.ts'
-import { throwBuildError, warnBuild } from '../nuxt-errors.ts'
+import { buildErrorUtils } from '../errors.ts'
 import * as ErrorCodes from '../error-codes.ts'
 import { checkNuxtCompatibility } from '../compatibility.ts'
 
@@ -87,7 +87,7 @@ function _defineNuxtModule<
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
-      throwBuildError(`Cannot use \`${module.meta.name || 'module'}\` outside of Nuxt context.`, { code: ErrorCodes.B8012, fix: 'Ensure this module is registered in the `modules` array of `nuxt.config`, not called directly.' })
+      buildErrorUtils.throw(`Cannot use \`${module.meta.name || 'module'}\` outside of Nuxt context.`, { code: ErrorCodes.B8012, fix: 'Ensure this module is registered in the `modules` array of `nuxt.config`, not called directly.' })
     }
 
     // Avoid duplicate installs
@@ -110,7 +110,7 @@ function _defineNuxtModule<
           error.name = 'ModuleCompatibilityError'
           throw error
         }
-        warnBuild(errorMessage, { code: ErrorCodes.B8013, fix: 'Update the module to a version that supports the current Nuxt version, or set `experimental.enforceModuleCompatibility` to `true` to make this a fatal error.' })
+        buildErrorUtils.warn(errorMessage, { code: ErrorCodes.B8013, fix: 'Update the module to a version that supports the current Nuxt version, or set `experimental.enforceModuleCompatibility` to `true` to make this a fatal error.' })
         return
       }
     }
@@ -138,7 +138,7 @@ function _defineNuxtModule<
 
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
-      warnBuild(`Slow module \`${moduleName}\` took \`${setupTime}ms\` to setup.`, { code: ErrorCodes.B8014, fix: 'Consider deferring expensive operations to a later hook (e.g., `build:before`) to reduce startup time.' })
+      buildErrorUtils.warn(`Slow module \`${moduleName}\` took \`${setupTime}ms\` to setup.`, { code: ErrorCodes.B8014, fix: 'Consider deferring expensive operations to a later hook (e.g., `build:before`) to reduce startup time.' })
     } else if (nuxt.options.debug && nuxt.options.debug.modules) {
       logger.info(`Module \`${moduleName}\` took \`${setupTime}ms\` to setup.`)
     }

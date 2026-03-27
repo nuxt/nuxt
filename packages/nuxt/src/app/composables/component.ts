@@ -3,7 +3,7 @@ import type { DefineComponent, defineComponent } from 'vue'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { getNuxtAppCtx, useNuxtApp } from '../nuxt'
-import { runtimeWarn } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E3007 } from '../error-codes'
 import { useHead } from './head'
 import { useAsyncData } from './asyncData'
@@ -44,7 +44,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
       })
     }
   } else if (import.meta.dev) {
-    runtimeWarn('asyncData should return an object.', { code: E3007, fix: 'Return a plain object from the `asyncData()` function, e.g. `asyncData() { return { key: value } }`.', cause: data })
+    runtimeErrorUtils.warn('asyncData should return an object.', { code: E3007, fix: 'Return a plain object from the `asyncData()` function, e.g. `asyncData() { return { key: value } }`.', cause: data })
   }
 }
 

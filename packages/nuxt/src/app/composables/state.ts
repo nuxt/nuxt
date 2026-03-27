@@ -1,7 +1,7 @@
 import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { throwError, toArray } from '../utils'
+import { runtimeErrorUtils, toArray } from '../utils'
 import { E7007, E7009 } from '../error-codes'
 
 // @ts-expect-error virtual file
@@ -22,10 +22,10 @@ export function useState<T> (...args: any): Ref<T> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, init] = args as [string, (() => T | Ref<T>)]
   if (!_key || typeof _key !== 'string') {
-    throwError('[useState] key must be a string: ' + _key, { code: E7009, fix: 'Pass a string key as the first argument to `useState()`, e.g. `useState(\'myKey\', () => initialValue)`.' })
+    runtimeErrorUtils.throw('[useState] key must be a string: ' + _key, { code: E7009, fix: 'Pass a string key as the first argument to `useState()`, e.g. `useState(\'myKey\', () => initialValue)`.' })
   }
   if (init !== undefined && typeof init !== 'function') {
-    throwError(`[useState] \`init\` must be a function, but got \`${typeof init}\`.`, {
+    runtimeErrorUtils.throw(`[useState] \`init\` must be a function, but got \`${typeof init}\`.`, {
       code: E7007,
       fix: 'Wrap the initial value in a function: `useState(\'key\', () => value)` instead of `useState(\'key\', value)`.',
     })

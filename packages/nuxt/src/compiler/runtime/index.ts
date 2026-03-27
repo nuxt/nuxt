@@ -1,4 +1,4 @@
-import { throwError } from '../../app/utils'
+import { runtimeErrorUtils } from '../../app/utils'
 import { E1007 } from '../../app/error-codes'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -19,7 +19,7 @@ export interface ObjectFactory<T extends Function> {
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function defineKeyedFunctionFactory<T extends Function> (factory: ObjectFactory<T>): T {
   const placeholder = function () {
-    throwError(
+    runtimeErrorUtils.throw(
       `\`${factory.name}\` is a compiler macro and cannot be called at runtime.`,
       { code: E1007, fix: 'It is only usable inside the directories scanned by the Nuxt compiler as an exported function and imported statically.' },
     )

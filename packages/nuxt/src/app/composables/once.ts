@@ -1,6 +1,6 @@
 import { useRouter } from './router'
 import { useNuxtApp } from '../nuxt'
-import { throwError } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E7008, E7010 } from '../error-codes'
 
 type CallOnceOptions = {
@@ -24,10 +24,10 @@ export async function callOnce (...args: any[]): Promise<void> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, fn, options] = args as [string, (() => any | Promise<any>), CallOnceOptions | undefined]
   if (!_key || typeof _key !== 'string') {
-    throwError('[callOnce] key must be a string: ' + _key, { code: E7010, fix: 'Pass a string key as the first argument to `callOnce()`, e.g. `callOnce(\'myKey\', () => { ... })`.' })
+    runtimeErrorUtils.throw('[callOnce] key must be a string: ' + _key, { code: E7010, fix: 'Pass a string key as the first argument to `callOnce()`, e.g. `callOnce(\'myKey\', () => { ... })`.' })
   }
   if (fn !== undefined && typeof fn !== 'function') {
-    throwError(`[callOnce] \`fn\` must be a function, but got \`${typeof fn}\`.`, {
+    runtimeErrorUtils.throw(`[callOnce] \`fn\` must be a function, but got \`${typeof fn}\`.`, {
       code: E7008,
       fix: 'Pass a function as the second argument: `callOnce(\'key\', () => { ... })`.',
     })

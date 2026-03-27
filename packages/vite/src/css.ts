@@ -2,8 +2,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { InlineConfig as ViteConfig } from 'vite'
 import type { Plugin } from 'postcss'
 import { createJiti } from 'jiti'
-import { ensureDependencyInstalled } from '@nuxt/kit'
-import { ErrorCodes, warnBuild } from './nuxt-errors.ts'
+import { ErrorCodes, buildErrorUtils, ensureDependencyInstalled } from '@nuxt/kit'
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
@@ -59,5 +58,5 @@ async function resolvePostcssPlugin (jiti: ReturnType<typeof createJiti>, plugin
     }
   }
 
-  warnBuild(`Could not load postcss plugin \`${pluginName}\`.`, { code: ErrorCodes.B7007, fix: `Run \`npm install -D ${pluginName}\` to install the PostCSS plugin.`, context: { pluginName } })
+  buildErrorUtils.warn(`Could not load postcss plugin \`${pluginName}\`.`, { code: ErrorCodes.B7007, fix: `Run \`npm install -D ${pluginName}\` to install the PostCSS plugin.`, context: { pluginName } })
 }

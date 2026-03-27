@@ -18,15 +18,15 @@ vi.mock('@nuxt/kit', async (importOriginal) => {
   return {
     ...mod,
     logger: mockLogger,
-    createBuildErrorUtils: (options: any) => {
-      const utils = mod.createBuildErrorUtils(options)
+    createErrorUtils: (options: any) => {
+      const utils = mod.createErrorUtils(options)
       return {
         ...utils,
-        warnBuild: (message: string, opts: any) => {
-          mockLogger.warn(utils.formatBuildError(message, opts))
+        warn: (message: string, opts: any) => {
+          mockLogger.warn(utils.format(message, opts))
         },
-        errorBuild: (message: string, opts: any) => {
-          mockLogger.error(utils.formatBuildError(message, opts))
+        error: (message: string, opts: any) => {
+          mockLogger.error(utils.format(message, opts))
         },
       }
     },

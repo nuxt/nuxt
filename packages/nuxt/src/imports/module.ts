@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
+import { ErrorCodes, addBuildPlugin, addTemplate, addTypeTemplate, buildErrorUtils, createIsIgnored, defineNuxtModule, directoryToURL, getLayerDirectories, resolveAlias, tryResolveModule, updateTemplates, useNitro, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
@@ -7,7 +7,6 @@ import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory, logger, resolveToAlias } from '../utils.ts'
-import { ErrorCodes, errorBuild } from '../core/utils/error-format.ts'
 import { TransformPlugin } from './transform.ts'
 import { appCompatPresets, defaultPresets } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -164,7 +163,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? `${resolveToAlias(i.from, nuxt)}` : i.from
-              errorBuild(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues.`, {
+              buildErrorUtils.error(`\`${value}\` is an auto-imported function that is in use by Nuxt. Overriding it will likely cause issues.`, {
                 code: ErrorCodes.B6002,
                 fix: `Rename \`${value}\` in \`${relativePath}\` to avoid conflicting with the built-in Nuxt auto-import.`,
                 context: {
