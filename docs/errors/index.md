@@ -204,8 +204,8 @@ Build-time errors occur during the Nuxt build process. They are prefixed with `B
 | [B5003](/docs/errors/B5003) | Reserved `runtimeConfig.app` namespace |
 | [B5004](/docs/errors/B5004) | External config file not supported |
 | [B5005](/docs/errors/B5005) | Unable to load schema |
-| [B5006](/docs/errors/B5006) | Webpack hash in dev mode |
-| [B5007](/docs/errors/B5007) | Webpack target should be "node" |
+| [B5006](/docs/errors/B5006) | webpack hash in dev mode |
+| [B5007](/docs/errors/B5007) | webpack target should be "node" |
 | [B5008](/docs/errors/B5008) | Unknown PostCSS order preset |
 | [B5009](/docs/errors/B5009) | Falling back to chokidar for schema |
 | [B5010](/docs/errors/B5010) | Missing packages |
@@ -219,14 +219,14 @@ Build-time errors occur during the Nuxt build process. They are prefixed with `B
 | [B6001](/docs/errors/B6001) | Importing from `@unhead/vue` instead of `#imports` |
 | [B6002](/docs/errors/B6002) | Auto-import name conflict |
 
-### B7xxx: Webpack / Vite Bundler
+### B7xxx: webpack / Vite Bundler
 
 | Code | Description |
 |------|-------------|
 | [B7001](/docs/errors/B7001) | Bundle analysis requires `rollup-plugin-visualizer` |
 | [B7002](/docs/errors/B7002) | Vite `optimizeDeps` stale |
 | [B7003](/docs/errors/B7003) | Server bundle should have one entry file |
-| [B7004](/docs/errors/B7004) | Webpack entry not found |
+| [B7004](/docs/errors/B7004) | webpack entry not found |
 | [B7005](/docs/errors/B7005) | No client entry in `rollupOptions` |
 | [B7006](/docs/errors/B7006) | No server entry in `rollupOptions` |
 | [B7007](/docs/errors/B7007) | Could not load PostCSS plugin (Vite) |
@@ -236,7 +236,7 @@ Build-time errors occur during the Nuxt build process. They are prefixed with `B
 | [B7011](/docs/errors/B7011) | Could not import PostCSS plugin (webpack) |
 | [B7012](/docs/errors/B7012) | Buffer size limit exceeded (ViteNode) |
 | [B7013](/docs/errors/B7013) | Socket path not configured (ViteNode) |
-| [B7014](/docs/errors/B7014) | Webpack build failed |
+| [B7014](/docs/errors/B7014) | webpack build failed |
 | [B7015](/docs/errors/B7015) | Payload extraction recommended |
 | [B7016](/docs/errors/B7016) | Custom `spaLoadingTemplate` not found |
 
