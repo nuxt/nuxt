@@ -1,5 +1,7 @@
 import { useRouter } from './router'
 import { useNuxtApp } from '../nuxt'
+import { throwError } from '../utils'
+import { E7008, E7010 } from '../error-codes'
 
 type CallOnceOptions = {
   mode?: 'navigation' | 'render'
@@ -22,10 +24,12 @@ export async function callOnce (...args: any[]): Promise<void> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, fn, options] = args as [string, (() => any | Promise<any>), CallOnceOptions | undefined]
   if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [callOnce] key must be a string: ' + _key)
+    throwError('[callOnce] key must be a string: ' + _key, { code: E7010 })
   }
   if (fn !== undefined && typeof fn !== 'function') {
-    throw new Error('[nuxt] [callOnce] fn must be a function: ' + fn)
+    throwError(`[callOnce] \`fn\` must be a function, but got \`${typeof fn}\`.`, {
+      code: E7008,
+    })
   }
   const nuxtApp = useNuxtApp()
 

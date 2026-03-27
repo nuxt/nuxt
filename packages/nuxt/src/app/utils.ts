@@ -5,42 +5,76 @@ export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
-interface RuntimeErrorMessageOptions {
-  /** A documentation URL relevant to this error */
-  docs?: string
-  /** A concrete suggestion for how to fix the issue */
+export interface RuntimeErrorOptions {
+  /** Error code (e.g., 'E1001'). Derives docs URL and is always shown, even in production. */
+  code?: string
+  /** A concrete suggestion for how to fix the issue (dev only) */
   fix?: string
 }
 
+const DOCS_BASE = 'https://nuxt.com/docs/errors'
+const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
+
+type Trace = { source: string, line?: number, column?: number }
+
 /**
- * Format a runtime error message with optional fix and docs link.
+ * Format a runtime error/warning message.
  *
- * Guarded by `import.meta.dev` at the call site so the extra detail is
- * tree-shaken out of production builds.
+ * - Always prepends `[nuxt]` and the error code (if provided).
+ * - In dev, appends `fix`, the user's source location (via `errx`), and a
+ *   docs link derived from the code. All dev-only code is guarded by
+ *   `import.meta.dev` and tree-shaken out of production builds.
+ * - In prod, only the code and core message are kept.
  */
-export function formatRuntimeError (message: string, opts?: RuntimeErrorMessageOptions): string {
-  if (!import.meta.dev || !opts) { return message }
+export function formatRuntimeError (message: string, opts?: RuntimeErrorOptions): string {
+  const code = opts?.code
+  const tag = code ? `[nuxt] [${code}]` : '[nuxt]'
+  let result = `${tag} ${message}`
 
-  let result = message
-
-  if (opts.fix) {
-    result += ` ${opts.fix}`
-  }
-
-  if (opts.docs) {
-    result += ` See: ${opts.docs}`
+  if (import.meta.dev) {
+    if (opts?.fix) {
+      result += ` ${opts.fix}`
+    }
+    const caller = getUserCaller()
+    if (caller) {
+      result += ` (at ${caller.source}${caller.line ? `:${caller.line}` : ''}${caller.column ? `:${caller.column}` : ''})`
+    }
+    if (code) {
+      result += ` See: ${DOCS_BASE}/${code}`
+    }
   }
 
   return result
 }
 
-const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
-type Trace = { source: string, line?: number, column?: number }
+/**
+ * Throw an error with an optional error code and fix.
+ *
+ * In dev mode, automatically appends the caller's file/line (via `errx`)
+ * and a docs link derived from the error code. In production, only the
+ * code and core message are kept — everything else is tree-shaken.
+ */
+export function throwError (message: string, opts?: RuntimeErrorOptions): never {
+  const err = new Error(formatRuntimeError(message, opts))
+  if (opts?.code) {
+    (err as any).code = opts.code
+  }
+  throw err
+}
+
+/**
+ * Log a warning with an optional error code and fix.
+ *
+ * In dev mode, automatically appends the caller's file/line (via `errx`)
+ * and a docs link derived from the error code. In production, only the
+ * code and core message are kept — everything else is tree-shaken.
+ */
+export function runtimeWarn (message: string, opts?: RuntimeErrorOptions, ...args: unknown[]): void {
+  console.warn(formatRuntimeError(message, opts), ...args)
+}
 
 export function getUserTrace (): Trace[] {
-  if (!import.meta.dev) {
-    return []
-  }
+  if (!import.meta.dev) { return [] }
 
   const trace = captureStackTrace()
   const start = trace.findIndex(entry => !entry.source.startsWith(distURL))
@@ -55,19 +89,9 @@ export function getUserTrace (): Trace[] {
 }
 
 export function getUserCaller (): Trace | null {
-  if (!import.meta.dev) {
-    return null
-  }
+  if (!import.meta.dev) { return null }
 
   const { source, line, column } = captureStackTrace().find(entry => !entry.source.startsWith(distURL)) ?? {}
-
-  if (!source) {
-    return null
-  }
-
-  return {
-    source: source.replace(/^file:\/\//, ''),
-    line,
-    column,
-  }
+  if (!source) { return null }
+  return { source: source.replace(/^file:\/\//, ''), line, column }
 }

@@ -2,6 +2,8 @@ import { hasProtocol, joinURL } from 'ufo'
 import { parse } from 'devalue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { runtimeWarn, throwError } from '../utils'
+import { E7001, E7002, E7003, E7004 } from '../error-codes'
 import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
 
@@ -69,7 +71,7 @@ const filename = '_payload.json'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
-    throw new Error('[nuxt] Payload URL must not include hostname: ' + url)
+    throwError('Payload URL must not include hostname: ' + url, { code: E7001 })
   }
   const config = useRuntimeConfig()
   const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
@@ -90,7 +92,7 @@ async function _importPayload (payloadURL: string) {
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    console.warn('[nuxt] Cannot load payload ', payloadURL, err)
+    runtimeWarn('Cannot load payload ' + payloadURL, { code: E7002 }, err)
   }
   return null
 }
@@ -207,7 +209,7 @@ export function definePayloadReviver (
   revive: (data: any) => any | undefined,
 ) {
   if (import.meta.dev && getCurrentInstance()) {
-    console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')
+    runtimeWarn('[definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.', { code: E7004 })
   }
   if (import.meta.client) {
     useNuxtApp()._payloadRevivers[name] = revive

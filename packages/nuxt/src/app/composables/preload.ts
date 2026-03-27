@@ -1,7 +1,8 @@
 import type { Component } from 'vue'
 import type { RouteLocationRaw, Router } from 'vue-router'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
+import { runtimeWarn, toArray } from '../utils'
+import { E2011 } from '../error-codes'
 import { useRouter } from './router'
 
 /**
@@ -69,7 +70,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
     const promise = Promise.resolve((component as () => unknown)())
       .catch((err) => {
         if (import.meta.dev) {
-          console.warn(`[nuxt] Failed to preload route component for \`${path}\`:`, err)
+          runtimeWarn(`Failed to preload route component for \`${path}\`:`, { code: E2011 }, err)
         }
       })
       .finally(() => promises.splice(promises.indexOf(promise), 1))

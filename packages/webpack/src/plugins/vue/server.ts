@@ -1,4 +1,5 @@
 import type { Compilation, Compiler } from 'webpack'
+import { ErrorCodes, throwBuildError } from '@nuxt/kit'
 import { extractQueryPartJS, isJS, validate } from './util.ts'
 import { webpack } from '#builder'
 
@@ -36,17 +37,15 @@ export default class VueSSRServerPlugin {
         const entryAssets = entryInfo.assets!.filter((asset: { name: string }) => isJS(asset.name))
 
         if (entryAssets.length > 1) {
-          throw new Error(
-            '[nuxt] Server-side bundle should have one single entry file. ' +
-            'Avoid using `optimization.splitChunks` in the server config.',
-          )
+          throwBuildError('Server-side bundle should have one single entry file.', {
+            code: ErrorCodes.B7003,
+            fix: 'Avoid using `optimization.splitChunks` in the server config.',
+          })
         }
 
         const [entry] = entryAssets
         if (!entry || typeof entry.name !== 'string') {
-          throw new Error(
-            `[nuxt] Entry "${entryName}" not found. Did you specify the correct entry option?`,
-          )
+          throwBuildError(`Entry "${entryName}" not found. Did you specify the correct entry option?`, { code: ErrorCodes.B7004 })
         }
 
         const bundle = {

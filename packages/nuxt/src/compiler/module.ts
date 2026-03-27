@@ -1,8 +1,8 @@
-import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, defineNuxtModule, errorBuild, ErrorCodes, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
-import { DECLARATION_EXTENSIONS, isDirectorySync, logger, normalizeExtension, toArray } from '../utils.ts'
+import { DECLARATION_EXTENSIONS, isDirectorySync, normalizeExtension, toArray } from '../utils.ts'
 import { createScanPluginContext, matchWithStringOrRegex } from './utils.ts'
 import { readFile } from 'node:fs/promises'
 import { KeyedFunctionFactoriesPlugin, KeyedFunctionFactoriesScanPlugin, scanFileForFactories } from './plugins/keyed-function-factories.ts'
@@ -127,11 +127,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              logger.error(`[nuxt:compiler] Plugin \`${plugin.name}\` failed to scan file \`${filePath}\``, e)
+              errorBuild(`Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, { code: ErrorCodes.B1005, context: { plugin: plugin.name, file: filePath } }, e)
             }
           }))
         } catch (e) {
-          logger.error(`[nuxt:compiler] Cannot read file \`${filePath}\``, e)
+          errorBuild(`Cannot read file \`${filePath}\`.`, { code: ErrorCodes.B1006, context: { file: filePath } }, e)
         }
       }
 
@@ -140,7 +140,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          logger.error(`[nuxt:compiler] Error in \`afterScan\` hook of plugin \`${plugin.name}\``, e)
+          errorBuild(`Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, { code: ErrorCodes.B1007, context: { plugin: plugin.name } }, e)
         }
       }))
     }

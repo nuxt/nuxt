@@ -735,7 +735,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
         iframeDoc.write(doctype + cleanedHTML);
         iframeDoc.close();
       } catch (err) {
-        console.error('Failed to update preview:', err);
+        console.error('[nuxt] Failed to update preview:', err);
       }
     };
 
@@ -971,7 +971,7 @@ function webComponentScript (base64HTML: string, startMinimized: boolean) {
       updateUI();
     }
   } catch (err) {
-    console.error('Failed to initialize Nuxt error overlay:', err);
+    console.error('[nuxt] Failed to initialize Nuxt error overlay:', err);
   }
 })();
 `

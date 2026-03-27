@@ -1,7 +1,8 @@
 import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
+import { throwError, toArray } from '../utils'
+import { E7007, E7009 } from '../error-codes'
 
 // @ts-expect-error virtual file
 import { useStateDefaults } from '#build/nuxt.config.mjs'
@@ -21,10 +22,12 @@ export function useState<T> (...args: any): Ref<T> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, init] = args as [string, (() => T | Ref<T>)]
   if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [useState] key must be a string: ' + _key)
+    throwError('[useState] key must be a string: ' + _key, { code: E7009 })
   }
   if (init !== undefined && typeof init !== 'function') {
-    throw new Error('[nuxt] [useState] init must be a function: ' + init)
+    throwError(`[useState] \`init\` must be a function, but got \`${typeof init}\`.`, {
+      code: E7007,
+    })
   }
   const key = useStateKeyPrefix + _key
 

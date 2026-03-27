@@ -1,6 +1,6 @@
-import { resolveAlias } from '@nuxt/kit'
+import { errorBuild, ErrorCodes, logger, resolveAlias } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
-import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, logger, stripExtension } from '../../utils.ts'
+import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, stripExtension } from '../../utils.ts'
 import type {
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
@@ -140,7 +140,7 @@ function createFactoryProcessor (
     for (const parsedFactoryCall of parsedFactoryCalls) {
       const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
-        logger.error(`[nuxt:compiler] No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`)
+        errorBuild(`No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`, { code: ErrorCodes.B1008, context: { function: parsedFactoryCall.functionName, file: filePath } })
         continue
       }
 

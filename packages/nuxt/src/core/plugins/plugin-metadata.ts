@@ -8,6 +8,7 @@ import { normalize } from 'pathe'
 import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
+import { ErrorCodes, throwBuildError } from '../utils/error-format.ts'
 import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
 import { logger } from '../../utils.ts'
 
@@ -61,7 +62,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const metaArg = node.arguments[1]
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw new Error(`[nuxt] Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`)
+        throwBuildError(`Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`, { code: ErrorCodes.B2001 })
       }
       meta = extractMetaFromObject(metaArg.properties)
     }
@@ -93,7 +94,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
   const meta: PluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throw new Error('[nuxt] Invalid plugin metadata: spread elements and computed keys are not supported in plugin options. Use static properties instead.')
+      throwBuildError('Invalid plugin metadata: spread elements and computed keys are not supported in plugin options.', { code: ErrorCodes.B2002, fix: 'Use static properties instead.' })
     }
     const propertyKey = property.key.name
     if (!isMetadataKey(propertyKey)) { continue }
@@ -105,7 +106,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
     }
     if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
-        throw new Error('[nuxt] Invalid plugin metadata: `dependsOn` must be an array of string literals.')
+        throwBuildError('Invalid plugin metadata: `dependsOn` must be an array of string literals.', { code: ErrorCodes.B2003 })
       }
       meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }

@@ -3,6 +3,8 @@ import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-render
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
+import { runtimeWarn } from '../utils'
+import { E4006 } from '../error-codes'
 import { createBuffer } from './utils'
 
 const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
@@ -68,7 +70,7 @@ const NuxtClientFallbackServer = defineComponent({
       return { ssrFailed, ssrVNodes }
     } catch (ssrError) {
       if (import.meta.dev) {
-        console.warn('[nuxt] SSR rendering failed inside `<NuxtClientFallback>`, falling back to client-side rendering:', ssrError)
+        runtimeWarn('SSR rendering failed inside `<NuxtClientFallback>`, falling back to client-side rendering:', { code: E4006 }, ssrError)
       }
       error.value = true
       ctx.emit('ssr-error', ssrError)

@@ -1,6 +1,8 @@
 import { defineComponent, h } from 'vue'
 import { parseQuery } from 'vue-router'
 import { resolve } from 'pathe'
+import { throwError } from '../utils'
+import { E4008 } from '../error-codes'
 // @ts-expect-error virtual file
 import { devRootDir } from '#build/nuxt.config.mjs'
 
@@ -22,7 +24,7 @@ export default (url: string) => defineComponent({
     }
     const path = resolve(query.path as string)
     if (!path.startsWith(devRootDir)) {
-      throw new Error(`[nuxt] Cannot access path outside of project root directory: \`${path}\`.`)
+      throwError(`Cannot access path outside of project root directory: \`${path}\`.`, { code: E4008 })
     }
     const comp = await import(/* @vite-ignore */ path as string).then(r => r.default)
     return () => [

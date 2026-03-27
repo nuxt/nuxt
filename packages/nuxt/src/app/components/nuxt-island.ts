@@ -11,6 +11,8 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
+import { runtimeWarn } from '../utils'
+import { E4005 } from '../error-codes'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
@@ -135,7 +137,7 @@ export default defineComponent({
         while (currentEl) {
           if (isEndFragment(currentEl)) {
             if (startEl !== currentEl.previousSibling) {
-              console.warn(`[nuxt] Server component "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`)
+              runtimeWarn(`Server component "${props.name}" must have a single root element. (HTML comments are considered elements as well.)`, { code: E4005 })
             }
             break
           } else if (!isStartFragment(currentEl) && isFirstElement) {

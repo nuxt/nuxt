@@ -7,6 +7,8 @@ import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
+import { E4001, E4002, E4003 } from '../error-codes'
+import { runtimeWarn } from '../utils'
 import { _mergeTransitionProps, _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
@@ -64,7 +66,9 @@ export default defineComponent({
       let layout = unref(props.name) ?? route?.meta.layout as string ?? routeRulesMatcher(route?.path).appLayout ?? 'default'
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
-          console.warn(`[nuxt] Invalid layout \`${layout}\` selected. Available layouts: ${Object.keys(layouts).join(', ') || 'none'}.`)
+          runtimeWarn(`Invalid layout \`${layout}\` selected. Available layouts: ${Object.keys(layouts).join(', ') || 'none'}.`, {
+            code: E4001,
+          })
         }
         if (props.fallback) {
           layout = unref(props.fallback)
@@ -205,9 +209,13 @@ const LayoutProvider = defineComponent({
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             if (name) {
-              console.warn(`[nuxt] \`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`)
+              runtimeWarn(`\`${name}\` layout does not have a single root node and will cause errors when navigating between routes.`, {
+                code: E4002,
+              })
             } else {
-              console.warn('[nuxt] `<NuxtLayout>` needs to be passed a single root node in its default slot.')
+              runtimeWarn('`<NuxtLayout>` needs to be passed a single root node in its default slot.', {
+                code: E4003,
+              })
             }
           }
         })

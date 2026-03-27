@@ -5,6 +5,8 @@ import { computed, reactive, toValue, watch } from 'vue'
 import { hash } from 'ohash'
 
 import { isPlainObject } from '@vue/shared'
+import { runtimeWarn, throwError } from '../utils'
+import { E3001, E3002 } from '../error-codes'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
@@ -43,6 +45,7 @@ export interface UseFetchOptions<
 }
 
 
+
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
@@ -78,7 +81,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       try {
         segments.push(hash(value))
       } catch {
-        console.warn('[nuxt] [useFetch] Failed to hash body', value)
+        runtimeWarn('[useFetch] Failed to hash body.', { code: E3002 }, value)
       }
     }
   }
@@ -151,6 +154,7 @@ export const createUseFetch = defineKeyedFunctionFactory({
       arg2?: string,
     ) {
       const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+
 
       const factoryOptions = (typeof options === 'function' ? options(opts as any) : options) as typeof opts
 

@@ -7,6 +7,8 @@ import type { H3Event } from '@nuxt/nitro-server/h3'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
+import { runtimeWarn } from '../utils'
+import { E7005, E7006 } from '../error-codes'
 import { useRequestEvent } from './ssr'
 
 // @ts-expect-error virtual import
@@ -104,7 +106,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       : ref<T | undefined>(cookieValue)
 
   if (import.meta.dev && hasExpired) {
-    console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
+    runtimeWarn(`Not setting cookie \`${name}\` as it has already expired.`, { code: E7005 })
   }
 
   if (import.meta.client) {
@@ -201,7 +203,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         if (isEqual(cookie.value, nuxtApp._cookies[name])) { return }
         // warn in dev mode
         if (import.meta.dev) {
-          console.warn(`[nuxt] cookie \`${name}\` was previously set to \`${opts.encode(nuxtApp._cookies[name] as any)}\` and is being overridden to \`${opts.encode(cookie.value as any)}\`. This may cause unexpected issues.`)
+          runtimeWarn(`Cookie \`${name}\` was previously set to \`${opts.encode(nuxtApp._cookies[name] as any)}\` and is being overridden to \`${opts.encode(cookie.value as any)}\`. This may cause unexpected issues.`, { code: E7006 })
         }
       }
       nuxtApp._cookies[name] = cookie.value

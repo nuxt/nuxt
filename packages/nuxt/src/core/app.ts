@@ -9,7 +9,7 @@ import type { PluginMeta } from 'nuxt/app'
 
 import { logger, resolveToAlias } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
-import { formatErrorMessage, getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
+import { ErrorCodes, formatErrorMessage, getNameFromPath, hasSuffix, throwBuildError, uniqueBy } from './utils/index.ts'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
@@ -71,7 +71,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         context: {
           src: template.src || 'inline',
           dst: fullPath,
-          buildDir: nuxt.options.buildDir
+          buildDir: nuxt.options.buildDir,
         },
       }), e)
       throw e
@@ -138,7 +138,10 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     return template.getContents({ ...ctx, options: template.options! })
   }
 
-  throw new Error('[nuxt] Invalid template. Templates must have either `src` or `getContents`: ' + JSON.stringify(template))
+  throwBuildError('Invalid template. Templates must have either `src` or `getContents`.', {
+    code: ErrorCodes.B1003,
+    context: { template },
+  })
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {

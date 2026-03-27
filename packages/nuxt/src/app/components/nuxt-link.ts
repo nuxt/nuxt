@@ -20,6 +20,8 @@ import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../c
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
+import { runtimeWarn } from '../utils'
+import { E4009, E4010 } from '../error-codes'
 
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
@@ -138,7 +140,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {
     if (import.meta.dev && props[main] !== undefined && props[sub] !== undefined) {
-      console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
+      runtimeWarn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`, { code: E4010 })
     }
   }
 
@@ -381,7 +383,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch((err) => {
             if (import.meta.dev) {
-              console.warn(`[nuxt] Failed to prefetch \`${normalizedPath}\`:`, err)
+              runtimeWarn(`Failed to prefetch \`${normalizedPath}\`:`, undefined, err)
             }
           }),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
@@ -419,7 +421,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       if (import.meta.dev && import.meta.server && !props.custom) {
         const isNuxtLinkChild = inject(NuxtLinkDevKeySymbol, false)
         if (isNuxtLinkChild) {
-          console.log('[nuxt] [NuxtLink] You can\'t nest one <a> inside another <a>. This will cause a hydration error on client-side. You can pass the `custom` prop to take full control of the markup.')
+          runtimeWarn('[NuxtLink] You can\'t nest one <a> inside another <a>. This will cause a hydration error on client-side.', { code: E4009, fix: 'Pass the `custom` prop to take full control of the markup.' })
         } else {
           provide(NuxtLinkDevKeySymbol, true)
         }

@@ -8,7 +8,7 @@ import type { Compiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
-import { logger, useNitro, useNuxt } from '@nuxt/kit'
+import { logger, throwBuildError, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -217,8 +217,7 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
-    const error = new Error(`[nuxt] Webpack \`${compiler.options.name}\` build failed with errors:\n\n${stats.toString('errors-only')}`)
-    throw error
+    throwBuildError(`Webpack \`${compiler.options.name}\` build failed with errors:\n\n${stats.toString('errors-only')}`)
   }
 }
 

@@ -3,6 +3,8 @@ import type { DefineComponent, defineComponent } from 'vue'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { getNuxtAppCtx, useNuxtApp } from '../nuxt'
+import { runtimeWarn } from '../utils'
+import { E3007 } from '../error-codes'
 import { useHead } from './head'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
@@ -42,7 +44,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
       })
     }
   } else if (import.meta.dev) {
-    console.warn('[nuxt] asyncData should return an object', data)
+    runtimeWarn('asyncData should return an object.', { code: E3007 }, data)
   }
 }
 

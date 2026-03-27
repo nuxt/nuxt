@@ -4,7 +4,8 @@ import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { getUserCaller, toArray } from '../utils'
+import { getUserCaller, runtimeWarn, throwError, toArray } from '../utils'
+import { E3003, E3004, E3005, E3006, E7011, E7012 } from '../error-codes'
 import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
 import { createError } from './error'
@@ -220,10 +221,10 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // Validate arguments
       const key = computed(() => toValue(_key))
       if (!key.value || typeof key.value !== 'string') {
-        throw new TypeError('[nuxt] [useAsyncData] key must be a non-empty string.')
+        throwError('[useAsyncData] key must be a non-empty string.', { code: E7011 })
       }
       if (typeof _handler !== 'function') {
-        throw new TypeError('[nuxt] [useAsyncData] handler must be a function.')
+        throwError('[useAsyncData] handler must be a function.', { code: E7012 })
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
@@ -285,9 +286,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           warnings.push(`mismatching \`deep\` option`)
         }
         if (warnings.length) {
-          const caller = getUserCaller()
-          const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
-          console.warn(`[nuxt] [${functionName}] Incompatible options detected for "${key.value}"${explanation}:\n${warnings.map(w => `- ${w}`).join('\n')}\nYou can use a different key or move the call to a composable to ensure the options are shared across calls.`)
+          runtimeWarn(`[${functionName}] Incompatible options detected for "${key.value}":\n${warnings.map(w => `- ${w}`).join('\n')}`, { code: E3004, fix: 'You can use a different key or move the call to a composable to ensure the options are shared across calls.' })
         }
       }
 
@@ -329,7 +328,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           instance.sp = []
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
-          console.warn(`[nuxt] [${functionName}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/4.x/getting-started/data-fetching`)
+          runtimeWarn(`[${functionName}] Component is already mounted, please use $fetch instead.`, { code: E3003 })
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
           instance._nuxtOnBeforeMountCbs = []
@@ -665,7 +664,7 @@ function buildAsyncData<
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
         // @ts-expect-error private property
-        console.warn(`[nuxt] [${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`)
+        runtimeWarn(`[${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`, { code: E3005 })
       }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
@@ -730,7 +729,7 @@ function buildAsyncData<
             const caller = getUserCaller()
             const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
             // @ts-expect-error private property
-            console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
+            runtimeWarn(`\`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`, { code: E3006 })
           }
 
           nuxtApp.payload.data[key] = result

@@ -1,4 +1,6 @@
 import { defineNuxtPlugin } from '../nuxt'
+import { runtimeWarn } from '../utils'
+import { E7003 } from '../error-codes'
 import { loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
@@ -37,7 +39,7 @@ export default defineNuxtPlugin({
         const { hostname } = new URL(url, window.location.href)
         if (hostname === window.location.hostname) {
           // TODO: use preloadPayload instead once we can support preloading islands too
-          await loadPayload(url).catch(() => { console.warn('[nuxt] Error preloading payload for', url) })
+          await loadPayload(url).catch(() => { runtimeWarn('Error preloading payload for ' + url, { code: E7003 }) })
         }
       })
       if (isAppManifestEnabled && navigator.connection?.effectiveType !== 'slow-2g') {

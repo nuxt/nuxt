@@ -10,7 +10,8 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
-import { getUserTrace } from '../utils'
+import { getUserTrace, runtimeWarn, throwError } from '../utils'
+import { E2001, E2002, E2003, E2005, E2006, E2007, E2008 } from '../error-codes'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /** @since 3.0.0 */
@@ -23,7 +24,9 @@ export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    console.warn(`[nuxt] \`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes. Learn more: https://nuxt.com/docs/4.x/directory-structure/app/middleware#accessing-route-in-middleware` + ('\n' + trace))
+    runtimeWarn(`\`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.` + ('\n' + trace), {
+      code: E2005,
+    })
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)
@@ -71,7 +74,7 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
   const global = options.global || typeof name !== 'string'
   const mw = typeof name !== 'string' ? name : middleware
   if (!mw) {
-    console.warn('[nuxt] No route middleware passed to `addRouteMiddleware`.', name)
+    runtimeWarn('No route middleware passed to `addRouteMiddleware`.', { code: E2006 }, name)
     return
   }
   if (global) {
@@ -162,11 +165,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
-      throw new Error(`[nuxt] Navigating to external URL \`${toPath}\` is not allowed by default. Use \`navigateTo('${toPath}', { external: true })\`.`)
+      throwError(`Navigating to external URL \`${toPath}\` is not allowed by default. Use \`navigateTo('${toPath}', { external: true })\`.`, {
+        code: E2001,
+      })
     }
     const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
-      throw new Error(`[nuxt] Cannot navigate to URL \`${toPath}\` with \`${protocol}\` protocol.`)
+      throwError(`Cannot navigate to URL \`${toPath}\` with \`${protocol}\` protocol.`, { code: E2002 })
     }
   }
 
@@ -256,7 +261,9 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
-    throw new Error('[nuxt] `abortNavigation()` is only usable inside a route middleware handler.')
+    throwError('`abortNavigation()` is only usable inside a route middleware handler.', {
+      code: E2003,
+    })
   }
 
   if (!err) { return false }
@@ -278,13 +285,17 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
-      console.warn('[nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
+      runtimeWarn('`setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.', {
+        code: E2007,
+      })
     }
     nuxtApp.payload.state._layout = layout
     nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
-    console.warn('[nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
+    runtimeWarn('`setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.', {
+      code: E2008,
+    })
   }
   const inMiddleware = isProcessingMiddleware()
   if (inMiddleware || import.meta.server || nuxtApp.isHydrating) {

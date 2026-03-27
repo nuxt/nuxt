@@ -13,6 +13,8 @@ import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
+import { throwError } from '#app/utils'
+import { E2004 } from '#app/error-codes'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
@@ -224,9 +226,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
           if (!middleware) {
             if (import.meta.dev) {
-              throw new Error(`[nuxt] Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`)
+              throwError(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`, {
+                code: E2004,
+              })
             }
-            throw new Error(`[nuxt] Unknown route middleware: '${entry}'.`)
+            throwError(`Unknown route middleware: '${entry}'.`, { code: E2004 })
           }
 
           try {
