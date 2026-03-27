@@ -1,2 +1,2 @@
-export default defineNuxtPlugin({ setup () {} }, { dependsOn: [42 as any] })
+export default defineNuxtPlugin({ setup () {} }, { dependsOn: ['meta-a'] })
 

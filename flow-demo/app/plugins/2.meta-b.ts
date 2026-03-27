@@ -1,3 +1,1 @@
-const opts = { name: 'meta-b' }
-
-export default defineNuxtPlugin({ setup () {} }, { ...opts })
+export default defineNuxtPlugin({ setup () {} }, { name: 'meta-b' })

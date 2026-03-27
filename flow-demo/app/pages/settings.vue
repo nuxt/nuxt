@@ -1,10 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  title: 'First',
-})
-
-definePageMeta({
-  title: 'Second',
+  title: 'Settings',
 })
 </script>
 
