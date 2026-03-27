@@ -399,7 +399,11 @@ export default defineNuxtModule({
         }
       } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
         // Full rebuild: scanPageMeta content change, layout/middleware change, or no pagesCtx
-        nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
+        try {
+          nuxt.apps.default!.pages = await resolvePagesRoutes(options.pattern, nuxt)
+        } catch (err) {
+          logger.warn('Route rebuild failed', err)
+        }
       }
     })
 
