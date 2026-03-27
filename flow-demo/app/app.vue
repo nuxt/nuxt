@@ -1,3 +1,6 @@
+<script setup lang="ts">
+</script>
+
 <template>
   <ThemeToggle />
   <NuxtPage />
@@ -61,7 +64,7 @@ body {
 }
 
 /* Page layout */
-#__nuxt > div {
+#__nuxt>div {
   max-width: 640px;
   margin: 0 auto;
   padding: 3rem 1.5rem;
@@ -173,7 +176,7 @@ a:has(> a):hover {
 }
 
 /* Section separators */
-div > div + div {
+div>div+div {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-light);
