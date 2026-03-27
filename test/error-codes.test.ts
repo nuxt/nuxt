@@ -22,15 +22,15 @@ describe('error codes documentation', () => {
 
   for (const code of runtimeCodes) {
     it(`has a docs page for runtime error ${code}`, () => {
-      const docPath = resolve(docsDir, `${code}.md`)
-      expect(existsSync(docPath), `Missing docs/errors/${code}.md`).toBe(true)
+      const docPath = resolve(docsDir, `${code.toLowerCase()}.md`)
+      expect(existsSync(docPath), `Missing docs/errors/${code.toLowerCase()}.md`).toBe(true)
     })
   }
 
   for (const code of buildCodes) {
     it(`has a docs page for build error ${code}`, () => {
-      const docPath = resolve(docsDir, `${code}.md`)
-      expect(existsSync(docPath), `Missing docs/errors/${code}.md`).toBe(true)
+      const docPath = resolve(docsDir, `${code.toLowerCase()}.md`)
+      expect(existsSync(docPath), `Missing docs/errors/${code.toLowerCase()}.md`).toBe(true)
     })
   }
 
