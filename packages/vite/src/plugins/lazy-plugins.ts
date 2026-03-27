@@ -5,7 +5,7 @@ import { normalize } from 'pathe'
 import { withoutLeadingSlash } from 'ufo'
 import type { Plugin } from 'vite'
 
-const LAZY_PLUGIN_RE = /defineLazyNuxtPlugin/
+const LAZY_PLUGIN_RE = /defineLazyNuxtPlugin|lazy:\s*true/
 
 export function LazyPluginPreloadPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev || !nuxt.options.experimental.lazyPlugins) { return }

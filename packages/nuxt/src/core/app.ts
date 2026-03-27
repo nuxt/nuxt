@@ -276,6 +276,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
         const name = plugin.name || relative(nuxt.options.rootDir, plugin.src)
         if (plugin.dependsOn?.length) {
           logger.warn(`Lazy plugin \`${name}\` has \`dependsOn\` which is ignored; lazy plugins run after hydration.`)
+          plugin.dependsOn = undefined
         }
         if (plugin.order != null && plugin.order < orderMap.default) {
           logger.warn(`Lazy plugin \`${name}\` has early ordering which is contradictory; lazy plugins run after hydration.`)
