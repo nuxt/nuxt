@@ -1,7 +1,7 @@
 import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { runtimeWarn } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E4004 } from '../error-codes'
 import { PageRouteSymbol } from './injections'
 
@@ -39,7 +39,7 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
             const filename = (vnode?.type as any)?.__file
-            runtimeWarn(`\`${filename}\` does not have a single root node and will cause errors when navigating between routes.`, {
+            runtimeErrorUtils.warn(`\`${filename}\` does not have a single root node and will cause errors when navigating between routes.`, {
               code: E4004,
               fix: 'Wrap the page component\'s template in a single root element (e.g., a `<div>`).',
             })

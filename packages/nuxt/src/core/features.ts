@@ -1,8 +1,8 @@
 import { resolvePackageJSON } from 'pkg-types'
 import { useNuxt } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 import { isAgent, isCI, provider } from 'std-env'
 import { logger } from '../utils.ts'
-import { ErrorCodes, errorBuild, warnBuild } from './utils/error-format.ts'
 
 const installPrompts = new Set<string>()
 
@@ -20,7 +20,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     }
   }
 
-  warnBuild(`Package \`${name}\` is missing.`, { code: ErrorCodes.B5011, fix: `Run \`npx nuxt add ${name}\` to install it.` })
+  buildErrorUtils.warn(`Package \`${name}\` is missing.`, { code: ErrorCodes.B5011, fix: `Run \`npx nuxt add ${name}\` to install it.` })
 
   if (isCI) {
     return false
@@ -29,7 +29,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
   // When running inside an AI coding agent, skip the interactive prompt
   // but log the exact command needed so the agent can act on it.
   if (isAgent) {
-    warnBuild(`Package \`${name}\` is required but not installed.`, { code: ErrorCodes.B5012, fix: `Run \`npx nuxt add ${name}\` to install it.` })
+    buildErrorUtils.warn(`Package \`${name}\` is required but not installed.`, { code: ErrorCodes.B5012, fix: `Run \`npx nuxt add ${name}\` to install it.` })
     return false
   }
 
@@ -52,7 +52,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     logger.success(`Installed \`${name}\`.`)
     return true
   } catch (err) {
-    errorBuild(`Failed to install \`${name}\`.`, {
+    buildErrorUtils.error(`Failed to install \`${name}\`.`, {
       code: ErrorCodes.B1004,
       fix: `Try installing manually with \`npm install ${name}\`.`,
       context: {

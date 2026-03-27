@@ -1,7 +1,7 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { NitroRouteRules } from 'nitro/types'
 import { useRuntimeConfig } from '../nuxt'
-import { runtimeWarn, throwError } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E5001, E5002, E5003 } from '../error-codes'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -25,7 +25,7 @@ let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throwError('App manifest is not enabled.', { code: E5001, fix: 'Set `experimental.appManifest: true` in your `nuxt.config`.' })
+    runtimeErrorUtils.throw('App manifest is not enabled.', { code: E5001, fix: 'Set `experimental.appManifest: true` in your `nuxt.config`.' })
   }
   let _manifest: Promise<NuxtAppManifest>
   if (import.meta.server) {
@@ -43,7 +43,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     if (manifest === _manifest) {
       manifest = undefined
     }
-    runtimeWarn('Error fetching app manifest.', { code: E5002, fix: 'Check that your server is running and the manifest endpoint is accessible. This may be a transient network issue.', cause: e })
+    runtimeErrorUtils.warn('Error fetching app manifest.', { code: E5002, fix: 'Check that your server is running and the manifest endpoint is accessible. This may be a transient network issue.', cause: e })
   })
   return _manifest
 }
@@ -51,7 +51,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
 /** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
-    throwError('App manifest is not enabled.', { code: E5001, fix: 'Set `experimental.appManifest: true` in your `nuxt.config`.' })
+    runtimeErrorUtils.throw('App manifest is not enabled.', { code: E5001, fix: 'Set `experimental.appManifest: true` in your `nuxt.config`.' })
   }
   return manifest || fetchManifest()
 }
@@ -66,7 +66,7 @@ export function getRouteRules (arg: string | H3Event | { path: string }) {
   try {
     return routeRulesMatcher(path)
   } catch (e) {
-    runtimeWarn(`Error matching route rules for path \`${path}\`.`, { code: E5003, fix: 'Check your `routeRules` in `nuxt.config` for invalid patterns.', cause: e })
+    runtimeErrorUtils.warn(`Error matching route rules for path \`${path}\`.`, { code: E5003, fix: 'Check your `routeRules` in `nuxt.config` for invalid patterns.', cause: e })
     return {}
   }
 }

@@ -1,11 +1,11 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from '../core/utils/error-format.ts'
 
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
 import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
-import { ErrorCodes, warnBuild } from '../core/utils/error-format.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
@@ -101,7 +101,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          warnBuild(`Components directory not found: \`${dirPath}\`. If this is intentional, you can remove it from \`components.dirs\` in your \`nuxt.config\`.`, { code: ErrorCodes.B3001, fix: 'If this is intentional, you can remove it from `components.dirs` in your `nuxt.config`.', context: { dirPath } })
+          buildErrorUtils.warn(`Components directory not found: \`${dirPath}\`. If this is intentional, you can remove it from \`components.dirs\` in your \`nuxt.config\`.`, { code: ErrorCodes.B3001, fix: 'If this is intentional, you can remove it from `components.dirs` in your `nuxt.config`.', context: { dirPath } })
         }
 
         const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
@@ -199,7 +199,7 @@ export default defineNuxtModule<ComponentsOptions>({
           })
         }
         if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
-          warnBuild(`Using server component \`${component.pascalName}\` with \`ssr: false\` is not supported with auto-detected component islands.`, {
+          buildErrorUtils.warn(`Using server component \`${component.pascalName}\` with \`ssr: false\` is not supported with auto-detected component islands.`, {
             code: ErrorCodes.B3002,
             fix: 'Set `experimental.componentIslands` to `true` in your `nuxt.config`, or convert the component to a client component.',
             context: {

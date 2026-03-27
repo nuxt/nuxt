@@ -13,7 +13,7 @@ import semver from 'semver'
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
-import { errorBuild, throwBuildError } from '../nuxt-errors.ts'
+import { buildErrorUtils } from '../nuxt-errors.ts'
 import * as ErrorCodes from '../error-codes.ts'
 import { getLayerDirectories } from '../layers.ts'
 
@@ -287,7 +287,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    return throwBuildError(`Nuxt module should be a function or a string to import. Received: \`${nuxtModule}\`.`, { code: ErrorCodes.B8015, fix: 'Pass a module function or a string package name to the `modules` array in `nuxt.config`.', context: { received: typeof nuxtModule } })
+    return buildErrorUtils.throw(`Nuxt module should be a function or a string to import. Received: \`${nuxtModule}\`.`, { code: ErrorCodes.B8015, fix: 'Pass a module function or a string package name to the `modules` array in `nuxt.config`.', context: { received: typeof nuxtModule } })
   }
 
   const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
@@ -309,7 +309,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     const resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
 
     if (typeof resolvedNuxtModule !== 'function') {
-      return throwBuildError(`Nuxt module should be a function: \`${nuxtModule}\`.`, { code: ErrorCodes.B8016, fix: 'Ensure the module has a default export that is a function. Use `defineNuxtModule()` to create a valid module.' })
+      return buildErrorUtils.throw(`Nuxt module should be a function: \`${nuxtModule}\`.`, { code: ErrorCodes.B8016, fix: 'Ensure the module has a default export that is a function. Use `defineNuxtModule()` to create a valid module.' })
     }
 
     // nuxt-module-builder generates a module.json with metadata including the version
@@ -322,19 +322,19 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   } catch (error: unknown) {
     const code = (error as Error & { code?: string }).code
     if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
-      return throwBuildError(`Could not load \`${nuxtModule}\`. Is it installed?`, { code: ErrorCodes.B8017, fix: `Run \`npm install ${nuxtModule}\` to install it.` })
+      return buildErrorUtils.throw(`Could not load \`${nuxtModule}\`. Is it installed?`, { code: ErrorCodes.B8017, fix: `Run \`npm install ${nuxtModule}\` to install it.` })
     }
     if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
       const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
       // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
       // i.e. module is importing a module that is missing
       if (module && !module.includes(nuxtModule as string)) {
-        return throwBuildError(`Error while importing module \`${nuxtModule}\`: ${error}`, { code: ErrorCodes.B8018, fix: 'A sub-dependency of this module is missing. Install it, or check that the module is compatible with the current environment.' })
+        return buildErrorUtils.throw(`Error while importing module \`${nuxtModule}\`: ${error}`, { code: ErrorCodes.B8018, fix: 'A sub-dependency of this module is missing. Install it, or check that the module is compatible with the current environment.' })
       }
     }
   }
 
-  return throwBuildError(`Could not load \`${nuxtModule}\`. Is it installed?`, { code: ErrorCodes.B8017, fix: `Run \`npm install ${nuxtModule}\` to install it.` })
+  return buildErrorUtils.throw(`Could not load \`${nuxtModule}\`. Is it installed?`, { code: ErrorCodes.B8017, fix: `Run \`npm install ${nuxtModule}\` to install it.` })
 }
 
 // --- Internal ---
@@ -380,7 +380,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
       )
     }
   } catch (e) {
-    errorBuild(
+    buildErrorUtils.error(
       `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module \`${meta.name}\`: ${e}`,
       { code: ErrorCodes.B8019, fix: 'Check the module\'s install/upgrade hook implementation, or report this issue to the module author.' },
     )

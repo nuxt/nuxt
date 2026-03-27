@@ -3,7 +3,7 @@ import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { HTTPError } from '@nuxt/nitro-server/h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
-import { runtimeWarn } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E2009 } from '../error-codes'
 import { getRouteRules } from '../composables/manifest'
 import { clearError, showError } from '../composables/error'
@@ -156,7 +156,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
       } catch (err) {
         if (import.meta.dev && !hooks.error.length) {
-          runtimeWarn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`.', { code: E2009, fix: 'Register an error handler with `router.onError()` or add error handling within your middleware.', cause: err })
+          runtimeErrorUtils.warn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`.', { code: E2009, fix: 'Register an error handler with `router.onError()` or add error handling within your middleware.', cause: err })
         }
         for (const handler of hooks.error) {
           await handler(err)

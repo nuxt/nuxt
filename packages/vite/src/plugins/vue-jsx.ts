@@ -1,6 +1,6 @@
 import type { Plugin, ResolvedConfig } from 'vite'
 import { ensureDependencyInstalled } from '@nuxt/kit'
-import { ErrorCodes, warnBuild } from '../nuxt-errors.ts'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 import type { Nuxt } from '@nuxt/schema'
 import type { Options } from '@vitejs/plugin-vue-jsx'
 
@@ -42,7 +42,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
 
     if (!result) {
       installFailed = true
-      warnBuild('Install `@vitejs/plugin-vue-jsx` to enable JSX support.', { code: ErrorCodes.B7008, fix: 'Run `npm install -D @vitejs/plugin-vue-jsx` to install it.' })
+      buildErrorUtils.warn('Install `@vitejs/plugin-vue-jsx` to enable JSX support.', { code: ErrorCodes.B7008, fix: 'Run `npm install -D @vitejs/plugin-vue-jsx` to install it.' })
       return undefined
     }
 

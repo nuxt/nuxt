@@ -8,7 +8,7 @@ import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { parseNodeModulePath } from 'mlly'
 import { directoryToURL } from './internal/esm.ts'
 import { tryUseNuxt } from './context.ts'
-import { throwBuildError } from './nuxt-errors.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 import { isIgnored } from './ignore.ts'
 import { type RequirePicked, toArray } from './utils.ts'
@@ -106,7 +106,7 @@ export interface Resolver {
  */
 export function createResolver (base: string | URL): Resolver {
   if (!base) {
-    throwBuildError('`base` argument is missing for createResolver(base)!', { code: ErrorCodes.B8002, fix: 'Pass `import.meta.url` or a directory path as the `base` argument to `createResolver()`.' })
+    buildErrorUtils.throw('`base` argument is missing for createResolver(base)!', { code: ErrorCodes.B8002, fix: 'Pass `import.meta.url` or a directory path as the `base` argument to `createResolver()`.' })
   }
 
   base = base.toString()

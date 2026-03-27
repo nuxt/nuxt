@@ -1,6 +1,10 @@
-import { createBuildErrorUtils } from './errors.ts'
+import { createErrorUtils } from './errors.ts'
+import { logger } from './logger.ts'
 
-export const { formatBuildError, throwBuildError, warnBuild, errorBuild } = /* @__PURE__ */ createBuildErrorUtils({
+export * as ErrorCodes from './error-codes.ts'
+
+export const buildErrorUtils = createErrorUtils({
   module: 'NUXT',
   docsBase: 'https://nuxt.com/e',
+  logger,
 })

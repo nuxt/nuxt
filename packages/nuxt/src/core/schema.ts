@@ -6,11 +6,11 @@ import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
 import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getLayerDirectories, importModule } from '@nuxt/kit'
+import { ErrorCodes, buildErrorUtils } from './utils/error-format.ts'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
-import { ErrorCodes, warnBuild } from './utils/error-format.ts'
 
 export default defineNuxtModule({
   meta: {
@@ -77,7 +77,7 @@ export default defineNuxtModule({
           }
           return
         } catch {
-          warnBuild('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.', { code: ErrorCodes.B5009, fix: 'Install `@parcel/watcher` for better file watching: `npm install -D @parcel/watcher`.' })
+          buildErrorUtils.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.', { code: ErrorCodes.B5009, fix: 'Install `@parcel/watcher` for better file watching: `npm install -D @parcel/watcher`.' })
         }
       }
 
@@ -115,7 +115,7 @@ export default defineNuxtModule({
             // TODO: fix type for second argument of `import`
             loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
-            warnBuild(`Unable to load Nuxt schema from \`${filePath}\`. Ensure the file exports a valid schema definition.`, { code: ErrorCodes.B5005, fix: 'Check that `nuxt.schema` exports a valid object with `defineNuxtSchema()` or as a plain object.', cause: err })
+            buildErrorUtils.warn(`Unable to load Nuxt schema from \`${filePath}\`. Ensure the file exports a valid schema definition.`, { code: ErrorCodes.B5005, fix: 'Check that `nuxt.schema` exports a valid object with `defineNuxtSchema()` or as a plain object.', cause: err })
             continue
           }
           schemaDefs.push(loadedConfig)

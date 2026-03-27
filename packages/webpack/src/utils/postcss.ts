@@ -3,7 +3,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import type { Plugin } from 'postcss'
-import { ErrorCodes, warnBuild } from '../nuxt-errors.ts'
+import { ErrorCodes, buildErrorUtils } from '../nuxt-errors.ts'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -61,7 +61,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       }
 
       if (typeof pluginFn !== 'function') {
-        warnBuild(`Could not import PostCSS plugin \`${pluginName}\`. Please report this as a bug.`, { code: ErrorCodes.B7011, fix: `Run \`npm install -D ${pluginName}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.` })
+        buildErrorUtils.warn(`Could not import PostCSS plugin \`${pluginName}\`. Please report this as a bug.`, { code: ErrorCodes.B7011, fix: `Run \`npm install -D ${pluginName}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.` })
       }
     }
 

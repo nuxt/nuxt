@@ -3,7 +3,7 @@ import type { Component, ComponentsDir } from '@nuxt/schema'
 import { resolveModuleExportNames } from 'mlly'
 
 import { useNuxt } from './context.ts'
-import { warnBuild } from './nuxt-errors.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 import { resolvePath } from './resolve.ts'
 import { MODE_RE } from './utils.ts'
@@ -66,7 +66,7 @@ function addComponents (addedComponents: Component[]) {
         // but we warn if they are equal.
         if (newPriority === existingPriority) {
           const name = existingComponent.pascalName || existingComponent.kebabName
-          warnBuild(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`, { code: ErrorCodes.B3012, fix: 'Specify a `priority` option when calling `addComponent` to avoid this warning.' })
+          buildErrorUtils.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`, { code: ErrorCodes.B3012, fix: 'Specify a `priority` option when calling `addComponent` to avoid this warning.' })
         }
         components.splice(existingComponentIndex, 1, component)
       } else {

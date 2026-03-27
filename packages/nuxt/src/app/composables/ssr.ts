@@ -4,7 +4,7 @@ import type { $Fetch } from 'nitro/types'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { runtimeWarn, throwError, toArray } from '../utils'
+import { runtimeErrorUtils, toArray } from '../utils'
 import { E1006, E5004 } from '../error-codes'
 import { useHead } from './head'
 
@@ -73,7 +73,7 @@ export function useResponseHeader (header: string) {
     if (import.meta.dev) {
       return computed({
         get: () => undefined,
-        set: () => runtimeWarn('Setting response headers is not supported in the browser.', { code: E5004, fix: 'Guard this code with `import.meta.server` or move it to a server-only context.' }),
+        set: () => runtimeErrorUtils.warn('Setting response headers is not supported in the browser.', { code: E5004, fix: 'Guard this code with `import.meta.server` or move it to a server-only context.' }),
       })
     }
     return ref()
@@ -120,7 +120,7 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
   if (import.meta.client) { return }
 
   if (typeof callback !== 'string') {
-    throwError('To transform a callback into a string, `onPrehydrate` must be processed by the Nuxt build pipeline.', { code: E1006, fix: 'If it is called in a third-party library, add the library to `build.transpile`.' })
+    runtimeErrorUtils.throw('To transform a callback into a string, `onPrehydrate` must be processed by the Nuxt build pipeline.', { code: E1006, fix: 'If it is called in a third-party library, add the library to `build.transpile`.' })
   }
 
   const vm = getCurrentInstance()

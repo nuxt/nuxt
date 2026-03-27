@@ -22,7 +22,7 @@ import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from
 import { useNuxtApp } from '../nuxt'
 import { isNuxtError, showError, useError } from '../composables/error'
 import { useRoute, useRouter } from '../composables/router'
-import { runtimeWarn } from '../utils'
+import { runtimeErrorUtils } from '../utils'
 import { E1009, E1010, E1012 } from '../error-codes'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
@@ -54,7 +54,7 @@ provide(PageRouteSymbol, useRoute())
 // vue:setup hook
 const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup', [])
 if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
-  runtimeWarn('Error in `vue:setup`. Callbacks must be synchronous.', { code: E1012, fix: 'Remove `async` from your `vue:setup` hook callback, or move async logic into `onMounted` or a plugin.' })
+  runtimeErrorUtils.warn('Error in `vue:setup`. Callbacks must be synchronous.', { code: E1012, fix: 'Remove `async` from your `vue:setup` hook callback, or move async logic into `onMounted` or a plugin.' })
 }
 
 // error handling
@@ -63,10 +63,10 @@ const error = useError()
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
 const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
 onErrorCaptured((err, target, info) => {
-  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => runtimeWarn('Error in `vue:error` hook.', { code: E1009, fix: 'Check your `vue:error` hook handler for uncaught exceptions.', cause: hookError }))
+  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => runtimeErrorUtils.warn('Error in `vue:error` hook.', { code: E1009, fix: 'Check your `vue:error` hook handler for uncaught exceptions.', cause: hookError }))
   if (import.meta.client && BOT_RE.test(navigator.userAgent)) {
     nuxtApp.hooks.callHook('app:error', err)
-    runtimeWarn(`Not rendering error page for bot with user agent \`${navigator.userAgent}\`.`, { code: E1010, fix: 'This is expected behavior — bot user agents receive the raw error instead of the error page.', cause: err })
+    runtimeErrorUtils.warn(`Not rendering error page for bot with user agent \`${navigator.userAgent}\`.`, { code: E1010, fix: 'This is expected behavior — bot user agents receive the raw error instead of the error page.', cause: err })
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {

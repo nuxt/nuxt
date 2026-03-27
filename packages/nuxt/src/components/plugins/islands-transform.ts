@@ -6,7 +6,7 @@ import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
 import { normalize } from 'pathe'
 import { isVue, parseModuleId } from '../../core/utils/index.ts'
-import { ErrorCodes, warnBuild } from '../../core/utils/error-format.ts'
+import { ErrorCodes, buildErrorUtils } from '../../core/utils/error-format.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
@@ -125,9 +125,9 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
 
         if (hasNuxtClient) {
           if (!options.selectiveClient) {
-            warnBuild(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: \`${id}\``, { code: ErrorCodes.B3007, fix: 'Set `experimental.componentIslands.selectiveClient` to `true` in your `nuxt.config`.', context: { file: id } })
+            buildErrorUtils.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: \`${id}\``, { code: ErrorCodes.B3007, fix: 'Set `experimental.componentIslands.selectiveClient` to `true` in your `nuxt.config`.', context: { file: id } })
           } else if (!isVite) {
-            warnBuild(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: \`${id}\``, { code: ErrorCodes.B3007, fix: 'Switch to the Vite builder by setting `builder: \'vite\'` in your `nuxt.config`.', context: { file: id } })
+            buildErrorUtils.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: \`${id}\``, { code: ErrorCodes.B3007, fix: 'Switch to the Vite builder by setting `builder: \'vite\'` in your `nuxt.config`.', context: { file: id } })
           }
         }
 

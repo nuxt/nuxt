@@ -10,7 +10,7 @@ import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
-import { throwBuildError } from './nuxt-errors.ts'
+import { buildErrorUtils } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 import { distDirURL, filterInPlace } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
@@ -77,7 +77,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   const template = addTemplate(_template)
 
   if (!template.filename.endsWith('.d.ts')) {
-    throwBuildError(`Invalid type template filename: "${template.filename}"`, { code: ErrorCodes.B8007, fix: 'Rename the template filename to end with `.d.ts`.', context: { template: template.filename } })
+    buildErrorUtils.throw(`Invalid type template filename: "${template.filename}"`, { code: ErrorCodes.B8007, fix: 'Rename the template filename to end with `.d.ts`.', context: { template: template.filename } })
   }
 
   // Add template to types reference
@@ -124,7 +124,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
  */
 export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
-    throwBuildError('Invalid template: ' + JSON.stringify(template), { code: ErrorCodes.B8008, fix: 'Pass a valid template object or a string path to `addTemplate()`.', context: { template: JSON.stringify(template) } })
+    buildErrorUtils.throw('Invalid template: ' + JSON.stringify(template), { code: ErrorCodes.B8008, fix: 'Pass a valid template object or a string path to `addTemplate()`.', context: { template: JSON.stringify(template) } })
   }
 
   // Normalize
@@ -137,7 +137,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   // Use src if provided
   if (template.src) {
     if (!existsSync(template.src)) {
-      throwBuildError('Template not found: ' + template.src, { code: ErrorCodes.B8009, fix: 'Check that the `src` path exists and is an absolute path or resolvable from the module directory.', context: { template: template.src } })
+      buildErrorUtils.throw('Template not found: ' + template.src, { code: ErrorCodes.B8009, fix: 'Check that the `src` path exists and is an absolute path or resolvable from the module directory.', context: { template: template.src } })
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
@@ -146,11 +146,11 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   if (!template.src && !template.getContents) {
-    throwBuildError('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8010, fix: 'Add a `getContents` function or a `src` path to the template object.', context: { template: template.filename || template.src } })
+    buildErrorUtils.throw('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8010, fix: 'Add a `getContents` function or a `src` path to the template object.', context: { template: template.filename || template.src } })
   }
 
   if (!template.filename) {
-    return throwBuildError('Invalid template. `filename` must be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8011, fix: 'Add a `filename` property to the template object, or provide a `src` path (the filename will be derived from it).', context: { template: JSON.stringify(template) } })
+    return buildErrorUtils.throw('Invalid template. `filename` must be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8011, fix: 'Add a `filename` property to the template object, or provide a `src` path (the filename will be derived from it).', context: { template: JSON.stringify(template) } })
   }
 
   // Always write declaration files

@@ -12,7 +12,7 @@ import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
-import { ErrorCodes, warnBuild } from './nuxt-errors.ts'
+import { ErrorCodes, buildErrorUtils } from './nuxt-errors.ts'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
@@ -549,7 +549,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
 
     if (result !== true) {
-      warnBuild(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, { code: ErrorCodes.B7010, fix: `Run \`npm install -D ${result.join(' ')}\` to install the required Babel decorator dependencies.` })
+      buildErrorUtils.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, { code: ErrorCodes.B7010, fix: `Run \`npm install -D ${result.join(' ')}\` to install the required Babel decorator dependencies.` })
     }
 
     if (result === true) {
@@ -712,7 +712,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // For full-static output, ensure payload extraction is not disabled
   if (nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
-    warnBuild('Payload extraction is recommended for full-static output.', { code: ErrorCodes.B7015, fix: 'Enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.' })
+    buildErrorUtils.warn('Payload extraction is recommended for full-static output.', { code: ErrorCodes.B7015, fix: 'Enable it by setting `experimental.payloadExtraction` to `true` or `\'client\'`.' })
   }
 
   // Trigger Nitro reload when SPA loading template changes
@@ -1060,7 +1060,7 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   if (nuxt.options.spaLoadingTemplate) {
-    warnBuild(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`, { code: ErrorCodes.B7016, fix: 'Check that the `spaLoadingTemplate` path in `nuxt.config` points to an existing HTML file, or set it to `true` to use the default template.' })
+    buildErrorUtils.warn(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`, { code: ErrorCodes.B7016, fix: 'Check that the `spaLoadingTemplate` path in `nuxt.config` points to an existing HTML file, or set it to `true` to use the default template.' })
   }
 
   return ''
