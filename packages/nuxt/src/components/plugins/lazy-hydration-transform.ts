@@ -94,7 +94,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
               const prop = camelCase(isDynamic ? attr.slice(1) : attr)
               if (prop in hydrationStrategyMap) {
                 if (strategy) {
-                  warnBuild(`Multiple hydration strategies are not supported in the same component \`<${node.name}>\` in \`${id}\`.`, { code: ErrorCodes.B3005, context: { component: node.name, file: id } })
+                  warnBuild(`Multiple hydration strategies are not supported in the same component \`<${node.name}>\` in \`${id}\`.`, { code: ErrorCodes.B3005, fix: 'Use only one hydration strategy attribute (e.g., `hydrate-on-visible` or `hydrate-on-idle`) per component.', context: { component: node.name, file: id } })
                 } else {
                   strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
                 }

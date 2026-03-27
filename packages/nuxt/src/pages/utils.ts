@@ -47,7 +47,7 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
     modes,
-    warn: msg => warnBuild(msg, { code: ErrorCodes.B4011 }),
+    warn: msg => warnBuild(msg, { code: ErrorCodes.B4011, fix: 'Check the page file naming and directory structure for issues.' }),
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
@@ -257,7 +257,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
         if (transformed.errors.length) {
           for (const error of transformed.errors) {
-            warnBuild(`Error while transforming \`${fnName}()\`` + error.codeframe, { code: ErrorCodes.B4007 })
+            warnBuild(`Error while transforming \`${fnName}()\`` + error.codeframe, { code: ErrorCodes.B4007, fix: 'Fix the syntax error shown above in the page file.' })
           }
           return
         }
@@ -268,14 +268,14 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
 
       if (pageExtractArgument?.type !== 'ObjectExpression') {
-        warnBuild(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`, { code: ErrorCodes.B4005, context: { file: absolutePath, receivedType: pageExtractArgument?.type } })
+        warnBuild(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`, { code: ErrorCodes.B4005, fix: `Pass a plain object literal to \`${fnName}()\`, e.g. \`${fnName}({ ... })\`. Variables and function calls are not supported.`, context: { file: absolutePath, receivedType: pageExtractArgument?.type } })
         return
       }
 
       if (fnName === 'defineRouteRules') {
         const { value, serializable } = isSerializable(code, pageExtractArgument)
         if (!serializable) {
-          warnBuild(`\`${fnName}\` must be called with a serializable object literal (reading \`${absolutePath}\`).`, { code: ErrorCodes.B4006, context: { file: absolutePath } })
+          warnBuild(`\`${fnName}\` must be called with a serializable object literal (reading \`${absolutePath}\`).`, { code: ErrorCodes.B4006, fix: 'Use only JSON-serializable values (strings, numbers, booleans, arrays, plain objects) in `defineRouteRules()`.', context: { file: absolutePath } })
           return
         }
 

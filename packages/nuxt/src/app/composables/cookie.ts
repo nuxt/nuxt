@@ -106,7 +106,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       : ref<T | undefined>(cookieValue)
 
   if (import.meta.dev && hasExpired) {
-    runtimeWarn(`Not setting cookie \`${name}\` as it has already expired.`, { code: E7005 })
+    runtimeWarn(`Not setting cookie \`${name}\` as it has already expired.`, { code: E7005, fix: 'Update the `expires` or `maxAge` option to a future date.' })
   }
 
   if (import.meta.client) {
@@ -203,7 +203,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         if (isEqual(cookie.value, nuxtApp._cookies[name])) { return }
         // warn in dev mode
         if (import.meta.dev) {
-          runtimeWarn(`Cookie \`${name}\` was previously set to \`${opts.encode(nuxtApp._cookies[name] as any)}\` and is being overridden to \`${opts.encode(cookie.value as any)}\`. This may cause unexpected issues.`, { code: E7006 })
+          runtimeWarn(`Cookie \`${name}\` was previously set to \`${opts.encode(nuxtApp._cookies[name] as any)}\` and is being overridden to \`${opts.encode(cookie.value as any)}\`. This may cause unexpected issues.`, { code: E7006, fix: 'Avoid setting the same cookie from multiple places during SSR, or use a single `useCookie()` composable shared across components.' })
         }
       }
       nuxtApp._cookies[name] = cookie.value

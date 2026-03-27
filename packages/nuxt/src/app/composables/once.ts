@@ -24,11 +24,12 @@ export async function callOnce (...args: any[]): Promise<void> {
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, fn, options] = args as [string, (() => any | Promise<any>), CallOnceOptions | undefined]
   if (!_key || typeof _key !== 'string') {
-    throwError('[callOnce] key must be a string: ' + _key, { code: E7010 })
+    throwError('[callOnce] key must be a string: ' + _key, { code: E7010, fix: 'Pass a string key as the first argument to `callOnce()`, e.g. `callOnce(\'myKey\', () => { ... })`.' })
   }
   if (fn !== undefined && typeof fn !== 'function') {
     throwError(`[callOnce] \`fn\` must be a function, but got \`${typeof fn}\`.`, {
       code: E7008,
+      fix: 'Pass a function as the second argument: `callOnce(\'key\', () => { ... })`.',
     })
   }
   const nuxtApp = useNuxtApp()

@@ -140,7 +140,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
   function checkPropConflicts (props: NuxtLinkProps, main: keyof NuxtLinkProps, sub: keyof NuxtLinkProps): void {
     if (import.meta.dev && props[main] !== undefined && props[sub] !== undefined) {
-      runtimeWarn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`, { code: E4010 })
+      runtimeWarn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`, { code: E4010, fix: `Remove the \`${sub}\` prop and use only \`${main}\`.` })
     }
   }
 

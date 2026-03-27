@@ -1,5 +1,6 @@
 import type { Plugin, ResolvedConfig } from 'vite'
-import { ErrorCodes, ensureDependencyInstalled, warnBuild } from '@nuxt/kit'
+import { ensureDependencyInstalled } from '@nuxt/kit'
+import { ErrorCodes, warnBuild } from '../nuxt-errors.ts'
 import type { Nuxt } from '@nuxt/schema'
 import type { Options } from '@vitejs/plugin-vue-jsx'
 

@@ -73,7 +73,7 @@ export function useResponseHeader (header: string) {
     if (import.meta.dev) {
       return computed({
         get: () => undefined,
-        set: () => runtimeWarn('Setting response headers is not supported in the browser.', { code: E5004 }),
+        set: () => runtimeWarn('Setting response headers is not supported in the browser.', { code: E5004, fix: 'Guard this code with `import.meta.server` or move it to a server-only context.' }),
       })
     }
     return ref()

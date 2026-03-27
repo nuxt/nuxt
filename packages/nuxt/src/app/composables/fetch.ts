@@ -81,7 +81,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
       try {
         segments.push(hash(value))
       } catch {
-        runtimeWarn('[useFetch] Failed to hash body.', { code: E3002, cause: value })
+        runtimeWarn('[useFetch] Failed to hash body.', { code: E3002, fix: 'Pass a serializable value (plain object, string, FormData) as the request body, or provide an explicit `key` to `useFetch`.', cause: value })
       }
     }
   }

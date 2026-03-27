@@ -11,7 +11,8 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
-import { ErrorCodes, addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, warnBuild } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { ErrorCodes, warnBuild } from './nuxt-errors.ts'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
@@ -548,7 +549,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
 
     if (result !== true) {
-      warnBuild(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, { code: ErrorCodes.B7010 })
+      warnBuild(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, { code: ErrorCodes.B7010, fix: `Run \`npm install -D ${result.join(' ')}\` to install the required Babel decorator dependencies.` })
     }
 
     if (result === true) {
@@ -1059,7 +1060,7 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   if (nuxt.options.spaLoadingTemplate) {
-    warnBuild(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`, { code: ErrorCodes.B7016 })
+    warnBuild(`Could not load custom \`spaLoadingTemplate\` path as it does not exist: \`${nuxt.options.spaLoadingTemplate}\`.`, { code: ErrorCodes.B7016, fix: 'Check that the `spaLoadingTemplate` path in `nuxt.config` points to an existing HTML file, or set it to `true` to use the default template.' })
   }
 
   return ''

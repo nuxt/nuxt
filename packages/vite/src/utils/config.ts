@@ -1,5 +1,5 @@
 import type { ResolvedConfig } from 'vite'
-import { ErrorCodes, throwBuildError } from '@nuxt/kit'
+import { ErrorCodes, throwBuildError } from '../nuxt-errors.ts'
 
 export function resolveClientEntry (config: ResolvedConfig) {
   const input = config.environments.client?.build.rolldownOptions.input ?? config.build.rolldownOptions.input
@@ -12,7 +12,7 @@ export function resolveClientEntry (config: ResolvedConfig) {
     }
   }
 
-  throwBuildError(`No client entry found in \`rollupOptions.input\`. Expected an \`entry\` key or a string input. Received: ${JSON.stringify(input)}`, { code: ErrorCodes.B7005 })
+  throwBuildError(`No client entry found in \`rollupOptions.input\`. Expected an \`entry\` key or a string input. Received: ${JSON.stringify(input)}`, { code: ErrorCodes.B7005, fix: 'Set `vite.build.rollupOptions.input` to a string or an object with an `entry` key in your `nuxt.config`.' })
 }
 
 export function resolveServerEntry (config: ResolvedConfig) {
@@ -26,5 +26,5 @@ export function resolveServerEntry (config: ResolvedConfig) {
     }
   }
 
-  throwBuildError(`No server entry found in \`rollupOptions.input\`. Expected a \`server\` key or a string input. Received: ${JSON.stringify(input)}`, { code: ErrorCodes.B7006 })
+  throwBuildError(`No server entry found in \`rollupOptions.input\`. Expected a \`server\` key or a string input. Received: ${JSON.stringify(input)}`, { code: ErrorCodes.B7006, fix: 'Set `vite.build.rollupOptions.input` to a string or an object with a `server` key in your `nuxt.config`.' })
 }

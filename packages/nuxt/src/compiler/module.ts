@@ -1,4 +1,5 @@
-import { addBuildPlugin, defineNuxtModule, errorBuild, ErrorCodes, resolveFiles, resolvePath } from '@nuxt/kit'
+import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
+import { ErrorCodes, errorBuild } from '../core/utils/error-format.ts'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
@@ -127,11 +128,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              errorBuild(`Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, { code: ErrorCodes.B1005, context: { plugin: plugin.name, file: filePath }, cause: e })
+              errorBuild(`Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, { code: ErrorCodes.B1005, fix: 'Check the file for syntax errors, or report this issue to the plugin author.', context: { plugin: plugin.name, file: filePath }, cause: e })
             }
           }))
         } catch (e) {
-          errorBuild(`Cannot read file \`${filePath}\`.`, { code: ErrorCodes.B1006, context: { file: filePath }, cause: e })
+          errorBuild(`Cannot read file \`${filePath}\`.`, { code: ErrorCodes.B1006, fix: 'Check that the file exists and has correct permissions.', context: { file: filePath }, cause: e })
         }
       }
 
@@ -140,7 +141,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          errorBuild(`Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, { code: ErrorCodes.B1007, context: { plugin: plugin.name }, cause: e })
+          errorBuild(`Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, { code: ErrorCodes.B1007, fix: 'Check the plugin implementation or report this issue to the plugin author.', context: { plugin: plugin.name }, cause: e })
         }
       }))
     }

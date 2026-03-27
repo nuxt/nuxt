@@ -105,7 +105,7 @@ if (import.meta.client) {
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
-    runtimeWarn('Error while mounting app.', { code: E1011, cause: error })
+    runtimeWarn('Error while mounting app.', { code: E1011, fix: 'Check your plugins and app initialization code for unhandled errors.', cause: error })
     throw error
   })
 }

@@ -17,11 +17,11 @@ export async function checkForExternalConfigurationFiles () {
 
   const foundOneExternalConfig = warningMessages.length === 1
   if (foundOneExternalConfig) {
-    warnBuild(warningMessages[0]!, { code: ErrorCodes.B5004 })
+    warnBuild(warningMessages[0]!, { code: ErrorCodes.B5004, fix: 'Move the configuration into `nuxt.config.ts` and delete the external config file.' })
   } else {
     const warningsAsList = warningMessages.map(message => `- ${message}`).join('\n')
     const warning = `Found multiple external configuration files: \n\n${warningsAsList}`
-    warnBuild(warning, { code: ErrorCodes.B5004 })
+    warnBuild(warning, { code: ErrorCodes.B5004, fix: 'Move these configurations into `nuxt.config.ts` and delete the external config files.' })
   }
 }
 

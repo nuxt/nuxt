@@ -115,7 +115,7 @@ export default defineNuxtModule({
             // TODO: fix type for second argument of `import`
             loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
-            warnBuild(`Unable to load Nuxt schema from \`${filePath}\`. Ensure the file exports a valid schema definition.`, { code: ErrorCodes.B5005, cause: err })
+            warnBuild(`Unable to load Nuxt schema from \`${filePath}\`. Ensure the file exports a valid schema definition.`, { code: ErrorCodes.B5005, fix: 'Check that `nuxt.schema` exports a valid object with `defineNuxtSchema()` or as a plain object.', cause: err })
             continue
           }
           schemaDefs.push(loadedConfig)

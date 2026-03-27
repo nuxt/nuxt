@@ -70,7 +70,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
   if (nuxt.options.dev && !nuxt.options.test) {
     nuxt.hooks.hookOnce('build:done', () => {
       checkForExternalConfigurationFiles()
-        .catch(e => warnBuild('Problem checking for external configuration files.', { code: ErrorCodes.B1014, cause: e }))
+        .catch(e => warnBuild('Problem checking for external configuration files.', { code: ErrorCodes.B1014, fix: 'This is likely a transient file system error. If it persists, check file permissions in your project root.', cause: e }))
     })
   }
 

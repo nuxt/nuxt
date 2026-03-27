@@ -114,7 +114,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throwBuildError(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`, { code: ErrorCodes.B1019 })
+            throwBuildError(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`, { code: ErrorCodes.B1019, fix: 'If you are a module author, ensure the component `mode` is set to `client`, `server`, or `all`. Otherwise, please report this issue.' })
           }
         },
       },

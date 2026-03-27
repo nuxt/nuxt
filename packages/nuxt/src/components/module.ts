@@ -201,6 +201,7 @@ export default defineNuxtModule<ComponentsOptions>({
         if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
           warnBuild(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`, {
             code: ErrorCodes.B3002,
+            fix: 'Set `experimental.componentIslands` to `true` in your `nuxt.config`, or convert the component to a client component.',
             context: {
               component: component.filePath,
               ssr: nuxt.options.ssr,

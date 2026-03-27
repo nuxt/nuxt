@@ -254,7 +254,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       if (count < 5) {
         return await readFileWithMeta(dir, fileName, count + 1)
       }
-      warnBuild(`Failed to read file \`${fileName}\` as it changed during read.`, { code: ErrorCodes.B1010 })
+      warnBuild(`Failed to read file \`${fileName}\` as it changed during read.`, { code: ErrorCodes.B1010, fix: 'The file was modified while being read. This is usually caused by a concurrent process writing to the file. Try restarting the build.' })
       return
     }
 
@@ -267,7 +267,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       },
     }
   } catch (err) {
-    warnBuild(`Failed to read file \`${fileName}\`.`, { code: ErrorCodes.B1011, cause: err })
+    warnBuild(`Failed to read file \`${fileName}\`.`, { code: ErrorCodes.B1011, fix: 'Check that the file exists and is readable, or try clearing the build cache with `nuxi clean`.', cause: err })
   } finally {
     await fd?.close()
   }
@@ -287,7 +287,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
       // Prevent path traversal attacks
       if (!filePath.startsWith(resolvedCwd)) {
-        warnBuild(`Skipping unsafe cache path: ${file.name}`, { code: ErrorCodes.B1012, context: { path: file.name } })
+        warnBuild(`Skipping unsafe cache path: ${file.name}`, { code: ErrorCodes.B1012, fix: 'This cache file has a path that escapes the project directory (possible path traversal). Delete the cache with `nuxi clean` and rebuild.', context: { path: file.name } })
         continue
       }
 
@@ -307,7 +307,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      errorBuild(`Failed to restore cached file \`${file.name}\`.`, { code: ErrorCodes.B1013, cause: err })
+      errorBuild(`Failed to restore cached file \`${file.name}\`.`, { code: ErrorCodes.B1013, fix: 'Try clearing the build cache with `nuxi clean` and rebuilding from scratch.', cause: err })
     } finally {
       await fd?.close()
     }

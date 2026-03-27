@@ -221,10 +221,10 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
       // Validate arguments
       const key = computed(() => toValue(_key))
       if (!key.value || typeof key.value !== 'string') {
-        throwError('[useAsyncData] key must be a non-empty string.', { code: E7011 })
+        throwError('[useAsyncData] key must be a non-empty string.', { code: E7011, fix: 'Pass a non-empty string as the first argument to `useAsyncData()`.' })
       }
       if (typeof _handler !== 'function') {
-        throwError('[useAsyncData] handler must be a function.', { code: E7012 })
+        throwError('[useAsyncData] handler must be a function.', { code: E7012, fix: 'Pass a function as the handler argument, e.g. `useAsyncData(\'key\', () => $fetch(\'/api/data\'))`.' })
       }
 
       const shouldFactoryOptionsOverride = typeof options === 'function'
@@ -331,7 +331,7 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           instance.sp = []
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
-          runtimeWarn(`[${functionName}] Component is already mounted, please use $fetch instead.`, { code: E3003 })
+          runtimeWarn(`[${functionName}] Component is already mounted, please use $fetch instead.`, { code: E3003, fix: 'Use `$fetch()` for requests triggered after mount (e.g., in event handlers), or call `useAsyncData`/`useFetch` in the `setup()` function.' })
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
           instance._nuxtOnBeforeMountCbs = []
@@ -667,7 +667,7 @@ function buildAsyncData<
       const opts = _opts && newValue === undefined && typeof _opts === 'object' ? _opts : {}
       if (import.meta.dev && newValue !== undefined && (!_opts || typeof _opts !== 'object')) {
         // @ts-expect-error private property
-        runtimeWarn(`[${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`, { code: E3005 })
+        runtimeWarn(`[${options._functionName}] Do not pass \`execute\` directly to \`watch\`. Instead, use an inline function, such as \`watch(q, () => execute())\`.`, { code: E3005, fix: 'Wrap the call: `watch(source, () => execute())` instead of `watch(source, execute)`.' })
       }
       if (nuxtApp._asyncDataPromises[key]) {
         if ((opts.dedupe ?? options.dedupe) === 'defer') {
@@ -732,7 +732,7 @@ function buildAsyncData<
             const caller = getUserCaller()
             const explanation = caller ? ` (used at ${caller.source}:${caller.line}:${caller.column})` : ''
             // @ts-expect-error private property
-            runtimeWarn(`\`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`, { code: E3006 })
+            runtimeWarn(`\`${options._functionName || 'useAsyncData'}${explanation}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`, { code: E3006, fix: 'Return a value from the handler function (e.g., `return null` instead of returning nothing).' })
           }
 
           nuxtApp.payload.data[key] = result

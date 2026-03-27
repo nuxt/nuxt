@@ -3,7 +3,8 @@ import { transformWithOxc } from 'vite'
 import { defu } from 'defu'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { RenderedModule } from 'rolldown'
-import { ErrorCodes, ensureDependencyInstalled, warnBuild } from '@nuxt/kit'
+import { ensureDependencyInstalled } from '@nuxt/kit'
+import { ErrorCodes, warnBuild } from '../nuxt-errors.ts'
 
 export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (nuxt.options.test) {
@@ -20,7 +21,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })) {
-    warnBuild('Skipping bundle analysis.', { code: ErrorCodes.B7001 })
+    warnBuild('Skipping bundle analysis.', { code: ErrorCodes.B7001, fix: 'Run `npm install -D rollup-plugin-visualizer` to enable bundle analysis.' })
     return
   }
 

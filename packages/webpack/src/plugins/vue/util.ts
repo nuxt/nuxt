@@ -3,12 +3,13 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/util.js
  */
 
-import { ErrorCodes, logger, warnBuild } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
+import { ErrorCodes, warnBuild } from '../../nuxt-errors.ts'
 import type { Compiler } from 'webpack'
 
 export const validate = (compiler: Compiler) => {
   if (compiler.options.target !== 'node') {
-    warnBuild('webpack config `target` should be "node".', { code: ErrorCodes.B5007 })
+    warnBuild('webpack config `target` should be "node".', { code: ErrorCodes.B5007, fix: 'Set `target: "node"` in your webpack server configuration.' })
   }
 
   if (!compiler.options.externals) {

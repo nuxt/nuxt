@@ -35,6 +35,8 @@ export const E1009 = 'E1009'
 export const E1010 = 'E1010'
 /** Error while mounting app. */
 export const E1011 = 'E1011'
+/** `vue:setup` callbacks must be synchronous */
+export const E1012 = 'E1012'
 
 // ---------- E2xxx: Navigation / routing ----------
 /** Navigating to an external URL without `external: true` */

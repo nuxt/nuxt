@@ -3,7 +3,7 @@ import type { Component, ComponentsDir } from '@nuxt/schema'
 import { resolveModuleExportNames } from 'mlly'
 
 import { useNuxt } from './context.ts'
-import { warnBuild } from './errors.ts'
+import { warnBuild } from './nuxt-errors.ts'
 import * as ErrorCodes from './error-codes.ts'
 import { resolvePath } from './resolve.ts'
 import { MODE_RE } from './utils.ts'

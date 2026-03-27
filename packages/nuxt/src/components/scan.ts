@@ -48,7 +48,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
             const nuxt = useNuxt()
             const original = resolveToAlias(dir.path, nuxt)
             const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
-            warnBuild(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`, { code: ErrorCodes.B3008, context: { scannedPath: corrected, expectedPath: original } })
+            warnBuild(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`, { code: ErrorCodes.B3008, fix: `Rename the directory from \`${basename(corrected)}\` to \`${basename(original)}\` to match the expected casing.`, context: { scannedPath: corrected, expectedPath: original } })
             break
           }
         }
@@ -140,7 +140,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        warnBuild(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`, { code: ErrorCodes.B3010, context: { filePath } })
+        warnBuild(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`, { code: ErrorCodes.B3010, fix: 'Rename the component file to something other than `index` (e.g., `MyComponent.vue`).', context: { filePath } })
         continue
       }
 

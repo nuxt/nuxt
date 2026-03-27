@@ -420,7 +420,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
-    const unreg = nuxtApp.hook('app:error', (...args) => { runtimeWarn('Error caught during app initialization.', { code: E1005, cause: args[0] }) })
+    const unreg = nuxtApp.hook('app:error', (...args) => { runtimeWarn('Error caught during app initialization.', { code: E1005, fix: 'Check your plugins, `app:created`, and `app:beforeMount` hooks for unhandled errors.', cause: args[0] }) })
     nuxtApp.hook('app:mounted', unreg)
   }
 
@@ -581,7 +581,7 @@ export function useNuxtApp (id?: string): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throwError('A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug.', { code: E1001 })
+      throwError('A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug.', { code: E1001, fix: 'Move this call inside a Vue `setup()` function, a Nuxt plugin, or a Nuxt middleware.' })
     } else {
       throwError('Nuxt instance unavailable.', { code: E1001 })
     }
@@ -621,7 +621,7 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         if (!loggedKeys.has(p)) {
           loggedKeys.add(p)
-          runtimeWarn(`Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}.`, { code: E1003 })
+          runtimeWarn(`Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}.`, { code: E1003, fix: `Move \`${p}\` under \`runtimeConfig.public\` in \`nuxt.config\` to make it available on the client side.` })
         }
       }
       return Reflect.get(target, p, receiver)

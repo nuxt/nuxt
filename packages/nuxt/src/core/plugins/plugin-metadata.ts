@@ -61,7 +61,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const metaArg = node.arguments[1]
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throwBuildError(`Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`, { code: ErrorCodes.B2001 })
+        throwBuildError(`Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`, { code: ErrorCodes.B2001, fix: 'Pass an object literal as the second argument, e.g. `defineNuxtPlugin(() => {}, { name: \'my-plugin\' })`.' })
       }
       meta = extractMetaFromObject(metaArg.properties)
     }
@@ -105,7 +105,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
     }
     if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
       if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
-        throwBuildError('Invalid plugin metadata: `dependsOn` must be an array of string literals.', { code: ErrorCodes.B2003 })
+        throwBuildError('Invalid plugin metadata: `dependsOn` must be an array of string literals.', { code: ErrorCodes.B2003, fix: 'Use string literals in the `dependsOn` array, e.g. `dependsOn: [\'my-plugin\']`.' })
       }
       meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
     }
@@ -122,7 +122,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       if (!plugin) { return }
 
       if (!code.trim()) {
-        warnBuild(`Plugin \`${plugin.src}\` has no content.`, { code: ErrorCodes.B2004, context: { src: plugin.src } })
+        warnBuild(`Plugin \`${plugin.src}\` has no content.`, { code: ErrorCodes.B2004, fix: 'Add content to the plugin file, or remove it from the `plugins/` directory.', context: { src: plugin.src } })
 
         return {
           code: 'export default () => {}',
@@ -174,7 +174,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           }
         })
       } catch (e) {
-        errorBuild(`Error parsing plugin \`${plugin.src}\`.`, { code: ErrorCodes.B2006, cause: e })
+        errorBuild(`Error parsing plugin \`${plugin.src}\`.`, { code: ErrorCodes.B2006, fix: 'Check the plugin file for syntax errors.', cause: e })
         return
       }
 

@@ -43,7 +43,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     if (manifest === _manifest) {
       manifest = undefined
     }
-    runtimeWarn('Error fetching app manifest.', { code: E5002, cause: e })
+    runtimeWarn('Error fetching app manifest.', { code: E5002, fix: 'Check that your server is running and the manifest endpoint is accessible. This may be a transient network issue.', cause: e })
   })
   return _manifest
 }
@@ -66,7 +66,7 @@ export function getRouteRules (arg: string | H3Event | { path: string }) {
   try {
     return routeRulesMatcher(path)
   } catch (e) {
-    runtimeWarn(`Error matching route rules for path \`${path}\`.`, { code: E5003, cause: e })
+    runtimeWarn(`Error matching route rules for path \`${path}\`.`, { code: E5003, fix: 'Check your `routeRules` in `nuxt.config` for invalid patterns.', cause: e })
     return {}
   }
 }
