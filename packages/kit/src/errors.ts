@@ -2,7 +2,7 @@ import { colors } from 'consola/utils'
 import { isAgent } from 'std-env'
 import { logger } from './logger.ts'
 
-const DOCS_BASE = 'https://nuxt.com/docs/errors'
+const DOCS_BASE = 'https://nuxt.com/docs/e'
 
 export interface NuxtErrorOptions {
   /** Error code (e.g., 'B1001'). Derives docs URL and is displayed with NUXT_ prefix. */
@@ -30,11 +30,11 @@ export function formatBuildError (message: string, opts: NuxtErrorOptions): stri
   let result = `[NUXT_${opts.code}] ${message}`
 
   if (opts.fix) {
-    result += ` ${opts.fix}`
+    result += `\n  ${colors.cyan('Fix:')} ${opts.fix}`
   }
 
   const docsURL = opts.docs || `${DOCS_BASE}/${opts.code}`
-  result += ` ${colors.dim('See:')} ${colors.underline(docsURL)}`
+  result += `\n  ${colors.dim('See:')} ${colors.underline(docsURL)}`
 
   if (isAgent && opts.context) {
     const entries = Object.entries(opts.context)

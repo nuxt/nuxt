@@ -14,7 +14,7 @@ export interface RuntimeErrorOptions {
   cause?: unknown
 }
 
-const DOCS_BASE = 'https://nuxt.com/docs/errors'
+const DOCS_BASE = 'https://nuxt.com/docs/e'
 const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
 
 type Trace = { source: string, line?: number, column?: number }
@@ -32,14 +32,14 @@ export function formatRuntimeError (message: string, opts: RuntimeErrorOptions):
   let result = `[NUXT_${opts.code}] ${message}`
 
   if (import.meta.dev) {
-    if (opts.fix) {
-      result += ` ${opts.fix}`
-    }
     const caller = getUserCaller()
     if (caller) {
       result += ` (at ${caller.source}${caller.line ? `:${caller.line}` : ''}${caller.column ? `:${caller.column}` : ''})`
     }
-    result += ` See: ${DOCS_BASE}/${opts.code}`
+    if (opts.fix) {
+      result += `\n  Fix: ${opts.fix}`
+    }
+    result += `\n  See: ${DOCS_BASE}/${opts.code}`
   }
 
   return result

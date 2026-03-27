@@ -1,7 +1,7 @@
 /**
  * Nuxt build-time error codes.
  *
- * Each code maps to a docs page at `https://nuxt.com/docs/errors/{code}`.
+ * Each code maps to a docs page at `https://nuxt.com/e/{code}`.
  * Codes are stable — once assigned they must not be reused or renumbered.
  *
  * Ranges:

@@ -1,7 +1,7 @@
 /**
  * Nuxt runtime error codes.
  *
- * Each code maps to a docs page at `https://nuxt.com/docs/errors/{code}`.
+ * Each code maps to a docs page at `https://nuxt.com/e/{code}`.
  * Codes are stable — once assigned they must not be reused or renumbered.
  *
  * Ranges:
@@ -29,6 +29,10 @@ export const E1006 = 'E1006'
 export const E1007 = 'E1007'
 /** Skipping render: a response was already set by middleware or a plugin. */
 export const E1008 = 'E1008'
+/** Error in `vue:error` hook. */
+export const E1009 = 'E1009'
+/** Not rendering error page for bot */
+export const E1010 = 'E1010'
 /** Error while mounting app. */
 export const E1011 = 'E1011'
 
