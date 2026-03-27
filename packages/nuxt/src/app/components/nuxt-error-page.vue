@@ -1,5 +1,5 @@
 <template>
-  <ErrorTemplate v-bind="{ status, statusText, description, stack }" />
+  <ErrorTemplate v-bind="{ status, statusText, description, stack, fix, why, docsUrl, errorCode }" />
 </template>
 
 <script setup>
@@ -40,6 +40,12 @@ const is404 = status === 404
 const statusText = _error.statusText ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
 const description = _error.message || _error.toString()
 const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
+
+// Structured error context (dev only, from throwError)
+const fix = import.meta.dev ? _error.fix : undefined
+const why = import.meta.dev ? _error.why : undefined
+const docsUrl = import.meta.dev ? _error.docsUrl : undefined
+const errorCode = import.meta.dev ? _error.code : undefined
 
 // TODO: Investigate side-effect issue with imports
 const _Error404 = defineAsyncComponent(() => import('./error-404.vue'))

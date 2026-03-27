@@ -61,7 +61,7 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
     const metaArg = node.arguments[1]
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throwBuildError(`Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`, { code: ErrorCodes.B2001, fix: 'Pass an object literal as the second argument, e.g. `defineNuxtPlugin(() => {}, { name: \'my-plugin\' })`.' })
+        return throwBuildError(`Invalid plugin metadata: the second argument to \`${name}\` must be an object literal, but got \`${metaArg.type}\`.`, { code: ErrorCodes.B2001, fix: 'Pass an object literal as the second argument, e.g. `defineNuxtPlugin(() => {}, { name: \'my-plugin\' })`.' })
       }
       meta = extractMetaFromObject(metaArg.properties)
     }
@@ -93,7 +93,7 @@ function extractMetaFromObject (properties: Array<ObjectPropertyKind>) {
   const meta: PluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throwBuildError('Invalid plugin metadata: spread elements and computed keys are not supported in plugin options.', { code: ErrorCodes.B2002, fix: 'Use static properties instead.' })
+      return throwBuildError('Invalid plugin metadata: spread elements and computed keys are not supported in plugin options.', { code: ErrorCodes.B2002, fix: 'Use static properties instead.' })
     }
     const propertyKey = property.key.name
     if (!isMetadataKey(propertyKey)) { continue }

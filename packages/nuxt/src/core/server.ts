@@ -21,7 +21,7 @@ async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): P
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
   } catch (err) {
-    throwBuildError(`Loading \`${builder}\` server builder failed.`, {
+    return throwBuildError(`Loading \`${builder}\` server builder failed.`, {
       code: ErrorCodes.B1018,
       fix: `Run \`npm install ${builder}\` to install it.`,
       docs: 'https://nuxt.com/docs/4.x/api/nuxt-config#builder-1',

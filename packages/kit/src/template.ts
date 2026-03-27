@@ -150,7 +150,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   if (!template.filename) {
-    throwBuildError('Invalid template. `filename` must be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8011, fix: 'Add a `filename` property to the template object, or provide a `src` path (the filename will be derived from it).', context: { template: JSON.stringify(template) } })
+    return throwBuildError('Invalid template. `filename` must be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8011, fix: 'Add a `filename` property to the template object, or provide a `src` path (the filename will be derived from it).', context: { template: JSON.stringify(template) } })
   }
 
   // Always write declaration files

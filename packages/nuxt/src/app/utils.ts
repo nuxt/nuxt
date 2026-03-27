@@ -1,5 +1,4 @@
 import { captureStackTrace } from 'errx'
-import { isAgent } from 'std-env'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
@@ -33,6 +32,47 @@ type Trace = { source: string, line?: number, column?: number }
  *   `import.meta.dev` and tree-shaken out of production builds.
  * - In prod, only the code and core message are kept.
  */
+/**
+ * Word-wrap a single detail line for the runtime frame. Returns the
+ * wrapped text with continuation lines indented under the `│` pipe.
+ */
+function wrapRuntimeLine (text: string, width = 76): string {
+  const words = text.split(' ')
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word
+    if (test.length > width && current) {
+      lines.push(current)
+      current = word
+    } else {
+      current = test
+    }
+  }
+  if (current) { lines.push(current) }
+  return lines.join('\n│  ')
+}
+
+/**
+ * Render an array of detail strings into a box-drawing frame.
+ * Uses plain Unicode characters (no ANSI) so it works in both
+ * terminal (SSR dev) and browser consoles.
+ *
+ * For continuation lines from word-wrap, mid-items use `│` and the
+ * last item uses `   ` (spaces) since `╰` signals the frame's end.
+ */
+function renderRuntimeFrame (lines: string[]): string {
+  return lines.map((line, i) => {
+    const isLast = i === lines.length - 1
+    const connector = isLast ? '╰▶' : '├▶'
+    // Replace continuation pipe with correct character for wrapped lines
+    const wrapped = isLast
+      ? line.replaceAll('\n│  ', '\n   ')
+      : line
+    return `${connector} ${wrapped}`
+  }).join('\n')
+}
+
 export function formatRuntimeError (message: string, opts: RuntimeErrorOptions): string {
   let result = `[NUXT_${opts.code}] ${message}`
 
@@ -41,19 +81,21 @@ export function formatRuntimeError (message: string, opts: RuntimeErrorOptions):
     if (caller) {
       result += ` (at ${caller.source}${caller.line ? `:${caller.line}` : ''}${caller.column ? `:${caller.column}` : ''})`
     }
-    if (opts.why) {
-      result += `\n  Why: ${opts.why}`
-    }
-    if (opts.fix) {
-      result += `\n  Fix: ${opts.fix}`
-    }
-    result += `\n  See: ${DOCS_BASE}/${opts.code}`
 
-    if (isAgent && opts.context) {
-      const entries = Object.entries(opts.context)
-        .map(([k, v]) => `  ${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
-        .join('\n')
-      result += `\n\nDiagnostic context:\n${entries}`
+    const lines: string[] = []
+
+    if (opts.why) {
+      lines.push(wrapRuntimeLine(opts.why))
+    }
+
+    lines.push(wrapRuntimeLine(`see: ${DOCS_BASE}/${opts.code}`))
+
+    if (opts.fix) {
+      lines.push(wrapRuntimeLine(`fix: ${opts.fix}`))
+    }
+
+    if (lines.length > 0) {
+      result += '\n' + renderRuntimeFrame(lines)
     }
   }
 
@@ -63,13 +105,29 @@ export function formatRuntimeError (message: string, opts: RuntimeErrorOptions):
 /**
  * Throw an error with an error code and optional fix.
  *
- * In dev mode, automatically appends the caller's file/line (via `errx`)
- * and a docs link derived from the error code. In production, only the
- * code and core message are kept — everything else is tree-shaken.
+ * In dev mode, logs the full frame-formatted message to the console
+ * for terminal readability. Structured fields (fix, why, docs) will be stored
+ * as properties on the Error object.
  */
 export function throwError (message: string, opts: RuntimeErrorOptions): never {
-  const err = new Error(formatRuntimeError(message, opts), { cause: opts.cause })
+  // Clean message for HTML display — no frame, no source location
+  const err = new Error(`[NUXT_${opts.code}] ${message}`, { cause: opts.cause })
   ;(err as any).code = `NUXT_${opts.code}`
+
+  if (import.meta.dev) {
+    // Structured fields for HTML error page rendering
+    if (opts.fix) { (err as any).fix = opts.fix }
+    if (opts.why) { (err as any).why = opts.why }
+    ;(err as any).docsUrl = `${DOCS_BASE}/${opts.code}`
+
+    // Log the rich frame-formatted version to the console for terminal users
+    if (opts.cause) {
+      console.error(formatRuntimeError(message, opts), opts.cause)
+    } else {
+      console.error(formatRuntimeError(message, opts))
+    }
+  }
+
   throw err
 }
 

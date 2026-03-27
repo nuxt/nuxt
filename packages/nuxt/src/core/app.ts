@@ -141,7 +141,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     return template.getContents({ ...ctx, options: template.options! })
   }
 
-  throwBuildError('Invalid template. Templates must have either `src` or `getContents`.', {
+  return throwBuildError('Invalid template. Templates must have either `src` or `getContents`.', {
     code: ErrorCodes.B1003,
     fix: 'Add a `getContents` function or a `src` path to the `addTemplate()` call.',
     context: { template },

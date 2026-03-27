@@ -2,6 +2,59 @@ import { colors } from 'consola/utils'
 import { isAgent } from 'std-env'
 import { logger } from './logger.ts'
 
+const CONNECTOR_MID = colors.dim('├▶')
+const CONNECTOR_END = colors.dim('╰▶')
+const PIPE = colors.dim('│')
+
+/**
+ * Word-wrap a single detail line at ~76 chars (to stay under 80 with the
+ * `│  ` prefix). Returns the wrapped string with continuation lines
+ * indented to align with the first line's content (after the connector).
+ */
+function wrapFrameLine (text: string, width = 76): string {
+  // Strip ANSI for length calculations
+  const stripAnsi = (s: string) => s.replace(/\x1B\[[0-9;]*m/g, '')
+
+  const words = text.split(' ')
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word
+    if (stripAnsi(test).length > width && current) {
+      lines.push(current)
+      current = word
+    } else {
+      current = test
+    }
+  }
+  if (current) { lines.push(current) }
+  return lines.join(`\n${PIPE}  `)
+}
+
+/**
+ * Render an array of pre-wrapped detail strings into a box-drawing frame.
+ *
+ * ```
+ * ├▶ first detail line that may
+ * │  wrap to the next line.
+ * ├▶ second detail line
+ * ╰▶ last detail line
+ * ```
+ */
+function renderFrame (lines: string[]): string {
+  const SPACE_PAD = colors.dim('  ')
+  return lines.map((line, i) => {
+    const isLast = i === lines.length - 1
+    const connector = isLast ? CONNECTOR_END : CONNECTOR_MID
+    // For the last item, replace pipe continuations with spaces since
+    // `╰` signals the frame's end
+    const wrapped = isLast
+      ? line.replaceAll(`\n${PIPE}  `, `\n${SPACE_PAD} `)
+      : line
+    return `${connector} ${wrapped}`
+  }).join('\n')
+}
+
 export interface NuxtErrorOptions {
   /** Error code (e.g., 'B1001'). Combined with the module prefix to form the error tag. */
   code: string
@@ -53,8 +106,8 @@ export interface BuildErrorUtilsOptions {
  *
  * warnBuild('Store not found.', { code: '001', fix: 'Call defineStore() first.' })
  * // Output: [PINIA_001] Store not found.
- * //           Fix: Call defineStore() first.
- * //           See: https://pinia.vuejs.org/errors/001
+ * //         ├▶ see: https://pinia.vuejs.org/errors/001
+ * //         ╰▶ fix: Call defineStore() first.
  * ```
  */
 export function createBuildErrorUtils (options: BuildErrorUtilsOptions) {
@@ -69,19 +122,28 @@ export function createBuildErrorUtils (options: BuildErrorUtilsOptions) {
    * - The diagnostic context block is only shown for AI agents.
    */
   function formatBuildError (message: string, opts: NuxtErrorOptions): string {
-    let result = `[${prefix}_${opts.code}] ${message}`
+    // Build the detail lines that go inside the frame
+    const lines: string[] = []
 
     if (opts.why) {
-      result += `\n  ${colors.dim('Why:')} ${opts.why}`
-    }
-
-    if (opts.fix) {
-      result += `\n  ${colors.cyan('Fix:')} ${opts.fix}`
+      lines.push(wrapFrameLine(opts.why))
     }
 
     const docsURL = opts.docs || (options.docsBase ? `${options.docsBase}/${opts.code}` : undefined)
     if (docsURL) {
-      result += `\n  ${colors.dim('See:')} ${colors.underline(docsURL)}`
+      lines.push(wrapFrameLine(`${colors.bold('see:')} ${colors.underline(docsURL)}`))
+    }
+
+    if (opts.fix) {
+      lines.push(wrapFrameLine(`${colors.bold('fix:')} ${opts.fix}`))
+    }
+
+    // Header line with error code and message
+    let result = `${colors.bold(`[${prefix}_${opts.code}]`)} ${message}`
+
+    // Render the frame if there are detail lines
+    if (lines.length > 0) {
+      result += '\n' + renderFrame(lines)
     }
 
     if (isAgent && opts.context) {

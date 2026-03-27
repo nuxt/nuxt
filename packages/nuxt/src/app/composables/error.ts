@@ -67,7 +67,21 @@ export class NuxtError<DataT = unknown> extends HTTPError<DataT> {
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>) => {
-  return typeof error === 'string'
-    ? new NuxtError<DataT>(error)
-    : new NuxtError<DataT>(error.message, error)
+  if (typeof error === 'string') {
+    return new NuxtError<DataT>(error)
+  }
+
+  const nuxtError = new NuxtError<DataT>(error.message, error)
+
+  // Forward structured error properties from throwError() so they
+  // survive the Error → NuxtError wrapping and are available in error.vue
+  if (import.meta.dev) {
+    const src = error as any
+    if (src.fix) { (nuxtError as any).fix = src.fix }
+    if (src.why) { (nuxtError as any).why = src.why }
+    if (src.docsUrl) { (nuxtError as any).docsUrl = src.docsUrl }
+    if (src.code) { (nuxtError as any).code = src.code }
+  }
+
+  return nuxtError
 }
