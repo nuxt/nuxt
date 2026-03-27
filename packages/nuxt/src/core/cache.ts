@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs'
 import { createIsIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { logger } from '../utils.ts'
+import { ErrorCodes, errorBuild, warnBuild } from './utils/error-format.ts'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { dirname, join, relative } from 'pathe'
@@ -253,7 +254,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       if (count < 5) {
         return await readFileWithMeta(dir, fileName, count + 1)
       }
-      logger.warn(`Failed to read file \`${fileName}\` as it changed during read.`)
+      warnBuild(`Failed to read file \`${fileName}\` as it changed during read.`, { code: ErrorCodes.B1010 })
       return
     }
 
@@ -266,7 +267,7 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
       },
     }
   } catch (err) {
-    logger.warn(`Failed to read file \`${fileName}\`:`, err)
+    warnBuild(`Failed to read file \`${fileName}\`.`, { code: ErrorCodes.B1011, cause: err })
   } finally {
     await fd?.close()
   }
@@ -286,7 +287,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
       // Prevent path traversal attacks
       if (!filePath.startsWith(resolvedCwd)) {
-        logger.warn(`Skipping unsafe cache path: ${file.name}`)
+        warnBuild(`Skipping unsafe cache path: ${file.name}`, { code: ErrorCodes.B1012, context: { path: file.name } })
         continue
       }
 
@@ -306,7 +307,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      logger.error(`Failed to restore cached file \`${file.name}\`.`, err)
+      errorBuild(`Failed to restore cached file \`${file.name}\`.`, { code: ErrorCodes.B1013, cause: err })
     } finally {
       await fd?.close()
     }

@@ -5,8 +5,9 @@ import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 
-import { QUOTE_RE, formatErrorMessage, resolveComponentNameSegments } from '../core/utils/index.ts'
-import { logger, resolveToAlias } from '../utils.ts'
+import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
+import { ErrorCodes, warnBuild } from '../core/utils/error-format.ts'
+import { resolveToAlias } from '../utils.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
@@ -47,7 +48,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
             const nuxt = useNuxt()
             const original = resolveToAlias(dir.path, nuxt)
             const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
-            logger.warn(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`)
+            warnBuild(`Components not scanned from \`${corrected}\`. Did you mean to name the directory \`${original}\` instead?`, { code: ErrorCodes.B3008, context: { scannedPath: corrected, expectedPath: original } })
             break
           }
         }
@@ -99,7 +100,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const pascalName = pascalCase(componentNameSegments)
 
       if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
-        logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+        warnBuild(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`, { code: ErrorCodes.B3009, fix: 'Rename the component to avoid the `Lazy` prefix.', context: { component: pascalName, filePath } })
       }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
@@ -139,7 +140,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        logger.warn(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`)
+        warnBuild(`Component did not resolve to a file name in \`${resolveToAlias(filePath)}\`.`, { code: ErrorCodes.B3010, context: { filePath } })
         continue
       }
 
@@ -171,11 +172,12 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  logger.warn(formatErrorMessage(`Two component files resolving to the same name \`${componentName}\`:\n` +
+  warnBuild(`Two component files resolving to the same name \`${componentName}\`:\n` +
     `\n - ${filePath}` +
     `\n - ${duplicatePath}`, {
+    code: ErrorCodes.B3011,
     fix: 'Rename one of the files or adjust the `components.dirs` prefix settings in your `nuxt.config`.',
-  }))
+  })
 }
 
 const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

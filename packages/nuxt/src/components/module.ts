@@ -5,7 +5,7 @@ import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addT
 import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
 import { DECLARATION_EXTENSIONS, isDirectorySync, logger } from '../utils.ts'
-import { formatErrorMessage } from '../core/utils/error-format.ts'
+import { ErrorCodes, warnBuild } from '../core/utils/error-format.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
@@ -101,7 +101,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         const present = isDirectorySync(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          logger.warn(`Components directory not found: \`${dirPath}\`. If this is intentional, you can remove it from \`components.dirs\` in your \`nuxt.config\`.`)
+          warnBuild(`Components directory not found: \`${dirPath}\`. If this is intentional, you can remove it from \`components.dirs\` in your \`nuxt.config\`.`, { code: ErrorCodes.B3001, fix: 'If this is intentional, you can remove it from `components.dirs` in your `nuxt.config`.', context: { dirPath } })
         }
 
         const dirs = dirPath.includes('node_modules') ? libraryComponentDirs : userComponentDirs
@@ -199,13 +199,14 @@ export default defineNuxtModule<ComponentsOptions>({
           })
         }
         if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
-          logger.warn(formatErrorMessage(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`, {
+          warnBuild(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`, {
+            code: ErrorCodes.B3002,
             context: {
               component: component.filePath,
               ssr: nuxt.options.ssr,
               componentIslands: nuxt.options.experimental.componentIslands,
             },
-          }))
+          })
         }
       }
       context.components = newComponents

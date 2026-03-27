@@ -4,6 +4,7 @@ import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseModuleId } from '../../core/utils/plugins.ts'
+import { ErrorCodes, throwBuildError } from '../../core/utils/error-format.ts'
 import { isAbsolute, normalize } from 'pathe'
 import { type PackageJson, readPackage } from 'pkg-types'
 import { genImport } from 'knitwork'
@@ -113,7 +114,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
+            throwBuildError(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`, { code: ErrorCodes.B1019 })
           }
         },
       },

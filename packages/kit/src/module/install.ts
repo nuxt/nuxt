@@ -13,7 +13,8 @@ import semver from 'semver'
 import { directoryToURL } from '../internal/esm.ts'
 import { useNuxt } from '../context.ts'
 import { resolveAlias } from '../resolve.ts'
-import { logger } from '../logger.ts'
+import { errorBuild, throwBuildError } from '../errors.ts'
+import * as ErrorCodes from '../error-codes.ts'
 import { getLayerDirectories } from '../layers.ts'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
@@ -286,7 +287,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw new TypeError(`Nuxt module should be a function or a string to import. Received: ${nuxtModule}.`)
+    throwBuildError(`Nuxt module should be a function or a string to import. Received: \`${nuxtModule}\`.`, { code: ErrorCodes.B8015, context: { received: typeof nuxtModule } })
   }
 
   const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
@@ -308,7 +309,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     const resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
 
     if (typeof resolvedNuxtModule !== 'function') {
-      throw new TypeError(`Nuxt module should be a function: ${nuxtModule}.`)
+      throwBuildError(`Nuxt module should be a function: \`${nuxtModule}\`.`, { code: ErrorCodes.B8016 })
     }
 
     // nuxt-module-builder generates a module.json with metadata including the version
@@ -321,19 +322,19 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   } catch (error: unknown) {
     const code = (error as Error & { code?: string }).code
     if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
-      throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+      throwBuildError(`Could not load \`${nuxtModule}\`. Is it installed?`, { code: ErrorCodes.B8017, fix: `Run \`npm install ${nuxtModule}\` to install it.` })
     }
     if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
       const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
       // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
       // i.e. module is importing a module that is missing
       if (module && !module.includes(nuxtModule as string)) {
-        throw new TypeError(`Error while importing module \`${nuxtModule}\`: ${error}`)
+        throwBuildError(`Error while importing module \`${nuxtModule}\`: ${error}`, { code: ErrorCodes.B8018 })
       }
     }
   }
 
-  throw new TypeError(`Could not load \`${nuxtModule}\`. Is it installed?`)
+  throwBuildError(`Could not load \`${nuxtModule}\`. Is it installed?`, { code: ErrorCodes.B8017, fix: `Run \`npm install ${nuxtModule}\` to install it.` })
 }
 
 // --- Internal ---
@@ -379,8 +380,9 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
       )
     }
   } catch (e) {
-    logger.error(
+    errorBuild(
       `Error while executing ${!previousVersion ? 'install' : 'upgrade'} hook for module \`${meta.name}\`: ${e}`,
+      { code: ErrorCodes.B8019 },
     )
   }
 }

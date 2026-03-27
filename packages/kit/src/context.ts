@@ -2,6 +2,8 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { getContext } from 'unctx'
 import type { UseContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
+import { throwBuildError } from './errors.ts'
+import * as ErrorCodes from './error-codes.ts'
 
 /**
  * Direct access to the Nuxt global context - see https://github.com/unjs/unctx.
@@ -31,7 +33,7 @@ export function useNuxt (): Nuxt {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const instance = asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
   if (!instance) {
-    throw new Error('Nuxt instance is unavailable!')
+    throwBuildError('Nuxt instance is unavailable!', { code: ErrorCodes.B8001 })
   }
   return instance
 }

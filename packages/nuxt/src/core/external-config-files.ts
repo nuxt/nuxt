@@ -1,6 +1,6 @@
 import { findPath } from '@nuxt/kit'
 import { basename } from 'pathe'
-import { logger } from '../utils.ts'
+import { ErrorCodes, warnBuild } from './utils/error-format.ts'
 
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
@@ -17,11 +17,11 @@ export async function checkForExternalConfigurationFiles () {
 
   const foundOneExternalConfig = warningMessages.length === 1
   if (foundOneExternalConfig) {
-    logger.warn(warningMessages[0])
+    warnBuild(warningMessages[0]!, { code: ErrorCodes.B5004 })
   } else {
     const warningsAsList = warningMessages.map(message => `- ${message}`).join('\n')
     const warning = `Found multiple external configuration files: \n\n${warningsAsList}`
-    logger.warn(warning)
+    warnBuild(warning, { code: ErrorCodes.B5004 })
   }
 }
 

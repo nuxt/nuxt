@@ -127,11 +127,11 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
             try {
               await plugin.scan.call(pluginScanThisContext, { id: filePath, code: contents, nuxt, autoImportsToSources })
             } catch (e) {
-              errorBuild(`Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, { code: ErrorCodes.B1005, context: { plugin: plugin.name, file: filePath } }, e)
+              errorBuild(`Plugin \`${plugin.name}\` failed to scan file \`${filePath}\`.`, { code: ErrorCodes.B1005, context: { plugin: plugin.name, file: filePath }, cause: e })
             }
           }))
         } catch (e) {
-          errorBuild(`Cannot read file \`${filePath}\`.`, { code: ErrorCodes.B1006, context: { file: filePath } }, e)
+          errorBuild(`Cannot read file \`${filePath}\`.`, { code: ErrorCodes.B1006, context: { file: filePath }, cause: e })
         }
       }
 
@@ -140,7 +140,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         try {
           await plugin.afterScan(nuxt)
         } catch (e) {
-          errorBuild(`Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, { code: ErrorCodes.B1007, context: { plugin: plugin.name } }, e)
+          errorBuild(`Error in \`afterScan\` hook of plugin \`${plugin.name}\`.`, { code: ErrorCodes.B1007, context: { plugin: plugin.name }, cause: e })
         }
       }))
     }

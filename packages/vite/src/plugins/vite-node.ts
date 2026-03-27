@@ -7,7 +7,7 @@ import fs from 'node:fs' // For sync operations like unlinkSync if needed during
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { isAbsolute, join, normalize } from 'pathe'
-import { directoryToURL, resolveAlias, tryUseNuxt, useNitro } from '@nuxt/kit'
+import { ErrorCodes, directoryToURL, resolveAlias, throwBuildError, tryUseNuxt, useNitro } from '@nuxt/kit'
 import type { EnvironmentModuleNode, ModuleNode, PluginContainer, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import type { FetchResult } from 'vite-node'
@@ -367,7 +367,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
       const requiredSize = writeOffset + additionalBytes
 
       if (requiredSize > MAX_BUFFER_SIZE) {
-        throw new Error(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`)
+        throwBuildError(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`, { code: ErrorCodes.B7012 })
       }
 
       if (requiredSize > buffer.length) {
@@ -439,7 +439,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
 
   const currentSocketPath = config.socketPath
   if (!currentSocketPath) {
-    throw new Error('Socket path not configured for ViteNodeSocketServer.')
+    throwBuildError('Socket path not configured for ViteNodeSocketServer.', { code: ErrorCodes.B7013 })
   }
 
   // Clean up existing socket file (Unix only)

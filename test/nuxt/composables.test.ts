@@ -615,7 +615,7 @@ describe('routing utilities: `navigateTo`', () => {
   }
 
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowError(/\[nuxt\].*Navigating to external URL `https:\/\/test\.com` is not allowed by default/)
+    expect(() => navigateTo('https://test.com')).toThrowError(/\[NUXT_E2001\].*Navigating to external URL `https:\/\/test\.com` is not allowed by default/)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
@@ -624,7 +624,7 @@ describe('routing utilities: `navigateTo`', () => {
       ['\0data:alert("hi")', 'data'],
     ]
     for (const [url, protocol] of urls) {
-      expect(() => navigateTo(url, { external: true })).toThrowError(new RegExp(`\\[nuxt\\].*Cannot navigate to URL.*with \\\`${protocol}:\\\` protocol`))
+      expect(() => navigateTo(url, { external: true })).toThrowError(new RegExp(`\\[NUXT_E2002\\].*Cannot navigate to URL.*with \\\`${protocol}:\\\` protocol`))
     }
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {

@@ -32,7 +32,7 @@ export default defineComponent({
     }
 
     onErrorCaptured((e) => {
-      runtimeWarn('Error in island component.', { code: E4012 }, e)
+      runtimeWarn('Error in island component.', { code: E4012, cause: e })
     })
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })

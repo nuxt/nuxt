@@ -19,6 +19,18 @@
 export const E1001 = 'E1001'
 /** Client-side runtime config key not available */
 export const E1003 = 'E1003'
+/** `setInterval` used on server */
+export const E1004 = 'E1004'
+/** Error during app initialization */
+export const E1005 = 'E1005'
+/** `onPrehydrate` not processed by build pipeline */
+export const E1006 = 'E1006'
+/** Compiler-hint helper called at runtime */
+export const E1007 = 'E1007'
+/** Skipping render: a response was already set by middleware or a plugin. */
+export const E1008 = 'E1008'
+/** Error while mounting app. */
+export const E1011 = 'E1011'
 
 // ---------- E2xxx: Navigation / routing ----------
 /** Navigating to an external URL without `external: true` */
@@ -133,13 +145,3 @@ export const E7010 = 'E7010'
 export const E7011 = 'E7011'
 /** `useAsyncData` handler must be a function */
 export const E7012 = 'E7012'
-
-// ---------- E1xxx (continued) ----------
-/** `setInterval` used on server */
-export const E1004 = 'E1004'
-/** Error during app initialization */
-export const E1005 = 'E1005'
-/** `onPrehydrate` not processed by build pipeline */
-export const E1006 = 'E1006'
-/** Compiler-hint helper called at runtime */
-export const E1007 = 'E1007'

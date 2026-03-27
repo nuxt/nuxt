@@ -86,13 +86,13 @@ async function _importPayload (payloadURL: string) {
     const res = await fetch(payloadURL, import.meta.dev ? {} : { cache: 'force-cache' })
     if (!res.ok) {
       if (import.meta.dev) {
-        console.warn(`[nuxt] Cannot load payload ${payloadURL}: ${res.status} ${res.statusText}`)
+        runtimeWarn(`Cannot load payload \`${payloadURL}\`: ${res.status} ${res.statusText}`, { code: E7002 })
       }
       return null
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    runtimeWarn('Cannot load payload ' + payloadURL, { code: E7002 }, err)
+    runtimeWarn('Cannot load payload ' + payloadURL, { code: E7002, cause: err })
   }
   return null
 }

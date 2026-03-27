@@ -6,9 +6,9 @@ import { relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils/index.ts'
-import { ErrorCodes, throwBuildError } from '../../core/utils/error-format.ts'
+import { ErrorCodes, throwBuildError, warnBuild } from '../../core/utils/error-format.ts'
 import { installNuxtModule } from '../../core/features.ts'
-import { logger, resolveToAlias } from '../../utils.ts'
+import { resolveToAlias } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -68,7 +68,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             if (!nuxt.options.dev) {
               throwBuildError(`\`${resolveToAlias(id, nuxt)}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\`.`, {
                 code: ErrorCodes.B3004,
-                fix: `Run \`npx nuxi module add ${internalInstall}\` to install it.`,
+                fix: `Run \`npx nuxt add ${internalInstall}\` to install it.`,
                 context: { file: id, component: component.pascalName, requiredModule: internalInstall },
               })
             }
@@ -83,7 +83,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
-              logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
+              warnBuild(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`, { code: ErrorCodes.B3003, fix: 'Set `experimental.componentIslands` to `true` in your `nuxt.config`.', context: { component: name } })
             }
             return identifier
           }

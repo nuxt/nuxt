@@ -1,3 +1,3 @@
-// Re-export from @nuxt/kit for backwards compatibility within this package
-export { formatBuildError as formatErrorMessage, throwBuildError, warnBuild, ErrorCodes } from '@nuxt/kit'
-export type { NuxtErrorOptions as ErrorMessageOptions } from '@nuxt/kit'
+// Re-export from @nuxt/kit for use within this package
+export { formatBuildError, throwBuildError, warnBuild, errorBuild, ErrorCodes } from '@nuxt/kit'
+export type { NuxtErrorOptions } from '@nuxt/kit'

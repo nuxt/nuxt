@@ -6,10 +6,12 @@ export function toArray<T> (value: T | T[]): T[] {
 }
 
 export interface RuntimeErrorOptions {
-  /** Error code (e.g., 'E1001'). Derives docs URL and is always shown, even in production. */
-  code?: string
+  /** Error code (e.g., 'E1001'). Derives docs URL and is always shown, even in production. Displayed with NUXT_ prefix. */
+  code: string
   /** A concrete suggestion for how to fix the issue (dev only) */
   fix?: string
+  /** The underlying error that caused this one */
+  cause?: unknown
 }
 
 const DOCS_BASE = 'https://nuxt.com/docs/errors'
@@ -26,51 +28,49 @@ type Trace = { source: string, line?: number, column?: number }
  *   `import.meta.dev` and tree-shaken out of production builds.
  * - In prod, only the code and core message are kept.
  */
-export function formatRuntimeError (message: string, opts?: RuntimeErrorOptions): string {
-  const code = opts?.code
-  const tag = code ? `[nuxt] [${code}]` : '[nuxt]'
-  let result = `${tag} ${message}`
+export function formatRuntimeError (message: string, opts: RuntimeErrorOptions): string {
+  let result = `[NUXT_${opts.code}] ${message}`
 
   if (import.meta.dev) {
-    if (opts?.fix) {
+    if (opts.fix) {
       result += ` ${opts.fix}`
     }
     const caller = getUserCaller()
     if (caller) {
       result += ` (at ${caller.source}${caller.line ? `:${caller.line}` : ''}${caller.column ? `:${caller.column}` : ''})`
     }
-    if (code) {
-      result += ` See: ${DOCS_BASE}/${code}`
-    }
+    result += ` See: ${DOCS_BASE}/${opts.code}`
   }
 
   return result
 }
 
 /**
- * Throw an error with an optional error code and fix.
+ * Throw an error with an error code and optional fix.
  *
  * In dev mode, automatically appends the caller's file/line (via `errx`)
  * and a docs link derived from the error code. In production, only the
  * code and core message are kept — everything else is tree-shaken.
  */
-export function throwError (message: string, opts?: RuntimeErrorOptions): never {
-  const err = new Error(formatRuntimeError(message, opts))
-  if (opts?.code) {
-    (err as any).code = opts.code
-  }
+export function throwError (message: string, opts: RuntimeErrorOptions): never {
+  const err = new Error(formatRuntimeError(message, opts), { cause: opts.cause })
+  ;(err as any).code = `NUXT_${opts.code}`
   throw err
 }
 
 /**
- * Log a warning with an optional error code and fix.
+ * Log a warning with an error code and optional fix.
  *
  * In dev mode, automatically appends the caller's file/line (via `errx`)
  * and a docs link derived from the error code. In production, only the
  * code and core message are kept — everything else is tree-shaken.
  */
-export function runtimeWarn (message: string, opts?: RuntimeErrorOptions, ...args: unknown[]): void {
-  console.warn(formatRuntimeError(message, opts), ...args)
+export function runtimeWarn (message: string, opts: RuntimeErrorOptions): void {
+  if (opts.cause) {
+    console.warn(formatRuntimeError(message, opts), opts.cause)
+  } else {
+    console.warn(formatRuntimeError(message, opts))
+  }
 }
 
 export function getUserTrace (): Trace[] {

@@ -5,11 +5,11 @@ import { createIsIgnored, directoryToURL, getLayerDirectories, importModule, isI
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
-import { isDirectory, logger } from '../utils.ts'
+import { isDirectory } from '../utils.ts'
 import { generateApp as _generateApp, createApp } from './app.ts'
 import { checkForExternalConfigurationFiles } from './external-config-files.ts'
 import { cleanupCaches, getVueHash } from './cache.ts'
-import { formatErrorMessage } from './utils/error-format.ts'
+import { ErrorCodes, throwBuildError, warnBuild } from './utils/error-format.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
@@ -70,7 +70,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
   if (nuxt.options.dev && !nuxt.options.test) {
     nuxt.hooks.hookOnce('build:done', () => {
       checkForExternalConfigurationFiles()
-        .catch(e => logger.warn('Problem checking for external configuration files.', e))
+        .catch(e => warnBuild('Problem checking for external configuration files.', { code: ErrorCodes.B1014, cause: e }))
     })
   }
 
@@ -240,7 +240,7 @@ async function createParcelWatcher () {
     }
     return true
   } catch {
-    logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+    warnBuild('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.', { code: ErrorCodes.B1015, fix: 'Install `@parcel/watcher` for better performance: `npm install -D @parcel/watcher`.' })
     return false
   }
 }
@@ -256,7 +256,7 @@ async function bundle (nuxt: Nuxt) {
     await nuxt.callHook('build:error', error)
 
     if (error.toString().includes('Cannot find module \'@nuxt/webpack-builder\'')) {
-      throw new Error('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies. See: https://nuxt.com/docs/4.x/api/nuxt-config#builder')
+      throwBuildError('Could not load `@nuxt/webpack-builder`. You may need to add it to your project dependencies.', { code: ErrorCodes.B1016, docs: 'https://nuxt.com/docs/4.x/api/nuxt-config#builder', fix: 'Run `npm install -D @nuxt/webpack-builder` to install it.' })
     }
 
     throw error
@@ -267,11 +267,12 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   try {
     return await importModule(builder, { url: [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)] })
   } catch (err) {
-    throw new Error(formatErrorMessage(`Loading \`${builder}\` builder failed.`, {
+    throwBuildError(`Loading \`${builder}\` builder failed.`, {
+      code: ErrorCodes.B1017,
       fix: `Run \`npm install ${builder}\` to install it.`,
       docs: 'https://nuxt.com/docs/4.x/api/nuxt-config#builder',
-      context: { builder, rootDir: nuxt.options.rootDir },
-    }), { cause: err })
+      context: { builder, rootDir: nuxt.options.rootDir, cause: err },
+    })
   }
 }
 

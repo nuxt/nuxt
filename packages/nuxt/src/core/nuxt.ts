@@ -12,7 +12,6 @@ import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 import onChange from 'on-change'
-import { colors } from 'consola/utils'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
@@ -38,6 +37,7 @@ import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { logger } from '../utils.ts'
+import { ErrorCodes, warnBuild } from './utils/error-format.ts'
 import { resolveTypePath } from './utils/types.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
@@ -185,12 +185,12 @@ async function initNuxt (nuxt: Nuxt) {
 
     if (nuxt.options.dev && hasTTY && !isCI && !isAgent && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      logger.warn(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback. More info at: ${colors.underline('https://nitro.build/deploy#compatibility-date')}`)
+      warnBuild(`We recommend adding \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config\` file.\nUsing \`${fallbackCompatibilityDate}\` as fallback.`, { code: ErrorCodes.B5001, docs: 'https://nitro.build/deploy#compatibility-date' })
     }
 
     if (nuxt.options.dev && isAgent && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      logger.warn(`No \`compatibilityDate\` is set in \`nuxt.config\`. Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`. Using \`${fallbackCompatibilityDate}\` as fallback. See: https://nitro.build/deploy#compatibility-date`)
+      warnBuild(`No \`compatibilityDate\` is set in \`nuxt.config\`. Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, { code: ErrorCodes.B5001, docs: 'https://nitro.build/deploy#compatibility-date' })
     }
   }
 
@@ -849,7 +849,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       searchPaths: options.modulesDir,
       from: import.meta.url,
     })) {
-      logger.warn(`Failed to install \`@nuxt/webpack-builder\` in \`${options.rootDir}\`. Please install it manually with \`npm install -D @nuxt/webpack-builder\`, or change the \`builder\` option to \`vite\` in \`nuxt.config\`.`)
+      warnBuild(`Failed to install \`@nuxt/webpack-builder\` in \`${options.rootDir}\`.`, { code: ErrorCodes.B5002, fix: 'Install it manually with `npm install -D @nuxt/webpack-builder`, or change the `builder` option to `vite` in `nuxt.config`.' })
     }
   }
 
@@ -887,7 +887,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
   for (const key in options.runtimeConfig.app) {
     if (!allowedKeys.has(key)) {
-      logger.warn(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`)
+      warnBuild(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`, { code: ErrorCodes.B5003, fix: 'Move the key to `runtimeConfig.public` or a custom namespace.' })
       delete options.runtimeConfig.app[key]
     }
   }

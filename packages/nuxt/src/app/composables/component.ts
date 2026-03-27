@@ -44,7 +44,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
       })
     }
   } else if (import.meta.dev) {
-    runtimeWarn('asyncData should return an object.', { code: E3007 }, data)
+    runtimeWarn('asyncData should return an object.', { code: E3007, cause: data })
   }
 }
 

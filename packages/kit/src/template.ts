@@ -10,6 +10,8 @@ import { readPackageJSON } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
+import { throwBuildError } from './errors.ts'
+import * as ErrorCodes from './error-codes.ts'
 import { distDirURL, filterInPlace } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
 import { getDirectory } from './module/install.ts'
@@ -75,7 +77,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
   const template = addTemplate(_template)
 
   if (!template.filename.endsWith('.d.ts')) {
-    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
+    throwBuildError(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`, { code: ErrorCodes.B8007, context: { template: template.filename } })
   }
 
   // Add template to types reference
@@ -122,7 +124,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
  */
 export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
-    throw new Error('Invalid template: ' + JSON.stringify(template))
+    throwBuildError('Invalid template: ' + JSON.stringify(template), { code: ErrorCodes.B8008, context: { template: JSON.stringify(template) } })
   }
 
   // Normalize
@@ -135,7 +137,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   // Use src if provided
   if (template.src) {
     if (!existsSync(template.src)) {
-      throw new Error('Template not found: ' + template.src)
+      throwBuildError('Template not found: ' + template.src, { code: ErrorCodes.B8009, context: { template: template.src } })
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
@@ -144,11 +146,11 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   if (!template.src && !template.getContents) {
-    throw new Error('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template))
+    throwBuildError('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8010, context: { template: template.filename || template.src } })
   }
 
   if (!template.filename) {
-    throw new Error('Invalid template. `filename` must be provided: ' + JSON.stringify(template))
+    throwBuildError('Invalid template. `filename` must be provided: ' + JSON.stringify(template), { code: ErrorCodes.B8011, context: { template: JSON.stringify(template) } })
   }
 
   // Always write declaration files

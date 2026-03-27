@@ -8,9 +8,8 @@ import { normalize } from 'pathe'
 import type { NuxtAppLiterals, ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk } from 'oxc-walker'
-import { ErrorCodes, throwBuildError } from '../utils/error-format.ts'
+import { ErrorCodes, errorBuild, throwBuildError, warnBuild } from '../utils/error-format.ts'
 import type { IdentifierName, ObjectPropertyKind } from 'oxc-parser'
-import { logger } from '../../utils.ts'
 
 const internalOrderMap = {
   // -50: pre-all (nuxt)
@@ -123,7 +122,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       if (!plugin) { return }
 
       if (!code.trim()) {
-        logger.warn(`Plugin \`${plugin.src}\` has no content.`)
+        warnBuild(`Plugin \`${plugin.src}\` has no content.`, { code: ErrorCodes.B2004, context: { src: plugin.src } })
 
         return {
           code: 'export default () => {}',
@@ -134,7 +133,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const exports = findExports(code)
       const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
       if (!defaultExport) {
-        logger.warn(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
+        warnBuild(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`, { code: ErrorCodes.B2005, fix: 'Add `export default defineNuxtPlugin(() => {})` to your plugin.', context: { src: plugin.src } })
         return {
           code: 'export default () => {}',
           map: null,
@@ -175,12 +174,12 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           }
         })
       } catch (e) {
-        logger.error(`Error parsing plugin \`${plugin.src}\`.`, e)
+        errorBuild(`Error parsing plugin \`${plugin.src}\`.`, { code: ErrorCodes.B2006, cause: e })
         return
       }
 
       if (!wrapped) {
-        logger.warn(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
+        warnBuild(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`, { code: ErrorCodes.B2007, fix: 'Wrap your plugin with `defineNuxtPlugin` — in the future this may enable enhancements.', context: { src: plugin.src } })
       }
 
       if (s.hasChanged()) {

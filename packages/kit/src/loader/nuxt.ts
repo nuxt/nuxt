@@ -5,6 +5,8 @@ import { resolveModulePath } from 'exsolve'
 import { interopDefault } from 'mlly'
 import { directoryToURL, importModule, tryImportModule } from '../internal/esm.ts'
 import { runWithNuxtContext } from '../context.ts'
+import { throwBuildError } from '../errors.ts'
+import * as ErrorCodes from '../error-codes.ts'
 import type { LoadNuxtConfigOptions } from './config.ts'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
@@ -29,7 +31,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }, '')
 
   if (!resolvedPath) {
-    throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
+    throwBuildError(`Cannot find any nuxt version from ${opts.cwd}`, { code: ErrorCodes.B8006 })
   }
   const { loadNuxt } = await import(pathToFileURL(resolvedPath).href).then(r => interopDefault(r)) as typeof import('nuxt')
   const nuxt = await loadNuxt(opts)

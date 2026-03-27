@@ -1,7 +1,7 @@
 import { relative } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { logger } from '@nuxt/kit'
+import { ErrorCodes, logger, warnBuild } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
 
 export function formatIncludeSnippet (deps: string[], cjsDeps?: Set<string>): string {
@@ -131,7 +131,7 @@ export function OptimizeDepsHintPlugin (nuxt: Nuxt): Plugin {
           `Update your \`nuxt.config.ts\`:\n\n` +
           configBlock(getSnippetDeps()),
         )
-        logger.warn(parts.join('\n\n'))
+        warnBuild(parts.join('\n\n'), { code: ErrorCodes.B7002 })
       }
     }, 3000)
   }

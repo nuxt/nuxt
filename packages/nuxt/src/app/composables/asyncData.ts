@@ -286,7 +286,10 @@ export const createUseAsyncData = defineKeyedFunctionFactory({
           warnings.push(`mismatching \`deep\` option`)
         }
         if (warnings.length) {
-          runtimeWarn(`[${functionName}] Incompatible options detected for "${key.value}":\n${warnings.map(w => `- ${w}`).join('\n')}`, { code: E3004, fix: 'You can use a different key or move the call to a composable to ensure the options are shared across calls.' })
+          runtimeWarn(`[${functionName}] Incompatible options detected for "${key.value}":\n${warnings.map(w => `- ${w}`).join('\n')}`, {
+            code: E3004,
+            fix: 'You can use a different key or move the call to a composable to ensure the options are shared across calls.',
+          })
         }
       }
 

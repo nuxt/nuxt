@@ -420,7 +420,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
-    const unreg = nuxtApp.hook('app:error', (...args) => { runtimeWarn('Error caught during app initialization.', { code: E1005 }, ...args) })
+    const unreg = nuxtApp.hook('app:error', (...args) => { runtimeWarn('Error caught during app initialization.', { code: E1005, cause: args[0] }) })
     nuxtApp.hook('app:mounted', unreg)
   }
 

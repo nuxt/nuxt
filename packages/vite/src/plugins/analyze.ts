@@ -3,7 +3,7 @@ import { transformWithOxc } from 'vite'
 import { defu } from 'defu'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { RenderedModule } from 'rolldown'
-import { ensureDependencyInstalled, logger } from '@nuxt/kit'
+import { ErrorCodes, ensureDependencyInstalled, warnBuild } from '@nuxt/kit'
 
 export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
   if (nuxt.options.test) {
@@ -20,7 +20,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })) {
-    logger.warn('Skipping bundle analysis.')
+    warnBuild('Skipping bundle analysis.', { code: ErrorCodes.B7001 })
     return
   }
 

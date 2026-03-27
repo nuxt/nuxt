@@ -5,8 +5,7 @@ import MagicString from 'magic-string'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isBindingIdentifier, parseAndWalk, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
-import { logger } from '../../utils.ts'
-import { formatErrorMessage } from '../../core/utils/error-format.ts'
+import { ErrorCodes, errorBuild, throwBuildError } from '../../core/utils/error-format.ts'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { isSerializable } from '../utils.ts'
 import type { ObjectPropertyKind, ParserOptions } from 'oxc-parser'
@@ -112,7 +111,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
             const { pathname } = parseModuleId(id)
-            logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
+            errorBuild(`The file \`${pathname}\` is not a valid page as it has no content.`, { code: ErrorCodes.B4001 })
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           }
@@ -195,11 +194,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                   if (node.type === 'AwaitExpression') {
                     const filePath = id.replace(/\?.+$/, '')
                     const snippet = code.slice(node.start, Math.min(node.end, node.start + 80))
-                    const msg = formatErrorMessage(`Await expressions are not supported in \`definePageMeta\`. File: \`${filePath}\``, {
+                    throwBuildError(`Await expressions are not supported in \`definePageMeta\`. File: \`${filePath}\``, {
+                      code: ErrorCodes.B4002,
                       context: { codeSnippet: snippet, offset: node.start },
                     })
-                    logger.error(msg)
-                    throw new Error(msg)
                   }
                   if (
                     isBindingIdentifier(node, parent)
@@ -343,9 +341,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throw new Error(formatErrorMessage(`Multiple \`definePageMeta\` calls are not supported. Consolidate them into a single call. File: \`${id.replace(/\?.+$/, '')}\``, {
+          throwBuildError(`Multiple \`definePageMeta\` calls are not supported. Consolidate them into a single call. File: \`${id.replace(/\?.+$/, '')}\``, {
+            code: ErrorCodes.B4003,
             context: { callCount: instances },
-          }))
+          })
         }
 
         if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {

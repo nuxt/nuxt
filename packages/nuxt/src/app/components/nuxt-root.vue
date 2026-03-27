@@ -22,6 +22,8 @@ import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from
 import { useNuxtApp } from '../nuxt'
 import { isNuxtError, showError, useError } from '../composables/error'
 import { useRoute, useRouter } from '../composables/router'
+import { runtimeWarn } from '../utils'
+import { E1008, E1009, E1010, E1011 } from '../error-codes'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
@@ -52,7 +54,7 @@ provide(PageRouteSymbol, useRoute())
 // vue:setup hook
 const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup', [])
 if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
-  console.error('[nuxt] Error in `vue:setup`. Callbacks must be synchronous.')
+  runtimeWarn('Error in `vue:setup`. Callbacks must be synchronous.', { code: E1008 })
 }
 
 // error handling
@@ -61,10 +63,10 @@ const error = useError()
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
 const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
 onErrorCaptured((err, target, info) => {
-  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
+  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => runtimeWarn('Error in `vue:error` hook.', { code: E1009, cause: hookError }))
   if (import.meta.client && BOT_RE.test(navigator.userAgent)) {
     nuxtApp.hooks.callHook('app:error', err)
-    console.error(`[nuxt] Not rendering error page for bot with user agent \`${navigator.userAgent}\`:`, err)
+    runtimeWarn(`Not rendering error page for bot with user agent \`${navigator.userAgent}\`.`, { code: E1010, cause: err })
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {

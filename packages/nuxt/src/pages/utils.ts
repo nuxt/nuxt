@@ -16,6 +16,7 @@ import { transformSync } from 'oxc-transform'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 import { getLoader } from '../core/utils/index.ts'
+import { ErrorCodes, warnBuild } from '../core/utils/error-format.ts'
 import { logger, toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 
@@ -46,11 +47,11 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
     modes,
-    warn: msg => logger.warn(msg),
+    warn: msg => warnBuild(msg, { code: ErrorCodes.B4011 }),
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
-      logger.warn(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+      warnBuild(`Route name generated for \`${file}\` is the same as \`${existingFile}\`. You may wish to set a custom name using \`definePageMeta\` within the page file.`, { code: ErrorCodes.B4004, fix: 'Set a custom name using `definePageMeta` within one of the page files.', context: { file, existingFile } })
     },
     attrs: { mode: modes },
   }
@@ -256,7 +257,7 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         const transformed = transformSync(absolutePath, script.code.slice(node.start, node.end), { lang: script.loader })
         if (transformed.errors.length) {
           for (const error of transformed.errors) {
-            logger.warn(`Error while transforming \`${fnName}()\`` + error.codeframe)
+            warnBuild(`Error while transforming \`${fnName}()\`` + error.codeframe, { code: ErrorCodes.B4007 })
           }
           return
         }
@@ -267,14 +268,14 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
       }
 
       if (pageExtractArgument?.type !== 'ObjectExpression') {
-        logger.warn(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`)
+        warnBuild(`\`${fnName}\` must be called with an object literal (reading \`${absolutePath}\`), found ${pageExtractArgument?.type} instead.`, { code: ErrorCodes.B4005, context: { file: absolutePath, receivedType: pageExtractArgument?.type } })
         return
       }
 
       if (fnName === 'defineRouteRules') {
         const { value, serializable } = isSerializable(code, pageExtractArgument)
         if (!serializable) {
-          logger.warn(`\`${fnName}\` must be called with a serializable object literal (reading \`${absolutePath}\`).`)
+          warnBuild(`\`${fnName}\` must be called with a serializable object literal (reading \`${absolutePath}\`).`, { code: ErrorCodes.B4006, context: { file: absolutePath } })
           return
         }
 

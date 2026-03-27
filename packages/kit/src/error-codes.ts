@@ -12,6 +12,7 @@
  *   B5xxx  Configuration
  *   B6xxx  Head / imports
  *   B7xxx  Webpack / Vite bundler
+ *   B8xxx  Kit API
  */
 
 // ---------- B1xxx: Build / compilation ----------
@@ -33,6 +34,26 @@ export const B1007 = 'B1007'
 export const B1008 = 'B1008'
 /** Duplicate keyed function name */
 export const B1009 = 'B1009'
+/** Failed to read file (changed during read) */
+export const B1010 = 'B1010'
+/** Failed to read file (I/O error) */
+export const B1011 = 'B1011'
+/** Skipping unsafe cache path */
+export const B1012 = 'B1012'
+/** Failed to restore cached file */
+export const B1013 = 'B1013'
+/** Problem checking for external configuration files */
+export const B1014 = 'B1014'
+/** Falling back to chokidar-granular (parcel/watcher unavailable) */
+export const B1015 = 'B1015'
+/** Could not load @nuxt/webpack-builder */
+export const B1016 = 'B1016'
+/** Loading builder failed */
+export const B1017 = 'B1017'
+/** Loading server builder failed */
+export const B1018 = 'B1018'
+/** Unknown component mode (internal bug) */
+export const B1019 = 'B1019'
 
 // ---------- B2xxx: Plugins ----------
 /** Invalid plugin metadata: not an object literal */
@@ -55,6 +76,8 @@ export const B2008 = 'B2008'
 export const B2009 = 'B2009'
 /** Failed to parse plugin static properties */
 export const B2010 = 'B2010'
+/** Invalid plugin: src option is required */
+export const B2011 = 'B2011'
 
 // ---------- B3xxx: Components ----------
 /** Components directory not found */
@@ -79,6 +102,8 @@ export const B3009 = 'B3009'
 export const B3010 = 'B3010'
 /** Duplicate component name */
 export const B3011 = 'B3011'
+/** Overriding component without priority */
+export const B3012 = 'B3012'
 
 // ---------- B4xxx: Pages / routing ----------
 /** Page file has no content */
@@ -101,6 +126,14 @@ export const B4008 = 'B4008'
 export const B4009 = 'B4009'
 /** No middleware name could be resolved */
 export const B4010 = 'B4010'
+/** Generic page tree warning (from unplugin-vue-router) */
+export const B4011 = 'B4011'
+/** Incremental route update failed */
+export const B4012 = 'B4012'
+/** Middleware already exists (name conflict) */
+export const B4013 = 'B4013'
+/** Not overriding existing layout */
+export const B4014 = 'B4014'
 
 // ---------- B5xxx: Configuration ----------
 /** Missing compatibilityDate */
@@ -119,6 +152,14 @@ export const B5006 = 'B5006'
 export const B5007 = 'B5007'
 /** Unknown PostCSS order preset */
 export const B5008 = 'B5008'
+/** Falling back to chokidar for schema watching */
+export const B5009 = 'B5009'
+/** Missing packages (dependency check) */
+export const B5010 = 'B5010'
+/** Package is missing (module install) */
+export const B5011 = 'B5011'
+/** Run command to install missing package */
+export const B5012 = 'B5012'
 
 // ---------- B6xxx: Head / imports ----------
 /** Importing from @unhead/vue instead of #imports */
@@ -139,3 +180,63 @@ export const B7004 = 'B7004'
 export const B7005 = 'B7005'
 /** No server entry in rollupOptions */
 export const B7006 = 'B7006'
+/** Could not load PostCSS plugin (vite) */
+export const B7007 = 'B7007'
+/** Install @vitejs/plugin-vue-jsx for JSX support */
+export const B7008 = 'B7008'
+/** Install packages for decorator support */
+export const B7009 = 'B7009'
+/** Install packages for decorator support (nitro) */
+export const B7010 = 'B7010'
+/** Could not import PostCSS plugin (webpack) */
+export const B7011 = 'B7011'
+/** Buffer size limit exceeded (ViteNode) */
+export const B7012 = 'B7012'
+/** Socket path not configured (ViteNode) */
+export const B7013 = 'B7013'
+/** Webpack build failed */
+export const B7014 = 'B7014'
+/** Payload extraction recommended for full-static output */
+export const B7015 = 'B7015'
+/** Custom spaLoadingTemplate not found */
+export const B7016 = 'B7016'
+
+// ---------- B8xxx: Kit API ----------
+/** Nuxt instance is unavailable */
+export const B8001 = 'B8001'
+/** `base` argument missing for createResolver */
+export const B8002 = 'B8002'
+/** Nitro not initialized yet */
+export const B8003 = 'B8003'
+/** Nuxt compatibility issues found */
+export const B8004 = 'B8004'
+/** Cannot determine nuxt version */
+export const B8005 = 'B8005'
+/** Cannot find any nuxt version from cwd */
+export const B8006 = 'B8006'
+/** Invalid type template: filename must end with .d.ts */
+export const B8007 = 'B8007'
+/** Invalid template (falsy value) */
+export const B8008 = 'B8008'
+/** Template not found (src does not exist) */
+export const B8009 = 'B8009'
+/** Invalid template: neither getContents nor src provided */
+export const B8010 = 'B8010'
+/** Invalid template: filename must be provided */
+export const B8011 = 'B8011'
+/** Cannot use module outside of Nuxt context */
+export const B8012 = 'B8012'
+/** Module disabled due to incompatibility */
+export const B8013 = 'B8013'
+/** Slow module setup time */
+export const B8014 = 'B8014'
+/** Nuxt module should be a function or string */
+export const B8015 = 'B8015'
+/** Nuxt module should be a function */
+export const B8016 = 'B8016'
+/** Could not load module */
+export const B8017 = 'B8017'
+/** Error while importing module */
+export const B8018 = 'B8018'
+/** Error in module install/upgrade hook */
+export const B8019 = 'B8019'

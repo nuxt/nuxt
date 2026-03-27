@@ -4,6 +4,8 @@ import { resolveModulePath } from 'exsolve'
 import { hasTTY, isCI, provider } from 'std-env'
 import { logger } from './logger.ts'
 import { tryUseNuxt } from './context.ts'
+import { errorBuild, warnBuild } from './errors.ts'
+import * as ErrorCodes from './error-codes.ts'
 
 const isStackblitz = provider === 'stackblitz'
 
@@ -51,7 +53,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 
   const formattedNames = missing.map(n => `\`${n}\``).join(', ')
-  logger.info(`Missing ${missing.length === 1 ? 'package' : 'packages'}: ${formattedNames}`)
+  warnBuild(`Missing ${missing.length === 1 ? 'package' : 'packages'}: ${formattedNames}`, { code: ErrorCodes.B5010 })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
@@ -85,7 +87,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     logger.success(`Installed ${formattedNames}`)
     return true
   } catch (err) {
-    logger.error(err)
+    errorBuild('Failed to install dependencies.', { code: ErrorCodes.B1004, cause: err })
     return Array.isArray(names) ? missing : false
   }
 }

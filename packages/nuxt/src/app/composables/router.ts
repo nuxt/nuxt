@@ -74,7 +74,7 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
   const global = options.global || typeof name !== 'string'
   const mw = typeof name !== 'string' ? name : middleware
   if (!mw) {
-    runtimeWarn('No route middleware passed to `addRouteMiddleware`.', { code: E2006 }, name)
+    runtimeWarn('No route middleware passed to `addRouteMiddleware`.', { code: E2006, cause: name })
     return
   }
   if (global) {

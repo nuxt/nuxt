@@ -1,7 +1,7 @@
 export { getNameFromPath, hasSuffix, resolveComponentNameSegments } from './names.ts'
 export { getLoader, isJS, isVue, parseModuleId } from './plugins.ts'
-export { ErrorCodes, formatErrorMessage, throwBuildError } from './error-format.ts'
-export type { ErrorMessageOptions } from './error-format.ts'
+export { ErrorCodes, errorBuild, formatBuildError, throwBuildError, warnBuild } from './error-format.ts'
+export type { NuxtErrorOptions } from './error-format.ts'
 
 export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
   if (arr.length < 2) {

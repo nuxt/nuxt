@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite'
-import { ensureDependencyInstalled, logger } from '@nuxt/kit'
+import { ErrorCodes, ensureDependencyInstalled, warnBuild } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
@@ -18,7 +18,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       })
 
       if (result !== true) {
-        logger.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`)
+        warnBuild(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, { code: ErrorCodes.B7009 })
         return false
       }
 

@@ -156,7 +156,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
       } catch (err) {
         if (import.meta.dev && !hooks.error.length) {
-          runtimeWarn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`.', { code: E2009 }, err)
+          runtimeWarn('No error handlers registered to handle middleware errors. You can register an error handler with `router.onError()`.', { code: E2009, cause: err })
         }
         for (const handler of hooks.error) {
           await handler(err)

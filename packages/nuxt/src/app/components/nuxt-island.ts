@@ -11,8 +11,8 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
-import { runtimeWarn } from '../utils'
-import { E4005 } from '../error-codes'
+import { runtimeWarn, throwError } from '../utils'
+import { E4005, E4012 } from '../error-codes'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 
 // @ts-expect-error virtual file
@@ -220,7 +220,7 @@ export default defineComponent({
         return result
       } catch (e: any) {
         if (r.status !== 200) {
-          throw new Error(`Failed to parse island response for \`${props.name}\` (HTTP ${r.status}): ${e.message}`, { cause: e })
+          throwError(`Failed to parse island response for \`${props.name}\` (HTTP ${r.status}): ${e.message}`, { code: E4012 })
         }
         throw e
       }

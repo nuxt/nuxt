@@ -21,7 +21,7 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 import { runtimeWarn } from '../utils'
-import { E4009, E4010 } from '../error-codes'
+import { E2010, E4009, E4010 } from '../error-codes'
 
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
@@ -383,7 +383,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch((err) => {
             if (import.meta.dev) {
-              runtimeWarn(`Failed to prefetch \`${normalizedPath}\`:`, undefined, err)
+              runtimeWarn(`Failed to prefetch \`${normalizedPath}\`.`, { code: E2010, cause: err })
             }
           }),
           !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
