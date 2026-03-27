@@ -1067,6 +1067,31 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(2)
     })
 
+    it.runIf(options?.mode === 'navigation')('should rerun on every consecutive navigation', async () => {
+      const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
+      const execute = () => options ? callOnce('consecutive-nav', fn, options) : callOnce('consecutive-nav', fn)
+
+      // First execution with page:start firing during async fn (simulates Suspense.onPending)
+      const p1 = execute()
+      await nuxtApp.callHook('page:start')
+      await p1
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      // First navigation
+      await navigateTo('/page-2')
+      const p2 = execute()
+      await nuxtApp.callHook('page:start')
+      await p2
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      // Second navigation - should NOT be skipped
+      await navigateTo('/page-3')
+      const p3 = execute()
+      await nuxtApp.callHook('page:start')
+      await p3
+      expect(fn).toHaveBeenCalledTimes(3)
+    })
+
     it('should retry after a rejected promise', async () => {
       const fn = vi.fn()
         .mockRejectedValueOnce(new Error('fail'))
