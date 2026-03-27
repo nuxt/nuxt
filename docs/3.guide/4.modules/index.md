@@ -24,6 +24,9 @@ With modules, you can encapsulate, properly test, and share custom solutions as 
   ::card{icon="i-lucide-layers" title="Use Hooks & Extend Types" to="/docs/4.x/guide/modules/recipes-advanced"}
   Master lifecycle hooks, virtual files and TypeScript declarations in your modules.
   ::
+  ::card{icon="i-lucide-cog" title="Configure your module environment" to="/docs/4.x/guide/modules/environment"}
+  Learn how you configure your module to use imports from other modules, typescript decorators or other important things.
+  ::
   ::card{icon="i-lucide-test-tube" title="Test Your Module" to="/docs/4.x/guide/modules/testing"}
   Learn how to test your Nuxt module with unit, integration and E2E tests.
   ::
