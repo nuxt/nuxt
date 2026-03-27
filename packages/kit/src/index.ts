@@ -40,7 +40,7 @@ export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRou
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { logger, useLogger } from './logger.ts'
 export { createBuildErrorUtils } from './errors.ts'
-export type { BuildErrorUtilsOptions, NuxtErrorOptions } from './errors.ts'
+export type { BuildErrorUtils, BuildErrorUtilsOptions, NuxtErrorOptions } from './errors.ts'
 export * as ErrorCodes from './error-codes.ts'
 
 // Dependencies

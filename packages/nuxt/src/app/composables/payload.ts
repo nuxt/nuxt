@@ -3,7 +3,7 @@ import { parse } from 'devalue'
 import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { runtimeWarn, throwError } from '../utils'
-import { E7001, E7002, E7003, E7004 } from '../error-codes'
+import { E7001, E7002, E7004 } from '../error-codes'
 import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
 

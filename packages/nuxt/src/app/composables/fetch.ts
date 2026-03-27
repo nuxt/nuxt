@@ -44,8 +44,6 @@ export interface UseFetchOptions<
   watch?: MultiWatchSources | false
 }
 
-
-
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
@@ -155,7 +153,6 @@ export const createUseFetch = defineKeyedFunctionFactory({
     ) {
       const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-
       const factoryOptions = (typeof options === 'function' ? options(opts as any) : options) as typeof opts
 
       // Merge factory options with user options:
@@ -185,9 +182,9 @@ export const createUseFetch = defineKeyedFunctionFactory({
       const key = computed(() => toValue(fetchOptions.key) || ('$f' + hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-        throwError(`[useFetch] The request URL must not start with "//" (received \`${_request.value}\`).`, { 
+        throwError(`[useFetch] The request URL must not start with "//" (received \`${_request.value}\`).`, {
           code: E3001,
-          fix: 'Use an absolute URL with a protocol or a relative path instead.'
+          fix: 'Use an absolute URL with a protocol or a relative path instead.',
         })
       }
 

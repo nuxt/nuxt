@@ -1,6 +1,6 @@
 import type { H3Event } from '@nuxt/nitro-server/h3'
 import type { NitroRouteRules } from 'nitro/types'
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useRuntimeConfig } from '../nuxt'
 import { runtimeWarn, throwError } from '../utils'
 import { E5001, E5002, E5003 } from '../error-codes'
 // @ts-expect-error virtual file

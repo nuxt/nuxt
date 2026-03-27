@@ -13,6 +13,7 @@ const PIPE = colors.dim('│')
  */
 function wrapFrameLine (text: string, width = 76): string {
   // Strip ANSI for length calculations
+  // eslint-disable-next-line no-control-regex
   const stripAnsi = (s: string) => s.replace(/\x1B\[[0-9;]*m/g, '')
 
   const words = text.split(' ')
@@ -89,6 +90,17 @@ export interface BuildErrorUtilsOptions {
   docsBase?: string
 }
 
+export interface BuildErrorUtils {
+  /** Format a build-time error/warning message with error code, fix, docs link, and agent-only diagnostic context. */
+  formatBuildError: (message: string, opts: NuxtErrorOptions) => string
+  /** Throw a build-time error with an error code, fix, and agent context. Sets `err.code` on the Error object. */
+  throwBuildError: (message: string, opts: NuxtErrorOptions) => never
+  /** Log a build-time warning with error code, fix, and agent context. */
+  warnBuild: (message: string, opts: NuxtErrorOptions) => void
+  /** Log a build-time error with error code, fix, and agent context (without throwing). */
+  errorBuild: (message: string, opts: NuxtErrorOptions) => void
+}
+
 /**
  * Create a set of build-time error/warning utilities scoped to a specific
  * module. The returned functions use the provided module name as the error
@@ -110,7 +122,7 @@ export interface BuildErrorUtilsOptions {
  * //         ╰▶ fix: Call defineStore() first.
  * ```
  */
-export function createBuildErrorUtils (options: BuildErrorUtilsOptions) {
+export function createBuildErrorUtils (options: BuildErrorUtilsOptions): BuildErrorUtils {
   const prefix = options.module.toUpperCase()
 
   /**
