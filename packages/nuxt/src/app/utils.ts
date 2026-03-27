@@ -19,7 +19,7 @@ export interface RuntimeErrorOptions {
   context?: Record<string, unknown>
 }
 
-const DOCS_BASE = 'https://nuxt.com/docs/e'
+const DOCS_BASE = 'https://nuxt-cp7c9vdke-nuxt-js.vercel.app/docs/4.x/errors'
 
 const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
 
