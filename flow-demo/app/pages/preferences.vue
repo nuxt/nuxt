@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const theme = useCookie('theme', { default: () => 'light' })
+const theme = useCookie('theme', { default: () => 'dark' })
 const session = useCookie('session', { maxAge: -1 })
 const language = useCookie('language', { default: () => 'en' })
 
