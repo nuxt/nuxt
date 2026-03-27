@@ -105,7 +105,9 @@ export function formatRuntimeError (message: string, opts: RuntimeErrorOptions):
     }
   }
 
-  return result
+  // Escape `%` so user-controlled strings cannot inject format specifiers
+  // into `console.*` calls (which interpret `%s`, `%d`, etc.).
+  return escapeFormatSpecifiers(result)
 }
 
 /**
@@ -127,12 +129,10 @@ export function throwError (message: string, opts: RuntimeErrorOptions): never {
     ;(err as any).docsUrl = `${DOCS_BASE}/${opts.code.toLowerCase()}`
 
     // Log the rich frame-formatted version to the console for terminal users.
-    // Escape `%` in the message so user-controlled text cannot inject format specifiers.
-    const safeMessage = escapeFormatSpecifiers(message)
     if (opts.cause) {
-      console.error(formatRuntimeError(safeMessage, opts), opts.cause)
+      console.error(formatRuntimeError(message, opts), opts.cause)
     } else {
-      console.error(formatRuntimeError(safeMessage, opts))
+      console.error(formatRuntimeError(message, opts))
     }
   }
 
