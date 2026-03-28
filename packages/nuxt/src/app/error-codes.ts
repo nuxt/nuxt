@@ -1,7 +1,7 @@
 /**
  * Nuxt runtime error codes.
  *
- * Each code maps to a docs page at `https://nuxt.com/e/{code}`.
+ * Each code maps to a docs page at `https://nuxt-cp7c9vdke-nuxt-js.vercel.app/docs/4.x/errors/{code}`.
  * Codes are stable — once assigned they must not be reused or renumbered.
  *
  * Ranges:
