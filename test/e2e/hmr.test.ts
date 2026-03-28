@@ -368,4 +368,27 @@ test.describe('vite-only HMR tests', () => {
     )
     expect(errors).toStrictEqual([])
   })
+
+  test('vite-node transform errors show actual error message (#34593)', async ({ page }) => {
+    const indexContent = readFileSync(join(sourceDir, 'app/pages/index.vue'), 'utf8')
+
+    // Write a file with a deliberate syntax error
+    writeFileSync(
+      join(fixtureDir, 'app/pages/index.vue'),
+      `<script setup>\nconst x = }\n</script>\n<template><div>test</div></template>`,
+    )
+
+    try {
+      // Make a raw request so we see the error page (no retry-on-500)
+      const response = await page.request.get('/')
+      const html = await response.text()
+
+      // The error page should contain the actual error text, not generic "undefined" values
+      expect(html).not.toMatch(/undefined:undefined/)
+      expect(html).toMatch(/vite-node|SyntaxError|Parse error|Unexpected token/i)
+    } finally {
+      // Always restore the original file
+      writeFileSync(join(fixtureDir, 'app/pages/index.vue'), indexContent)
+    }
+  })
 })

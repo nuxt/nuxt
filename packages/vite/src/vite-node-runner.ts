@@ -17,7 +17,7 @@ function createRunner () {
     fetchModule (id) {
       id = id.replace(/\/\//g, '/') // TODO: fix in vite-node
       return viteNodeFetch.fetchModule(id).catch((err) => {
-        const errorData = err?.data?.data
+        const errorData = err?.data
         if (!errorData) {
           throw err
         }
@@ -59,6 +59,7 @@ function formatViteError (errorData: any, id: string) {
     '[vite-node]',
     errorData.plugin && `[plugin:${errorData.plugin}]`,
     errorCode && `[${errorCode}]`,
+    errorData.message,
     loc,
     errorData.reason && `: ${errorData.reason}`,
     frame && `<br><pre>${frame.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><br>`,
