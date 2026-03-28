@@ -11,6 +11,7 @@ import { joinURL, withTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro/builder'
 import type { Nitro, NitroConfig, NitroRouteRules } from 'nitro/types'
+import type { ErrorInfo } from '@nuxt/kit'
 import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependencyInstalled, findPath, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import { ErrorCodes, buildErrorUtils } from './nuxt-errors.ts'
 import escapeRE from 'escape-string-regexp'
@@ -873,7 +874,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitro.options.devHandlers.push({
     route: '/__nuxt_error_info',
     handler: defineEventHandler(async (event) => {
-      const body = await readBody(event)
+      const body = await readBody<ErrorInfo & { level: string }>(event)
       if (!body?.code || !body?.message) { return null }
       const { level, ...info } = body
       if (level === 'error') {
