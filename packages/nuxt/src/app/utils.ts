@@ -1,5 +1,6 @@
 import { captureStackTrace } from 'errx'
 import { createErrorUtils } from '../../../shared/src/error.ts'
+import type { ErrorInfo } from '../../../shared/src/error.ts'
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
@@ -28,7 +29,33 @@ type Trace = { source: string, line?: number, column?: number }
 export const runtimeErrorUtils = /* @__PURE__ */ createErrorUtils({
   prefix: 'NUXT',
   docsBase: DOCS_BASE,
-  // TODO: implement the formatter and logger to forward them to the server side
+  reporter: import.meta.dev && import.meta.client
+    ? (item, level, formatted) => {
+        console[level](formatted)
+        try {
+          const payload: Record<string, unknown> = {
+            level,
+            code: item.code,
+            codePrefix: item.codePrefix,
+            message: item.message,
+            why: item.why,
+            fix: item.fix,
+            hint: item.hint,
+            docs: item.docs,
+            source: item.source,
+            context: item.context,
+          }
+          if (item.cause instanceof Error) {
+            payload.cause = { message: item.cause.message, stack: item.cause.stack }
+          }
+          fetch('/__nuxt_error_info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }).catch(() => {})
+        } catch {}
+      }
+    : undefined,
 })
 
 export function getUserTrace (): Trace[] {

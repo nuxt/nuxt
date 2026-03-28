@@ -15,7 +15,7 @@ import { addPlugin, addTemplate, addVitePlugin, createIsIgnored, ensureDependenc
 import { ErrorCodes, buildErrorUtils } from './nuxt-errors.ts'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+import { defineEventHandler, dynamicEventHandler, handleCors, readBody } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
@@ -867,6 +867,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     route: '/__nuxt_error',
     lazy: true,
     handler: resolve(distDir, 'runtime/handlers/renderer'),
+  })
+
+  // Forward structured ErrorInfo from client to server terminal
+  nitro.options.devHandlers.push({
+    route: '/__nuxt_error_info',
+    handler: defineEventHandler(async (event) => {
+      const body = await readBody(event)
+      if (!body?.code || !body?.message) { return null }
+      const { level, ...info } = body
+      if (level === 'error') {
+        buildErrorUtils.error(info)
+      } else {
+        buildErrorUtils.warn(info)
+      }
+      return null
+    }),
   })
 
   // TODO: refactor into a module when this is more full-featured

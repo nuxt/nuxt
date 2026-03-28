@@ -124,11 +124,13 @@ export interface ErrorUtilsOptions {
    * Default: plain Unicode frame with `wrapLine` / `renderFrame`.
    */
   formatError?: (item: ErrorInfo, options: ErrorUtilsOptions) => string
-  /** Logger for warn/error methods. Default: console. */
-  logger?: {
-    error: (...args: any[]) => void
-    warn: (...args: any[]) => void
-  }
+  /**
+   * Called after formatting, before logging. Use to forward errors
+   * to an external system (e.g., POST to a dev server).
+   *
+   * Default: logs the formatted message via `console.warn` / `console.error`.
+   */
+  reporter?: (item: ErrorInfo, level: 'warn' | 'error', formatted: string) => void
 }
 
 export interface ErrorUtils {
@@ -206,9 +208,17 @@ function resolveCode (code: string, codePrefix: string | undefined): string {
  * //         ╰▶ fix: Call defineStore() first.
  * ```
  */
+function defaultReporter (item: ErrorInfo, level: 'warn' | 'error', formatted: string): void {
+  if (item.cause) {
+    console[level](formatted, item.cause)
+  } else {
+    console[level](formatted)
+  }
+}
+
 export function createErrorUtils (options: ErrorUtilsOptions): ErrorUtils {
   const _formatError = options.formatError ?? defaultFormatError
-  const _logger = options.logger ?? console
+  const _reporter = options.reporter ?? defaultReporter
 
   function format (item: ErrorInfo): string {
     return _formatError(item, options)
@@ -232,19 +242,11 @@ export function createErrorUtils (options: ErrorUtilsOptions): ErrorUtils {
   }
 
   function warn (item: ErrorInfo): void {
-    if (item.cause) {
-      _logger.warn(format(item), item.cause)
-    } else {
-      _logger.warn(format(item))
-    }
+    _reporter(item, 'warn', format(item))
   }
 
   function error (item: ErrorInfo): void {
-    if (item.cause) {
-      _logger.error(format(item), item.cause)
-    } else {
-      _logger.error(format(item))
-    }
+    _reporter(item, 'error', format(item))
   }
 
   return {
