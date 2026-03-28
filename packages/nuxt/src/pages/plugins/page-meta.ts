@@ -111,7 +111,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!code) {
             s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
             const { pathname } = parseModuleId(id)
-            buildErrorUtils.error(`The file \`${pathname}\` is not a valid page as it has no content.`, { code: ErrorCodes.B4001, fix: 'Add a `<template>` block to the page file, or remove the empty file from the `pages/` directory.' })
+            buildErrorUtils.error({ message: `The file \`${pathname}\` is not a valid page as it has no content.`, code: ErrorCodes.B4001, fix: 'Add a `<template>` block to the page file, or remove the empty file from the `pages/` directory.' })
           } else {
             s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           }
@@ -194,7 +194,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                   if (node.type === 'AwaitExpression') {
                     const filePath = id.replace(/\?.+$/, '')
                     const snippet = code.slice(node.start, Math.min(node.end, node.start + 80))
-                    buildErrorUtils.throw(`Await expressions are not supported in \`definePageMeta\`. File: \`${filePath}\``, {
+                    buildErrorUtils.throw({ message: `Await expressions are not supported in \`definePageMeta\`. File: \`${filePath}\``,
                       code: ErrorCodes.B4002,
                       fix: 'Move the `await` outside of variables referenced in `definePageMeta`, or use a static value instead.',
                       context: { codeSnippet: snippet, offset: node.start },
@@ -342,7 +342,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          buildErrorUtils.throw(`Multiple \`definePageMeta\` calls are not supported. File: \`${id.replace(/\?.+$/, '')}\``, {
+          buildErrorUtils.throw({ message: `Multiple \`definePageMeta\` calls are not supported. File: \`${id.replace(/\?.+$/, '')}\``,
             code: ErrorCodes.B4003,
             fix: 'Merge all `definePageMeta()` calls into a single call.',
             context: { callCount: instances },

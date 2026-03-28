@@ -31,7 +31,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }, '')
 
   if (!resolvedPath) {
-    buildErrorUtils.throw(`Cannot find any nuxt version from ${opts.cwd}`, { code: ErrorCodes.B8006, fix: 'Run `npm install nuxt` in your project directory to install Nuxt.' })
+    buildErrorUtils.throw({ message: `Cannot find any nuxt version from ${opts.cwd}`, code: ErrorCodes.B8006, fix: 'Run `npm install nuxt` in your project directory to install Nuxt.' })
   }
   const { loadNuxt } = await import(pathToFileURL(resolvedPath).href).then(r => interopDefault(r)) as typeof import('nuxt')
   const nuxt = await loadNuxt(opts)

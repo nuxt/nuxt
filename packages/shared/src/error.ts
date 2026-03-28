@@ -196,11 +196,11 @@ function resolveCode (code: string, codePrefix: string | undefined): string {
  * @example
  * ```ts
  * const errorUtils = createErrorUtils({
- *   module: 'pinia',
+ *   prefix: 'pinia',
  *   docsBase: 'https://pinia.vuejs.org/errors',
  * })
  *
- * errorUtils.warn('Store not found.', { code: '001', fix: 'Call defineStore() first.' })
+ * errorUtils.warn({ message: 'Store not found.', code: '001', fix: 'Call defineStore() first.' })
  * // Output: [PINIA_001] Store not found.
  * //         ├▶ see: https://pinia.vuejs.org/errors/001
  * //         ╰▶ fix: Call defineStore() first.

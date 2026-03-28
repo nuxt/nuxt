@@ -54,7 +54,7 @@ provide(PageRouteSymbol, useRoute())
 // vue:setup hook
 const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup', [])
 if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
-  runtimeErrorUtils.warn('Error in `vue:setup`. Callbacks must be synchronous.', { code: E1012, fix: 'Remove `async` from your `vue:setup` hook callback, or move async logic into `onMounted` or a plugin.' })
+  runtimeErrorUtils.warn({ message: 'Error in `vue:setup`. Callbacks must be synchronous.', code: E1012, fix: 'Remove `async` from your `vue:setup` hook callback, or move async logic into `onMounted` or a plugin.' })
 }
 
 // error handling
@@ -63,10 +63,10 @@ const error = useError()
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
 const BOT_RE = /bot\b|chrome-lighthouse|facebookexternalhit|google\b/i
 onErrorCaptured((err, target, info) => {
-  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => runtimeErrorUtils.warn('Error in `vue:error` hook.', { code: E1009, fix: 'Check your `vue:error` hook handler for uncaught exceptions.', cause: hookError }))
+  nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => runtimeErrorUtils.warn({ message: 'Error in `vue:error` hook.', code: E1009, fix: 'Check your `vue:error` hook handler for uncaught exceptions.', cause: hookError }))
   if (import.meta.client && BOT_RE.test(navigator.userAgent)) {
     nuxtApp.hooks.callHook('app:error', err)
-    runtimeErrorUtils.warn(`Not rendering error page for bot with user agent \`${navigator.userAgent}\`.`, { code: E1010, fix: 'This is expected behavior — bot user agents receive the raw error instead of the error page.', cause: err })
+    runtimeErrorUtils.warn({ message: `Not rendering error page for bot with user agent \`${navigator.userAgent}\`.`, code: E1010, fix: 'This is expected behavior — bot user agents receive the raw error instead of the error page.', cause: err })
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {

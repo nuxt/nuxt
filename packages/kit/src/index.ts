@@ -40,7 +40,7 @@ export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRou
 export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template.ts'
 export { logger, useLogger } from './logger.ts'
 export { createErrorUtils } from './errors.ts'
-export type { ErrorUtils, ErrorUtilsOptions, ErrorOptions } from './errors.ts'
+export type { ErrorInfo, ErrorUtils, ErrorUtilsOptions } from './errors.ts'
 export * as ErrorCodes from './error-codes.ts'
 
 // Dependencies

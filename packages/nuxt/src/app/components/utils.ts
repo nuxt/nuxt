@@ -89,7 +89,7 @@ export function vforToArray (source: any): any[] {
     return source.split('')
   } else if (typeof source === 'number') {
     if (import.meta.dev && !Number.isInteger(source)) {
-      runtimeErrorUtils.warn(`The v-for range expects an integer value but got ${source}.`, { code: E4013, fix: 'Use `Math.floor()` or `Math.round()` to convert the value to an integer.' })
+      runtimeErrorUtils.warn({ message: `The v-for range expects an integer value but got ${source}.`, code: E4013, fix: 'Use `Math.floor()` or `Math.round()` to convert the value to an integer.' })
     }
     const array: number[] = []
     for (let i = 0; i < source; i++) {

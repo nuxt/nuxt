@@ -24,7 +24,7 @@ export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     const middleware = useNuxtApp()._processingMiddleware
     const trace = getUserTrace().map(({ source, line, column }) => `at ${source}:${line}:${column}`).join('\n')
-    runtimeErrorUtils.warn(`\`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.` + ('\n' + trace), {
+    runtimeErrorUtils.warn({ message: `\`useRoute\` was called within middleware${typeof middleware === 'string' ? ` (\`${middleware}\`)` : ''}. This may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.` + ('\n' + trace),
       code: E2005,
       fix: 'Use the `to` and `from` arguments passed to the middleware function instead of `useRoute()`.',
     })
@@ -75,7 +75,7 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
   const global = options.global || typeof name !== 'string'
   const mw = typeof name !== 'string' ? name : middleware
   if (!mw) {
-    runtimeErrorUtils.warn('No route middleware passed to `addRouteMiddleware`.', { code: E2006, fix: 'Pass a middleware function as the second argument: `addRouteMiddleware(\'name\', (to, from) => { ... })`.', cause: name })
+    runtimeErrorUtils.warn({ message: 'No route middleware passed to `addRouteMiddleware`.', code: E2006, fix: 'Pass a middleware function as the second argument: `addRouteMiddleware(\'name\', (to, from) => { ... })`.', cause: name })
     return
   }
   if (global) {
@@ -166,14 +166,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
-      runtimeErrorUtils.throw(`Navigating to external URL \`${toPath}\` is not allowed by default.`, {
+      runtimeErrorUtils.throw({ message: `Navigating to external URL \`${toPath}\` is not allowed by default.`,
         code: E2001,
         fix: `Use \`navigateTo('${toPath}', { external: true })\` to allow external navigation.`,
       })
     }
     const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
-      runtimeErrorUtils.throw(`Cannot navigate to URL \`${toPath}\` with \`${protocol}\` protocol.`, { code: E2002, fix: 'Script protocols (e.g., `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.' })
+      runtimeErrorUtils.throw({ message: `Cannot navigate to URL \`${toPath}\` with \`${protocol}\` protocol.`, code: E2002, fix: 'Script protocols (e.g., `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.' })
     }
   }
 
@@ -263,7 +263,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
-    runtimeErrorUtils.throw('`abortNavigation()` is only usable inside a route middleware handler.', {
+    runtimeErrorUtils.throw({ message: '`abortNavigation()` is only usable inside a route middleware handler.',
       code: E2003,
       fix: 'Move this call inside a route middleware defined with `defineNuxtRouteMiddleware()` or `addRouteMiddleware()`.',
     })
@@ -288,7 +288,7 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
-      runtimeErrorUtils.warn('`setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.', {
+      runtimeErrorUtils.warn({ message: '`setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.',
         code: E2007,
         fix: 'Call `setPageLayout` in a route middleware or plugin instead of inside a component\'s `setup()`.',
       })
@@ -297,7 +297,7 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown 
     nuxtApp.payload.state._layoutProps = props
   }
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
-    runtimeErrorUtils.warn('`setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.', {
+    runtimeErrorUtils.warn({ message: '`setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.',
       code: E2008,
       fix: 'Set the layout in `definePageMeta` or in a route middleware before hydration occurs.',
     })

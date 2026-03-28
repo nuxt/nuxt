@@ -226,12 +226,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
           if (!middleware) {
             if (import.meta.dev) {
-              runtimeErrorUtils.throw(`Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`, {
+              runtimeErrorUtils.throw({ message: `Unknown route middleware: '${entry}'. Valid middleware: ${Object.keys(namedMiddleware).map(mw => `'${mw}'`).join(', ')}.`,
                 code: E2004,
                 fix: `Create a \`middleware/${entry}.ts\` file, or check the middleware name for typos.`,
               })
             }
-            runtimeErrorUtils.throw(`Unknown route middleware: '${entry}'.`, { code: E2004 })
+            runtimeErrorUtils.throw({ message: `Unknown route middleware: '${entry}'.`, code: E2004 })
           }
 
           try {

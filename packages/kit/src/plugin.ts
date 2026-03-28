@@ -27,7 +27,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
 
   if (!plugin.src) {
-    buildErrorUtils.throw('Invalid plugin. src option is required: ' + JSON.stringify(plugin), { code: ErrorCodes.B2011, fix: 'Pass a string path or an object with a `src` property to `addPlugin()`.' })
+    buildErrorUtils.throw({ message: 'Invalid plugin. src option is required: ' + JSON.stringify(plugin), code: ErrorCodes.B2011, fix: 'Pass a string path or an object with a `src` property to `addPlugin()`.' })
   }
 
   // Normalize full path to plugin

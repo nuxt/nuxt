@@ -59,5 +59,5 @@ async function resolvePostcssPlugin (jiti: ReturnType<typeof createJiti>, plugin
     }
   }
 
-  buildErrorUtils.warn(`Could not load postcss plugin \`${pluginName}\`.`, { code: ErrorCodes.B7007, fix: `Run \`npm install -D ${pluginName}\` to install the PostCSS plugin.`, context: { pluginName } })
+  buildErrorUtils.warn({ message: `Could not load postcss plugin \`${pluginName}\`.`, code: ErrorCodes.B7007, fix: `Run \`npm install -D ${pluginName}\` to install the PostCSS plugin.`, context: { pluginName } })
 }

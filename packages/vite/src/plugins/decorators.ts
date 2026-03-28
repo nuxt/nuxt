@@ -19,7 +19,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
       })
 
       if (result !== true) {
-        buildErrorUtils.warn(`Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, { code: ErrorCodes.B7009, fix: `Run \`npm install -D ${result.join(' ')}\` to install the required Babel decorator dependencies.` })
+        buildErrorUtils.warn({ message: `Install ${result.map(d => `\`${d}\``).join(' and ')} to enable decorator support.`, code: ErrorCodes.B7009, fix: `Run \`npm install -D ${result.join(' ')}\` to install the required Babel decorator dependencies.` })
         return false
       }
 

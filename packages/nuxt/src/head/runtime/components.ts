@@ -262,7 +262,7 @@ export const Title = defineComponent({
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
       if (import.meta.dev) {
         if (defaultSlot && (defaultSlot.length > 1 || (defaultSlot[0] && typeof defaultSlot[0].children !== 'string'))) {
-          runtimeErrorUtils.warn('`<Title>` can take only one string in its default slot.', { code: E6002 })
+          runtimeErrorUtils.warn({ message: '`<Title>` can take only one string in its default slot.', code: E6002 })
         }
       }
       update()
@@ -336,7 +336,7 @@ export const Style = defineComponent({
       const textContent = slots.default?.()?.[0]?.children
       if (textContent) {
         if (import.meta.dev && typeof textContent !== 'string') {
-          runtimeErrorUtils.warn('`<Style>` can only take a string in its default slot.', { code: E6003 })
+          runtimeErrorUtils.warn({ message: '`<Style>` can only take a string in its default slot.', code: E6003 })
         }
         input.style![idx] = style
         style.textContent = textContent

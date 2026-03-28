@@ -82,7 +82,7 @@ export function addPrerenderRoutes (routes: string | string[]): void {
 export function useNitro (): Nitro {
   const nuxt = useNuxt()
   if (!(nuxt as any)._nitro) {
-    buildErrorUtils.throw('Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.', { code: ErrorCodes.B8003, fix: 'Move your `useNitro()` call inside a hook that runs after initialization, such as `nuxt.hook(\'ready\', () => { ... })`.' })
+    buildErrorUtils.throw({ message: 'Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.', code: ErrorCodes.B8003, fix: 'Move your `useNitro()` call inside a hook that runs after initialization, such as `nuxt.hook(\'ready\', () => { ... })`.' })
   }
   return (nuxt as any)._nitro
 }

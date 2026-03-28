@@ -77,7 +77,7 @@ export default defineNuxtModule({
           }
           return
         } catch {
-          buildErrorUtils.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.', { code: ErrorCodes.B5009, fix: 'Install `@parcel/watcher` for better file watching: `npm install -D @parcel/watcher`.' })
+          buildErrorUtils.warn({ message: 'Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.', code: ErrorCodes.B5009, fix: 'Install `@parcel/watcher` for better file watching: `npm install -D @parcel/watcher`.' })
         }
       }
 
@@ -115,7 +115,7 @@ export default defineNuxtModule({
             // TODO: fix type for second argument of `import`
             loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
-            buildErrorUtils.warn(`Unable to load Nuxt schema from \`${filePath}\`. Ensure the file exports a valid schema definition.`, { code: ErrorCodes.B5005, fix: 'Check that `nuxt.schema` exports a valid object with `defineNuxtSchema()` or as a plain object.', cause: err })
+            buildErrorUtils.warn({ message: `Unable to load Nuxt schema from \`${filePath}\`. Ensure the file exports a valid schema definition.`, code: ErrorCodes.B5005, fix: 'Check that `nuxt.schema` exports a valid object with `defineNuxtSchema()` or as a plain object.', cause: err })
             continue
           }
           schemaDefs.push(loadedConfig)

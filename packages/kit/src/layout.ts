@@ -17,10 +17,11 @@ export function addLayout (template: NuxtTemplate | string, name?: string): void
   nuxt.hook('app:templates', (app) => {
     if (layoutName in app.layouts) {
       const relativePath = reverseResolveAlias(app.layouts[layoutName]!.file, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || app.layouts[layoutName]!.file
-      return buildErrorUtils.warn(
-        `Not overriding \`${layoutName}\` (provided by \`${relativePath}\`) with \`${src || filename}\`.`,
-        { code: ErrorCodes.B4014, fix: 'Rename one of the layouts, or remove the duplicate layout registration.' },
-      )
+      return buildErrorUtils.warn({
+        message: `Not overriding \`${layoutName}\` (provided by \`${relativePath}\`) with \`${src || filename}\`.`,
+        code: ErrorCodes.B4014,
+        fix: 'Rename one of the layouts, or remove the duplicate layout registration.',
+      })
     }
     app.layouts[layoutName] = {
       file: join('#build', filename),

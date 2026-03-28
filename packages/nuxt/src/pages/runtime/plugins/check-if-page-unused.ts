@@ -12,7 +12,7 @@ export default defineNuxtPlugin({
 
     function checkIfPageUnused () {
       if (!error.value && !nuxtApp._isNuxtPageUsed) {
-        runtimeErrorUtils.warn('Your project has pages but the `<NuxtPage />` component has not been used. You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.', { code: E4011, fix: 'You can set `pages: false` in `nuxt.config` if you do not wish to use the Nuxt `vue-router` integration.' })
+        runtimeErrorUtils.warn({ message: 'Your project has pages but the `<NuxtPage />` component has not been used. You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.', code: E4011, fix: 'You can set `pages: false` in `nuxt.config` if you do not wish to use the Nuxt `vue-router` integration.' })
       }
     }
 

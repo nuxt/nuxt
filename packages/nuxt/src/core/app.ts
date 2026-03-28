@@ -67,7 +67,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
     const contents = await compileTemplate(template, templateContext).catch((e) => {
-      buildErrorUtils.error(`Could not compile template \`${template.filename}\`.`, {
+      buildErrorUtils.error({ message: `Could not compile template \`${template.filename}\`.`,
         code: ErrorCodes.B1001,
         fix: template.src ? `Check the template source file at \`${template.src}\` for syntax errors.` : 'Check the `getContents` function of this template for errors.',
         context: {
@@ -133,7 +133,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      buildErrorUtils.error(`Error reading template from \`${template.src}\`.`, { code: ErrorCodes.B1002, fix: 'Check that the template `src` path exists and is readable.' })
+      buildErrorUtils.error({ message: `Error reading template from \`${template.src}\`.`, code: ErrorCodes.B1002, fix: 'Check that the template `src` path exists and is readable.' })
       throw err
     }
   }
@@ -141,7 +141,7 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     return template.getContents({ ...ctx, options: template.options! })
   }
 
-  return buildErrorUtils.throw('Invalid template. Templates must have either `src` or `getContents`.', {
+  return buildErrorUtils.throw({ message: 'Invalid template. Templates must have either `src` or `getContents`.',
     code: ErrorCodes.B1003,
     fix: 'Add a `getContents` function or a `src` path to the `addTemplate()` call.',
     context: { template },
@@ -173,7 +173,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file, dirs.appLayouts)
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        buildErrorUtils.warn(`No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\` (\`index\` is ignored for the purpose of creating a layout name).`, { code: ErrorCodes.B4009, fix: 'Rename the layout file to something other than `index` (e.g., `layouts/default.vue`).' })
+        buildErrorUtils.warn({ message: `No layout name could be resolved for \`${resolveToAlias(file, nuxt)}\` (\`index\` is ignored for the purpose of creating a layout name).`, code: ErrorCodes.B4009, fix: 'Rename the layout file to something other than `index` (e.g., `layouts/default.vue`).' })
         continue
       }
       layouts[name] ||= { name, file }
@@ -191,7 +191,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        buildErrorUtils.warn(`No middleware name could be resolved for \`${resolveToAlias(file, nuxt)}\` (\`index\` is ignored for the purpose of creating a middleware name).`, { code: ErrorCodes.B4010, fix: 'Rename the middleware file to something other than `index` (e.g., `middleware/auth.ts`).' })
+        buildErrorUtils.warn({ message: `No middleware name could be resolved for \`${resolveToAlias(file, nuxt)}\` (\`index\` is ignored for the purpose of creating a middleware name).`, code: ErrorCodes.B4010, fix: 'Rename the middleware file to something other than `index` (e.g., `middleware/auth.ts`).' })
         continue
       }
       middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
@@ -274,9 +274,9 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
       if ((e as Error).message === 'Invalid plugin metadata') {
-        buildErrorUtils.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta.`, { code: ErrorCodes.B2010, fix: 'Use an object literal with static values as the second argument to `defineNuxtPlugin()`.', docs: 'https://nuxt.com/docs/4.x/directory-structure/app/plugins#object-syntax-plugins' })
+        buildErrorUtils.warn({ message: `Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta.`, code: ErrorCodes.B2010, fix: 'Use an object literal with static values as the second argument to `defineNuxtPlugin()`.', docs: 'https://nuxt.com/docs/4.x/directory-structure/app/plugins#object-syntax-plugins' })
       } else {
-        buildErrorUtils.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, { code: ErrorCodes.B2010, fix: 'Check the plugin file for syntax errors or unsupported constructs in the metadata.', cause: e })
+        buildErrorUtils.warn({ message: `Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, code: ErrorCodes.B2010, fix: 'Check the plugin file for syntax errors or unsupported constructs in the metadata.', cause: e })
       }
       _plugins.push(plugin)
     }
@@ -291,7 +291,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.has(name))) {
-      buildErrorUtils.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`, {
+      buildErrorUtils.error({ message: `Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.has(name)).join(', ')}\` but they are not registered.`,
         code: ErrorCodes.B2008,
         fix: 'Register the missing dependency plugins, or remove them from the `dependsOn` array.',
         context: { pluginSrc: plugin.src, registeredPlugins: [...pluginNames] },
@@ -304,7 +304,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
   const checkDeps = (name: string, visited: string[] = []): string[] => {
     if (visited.includes(name)) {
-      buildErrorUtils.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`, {
+      buildErrorUtils.error({ message: `Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`,
         code: ErrorCodes.B2009,
         fix: 'Restructure the plugin `dependsOn` declarations to break the cycle.',
         context: { dependencyGraph: deps },

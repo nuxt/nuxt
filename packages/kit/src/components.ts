@@ -66,7 +66,7 @@ function addComponents (addedComponents: Component[]) {
         // but we warn if they are equal.
         if (newPriority === existingPriority) {
           const name = existingComponent.pascalName || existingComponent.kebabName
-          buildErrorUtils.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`, { code: ErrorCodes.B3012, fix: 'Specify a `priority` option when calling `addComponent` to avoid this warning.' })
+          buildErrorUtils.warn({ message: `Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`, code: ErrorCodes.B3012, fix: 'Specify a `priority` option when calling `addComponent` to avoid this warning.' })
         }
         components.splice(existingComponentIndex, 1, component)
       } else {

@@ -185,12 +185,12 @@ async function initNuxt (nuxt: Nuxt) {
 
     if (nuxt.options.dev && hasTTY && !isCI && !isAgent && !nuxt.options.test && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      buildErrorUtils.warn(`No \`compatibilityDate\` is set in \`nuxt.config\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, { code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
+      buildErrorUtils.warn({ message: `No \`compatibilityDate\` is set in \`nuxt.config\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
     }
 
     if (nuxt.options.dev && isAgent && !warnedAboutCompatDate) {
       warnedAboutCompatDate = true
-      buildErrorUtils.warn(`No \`compatibilityDate\` is set in \`nuxt.config\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, { code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
+      buildErrorUtils.warn({ message: `No \`compatibilityDate\` is set in \`nuxt.config\`. Using \`${fallbackCompatibilityDate}\` as fallback.`, code: ErrorCodes.B5001, fix: `Add \`compatibilityDate: '${formatDate('latest')}'\` to your \`nuxt.config.ts\`.`, docs: 'https://nitro.build/deploy#compatibility-date' })
     }
   }
 
@@ -849,7 +849,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       searchPaths: options.modulesDir,
       from: import.meta.url,
     })) {
-      buildErrorUtils.warn(`Failed to install \`@nuxt/webpack-builder\` in \`${options.rootDir}\`.`, { code: ErrorCodes.B5002, fix: 'Install it manually with `npm install -D @nuxt/webpack-builder`, or change the `builder` option to `vite` in `nuxt.config`.' })
+      buildErrorUtils.warn({ message: `Failed to install \`@nuxt/webpack-builder\` in \`${options.rootDir}\`.`, code: ErrorCodes.B5002, fix: 'Install it manually with `npm install -D @nuxt/webpack-builder`, or change the `builder` option to `vite` in `nuxt.config`.' })
     }
   }
 
@@ -887,7 +887,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const allowedKeys = new Set(['baseURL', 'buildAssetsDir', 'cdnURL', 'buildId'])
   for (const key in options.runtimeConfig.app) {
     if (!allowedKeys.has(key)) {
-      buildErrorUtils.warn(`The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`, { code: ErrorCodes.B5003, fix: 'Move the key to `runtimeConfig.public` or a custom namespace.' })
+      buildErrorUtils.warn({ message: `The \`app\` namespace is reserved for Nuxt and is exposed to the browser. Please move \`runtimeConfig.app.${key}\` to a different namespace.`, code: ErrorCodes.B5003, fix: 'Move the key to `runtimeConfig.public` or a custom namespace.' })
       delete options.runtimeConfig.app[key]
     }
   }

@@ -32,7 +32,7 @@ export default defineComponent({
     }
 
     onErrorCaptured((e) => {
-      runtimeErrorUtils.warn('Error in island component.', { code: E4012, fix: 'Check the server component for runtime errors in its `setup()` or template.', cause: e })
+      runtimeErrorUtils.warn({ message: 'Error in island component.', code: E4012, fix: 'Check the server component for runtime errors in its `setup()` or template.', cause: e })
     })
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })

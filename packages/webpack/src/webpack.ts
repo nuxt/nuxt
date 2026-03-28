@@ -218,7 +218,7 @@ async function compile (compiler: Compiler) {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
-    buildErrorUtils.throw(`Webpack \`${compiler.options.name}\` build failed with errors:\n\n${stats.toString('errors-only')}`, { code: ErrorCodes.B7014, fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxi clean` and rebuilding.' })
+    buildErrorUtils.throw({ message: `Webpack \`${compiler.options.name}\` build failed with errors:\n\n${stats.toString('errors-only')}`, code: ErrorCodes.B7014, fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxi clean` and rebuilding.' })
   }
 }
 

@@ -141,7 +141,7 @@ function createFactoryProcessor (
     for (const parsedFactoryCall of parsedFactoryCalls) {
       const factoryMeta = getFactoryByLocalName(parsedFactoryCall.factoryName)
       if (!factoryMeta) {
-        buildErrorUtils.error(`No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`, { code: ErrorCodes.B1008, fix: 'Please report this issue at https://github.com/nuxt/nuxt/issues with the file contents.', context: { function: parsedFactoryCall.functionName, file: filePath } })
+        buildErrorUtils.error({ message: `No factory function found for \`${parsedFactoryCall.functionName}\` in file \`${filePath}\`. This is a Nuxt bug.`, code: ErrorCodes.B1008, fix: 'Please report this issue at https://github.com/nuxt/nuxt/issues with the file contents.', context: { function: parsedFactoryCall.functionName, file: filePath } })
         continue
       }
 

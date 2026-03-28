@@ -53,7 +53,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 
   const formattedNames = missing.map(n => `\`${n}\``).join(', ')
-  buildErrorUtils.warn(`Missing ${missing.length === 1 ? 'package' : 'packages'}: ${formattedNames}`, { code: ErrorCodes.B5010, fix: `Run \`npm install ${missing.join(' ')}\` to install ${missing.length === 1 ? 'it' : 'them'}.` })
+  buildErrorUtils.warn({ message: `Missing ${missing.length === 1 ? 'package' : 'packages'}: ${formattedNames}`, code: ErrorCodes.B5010, fix: `Run \`npm install ${missing.join(' ')}\` to install ${missing.length === 1 ? 'it' : 'them'}.` })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
@@ -87,7 +87,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     logger.success(`Installed ${formattedNames}`)
     return true
   } catch (err) {
-    buildErrorUtils.error('Failed to install dependencies.', { code: ErrorCodes.B1004, fix: `Try installing manually with \`npm install ${missing.join(' ')}\`.`, cause: err })
+    buildErrorUtils.error({ message: 'Failed to install dependencies.', code: ErrorCodes.B1004, fix: `Try installing manually with \`npm install ${missing.join(' ')}\`.`, cause: err })
     return Array.isArray(names) ? missing : false
   }
 }
