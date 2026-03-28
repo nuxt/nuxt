@@ -234,8 +234,8 @@ export function createErrorUtils (options: ErrorUtilsOptions): ErrorUtils {
     if (item.why) { (err as any).why = item.why }
     if (item.hint) { (err as any).hint = item.hint }
     if (item.source) { (err as any).source = item.source }
-    const docsURL = item.docs || resolveDocsUrl(item.code, options.docsBase)
-    if (docsURL) { (err as any).docs = docsURL }
+    const docsUrl = item.docs || resolveDocsUrl(item.code, options.docsBase)
+    if (docsUrl) { (err as any).docsUrl = docsUrl }
 
     error(item)
 

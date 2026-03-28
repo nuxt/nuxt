@@ -26,6 +26,10 @@
         <span class="font-semibold text-xs uppercase tracking-wider text-[#0891b2] dark:text-[#22d3ee] shrink-0 min-w-10">Fix</span>
         <span>{{ messages.fix }}</span>
       </div>
+      <div class="error-context-item px-4 py-3 border-b border-[#e2e8f0] dark:border-[#334155] flex gap-3 items-baseline" data-error-hint>
+        <span class="font-semibold text-xs uppercase tracking-wider text-[#64748b] dark:text-[#94a3b8] shrink-0 min-w-10">Hint</span>
+        <span>{{ messages.hint }}</span>
+      </div>
       <div class="error-context-item px-4 py-3 flex gap-3 items-baseline" data-error-docs>
         <span class="font-semibold text-xs uppercase tracking-wider text-[#64748b] dark:text-[#94a3b8] shrink-0 min-w-10">Docs</span>
         <a href="{{ messages.docsUrl }}" class="text-[#2563eb] dark:text-[#60a5fa] underline underline-offset-2 break-all hover:text-[#1d4ed8] dark:hover:text-[#93c5fd]">{{ messages.docsUrl }}</a>

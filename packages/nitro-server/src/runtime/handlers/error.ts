@@ -29,6 +29,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
       const src = error as any
       if (src.fix) { defaultRes.body.fix = src.fix }
       if (src.why) { defaultRes.body.why = src.why }
+      if (src.hint) { defaultRes.body.hint = src.hint }
       if (src.docsUrl) { defaultRes.body.docsUrl = src.docsUrl }
       if (src.code) { defaultRes.body.errorCode = src.code }
     }
@@ -50,11 +51,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   errorObject.data ??= error.data
   errorObject.url = event.req.url
 
-  // Forward structured error properties (fix, why, docsUrl, code) for error pages
+  // Forward structured error properties for error pages
   if (import.meta.dev) {
     const src = error as any
     if (src.fix) { (errorObject as any).fix = src.fix }
     if (src.why) { (errorObject as any).why = src.why }
+    if (src.hint) { (errorObject as any).hint = src.hint }
     if (src.docsUrl) { (errorObject as any).docsUrl = src.docsUrl }
     if (src.code) { (errorObject as any).errorCode = src.code }
   }

@@ -1,5 +1,5 @@
 <template>
-  <ErrorTemplate v-bind="{ status, statusText, description, stack, fix, why, docsUrl, errorCode }" />
+  <ErrorTemplate v-bind="{ status, statusText, description, stack, fix, why, hint, docsUrl, errorCode }" />
 </template>
 
 <script setup>
@@ -48,6 +48,7 @@ const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktra
 // Structured error context (dev only, from throwError)
 const fix = import.meta.dev ? _error.fix : undefined
 const why = import.meta.dev ? _error.why : undefined
+const hint = import.meta.dev ? _error.hint : undefined
 const docsUrl = import.meta.dev ? _error.docsUrl : undefined
 const errorCode = errCode
 

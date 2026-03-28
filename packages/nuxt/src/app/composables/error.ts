@@ -79,6 +79,7 @@ export const createError = <DataT = unknown>(error: string | Error | Partial<Nux
     const src = error as any
     if (src.fix) { (nuxtError as any).fix = src.fix }
     if (src.why) { (nuxtError as any).why = src.why }
+    if (src.hint) { (nuxtError as any).hint = src.hint }
     if (src.docsUrl) { (nuxtError as any).docsUrl = src.docsUrl }
     if (src.code) { (nuxtError as any).code = src.code }
   }
