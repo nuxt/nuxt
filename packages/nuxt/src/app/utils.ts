@@ -41,7 +41,7 @@ export const runtimeErrorUtils: ErrorUtils = /* @__PURE__ */ createErrorUtils({
             fix: item.fix,
             hint: item.hint,
             docs: item.docs,
-            source: item.source,
+            sources: item.sources,
             context: item.context,
           }
           if (item.cause instanceof Error) {

@@ -89,11 +89,11 @@ export interface ErrorInfo {
   /** A documentation URL (overrides code-derived URL) */
   docs?: string
   /** The location of source file that caused the error */
-  source?: {
+  sources?: {
     file: string
     line?: number
     column?: number
-  }
+  }[]
   /** The underlying error that caused this one */
   cause?: unknown
   /** Extra context to include (only shown when the formatError implementation handles it) */
@@ -164,8 +164,17 @@ function defaultFormatError (item: ErrorInfo, options: ErrorUtilsOptions): strin
   if (item.hint) {
     lines.push(wrapLine(`hint: ${item.hint}`))
   }
-  if (item.source) {
-    lines.push(wrapLine(`source: ${item.source.file}:${item.source.line}:${item.source.column}`))
+  if (item.sources) {
+    for (const source of item.sources) {
+      let path = source.file
+      if (source.line != null) {
+        path += `:${source.line}`
+        if (source.column != null) {
+          path += `:${source.column}`
+        }
+      }
+      lines.push(wrapLine(`source: ${path}`))
+    }
   }
 
   let result = `[${resolveCode(item.code, item.codePrefix ?? options.prefix)}] ${item.message}`
@@ -233,7 +242,7 @@ export function createErrorUtils (options: ErrorUtilsOptions): ErrorUtils {
     if (item.fix) { (err as any).fix = item.fix }
     if (item.why) { (err as any).why = item.why }
     if (item.hint) { (err as any).hint = item.hint }
-    if (item.source) { (err as any).source = item.source }
+    if (item.sources) { (err as any).sources = item.sources }
     const docsUrl = item.docs || resolveDocsUrl(item.code, options.docsBase)
     if (docsUrl) { (err as any).docsUrl = docsUrl }
 
